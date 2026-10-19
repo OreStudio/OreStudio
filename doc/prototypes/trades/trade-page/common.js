@@ -487,6 +487,15 @@ function needsRole(screen, need, roles) {
         roles.map((r, i) => [i ? ', ' : '', h('a', { href: '#', 'data-ref': 'access-request:' + r.toLowerCase().replace(/ /g, '-') }, r)]), '.');
 }
 
+/* A form with changes is not thrown away without asking. */
+function leaveGuard(isDirty) {
+    window.addEventListener('beforeunload', e => { if (isDirty()) e.preventDefault(); });
+    document.addEventListener('click', e => {
+        const a = e.target.closest('a[href]');
+        if (a && isDirty() && a.getAttribute('href') !== '#' && !a.closest('.tabs') && !a.closest('.proto-bar') && !confirm('You have unsaved changes. Close anyway?')) e.preventDefault();
+    }, true);
+}
+
 /* ---------- cards and fields ---------- */
 function showValue(fd) {
     if (fd.node) return fd.node;

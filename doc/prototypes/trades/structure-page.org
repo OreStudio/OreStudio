@@ -34,7 +34,7 @@ The page opens on the list of trees. The list shows each root with its inner str
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| (none) | The list: roots, with inner structures indented, filtered by kind, paged on the server |
+| (none) | The list: roots, with inner structures indented. The page, size, search, kind and order are in the address (=?offset=, =?limit=, =?search=, =?kind=, =?sort=, =?dir=) |
 | =?deal=STR-0010= | A dynamic structure that is the root of a tree: a strategy, a package and a hedge trade inside it |
 | =?deal=STR-0007= | The strategy inside it, a risk reversal, with its template roles checked |
 | =?deal=PKG-0021= | The package inside it: a bond repo and a bond, each confirming on its own |
@@ -42,6 +42,8 @@ The page opens on the list of trees. The list shows each root with its inner str
 | =?deal=PKG-0004= | A package on its own: a swap and a cap |
 | =?mode=group&trades=ACME-100202,ACME-100209= | The grouping workflow, with the kind to choose |
 | =?mode=group&trades=ACME-100201,ACME-100202= | The refusal: the trades have different counterparties |
+| =?state=loading=, =?state=error=, =?state=empty=, =?state=stale=, =?state=refused&tab=history= | The states of the list and the page |
+| =?as=reader= | The grouping screen names the right it needs and links to a request for each role that gives it |
 
 ** Open question
 
@@ -73,6 +75,7 @@ A composite trade is neither. It is one trade with its own legs, and it is not i
 - The client states the rules the database enforces: every leg shares the party and the counterparty, a structure nests one level at most, and a strategy has one product family. The person sees the check before the server refuses it.
 - A trade moves from one structure to another without being rewritten.
 - Pricing and composition stay in the Trade Entry Prototype. The Workflows menu links to both.
+- A tab, a click in the tree and a click on a trade open in place and put their address in the history. Link a trade is the Add of the Trades card and is not in the menu. Link and Unlink ask for a reason and commentary, and the card keeps its old rows until Refresh, which then adds an entry to History.
 
 ** What is fake
 

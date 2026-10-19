@@ -171,9 +171,5 @@ function redraw() {
 }
 main.addEventListener('input', () => { touched = true; });
 main.addEventListener('change', () => { touched = true; });
-window.addEventListener('beforeunload', e => { if (touched && !result) e.preventDefault(); });
-document.addEventListener('click', e => {
-    const a = e.target.closest('a[href]');
-    if (a && touched && !result && a.getAttribute('href') !== '#' && !a.closest('.tabs') && !confirm('You have unsaved changes. Close anyway?')) e.preventDefault();
-}, true);
+leaveGuard(() => touched && !result);
 redraw();

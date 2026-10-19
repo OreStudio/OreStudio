@@ -128,6 +128,41 @@ Checked in headless Chrome at the commit of this change. A scripted run of the f
 the review, the booking and the result passes. The reader, duplicate and half-booked
 states pass. The earlier trade page scripts pass again.
 
+** Structure page and ORE portfolio, 2026-10-20
+
+The numbers are those of the reviews in the task "Check the trade prototypes against the entity screen specification". =common.js= gained =leaveGuard()=, in all five folders.
+
+| Page | # | Fix |
+|------+---+-----|
+| Structure | 1 | The trail names Trades once |
+| Structure | 2 | One line under the title: the identifier, the kind, the template and whether the legs are complete. Confirmation and pricing are on their card |
+| Structure | 3 | A tab, a click in the tree and a click on a trade open in place, with Back |
+| Structure | 4 | The party, counterparty, template, parent structure, trade type and trade are links. Money has its flag |
+| Structure | 5, 6 | Link a trade is a button on the Trades card, without a plus, and not in the menu |
+| Structure | 7 | Link and Unlink ask for a reason and commentary, show the request and its precondition, and guard Cancel. They ask no kind of change: a membership change is not an amendment, as the Unlink dialog already says |
+| Structure | 8, 9 | A save keeps the old rows and turns Refresh gold. Refresh applies the change and adds an entry to History. Entries name their record: Structure, Member, Leg |
+| Structure | 10 | The chip, the "Internal version" field, the root explanation and the tree note are gone |
+| Structure | 11 | The list holds page, size, search, kind and order in the address. Headers sort and the request line states the order |
+| Structure | 12 | The list has loading, error and empty states. The page has loading, error and a refused History tab |
+| Structure | 13, 14 | A reader gets =needsRole()= and nothing else. Create asks for a reason and commentary, and leaving a half-chosen group asks first |
+| Structure | 15 | The line about the server enforcing the check is gone |
+| ORE | 1 | The trail names Trades once |
+| ORE | 2 | The Workflows menu is gone from both pages |
+| ORE | 3 | A reader gets =needsRole()= and nothing else |
+| ORE | 4 | The step is in the address. Back returns to the earlier step. A reload returns to the first step |
+| ORE | 5 | A touched form asks "You have unsaved changes. Close anyway?" |
+| ORE | 6 | The parent portfolio is a combo box |
+| ORE | 7 | The counterparty and trade type are links in the preview and the export check |
+| ORE | 8 | Confirm asks for a reason and commentary. I withdraw the export from this item: an export writes a file and changes no record |
+| ORE | 9 | Import and export show a loading line and a failure that names the operation, status and request id (=?fail=import=, =?fail=export=) |
+| ORE | 10 | Roll back asks for a reason in a dialog |
+| ORE | 11 | The preview and the export check have a pager. Their page is in memory: they are checks made by the client, not requests |
+| ORE | 12 | A disabled Continue, Preview and Export says why in its tooltip |
+
+A function named =history= in the structure page hid =window.history=. It is now =historyEntries=.
+
+Checked in headless Chrome. Scripted runs pass for the list (sort, kind, address), the page (tab in place, Unlink, Refresh, History, tree click, Back), the grouping workflow, the reader view, and the loading, error, empty and refused states. The import (every step, the failure, the rollback) and the export (done and failed) pass too. All nine pages load without a console error. The scripts are not kept.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

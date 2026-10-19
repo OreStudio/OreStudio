@@ -2640,6 +2640,7 @@ export const en: SourceCatalogue = {
                 'ibor-index': 'IBOR index',
                 'overnight-index': 'Overnight index',
                 'swap-index': 'Named swap index',
+                'zero-inflation-index': 'Zero inflation index',
                 tenor: 'Tenor resolution',
                 'currency-pair': 'Currency pair',
             },

@@ -45,12 +45,14 @@ _SHELL_AGGREGATOR_TEMPLATES = {
 # time. No model file states that list: it is derived from the reference-data
 # entity models that declare ``#+convention_family:``, so the generator reads
 # the modelling tree and hands the templates one projection of it. The facet
-# renders once per component, not once per family; see
+# renders once per component, not once per family; the TypeScript twin reads
+# the same projection as the C++ header. See
 # :func:`convention_family_context`.
 _CONVENTION_REGISTRY_TEMPLATES = {
     "cpp_convention_family_registry.hpp.mustache",
     "cpp_convention_family_units.hpp.mustache",
     "cpp_convention_family_dispatch.cpp.mustache",
+    "ts_convention_family_registry.ts.mustache",
 }
 
 # The per-family unit renders once for each family entity, from that entity's

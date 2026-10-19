@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 0502BC6C-73FA-4F88-84BD-0E8F4B8D56B6
+:END:
+#+title: ores.ts.convention-registry
+#+description: The TypeScript twin of the convention family registry: one module that lists every convention family, so the web layer holds no list of its own. Opt-in.
+#+type: facet
+#+model_types: component
+#+default: disabled
+#+level: cross
+#+facet_group: ores.ts
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is the node for the =ores.ts.convention-registry= facet of the
+codegen template library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+A convention family is an entity model that declares =#+convention_family:=.
+The [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]] facet renders the family list as a C++
+header. This facet renders the same list, from the same derivation, as one
+TypeScript module. The web layer reads that module, so it holds no family list
+of its own and cannot disagree with the server about which families exist.
+
+The facet is opt-in and renders nothing by default. It is addressed to a
+/component/ model, because the module is one file per component and not one
+file per entity. The archetype carries a literal =#+output:= path for the same
+reason as the C++ facet: the path names its component, and no model variable
+states it. Only =ores.refdata= opts in.
+
+* Mustache incantations
+
+The archetype reads the one context the C++ facet reads, =convention_registry=.
+It exposes =component= and the =families= list in family-key order. Each family
+states =key=, =entity=, =subject_stem=, =party_scoped= and =write_mode=. The
+C++ type name and the one-hot mode flags are in the context too, and this facet
+does not use them.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:9345F241-0936-4F38-95C5-93BB688A849D][ores.ts.convention-registry.registry_module]] | The TypeScript module that lists every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]] — the C++ face of the same registry.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

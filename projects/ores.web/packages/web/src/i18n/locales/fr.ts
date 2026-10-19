@@ -2674,6 +2674,7 @@ const fr: SourceCatalogue = {
                 'ibor-index': 'Indice IBOR',
                 'overnight-index': 'Indice au jour le jour',
                 'swap-index': 'Indice de swap nommé',
+                'zero-inflation-index': "Indice d'inflation zéro",
                 tenor: 'Résolution de ténor',
                 'currency-pair': 'Paire de devises',
             },

@@ -23,8 +23,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
+import { CONVENTION_FAMILY_ENTRIES } from '@ores/wire-protocol/generated/refdata/domain/convention_family_registry';
 import type { Config } from './config.js';
-import { CONVENTION_FAMILIES } from './conventions.js';
+import { ABSORBED_REGISTRY_KEYS, CONVENTION_FAMILIES } from './conventions.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -126,6 +127,49 @@ const LS_ID = '77777777-7777-4777-8777-777777777777';
 const PR_PART_ID = '88888888-8888-4888-8888-888888888888';
 const LS_PART_ID = '99999999-9999-4999-8999-999999999999';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
+
+describe('the family list', () => {
+    it('lists every registry family the screen does not absorb, so a new family needs no edit', () => {
+        const listed = new Set(CONVENTION_FAMILIES.map((family) => family.entity));
+        for (const entry of CONVENTION_FAMILY_ENTRIES) {
+            if (!ABSORBED_REGISTRY_KEYS.has(entry.key)) {
+                expect(listed.has(entry.entity), entry.key).toBe(true);
+            }
+        }
+        expect(CONVENTION_FAMILIES.map((family) => family.key)).toContain('zero-inflation-index');
+    });
+
+    it('lists the composite and the screen-only kinds, and nothing else beyond the registry', () => {
+        const registryEntities = new Set(CONVENTION_FAMILY_ENTRIES.map((entry) => entry.entity));
+        const extra = CONVENTION_FAMILIES.filter(
+            (family) => !registryEntities.has(family.entity),
+        ).map((family) => family.key);
+        expect(extra.sort()).toEqual(['currency-pair', 'tenor', 'tenor-basis-swap'].sort());
+    });
+
+    it('addresses each registry family at the subject stem the registry states', () => {
+        for (const entry of CONVENTION_FAMILY_ENTRIES) {
+            const family = CONVENTION_FAMILIES.find(
+                (candidate) => candidate.entity === entry.entity,
+            );
+            if (family !== undefined) {
+                expect(`refdata.v1.${family.prefix}`, entry.key).toBe(entry.subjectStem);
+            }
+        }
+    });
+
+    it('absorbs only keys the registry states, so a mistyped key cannot hide nothing', () => {
+        const registryKeys = new Set(CONVENTION_FAMILY_ENTRIES.map((entry) => entry.key));
+        for (const key of ABSORBED_REGISTRY_KEYS) {
+            expect(registryKeys.has(key), key).toBe(true);
+        }
+    });
+
+    it('names each family once', () => {
+        const keys = CONVENTION_FAMILIES.map((family) => family.key);
+        expect(new Set(keys).size).toBe(keys.length);
+    });
+});
 
 describe('convention routes', () => {
     it('counts every family, and reads a count it cannot as null', async () => {

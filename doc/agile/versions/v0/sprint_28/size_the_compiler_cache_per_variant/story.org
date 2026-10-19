@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 83E40708-84D6-4C55-97C5-F84AB0B6EF37
+:END:
+#+title: Story: Hotfix: the compiler cache is too small for the builds it serves
+#+description: The action's max-size overrides the job cap, nightly and continuous cap the shared entries differently, and the four variants do not fit the 10 GB allowance. Give each variant a budget and stop the gcc debug build.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Linux builds keep a compiler cache that is as big as the build, inside the
+10 GB repository allowance. The gcc debug build, which never finishes, stops.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- Each variant has one cap, in the action's =max-size=.
+- The nightly workflow has no gcc debug leg.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9A65BF0-8455-4400-9064-BD7CB5005288][Scaffold story: Hotfix: the compiler cache is too small for the builds it serves]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5EAC09E6-2D48-4B5F-9DCB-7C172BA5A0D3][Implement Hotfix: the compiler cache is too small for the builds it serves]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: Hotfix: the compiler cache is too small for the builds it serves |
+
+* Decisions
+
+- A cache smaller than its build is worth almost nothing, so a variant gets
+  the whole of its need or no cache. The budgets, in MB, are clang debug 4000,
+  clang release 1600, gcc release 1800 and 1600 free.
+- The gcc debug build stops until the debug build gets smaller. Then it can
+  have a cache again.
+
+* Out of scope
+
+-

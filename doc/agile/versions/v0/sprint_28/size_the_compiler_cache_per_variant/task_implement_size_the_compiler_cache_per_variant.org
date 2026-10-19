@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 5EAC09E6-2D48-4B5F-9DCB-7C172BA5A0D3
+:END:
+#+title: Task: Implement Hotfix: the compiler cache is too small for the builds it serves
+#+description: Initial task for: Hotfix: the compiler cache is too small for the builds it serves
+#+type: task
+#+level: s1
+#+filetags: :size_the_compiler_cache_per_variant:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-size-the-compiler-cache-per-variant
+#+pr: 3571
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83E40708-84D6-4C55-97C5-F84AB0B6EF37][Hotfix: the compiler cache is too small for the builds it serves]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give each Linux build variant a compiler cache big enough for the whole build,
+and stop the gcc debug build. The caches then fit the 10 GB repository
+allowance, and the debug build can get faster from one run to the next.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:83E40708-84D6-4C55-97C5-F84AB0B6EF37][Hotfix: the compiler cache is too small for the builds it serves]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- The action's =max-size= is the only cap, one value per variant, equal in the
+  nightly and continuous workflows.
+- The nightly matrix has no gcc debug leg.
+- The budgets add up to no more than the 9000 MB the make-room step keeps for
+  sccache.
+
+* Plan
+
+Evidence from the nightly of 2026-10-18 and the repository cache list:
+
+- =hendrikmuhs/ccache-action= starts sccache with =SCCACHE_CACHE_SIZE= set to
+  its =max-size= input and ignores the job-level value. The 2G of hotfix #3559
+  never applied, and the real cap was 1000M.
+- The clang debug build needs about 3.9 GB. With 1000 MiB it got 193 hits in
+  7664 requests (2.52%). The build reads its objects in the same order each
+  night and the oldest go first, so a cache smaller than the build gives almost
+  no hits.
+- Nightly (1000M) and continuous (2500M) share the clang entries, and each cut
+  the other's entry down when it saved.
+- Four full caches need about 10.8 GB. The repository has 10 GB, and 1 GB goes
+  to vcpkg, cmake and emacs.
+- The gcc debug leg never finished and never saved a cache.
+
+Budgets, in MB: clang debug 4000, clang release 1600, gcc release 1800, free
+1600, total 9000. The gcc release figure is an estimate: its entry hit the
+1000M cap.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3571][#3571]] | [ci] Size the compiler cache per variant and stop the gcc debug build |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both workflows set =max-size= per variant: 4000M for debug, 1600M for clang
+release and 1800M for gcc release. The dead =SCCACHE_CACHE_SIZE= is gone. The
+nightly matrix excludes gcc debug, and =ci_health.py= no longer expects a vcpkg
+cache for it.
+
+- Both workflows parse, =yamllint= passes and =check_no_pr_triggers.py= passes.
+- The effect shows only in a CI run. The first run of each variant restores the
+  old, smaller entry, so the full hit rate arrives from the second run.
+- The gcc release and gcc debug sizes are estimates, not measurements.

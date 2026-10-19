@@ -296,7 +296,7 @@ def detect_alerts(
 
     # Expected vcpkg cache configs
     expected_vcpkg = [
-        "linux-gcc-debug", "linux-gcc-release",
+        "linux-gcc-release",
         "linux-clang-debug", "linux-clang-release",
         "windows-msvc-debug", "windows-msvc-release",
         "macos-clang-debug", "macos-clang-release",

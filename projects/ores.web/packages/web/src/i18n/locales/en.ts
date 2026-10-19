@@ -4517,14 +4517,10 @@ export const en: SourceCatalogue = {
         runs: 'Runs',
         invalid:
             'Not a schedule the scheduler reads. A cron expression needs five parts: minute, hour, day of month, month and day of week.',
-        unshown:
-            'This schedule is none of the shapes above. Keep it as it is, pick a common schedule, or edit it under Advanced.',
         presets: {
-            title: 'Common schedules',
             premarket: { name: 'Pre-market run' },
             intraday: { name: 'Intraday check' },
             eod: { name: 'End of day batch' },
-            custom: { name: 'Custom schedule', hint: 'Choose the times and days yourself' },
         },
         repeat: 'Repeat',
         repeats: {
@@ -4539,10 +4535,12 @@ export const en: SourceCatalogue = {
         onDay: 'On day',
         onDays: 'On these days',
         steps: { minutes: '{n} minutes', hour: 'hour', hours: '{n} hours' },
-        advanced: 'Advanced: the cron expression',
+        ways: {
+            common: 'Common schedules',
+            custom: 'Custom schedule',
+            advanced: 'Advanced: the cron expression',
+        },
         expression: 'Cron expression',
-        expressionHint:
-            'Five parts: minute, hour, day of month, month, day of week. The scheduler runs on the server clock; it knows no business-day or holiday calendar.',
         weekdaysOnly: 'Weekdays only',
         dayShort: { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' },
     },

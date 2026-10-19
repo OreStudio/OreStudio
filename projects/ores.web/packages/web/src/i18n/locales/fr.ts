@@ -4582,17 +4582,10 @@ const fr: SourceCatalogue = {
         runs: "S'exécute",
         invalid:
             "Ce n'est pas un calendrier que le planificateur lit. Une expression cron a cinq parties : minute, heure, jour du mois, mois et jour de la semaine.",
-        unshown:
-            "Ce calendrier n'est aucune des formes ci-dessus. Gardez-le tel quel, choisissez un calendrier courant, ou modifiez-le sous Avancé.",
         presets: {
-            title: 'Calendriers courants',
             premarket: { name: "Exécution d'avant-marché" },
             intraday: { name: 'Contrôle intrajournalier' },
             eod: { name: 'Traitement de fin de journée' },
-            custom: {
-                name: 'Calendrier personnalisé',
-                hint: 'Choisissez vous-même les heures et les jours',
-            },
         },
         repeat: 'Répéter',
         repeats: {
@@ -4607,10 +4600,12 @@ const fr: SourceCatalogue = {
         onDay: 'Le jour',
         onDays: 'Ces jours-là',
         steps: { minutes: '{n} minutes', hour: 'heure', hours: '{n} heures' },
-        advanced: "Avancé : l'expression cron",
+        ways: {
+            common: 'Calendriers courants',
+            custom: 'Calendrier personnalisé',
+            advanced: "Avancé : l'expression cron",
+        },
         expression: 'Expression cron',
-        expressionHint:
-            "Cinq parties : minute, heure, jour du mois, mois, jour de la semaine. Le planificateur suit l'horloge du serveur ; il ne connaît aucun calendrier de jours ouvrés ou de jours fériés.",
         weekdaysOnly: 'En semaine seulement',
         dayShort: { 0: 'dim', 1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam' },
     },

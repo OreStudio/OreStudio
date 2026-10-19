@@ -4552,17 +4552,10 @@ const pt: SourceCatalogue = {
         runs: 'Executa',
         invalid:
             'Não é um calendário que o agendador leia. Uma expressão cron precisa de cinco partes: minuto, hora, dia do mês, mês e dia da semana.',
-        unshown:
-            'Este calendário não é nenhuma das formas acima. Mantenha-o como está, escolha um calendário comum, ou edite-o em Avançado.',
         presets: {
-            title: 'Calendários comuns',
             premarket: { name: 'Execução pré-mercado' },
             intraday: { name: 'Verificação intradiária' },
             eod: { name: 'Lote de fim de dia' },
-            custom: {
-                name: 'Calendário personalizado',
-                hint: 'Escolha você mesmo as horas e os dias',
-            },
         },
         repeat: 'Repetir',
         repeats: {
@@ -4577,10 +4570,12 @@ const pt: SourceCatalogue = {
         onDay: 'No dia',
         onDays: 'Nestes dias',
         steps: { minutes: '{n} minutos', hour: 'hora', hours: '{n} horas' },
-        advanced: 'Avançado: a expressão cron',
+        ways: {
+            common: 'Calendários comuns',
+            custom: 'Calendário personalizado',
+            advanced: 'Avançado: a expressão cron',
+        },
         expression: 'Expressão cron',
-        expressionHint:
-            'Cinco partes: minuto, hora, dia do mês, mês, dia da semana. O agendador segue o relógio do servidor; não conhece calendário de dias úteis ou feriados.',
         weekdaysOnly: 'Só dias úteis',
         dayShort: { 0: 'dom', 1: 'seg', 2: 'ter', 3: 'qua', 4: 'qui', 5: 'sex', 6: 'sáb' },
     },

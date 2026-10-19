@@ -130,6 +130,9 @@ export function CronField({
 const hourOptions = Array.from({ length: 24 }, (_, hour) => hour);
 
 /** The builder: presets, then the controls, applied only on the button. */
+type Way = 'common' | 'custom' | 'advanced';
+
+/** The builder: three ways to state a schedule, of which one is live at a time. */
 export function CronBuilder({
     expression,
     onApply,
@@ -143,10 +146,41 @@ export function CronBuilder({
     const [text, setText] = useState(expression === '' ? PRESETS[0].expression : expression);
     const schedule = parseSchedule(text);
     const preset = PRESETS.find((candidate) => candidate.expression === text.trim());
+    const [way, setWay] = useState<Way>(
+        preset !== undefined ? 'common' : schedule !== undefined ? 'custom' : 'advanced',
+    );
     const valid = cronValid(text.trim());
     const says = describeCron(text, language);
     const edit = (patch: Partial<Schedule>): void =>
         setText(cronOf({ ...(schedule ?? STARTING_SCHEDULE), ...patch }));
+    /*
+     * Choosing a way makes the text one that way can show, so the controls of
+     * the live group always read what will be applied.
+     */
+    const choose = (next: Way): void => {
+        setWay(next);
+        if (next === 'common' && preset === undefined) {
+            setText(PRESETS[0].expression);
+        } else if (next === 'custom' && schedule === undefined) {
+            setText(cronOf(STARTING_SCHEDULE));
+        }
+    };
+    const group = (id: Way, title: string, children: ReactNode): ReactNode => (
+        <section className="space-y-3 rounded-md border border-line p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                    type="radio"
+                    name="schedule-way"
+                    checked={way === id}
+                    onChange={() => choose(id)}
+                />
+                {title}
+            </label>
+            <fieldset disabled={way !== id} className={cx('pl-6', way !== id && 'opacity-50')}>
+                {children}
+            </fieldset>
+        </section>
+    );
     return (
         <Dialog
             title={t('cron.title')}
@@ -169,7 +203,7 @@ export function CronBuilder({
                 </div>
             }
         >
-            <div className="space-y-5">
+            <div className="space-y-4">
                 <div className="rounded-md border border-line bg-surface-sunken px-3 py-2">
                     <div className="text-xs text-ink-muted">{t('cron.runs')}</div>
                     <div className="text-sm">
@@ -177,67 +211,60 @@ export function CronBuilder({
                     </div>
                 </div>
 
-                <fieldset className="space-y-2">
-                    <legend className="mb-1 text-sm font-medium text-ink-muted">
-                        {t('cron.presets.title')}
-                    </legend>
-                    {PRESETS.map((entry) => (
-                        <label key={entry.id} className="flex items-start gap-2 text-sm">
-                            <input
-                                type="radio"
-                                name="schedule-preset"
-                                checked={preset?.id === entry.id}
-                                onChange={() => setText(entry.expression)}
-                            />
-                            <span>
-                                {t(`cron.presets.${entry.id}.name`)}
-                                <span className="block text-xs text-ink-faint">
-                                    {describeCron(entry.expression, language)}
+                {group(
+                    'common',
+                    t('cron.ways.common'),
+                    <div className="space-y-2">
+                        {PRESETS.map((entry) => (
+                            <label key={entry.id} className="flex items-start gap-2 text-sm">
+                                <input
+                                    type="radio"
+                                    name="schedule-preset"
+                                    checked={preset?.id === entry.id}
+                                    onChange={() => setText(entry.expression)}
+                                />
+                                <span>
+                                    {t(`cron.presets.${entry.id}.name`)}
+                                    <span className="block text-xs text-ink-faint">
+                                        {describeCron(entry.expression, language)}
+                                    </span>
                                 </span>
-                            </span>
-                        </label>
-                    ))}
-                    <label className="flex items-start gap-2 text-sm">
-                        <input
-                            type="radio"
-                            name="schedule-preset"
-                            checked={preset === undefined}
-                            onChange={() => edit({})}
-                        />
-                        <span>
-                            {t('cron.presets.custom.name')}
-                            <span className="block text-xs text-ink-faint">
-                                {t('cron.presets.custom.hint')}
-                            </span>
-                        </span>
-                    </label>
-                </fieldset>
+                            </label>
+                        ))}
+                    </div>,
+                )}
 
-                {preset === undefined &&
-                    (schedule === undefined ? (
-                        <p className="text-sm text-ink-muted">{t('cron.unshown')}</p>
-                    ) : (
-                        <Controls schedule={schedule} edit={edit} />
-                    ))}
+                {group(
+                    'custom',
+                    t('cron.ways.custom'),
+                    <Controls schedule={schedule ?? STARTING_SCHEDULE} edit={edit} />,
+                )}
 
-                <details className="text-sm" open={preset === undefined && schedule === undefined}>
-                    <summary className="cursor-pointer text-ink-muted">
-                        {t('cron.advanced')}
-                    </summary>
-                    <div className="mt-2 space-y-1">
+                {group(
+                    'advanced',
+                    t('cron.ways.advanced'),
+                    <div className="space-y-1">
                         <Input
                             value={text}
                             spellCheck={false}
                             aria-label={t('cron.expression')}
-                            aria-invalid={!valid}
-                            className={cx('font-mono', !valid && 'border-down')}
+                            aria-invalid={way === 'advanced' && !valid}
+                            className={cx(
+                                'font-mono',
+                                way === 'advanced' && !valid && 'border-down',
+                            )}
                             onChange={(event) => setText(event.target.value)}
                         />
-                        <span className="block text-xs text-ink-faint">
-                            {t('cron.expressionHint')}
-                        </span>
-                    </div>
-                </details>
+                        {way === 'advanced' &&
+                            (valid ? (
+                                says !== undefined && (
+                                    <span className="block text-xs text-ink-faint">{says}</span>
+                                )
+                            ) : (
+                                <span className="block text-xs text-down">{t('cron.invalid')}</span>
+                            ))}
+                    </div>,
+                )}
             </div>
         </Dialog>
     );

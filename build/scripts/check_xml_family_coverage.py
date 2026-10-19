@@ -36,7 +36,11 @@ FAMILIES = {
     "CurrencyConfig": ("supported", "importer reads it"),
     "IborFallbackConfig": ("supported", "table written and proved; nothing reads it yet"),
     "NettingSetDefinitions": ("supported", "table written and proved; nothing reads the ORE XML"),
-    "TodaysMarket": ("supported", "todays_market_mapper reads it"),
+    "TodaysMarket": (
+        "supported",
+        "todays_market_projection reads and writes it through the codec; run_store and the "
+        "run configuration service call it",
+    ),
     "CreditSimulation": (
         "supported",
         "the projection reads and writes the document through the codec; the "

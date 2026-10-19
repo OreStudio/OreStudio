@@ -25,7 +25,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
-#include "ores.ore.core/domain/todays_market_mapper.hpp"
+#include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
@@ -325,7 +325,7 @@ void parse_document(std::string_view code,
         d.curves = curve_configuration_projection::map(
             curve_configuration_projection::read(content, file));
     else if (code == "todays_market")
-        d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
+        d.market = todays_market_projection::map(todays_market_projection::read(content, file));
     else if (code == "pricing_engines")
         d.engines = pricing_engine_projection::map(pricing_engine_projection::read(content, file));
 }
@@ -500,7 +500,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                              .configuration_id = configuration, .party_id = run.party_id})
                         .document));
         else if (code == "todays_market")
-            files[*file] = save_data(todays_market_mapper::reverse(
+            files[*file] = todays_market_projection::write(todays_market_projection::reverse(
                 call(owners,
                      an::get_todays_market_document_request{.configuration_id = configuration,
                                                             .party_id = run.party_id})

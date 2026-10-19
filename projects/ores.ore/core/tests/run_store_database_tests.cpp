@@ -19,7 +19,9 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/store/run_store.hpp"
+#include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
@@ -96,6 +98,21 @@ std::string difference(const store::input_files& original,
         parse<Document>(original.at(name)), parse<Document>(it->second), example + name);
 }
 
+// Today's market is compared by the table, as the family is read through it.
+std::string market_difference(const store::input_files& original,
+                              const store::input_files& exported,
+                              const std::string& name) {
+    const auto it = exported.find(name);
+    if (it == exported.end())
+        return name + " was not exported";
+    using projection = domain::todays_market_projection;
+    const auto left = projection::read(original.at(name), example + name);
+    const auto right = projection::read(it->second, name);
+    const auto found = xml::compare_records(
+        *xml::generated::todays_market::todays_market_document().root, &left, &right);
+    return found ? example + name + ": " + found->path + ": " + found->detail : std::string();
+}
+
 std::map<std::string, std::string> parameters_of(const domain::parameterListType& list) {
     std::map<std::string, std::string> out;
     for (const auto& p : list.Parameter)
@@ -136,7 +153,7 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     CHECK(exported.size() == imported.stored.size());
 
     CHECK(difference<domain::pricingengines>(original, exported, "pricingengine.xml").empty());
-    CHECK(difference<domain::todaysmarket>(original, exported, "todaysmarket.xml").empty());
+    CHECK(market_difference(original, exported, "todaysmarket.xml").empty());
     CHECK(difference<domain::curveconfiguration>(original, exported, "curveconfig.xml").empty());
 
     const auto run = parse<domain::ore>(original.at("ore.xml"));

@@ -85,7 +85,6 @@ set(files
     "xml_scanner_tests.cpp"
     "xml_scripted_golden_roundtrip_tests.cpp"
     "xml_stresstesting_roundtrip_tests.cpp"
-    "xml_todays_market_mapper_roundtrip_tests.cpp"
-    "xml_todaysmarket_roundtrip_tests.cpp"
+    "xml_todays_market_projection_tests.cpp"
     "xml_trade_import_tests.cpp"
 )

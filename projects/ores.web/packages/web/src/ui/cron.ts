@@ -23,50 +23,27 @@
  * weekday. This file holds what the cron field and its builder agree on, so the
  * rules are tested without a page. The server stays the authority on whether an
  * expression runs; the check here only tells a person early.
+ *
+ * The builder states a schedule the way a person who does not know cron says
+ * it: every few minutes or hours inside a window, at a time of day, or on a day
+ * of the month, on the days picked. An expression of another shape is valid and
+ * is kept as typed; it is never rewritten into one of these.
  */
 
-export type CronFieldName = 'minute' | 'hour' | 'day' | 'month' | 'weekday';
-
-/** What one field of the expression accepts and how the builder offers it. */
-export interface CronFieldConfig {
-    readonly name: CronFieldName;
-    readonly min: number;
-    readonly max: number;
-    /** The words the values go by, from the minimum up; empty for plain numbers. */
-    readonly words: readonly string[];
-    /** The steps the Frequency choice offers besides every value. */
-    readonly steps: readonly number[];
-    readonly perRow: number;
-}
-
-export const CRON_FIELDS: readonly CronFieldConfig[] = [
-    {
-        name: 'minute',
-        min: 0,
-        max: 59,
-        words: [],
-        steps: [2, 3, 4, 5, 6, 10, 12, 15, 20, 30],
-        perRow: 10,
-    },
-    { name: 'hour', min: 0, max: 23, words: [], steps: [2, 3, 4, 6, 8, 12], perRow: 12 },
-    { name: 'day', min: 1, max: 31, words: [], steps: [2, 3, 4, 5, 7, 10, 14], perRow: 10 },
+const FIELD_RANGES = [
+    { name: 'minute', min: 0, max: 59, words: [] as readonly string[] },
+    { name: 'hour', min: 0, max: 23, words: [] as readonly string[] },
+    { name: 'day', min: 1, max: 31, words: [] as readonly string[] },
     {
         name: 'month',
         min: 1,
         max: 12,
-        words: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        steps: [2, 3, 4, 6],
-        perRow: 6,
+        words: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
     },
-    {
-        name: 'weekday',
-        min: 0,
-        max: 6,
-        words: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        steps: [2, 3],
-        perRow: 7,
-    },
-];
+    { name: 'weekday', min: 0, max: 6, words: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] },
+] as const;
+
+type FieldRange = (typeof FIELD_RANGES)[number];
 
 /** The default a new schedule starts from: the top of every hour. */
 export const DEFAULT_CRON = '0 * * * *';
@@ -76,28 +53,23 @@ export function cronParts(expression: string): readonly string[] {
     return expression.split(' ').filter((part) => part !== '');
 }
 
-/** A value of a field as the builder labels it. */
-export function valueLabel(config: CronFieldConfig, value: number): string {
-    return config.words[value - config.min] ?? String(value).padStart(2, '0');
-}
-
 /** The number a token stands for, by digits or by the word the field goes by. */
-function numberOf(config: CronFieldConfig, token: string): number | undefined {
+function numberOf(range: FieldRange, token: string): number | undefined {
     if (/^[0-9]+$/.test(token)) {
         return Number.parseInt(token, 10);
     }
-    const index = config.words.findIndex((word) => word.toLowerCase() === token.toLowerCase());
-    return index < 0 ? undefined : index + config.min;
+    const index = (range.words as readonly string[]).indexOf(token.toLowerCase());
+    return index < 0 ? undefined : index + range.min;
 }
 
 /** Whether a value lies where the field allows; Sunday may be 0 or 7. */
-function inRange(config: CronFieldConfig, value: number): boolean {
-    const max = config.name === 'weekday' ? 7 : config.max;
-    return value >= config.min && value <= max;
+function inRange(range: FieldRange, value: number): boolean {
+    const max = range.name === 'weekday' ? 7 : range.max;
+    return value >= range.min && value <= max;
 }
 
 /** Whether one comma-free item of a field is well formed and in range. */
-function itemValid(config: CronFieldConfig, item: string): boolean {
+function itemValid(range: FieldRange, item: string): boolean {
     const [span = '', step, ...rest] = item.split('/');
     if (rest.length > 0 || (step !== undefined && !/^[0-9]+$/.test(step))) {
         return false;
@@ -112,175 +84,223 @@ function itemValid(config: CronFieldConfig, item: string): boolean {
     if (ends.length > 2) {
         return false;
     }
-    const values = ends.map((end) => numberOf(config, end));
-    return values.every((value) => value !== undefined && inRange(config, value));
-}
-
-/** Whether one field is well formed: a list of items, each valid. */
-export function fieldValid(config: CronFieldConfig, field: string): boolean {
-    return field !== '' && field.split(',').every((item) => itemValid(config, item));
+    return ends
+        .map((end) => numberOf(range, end))
+        .every((value) => value !== undefined && inRange(range, value));
 }
 
 /** Whether an expression holds five well-formed fields. */
 export function cronValid(expression: string): boolean {
     const parts = cronParts(expression);
     return (
-        parts.length === CRON_FIELDS.length &&
-        CRON_FIELDS.every((config, index) => fieldValid(config, parts[index] ?? ''))
+        parts.length === FIELD_RANGES.length &&
+        FIELD_RANGES.every((range, index) => {
+            const field = parts[index] ?? '';
+            return field !== '' && field.split(',').every((item) => itemValid(range, item));
+        })
     );
 }
 
-export type CronMode = 'frequency' | 'range' | 'choice';
+export type Repeat = 'interval' | 'daily' | 'monthly';
+
+/** The steps an interval offers, in minutes; an hour and more are whole hours. */
+export const INTERVAL_STEPS: readonly number[] = [5, 10, 15, 30, 60, 120, 240];
+
+/** The days of the week in the order a working week reads, Sunday last. */
+export const WEEK: readonly number[] = [1, 2, 3, 4, 5, 6, 0];
+
+const WORKING_DAYS: readonly number[] = [1, 2, 3, 4, 5];
 
 /**
- * One field as the builder edits it: a frequency, a range or a set of ticked
- * values. A field the three cannot state, such as a list of ranges, keeps its
- * text in `kept` and is written back unchanged until the person edits it.
+ * A schedule as the builder states it. Only the fields of its `repeat` are
+ * read: an interval has a step and a window, a daily run a time, a monthly run
+ * a time and a day of the month.
  */
-export interface CronFieldModel {
-    readonly mode: CronMode;
-    /** Frequency: how many values apart; 1 is every value. */
-    readonly every: number;
-    /** Frequency: the value it starts from. */
-    readonly start: number;
+export interface Schedule {
+    readonly repeat: Repeat;
+    readonly step: number;
+    /** The first and last hour of an interval's window. */
     readonly from: number;
     readonly to: number;
-    readonly picked: readonly number[];
-    readonly kept?: string;
+    readonly hour: number;
+    readonly minute: number;
+    readonly day: number;
+    /** The days of the week it runs on, Sunday 0; none or all means every day. */
+    readonly days: readonly number[];
 }
 
-export function blankModel(config: CronFieldConfig): CronFieldModel {
-    return {
-        mode: 'frequency',
-        every: 1,
-        start: config.min,
-        from: config.min,
-        to: config.max,
-        picked: [],
-    };
+/** What the builder starts from when an expression is none of its shapes. */
+export const STARTING_SCHEDULE: Schedule = {
+    repeat: 'daily',
+    step: 60,
+    from: 0,
+    to: 23,
+    hour: 7,
+    minute: 0,
+    day: 1,
+    days: WORKING_DAYS,
+};
+
+/** The expressions a middle office asks for most, offered before any control. */
+export const PRESETS = [
+    { id: 'premarket', expression: '0 7 * * 1-5' },
+    { id: 'intraday', expression: '0 8-18 * * 1-5' },
+    { id: 'eod', expression: '30 18 * * 1-5' },
+] as const;
+
+function daysField(days: readonly number[]): string {
+    const picked = [...new Set(days)].sort((a, b) => a - b);
+    if (picked.length === 0 || picked.length === 7) {
+        return '*';
+    }
+    return picked.join(',') === WORKING_DAYS.join(',') ? '1-5' : picked.join(',');
 }
 
-function integer(token: string | undefined): number | undefined {
+function windowField(schedule: Schedule): string {
+    return schedule.from === 0 && schedule.to === 23 ? '*' : `${schedule.from}-${schedule.to}`;
+}
+
+/** The expression a schedule states. */
+export function cronOf(schedule: Schedule): string {
+    const days = daysField(schedule.days);
+    if (schedule.repeat === 'monthly') {
+        return `${schedule.minute} ${schedule.hour} ${schedule.day} * *`;
+    }
+    if (schedule.repeat === 'daily') {
+        return `${schedule.minute} ${schedule.hour} * * ${days}`;
+    }
+    const window = windowField(schedule);
+    if (schedule.step < 60) {
+        return `*/${schedule.step} ${window} * * ${days}`;
+    }
+    if (schedule.step === 60) {
+        return `0 ${window} * * ${days}`;
+    }
+    return `0 ${window}/${schedule.step / 60} * * ${days}`;
+}
+
+function digits(token: string | undefined): number | undefined {
     return token !== undefined && /^[0-9]+$/.test(token) ? Number.parseInt(token, 10) : undefined;
 }
 
-/** The model a field's text states; a text it cannot state is kept as typed. */
-export function parseField(config: CronFieldConfig, field: string): CronFieldModel {
-    const blank = blankModel(config);
-    const keep = { ...blank, kept: field };
-    if (!fieldValid(config, field)) {
-        return keep;
-    }
+function daysOf(field: string): readonly number[] | undefined {
     if (field === '*') {
-        return blank;
+        return [];
     }
-    if (field.includes('/')) {
-        const [span = '', step] = field.split('/');
-        const every = integer(step);
-        const start = span === '*' ? config.min : integer(span);
-        const inGrid = every !== undefined && every >= 2 && every <= config.max;
-        return start !== undefined && inGrid && inRange(config, start) && start <= config.max
-            ? { ...blank, every, start }
-            : keep;
+    if (field === '1-5') {
+        return WORKING_DAYS;
     }
-    if (field.includes('-') && !field.includes(',')) {
-        const [low, high] = field.split('-').map((end) => numberOf(config, end));
-        return low !== undefined && high !== undefined && high <= config.max
-            ? { ...blank, mode: 'range', from: low, to: high }
-            : keep;
-    }
-    const picked = field.split(',').map((item) => numberOf(config, item));
-    const plain = picked.every(
-        (value): value is number =>
-            value !== undefined && value >= config.min && value <= config.max,
-    );
-    return plain ? { ...blank, mode: 'choice', picked: [...new Set(picked)] } : keep;
+    const days = field.split(',').map(digits);
+    return days.every((day): day is number => day !== undefined && day <= 6) ? days : undefined;
 }
 
-/** The text of a field for its model. */
-export function fieldText(config: CronFieldConfig, model: CronFieldModel): string {
-    if (model.kept !== undefined) {
-        return model.kept;
+/** The hours of an interval's window: every hour, or a first and a last. */
+function windowOf(field: string): { from: number; to: number } | undefined {
+    if (field === '*') {
+        return { from: 0, to: 23 };
     }
-    if (model.mode === 'frequency') {
-        const atMin = model.start === config.min;
-        if (model.every === 1) {
-            return atMin ? '*' : String(model.start);
+    const [from, to, ...rest] = field.split('-').map(digits);
+    return rest.length === 0 && from !== undefined && to !== undefined && from <= to && to <= 23
+        ? { from, to }
+        : undefined;
+}
+
+function scheduleOf(parts: readonly string[]): Schedule | undefined {
+    const [minute = '', hour = '', day = '', month = '', weekday = ''] = parts;
+    const days = daysOf(weekday);
+    if (month !== '*' || days === undefined) {
+        return undefined;
+    }
+    const base = { ...STARTING_SCHEDULE, days };
+    const at = { minute: digits(minute), hour: digits(hour), day: digits(day) };
+    if (at.minute !== undefined && at.hour !== undefined && at.minute <= 59 && at.hour <= 23) {
+        if (day === '*') {
+            return { ...base, repeat: 'daily', minute: at.minute, hour: at.hour };
         }
-        return `${atMin ? '*' : model.start}/${model.every}`;
+        if (at.day !== undefined && at.day >= 1 && at.day <= 31 && weekday === '*') {
+            return { ...base, repeat: 'monthly', minute: at.minute, hour: at.hour, day: at.day };
+        }
+        return undefined;
     }
-    if (model.mode === 'range') {
-        return `${model.from}-${model.to}`;
+    if (day !== '*') {
+        return undefined;
     }
-    const total = config.max - config.min + 1;
-    const values = [...model.picked].sort((a, b) => a - b);
-    return values.length === 0 || values.length === total ? '*' : values.join(',');
-}
-
-/** The models of an expression; an expression of another size starts from the default. */
-export function parseCron(expression: string): readonly CronFieldModel[] {
-    const parts = cronParts(cronParts(expression).length === 5 ? expression : DEFAULT_CRON);
-    return CRON_FIELDS.map((config, index) => parseField(config, parts[index] ?? '*'));
-}
-
-/** The expression the models state. */
-export function cronText(models: readonly CronFieldModel[]): string {
-    return CRON_FIELDS.map((config, index) => {
-        const model = models[index];
-        return model === undefined ? '*' : fieldText(config, model);
-    }).join(' ');
-}
-
-/** A sentence for an expression, as a translation key and its values. */
-export interface CronSentence {
-    readonly key: string;
-    readonly values?: Readonly<Record<string, string>>;
-    /** The day of the week the sentence names, 0 for Sunday; the page words it. */
-    readonly weekday?: number;
-}
-
-/** The hour as a 24-hour clock reads it, which no language reads two ways. */
-function clock(hour: string): string {
-    const value = integer(hour);
-    return value === undefined || value > 23
-        ? `${hour}:00`
-        : `${String(value).padStart(2, '0')}:00`;
+    if (minute.startsWith('*/')) {
+        const step = digits(minute.slice(2));
+        const window = windowOf(hour);
+        return step !== undefined && INTERVAL_STEPS.includes(step) && step < 60 && window
+            ? { ...base, repeat: 'interval', step, ...window }
+            : undefined;
+    }
+    if (minute !== '0') {
+        return undefined;
+    }
+    const [span = '', every, ...rest] = hour.split('/');
+    const hours = every === undefined ? 1 : digits(every);
+    const window = windowOf(span);
+    return rest.length === 0 && hours !== undefined && INTERVAL_STEPS.includes(hours * 60) && window
+        ? { ...base, repeat: 'interval', step: hours * 60, ...window }
+        : undefined;
 }
 
 /**
- * What an expression means, when it is one of the common shapes. Any other
- * expression has no sentence, and the field shows the text alone.
+ * The schedule an expression states, or nothing when it is none of the
+ * builder's shapes. A shape is recognised only when it writes back as the same
+ * expression, so the builder never changes one it shows.
  */
-export function describeCron(expression: string): CronSentence | undefined {
+export function parseSchedule(expression: string): Schedule | undefined {
     const parts = cronParts(expression);
     if (parts.length !== 5 || !cronValid(expression)) {
         return undefined;
     }
-    const [minute = '', hour = '', day = '', month = '', weekday = ''] = parts;
-    if (parts.every((part) => part === '*')) {
-        return { key: 'cron.says.everyMinute' };
+    const schedule = scheduleOf(parts);
+    return schedule !== undefined && cronOf(schedule) === parts.join(' ') ? schedule : undefined;
+}
+
+/** A sentence for a schedule, as a translation key and the values that fill it. */
+export interface CronSentence {
+    readonly key: string;
+    readonly values: Readonly<Record<string, string>>;
+    /** The days it runs on; empty is every day. The page words them. */
+    readonly days: readonly number[];
+}
+
+const clock = (hour: number, minute = 0): string =>
+    `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+/**
+ * What an expression means, when it is one of the builder's shapes. Any other
+ * expression has no sentence, and the field shows the text alone.
+ */
+export function describeCron(expression: string): CronSentence | undefined {
+    const schedule = parseSchedule(expression);
+    if (schedule === undefined) {
+        return undefined;
     }
-    if (minute === '0' && hour === '*' && day === '*' && month === '*' && weekday === '*') {
-        return { key: 'cron.says.everyHour' };
+    const days = schedule.days.length === 7 ? [] : [...schedule.days];
+    if (schedule.repeat === 'monthly') {
+        return {
+            key: 'cron.says.monthly',
+            values: { time: clock(schedule.hour, schedule.minute), day: String(schedule.day) },
+            days: [],
+        };
     }
-    if (minute === '0' && day === '*' && month === '*') {
-        const at = clock(hour);
-        if (weekday === '*') {
-            return { key: 'cron.says.daily', values: { time: at } };
-        }
-        if (weekday === '1-5') {
-            return { key: 'cron.says.weekdays', values: { time: at } };
-        }
-        const number = integer(weekday);
-        if (number !== undefined && number <= 7) {
-            return { key: 'cron.says.weekly', values: { time: at }, weekday: number % 7 };
-        }
+    if (schedule.repeat === 'daily') {
+        return {
+            key: 'cron.says.daily',
+            values: { time: clock(schedule.hour, schedule.minute) },
+            days,
+        };
     }
-    if (minute === '0' && weekday === '*' && month === '*') {
-        const number = integer(day);
-        if (number !== undefined && number >= 1 && number <= 31) {
-            return { key: 'cron.says.monthly', values: { time: clock(hour), day: String(number) } };
-        }
-    }
-    return undefined;
+    const whole = schedule.from === 0 && schedule.to === 23;
+    return {
+        key: whole ? 'cron.says.interval' : 'cron.says.intervalWindow',
+        values: {
+            n: String(schedule.step < 60 ? schedule.step : schedule.step / 60),
+            unit: schedule.step < 60 ? 'minutes' : schedule.step === 60 ? 'hour' : 'hours',
+            from: clock(schedule.from),
+            to: clock(schedule.to, 59),
+        },
+        days,
+    };
 }

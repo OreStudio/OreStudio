@@ -19,13 +19,15 @@
  */
 
 /**
- * A field for a cron expression, and the builder that fills it.
+ * A field for a schedule, and the builder that fills it.
  *
- * The field is the expression as text, which a person who knows cron types, with
- * its meaning in words under it when it is a common shape, and a refusal when it
- * is not an expression. The Build button opens the builder: one tab for each of
- * the five parts, each stating its part as a frequency, a range or a set of
- * ticked values. Any form that asks for a schedule uses this field.
+ * The field states the schedule in words and cannot be typed into: a person who
+ * does not know cron never meets it, and one who does opens the builder. The
+ * builder offers the common schedules first, then controls for the rest: every
+ * few minutes or hours inside a window, a time of day, or a day of the month,
+ * on the days picked. The cron expression itself is under Advanced, for the
+ * schedules the controls do not state. A schedule that needs a business-day
+ * calendar is not offered, because the scheduler reads cron and no calendar.
  */
 
 import { useId, useState, type ReactNode } from 'react';
@@ -33,36 +35,53 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Input, Select, cx } from './Primitives.js';
 import {
-    CRON_FIELDS,
-    DEFAULT_CRON,
-    cronText,
+    INTERVAL_STEPS,
+    PRESETS,
+    STARTING_SCHEDULE,
+    WEEK,
+    cronOf,
     cronValid,
     describeCron,
-    parseCron,
-    valueLabel,
-    type CronFieldConfig,
-    type CronFieldModel,
-    type CronMode,
+    parseSchedule,
+    type Repeat,
+    type Schedule,
 } from './cron.js';
 
-/** What an expression means in words, when it is a common shape. */
-function say(
-    t: (key: string, values?: Record<string, string>) => string,
-    expression: string,
-): string | undefined {
-    const sentence = describeCron(expression);
+type Translate = (key: string, values?: Record<string, string>) => string;
+
+/** The days a sentence runs on, in words. */
+function daysIn(t: Translate, days: readonly number[]): string {
+    const picked = WEEK.filter((day) => days.includes(day));
+    if (picked.length === 0) {
+        return t('cron.days.every');
+    }
+    if (picked.join() === '1,2,3,4,5') {
+        return t('cron.days.weekdays');
+    }
+    if (picked.join() === '6,0') {
+        return t('cron.days.weekend');
+    }
+    return picked.map((day) => t(`cron.day.${day}`)).join(', ');
+}
+
+/** What an expression means in words, when it is one the builder states. */
+export function sayCron(t: Translate, expression: string): string | undefined {
+    const sentence = describeCron(expression.trim());
     if (sentence === undefined) {
         return undefined;
     }
-    const day = sentence.weekday === undefined ? {} : { day: t(`cron.days.${sentence.weekday}`) };
-    return t(sentence.key, { ...sentence.values, ...day });
+    const unit = sentence.values['unit'];
+    return t(sentence.key, {
+        ...sentence.values,
+        ...(unit === undefined ? {} : { step: t(`cron.says.step.${unit}`, sentence.values) }),
+        days: daysIn(t, sentence.days),
+    });
 }
 
 export function CronField({
     label,
     value,
     onChange,
-    onBlur,
     disabled = false,
     hint,
     error,
@@ -80,7 +99,7 @@ export function CronField({
     const [building, setBuilding] = useState(false);
     const trimmed = value.trim();
     const invalid = trimmed !== '' && !cronValid(trimmed);
-    const says = invalid ? undefined : say(t, trimmed);
+    const shown = trimmed === '' ? '' : ((invalid ? undefined : sayCron(t, trimmed)) ?? trimmed);
     return (
         <div>
             <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-muted">
@@ -89,14 +108,11 @@ export function CronField({
             <div className="flex gap-2">
                 <Input
                     id={id}
-                    value={value}
-                    disabled={disabled}
-                    spellCheck={false}
-                    placeholder={DEFAULT_CRON}
+                    readOnly
+                    value={shown ?? trimmed}
+                    placeholder={t('cron.none')}
                     aria-invalid={invalid}
-                    className={cx('font-mono', invalid && 'border-down')}
-                    onBlur={onBlur}
-                    onChange={(event) => onChange(event.target.value)}
+                    className={cx('cursor-default', invalid && 'border-down')}
                 />
                 <Button
                     type="button"
@@ -104,10 +120,9 @@ export function CronField({
                     onClick={() => setBuilding(true)}
                     aria-label={t('cron.open')}
                 >
-                    {t('cron.build')}
+                    {t('cron.change')}
                 </Button>
             </div>
-            {says !== undefined && <span className="mt-1 block text-xs text-ink">{says}</span>}
             {hint !== undefined && (
                 <span className="mt-1 block text-xs text-ink-faint">{hint}</span>
             )}
@@ -129,7 +144,9 @@ export function CronField({
     );
 }
 
-/** The builder: five tabs over one expression, applied only on OK. */
+const hourOptions = Array.from({ length: 24 }, (_, hour) => hour);
+
+/** The builder: presets, then the controls, applied only on the button. */
 export function CronBuilder({
     expression,
     onApply,
@@ -140,15 +157,17 @@ export function CronBuilder({
     readonly onCancel: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const [models, setModels] = useState<readonly CronFieldModel[]>(() => parseCron(expression));
-    const [tab, setTab] = useState(0);
-    const text = cronText(models);
-    const config = CRON_FIELDS[tab] ?? CRON_FIELDS[0];
-    const model = models[tab];
+    const [text, setText] = useState(expression === '' ? PRESETS[0].expression : expression);
+    const schedule = parseSchedule(text);
+    const preset = PRESETS.find((candidate) => candidate.expression === text.trim());
+    const valid = cronValid(text.trim());
+    const says = valid ? sayCron(t, text) : undefined;
+    const edit = (patch: Partial<Schedule>): void =>
+        setText(cronOf({ ...(schedule ?? STARTING_SCHEDULE), ...patch }));
     return (
         <Dialog
             title={t('cron.title')}
-            name="cron builder"
+            name="schedule builder"
             onClose={onCancel}
             wide
             footer={
@@ -156,176 +175,247 @@ export function CronBuilder({
                     <Button type="button" variant="ghost" onClick={onCancel}>
                         {t('cron.cancel')}
                     </Button>
-                    <Button type="button" variant="primary" onClick={() => onApply(text)}>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        disabled={!valid}
+                        onClick={() => onApply(text.trim())}
+                    >
                         {t('cron.apply')}
                     </Button>
                 </div>
             }
         >
-            <div className="space-y-4">
-                <div className="rounded-md border border-line bg-surface-sunken px-3 py-2 text-sm">
-                    <div className="font-mono">{text}</div>
-                    <div className="text-xs text-ink-muted">
-                        {say(t, text) ?? t('cron.says.other')}
+            <div className="space-y-5">
+                <div className="rounded-md border border-line bg-surface-sunken px-3 py-2">
+                    <div className="text-xs text-ink-muted">{t('cron.runs')}</div>
+                    <div className="text-sm">
+                        {valid ? (says ?? t('cron.says.other')) : t('cron.invalid')}
                     </div>
                 </div>
-                <div
-                    role="tablist"
-                    aria-label={t('cron.title')}
-                    className="flex gap-1 border-b border-line"
-                >
-                    {CRON_FIELDS.map((field, index) => (
-                        <button
-                            key={field.name}
-                            type="button"
-                            role="tab"
-                            aria-selected={index === tab}
-                            className={cx(
-                                '-mb-px border-b-2 px-3 py-2 text-sm',
-                                index === tab
-                                    ? 'border-accent text-ink'
-                                    : 'border-transparent text-ink-muted hover:text-ink',
-                            )}
-                            onClick={() => setTab(index)}
-                        >
-                            {t(`cron.fields.${field.name}`)}
-                        </button>
+
+                <fieldset className="space-y-2">
+                    <legend className="mb-1 text-sm font-medium text-ink-muted">
+                        {t('cron.presets.title')}
+                    </legend>
+                    {PRESETS.map((entry) => (
+                        <label key={entry.id} className="flex items-start gap-2 text-sm">
+                            <input
+                                type="radio"
+                                name="schedule-preset"
+                                checked={preset?.id === entry.id}
+                                onChange={() => setText(entry.expression)}
+                            />
+                            <span>
+                                {t(`cron.presets.${entry.id}.name`)}
+                                <span className="block text-xs text-ink-faint">
+                                    {t(`cron.presets.${entry.id}.hint`)}
+                                </span>
+                            </span>
+                        </label>
                     ))}
-                </div>
-                {config !== undefined && model !== undefined && (
-                    <FieldPanel
-                        config={config}
-                        model={model}
-                        onChange={(next) =>
-                            setModels(models.map((was, index) => (index === tab ? next : was)))
-                        }
-                    />
-                )}
+                    <label className="flex items-start gap-2 text-sm">
+                        <input
+                            type="radio"
+                            name="schedule-preset"
+                            checked={preset === undefined}
+                            onChange={() => edit({})}
+                        />
+                        <span>
+                            {t('cron.presets.custom.name')}
+                            <span className="block text-xs text-ink-faint">
+                                {t('cron.presets.custom.hint')}
+                            </span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                {preset === undefined &&
+                    (schedule === undefined ? (
+                        <p className="text-sm text-ink-muted">{t('cron.unshown')}</p>
+                    ) : (
+                        <Controls schedule={schedule} edit={edit} />
+                    ))}
+
+                <details className="text-sm" open={preset === undefined && schedule === undefined}>
+                    <summary className="cursor-pointer text-ink-muted">
+                        {t('cron.advanced')}
+                    </summary>
+                    <div className="mt-2 space-y-1">
+                        <Input
+                            value={text}
+                            spellCheck={false}
+                            aria-label={t('cron.expression')}
+                            aria-invalid={!valid}
+                            className={cx('font-mono', !valid && 'border-down')}
+                            onChange={(event) => setText(event.target.value)}
+                        />
+                        <span className="block text-xs text-ink-faint">
+                            {t('cron.expressionHint')}
+                        </span>
+                    </div>
+                </details>
             </div>
         </Dialog>
     );
 }
 
-/** One part of the expression, stated three ways of which one is on. */
-function FieldPanel({
-    config,
-    model,
-    onChange,
+/** The controls for a schedule the builder states. */
+function Controls({
+    schedule,
+    edit,
 }: {
-    readonly config: CronFieldConfig;
-    readonly model: CronFieldModel;
-    readonly onChange: (model: CronFieldModel) => void;
+    readonly schedule: Schedule;
+    readonly edit: (patch: Partial<Schedule>) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const group = useId();
-    const values = Array.from({ length: config.max - config.min + 1 }, (_, i) => config.min + i);
-    const change = (patch: Partial<CronFieldModel>): void => {
-        const { kept: _kept, ...rest } = model;
-        onChange({ ...rest, ...patch });
-    };
-    const mode = (name: CronMode): ReactNode => (
-        <input
-            type="radio"
-            name={group}
-            checked={model.kept === undefined && model.mode === name}
-            onChange={() => change({ mode: name })}
-            aria-label={t(`cron.modes.${name}`)}
-        />
+    const time = `${String(schedule.hour).padStart(2, '0')}:${String(schedule.minute).padStart(2, '0')}`;
+    const hours = (value: number, set: (hour: number) => void, name: string): ReactNode => (
+        <Select
+            className="w-24"
+            value={value}
+            aria-label={name}
+            onChange={(event) => set(Number.parseInt(event.target.value, 10))}
+        >
+            {hourOptions.map((hour) => (
+                <option key={hour} value={hour}>
+                    {String(hour).padStart(2, '0')}:00
+                </option>
+            ))}
+        </Select>
     );
-    const option = (value: number): ReactNode => (
-        <option key={value} value={value}>
-            {valueLabel(config, value)}
-        </option>
-    );
-    const number = (event: { target: { value: string } }): number =>
-        Number.parseInt(event.target.value, 10);
-    const on = (name: CronMode): boolean => model.kept === undefined && model.mode === name;
     return (
         <div className="space-y-4">
-            {model.kept !== undefined && (
-                <p className="text-xs text-ink-muted">{t('cron.kept', { value: model.kept })}</p>
+            <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm text-ink-muted">{t('cron.repeat')}</span>
+                <Select
+                    className="w-64"
+                    value={schedule.repeat}
+                    aria-label={t('cron.repeat')}
+                    onChange={(event) => edit({ repeat: event.target.value as Repeat })}
+                >
+                    <option value="interval">{t('cron.repeats.interval')}</option>
+                    <option value="daily">{t('cron.repeats.daily')}</option>
+                    <option value="monthly">{t('cron.repeats.monthly')}</option>
+                </Select>
+            </div>
+
+            {schedule.repeat === 'interval' && (
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-ink-muted">{t('cron.every')}</span>
+                    <Select
+                        className="w-36"
+                        value={schedule.step}
+                        aria-label={t('cron.every')}
+                        onChange={(event) =>
+                            edit({ step: Number.parseInt(event.target.value, 10) })
+                        }
+                    >
+                        {INTERVAL_STEPS.map((step) => (
+                            <option key={step} value={step}>
+                                {step < 60
+                                    ? t('cron.steps.minutes', { n: String(step) })
+                                    : step === 60
+                                      ? t('cron.steps.hour')
+                                      : t('cron.steps.hours', { n: String(step / 60) })}
+                            </option>
+                        ))}
+                    </Select>
+                    <span className="text-sm text-ink-muted">{t('cron.between')}</span>
+                    {hours(
+                        schedule.from,
+                        (from) => edit({ from, to: Math.max(from, schedule.to) }),
+                        t('cron.between'),
+                    )}
+                    <span className="text-sm text-ink-muted">{t('cron.and')}</span>
+                    {hours(
+                        schedule.to,
+                        (to) => edit({ to, from: Math.min(to, schedule.from) }),
+                        t('cron.and'),
+                    )}
+                </div>
             )}
-            <div className="flex flex-wrap items-center gap-3">
-                {mode('frequency')}
-                <span className="w-24 text-sm">{t('cron.modes.frequency')}</span>
-                <span className="text-sm text-ink-muted">{t('cron.every')}</span>
-                <Select
-                    className="w-24"
-                    disabled={!on('frequency')}
-                    value={model.every}
-                    aria-label={t('cron.every')}
-                    onChange={(event) => change({ every: number(event) })}
-                >
-                    <option value={1}>{t('cron.each')}</option>
-                    {config.steps.map((step) => (
-                        <option key={step} value={step}>
-                            {step}
-                        </option>
-                    ))}
-                </Select>
-                <span className="text-sm text-ink-muted">{t('cron.starting')}</span>
-                <Select
-                    className="w-28"
-                    disabled={!on('frequency')}
-                    value={model.start}
-                    aria-label={t('cron.starting')}
-                    onChange={(event) => change({ start: number(event) })}
-                >
-                    {values.map(option)}
-                </Select>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-                {mode('range')}
-                <span className="w-24 text-sm">{t('cron.modes.range')}</span>
-                <span className="text-sm text-ink-muted">{t('cron.from')}</span>
-                <Select
-                    className="w-28"
-                    disabled={!on('range')}
-                    value={model.from}
-                    aria-label={t('cron.from')}
-                    onChange={(event) => change({ from: number(event) })}
-                >
-                    {values.map(option)}
-                </Select>
-                <span className="text-sm text-ink-muted">{t('cron.to')}</span>
-                <Select
-                    className="w-28"
-                    disabled={!on('range')}
-                    value={model.to}
-                    aria-label={t('cron.to')}
-                    onChange={(event) => change({ to: number(event) })}
-                >
-                    {values.map(option)}
-                </Select>
-            </div>
-            <div className="space-y-2 border-t border-line pt-3">
-                <div className="flex items-center gap-3">
-                    {mode('choice')}
-                    <span className="text-sm">{t('cron.modes.choice')}</span>
+
+            {schedule.repeat !== 'interval' && (
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-ink-muted">{t('cron.at')}</span>
+                    <Input
+                        type="time"
+                        className="w-32"
+                        value={time}
+                        aria-label={t('cron.at')}
+                        onChange={(event) => {
+                            const [hour, minute] = event.target.value.split(':').map(Number);
+                            if (
+                                hour !== undefined &&
+                                minute !== undefined &&
+                                !Number.isNaN(hour + minute)
+                            ) {
+                                edit({ hour, minute });
+                            }
+                        }}
+                    />
                 </div>
-                <div
-                    className="grid gap-x-3 gap-y-1 pl-6"
-                    style={{ gridTemplateColumns: `repeat(${config.perRow}, minmax(0, 1fr))` }}
-                >
-                    {values.map((value) => (
-                        <label key={value} className="flex items-center gap-1 text-sm">
-                            <input
-                                type="checkbox"
-                                disabled={!on('choice')}
-                                checked={model.picked.includes(value)}
-                                onChange={(event) =>
-                                    change({
-                                        picked: event.target.checked
-                                            ? [...model.picked, value]
-                                            : model.picked.filter((picked) => picked !== value),
-                                    })
-                                }
-                            />
-                            {valueLabel(config, value)}
-                        </label>
-                    ))}
+            )}
+
+            {schedule.repeat === 'monthly' ? (
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-ink-muted">{t('cron.onDay')}</span>
+                    <Select
+                        className="w-24"
+                        value={schedule.day}
+                        aria-label={t('cron.onDay')}
+                        onChange={(event) => edit({ day: Number.parseInt(event.target.value, 10) })}
+                    >
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                            <option key={day} value={day}>
+                                {day}
+                            </option>
+                        ))}
+                    </Select>
                 </div>
-            </div>
+            ) : (
+                <div className="space-y-2">
+                    <div className="text-sm text-ink-muted">{t('cron.onDays')}</div>
+                    <div className="flex flex-wrap gap-2">
+                        {WEEK.map((day) => {
+                            const on = schedule.days.length === 0 || schedule.days.includes(day);
+                            const days = schedule.days.length === 0 ? WEEK : schedule.days;
+                            return (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    aria-pressed={on}
+                                    className={cx(
+                                        'rounded-full border px-3 py-1 text-sm',
+                                        on
+                                            ? 'border-accent bg-accent/15 text-ink'
+                                            : 'border-line text-ink-muted hover:text-ink',
+                                    )}
+                                    onClick={() => {
+                                        const next = on
+                                            ? days.filter((d) => d !== day)
+                                            : [...days, day];
+                                        if (next.length > 0) {
+                                            edit({ days: next });
+                                        }
+                                    }}
+                                >
+                                    {t(`cron.dayShort.${day}`)}
+                                </button>
+                            );
+                        })}
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => edit({ days: [1, 2, 3, 4, 5] })}
+                        >
+                            {t('cron.days.weekdaysOnly')}
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

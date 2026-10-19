@@ -48,15 +48,16 @@ function builder(expression: string): string {
     );
 }
 
-describe('the cron field', () => {
-    it('shows the expression as text with a Build button', () => {
-        const html = field('0 7 * * 1-5');
-        expect(html).toContain('value="0 7 * * 1-5"');
-        expect(html).toContain('Build…');
+describe('the schedule field', () => {
+    it('shows the schedule in words and cannot be typed into', () => {
+        const html = field('30 18 * * 1-5');
+        expect(html).toContain('value="At 18:30, Monday through Friday"');
+        expect(html).toMatch(/<input[^>]*readOnly=""|<input[^>]*readonly=""/i);
+        expect(html).not.toContain('30 18 * * 1-5');
     });
 
-    it('says in words what a common expression means', () => {
-        expect(field('0 7 * * 1-5')).toContain('At 07:00, Monday through Friday');
+    it('shows an expression it cannot put in words as it is', () => {
+        expect(field('5/15 * * * *')).toContain('value="5/15 * * * *"');
     });
 
     it('refuses what is not an expression, and says what it needs', () => {
@@ -66,37 +67,57 @@ describe('the cron field', () => {
     });
 
     it('does not call an empty field wrong; the form asks for it when it must', () => {
-        expect(field('')).not.toContain('five parts');
+        const html = field('');
+        expect(html).not.toContain('five parts');
+        expect(html).toContain('placeholder="No schedule"');
     });
 
-    it('turns the Build button off when the field is read only', () => {
+    it('offers Change, and turns it off when the field is read only', () => {
+        expect(field('0 * * * *')).toContain('Change…');
         expect(field('0 * * * *', true)).toMatch(/<button[^>]*disabled/);
     });
 });
 
-describe('the cron builder', () => {
-    it('offers one tab for each part of the expression', () => {
-        const html = builder('0 * * * *');
-        for (const name of ['Minutes', 'Hours', 'Days of month', 'Month', 'Days of week']) {
-            expect(html).toContain(`>${name}<`);
+describe('the schedule builder', () => {
+    it('opens on the common schedules, with the one in force chosen', () => {
+        const html = builder('30 18 * * 1-5');
+        for (const name of [
+            'Pre-market run',
+            'Intraday check',
+            'End of day batch',
+            'Custom schedule',
+        ]) {
+            expect(html).toContain(name);
         }
+        expect(html).toContain('At 18:30, Monday through Friday');
+        expect(html).not.toContain('Once a day, at a time');
     });
 
-    it('states the expression it will apply, with its words', () => {
-        const html = builder('0 9 * * *');
-        expect(html).toContain('0 9 * * *');
-        expect(html).toContain('At 09:00, every day');
+    it('offers the controls for a custom schedule', () => {
+        const html = builder('15 9 * * 1,3,5');
+        expect(html).toContain('Once a day, at a time');
+        expect(html).toContain('type="time"');
+        expect(html).toContain('value="09:15"');
+        expect(html).toContain('aria-pressed="true"');
+        expect(html).toContain('aria-pressed="false"');
     });
 
-    it('offers the three ways to state a part', () => {
-        const html = builder('*/15 * * * *');
-        for (const way of ['Frequency', 'Range', 'Choice']) {
-            expect(html).toContain(way);
-        }
+    it('offers an interval with its window', () => {
+        const html = builder('*/15 8-17 * * 1-5');
+        expect(html).toContain('Every 15 minutes, from 08:00 to 17:59, Monday through Friday');
+        expect(html).toContain('between');
     });
 
-    it('says when a part is one it cannot show, and keeps it', () => {
-        const html = builder('0 9 1-5,10 * *');
-        expect(html).toContain('0 9 1-5,10 * *');
+    it('keeps the cron expression under Advanced', () => {
+        const html = builder('30 18 * * 1-5');
+        expect(html).toContain('Advanced: the cron expression');
+        expect(html).toContain('value="30 18 * * 1-5"');
+        expect(html).toContain('business-day or holiday calendar');
+    });
+
+    it('opens Advanced, and does not guess, for a schedule it cannot show', () => {
+        const html = builder('5/15 * * * *');
+        expect(html).toContain('none of the shapes above');
+        expect(html).toMatch(/<details[^>]*open=""/);
     });
 });

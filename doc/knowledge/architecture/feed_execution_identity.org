@@ -122,12 +122,16 @@ A person who wants a feed to stay stopped sets =enabled= to false.
 Source: [[proj:doc/knowledge/architecture/feed_restore_sequence.puml][=feed_restore_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/feed_restore_sequence.puml=.
 
-The walk reads each tenant's configs in a context of that tenant, opened on the
-tenant's root party. Row-level security shows a tenant context its own
+The walk reads each tenant's configs in a context of that tenant, opened on one
+root party at a time. Row-level security shows a tenant context its own
 collections. The party policy shows a party's collection only to a context whose
-visible parties include that party, and the root party's subtree is every party
-of the tenant. A system feed starts only in the pass of the system tenant. A
-tenant that fails is logged and does not stop the others.
+visible parties include that party, and a root party's subtree is the visible
+set. A tenant can have more than one root party, for example its system party
+and its top operational party, so the walk makes one pass for each root party.
+The collections of the system party belong to a different subtree than the
+collections of the operational parties, and a walk on one root alone would miss
+the other. A system feed starts only in the pass of the system tenant. A pass
+that fails is logged and does not stop the others.
 
 *** The restore waits for its dependencies
 

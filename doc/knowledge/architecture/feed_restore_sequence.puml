@@ -31,8 +31,8 @@ participant "Marketdata" as md
 == The service starts ==
 
 syn -> db : list the active tenants
-loop each tenant, the system tenant first
-    syn -> db : read the collections and feeds\nin the tenant, through its root party
+loop the system tenant, then each root party of each tenant
+    syn -> db : read the collections and feeds\nthrough the root party
     loop each feed with enabled and auto_start
         alt the collection holds a run grant
             syn -> iam : iam.v1.ops.exchange_run_grant(grant id, run id)\nAuthorization: the service's own token

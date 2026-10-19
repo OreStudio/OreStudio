@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <expected>
@@ -31,6 +32,15 @@
 #include <vector>
 
 namespace ores::marketdata::client {
+
+/**
+ * @brief The record a save of @p binding puts on the wire.
+ *
+ * Every field the binding owns travels, the producer kind included: the
+ * service refuses a binding that names none.
+ */
+ORES_MARKETDATA_CLIENT_EXPORT messaging::feed_binding_write
+feed_binding_write_of(const domain::feed_binding& binding);
 
 /**
  * @brief Typed, authenticated facade over the marketdata NATS protocol.

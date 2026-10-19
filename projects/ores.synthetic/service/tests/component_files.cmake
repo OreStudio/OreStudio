@@ -29,4 +29,5 @@ set(files
     "ir_curve_feed_vintage_tests.cpp"
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"
+    "restore_retry_tests.cpp"
 )

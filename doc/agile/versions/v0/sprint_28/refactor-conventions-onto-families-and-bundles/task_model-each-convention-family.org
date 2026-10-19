@@ -26,11 +26,11 @@ Every convention family is declared once, in its own entity, and carries only it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | The aggregate, the whole-document service, the six bulk functions and the model section are deleted in step 4. The package is the only shape that crosses the ORE boundary. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 5: generate the bundle service per family, one translation unit each, and add the codegen unit budget gate. |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -145,8 +145,21 @@ task and name that file in the Command column.
   The tests read a family through =rows_of=, which names the family and its type.
   The pinned export digests judge the package, so the test that compared the
   package with the aggregate was removed with the aggregate.
-- The per-family translation units are not generated yet, so the staged apply
-  and the payload read each compile one branch per family in a single unit.
+- Step 5 split the refdata units. A new facet, =ores.cpp.convention-family=, renders
+  one translation unit for each family entity that opts in, holding that
+  family's apply and payload-read functions and reflecting its own type alone.
+  The registry facet renders the declarations header and a dispatch that looks a
+  family up in a table of function pointers, and the registry header gained a
+  =convention_family_key= enumeration tied to the table. The dispatch asserts one
+  row per registry family and the registry's order, so a family without a unit
+  does not compile. The apply fragment, its includes fragment, the six groupings
+  they read and the =repositories= list went with it.
+- The translation unit budget is a local check, =translation-unit-budget=. A file
+  that reflects more than one convention family fails it. Three files are over
+  budget and recorded with a ceiling that can only go down: the package's pack
+  and join tables in =conventions_mapper.cpp= at 26, and the two units that
+  handle the three tenor basis swap families together, which are one document
+  element. The first is the capture split-the-conventions-package-per-family.
 - The pin holds. Comparing the service's hand-written calls with the generated
   registry gives 26 families against 26 entries, no disagreement about which
   families are party-scoped and which are world-scoped, and no registry row the
@@ -245,6 +258,22 @@ via its "Verifies task" field.
 
 * Result
 
-Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the generated per-family read. The ORE boundary package is in review as #3562. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
+Every convention family is now declared once, in its own entity, and carries only its own fields. The registry, the apply and the read are generated from those entities, and no type holds every family.
 
-The boundary is what step 3 changes, and it changes it in the direction the deletion needs. The two run import paths no longer move conventions through the document: the run store and the run configuration operations each split a file into a package and apply its bundle, and each joins the bundle the read returns. What still names the type is the legacy file importer and exporter in ores.ore, =conventions_difference=, the whole-document service in refdata, and the tests that compare the package with the document. Those are step 4's work, and they go with the type rather than before it, because a comparison against the old shape is what proved the new one.
+What shipped, by PR:
+
+- #3459, #3460, #3462, #3469, #3474, #3481 and #3500 generated the family registry and the per-family apply and moved them into their own translation unit.
+- #3542 and #3554 wrote and read a bundle of family payloads in the caller's transaction.
+- #3562 put the ORE boundary on a package of one bundle and the FX projection.
+- #3564 deleted =conventions_document=, its service, the six bulk functions, the mapper pair and the model section.
+- The step 5 PR split the refdata units, one translation unit for each family, with a dispatch that includes declarations only, and added the =translation-unit-budget= check.
+
+Acceptance, point by point:
+
+- Each family is its own entity with its own fields. Met.
+- One generated registry names every family, its scope and its repository. Met.
+- The apply code is generated from the same registry. Met, and the read is too.
+- No reflected type in refdata carries every family, and no translation unit instantiates one. Met for the types, and for the refdata units. The ORE package's pack and join tables still name every family in one unit, so the budget check records =conventions_mapper.cpp= at a ceiling of 26. The capture split-the-conventions-package-per-family owns the rest, and it waits on the mapper moving to the codec records.
+- =conventions_document=, its service and the whole-document protocol operations no longer exist. Met.
+
+The decision to leave the ORE side for later is a dependency, not a gap. Another environment is moving the mapper onto the codec records, and splitting the same file at the same time would collide. The ceiling in the check keeps the debt visible and lets it only go down.

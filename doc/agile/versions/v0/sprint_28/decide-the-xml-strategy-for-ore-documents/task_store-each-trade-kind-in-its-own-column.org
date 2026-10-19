@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-20
 #+updated: 2026-10-20
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Remove the 340 KB zero fill from each trade without a variant, by moving each in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -81,19 +81,78 @@ This is the same idiom as =indexed_nested=: a member is an index into a
 container the parent owns. The new part is that the column belongs to the
 portfolio and not to the trade, and that one trade uses at most one of them.
 
-** Open questions
+** Findings
 
-1. Where the column lives. A trade nested in a component or a derivative has a
-   different parent from a top-level one. The column may need to live in the
-   document root, or in each parent that holds a trade list.
-2. A new field kind or a reuse of =indexed_nested=. The existing kind assumes
-   the arena sits in the same record as the index.
-3. How the generator detects the choice. It records =CHOICE_CHILDREN= already,
-   but only to drop the required flag.
-4. What the projections read. They walk =trade= members by name today and must
-   walk the tag instead.
-5. Whether the deque from #3579 is still needed for trades once the record is
-   small.
+Read from =generate_xml_bindings.py=, =binding.cpp=, =record.cpp=, the
+emitter, =record_diff.cpp= and the projections, at =main= after #3580.
+
+- Three types have the problem, not one: =trade=, =component_trade= and
+  =component_sub_trade=, each with about 190 members. =derivative= is small.
+- =trade= has one parent, =portfolio=, which holds it in a deque.
+  =component_trade= sits in an arena beside an index vector in three records
+  (=composite_trade_components= and two more). =component_sub_trade= sits in an
+  arena in =composite_trade_components=, and also by value in
+  =trs_underlying_data=. A by-value member has the 340 KB cost in the parent
+  too.
+- The member list comes from =expand()= in the generator. A reference to an
+  abstract element with substitution members yields one optional field per
+  member. =CHOICE_CHILDREN= does not hold them: it covers only =xs:choice=.
+- Every projection reads a trade through =record_reader::child(name)= and
+  =record_writer::child(name)=. They name the element and the table resolves
+  the offset. No projection names a C++ member of =trade=.
+- Only the engine, =record.cpp=, the emitter and =record_diff.cpp= know the
+  layout.
+
+** Answers to the open questions
+
+1. *Where the column lives.* In the record that holds the trade-like row, as a
+   sibling of its deque or arena. For =trade= that is =portfolio=. For
+   =component_trade= and =component_sub_trade= it is each record that holds
+   them, including =trs_underlying_data=. One column per kind type, not per
+   element name. The table gives the tag the element name and the index the
+   column. A trade is always reached from its parent, so the engine has the
+   parent frame, and the reader, writer, emitter and diff get the parent
+   record as an extra argument when they step into a child.
+
+   Rejected: an out-of-line payload owned by the trade. It needs one
+   allocation per trade and a destructor entry in the table, and it gives no
+   column to scan.
+
+2. *New field kind.* A new kind, =column_nested=, beside =indexed_nested=. An
+   =indexed_nested= member keeps its index vector and its arena in the same
+   record. A =column_nested= member lives in the trade-like row and names a
+   column in the parent: =arena_offset= is the column's offset in the parent
+   and =repeated= are its ops. The row stores a tag and an index in two fixed
+   fields, not a vector of indices, because at most one kind appears per
+   trade.
+
+3. *Detection.* In =expand()=, where a substitution head is turned into its
+   members. The generator marks every field made that way as a column member
+   of the type that holds it. A type with column members gets the tag and the
+   index fields, and each of its parents gets one column per distinct member
+   type. Nothing is read from =CHOICE_CHILDREN=.
+
+4. *Projections.* No change. They already name the element, and
+   =child(name)= resolves a column member through the tag, the index and the
+   parent record. =has(name)= tests the tag. The reader and writer classes
+   carry the parent record, which is the only new state.
+
+5. *The deque.* Not needed for trades afterwards. =member_counts= is
+   structural, so a =trade= with a handful of members is no longer wide and
+   becomes a vector with no change to the rule. The kind columns follow the
+   rule too: a kind row that is wide is held in a deque, so a frame open on a
+   row keeps its address while the column grows.
+
+** Risks
+
+- The parent pointer touches the reader, writer, emitter and diff, so it is
+  the largest part of the work. Each already passes a record pointer, so the
+  change is one more argument, but it is five files.
+- A row's tag and index must stay valid when a document is copied or moved.
+  Indices survive both. A raw pointer to the column would not.
+- =sub_trade= by value in =trs_underlying_data= means that record, not a
+  vector, owns a column. It is the test case for a parent that is not a
+  container.
 
 ** Steps
 

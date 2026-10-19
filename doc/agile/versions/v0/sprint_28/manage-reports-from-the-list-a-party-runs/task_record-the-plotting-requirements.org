@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: F0F1228A-A580-4AB6-A6F2-7B800CB7A8FC
+:END:
+#+title: Task: Record the plotting requirements the reports screens inherit
+#+description: File the capture that states the owner's three requirements for a time series plot, names what the two reporting prototypes meet today, and leaves the open questions for a future decision. Builds no plot.
+#+type: task
+#+level: s1
+#+filetags: :reporting:plotting:sprint_28:v0:manage-reports-from-the-list-a-party-runs:
+#+owner: marco
+#+branch: docs/capture-time-series-plotting
+#+pr: 3557
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record what the owner requires of a time series plot, before any screen builds
+one. The work is one capture: the three requirements quoted as given, what the
+two reporting prototypes meet today, the constraints an implementation inherits,
+and the open questions a future decision answers. No plot, no control and no read
+is built here, and this task schedules no plotting work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
+| Now          | The capture is filed and the gate passes. |
+| Waiting on   | Nothing.                               |
+| Next         | None. The capture waits for a decision, not for work. |
+| Last touched | 2026-10-18                             |
+
+* Acceptance
+
+- A capture in the product backlog inbox states the owner's three requirements
+  word for word, and states why the three belong together.
+- The capture names, per requirement, what each of the two reporting prototypes
+  meets today and what it does not, from a reading of the two prototypes.
+- The capture states the constraints any implementation inherits, and says
+  whether these plots can remain inline SVG with no library.
+- The capture carries the open questions as questions, and states plainly that
+  it is deferred and that no plotting work is scheduled.
+- The capture links the two reporting prototypes, the reporting story, and any
+  plotting convention the knowledge base states.
+- =./compass.sh check --only org-links --only lint --exclude-heavy= passes.
+
+* Plan
+
+Read the two prototypes and the knowledge base, then write the capture around
+the three requirement groups the owner gave. The evidence for each claim is a
+file read, and every claim that a prototype does or does not do something is
+answered from its =prototype.js=, its =index.html= and its plot comments.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Documentation gate | 2 of 2 checks pass, org-links 2.5s, lint 2.6s | =./compass.sh check --only org-links --only lint --exclude-heavy= | 797c1e2593 |
+
+* Notes
+
+The capture lives at
+=doc/agile/product_backlog/inbox/what-a-time-series-plot-must-do.org=, with ID
+=89FD8022-5CCC-4B19-ABC0-BEAD9043AE45=. It is filed in the inbox and not in the
+sprint, because the requirements wait on a decision and not on a sprint slot.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3557][#3557]] | [reporting] Capture what a time series plot must do |
+
+* Result
+
+The capture is filed. Neither reporting prototype meets the three requirements.
+The run prototype draws a difference against a previous run across books, which
+answers a different question, and no page in the repo draws a Bollinger band,
+draws a realised volatility, selects a range of a series or reads a pointer. The
+knowledge base states no plotting convention for a reporting plot, so the capture
+cites the three documents that hold a rule a plot can use.

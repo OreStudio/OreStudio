@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 7A76B61E-DAE9-4187-AE07-98A175F907E2
+:END:
+#+title: Story: Prototype the management of conventions
+#+description: Design how a person manages conventions, as user journeys first and clickable prototypes second.
+#+type: story
+#+level: s2
+#+filetags: :conventions:journeys:prototype:ux:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person can see, from clickable prototypes, how conventions are managed. Each prototype answers to a user journey that is written first, to the journey conventions of the project. The journeys build on the five that exist and do not repeat them. Each gap a journey finds on the server is recorded.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- The journey catalogue is checked against the five existing conventions journeys, and the owner agrees it before any journey is written.
+- Each new journey follows the user_journey contract and the extraction standard, with a wireframe and a coverage table.
+- Each prototype is a static page in the conventions prototype group and opens with no build.
+- Each gap that a journey finds is a capture or a task.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7F24F915-BB5E-4AF0-8B0C-F6BDED942645][Scaffold story: Prototype the management of conventions]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:093A0192-AA05-47DD-B829-2130B7C40F8C][Write the user journeys for managing conventions]] | STARTED | 2026-10-19 | | Initial task for: Prototype the management of conventions |
+
+* Decisions
+
+* Out of scope
+
+-

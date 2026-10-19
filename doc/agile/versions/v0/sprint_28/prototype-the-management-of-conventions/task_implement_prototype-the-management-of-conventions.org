@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 093A0192-AA05-47DD-B829-2130B7C40F8C
+:END:
+#+title: Task: Write the user journeys for managing conventions
+#+description: Initial task for: Prototype the management of conventions
+#+type: task
+#+level: s1
+#+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-prototype-the-management-of-conventions
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can see, from clickable prototypes, how conventions are managed. Each prototype answers to a user journey that is written first, to the journey conventions of the project. The journeys build on the five that exist and do not repeat them. Each gap a journey finds on the server is recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- The journey catalogue is checked against the five existing conventions journeys, and the owner agrees it before any journey is written.
+- Each new journey follows the user_journey contract and the extraction standard, with a wireframe and a coverage table.
+- Each gap that a journey finds is a capture or a task.
+- The prototypes are not in this task. They are a follow-on task of the story, and each one answers to a journey written here.
+
+* Plan
+
+1. Check the five existing journeys and the story "Name the convention sets a
+   report chooses". Draft the catalogue in the Notes. Done.
+2. Get the owner's agreement on the catalogue (J08). Done: see the Notes.
+3. Scaffold each journey with =compass add user_journey=, draw its wireframe as a
+   PlantUML salt file, render the PNG and write the eleven sections.
+4. Add the four journeys to the group page.
+5. Run the local gate. Raise one PR for the four journeys.
+6. Record the server gaps as captures or tasks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Approval kinds seeded | 3 (=iam.role_grant=, =refdata.book_change=, =refdata.counterparty_change=) | =sed -n 36,60p projects/ores.sql/populate/inbox/inbox_approval_kinds_populate.sql= | c4c3183288 |
+| Convention journeys in the group | 9 | =ls doc/knowledge/journeys/conventions/journey_*.org= | this branch |
+
+* Notes
+
+** Draft journey catalogue (J08: not yet agreed)
+
+The five journeys that exist cover: onboard a party, publish from data quality,
+see what a party uses, change one convention, and author one convention for a
+kind. The checks below were made against those five and the story "Name the
+convention sets a report chooses".
+
+Three acts already appear in the five journeys, and none of them is a journey
+of its own:
+
+- /Search a kind by a term/ is a step and a named gap in three journeys.
+- /Retire a document/ is a coverage row in "Change the convention"; that
+  journey sends no delete.
+- /A second person approves a change/ is a gap in "Change" and "Author"; the
+  existing prototype draws it, and no journey states it.
+
+| # | Candidate journey | Actor | Goal | Starts | Ends | Overlap with the five |
+|---+-------------------+-------+------+--------+------+-----------------------|
+| N1 | Name a convention set | Market risk owner | Group the kinds into one set with a name, a purpose and a description, so a report can choose it. | The person finds no set that fits (the link out from a report). | The set exists and its name, purpose and kinds read back. | None. This is the authoring UX that the story defers. "Author a convention for a kind" writes one document of one kind. |
+| N2 | Retire a convention a run should stop reading | Operations, tenant administrator | Stop a run from reading a document that is wrong or unused, and know what it affects first. | The person finds the document in a kind's list. | The document is closed and the history shows who closed it and why. | "Change" lists the delete as `exists` and does not send it. |
+| N3 | Decide on a requested convention change | Market risk approver (not the requester) | Approve or decline a change that another person asked for, with the old and new terms side by side. | A request waits for the person. | The request is decided and the requester can read the decision. | "Change" and "Author" record the missing four-eyes control as a gap. The existing prototype draws the screen. No journey states the approver's goal. |
+| N4 | Find the convention that states these terms | Market risk, trading desk | Find out whether a document with these terms exists, before authoring a duplicate or choosing one. | The person holds a set of terms. | The person has the matching document, or knows none exists. | Three journeys carry this as a step and a gap. |
+
+** Recommendation
+
+- Write N1, N2 and N3. Each one has one person and one goal, and none repeats a
+  journey that exists.
+- Do not write N4 as a journey. It is a step in "Change" and "Author", and a
+  filter on the term columns is the fix. Record it as a prototype feature of N1
+  to N3 and as a server gap.
+- Draw one prototype for each journey, in =doc/prototypes/conventions/=. N1
+  also replaces the deferred link out from the two report prototypes.
+
+** Agreement (J08)
+
+The owner agreed on 2026-10-19 and asked for all four journeys, N4 included.
+The owner's answers:
+
+- N1 is the authoring UX that the story defers.
+- The approver in N3: the owner thinks the role is a gap and asked for a check.
+- No goal is missing from the list.
+
+** Check of the approver role (N3)
+
+The role is not the gap. The request kind is.
+
+- The part /Market Risk/ is seeded in =inbox_approval_parts_populate.sql= with the
+  description "Classification, capital treatment, agreements and conventions".
+- The permission =inbox::approvals:decide_market_risk= is seeded in
+  =iam_permissions_populate.sql=.
+- Three kinds are seeded: =iam.role_grant=, =refdata.book_change= and
+  =refdata.counterparty_change=. None is for a convention.
+- The controls note names Market Risk as the decider for a new convention and a
+  change of its terms.
+- Not checked: whether a tenant's Market Risk account holds the permission
+  through a seeded role. The journey says so as an assumption.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4
+:END:
+#+title: User Journey: Name a convention set
+#+description: A market risk owner groups convention documents into one named set with a purpose and a description, so a report can choose it.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market risk owner groups convention documents into one named set with a purpose and a description, so a report can choose it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"No set on the list fits the Dubai swaps desk. I want one set, with a name that
+says what it is and a purpose a reader understands, and I want a report to be
+able to choose it."
+
+The journey is done when a request for the set is waiting for Market Risk, and
+the person can read its name, purpose, description and the document it names for
+each kind. The set exists for a report to choose only after the request is
+approved.
+
+This is a different job from
+[[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]].
+That journey writes one document of one kind. This journey writes no term. It
+groups documents that already exist, one per kind, under a name.
+
+* Actor and trigger
+
+The actor is the person who owns the market terms: a market risk owner, or a
+tenant administrator acting for them. Market Risk is the function that decides a
+convention change ([[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]), so the maker and the decider are two different people.
+
+The trigger is a report author who found no set that fits. The report prototypes
+([[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a report
+runs]]) draw a link out to this screen for that case. A person can also start here
+from the list of sets, with no report in mind.
+
+The journey starts on the list of sets and ends when the request is raised and
+visible under /My requests/. It does not bind the set to a report: that is the
+act of the report author.
+
+The journey keeps server state. A request waits on a second person, and the
+request carries the state. The person can leave the screen after the request is
+raised.
+
+* Steps
+
+1. *Read the sets that exist.* The system lists every set with its name, its
+   purpose, how many of the 26 kinds it covers and how many report definitions
+   use it. A system holds few sets, so one page holds all of them. The person
+   confirms that no set fits. Four conventions configurations exist today, by
+   name and type, and none of them carries a purpose or a kind.
+2. *Describe the set.* The person writes a name, a purpose and a description.
+   The three are stored. The system refuses a name that another set holds, and the
+   screen says so beside the field.
+3. *Choose a document for each kind.* For each kind the set covers, the person
+   picks one document from that kind's list. A kind left out is not covered. The
+   screen shows the document's terms in words beside its key, because the key
+   alone does not say what a document states. A kind of 320 documents is read by
+   the person, because the filter takes the key only; see
+   [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]].
+4. *Review the reach.* The system shows how many kinds the set covers, which
+   documents it names, and which report definitions would change if a report
+   author moved them to this set. It states which kinds are tenant kinds. A
+   document of a tenant kind is read by every party of the tenant, so the set
+   reaches further than the party that made it.
+5. *Ask for approval.* The person raises one request for the set. The request
+   names Market Risk as the decider and carries the whole set as the pending
+   change. The person cannot decide their own request.
+6. *Read it back as waiting.* The system shows the request under /My requests/
+   with its state. It states what the request did not do: the set does not exist
+   yet, and no report can choose it.
+7. *Leave, or go on.* The person returns to the list of sets. The decision is the
+   journey [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention
+   change]]. The report author's choice is in the report prototypes.
+
+* Screens and wireframes
+
+One screen of five panels: the list of sets, the description, the document for
+each kind, the review of the reach, and the waiting request. The rail runs in
+order, and the last step cannot be returned past.
+
+The screen draws a set as a name, a purpose and a list of documents. It does not
+draw the terms as editable fields, because a set holds no term. It shows the
+terms of each document in words so that the person can tell the documents apart.
+
+#+caption: Name a convention set: the sets that exist, the three stored fields, one document chosen for each kind, the reach, and the request that waits for Market Risk.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_name_a_convention_set.png]]
+
+* Prototype
+
+No prototype exists yet. The story
+[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
+conventions]] draws one in =doc/prototypes/conventions/=. The report side of the
+choice is already drawn in the two report prototypes, and they draw a fixture
+list.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The convention set | The name, the purpose and the description. This entity does not exist. A conventions configuration is the nearest entity. | none |
+| =configuration= | The four conventions configurations that exist: a name, a type code and an owning component. No purpose, no description, no kind. | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| The set's kinds | One row for each covered kind, naming one document. This entity does not exist. | none |
+| The 26 convention tables | The documents a set names. The screen reads each table's list and shows the terms in words. | see [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] |
+| =report_configuration= | The report definitions that bind a configuration, so the review can count them | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =approval_request= | The request that waits for Market Risk | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | The rule: how many approvals, and the permission a decider holds | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the sets | List the conventions configurations | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| Read the sets | Read the kinds a set covers | (no set-to-kind rows) | missing |
+| Read the sets | Read a set's purpose | (no purpose column) | missing |
+| Describe the set | Refuse a name another set holds | (no unique name rule on a set) | missing |
+| Choose a document | List a kind's documents | =refdata.v1.<kind>_conventions.list= | exists |
+| Choose a document | Read the documents by key | =refdata.v1.<kind>_conventions.get_many= | exists |
+| Choose a document | Search a kind by a term | (the filter is =id_one_of= and nothing else) | missing |
+| Review the reach | Read the report definitions that bind a configuration | =reporting.v1.report_configurations.list= | exists |
+| Ask for approval | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
+| Ask for approval | Raise the request | =inbox.v1.ops.raise_approval= | exists |
+| Ask for approval | A request kind for a convention set | (no kind is seeded) | missing |
+| Read it back | Read my own requests | =inbox.v1.ops.list_my_approval_requests= | exists |
+| Create the set when approved | Write the set and its kinds | (no apply workflow) | missing |
+| The screen itself | Name a set from the browser | (no BFF route) | missing |
+
+=reporting.v1.configurations.put= exists, and it writes a name, a type code and
+an owning component. It cannot carry a purpose or a kind.
+
+* What is missing
+
+1. *No set has a purpose or a description.* The configuration holds a name, a
+   type code and an owning component. The story
+   [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report
+   chooses]] records the gap and has not started the schema work.
+2. *No set names a document for a kind.* A configuration has no children, so it
+   binds 26 kinds in name only. A set needs one row for each covered kind with the
+   key of one document. Until the row exists, a run reads the whole party document
+   and not the set.
+3. *No default marker.* The same gap blocks
+   [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]]
+   and [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party
+   uses for one kind]]. A set's child rows would be the first place a choice is
+   written, and they would need an owner.
+4. *No approval kind for a set.* =iam.role_grant=, =refdata.book_change= and
+   =refdata.counterparty_change= are the only kinds seeded. Market Risk has a
+   deciding part and a permission, =inbox::approvals:decide_market_risk=, and no
+   kind names them for a convention. The controls note states the rule for a new
+   convention or a change of its terms. It does not state a rule for a set, and
+   the product owner confirms that rule.
+5. *A request holds no pending set.* A request carries a reason and a kind. It does
+   not carry the change, and nothing applies the change when the last decider
+   approves.
+6. *The publish carries no correction.* A re-publish does nothing where a row
+   exists for 25 of the 26 kinds. A set that names a corrected document cannot
+   rely on the publish to bring the correction to a tenant.
+7. *A set that names a tenant kind reaches every party.* The screen can say so.
+   Nothing in the server reports the scope.
+8. *No BFF route serves a set.* The journey adds one, for example
+   =POST /api/refdata/convention-sets=, which validates the name, reads the named
+   documents and raises the request.
+
+* Related journeys
+
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — the person needs a document that no list holds, before a set can name it
+- [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]] — the search that picks a document for a kind
+- [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]] — the second person's half of step 5
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — read which document a run takes after the set exists
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — correct a document a set names
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the report author who chooses the set
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report chooses]] — the decision that conventions are named sets
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — who decides a convention change
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the sections this page fills

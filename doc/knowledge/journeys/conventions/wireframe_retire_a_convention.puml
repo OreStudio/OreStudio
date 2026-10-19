@@ -1,0 +1,77 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>RETIRE A CONVENTION</b>  { Document | Reach | Reason | Retired }
+  --
+  {
+    {
+      <b>1. The document</b>  -  swap, party ACCOUS
+      --
+      {#
+        Field | Value
+        Key | AED-EIBOR-6M-SWAP
+        Version | 2
+        Terms | AED, annual, ACT/365, AED-EIBOR-6M
+        Same terms in | 0 other documents
+      }
+      <i>Retiring closes the row with valid_to. The history stays readable.</i>
+      [ Read the reach ]
+    } | {
+      <b>2. What reads it</b>
+      --
+      {#
+        Reader | State
+        Conventions file of ACCOUS | carries every swap document
+        Convention sets | named by 1 set
+        Report definitions | bound through that set: 2
+        Trades | carry their terms inline: none
+      }
+      <b>A run takes this row because it is in the party's document.</b>
+      <i>Nothing in the server checks references before a delete.</i>
+      [ Back ] | [ Continue ]
+    }
+  }
+  --
+  {
+    {
+      <b>3. Say why</b>
+      --
+      Reason: ^system.obsolete^v
+      Commentary: ^Replaced by AED-EIBOR-6M-SWAP-2.^
+      --
+      <b>Retiring removes the row from the next run of ACCOUS.</b>
+      Runs that read it before keep the version they read.
+      [ Back ] | [ Ask for approval ]
+    } | {
+      <b>4. Retired</b>
+      --
+      <b>AED-EIBOR-6M-SWAP is retired at version 3</b>
+      by m.okafor at 2026-10-19 10:12
+      --
+      <b>What retiring did not do</b>
+      It did not choose a replacement: no default marker exists.
+      It did not change the set that names it: the set now names a closed row.
+      [ See the history ] | [ Back to the kind ]
+    }
+  }
+}
+
+@enduml

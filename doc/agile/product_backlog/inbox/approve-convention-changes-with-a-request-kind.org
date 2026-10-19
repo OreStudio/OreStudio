@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: C85BD99A-B25D-462C-A3D7-CE801993DDFB
+:END:
+#+title: Seed an approval kind and an apply step for convention changes
+#+description: Market Risk holds the deciding part and the permission inbox::approvals:decide_market_risk, and no approval kind names a convention. A request holds no pending change and nothing applies a change when the last decider approves. Decide the kind or kinds, where the pending row lives, and the apply step, so the four convention management journeys can raise and decide a request. Found while writing the journeys Decide a convention change, Name a convention set and Retire a convention.
+#+type: capture
+#+level: cross
+#+filetags: :conventions:approvals:inbox:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Seed the approval kind or kinds for a convention change, decide where the pending row lives, and add the step that applies the change when the last decider approves.
+
+* Why
+
+Market Risk has a deciding part and the permission =inbox::approvals:decide_market_risk=. Only =iam.role_grant=, =refdata.book_change= and =refdata.counterparty_change= are seeded as kinds, so the queue of a Market Risk approver cannot list a convention request. A request holds a kind and a reason and no pending change. Nothing applies a change on the last approval. The open choices are one kind for all four convention writes or one kind for each, and whether the pending row is on the request or staged in the convention table.
+
+* References
+
+- [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]]
+- [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]]
+- [[id:59C8659C-D442-4AEA-94CE-5244F1AF19B3][Retire a convention]]
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]]
+
+* See also
+
+-

@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: D0ACFA17-B993-478B-958C-606C3349B079
+:END:
+#+title: User Journey: Find a convention by its terms
+#+description: A person holding a set of terms searches a kind for the document that states them, or learns that none does.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person holding a set of terms searches a kind for the document that states them, or learns that none does.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I know the terms: AED, annual, ACT/365. Which document in this kind states them,
+or is there none?"
+
+The journey is done when the person holds the matching document, or holds the
+fact that none matches and can go on to author one. A person who ends without a
+document must know that the search read every row, and not only the first page.
+
+The party holds 320 swap documents that state 201 distinct term sets. A person
+cannot answer this question by reading the list, and four other journeys depend
+on the answer. See /Related journeys/.
+
+* Actor and trigger
+
+The actor is any person who reads or writes conventions: market risk, a trading
+desk, operations or a tenant administrator. The same activity serves all four. The
+visible rows differ by permission and by row-level policy, and the screen is the
+same.
+
+The trigger is a set of terms the person holds and a document they need. It comes
+from a trade that states the terms, a counterparty agreement, a run whose terms
+are in doubt, or the wish to author a document without writing a duplicate. The
+journey starts on one kind and ends on a matched document or on a statement that
+none exists.
+
+The journey keeps no server state. This journey reads. It writes nothing.
+
+* Steps
+
+1. *Choose the kind.* The person picks the kind that serves the instrument family.
+   The system shows how many documents the party holds in the kind and how many
+   distinct term sets they state. For a tenant kind it states that the documents
+   belong to every party.
+2. *State the terms.* The system draws one row for each term column the kind
+   carries. The person sets the value they hold. A term left as /any/ matches every
+   value. A term that is a pick is chosen from the list that owns it, so a code
+   that no list holds cannot be typed. Empty and /any/ are different: empty
+   matches only a row that states nothing for the term.
+3. *Read the matches.* The system lists the documents whose terms equal the stated
+   ones. Each row shows the key and the terms the person left as /any/, so the
+   person sees how the matches differ. The system says how many rows it read,
+   because a search that read a page is not a search of the kind.
+4. *Read what a match is.* The person opens one match. The system shows its terms
+   in words, its version, where it came from, which sets name it and whether the
+   party's runs read it.
+5. *Find that none matches.* When no document states the terms, the screen says
+   so in one sentence, with the number of rows read, and offers two ways on: author
+   a document with these terms, or change one term and search again.
+6. *Leave, or go on.* The person goes to
+   [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]]
+   with the terms carried over, or to another journey with the matched key.
+
+* Screens and wireframes
+
+One screen of four panels: the kind, the terms, the matches and the empty result.
+The terms panel is the one the journey is about. The search is a set of equals on
+the columns the kind carries, and the screen draws the columns of the chosen kind
+only.
+
+#+caption: Find a convention by its terms: the kind with its document and term-set counts, the terms the person holds, the matching documents, and the empty result that leads to authoring.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_find_a_convention_by_its_terms.png]]
+
+* Prototype
+
+No prototype exists yet. The story
+[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
+conventions]] draws one in =doc/prototypes/conventions/=. The search is also a
+panel in the prototypes of the other journeys, and the prototype for this journey
+is the full screen.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The kind's convention table | The documents searched and the term columns searched on | one of the 26; see [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] |
+| =swap_convention= | The worked example: seven term columns, 320 documents, 201 term sets | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =calendar_name=, =day_count_fraction_type=, =business_day_convention_type=, =payment_frequency=, =floating_index_type= | The lists a pick term is chosen from | |
+| =configuration= | The conventions configurations, read to say whether a match is used | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the kind | Count the kind's documents | =refdata.v1.<kind>_conventions.list= (a page and a total) | partial |
+| State the terms | Fill the calendar picker | =refdata.v1.calendar_names.list= | exists |
+| State the terms | Fill the day count picker | =refdata.v1.day_count_fraction_types.list= | exists |
+| State the terms | Fill the business-day convention picker | =refdata.v1.business_day_convention_types.list= | exists |
+| State the terms | Fill the payment frequency picker | =refdata.v1.payment_frequencies.list= | exists |
+| State the terms | Fill the floating index picker | =refdata.v1.floating_index_types.list= | exists |
+| Read the matches | Filter a kind by its terms | (the filter is =id_one_of= and nothing else) | missing |
+| Read the matches | Read every page of a kind | =refdata.v1.<kind>_conventions.list= | exists |
+| Read what a match is | Read one document | =refdata.v1.<kind>_conventions.get= | exists |
+| Read what a match is | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
+| Read what a match is | Read the sets that name it | (a configuration has no children) | missing |
+| The screen itself | Search conventions from the browser | (no BFF route) | missing |
+
+* What is missing
+
+1. *The list cannot be searched by a term.* The generated filter takes =id_one_of=
+   and nothing else. A match on terms is a read of every page followed by a
+   comparison in the browser. The screen can do this, and on a kind of 320
+   documents it is a real cost. The candidate is a filter on the term columns of
+   each kind, for example =refdata.v1.<kind>_conventions.list= with a
+   =terms_equal= argument. Until it exists the screen reads every page itself and
+   says how many rows it read.
+2. *The search differs for each kind.* The 26 tables have different columns, so
+   there is no shared filter. A generated filter is the only shape that does not
+   claim a column a table lacks.
+3. *No term-set count comes from the server.* The count of 201 distinct term sets
+   is a number the screen must compute. It is a derived fact, and it is read once
+   for each search.
+4. *A match cannot say whether a run reads it.* No default marker exists, and a
+   configuration holds no rows. The screen says so and does not leave the column
+   empty.
+5. *A tenant kind is searched across every party.* =currency_pair=, =ibor_index=,
+   =overnight_index= and =tenor= carry no =party_id=. The screen states the scope.
+6. *No BFF route serves conventions.* The journey adds a read, for example
+   =GET /api/refdata/parties/<party-id>/conventions/<kind>?terms=...=.
+
+* Related journeys
+
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — the next step when no document matches
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — the next step when a match needs a correction
+- [[id:59C8659C-D442-4AEA-94CE-5244F1AF19B3][Retire a convention]] — find the twin of a document before it is closed
+- [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]] — find the document a set names for a kind
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — read the kind as a whole
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the sections this page fills

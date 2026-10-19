@@ -31,9 +31,11 @@ namespace ores::ore::domain {
 /**
  * @brief One ORE conventions document, split at the family boundary.
  *
- * The bundle carries every family the document holds, one row per element, and
- * each row is that family's own payload. Nothing in this type names a family,
- * so a family the document gains is carried without a change here.
+ * The bundle carries every family the document holds, one row per stored row,
+ * and each row is that family's own payload. A document element that is more
+ * than one row of a table, as a tenor basis swap is, arrives as one row per
+ * table. This type names no family, so it does not change when the document
+ * gains one; the two directions do, and each names every family it carries.
  *
  * The FX conventions are the exception, and are a projection rather than a
  * store. What the document calls one FX convention is a currency pair, that

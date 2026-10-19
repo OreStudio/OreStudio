@@ -3230,8 +3230,14 @@ conventions join_conventions(const conventions_package& p) {
     std::vector<refdata::domain::tenor_basis_swap_long_short> long_shorts;
 
     for (const auto& row : p.bundle.rows) {
+        // The one table carries every kind, and only this kind's rows have a
+        // document element. A row of another kind is a convention with no
+        // element to be written as, so it is dropped rather than written as a
+        // tenor basis swap that carries no legs.
         if (row.family == "convention") {
-            central.push_back(unpack_row<refdata::domain::convention>(row));
+            auto c = unpack_row<refdata::domain::convention>(row);
+            if (c.kind_code == tenor_basis_swap_kind)
+                central.push_back(std::move(c));
             continue;
         }
         if (row.family == "tenor_basis_swap_pay_receive") {
@@ -3252,7 +3258,9 @@ conventions join_conventions(const conventions_package& p) {
     }
 
     // The three families are one document element, so a central row takes back
-    // the parts that name it.
+    // the parts that name it. The row order is the bundle's order; the sequence
+    // each row carries orders a family within a bundle, and the join does not
+    // need it because a family's rows are appended in the order they arrive.
     for (const auto& c : central) {
         refdata::messaging::tenor_basis_swap_convention_item item;
         item.key.id = c.id;

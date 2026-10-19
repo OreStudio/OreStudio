@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-18
+#+updated: 2026-10-19
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -70,7 +70,7 @@ The plan is five steps.
 4. Delete the aggregate, the service, the six bulk functions and the model section, retiring the bridge.
 5. The translation-unit gate, and the measurements this task records.
 
-Step 3 landed in two parts. The package and its two directions came first, proven against the document over the whole corpus. The two production callers moved onto it next, which leaves the document with no caller but its tests. The bridge is the mapper pair itself: =map= and =reverse= still turn a document into the rows the tests compare and back, and step 4 removes them with the type.
+Step 3 arrived in one change. The package, its two directions, the tests that compare it with the document and the move of both production callers all came together, so the new shape had callers from the first commit. The bridge is the mapper pair itself: =map= and =reverse= still turn a document into the rows the legacy file importer and exporter, the diff and the tests work in, and step 4 removes them with the type.
 
 * Measurements
 
@@ -116,14 +116,20 @@ task and name that file in the Command column.
   kind this bundle covers, because that one table carries every kind. A test
   proves the bundle read carries the same rows as the document read, which is
   the bridge the next step removes.
-- Step 3 is merged. =ores::ore::domain::conventions_package= holds one bundle
-  and the FX projection, and =split_conventions= and =join_conventions= are
-  the two directions over it. The package is now what crosses the boundary:
-  the run store and the run configuration operations both read into it and
-  write from it, and neither of them assembles a document any more. The run
-  configuration operations lost the reflection that turned a document into
-  generic JSON and back, because a bundle is already the shape the staging
-  call takes.
+- Step 3 is in review as #3562. =ores::ore::domain::conventions_package= holds
+  one bundle and the FX projection, and =split_conventions= and
+  =join_conventions= are the two directions over it. The package is now what
+  crosses the boundary: the run store and the run configuration operations both
+  read into it and write from it, and neither of them assembles a document any
+  more. The run configuration operations lost the whole-document reflection that
+  turned a document into generic JSON and back; per-row =rfl::json= remains,
+  because a payload is a row.
+- An import now applies one row at a time: =apply_staged_family= decodes one
+  payload and writes it, and the row helpers read the family's table on every
+  call. The document path read a family once and wrote its rows together, so a
+  family of many rows costs a read per row where it used to cost one. That is
+  the shape the staging path already had, and the fix is the per-family apply
+  the next two steps write: one call per family carrying its rows.
 - The FX convention is the only part of the package that does not enter the
   bundle, and that is what the projection means. It comes back on the export
   only when the same package is joined, which is why the store never returns
@@ -213,9 +219,15 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The python renderer dropped its 100 column wrap when the templates took over. | convention_family_registry facet | Accepted, no change | The generated header's longest line is 80 columns, so nothing exceeds the limit today. The fix, if a name grows, is in the template. |
 | 2 | The facet hardcodes the refdata output paths, so a second component opting in would overwrite them. | convention-registry facets | Accepted, recorded | A second component needs the address parameterised before it enables the facet. The facet page states the limit. |
+| 3 | #3562: =join_conventions= wrote a central convention row of any kind as a tenor basis swap, where =reverse= filters on the kind. The RPC read hands it rows of every kind, so an export could carry a leg-less element for a convention no document element names. | conventions_mapper.cpp | Fixed | The join keeps only rows whose kind is the tenor basis swap, which is what the path it replaces did. A test writes a central row of another kind and asserts no element comes back. |
+| 4 | #3562: the row-count test covered six of the twenty-six families. | conventions_package_tests.cpp | Fixed | A test now walks the corpus, refuses a family the registry does not name, and requires the corpus to name every family the registry does. |
+| 5 | #3562: an import applies one row at a time, so the row helpers read the family's table once per row where the document path read it once per family. | conventions_row_helpers.hpp | Accepted, recorded | The staging path already had this shape. The fix is the per-family apply the next two steps write, and the note above says so. |
+| 6 | #3562: the package header says one row per element, when a tenor basis swap element is a central row plus its part rows. | conventions_package.hpp | Fixed | The header now says one row per stored row and names the element that is more than one. |
+| 7 | #3562: =conventions_document_service::save= is production-dead, with only tests calling it. | conventions_document_service.cpp | Accepted, recorded | Step 4 deletes it with the type it takes. |
+| 8 | #3562: the benchmark rows and the generated shell script are unrelated to a conventions refactor. | benchmarks, shell scripts | Accepted, explained | The gate asks for a benchmark row after a change to the XML code, and it fails on trunk without the shell script, so neither can wait for a separate branch. |
 
 * Result
 
-Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, the generated per-family read, and the ORE boundary package. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
+Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the generated per-family read. The ORE boundary package is in review as #3562. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
 
 The boundary is what step 3 changes, and it changes it in the direction the deletion needs. The two run import paths no longer move conventions through the document: the run store and the run configuration operations each split a file into a package and apply its bundle, and each joins the bundle the read returns. What still names the type is the legacy file importer and exporter in ores.ore, =conventions_difference=, the whole-document service in refdata, and the tests that compare the package with the document. Those are step 4's work, and they go with the type rather than before it, because a comparison against the old shape is what proved the new one.

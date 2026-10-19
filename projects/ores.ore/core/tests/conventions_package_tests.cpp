@@ -21,10 +21,15 @@
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <rfl/json.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -165,4 +170,41 @@ TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", tags) {
     package.bundle.rows.push_back({"no_such_family", 0, "{}"});
 
     CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+}
+
+// The one table a bundle reads for the shared family holds every kind, so a
+// read hands the join rows that have no document element. Writing one as a
+// tenor basis swap would put a leg-less element in the export.
+TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap", tags) {
+    ores::refdata::domain::convention c;
+    c.kind_code = "SWAP";
+    c.name = "not a tenor basis swap";
+
+    conventions_package package;
+    package.bundle.rows.push_back({"convention", 0, rfl::json::write(c)});
+
+    CHECK(join_conventions(package).TenorBasisSwap.empty());
+}
+
+TEST_CASE("every_family_the_package_names_is_one_the_registry_names", tags) {
+    std::set<std::string> seen;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto package = split_conventions(load(path));
+        for (const auto& row : package.bundle.rows) {
+            INFO(path.string() << " " << row.family);
+            CHECK(std::ranges::any_of(
+                ores::refdata::domain::convention_families,
+                [&row](const auto& family) { return family.key == row.family; }));
+            seen.insert(row.family);
+        }
+    }
+
+    std::set<std::string> registry;
+    for (const auto& family : ores::refdata::domain::convention_families)
+        registry.insert(std::string(family.key));
+
+    // The corpus is what the equivalence test compares, so a family it never
+    // exercises is a family the package has never been shown to carry.
+    CHECK(seen == registry);
 }

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/migrate-pricing-engines-onto-the-codec
-#+pr: 3486
+#+branch: feature/project-the-portfolio-document
+#+pr: 3560
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-19
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,10 +29,10 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments, currency config, pricing engines, credit simulation, curve configuration and the run document read and write through the codec; stress testing has a table the harness proves; the netting set XML mapper is deleted. |
-| Waiting on   | Nothing.                               |
-| Next         | Portfolio, the last family read through the binding: its importer, exporter and instrument mappers. |
-| Last touched | 2026-10-18                               |
+| Now          | Every reference data family except conventions, and the portfolio, reads and writes through the codec. The portfolio projection replaces the importer and exporter path and the nine mappers, and every corpus portfolio exports a document that binds. |
+| Waiting on   | The conventions registry refactor, which prime origin owns on =step3-ore-package=. |
+| Next         | Conventions, then today's market, then the generated domain removal. |
+| Last touched | 2026-10-19                               |
 
 * Acceptance
 
@@ -419,6 +419,7 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/3549][#3549]] | [ore] Read the schema shapes the portfolio document needs |
 | [[https://github.com/OreStudio/OreStudio/pull/3555][#3555]] | [ore] Index the member a record cannot hold |
 | [[https://github.com/OreStudio/OreStudio/pull/3556][#3556]] | [ore] Read and write the portfolio document's numbers exactly |
+| [[https://github.com/OreStudio/OreStudio/pull/3560][#3560]] | [ore] Read and write the portfolio through the projection |
 
 * Review
 
@@ -427,3 +428,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every reference data document except conventions, and the portfolio, is on the
+codec. The family census reports 13 supported, 0 migrating and 7 unused. The XML
+suites pass, and every portfolio in the example corpus exports a document that
+binds.
+
+Two steps remain before the generated domain can go. Conventions moves first,
+and it waits on the registry refactor prime origin owns on =step3-ore-package=.
+Today's market follows, and its reader is one of the files that branch changes.
+Then the generated domain, the sibling-checkout wiring and the two regeneration
+patches go in one change.
+
+Until the last step, five files include =domain/domain.hpp=: =domain.cpp= (the
+generated serialiser), =run_store.cpp=, =run_configuration_operations.cpp=,
+=importer.cpp= and =exporter.cpp=.

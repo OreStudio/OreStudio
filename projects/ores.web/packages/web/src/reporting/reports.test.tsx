@@ -458,21 +458,23 @@ describe('one report definition', () => {
         expect(textOf(html)).not.toContain('ACCOHK');
     });
 
-    it('offers Edit and no form on the page, because a change is made in a dialog', () => {
+    it('offers one Edit, on the card it changes, and none in the header', () => {
         const html = detail();
 
-        expect(textOf(html)).toContain('Edit');
+        // The specification puts Edit on the card, so the header carries none.
+        expect(html.match(/>Edit</g)).toHaveLength(1);
+        const header = html.slice(0, html.indexOf('Definition'));
+        expect(header).not.toContain('>Edit<');
         expect(html).not.toContain('<textarea');
         expect(html).not.toContain('Schedule expression</label>');
     });
 
-    it('states the fields the record holds, and the access mark', () => {
+    it('states the fields the record holds', () => {
         const page = textOf(detail());
 
         expect(page).toContain('Definition');
         expect(page).toContain('Report type');
         expect(page).toContain('forbid');
-        expect(page).toContain('Editable');
     });
 
     it('closes the details with the provenance of the version it read', () => {

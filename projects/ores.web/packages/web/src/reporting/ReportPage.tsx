@@ -274,8 +274,7 @@ function ReportBody(): ReactNode {
                 recordKey={shortId(definition.id)}
                 version={definition.version}
                 subdued
-                access={mayEdit}
-                onEdit={mayEdit ? () => setEditing(true) : undefined}
+                access={null}
                 own={<RefreshButton onClick={reload} load={load} news={news} />}
             />
             <div className="space-y-4">

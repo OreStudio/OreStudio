@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/conventions-on-the-codec
-#+pr:
+#+pr: 3565
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -423,6 +423,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3565][#3565]] | [ore] Read conventions through the codec and remove the generated domain |
 | [[https://github.com/OreStudio/OreStudio/pull/3563][#3563]] | [ore] Read and write today's market through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |

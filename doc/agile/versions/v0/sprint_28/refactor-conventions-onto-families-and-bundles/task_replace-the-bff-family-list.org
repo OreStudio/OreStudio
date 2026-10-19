@@ -58,7 +58,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Registry entries | 26, of which 3 are absorbed by the composite and 23 are listed as plain families | =grep -c "key: '"= on the generated module | 7515c50292 plus this change |
 | Families on the screen | 25 before (table rows in =origin/main= =conventions.ts=), 26 after: 23 plain, 1 composite, 2 screen-only | =grep -c= on the old table and the BFF test =names each family once= | 7515c50292 plus this change |
-| BFF suite | 67 files, 794 tests passed | =npm test= in =packages/bff= | 7515c50292 plus this change |
+| BFF suite | 67 files, 795 tests passed | =npm test= in =packages/bff= | 7515c50292 plus this change |
 | Web suite | 1656 tests passed | =npm test= in =packages/web= | 7515c50292 plus this change |
 | Registry module tests | 12 passed | =venv/bin/python -m pytest tests/test_convention_family_registry.py= in =projects/ores.codegen= | 7515c50292 plus this change |
 
@@ -96,7 +96,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The test repeats the absorbed keys that =conventions.ts= already lists | =conventions.test.ts= | Accepted | =ABSORBED_REGISTRY_KEYS= is exported and the test reads it. |
+| 2 | The =SCREEN_ONLY.every= check repeats the =toEqual= check | =conventions.test.ts= | Accepted | Removed. |
+| 3 | A mistyped =registryKeys= entry hides nothing and no test fails | =conventions.test.ts= | Accepted | A test requires every absorbed key to be a registry key. |
+| 4 | Use =localeCompare= in the sort | =conventions.ts= | Declined | Plain =<= order does not depend on the locale, so the list order is the same everywhere. |
+| 5 | Confirm the target allows =replaceAll= | =conventions.ts= | No change | The typecheck passes, so the target allows it. |
+| 6 | Check the alphabetical order in a browser | PR | Recorded | Already a stated limitation of the PR. |
 
 * Result
 
@@ -104,6 +109,6 @@ The BFF no longer holds a list of plain document families. A new TypeScript face
 
 The acceptance line was reworded with the owner's agreement. The registry cannot state which entries the screen shows or which it writes, so three screen choices stay hand-written and the code says so. The gain is that a plain document family reaches the screen with no edit. =zero-inflation-index= is the first, and its label is in the English, Portuguese and French locale files.
 
-Four tests in =conventions.test.ts= guard the link. They check that every registry family is listed or absorbed, that the only extra entries are the composite and the two screen-only kinds, that each family's subject prefix matches the registry's subject stem, and that no key repeats. The BFF suite, the web suite and the registry tests pass.
+Five tests in =conventions.test.ts= guard the link. They check that every registry family is listed or absorbed, that every absorbed key is a registry key, that the only extra entries are the composite and the two screen-only kinds, that each family's subject prefix matches the registry's subject stem, and that no key repeats. The BFF suite, the web suite and the registry tests pass.
 
 The data classification page does not name the set the screen groups. The capture =name-a-set-of-kinds-that-a-screen-groups= holds that question.

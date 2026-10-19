@@ -93,7 +93,7 @@ const SCREEN_ONLY_ENTITIES: readonly (readonly [string, string])[] = [
 
 const WRITABLE_FAMILIES: ReadonlySet<string> = new Set(['deposit', 'swap']);
 
-const ABSORBED_REGISTRY_KEYS: ReadonlySet<string> = new Set(
+export const ABSORBED_REGISTRY_KEYS: ReadonlySet<string> = new Set(
     Object.values(COMPOSITE_FAMILIES).flatMap((composite) => composite.registryKeys),
 );
 

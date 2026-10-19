@@ -8,7 +8,7 @@
 #+filetags: :stop_the_windows_debug_builds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-stop-the-windows-debug-builds
-#+pr:
+#+pr: 3572
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3572][#3572]] | [ci] Switch off the Windows debug builds |
 
 * Review
 

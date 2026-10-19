@@ -46,7 +46,7 @@ struct counterparty {
 };
 struct counterparties {
     std::uint64_t present = 0;
-    std::vector<counterparty> counterparty;
+    std::vector<struct counterparty> counterparty;
 };
 struct correlation {
     std::uint64_t present = 0;
@@ -56,11 +56,11 @@ struct correlation {
 };
 struct counter_party_correlations {
     std::uint64_t present = 0;
-    std::vector<correlation> correlation;
+    std::vector<struct correlation> correlation;
 };
 struct counterparty_information {
     std::uint64_t present = 0;
-    counterparties counterparties;
+    struct counterparties counterparties;
     counter_party_correlations correlations;
 };
 

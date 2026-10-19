@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 1AFD80D3-3A7D-435D-BDA6-2CC9E6B6C4A2
+:END:
+#+title: Task: Implement Hotfix: gcc rejects member names that match their type in the generated xml headers
+#+description: Initial task for: Hotfix: gcc rejects member names that match their type in the generated xml headers
+#+type: task
+#+level: s1
+#+filetags: :gcc_changes_meaning_in_generated_xml:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-gcc-changes-meaning-in-generated-xml
+#+pr: 3570
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42F3826C-9DFA-459C-900B-4E8A99895C0D][Hotfix: gcc rejects member names that match their type in the generated xml headers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the generated xml headers compile with gcc. The nightly gcc builds fail
+with =-Wchanges-meaning= because a record names a member after its own type,
+or after a type that an earlier member uses.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:42F3826C-9DFA-459C-900B-4E8A99895C0D][Hotfix: gcc rejects member names that match their type in the generated xml headers]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- Every generated xml header compiles with gcc and with clang.
+- The xml bindings drift check passes.
+
+* Plan
+
+The nightly gcc-release run of 2026-10-18 failed in =credit_simulation.hpp=
+after commit 73c676be80 added the generated header. gcc 12 and later reject a
+member whose name is also the name of a type the record uses. clang accepts
+it. A reproduction with g++ 16 confirmed the error, and the =struct= keyword
+before the type removes it under both compilers.
+
+=shadowed_types= in =generate_xml_bindings.py= already spells a type with
+=struct= when an earlier member hides it. Widen the rule to every member of
+the record: the member itself, an earlier member and a later member. Then
+regenerate the bindings.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated headers that changed | 10 | =git diff --stat -- projects/ores.ore/core= | 4b47526bdc |
+| Generated headers that pass =g++ -fsyntax-only= | 13 of 13 | a loop over =xml/generated/*.hpp= with =-std=c++23= | 4b47526bdc |
+| Generated headers that pass =clang++ -fsyntax-only= | 13 of 13 | the same loop with =clang++= | 4b47526bdc |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3570][#3570]] | [ore] Spell a type with struct when a member takes its name |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generator now writes the =struct= keyword before a type whenever any
+member of the same record has the type's name. The regenerated bindings change
+10 headers, and the change only adds the keyword.
+
+- All 13 generated headers pass =g++ 16 -fsyntax-only= and
+  =clang++ -fsyntax-only=.
+- =check_xml_bindings_drift.py= passes.
+- =ores.ore.api.tests=, =ores.ore.core.tests= and =ores.ore.service.tests=
+  pass on =linux-clang-release-ninja= (3 of 3).
+
+Not done: a full gcc build of the tree. The nightly =linux-gcc-release= leg is
+the proof. The other local checks did not run, by the user's choice.

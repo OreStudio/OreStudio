@@ -354,7 +354,7 @@ struct derived_schedule_type {
 struct schedule_data {
     std::uint64_t present = 0;
     std::string name;
-    std::vector<rules> rules;
+    std::vector<struct rules> rules;
     std::vector<dates_type> dates;
     std::vector<derived_schedule_type> derived_schedule;
     std::vector<derived_schedule_type> derived;
@@ -422,11 +422,11 @@ struct date {
 };
 struct dates {
     std::uint64_t present = 0;
-    std::vector<date> date;
+    std::vector<struct date> date;
 };
 struct prohibited_expiries_type {
     std::uint64_t present = 0;
-    dates dates;
+    struct dates dates;
 };
 struct valid_contract_months {
     std::uint64_t present = 0;
@@ -462,7 +462,7 @@ struct off_peak_power_index_data_type {
 struct commodity_future_type {
     std::uint64_t present = 0;
     std::string id;
-    anchor_day anchor_day;
+    struct anchor_day anchor_day;
     std::int16_t contract_frequency = 0;
     std::string calendar;
     std::string expiry_calendar;
@@ -473,7 +473,7 @@ struct commodity_future_type {
     std::int16_t adjust_before_offset = 0;
     std::int16_t is_averaging = 0;
     prohibited_expiries_type prohibited_expiries;
-    valid_contract_months valid_contract_months;
+    struct valid_contract_months valid_contract_months;
     std::int64_t option_expiry_month_lag = 0;
     std::int16_t option_contract_frequency = 0;
     std::int64_t option_expiry_offset = 0;
@@ -526,7 +526,7 @@ struct trading_center {
 };
 struct trading_centers {
     std::uint64_t present = 0;
-    trading_center trading_center;
+    struct trading_center trading_center;
 };
 struct event {
     std::uint64_t present = 0;
@@ -536,14 +536,14 @@ struct event {
 };
 struct events {
     std::uint64_t present = 0;
-    event event;
+    struct event event;
 };
 struct fx_option_time_weighting {
     std::uint64_t present = 0;
     std::string id;
-    weekday_weights weekday_weights;
-    trading_centers trading_centers;
-    events events;
+    struct weekday_weights weekday_weights;
+    struct trading_centers trading_centers;
+    struct events events;
 };
 struct record_event_type {
     std::uint64_t present = 0;
@@ -563,7 +563,7 @@ struct zero_inflation_index_type {
     std::int16_t frequency = 0;
     std::string availability_lag;
     std::int16_t currency = 0;
-    rebasing_events rebasing_events;
+    struct rebasing_events rebasing_events;
 };
 struct bond_yield {
     std::uint64_t present = 0;
@@ -594,7 +594,7 @@ struct load_profile_datum {
 };
 struct explicit_load_profile_type {
     std::uint64_t present = 0;
-    std::vector<load_profile_datum> load_profile_datum;
+    std::vector<struct load_profile_datum> load_profile_datum;
 };
 struct load_profile_business_day_rule {
     std::uint64_t present = 0;
@@ -605,7 +605,7 @@ struct load_profile_business_day_rule {
 };
 struct rule_based_load_profile_type {
     std::uint64_t present = 0;
-    std::vector<load_profile_business_day_rule> load_profile_business_day_rule;
+    std::vector<struct load_profile_business_day_rule> load_profile_business_day_rule;
 };
 struct power_load_profile_data_type {
     std::uint64_t present = 0;
@@ -640,11 +640,11 @@ struct conventions {
     std::vector<cms_spread_option_type> cms_spread_option;
     std::vector<commodity_forward_type> commodity_forward;
     std::vector<commodity_future_type> commodity_future;
-    std::vector<fx_option> fx_option;
-    std::vector<fx_option_time_weighting> fx_option_time_weighting;
+    std::vector<struct fx_option> fx_option;
+    std::vector<struct fx_option_time_weighting> fx_option_time_weighting;
     std::vector<zero_inflation_index_type> zero_inflation_index;
-    std::vector<bond_yield> bond_yield;
-    std::vector<intraday_power_load> intraday_power_load;
+    std::vector<struct bond_yield> bond_yield;
+    std::vector<struct intraday_power_load> intraday_power_load;
 };
 
 ORES_ORE_CORE_EXPORT auto conventions_document() -> const document_type&;

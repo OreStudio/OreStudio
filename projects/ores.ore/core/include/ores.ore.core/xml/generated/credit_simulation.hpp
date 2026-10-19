@@ -46,7 +46,7 @@ struct data {
 struct transitionmatrix {
     std::uint64_t present = 0;
     std::string name;
-    data data;
+    struct data data;
 };
 struct transitionmatrices {
     std::uint64_t present = 0;
@@ -61,7 +61,7 @@ struct entity {
 };
 struct entities {
     std::uint64_t present = 0;
-    std::vector<entity> entity;
+    std::vector<struct entity> entity;
 };
 struct risk {
     std::uint64_t present = 0;
@@ -78,9 +78,9 @@ struct risk {
 struct creditsimulation {
     std::uint64_t present = 0;
     transitionmatrices transition_matrices;
-    entities entities;
+    struct entities entities;
     std::string netting_set_ids;
-    risk risk;
+    struct risk risk;
 };
 
 ORES_ORE_CORE_EXPORT auto credit_simulation_document() -> const document_type&;

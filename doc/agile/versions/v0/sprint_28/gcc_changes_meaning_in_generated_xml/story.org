@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 42F3826C-9DFA-459C-900B-4E8A99895C0D
+:END:
+#+title: Story: Hotfix: gcc rejects member names that match their type in the generated xml headers
+#+description: The gcc nightly builds fail with -Wchanges-meaning on credit_simulation.hpp because a member shares its name with its type; the debug builds also never finish.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.ore:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The nightly gcc builds compile the generated xml headers again. The debug
+builds that never finish are a separate cause and a separate change.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- The nightly =linux-gcc-release= leg gets past =credit_simulation.hpp=.
+- Every generated xml header compiles with gcc and with clang.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F816A6D1-10D4-4029-8EF0-9E21D71B70FF][Scaffold story: Hotfix: gcc rejects member names that match their type in the generated xml headers]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1AFD80D3-3A7D-435D-BDA6-2CC9E6B6C4A2][Implement Hotfix: gcc rejects member names that match their type in the generated xml headers]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: Hotfix: gcc rejects member names that match their type in the generated xml headers |
+
+* Decisions
+
+- The generator spells a type with the =struct= keyword whenever any member of
+  the same record has the type's name. No type is renamed, so the names in the
+  schemas and the C++ API stay the same.
+
+* Out of scope
+
+-

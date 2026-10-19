@@ -102,7 +102,7 @@ struct convention {
 };
 struct conventions {
     std::uint64_t present = 0;
-    std::vector<convention> convention;
+    std::vector<struct convention> convention;
 };
 struct parconversion {
     std::uint64_t present = 0;
@@ -111,7 +111,7 @@ struct parconversion {
     std::string discount_curve;
     std::int16_t other_currency = 0;
     std::string rate_computation_period;
-    conventions conventions;
+    struct conventions conventions;
 };
 struct stressdiscountcurve {
     std::uint64_t present = 0;
@@ -185,7 +185,7 @@ struct stressfxvolatility {
     std::vector<shift_type_entry> shift_type;
     std::string shifts;
     std::string shift_expiries;
-    weighted_shifts weighted_shifts;
+    struct weighted_shifts weighted_shifts;
 };
 struct stressfxvolatilities {
     std::uint64_t present = 0;
@@ -221,14 +221,14 @@ struct shift {
 };
 struct shifts {
     std::uint64_t present = 0;
-    std::vector<shift> shift;
+    std::vector<struct shift> shift;
 };
 struct stresscapfloorvolatility {
     std::uint64_t present = 0;
     std::string key;
     std::string ccy;
     std::vector<shift_type_entry> shift_type;
-    shifts shifts;
+    struct shifts shifts;
     std::string shift_expiries;
     std::string shift_strikes;
     std::string index;

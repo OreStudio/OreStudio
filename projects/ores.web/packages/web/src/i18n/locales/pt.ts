@@ -3637,6 +3637,9 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            pre_processing: { execute: 'Executar', substitute: 'Substituir' },
+            post_processing: { execute: 'Executar', ignore: 'Ignorar' },
+            concurrency_policy: { skip: 'Ignorar', queue: 'Pôr em fila', fail: 'Falhar' },
             producer_kind: { SYNTHETIC: 'Sintético', VENDOR: 'Fornecedor' },
             process_type: {
                 geometric: 'Geométrico',
@@ -4489,6 +4492,34 @@ const pt: SourceCatalogue = {
             post_processing: 'Pós-processamento',
             is_official: 'Oficial',
         },
+        means: {
+            name: 'O nome do relatório. É a chave do seu histórico e do seu endereço, por isso é fixado quando o relatório é criado. Para outro nome, crie um novo relatório.',
+            reportType: {
+                risk: 'Um cálculo de risco completo na grelha: VAL, fluxos, sensibilidades, XVA, VaR e SIMM. O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
+                other: 'O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
+            },
+            concurrencyPolicy: {
+                skip: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução não começa. Fica registada como ignorada.',
+                queue: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução espera e começa quando a anterior terminar.',
+                fail: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução fica registada como falhada e não começa.',
+                other: 'O que acontece quando o calendário dispara com a execução anterior ainda a decorrer.',
+            },
+            preProcessing: {
+                execute:
+                    'Cada execução constrói a própria entrada do motor: reúne as transações e os dados de mercado do relatório e empacota-os.',
+                substitute:
+                    'Cada execução salta essa construção e lê um arquivo de entrada preparado, indicado em Entrada preparada.',
+                other: 'Como uma execução obtém a entrada do motor.',
+            },
+            preparedInputKey:
+                'O arquivo guardado de onde uma execução lê a sua entrada quando o pré-processamento é Substituir. Fica vazio enquanto as execuções constroem a sua própria entrada.',
+            postProcessing: {
+                execute:
+                    'Os resultados do motor são lidos para o armazém de resultados, para que os números da execução possam ser consultados depois.',
+                ignore: 'Uma execução regista apenas que o motor produziu resultados. Os resultados não são guardados.',
+                other: 'O que uma execução faz com os resultados do motor.',
+            },
+        },
         detail: {
             record: 'Definição',
             party: 'Parte',
@@ -4505,7 +4536,6 @@ const pt: SourceCatalogue = {
             noNextFire: 'O agendador não enuncia qualquer próxima execução.',
             scheduleExpressionHint:
                 'Uma expressão cron. O momento em que o agendador a dispara é decidido pela tarefa a que a definição está ligada.',
-            preparedInputKeyHint: 'A chave de onde a execução lê a sua entrada preparada.',
             isOfficialHint: 'A definição oficial do seu relatório para esta parte.',
             gaps: 'Esta página não oferece Eliminar nem Adicionar: nenhuma rota elimina ainda uma definição, e uma definição é criada pelo percurso que cria um relatório. Também não desenha o separador Histórico: o servidor procura uma definição pelo nome, e várias partes de um mesmo inquilino partilham um nome.',
         },

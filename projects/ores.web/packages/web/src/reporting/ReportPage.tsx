@@ -58,6 +58,7 @@ import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { CronValue } from '../ui/CronField.js';
 import { REPORTS_EVENTS, REPORTS_RESOURCE, reportingStore } from './store.js';
 import { Absent, HealthTag, formatDuration, runDuration } from './shared.js';
 
@@ -90,6 +91,7 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         labelKey: 'reporting.fields.name',
         kind: { kind: 'text', max: 200 },
         fixed: true,
+        means: { key: 'reporting.means.name' },
     },
     {
         field: 'description',
@@ -104,6 +106,7 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         labelKey: 'reporting.fields.report_type',
         kind: { kind: 'text', max: 100 },
         fixed: true,
+        means: { key: 'reporting.means.reportType', values: ['risk'] },
     },
     {
         field: 'schedule_expression',
@@ -116,8 +119,9 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         field: 'concurrency_policy',
         history: 'Concurrency Policy',
         labelKey: 'reporting.fields.concurrency_policy',
-        kind: { kind: 'text', max: 100 },
+        kind: { kind: 'choice', options: ['skip', 'queue', 'fail'] },
         fixed: true,
+        means: { key: 'reporting.means.concurrencyPolicy', values: ['skip', 'queue', 'fail'] },
     },
     {
         field: 'prepared_input_key',
@@ -125,21 +129,21 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         labelKey: 'reporting.fields.prepared_input_key',
         kind: { kind: 'text', max: 500 },
         blank: true,
-        help: 'reporting.detail.preparedInputKeyHint',
+        means: { key: 'reporting.means.preparedInputKey' },
     },
     {
         field: 'pre_processing',
         history: 'Pre-Processing',
         labelKey: 'reporting.fields.pre_processing',
-        kind: { kind: 'text', max: 2000 },
-        blank: true,
+        kind: { kind: 'choice', options: ['execute', 'substitute'] },
+        means: { key: 'reporting.means.preProcessing', values: ['execute', 'substitute'] },
     },
     {
         field: 'post_processing',
         history: 'Post-Processing',
         labelKey: 'reporting.fields.post_processing',
-        kind: { kind: 'text', max: 2000 },
-        blank: true,
+        kind: { kind: 'choice', options: ['execute', 'ignore'] },
+        means: { key: 'reporting.means.postProcessing', values: ['execute', 'ignore'] },
     },
     {
         field: 'is_official',
@@ -492,8 +496,8 @@ function NameChooser({
                                             <Tag>{choice.partyName}</Tag>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2 font-mono text-xs">
-                                        {choice.scheduleExpression}
+                                    <td className="px-4 py-2 text-xs">
+                                        <CronValue expression={choice.scheduleExpression} />
                                     </td>
                                     <td className="px-4 py-2">
                                         <HealthTag

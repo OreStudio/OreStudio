@@ -60,6 +60,7 @@ import {
 } from '../refdata/RecordList.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { CronValue } from '../ui/CronField.js';
 import { REPORTS_EVENTS } from './store.js';
 import {
     Absent,
@@ -242,12 +243,14 @@ function ProblemCount({ value }: { readonly value: number | null }): ReactNode {
     return <>{formatCount(value, language)}</>;
 }
 
-/** The expression the definition runs on, with the next fire when the scheduler states one. */
+/** The schedule the definition runs on, in words, with the next fire when the scheduler states one. */
 function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
     const { t } = useTranslation();
     return (
         <span className="flex flex-col gap-1">
-            <span className="font-mono text-xs">{row.scheduleExpression}</span>
+            <span className="text-xs">
+                <CronValue expression={row.scheduleExpression} />
+            </span>
             {row.nextFireAt !== null && (
                 <span className="text-xs text-ink-faint">
                     <RelativeTime at={row.nextFireAt} />

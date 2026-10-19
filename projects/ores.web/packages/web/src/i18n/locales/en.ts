@@ -3610,6 +3610,9 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            pre_processing: { execute: 'Execute', substitute: 'Substitute' },
+            post_processing: { execute: 'Execute', ignore: 'Ignore' },
+            concurrency_policy: { skip: 'Skip', queue: 'Queue', fail: 'Fail' },
             producer_kind: { SYNTHETIC: 'Synthetic', VENDOR: 'Vendor' },
             process_type: {
                 geometric: 'Geometric',
@@ -4454,6 +4457,34 @@ export const en: SourceCatalogue = {
             post_processing: 'Post-processing',
             is_official: 'Official',
         },
+        means: {
+            name: 'What the report is called. It keys the report’s history and its address, so it is set when the report is made. To use another name, make a new report.',
+            reportType: {
+                risk: 'A full risk run on the compute grid: NPV, cashflows, sensitivities, XVA, VaR and SIMM. The type decides the workflow that runs and the configurations the report can bind.',
+                other: 'The type decides the workflow that runs and the configurations the report can bind.',
+            },
+            concurrencyPolicy: {
+                skip: 'If the last run is still going when the schedule fires, this run is not started. It is recorded as skipped.',
+                queue: 'If the last run is still going when the schedule fires, this run waits and starts when that one completes.',
+                fail: 'If the last run is still going when the schedule fires, this run is recorded as failed and does not start.',
+                other: 'What happens when the schedule fires while the last run is still going.',
+            },
+            preProcessing: {
+                execute:
+                    'Each run builds the engine’s input itself: it gathers the report’s trades and market data and packages them.',
+                substitute:
+                    'Each run skips that build and reads a prepared input archive, named under Prepared input.',
+                other: 'How a run gets the engine’s input.',
+            },
+            preparedInputKey:
+                'The stored archive a run reads its input from when pre-processing is Substitute. It stays empty while runs build their own input.',
+            postProcessing: {
+                execute:
+                    'The engine’s results are read into the result store, so the run’s figures can be read afterwards.',
+                ignore: 'A run records only that the engine produced results. The results are not stored.',
+                other: 'What a run does with the engine’s results.',
+            },
+        },
         detail: {
             record: 'Definition',
             party: 'Party',
@@ -4470,7 +4501,6 @@ export const en: SourceCatalogue = {
             noNextFire: 'The scheduler states no next run.',
             scheduleExpressionHint:
                 'A cron expression. When the scheduler fires it is decided by the job the definition is bound to.',
-            preparedInputKeyHint: 'The key the run reads its prepared input from.',
             isOfficialHint: 'The official definition of its report for this party.',
             gaps: 'This page offers no Delete and no Add: no route removes a definition yet, and a definition is made by the journey that creates a report. It draws no History tab either: the server looks a definition up by its name, and several parties of one tenant share a name.',
         },

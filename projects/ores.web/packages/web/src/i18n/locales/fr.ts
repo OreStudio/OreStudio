@@ -3659,6 +3659,9 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            pre_processing: { execute: 'Exécuter', substitute: 'Substituer' },
+            post_processing: { execute: 'Exécuter', ignore: 'Ignorer' },
+            concurrency_policy: { skip: 'Ignorer', queue: 'Mettre en file', fail: 'Échouer' },
             producer_kind: { SYNTHETIC: 'Synthétique', VENDOR: 'Fournisseur' },
             process_type: {
                 geometric: 'Géométrique',
@@ -4519,6 +4522,34 @@ const fr: SourceCatalogue = {
             post_processing: 'Post-traitement',
             is_official: 'Officielle',
         },
+        means: {
+            name: 'Le nom du rapport. Il sert de clé à son historique et à son adresse : il est fixé à la création du rapport. Pour un autre nom, créez un nouveau rapport.',
+            reportType: {
+                risk: 'Un calcul de risque complet sur la grille : VAN, flux, sensibilités, XVA, VaR et SIMM. Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+                other: 'Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+            },
+            concurrencyPolicy: {
+                skip: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution ne démarre pas. Elle est enregistrée comme ignorée.',
+                queue: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution attend et démarre à la fin de la précédente.',
+                fail: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution est enregistrée comme échouée et ne démarre pas.',
+                other: 'Ce qui se passe quand le calendrier se déclenche alors que l’exécution précédente tourne encore.',
+            },
+            preProcessing: {
+                execute:
+                    'Chaque exécution construit elle-même l’entrée du moteur : elle rassemble les transactions et les données de marché du rapport et les empaquette.',
+                substitute:
+                    'Chaque exécution saute cette construction et lit une archive d’entrée préparée, nommée sous Entrée préparée.',
+                other: 'Comment une exécution obtient l’entrée du moteur.',
+            },
+            preparedInputKey:
+                'L’archive stockée dont une exécution lit son entrée quand le pré-traitement est Substituer. Elle reste vide tant que les exécutions construisent leur propre entrée.',
+            postProcessing: {
+                execute:
+                    'Les résultats du moteur sont lus dans le magasin de résultats, pour que les chiffres de l’exécution restent consultables.',
+                ignore: 'Une exécution enregistre seulement que le moteur a produit des résultats. Ils ne sont pas stockés.',
+                other: 'Ce qu’une exécution fait des résultats du moteur.',
+            },
+        },
         detail: {
             record: 'Définition',
             party: 'Partie',
@@ -4535,7 +4566,6 @@ const fr: SourceCatalogue = {
             noNextFire: "Le planificateur n'énonce aucune prochaine exécution.",
             scheduleExpressionHint:
                 'Une expression cron. Le moment où le planificateur la déclenche est décidé par la tâche à laquelle la définition est liée.',
-            preparedInputKeyHint: "La clé à laquelle l'exécution lit son entrée préparée.",
             isOfficialHint: 'La définition officielle de son rapport pour cette partie.',
             gaps: 'Cette page n’offre ni Supprimer ni Ajouter : aucune route ne supprime encore une définition, et une définition est créée par le parcours qui crée un rapport. Elle ne dessine pas non plus d’onglet Historique : le serveur retrouve une définition par son nom, et plusieurs parties d’un même locataire partagent un nom.',
         },

@@ -35,7 +35,7 @@ import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
-import { CronField } from '../ui/CronField.js';
+import { CronField, CronValue } from '../ui/CronField.js';
 import { cronValid } from '../ui/cron.js';
 import { RelativeTime } from '../ui/Time.js';
 import { Tooltip } from '../ui/Tooltip.js';
@@ -106,6 +106,30 @@ export interface FieldSpec {
      * by its option: the key names a block with one entry for each.
      */
     readonly help?: string;
+    /**
+     * What the field's value means, for a reader who does not know the system.
+     * It is drawn under the value on the page and under the field in the form,
+     * and it replaces the common words about a fixed field. A field with a
+     * vocabulary lists its values, and the key names a block with one entry for
+     * each and an `other` for a value the list lacks.
+     */
+    readonly means?: { readonly key: string; readonly values?: readonly string[] };
+}
+
+/** The words that say what a field's value means, when the field has them. */
+export function meaningOf(
+    t: (key: string) => string,
+    spec: FieldSpec,
+    value: string,
+): string | undefined {
+    if (spec.means === undefined) {
+        return undefined;
+    }
+    const { key, values } = spec.means;
+    if (values === undefined) {
+        return t(key);
+    }
+    return t(`${key}.${values.includes(value) ? value : 'other'}`);
 }
 
 function asked(spec: FieldSpec, values: FieldValues): boolean {
@@ -354,19 +378,22 @@ export function FieldInput({
     const { t } = useTranslation();
     const choices = useChoices(spec.kind, spec.flag);
     const label = labelOf(t, spec);
+    const meaning = meaningOf(t, spec, value);
     const help =
-        spec.help === undefined
-            ? disabled && spec.fixed === true
-                ? { hint: t('refdata.records.fixedHint') }
-                : {}
-            : {
-                  hint:
-                      spec.kind.kind === 'choice'
-                          ? value === ''
-                              ? ''
-                              : t(`${spec.help}.${value}`)
-                          : t(spec.help),
-              };
+        meaning !== undefined && spec.help === undefined
+            ? { hint: meaning }
+            : spec.help === undefined
+              ? disabled && spec.fixed === true
+                  ? { hint: t('refdata.records.fixedHint') }
+                  : {}
+              : {
+                    hint:
+                        spec.kind.kind === 'choice'
+                            ? value === ''
+                                ? ''
+                                : t(`${spec.help}.${value}`)
+                            : t(spec.help),
+                };
     if (spec.kind.kind === 'image') {
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
@@ -795,11 +822,17 @@ export function RecordDetails({
                         <dd className="mt-0.5 text-sm">
                             <DetailValue spec={spec} value={row[spec.field]} />
                         </dd>
-                        {spec.fixed === true && (
-                            <p className="mt-0.5 text-xs text-ink-faint">
-                                {t('refdata.records.fixedHint')}
-                            </p>
-                        )}
+                        {(() => {
+                            const meaning = meaningOf(t, spec, show(row[spec.field]));
+                            const words =
+                                meaning ??
+                                (spec.fixed === true ? t('refdata.records.fixedHint') : undefined);
+                            return (
+                                words !== undefined && (
+                                    <p className="mt-0.5 text-xs text-ink-faint">{words}</p>
+                                )
+                            );
+                        })()}
                     </div>
                 ))}
                 {(extra ?? []).map(([label, value, hint]) => (
@@ -849,7 +882,14 @@ function DetailValue({
         );
     }
     if (spec.kind.kind === 'choice') {
-        return <>{t(`refdata.choices.${spec.field}.${text}`)}</>;
+        return spec.kind.options.includes(text) ? (
+            <>{t(`refdata.choices.${spec.field}.${text}`)}</>
+        ) : (
+            <>{text}</>
+        );
+    }
+    if (spec.kind.kind === 'cron') {
+        return <CronValue expression={text} />;
     }
     return <>{text}</>;
 }

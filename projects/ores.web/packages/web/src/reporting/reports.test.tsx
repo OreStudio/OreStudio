@@ -469,6 +469,40 @@ describe('one report definition', () => {
         expect(html).not.toContain('Schedule expression</label>');
     });
 
+    it('explains what each value means in place of the generic fixed-field words', () => {
+        const page = textOf(detail());
+
+        expect(page).toContain('What the report is called.');
+        expect(page).toContain('A full risk run on the compute grid');
+        expect(page).toContain('The stored archive a run reads its input from');
+        expect(page).not.toContain('never changed here');
+    });
+
+    it('states a known value by its word and explains it', () => {
+        const page = textOf(
+            openedBy(AUDIT_ELSEWHERE, (client) => {
+                client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                    kind: 'record',
+                    detail: {
+                        ...DETAIL,
+                        definition: {
+                            ...DETAIL.definition,
+                            pre_processing: 'execute',
+                            post_processing: 'ignore',
+                            schedule_expression: '30 18 * * 1-5',
+                        },
+                    },
+                } satisfies ReportOpen);
+            }),
+        );
+
+        expect(page).toContain('Execute');
+        expect(page).toContain('At 18:30, Monday through Friday');
+        expect(page).not.toContain('30 18 * * 1-5');
+        expect(page).toContain('Each run builds the engine’s input itself');
+        expect(page).toContain('A run records only that the engine produced results');
+    });
+
     it('states the fields the record holds', () => {
         const page = textOf(detail());
 

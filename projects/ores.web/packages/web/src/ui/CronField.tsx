@@ -78,6 +78,16 @@ export function sayCron(t: Translate, expression: string): string | undefined {
     });
 }
 
+/**
+ * A schedule where a record states it: in words. An expression the builder does
+ * not put in words is shown as it is, because hiding it would hide the schedule.
+ */
+export function CronValue({ expression }: { readonly expression: string }): ReactNode {
+    const { t } = useTranslation();
+    const says = cronValid(expression) ? sayCron(t, expression) : undefined;
+    return says === undefined ? <span className="font-mono">{expression}</span> : <>{says}</>;
+}
+
 export function CronField({
     label,
     value,
@@ -99,7 +109,7 @@ export function CronField({
     const [building, setBuilding] = useState(false);
     const trimmed = value.trim();
     const invalid = trimmed !== '' && !cronValid(trimmed);
-    const shown = trimmed === '' ? '' : ((invalid ? undefined : sayCron(t, trimmed)) ?? trimmed);
+    const says = invalid ? undefined : sayCron(t, trimmed);
     return (
         <div>
             <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-muted">
@@ -109,10 +119,14 @@ export function CronField({
                 <Input
                     id={id}
                     readOnly
-                    value={shown ?? trimmed}
+                    value={says ?? trimmed}
                     placeholder={t('cron.none')}
                     aria-invalid={invalid}
-                    className={cx('cursor-default', invalid && 'border-down')}
+                    className={cx(
+                        'cursor-default',
+                        says === undefined && trimmed !== '' && 'font-mono',
+                        invalid && 'border-down',
+                    )}
                 />
                 <Button
                     type="button"

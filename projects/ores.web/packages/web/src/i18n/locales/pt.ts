@@ -4555,12 +4555,9 @@ const pt: SourceCatalogue = {
             'Este calendário não é nenhuma das formas acima. Mantenha-o como está, escolha um calendário comum, ou edite-o em Avançado.',
         presets: {
             title: 'Calendários comuns',
-            premarket: { name: 'Execução pré-mercado', hint: 'Dias úteis às 07:00' },
-            intraday: {
-                name: 'Verificação intradiária',
-                hint: 'Cada hora das 08:00 às 18:59, em dias úteis',
-            },
-            eod: { name: 'Lote de fim de dia', hint: 'Dias úteis às 18:30' },
+            premarket: { name: 'Execução pré-mercado' },
+            intraday: { name: 'Verificação intradiária' },
+            eod: { name: 'Lote de fim de dia' },
             custom: {
                 name: 'Calendário personalizado',
                 hint: 'Escolha você mesmo as horas e os dias',
@@ -4583,30 +4580,8 @@ const pt: SourceCatalogue = {
         expression: 'Expressão cron',
         expressionHint:
             'Cinco partes: minuto, hora, dia do mês, mês, dia da semana. O agendador segue o relógio do servidor; não conhece calendário de dias úteis ou feriados.',
-        days: {
-            every: 'todos os dias',
-            weekdays: 'de segunda a sexta-feira',
-            weekend: 'aos fins de semana',
-            weekdaysOnly: 'Só dias úteis',
-        },
-        day: {
-            0: 'domingo',
-            1: 'segunda-feira',
-            2: 'terça-feira',
-            3: 'quarta-feira',
-            4: 'quinta-feira',
-            5: 'sexta-feira',
-            6: 'sábado',
-        },
+        weekdaysOnly: 'Só dias úteis',
         dayShort: { 0: 'dom', 1: 'seg', 2: 'ter', 3: 'qua', 4: 'qui', 5: 'sex', 6: 'sáb' },
-        says: {
-            step: { minutes: 'A cada {n} minutos', hour: 'A cada hora', hours: 'A cada {n} horas' },
-            daily: 'Às {time}, {days}',
-            monthly: 'Às {time}, no dia {day} de cada mês',
-            interval: '{step}, {days}',
-            intervalWindow: '{step}, das {from} às {to}, {days}',
-            other: 'Um calendário que o construtor não põe em palavras. É mantido como escrito.',
-        },
     },
 
     permissionWords: {

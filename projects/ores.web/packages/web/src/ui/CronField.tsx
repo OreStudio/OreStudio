@@ -47,44 +47,13 @@ import {
     type Schedule,
 } from './cron.js';
 
-type Translate = (key: string, values?: Record<string, string>) => string;
-
-/** The days a sentence runs on, in words. */
-function daysIn(t: Translate, days: readonly number[]): string {
-    const picked = WEEK.filter((day) => days.includes(day));
-    if (picked.length === 0) {
-        return t('cron.days.every');
-    }
-    if (picked.join() === '1,2,3,4,5') {
-        return t('cron.days.weekdays');
-    }
-    if (picked.join() === '6,0') {
-        return t('cron.days.weekend');
-    }
-    return picked.map((day) => t(`cron.day.${day}`)).join(', ');
-}
-
-/** What an expression means in words, when it is one the builder states. */
-export function sayCron(t: Translate, expression: string): string | undefined {
-    const sentence = describeCron(expression.trim());
-    if (sentence === undefined) {
-        return undefined;
-    }
-    const unit = sentence.values['unit'];
-    return t(sentence.key, {
-        ...sentence.values,
-        ...(unit === undefined ? {} : { step: t(`cron.says.step.${unit}`, sentence.values) }),
-        days: daysIn(t, sentence.days),
-    });
-}
-
 /**
  * A schedule where a record states it: in words. An expression the builder does
  * not put in words is shown as it is, because hiding it would hide the schedule.
  */
 export function CronValue({ expression }: { readonly expression: string }): ReactNode {
-    const { t } = useTranslation();
-    const says = cronValid(expression) ? sayCron(t, expression) : undefined;
+    const { language } = useTranslation();
+    const says = describeCron(expression, language);
     return says === undefined ? <span className="font-mono">{expression}</span> : <>{says}</>;
 }
 
@@ -104,12 +73,12 @@ export function CronField({
     readonly hint?: string | undefined;
     readonly error?: string | undefined;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const id = useId();
     const [building, setBuilding] = useState(false);
     const trimmed = value.trim();
     const invalid = trimmed !== '' && !cronValid(trimmed);
-    const says = invalid ? undefined : sayCron(t, trimmed);
+    const says = describeCron(trimmed, language);
     return (
         <div>
             <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-muted">
@@ -170,12 +139,12 @@ export function CronBuilder({
     readonly onApply: (expression: string) => void;
     readonly onCancel: () => void;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [text, setText] = useState(expression === '' ? PRESETS[0].expression : expression);
     const schedule = parseSchedule(text);
     const preset = PRESETS.find((candidate) => candidate.expression === text.trim());
     const valid = cronValid(text.trim());
-    const says = valid ? sayCron(t, text) : undefined;
+    const says = describeCron(text, language);
     const edit = (patch: Partial<Schedule>): void =>
         setText(cronOf({ ...(schedule ?? STARTING_SCHEDULE), ...patch }));
     return (
@@ -204,7 +173,7 @@ export function CronBuilder({
                 <div className="rounded-md border border-line bg-surface-sunken px-3 py-2">
                     <div className="text-xs text-ink-muted">{t('cron.runs')}</div>
                     <div className="text-sm">
-                        {valid ? (says ?? t('cron.says.other')) : t('cron.invalid')}
+                        {valid ? (says ?? text.trim()) : t('cron.invalid')}
                     </div>
                 </div>
 
@@ -223,7 +192,7 @@ export function CronBuilder({
                             <span>
                                 {t(`cron.presets.${entry.id}.name`)}
                                 <span className="block text-xs text-ink-faint">
-                                    {t(`cron.presets.${entry.id}.hint`)}
+                                    {describeCron(entry.expression, language)}
                                 </span>
                             </span>
                         </label>
@@ -425,7 +394,7 @@ function Controls({
                             variant="ghost"
                             onClick={() => edit({ days: [1, 2, 3, 4, 5] })}
                         >
-                            {t('cron.days.weekdaysOnly')}
+                            {t('cron.weekdaysOnly')}
                         </Button>
                     </div>
                 </div>

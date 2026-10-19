@@ -105,37 +105,25 @@ describe('the schedules the builder states', () => {
     });
 });
 
-describe('the sentence for an expression', () => {
-    it('states a daily run and its days', () => {
-        expect(describeCron('30 18 * * 1-5')).toEqual({
-            key: 'cron.says.daily',
-            values: { time: '18:30' },
-            days: [1, 2, 3, 4, 5],
-        });
-        expect(describeCron('0 7 * * *')?.days).toEqual([]);
+describe('the words for an expression', () => {
+    it('come from one place and read as a sentence in English', () => {
+        expect(describeCron('30 18 * * 1-5', 'en')).toBe('At 18:30, Monday through Friday');
+        expect(describeCron('*/15 * * * *', 'en')).toBe('Every 15 minutes');
+        expect(describeCron('0 9 15 * *', 'en')).toBe('At 09:00, on day 15 of the month');
     });
 
-    it('states an interval with and without a window', () => {
-        expect(describeCron('*/15 * * * *')).toMatchObject({
-            key: 'cron.says.interval',
-            values: { n: '15', unit: 'minutes' },
-        });
-        expect(describeCron('0 8-18 * * 1-5')).toMatchObject({
-            key: 'cron.says.intervalWindow',
-            values: { unit: 'hour', from: '08:00', to: '18:59' },
-        });
-        expect(describeCron('0 */4 * * *')).toMatchObject({ values: { n: '4', unit: 'hours' } });
+    it('come in the language asked for', () => {
+        expect(describeCron('*/5 * * * *', 'fr')).toBe('Toutes les 5 minutes');
+        expect(describeCron('*/5 * * * *', 'pt')).not.toBe(describeCron('*/5 * * * *', 'en'));
     });
 
-    it('states a monthly run', () => {
-        expect(describeCron('0 9 15 * *')).toMatchObject({
-            key: 'cron.says.monthly',
-            values: { time: '09:00', day: '15' },
-        });
+    it('cover an expression the builder has no control for', () => {
+        expect(describeCron('5/15 * * * *', 'en')).toBeDefined();
     });
 
-    it('says nothing of an expression that is not a shape the builder states', () => {
-        expect(describeCron('5/15 * * * *')).toBeUndefined();
-        expect(describeCron('nonsense')).toBeUndefined();
+    it('are none for an expression the server would refuse', () => {
+        expect(describeCron('0 0 9 * * ?', 'en')).toBeUndefined();
+        expect(describeCron('nonsense', 'en')).toBeUndefined();
+        expect(describeCron('', 'en')).toBeUndefined();
     });
 });

@@ -4520,12 +4520,9 @@ export const en: SourceCatalogue = {
             'This schedule is none of the shapes above. Keep it as it is, pick a common schedule, or edit it under Advanced.',
         presets: {
             title: 'Common schedules',
-            premarket: { name: 'Pre-market run', hint: 'Weekdays at 07:00' },
-            intraday: {
-                name: 'Intraday check',
-                hint: 'Every hour from 08:00 to 18:59, on weekdays',
-            },
-            eod: { name: 'End of day batch', hint: 'Weekdays at 18:30' },
+            premarket: { name: 'Pre-market run' },
+            intraday: { name: 'Intraday check' },
+            eod: { name: 'End of day batch' },
             custom: { name: 'Custom schedule', hint: 'Choose the times and days yourself' },
         },
         repeat: 'Repeat',
@@ -4545,30 +4542,8 @@ export const en: SourceCatalogue = {
         expression: 'Cron expression',
         expressionHint:
             'Five parts: minute, hour, day of month, month, day of week. The scheduler runs on the server clock; it knows no business-day or holiday calendar.',
-        days: {
-            every: 'every day',
-            weekdays: 'Monday through Friday',
-            weekend: 'on weekends',
-            weekdaysOnly: 'Weekdays only',
-        },
-        day: {
-            0: 'Sunday',
-            1: 'Monday',
-            2: 'Tuesday',
-            3: 'Wednesday',
-            4: 'Thursday',
-            5: 'Friday',
-            6: 'Saturday',
-        },
+        weekdaysOnly: 'Weekdays only',
         dayShort: { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' },
-        says: {
-            step: { minutes: 'Every {n} minutes', hour: 'Every hour', hours: 'Every {n} hours' },
-            daily: 'At {time}, {days}',
-            monthly: 'At {time}, on day {day} of every month',
-            interval: '{step}, {days}',
-            intervalWindow: '{step}, from {from} to {to}, {days}',
-            other: 'A schedule the builder does not put in words. It is kept as typed.',
-        },
     },
 
     permissionWords: {

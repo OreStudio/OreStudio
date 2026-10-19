@@ -56,8 +56,14 @@ describe('the schedule field', () => {
         expect(html).not.toContain('30 18 * * 1-5');
     });
 
-    it('shows an expression it cannot put in words as it is', () => {
-        expect(field('5/15 * * * *')).toContain('value="5/15 * * * *"');
+    it('puts even an expression the builder has no control for in words', () => {
+        expect(field('5/15 * * * *')).toContain(
+            'value="Every 15 minutes, starting at 5 minutes past the hour"',
+        );
+    });
+
+    it('shows an expression the server would refuse as it is', () => {
+        expect(field('0 0 9 * * ?')).toContain('value="0 0 9 * * ?"');
     });
 
     it('refuses what is not an expression, and says what it needs', () => {
@@ -104,7 +110,7 @@ describe('the schedule builder', () => {
 
     it('offers an interval with its window', () => {
         const html = builder('*/15 8-17 * * 1-5');
-        expect(html).toContain('Every 15 minutes, from 08:00 to 17:59, Monday through Friday');
+        expect(html).toContain('Every 15 minutes, between 08:00 and 17:59, Monday through Friday');
         expect(html).toContain('between');
     });
 

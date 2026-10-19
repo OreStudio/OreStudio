@@ -4585,12 +4585,9 @@ const fr: SourceCatalogue = {
             "Ce calendrier n'est aucune des formes ci-dessus. Gardez-le tel quel, choisissez un calendrier courant, ou modifiez-le sous Avancé.",
         presets: {
             title: 'Calendriers courants',
-            premarket: { name: "Exécution d'avant-marché", hint: 'En semaine à 07:00' },
-            intraday: {
-                name: 'Contrôle intrajournalier',
-                hint: 'Chaque heure de 08:00 à 18:59, en semaine',
-            },
-            eod: { name: 'Traitement de fin de journée', hint: 'En semaine à 18:30' },
+            premarket: { name: "Exécution d'avant-marché" },
+            intraday: { name: 'Contrôle intrajournalier' },
+            eod: { name: 'Traitement de fin de journée' },
             custom: {
                 name: 'Calendrier personnalisé',
                 hint: 'Choisissez vous-même les heures et les jours',
@@ -4613,34 +4610,8 @@ const fr: SourceCatalogue = {
         expression: 'Expression cron',
         expressionHint:
             "Cinq parties : minute, heure, jour du mois, mois, jour de la semaine. Le planificateur suit l'horloge du serveur ; il ne connaît aucun calendrier de jours ouvrés ou de jours fériés.",
-        days: {
-            every: 'chaque jour',
-            weekdays: 'du lundi au vendredi',
-            weekend: 'le week-end',
-            weekdaysOnly: 'En semaine seulement',
-        },
-        day: {
-            0: 'dimanche',
-            1: 'lundi',
-            2: 'mardi',
-            3: 'mercredi',
-            4: 'jeudi',
-            5: 'vendredi',
-            6: 'samedi',
-        },
+        weekdaysOnly: 'En semaine seulement',
         dayShort: { 0: 'dim', 1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam' },
-        says: {
-            step: {
-                minutes: 'Toutes les {n} minutes',
-                hour: 'Chaque heure',
-                hours: 'Toutes les {n} heures',
-            },
-            daily: 'À {time}, {days}',
-            monthly: 'À {time}, le {day} de chaque mois',
-            interval: '{step}, {days}',
-            intervalWindow: '{step}, de {from} à {to}, {days}',
-            other: 'Un calendrier que le constructeur ne met pas en mots. Il est gardé tel que saisi.',
-        },
     },
 
     permissionWords: {

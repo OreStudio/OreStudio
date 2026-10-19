@@ -18,6 +18,11 @@
  *
  */
 
+import cronstrue from 'cronstrue';
+import 'cronstrue/locales/fr';
+import 'cronstrue/locales/pt_PT';
+import type { Language } from '../i18n/languages.js';
+
 /**
  * The cron expression the scheduler reads: five fields, minute hour day month
  * weekday. This file holds what the cron field and its builder agree on, so the
@@ -257,50 +262,28 @@ export function parseSchedule(expression: string): Schedule | undefined {
     return schedule !== undefined && cronOf(schedule) === parts.join(' ') ? schedule : undefined;
 }
 
-/** A sentence for a schedule, as a translation key and the values that fill it. */
-export interface CronSentence {
-    readonly key: string;
-    readonly values: Readonly<Record<string, string>>;
-    /** The days it runs on; empty is every day. The page words them. */
-    readonly days: readonly number[];
-}
-
-const clock = (hour: number, minute = 0): string =>
-    `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+/** The cronstrue locale for each language the interface speaks. */
+const LOCALE: Readonly<Record<Language, string>> = { en: 'en', fr: 'fr', pt: 'pt_PT' };
 
 /**
- * What an expression means, when it is one of the builder's shapes. Any other
- * expression has no sentence, and the field shows the text alone.
+ * An expression in words, in the language given: the one place the codebase
+ * turns a cron expression into a sentence, so the field, the details, the list
+ * and the builder cannot word one schedule two ways. The words come from
+ * cronstrue, a library for this, on a 24-hour clock. An expression the server
+ * would refuse has no words.
  */
-export function describeCron(expression: string): CronSentence | undefined {
-    const schedule = parseSchedule(expression);
-    if (schedule === undefined) {
+export function describeCron(expression: string, language: Language): string | undefined {
+    const text = expression.trim();
+    if (!cronValid(text)) {
         return undefined;
     }
-    const days = schedule.days.length === 7 ? [] : [...schedule.days];
-    if (schedule.repeat === 'monthly') {
-        return {
-            key: 'cron.says.monthly',
-            values: { time: clock(schedule.hour, schedule.minute), day: String(schedule.day) },
-            days: [],
-        };
+    try {
+        return cronstrue.toString(text, {
+            locale: LOCALE[language],
+            use24HourTimeFormat: true,
+            throwExceptionOnParseError: true,
+        });
+    } catch {
+        return undefined;
     }
-    if (schedule.repeat === 'daily') {
-        return {
-            key: 'cron.says.daily',
-            values: { time: clock(schedule.hour, schedule.minute) },
-            days,
-        };
-    }
-    const whole = schedule.from === 0 && schedule.to === 23;
-    return {
-        key: whole ? 'cron.says.interval' : 'cron.says.intervalWindow',
-        values: {
-            n: String(schedule.step < 60 ? schedule.step : schedule.step / 60),
-            unit: schedule.step < 60 ? 'minutes' : schedule.step === 60 ? 'hour' : 'hours',
-            from: clock(schedule.from),
-            to: clock(schedule.to, 59),
-        },
-        days,
-    };
 }

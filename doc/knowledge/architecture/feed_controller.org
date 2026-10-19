@@ -58,12 +58,13 @@ the control plane still has a value to report for that case.
 ** The binding rule
 
 Both paths create the feed's marketdata feed binding from one gate. A
-bound feed is bound and a sandboxed feed is never bound. The binding is
-created with the run token of the feed's collection, so it belongs to the
-party of the collection's grant, whoever or whatever started the feed. A
-start whose collection yields no token binds nothing and logs why. [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]]
+bound feed is bound and a sandboxed feed is never bound. The binding is the
+caller's subscription, so the controller creates it with the caller's bearer
+token, in the caller's party. A start with no caller bearer token binds
+nothing, because there is no party to subscribe: a restore leaves the stored
+bindings as they are. [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]]
 states what the two modes mean, and [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]] states
-where the token comes from.
+which identity the feed itself runs as.
 
 ** Three facts the code shape does not show
 

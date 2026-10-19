@@ -110,7 +110,7 @@ active tenant again, so a quiet binding after a restart is a feed that did not
 start. The log of the producer service names the reason for each feed it skipped.
 There are three:
 
-- The collection holds no run grant, because no person has started it yet.
+- The feed starts from a vintage price and its collection holds no run grant, because no person has started the collection yet.
 - The grant lapsed, because its grantor lost a permission of the role or left.
 - Another running feed holds the same series.
 

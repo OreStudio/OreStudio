@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-19
 #+updated: 2026-10-19
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

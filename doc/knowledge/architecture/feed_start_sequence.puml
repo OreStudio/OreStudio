@@ -42,15 +42,15 @@ iam -> iam : check the audience, the grant, the tenant and the grantor\npermissi
 iam --> syn : run token (five minutes)
 
 syn -> md : read the vintage series and observations\nAuthorization: the run token
-syn -> md : create the feed binding if absent\nAuthorization: the run token
 syn -> syn : start the feed
+syn -> md : create the operator's feed binding if absent\nAuthorization: the operator's token
 
 syn --> op : started
 
 note over syn
-    The operator's token serves the permission check
-    and, once, the consent. Nothing else depends on
-    who pressed Start.
+    The operator's token serves the permission check,
+    the consent and the operator's own binding.
+    The feed itself does not depend on who pressed Start.
 end note
 
 @enduml

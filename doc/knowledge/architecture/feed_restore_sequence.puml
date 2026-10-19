@@ -35,10 +35,10 @@ loop each tenant, the system tenant first
             syn -> iam : iam.v1.ops.exchange_run_grant(grant id, run id)\nAuthorization: the service's own token
             iam --> syn : run token, or refused (grant lapsed)
         end
-        alt a token is held, or the feed reads no data
-            syn -> md : read the vintage, create the binding if absent\nAuthorization: the run token
+        alt a token is held, or the feed has a fixed price
+            syn -> md : read the vintage series and observations\nAuthorization: the run token
             syn -> syn : start the feed
-        else the feed needs a token and has none
+        else the feed starts from a vintage and has no token
             syn -> syn : skip the feed and log the reason
         end
     end
@@ -47,6 +47,7 @@ end
 note over syn
     A restart uses the same exchange as the Start command.
     No person is present, so the stored consent stands in for the operator.
+    A restore creates no binding: the stored bindings stand.
 end note
 
 @enduml

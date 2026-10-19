@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <provider_code>
-     * <reason> <commentary>
+     * <run_grant_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id>
-     * <provider_code> <reason> <commentary> [--version <n>]
+     * <provider_code> <run_grant_id> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <scope> <binding_mode> <name> <description> <enabled>
-     * <dataset_id> <provider_code> <reason> <commentary>
+     * <dataset_id> <provider_code> <run_grant_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

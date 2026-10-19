@@ -127,8 +127,17 @@ public:
 
         start_feed_response resp;
         const auto bearer = ores::nats::service::extract_bearer(msg);
-        const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
         try {
+            const auto token = ctrl_->identity().run_token_for(*target, req_ctx, bearer);
+            if (!token) {
+                resp.success = false;
+                resp.message = token.error();
+                BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+                    << msg.subject << " — feed rejected: " << resp.message;
+                reply(nats_, msg, resp);
+                return;
+            }
+            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, *token};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;

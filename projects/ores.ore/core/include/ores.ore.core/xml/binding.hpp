@@ -80,16 +80,17 @@ struct record_type;
 /**
  * @brief The operations a repeated member needs from the table.
  *
- * A repeated member is a std::vector whose element type only the generated
- * code knows, so growing it, measuring it and reaching into it are three
- * functions the table carries rather than switches the engine makes on a
+ * A repeated member is a std::vector, or a std::deque when its element is a
+ * wide record that must not move. Only the generated code knows the container
+ * and the element type, so growing it, measuring it and reaching into it are
+ * three functions the table carries rather than switches the engine makes on a
  * member's kind. The reader appends, the writer measures and indexes.
  */
 struct vector_ops {
-    /// Appends a default-constructed element to a vector and hands back its
-    /// address.
+    /// Appends a default-constructed element to the container and hands back
+    /// its address.
     void (*append)(void* container, void** slot);
-    /// How many elements the vector holds.
+    /// How many elements the container holds.
     auto (*count)(const void* container) -> std::size_t;
     /// The address of one element, which the caller bounds.
     auto (*at)(const void* container, std::size_t index) -> const void*;

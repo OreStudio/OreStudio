@@ -61,6 +61,8 @@ target_link_libraries(${lib_target_name}
         ores.marketdata.client.lib
         ores.marketdata.core.lib
         ores.iam.client.lib
+        ores.iam.core.lib
+        ores.refdata.core.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib

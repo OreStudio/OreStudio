@@ -8,12 +8,12 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/cut-the-portfolio-vector-growth
-#+pr: 3576
+#+pr: 3579
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
 #+updated: 2026-10-19
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Reading a portfolio spends 32.70% of its instructions in the trade vector's real
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -57,7 +57,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| sizeof of a trade | 346,624 bytes; the next widest record is 13,208 bytes | a throwaway program printing =sizeof= of every generated struct | =7515c50292= |
+| Members of a trade, records held by value included | 11,537; the widest other record is 454 | =generate_xml_bindings.py= member count, printed once while choosing the threshold | =7515c50292= |
+| Instructions, portfolio import test, before | 4,028,918,281; =import_portfolio_with_context= 2,910,831,513 | =valgrind --tool=callgrind ores.ore.core.tests "import_portfolio_all_ore_example_files_can_be_parsed"= | =7515c50292= |
+| Instructions, same test, after | 3,070,700,246; =import_portfolio_with_context= 1,952,347,014 | same command | =a6c7e6f7da= |
+| Instructions, same test, reserve only (throwaway) | 3,027,004,932 | same command, with a fixed =reserve= in =append_to= | =7515c50292= plus a hand edit |
+| XML benchmark | scan, tape and pugi unchanged | =./benchmarks/xml/run.sh= | =16f7dfda83= |
+| Full test binary | 376 cases, 475,402 assertions, all pass | =ores.ore.core.tests= | =a6c7e6f7da= |
 
 * Notes
 
@@ -89,6 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3579][#3579]] | [ore] Hold the repeated children of a wide record in a deque |
 | [[https://github.com/OreStudio/OreStudio/pull/3576][#3576]] | [agile] Scaffold the portfolio vector growth task |
 
 * Review
@@ -98,3 +105,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator now counts the members of each record, records held by value
+included. A record with 1,000 or more keeps its repeated children in a
+=std::deque=, which never moves an element. Four portfolio records qualify:
+=trade=, =component_trade=, =derivative= and =component_sub_trade=. The
+widest record that stays a vector has 454 members, so the threshold sits in a
+gap of more than 10,000. Only =portfolio.cpp= and =portfolio.hpp= change in
+their tables. The other families gain a default template parameter and no other
+change.
+
+Reading the portfolio test falls from 4,028,918,281 to 3,070,700,246
+instructions, 23.8%. The import function alone falls from 2,910,831,513 to
+1,952,347,014, 32.9%, and the binder from 2,310,204,223 to 1,339,979,756,
+42.0%. The 340 KB zero fill of each new trade stays, and a throwaway reserve
+shows no container could remove it: it reaches 3,027,004,932, within 1.4% of the
+deque.
+
+What is left is the shape of =trade=. It holds one member for every instrument
+kind, 346,624 bytes, and a trade uses one. The fill is 33% of the test. A fix
+changes the record, not the container, so it is a separate task and not started.
+
+A test pins the property: trades keep their address while the document grows.
+Run against a plain =std::vector=, the same check fails. I confirmed that with a
+separate program, not by building the old tree again.
+
+The benchmark gate asked for a row because the generated headers sit under the
+watched path. The XML benchmark measures scanning and the tape, not the binder,
+so its numbers did not move.

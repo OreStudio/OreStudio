@@ -85,6 +85,8 @@ struct feed_kind_candidate final {
     std::string display_name;
     bool enabled = false;
     bool auto_start = false;
+    /** The feed starts from a vintage price, so its start reads marketdata. */
+    bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
 
     /** Built lazily: only the vintage verb reads it. */
@@ -109,6 +111,8 @@ struct feed_start_target final {
     domain::scope container_scope = domain::scope::party;
     bool container_found = false;
     bool container_enabled = false;
+    /** The run grant the container holds: the consent its feeds run under. */
+    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief The one startability gate: the row and its container are both

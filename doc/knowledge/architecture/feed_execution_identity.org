@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: A7D1927B-CB42-49A9-94EF-DBB40225274C
+:END:
+#+title: The identity a feed runs as
+#+description: Who may start a feed, why a feed runs as its owning tenant and not as the person who started it, and how a start and a restart obtain the same token.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:identity:iam:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+* Summary
+
+A feed acts for the tenant that owns it. It never acts for the person who
+pressed Start. Starting a feed also subscribes the caller's party to it, and
+that subscription, the feed binding, is the caller's own act. Three questions
+about the feed have three owners. The synthetic service checks
+whether the caller may command the feed. The collection's run grant records that
+a person consented to the feed acting in its tenant and party. A short-lived run
+token, which the service exchanges for the grant at every start, carries the
+authority of the feed. A Start by a person and a restore after a restart use the
+same exchange, so a feed behaves the same either way.
+
+* Detail
+
+** Three questions, three owners
+
+#+ATTR_HTML: :class hug-leading
+| Question | Owner | When it is asked |
+|----------+-------+------------------|
+| May this caller command the feed? | the synthetic service, from the caller's token | at the Start and Stop commands only |
+| Should the feed run? | the feed's =enabled= and =auto_start= flags | at each start and at each restore |
+| What may the running feed read and write? | the run token, from the collection's run grant | at each start |
+
+The caller's token answers the first question and nothing else. It does not
+reach the feed. A feed that a restart starts has no caller, and it needs no
+caller, because the other two questions do not depend on one.
+
+** The consent
+
+A collection of feeds belongs to one tenant and one party. A person's consent
+that its feeds act in that tenant and party is a
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][run grant]]. The synthetic service
+states these choices for it.
+
+#+ATTR_HTML: :class hug-leading
+| Field | Value |
+|-------+-------|
+| =resource= | =synthetic.market_data_generation_config/<collection id>= |
+| =role= | =SyntheticFeedRun= |
+| =audience= | =SyntheticService= |
+| =max_runs=, =not_after= | empty: the grant is standing |
+
+The =SyntheticFeedRun= role holds two permissions and no more:
+=marketdata::market_series:read= and =marketdata::market_observations:read=.
+They let a feed resolve the vintage price that it starts from. A run
+token carries the role's permissions that the grantor holds in the party at the
+moment of the exchange. IAM refuses the grant when the grantor does not hold
+every permission of the role.
+
+The collection stores the grant id in =run_grant_id=. The grant id is not a
+secret. A feed with a fixed price reads no marketdata and needs no token. Only a
+feed that starts from a vintage price holds one.
+
+** When the grant is made, used and ended
+
+- *Made.* A Start by a person on a collection that holds no grant gives the
+  consent. The service creates the grant with the person's token and stores its
+  id on the collection. The person must act in the collection's party.
+- *Used.* Every start exchanges the grant for a run token, whether a person or a
+  restore causes it. The run identifier is the feed config id. The service keeps
+  tokens in a run token cache.
+- *Ended.* A person who holds =iam::run_grants:revoke= revokes the grant, and
+  IAM answers =grant_lapsed= from then on. Deleting a collection leaves its
+  grant in place until someone revokes it.
+- *Lapsed.* IAM answers =grant_lapsed= when the grantor no longer holds the
+  role's permissions or is no longer active. The feed does not start. A restore
+  logs the reason. A Start by a person who holds the permissions is a new consent
+  that replaces the lapsed grant.
+
+A running feed does not need the token. It publishes its ticks under the
+service's own identity. A lapse therefore stops no running feed. It stops the
+next start.
+
+** The Start command
+
+#+caption: Starting a feed: the operator's token serves the permission check, the consent and the operator's own binding. The run token serves the vintage reads.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/feed_start_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/feed_start_sequence.puml][=feed_start_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/feed_start_sequence.puml=.
+
+The permission check happens before anything else. A caller without the kind's
+config permission and the run permission gets =forbidden=, and no grant is
+created.
+
+** The binding is the caller's subscription
+
+A feed binding records that a party consumes a producer source. A Start by a
+person subscribes that person's party, whether the feed was already running or
+not, and a second party that starts the same feed gets a binding of its own.
+The service creates it with the caller's token, in the caller's party. It is the
+caller's act, so it does not use the run token. A restore subscribes no party,
+because the stored bindings stand. A bound feed that a restore starts keeps
+every binding it had.
+
+** The restore
+
+The synthetic service restores its feeds when it starts. The running set is not
+stored. The =enabled= and =auto_start= flags of the configs are the stored form
+of it.
+
+#+caption: Restoring the feeds: every active tenant is walked, and each feed gets its token by the same exchange as a Start.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/feed_restore_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/feed_restore_sequence.puml][=feed_restore_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/feed_restore_sequence.puml=.
+
+The walk reads each tenant's configs in a context of that tenant, opened on the
+tenant's root party. Row-level security shows a tenant context its own
+collections. The party policy shows a party's collection only to a context whose
+visible parties include that party, and the root party's subtree is every party
+of the tenant. A system feed starts only in the pass of the system tenant. A
+tenant that fails is logged and does not stop the others.
+
+** The states of a feed
+
+#+caption: The states of a feed: Start and the restore enter the same starting state, and the running set is not stored.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/feed_run_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/feed_run_states.puml][=feed_run_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/feed_run_states.puml=.
+
+** What can go wrong
+
+#+ATTR_HTML: :class hug-leading
+| Condition | What the feed does | What the person reads |
+|-----------+--------------------+-----------------------|
+| The caller lacks a permission | does not start; no grant is made | =forbidden= |
+| The grantor lacks a permission of the role | no grant is made | IAM's refusal, naming the permission |
+| The grant lapsed or is revoked | does not start | the reason, in the reply or in the log |
+| A vintage-priced feed finds no grant at a restore | is skipped | a log line that names the feed and says a Start gives the consent |
+| IAM does not answer | does not start | the reason, in the reply or in the log |
+| Another feed holds the series | does not start | the name of the holder |
+
+* Patterns used
+
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] —
+  a feed that a restart starts has no caller. A grant, a token exchange and a
+  token cache give it the authority of its tenant and party.
+
+* See also
+
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — the owner of the running feeds and the binding rule.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — IAM's grant, exchange and token cache.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]] — what a bound feed creates when it starts.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.

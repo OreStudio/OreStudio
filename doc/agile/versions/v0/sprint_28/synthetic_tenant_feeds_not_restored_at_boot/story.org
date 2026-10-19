@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: B4DD3D99-6C90-4481-80E0-B4D1D41880A7
+:END:
+#+title: Story: Tenant auto-start feeds are not restored after a services restart
+#+description: After compass services stop/start only the 24 system-tenant feeds run. The 54 ACME auto_start configs do not run, so ingest sees no ticks and plots go empty. Suspect: auto_start_feeds walks registry.targets with one service db context that sees only the system tenant under RLS.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+After a services restart every tenant's auto-start feeds run again, so ingest
+stores ticks and the plots fill. Before, only the 24 system-tenant feeds ran and
+the 54 ACME auto-start feeds did not.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- After services stop/start, the auto-start feeds of the ACME tenant run.
+- The observations table grows with ACME sources after the restart.
+- System feeds start once.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6FEEE41B-07C5-4CB1-A3B0-F0E66A012ACD][Implement: restore every tenant's auto-start feeds at boot]] | DONE | 2026-10-19 | 2026-10-19 | Task for: Tenant auto-start feeds are not restored after a services restart |
+
+* Decisions
+
+- The boot walk visits each active tenant through a context on the tenant's
+  root party. A tenant context alone is not enough: the party policy hides a
+  party's collections from a context with no visible party set.
+- The 13 vintage-priced ACME FX feeds are out of scope. They need tenant
+  authority at boot that the service token does not have.
+
+* Out of scope
+
+- The 13 vintage-priced ACME FX feeds. They need a tenant-scoped way to read
+  series at boot.

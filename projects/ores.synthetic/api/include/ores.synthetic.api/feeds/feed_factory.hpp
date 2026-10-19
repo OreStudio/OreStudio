@@ -49,11 +49,12 @@ struct feed_build_context final {
     ores::nats::service::client& nats;
     ores::nats::service::nats_client& auth_nats;
     /**
-     * @brief Bearer token of the requesting end-user, forwarded as X-Delegated-Authorization
-     * on delegated service-to-service lookups (vintage resolution) so they run in the caller's
-     * tenant/party context. Empty for paths without an end-user session (auto-start).
+     * @brief The run token of the feed's collection, forwarded as X-Delegated-Authorization on
+     * the delegated lookups of a vintage resolution, so they run in the tenant and party of the
+     * collection's run grant whoever starts the feed. Empty for a feed that starts from a fixed
+     * price.
      */
-    std::string caller_bearer_token;
+    std::string run_token;
 };
 
 /**

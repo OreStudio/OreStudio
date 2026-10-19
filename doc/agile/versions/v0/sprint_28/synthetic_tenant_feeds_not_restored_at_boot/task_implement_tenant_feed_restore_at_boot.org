@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 6FEEE41B-07C5-4CB1-A3B0-F0E66A012ACD
+:END:
+#+title: Task: Implement: restore every tenant's auto-start feeds at boot
+#+description: Task for: Tenant auto-start feeds are not restored after a services restart
+#+type: task
+#+level: s1
+#+filetags: :synthetic_tenant_feeds_not_restored_at_boot:sprint_28:v0:
+#+owner: marco
+#+branch: feature/synthetic-tenant-feeds-not-restored-at-boot
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B4DD3D99-6C90-4481-80E0-B4D1D41880A7][Tenant auto-start feeds are not restored after a services restart]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the synthetic service start the auto-start feeds of every active tenant at boot, not only the system tenant's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B4DD3D99-6C90-4481-80E0-B4D1D41880A7][Tenant auto-start feeds are not restored after a services restart]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- After services stop/start, ACME's party-scope feeds run and ingest stores their observations.
+- System feeds still start once.
+
+* Plan
+
+Cause, from the code and a repro in the brave_hopper environment: the boot walk
+=auto_start_feeds= read the feed configs through the service's own database
+context. That context belongs to the system tenant. Row-level security shows it
+the system collections and nothing of any other tenant. A party-scope
+collection is also hidden by the party policy unless the context has a visible
+party set. So the 54 auto-start feeds of the ACME tenant were never seen.
+
+Change, in =ores.synthetic.service/app/application.cpp=:
+
+- The walk runs once for the system tenant, then once for each active tenant.
+- A tenant's context is opened on its root party, so its whole party subtree is
+  visible. A tenant has exactly one root party.
+- A system feed starts only in the system pass, as =feed_run_control= already
+  does for a start request.
+- A failing tenant is logged and does not stop the others.
+- The service links =ores.iam.core.lib= for the tenant list.
+
+The bound-feed binding needs no token at boot. =bind_feed= skips on an empty
+token, but =save_if_absent= ran when the feed first started, so the stored
+binding survives the restart.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Observations before the stop | 9966 to 13059 in 20 s | psql count and max(observation_datetime), twice | origin/main 7515c50292 |
+| Observations after the stop, unfixed | frozen at 16257, newest 12:39:24 | same query, 35 s apart | origin/main 7515c50292 |
+| Feeds started at boot, unfixed | 24, system tenant only | journal of the synthetic service, "Auto-started" | origin/main 7515c50292 |
+| Feeds started at boot, fixed | 24 system plus 41 ACME | same journal line, per tenant | working tree |
+| Observations after the restart, fixed | 16257 to 20970, newest 12:47:08, source synthetic.bloomberg.* | same query, group by source | working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The boot walk now restores the auto-start feeds of every active tenant.
+
+- Repro: fresh =db recreate=, ACME provisioning, then =compass services stop=
+  and =start=. Before the fix the walk started 24 feeds and the observations
+  stopped at the stop time.
+- After the fix the walk starts 24 system feeds and 41 ACME feeds, and the
+  observations table grows with =synthetic.bloomberg.*= sources again.
+- Built with =compass build ores.synthetic.service=. No unit test covers the
+  boot walk, and I did not add one.
+- Not fixed: 13 vintage-priced ACME FX feeds (=price_source= vintage) still
+  fail at boot with =marketdata.v1.market_series.list failed: forbidden=.
+  Their start replays a vintage through the service's system-tenant token.
+  That token lacks =marketdata::market_series:read=, and it would see no ACME
+  series even with it. Those feeds start when a user starts them.

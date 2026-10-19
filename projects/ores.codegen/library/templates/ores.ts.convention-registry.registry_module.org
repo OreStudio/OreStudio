@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 9345F241-0936-4F38-95C5-93BB688A849D
+:END:
+#+title: ores.ts.convention-registry.registry_module
+#+description: The TypeScript module that lists every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=.
+#+type: archetype
+#+output: projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/convention_family_registry.ts
+#+facet: ores.ts.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+Every convention family the conventions document carries, as a TypeScript
+constant: the family key, the entity model that serves it, the protocol subject
+stem, whether the family's table is party-scoped, and how the document writes
+it. The rows and their order are those of the C++ registry header, because both
+come from one derivation.
+
+The module lives beside the generated domain interfaces and is committed, as
+they are, so a regeneration cannot delete a file the web layer imports. It
+names no C++ type. The field names are camelCase, because the module is not a
+wire shape.
+
+The output path is literal because the facet renders from a /component/ model.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/ts_convention_family_registry.ts.mustache=.
+
+#+begin_src mustache :tangle ts_convention_family_registry.ts.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.convention-registry.registry_module.org. Edit the org source. }}
+{{{ts_license}}}
+{{#convention_registry}}
+export type ConventionWriteMode = 'party' | 'by_id' | 'world';
+
+/**
+ * One convention family the conventions document carries.
+ *
+ * key is the family's field name in the document, entity is the entity model
+ * that serves it, subjectStem is the protocol prefix every verb of that entity
+ * shares, partyScoped is true when the family's table carries a party_id
+ * column, and writeMode is how the document writes the family.
+ */
+export interface ConventionFamilyEntry {
+    readonly key: string;
+    readonly entity: string;
+    readonly subjectStem: string;
+    readonly partyScoped: boolean;
+    readonly writeMode: ConventionWriteMode;
+}
+
+/** Every convention family, ordered by family key. */
+export const CONVENTION_FAMILY_ENTRIES: readonly ConventionFamilyEntry[] = [
+{{#families}}
+    {
+        key: '{{key}}',
+        entity: '{{entity}}',
+        subjectStem: '{{subject_stem}}',
+        partyScoped: {{#party_scoped}}true{{/party_scoped}}{{^party_scoped}}false{{/party_scoped}},
+        writeMode: '{{write_mode}}',
+    },
+{{/families}}
+];
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:0502BC6C-73FA-4F88-84BD-0E8F4B8D56B6][ores.ts.convention-registry]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

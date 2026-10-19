@@ -157,11 +157,11 @@ private:
  * market_observation instead of the initial_rate parameter value: the resolved entries'
  * shortest-tenor DEPOSIT entry is looked up in market_observation by (cfg.vintage_source,
  * cfg.vintage_date, that entry's point_id), via a market_data_client delegated with @p
- * caller_bearer_token so the lookup runs in the caller's own tenant/party context
+ * run_token so the lookup runs in the tenant and party of the collection's run grant
  * (market_observation is tenant-scoped under RLS; this service's own service-account token is
- * bound to the system tenant). An empty caller_bearer_token falls back to @p auth_nats's own
- * (undelegated) identity -- e.g. auto-start, which has no end-user session. When cfg.price_source
- * is "fixed" (the default), @p auth_nats and @p caller_bearer_token are unused and the
+ * bound to the system tenant). An empty run_token falls back to @p auth_nats's own
+ * (undelegated) identity, which sees no tenant data. When cfg.price_source
+ * is "fixed" (the default), @p auth_nats and @p run_token are unused and the
  * initial_rate parameter value is used as-is.
  *
  * The publish subject is derived from cfg.source_name under @p binding_mode via
@@ -185,7 +185,7 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const ir_curve_refdata_context& refctx,
     ores::synthetic::domain::binding_mode binding_mode =
         ores::synthetic::domain::binding_mode::bound,
-    const std::string& caller_bearer_token = {});
+    const std::string& run_token = {});
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

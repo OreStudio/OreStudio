@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: DD70A241-4AF5-4AB7-B22F-0DBA7286EC18
+:END:
+#+title: Revoke a collection's run grant when the collection is delet…
+#+description: Revoke a collection's run grant when the collection is deleted. A collection's run grant (feeds_run_as_their_owning_tenant, doc/knowledge/architecture/feed_execution_identity.org) stays standing after its collection is deleted, until a person with iam::run_grants:revoke ends it. The delete of a market data generation config should revoke the grant it holds, as reporting revokes a report definition's grant on unschedule or delete.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

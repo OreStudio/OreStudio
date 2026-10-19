@@ -24,6 +24,7 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <cstdint>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -2562,9 +2563,9 @@ struct equity_option_position_data {
 struct composite_trade_components {
     std::uint64_t present = 0;
     std::vector<std::uint32_t> trade;
-    std::vector<struct component_trade> trade_arena;
+    std::deque<struct component_trade> trade_arena;
     std::vector<std::uint32_t> sub_trade;
-    std::vector<struct component_sub_trade> sub_trade_arena;
+    std::deque<struct component_sub_trade> sub_trade_arena;
 };
 struct composite_trade_data {
     std::uint64_t present = 0;
@@ -4493,7 +4494,7 @@ struct derivative {
     std::uint64_t present = 0;
     std::string id;
     std::vector<std::uint32_t> trade;
-    std::vector<struct component_trade> trade_arena;
+    std::deque<struct component_trade> trade_arena;
     component_sub_trade sub_trade;
 };
 struct portfolio_index_trade_data {
@@ -4504,10 +4505,10 @@ struct portfolio_index_trade_data {
 };
 struct trs_underlying_data {
     std::uint64_t present = 0;
-    std::vector<struct derivative> derivative;
+    std::deque<struct derivative> derivative;
     std::vector<std::uint32_t> trade;
-    std::vector<struct component_trade> trade_arena;
-    std::vector<component_sub_trade> sub_trade;
+    std::deque<struct component_trade> trade_arena;
+    std::deque<component_sub_trade> sub_trade;
     std::vector<struct portfolio_index_trade_data> portfolio_index_trade_data;
 };
 struct trs_return_data_payment_dates_type {
@@ -4749,8 +4750,8 @@ struct component_trade {
 };
 struct cbo_bond_basket_data {
     std::uint64_t present = 0;
-    std::vector<component_trade> trade;
-    std::vector<component_sub_trade> sub_trade;
+    std::deque<component_trade> trade;
+    std::deque<component_sub_trade> sub_trade;
 };
 struct cbotranche {
     std::uint64_t present = 0;
@@ -4999,7 +5000,7 @@ struct trade {
 };
 struct portfolio {
     std::uint64_t present = 0;
-    std::vector<struct trade> trade;
+    std::deque<struct trade> trade;
 };
 
 ORES_ORE_CORE_EXPORT auto portfolio_document() -> const document_type&;

@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 3AD9A98E-C8D0-4351-A1B7-470888A253DB
+:END:
+#+title: Name a set of unrelated refdata kinds that a screen or export groups
+#+description: The data classification page has no name for a set of kinds that a screen, an export or a boundary lists together with no invariant between them. The BFF convention screen is one case: it shows the document families, a composite family and two kinds the conventions document does not carry (tenor and currency pair). The page says a set that needs a screen to be true is not a bundle, and it says a list of several kinds is not a list. It also closes the set of classifications. Decide whether the page needs a new classification for such a set, or whether each case stays several lists with a small hand-written catalogue that the code states as a presentation choice. Then record the decision on the classification page. Found while the BFF family list task moved to the generated registry.
+#+type: capture
+#+level: cross
+#+filetags: :architecture:data_classification:conventions:bff:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide how the architecture names a set of kinds that a screen, an export or a boundary lists together when no invariant joins them. The BFF convention screen lists the document families, one composite family, and two kinds that the conventions document does not carry: tenor and currency pair. The data classification page does not name that set.
+
+* Why
+
+The page says a bundle needs an invariant or an all-or-nothing operation, and that a set which needs a screen to be true is not a bundle. It says a package is bytes that move between systems, and a list of several kinds is not a list. It closes the set of classifications, and it says a data set that fits none is a finding to report. This set fits none, so the BFF keeps a short hand-written catalogue and states in its comments that the catalogue is a screen choice.
+
+Two answers are open. One adds a classification for a set that is grouped for presentation or transport and has no atomicity. The other keeps each case as several lists and accepts the small catalogue. Other screens and exports probably meet the same question, so the decision should come before the next one is built.
+
+* References
+
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle, package and artefact]]
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package catalogue]]
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]]: the BFF family list task in the conventions story.
+
+* See also
+
+-

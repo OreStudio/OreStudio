@@ -33,6 +33,10 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 3. *The decision.* Approve, decline or hold, and a comment. A decline without a comment is refused under the field.
 4. *The outcome.* The state and what happened to the record.
 
+** How it is reached
+
+It is not a workflow of the conventions. It is the Requests screen, because Requests is the one place for every kind of request. The record page of a document carries a Requests tab that lists the requests waiting on it and links here.
+
 ** The UX rules it follows
 
 The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],

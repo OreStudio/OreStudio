@@ -160,8 +160,8 @@
     function render() {
         var body = [setsStep, describeStep, docsStep, reviewStep, requestStep][S.step]();
         document.getElementById('app').innerHTML = M.shell('Reference data', S.person) + '<div class="page">' +
-            M.crumbs([{ t: 'Reference data' }, { t: 'Conventions' }, { t: 'Convention sets' }]) +
-            M.pagehead('Convention sets', 'The named sets of convention documents a report can choose.', M.accessMark(canWrite())) +
+            M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Name a convention set' }], '../see-the-conventions-a-party-uses/') +
+            M.pagehead('Name a convention set', 'The named sets of convention documents a report can choose.', M.accessMark(canWrite())) +
             '<div class="journey">' + M.rail(STEPS, S.step) + '<div class="card">' + body + '</div></div></div>';
         document.getElementById('proto-bar').innerHTML = M.bar([{ v: '0', t: 'Sets' }, { v: '1', t: 'Describe' }, { v: '2', t: 'Documents' },
             { v: '3', t: 'Review' }, { v: '4', t: 'Request' }, { v: 'k.mori', t: 'Read-only person' }], String(S.step));

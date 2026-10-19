@@ -71,6 +71,29 @@
             M.icon(editable ? 'edit' : 'lock_closed') + (editable ? 'Editable' : 'Read only') + '</span>';
     };
 
+    /* The menu of workflows a list or a record page carries. Each line is a
+       verb and its object, and one line about it. items: [{t, d, href}]. */
+    M.workflowMenu = function (items) {
+        if (!items.length) { return ''; }
+        return '<div class="wf" data-wf><button type="button" class="btn" aria-haspopup="menu" aria-expanded="false" data-wf-trigger>Workflows <span class="chev">\u25be</span></button>' +
+            '<div class="sel-menu wf-menu" role="menu" hidden>' + items.map(function (i) {
+                return '<a role="menuitem" href="' + M.esc(i.href) + '"><b>' + M.esc(i.t) + '</b><span>' + M.esc(i.d) + '</span></a>';
+            }).join('') + '</div></div>';
+    };
+    M.wireWorkflowMenus = function (rootEl) {
+        rootEl.querySelectorAll('[data-wf]').forEach(function (w) {
+            var trig = w.querySelector('[data-wf-trigger]');
+            var menu = w.querySelector('.wf-menu');
+            trig.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var open = menu.hidden;
+                document.querySelectorAll('.sel-menu').forEach(function (m) { m.hidden = true; });
+                menu.hidden = !open;
+                trig.setAttribute('aria-expanded', String(open));
+            });
+        });
+    };
+
     M.notice = function (kind, html) { return '<div class="notice ' + kind + '">' + html + '</div>'; };
 
     /* ---------------------------------------------------------------- */
@@ -87,10 +110,11 @@
             M.esc(person.part) + ' · ACME</span></header>';
     };
 
-    M.crumbs = function (items) {
-        return '<div class="crumbs">' + items.map(function (c, i) {
+    M.crumbs = function (items, backHref) {
+        return '<div class="crumbs">' + (backHref ? '<a class="access-link" style="float:right" href="' + M.esc(backHref) + '">\u2039 Back to the conventions</a>' : '') + items.map(function (c, i) {
             var last = i === items.length - 1;
-            return (c.act && !last ? '<a href="#" data-act="' + c.act + '">' + M.esc(c.t) + '</a>' : M.esc(c.t)) +
+            return (c.href && !last ? '<a href="' + M.esc(c.href) + '">' + M.esc(c.t) + '</a>' :
+                c.act && !last ? '<a href="#" data-act="' + c.act + '">' + M.esc(c.t) + '</a>' : M.esc(c.t)) +
                 (last ? '' : '<span class="sep">›</span>');
         }).join('') + '</div>';
     };

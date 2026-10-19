@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2B7E97DF-2F4F-4356-9B6F-615FCCF606DD
 :END:
-#+title: Task: Draw the four convention management prototypes
+#+title: Task: Draw the five convention management prototypes
 #+description: One static prototype for each of the four management journeys, in the conventions prototype group.
 #+type: task
 #+level: s1
@@ -51,10 +51,14 @@ Each management journey has a clickable prototype that follows the UX convention
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Prototypes in the conventions group | 5 | =python3 build/scripts/check_prototype_inventory.py= | this branch |
+| Prototypes in the conventions group | 6 | =python3 build/scripts/check_prototype_inventory.py= | this branch |
 | Swap documents and distinct term sets in the mock data | 320 and 201 | read in the browser from =Mgmt.docs('swap')= and =Mgmt.termSets('swap')= | this branch |
 
 * Notes
+
+** The entity screens come first
+
+The owner asked for the plain entity screens of the conventions, with the other four prototypes as workflows layered on top, as the Workflows menu does for other entities. The fifth prototype, See the conventions a party uses, draws the list of kinds, the list of one kind and the record page. Find, Name a set and Retire are lines in its Workflows menus. Decide stays in the Requests area and has a Requests tab on the record page.
 
 ** UX rules applied
 

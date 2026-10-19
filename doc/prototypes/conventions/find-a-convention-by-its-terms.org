@@ -32,6 +32,10 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 2. *The matches.* The documents that state the terms, with the term columns the person left open beside the key. A notice says how many rows the screen read. A kind with no match says so and offers to add a document. Several keys that state the same terms are noted.
 3. *A match.* The document as a record page: details, the same-terms tab, and the last-changed line. Edit and Delete are drawn for a person who may write, and both lead to the prototype that owns the act.
 
+** How it is reached
+
+It is a line in the Workflows menu of the conventions screens: *Find a convention by its terms*. The trail is Home › Reference data › Find a convention by its terms, and a link returns to the list of the kind. The owner may decide that a filter on the list serves this act better than a workflow. The prototype draws the workflow so the question can be argued.
+
 ** The UX rules it follows
 
 The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],

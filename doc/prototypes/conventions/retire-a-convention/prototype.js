@@ -92,8 +92,8 @@
             rows.map(function (x) { return '<tr><td>' + x[0] + '</td><td class="dim">' + x[1] + '</td><td>' + x[2] + '</td></tr>'; }).join('') + '</tbody></table>';
         h += '<h3>Documents with the same terms</h3>' + (tw.length === 0
             ? '<p class="dim">None yet.</p>'
-            : '<p class="dim">' + tw.length + ' other documents state the same terms, so a run keeps these terms after the delete.</p><p class="mono">' +
-              tw.slice(0, 4).map(M.esc).join(', ') + '</p>');
+            : '<p class="dim">' + tw.length + (tw.length === 1 ? ' other document states' : ' other documents state') + ' the same terms, so a run keeps these terms after the delete.</p><p class="mono">' +
+              tw.slice(0, 4).map(function (x) { return M.esc(x.key); }).join(', ') + '</p>');
         h += M.gap('A set holds no rows and no run records the version it read, so the last two readers cannot be listed. The delete does not check that a document is unreferenced.');
         return h + '<div class="stepfoot">' + M.btn('goto', 'Back', { cls: 'ghost', arg: 0 }) + '<span class="ml-auto"></span>' +
             M.btn('delete', 'Delete', { cls: 'danger', icon: 'delete' }) + '</div>';
@@ -160,7 +160,7 @@
         var d = doc();
         var body = S.step === 0 ? recordPage() : S.step === 1 ? readers() : S.step === 2 ? requestStep() : historyStep();
         document.getElementById('app').innerHTML = M.shell('Reference data', S.person) + '<div class="page">' +
-            M.crumbs([{ t: 'Reference data' }, { t: 'Conventions' }, { t: M.kind(S.kind).label }, { t: d.key }]) +
+            M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Retire a convention' }], '../see-the-conventions-a-party-uses/?kind=' + S.kind + '&key=' + encodeURIComponent(d.key)) +
             '<div class="journey">' + M.rail(STEPS, S.step) + '<div class="card">' + body + '</div></div></div>';
         document.getElementById('proto-bar').innerHTML = M.bar([{ v: '0', t: 'Document' }, { v: '1', t: 'What reads it' },
             { v: 'dialog', t: 'Delete dialog' }, { v: 'waiting', t: 'Waiting' }, { v: 'approved', t: 'Approved' }, { v: 'declined', t: 'Declined' },

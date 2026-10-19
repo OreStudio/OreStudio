@@ -34,6 +34,10 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 4. *Review.* The three fields, the documents named, the reach, and the rule that Market Risk decides.
 5. *The request.* The request waits with its state. The person can withdraw it. A link opens it as a Market Risk approver.
 
+** How it is reached
+
+It is a line in the Workflows menu of the conventions list: *Name a convention set*. It has its own trail, Home › Reference data › Name a convention set, and a link back to the conventions. A set is its own record kind with its own list, and the prototype draws that list as its first step.
+
 ** The UX rules it follows
 
 The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],

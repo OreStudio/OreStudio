@@ -1,0 +1,313 @@
+/* See the conventions a party uses.
+ *
+ * The plain entity screens of the conventions, drawn as the record screen
+ * standard draws every record kind: the list of kinds, the list of one kind's
+ * documents, and the record page of one document. The workflows that manage
+ * conventions sit in the Workflows menu and open as their own pages, and the
+ * requests that wait for a decision are a tab of the record page. A write that
+ * needs a second person says Propose. */
+
+(function () {
+    'use strict';
+
+    var M = window.Mgmt;
+    var Q = M.params();
+
+    var S = {
+        view: Q.get('view') || 'kinds',
+        kind: Q.get('kind') || 'swap',
+        key: Q.get('key') || '',
+        tab: Q.get('tab') || 'details',
+        q: Q.get('q') || '',
+        source: Q.get('source') || 'all',
+        held: Q.get('held') || 'all',
+        sort: { id: 'key', dir: 1 },
+        pgK: { page: 0, size: 15 },
+        pgD: { page: 0, size: 15 },
+        state: Q.get('state') || '',
+        empty: Q.get('empty') === '1',
+        flash: '',
+        person: M.PEOPLE[Q.get('actor')] || M.PEOPLE['m.okafor']
+    };
+    if (Q.get('gaps') === '0') { document.body.classList.add('nogaps'); }
+    if (S.key && Q.get('view') === null) { S.view = 'record'; }
+    if (!M.kind(S.kind)) { S.kind = 'swap'; }
+
+    function canWrite() { return S.person.part === 'Operations' || S.person.part === 'Market Risk'; }
+    function docs() { return S.empty ? [] : M.docs(S.kind); }
+    function doc() { return M.doc(S.kind, S.key) || M.docs(S.kind)[0]; }
+
+    /* Fixtures: the requests that wait on documents. */
+    function requestsFor(d) {
+        if (d.key === 'AED-EIBOR-6M-SWAP') { return [{ id: 'r1', t: 'Change AED swap day count', by: 'M. Okafor', at: '2026-10-17T12:00:00Z' }]; }
+        if (d.key === 'AED-EIBOR-6M-SWAP-201') { return [{ id: 'r3', t: 'Delete AED-EIBOR-6M-SWAP-201', by: 'M. Okafor', at: '2026-10-19T08:00:00Z' }]; }
+        return [];
+    }
+    function waiting(kind) { return kind === 'swap' ? 2 : 0; }
+
+    function workflows(forDoc) {
+        if (!canWrite()) { return []; }
+        if (forDoc) {
+            return [{ t: 'Retire a convention', d: 'Read what depends on a document, then ask for it to be deleted.',
+                href: '../retire-a-convention/?kind=' + S.kind + '&key=' + encodeURIComponent(forDoc.key) + '&actor=' + S.person.id }];
+        }
+        return [
+            { t: 'Find a convention by its terms', d: 'Search a kind for the document that states a set of terms.', href: '../find-a-convention-by-its-terms/?kind=' + (M.modelled(S.kind) ? S.kind : 'swap') + '&actor=' + S.person.id },
+            { t: 'Name a convention set', d: 'Group one document of each kind under a name a report can choose.', href: '../name-a-convention-set/?actor=' + S.person.id },
+            { t: 'Define instrument conventions', d: 'Start from an instrument and walk to the convention that serves it.', href: '../define-the-conventions-for-an-instrument/' }
+        ];
+    }
+
+    /* ------------------------------------------------------------ */
+    /* The list of kinds                                              */
+    /* ------------------------------------------------------------ */
+
+    function kindsView() {
+        var cols = [
+            { id: 'label', h: 'Kind', cell: function (k) { return M.esc(k.label); }, val: function (k) { return k.label; } },
+            { id: 'docs', h: 'Documents', cls: 'right', cell: function (k) { return '<span class="num">' + M.docs(k.key).length + '</span>'; }, val: function (k) { return M.docs(k.key).length; } },
+            { id: 'sets', h: 'Term sets', cls: 'right', cell: function (k) { return M.modelled(k.key) ? '<span class="num">' + M.termSets(k.key) + '</span>' : M.dash(''); }, val: function (k) { return M.modelled(k.key) ? M.termSets(k.key) : 0; } },
+            { id: 'held', h: 'Held for', cell: function (k) { return k.party ? 'ACME' : M.badge('class', 'Whole tenant'); }, val: function (k) { return k.party ? 0 : 1; } },
+            { id: 'wait', h: 'Waiting', cell: function (k) { return waiting(k.key) ? M.badge('pending', waiting(k.key) + ' waiting') : M.dash(''); }, val: function (k) { return waiting(k.key); } }
+        ];
+        var rows = M.KINDS.filter(function (k) {
+            return (!S.q || (k.label + k.key).toLowerCase().indexOf(S.q.toLowerCase()) >= 0) &&
+                (S.held === 'all' || (S.held === 'party') === k.party);
+        });
+        rows = M.sortRows(rows, cols, S.sort.id === 'key' ? { id: 'label', dir: 1 } : S.sort);
+        S.shownKinds = rows.slice(S.pgK.page * S.pgK.size, (S.pgK.page + 1) * S.pgK.size);
+        var acts = M.btn('refresh', 'Refresh', { icon: 'arrow_clockwise' }) + M.workflowMenu(workflows(null));
+        return M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Conventions' }]) +
+            M.pagehead('Conventions', 'The market terms ACME’s instruments are built on, one kind for each instrument family.', acts) +
+            toolbar('Search kinds', [{ id: 'held', all: 'All kinds', opts: [{ v: 'party', t: 'Held for the party' }, { v: 'tenant', t: 'Held for the whole tenant' }], v: S.held }]) +
+            M.notice('info', '<b>10,991 documents</b> across 26 kinds. 2,155 belong to the party and 216 are held once for the tenant.') +
+            (rows.length === 0 ? '<div class="tblstate">No kinds match the search. ' + M.btn('clear', 'Clear', { cls: 'small' }) + '</div>'
+                : M.table(cols, S.shownKinds, { sort: S.sort.id === 'key' ? { id: 'label', dir: 1 } : S.sort })) +
+            M.pager(S.pgK, rows.length) +
+            M.gap('The server holds no count of documents or of distinct term sets for a kind, so the screen reads each list to count. Document counts for the 23 kinds without mock terms are fixtures.');
+    }
+
+    function toolbar(placeholder, filters) {
+        return '<div class="listtools"><div class="searchbox">' + M.icon('search') + '<input type="text" placeholder="' + M.esc(placeholder) + '" data-input="q" value="' + M.esc(S.q) + '"></div>' +
+            filters.map(function (f) {
+                return M.select('f.' + f.id, [{ v: 'all', t: f.all }].concat(f.opts), f.v, { inline: true });
+            }).join('') + '</div>';
+    }
+
+    /* ------------------------------------------------------------ */
+    /* The list of one kind's documents                               */
+    /* ------------------------------------------------------------ */
+
+    function listCols() {
+        var tc = (M.COLUMNS[S.kind] || []).slice(0, 4);
+        return [{ id: 'key', h: 'Key', cell: function (d) { return '<span class="key">' + M.esc(d.key) + '</span>'; }, val: function (d) { return d.key; } }]
+            .concat(tc.map(function (c) { return { id: c.id, h: c.h, cell: function (d) { return M.dash(d.terms[c.id]); }, val: function (d) { return d.terms[c.id] || ''; } }; }))
+            .concat([{ id: 'source', h: 'Source', cell: function (d) { return M.esc(d.source); }, val: function (d) { return d.source; } }]);
+    }
+
+    function listView() {
+        var k = M.kind(S.kind);
+        var cols = listCols();
+        var all = docs();
+        var rows = all.filter(function (d) {
+            return (!S.q || d.key.toLowerCase().indexOf(S.q.toLowerCase()) >= 0) &&
+                (S.source === 'all' || (S.source === 'curated') === (d.source === 'Curated dataset'));
+        });
+        rows = M.sortRows(rows, cols, S.sort);
+        S.shown = rows.slice(S.pgD.page * S.pgD.size, (S.pgD.page + 1) * S.pgD.size);
+        var acts = M.accessMark(canWrite()) + M.btn('refresh', 'Refresh', { icon: 'arrow_clockwise' }) + M.workflowMenu(workflows(null)) +
+            (canWrite() ? M.btn('dialog', 'Add', { cls: 'primary', icon: 'add', arg: 'add' }) : '');
+        var body;
+        if (S.state === 'loading') { body = '<div class="tblstate">Loading…</div>'; }
+        else if (S.state === 'error') { body = M.notice('error', '<b>The ' + M.esc(k.label.toLowerCase()) + ' documents could not be read.</b> The server did not answer. ' + M.btn('retry', 'Retry', { cls: 'small' })); }
+        else if (all.length === 0) { body = '<div class="tblstate">There are no ' + M.esc(k.label.toLowerCase()) + ' documents yet. ' + (canWrite() ? M.btn('dialog', 'Add', { cls: 'small primary', arg: 'add' }) : '') + '</div>'; }
+        else if (rows.length === 0) { body = '<div class="tblstate">No ' + M.esc(k.label.toLowerCase()) + ' documents match the search. ' + M.btn('clear', 'Clear', { cls: 'small' }) + '</div>'; }
+        else { body = M.table(cols, S.shown, { sort: S.sort }); }
+        return M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Conventions', act: 'toKinds' }, { t: k.label }]) +
+            (S.flash ? M.notice('success', S.flash) : '') +
+            M.pagehead(k.label, 'The ' + k.label.toLowerCase() + ' documents ' + (k.party ? 'ACME holds.' : 'held once for the tenant, which every party reads.'), acts) +
+            toolbar('Search by key', [{ id: 'source', all: 'All sources', opts: [{ v: 'curated', t: 'Curated dataset' }, { v: 'authored', t: 'Authored' }], v: S.source }]) +
+            (M.modelled(S.kind) && S.state === '' ? '<p class="listnote">' + all.length + ' documents state ' + M.termSets(S.kind) + ' distinct term sets.</p>' : '') +
+            body + (S.state === '' && rows.length ? M.pager(S.pgD, rows.length) : '') +
+            M.gap('The list filter takes <span class="mono">id_one_of</span> and nothing else, so the search above matches the key through a read of every page. A filter on the term columns is the gap that the Find workflow draws.');
+    }
+
+    /* ------------------------------------------------------------ */
+    /* The record page of one document                                */
+    /* ------------------------------------------------------------ */
+
+    function versions(d) {
+        var v = [];
+        if (d.version >= 2) {
+            v.push({ n: 2, by: 'm.okafor', at: '2026-10-12T09:20:00Z', code: 'common.rectification', note: 'Corrected the float frequency', diff: [['Float frequency', 'Quarterly', 'Semi-Annual']] });
+        }
+        v.push({ n: 1, by: d.modifiedBy, at: d.recordedAt, code: d.reason, note: d.commentary, diff: null });
+        return v;
+    }
+
+    function recordView() {
+        var d = doc();
+        var k = M.kind(S.kind);
+        var reqs = requestsFor(d);
+        var w = canWrite();
+        var acts = M.accessMark(w) + (w ? M.btn('dialog', 'Edit', { icon: 'edit', arg: 'edit' }) : '') + M.workflowMenu(workflows(d));
+        var tabs = [['details', 'Details'], ['requests', 'Requests' + (reqs.length ? ' (' + reqs.length + ')' : '')], ['history', 'History']];
+        var body;
+        if (S.tab === 'requests') {
+            body = reqs.length === 0 ? '<p class="dim">None yet.</p>' :
+                '<table class="rows"><thead><tr><th>Request</th><th>Asked by</th><th>State</th><th>Asked</th></tr></thead><tbody>' + reqs.map(function (r) {
+                    return '<tr><td><a href="../decide-a-convention-change/?actor=t.brandt&request=' + r.id + '">' + M.esc(r.t) + '</a></td><td>' + M.esc(r.by) + '</td><td>' + M.badge('pending', 'Pending') + '</td><td>' + M.relTime(r.at) + '</td></tr>';
+                }).join('') + '</tbody></table>';
+        } else if (S.tab === 'history') {
+            body = '<ol class="timeline">' + versions(d).map(function (v, i) {
+                return '<li><div class="when">' + M.relTime(v.at) + '</div><div><div class="head"><b>' + (v.n === 1 ? 'Created' : 'Changed') + '</b><span class="mono">' + M.esc(d.key) + ' v' + v.n + '</span><span class="mono dim">' + M.esc(v.code) + '</span><span class="dim">' + M.esc(v.by) + '</span>' +
+                    (i === 0 ? '<span class="cur" title="Current version">Current version</span>' : '') +
+                    (i > 0 && w ? M.btn('revert', 'Revert to this version', { cls: 'small ghost', icon: 'arrow_rotate_counterclockwise', arg: v.n }) : '') + '</div><p class="note">' + M.esc(v.note) + '</p>' +
+                    (v.diff ? '<details><summary>Details</summary><table class="diff"><thead><tr><th>Field</th><th>Was</th><th>Now</th></tr></thead><tbody>' +
+                        v.diff.map(function (r) { return '<tr class="changed"><td>' + M.esc(r[0]) + '</td><td class="was">' + M.esc(r[1]) + '</td><td class="now">' + M.esc(r[2]) + '</td></tr>'; }).join('') + '</tbody></table></details>' : '') + '</div></li>';
+            }).join('') + '</ol>';
+        } else {
+            var cols = M.COLUMNS[S.kind];
+            body = (cols ? '<dl class="fields">' + cols.map(function (c) { return '<div><dt>' + M.esc(c.h) + '</dt><dd>' + M.dash(d.terms[c.id]) + '</dd></div>'; }).join('') + '</dl>'
+                : '<p class="dim">The terms of this kind are not drawn in the prototype.</p>') +
+                '<div class="lastchanged">Last changed: version ' + d.version + ' · ' + M.esc(d.modifiedBy) + ' · ' + M.relTime(d.recordedAt) + ' · ' + M.esc(d.reason) + ' · “' + M.esc(d.commentary) + '”</div>' +
+                (k.party ? '' : M.notice('warn', '<b>Every party reads this document.</b> It is held once for the tenant.')).replace(/^/, '<div style="margin-top:16px"></div>');
+        }
+        return M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Conventions', act: 'toKinds' }, { t: k.label, act: 'toList' }, { t: d.key }]) +
+            (S.flash ? M.notice('success', S.flash) : '') +
+            M.pagehead(d.key, d.key + ' · version ' + d.version, acts).replace('<h1>', '<h1 class="mono">') +
+            '<div class="tabs">' + tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-arg="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' + body;
+    }
+
+    /* ------------------------------------------------------------ */
+    /* Add and Edit                                                   */
+    /* ------------------------------------------------------------ */
+
+    var D = null;
+
+    function openDialog(mode) {
+        var cols = M.COLUMNS[S.kind] || [];
+        var orig = {};
+        if (mode === 'edit') { cols.forEach(function (c) { orig[c.id] = doc().terms[c.id] || ''; }); }
+        D = { mode: mode, key: mode === 'edit' ? doc().key : '', vals: JSON.parse(JSON.stringify(orig)), orig: orig, reason: '', commentary: '', tried: false };
+        drawDialog();
+    }
+
+    function changed() {
+        return Object.keys(D.orig).filter(function (id) { return (D.vals[id] || '') !== D.orig[id]; });
+    }
+
+    function syncText() {
+        var k = document.querySelector('[data-input=dkey]');
+        if (k) { D.key = k.value; }
+        var c = document.querySelector('[data-input=dcomment]');
+        if (c) { D.commentary = c.value; }
+    }
+
+    function drawDialog() {
+        var k = M.kind(S.kind);
+        var cols = M.COLUMNS[S.kind] || [];
+        var add = D.mode === 'add';
+        var keyBad = D.tried && add && (!D.key.trim() || M.doc(S.kind, D.key.trim()));
+        var reasons = M.CHANGE_REASONS.amend.filter(function (r) { return changed().length ? r.v !== 'common.non_material_update' : r.v === 'common.non_material_update'; });
+        var reasonBad = D.tried && !add && !D.reason;
+        var html = '<h2>' + (add ? 'Add ' + M.esc(k.label.toLowerCase()) + ' document' : 'Edit ' + M.esc(D.key)) + '</h2>' +
+            '<p class="lede">' + (add ? 'A new document is written with the reason New record.' : 'Change the terms, then say why.') + '</p>' +
+            '<div class="field' + (keyBad ? ' bad' : '') + '"><span class="lbl">Key <span class="req">(' + (add ? 'required' : 'fixed') + ')</span></span><input type="text" data-input="dkey" value="' + M.esc(D.key) + '"' + (add ? '' : ' disabled') + '>' +
+            (keyBad ? '<p class="msg">' + (D.key.trim() ? 'A document with the key “' + M.esc(D.key.trim()) + '” exists.' : 'Give the document a key.') + '</p>' : '') + '</div>' +
+            (cols.length ? '<div class="grid2">' + cols.map(function (c) {
+                var opts = (c.optional ? [{ v: '', t: 'Not stated' }] : []).concat(c.options);
+                return '<div class="field"><span class="lbl">' + M.esc(c.h) + '</span>' + M.select('d.' + c.id, opts, D.vals[c.id] === undefined ? '' : D.vals[c.id], { placeholder: 'Choose…' }) + '</div>';
+            }).join('') + '</div>' : '<p class="dim">The terms of this kind are not drawn in the prototype.</p>') +
+            (add ? '' : '<div class="field' + (reasonBad ? ' bad' : '') + '"><span class="lbl">Reason <span class="req">(required)</span></span>' + M.select('dreason', reasons, D.reason, { placeholder: 'Choose a reason' }) +
+                (reasonBad ? '<p class="msg">Choose a reason for the change.</p>' : '') + '</div><div class="field"><span class="lbl">Commentary</span><textarea data-input="dcomment">' + M.esc(D.commentary) + '</textarea></div>') +
+            M.notice('info', 'Market Risk decides this change. Nothing changes until it approves, and you cannot approve your own request.') +
+            '<div class="foot">' + M.btn('cancel', 'Cancel', { cls: 'ghost', icon: 'dismiss' }) + M.btn('propose', 'Propose', { cls: 'primary', disabled: !add && changed().length === 0 && D.reason !== 'common.non_material_update' && false }) + '</div>';
+        M.dialog(html, true);
+        M.wireSelects(document.getElementById('dialog-scrim'), function (id, v) {
+            syncText();
+            if (id === 'dreason') { D.reason = v; } else { D.vals[id.slice(2)] = v; D.reason = changed().length && D.reason === 'common.non_material_update' ? '' : D.reason; }
+            drawDialog();
+        });
+    }
+
+    /* ------------------------------------------------------------ */
+
+    function render() {
+        var body = S.view === 'kinds' ? kindsView() : S.view === 'list' ? listView() : recordView();
+        document.getElementById('app').innerHTML = M.shell('Reference data', S.person) + '<div class="page">' + body + '</div>';
+        document.getElementById('proto-bar').innerHTML = M.bar([{ v: 'kinds', t: 'Kinds' }, { v: 'list', t: 'Swap list' }, { v: 'record', t: 'A document' },
+            { v: 'err', t: 'Read error' }, { v: 'readonly', t: 'Read-only person' }], S.view);
+        var app = document.getElementById('app');
+        M.wireSelects(app, function (id, v) {
+            if (id === 'pagesize') { (S.view === 'kinds' ? S.pgK : S.pgD).size = Number(v); (S.view === 'kinds' ? S.pgK : S.pgD).page = 0; }
+            else if (id === 'f.held') { S.held = v; S.pgK.page = 0; }
+            else if (id === 'f.source') { S.source = v; S.pgD.page = 0; }
+            render();
+        });
+        M.wireWorkflowMenus(app);
+        var qi = document.querySelector('[data-input=q]');
+        if (qi) {
+            qi.addEventListener('input', function () {
+                S.q = qi.value; S.pgK.page = 0; S.pgD.page = 0;
+                var pos = qi.selectionStart; render();
+                var n = document.querySelector('[data-input=q]'); n.focus(); n.setSelectionRange(pos, pos);
+            });
+        }
+        if (Q.get('menu') === '1' && !render.menuShown) { render.menuShown = true; var m = document.querySelector('.wf-menu'); if (m) { m.hidden = false; } }
+    }
+
+    document.addEventListener('click', function (e) {
+        var tr = e.target.closest('tr[data-row]');
+        if (tr && S.view === 'kinds') { S.kind = S.shownKinds[Number(tr.getAttribute('data-row'))].key; S.q = ''; S.pgD.page = 0; S.source = 'all'; S.view = 'list'; render(); return; }
+        if (tr && S.view === 'list') { S.key = S.shown[Number(tr.getAttribute('data-row'))].key; S.tab = 'details'; S.flash = ''; S.view = 'record'; render(); return; }
+        var b = e.target.closest('[data-act]');
+        if (!b || b.closest('.sel')) { return; }
+        var name = b.getAttribute('data-act');
+        var arg = b.getAttribute('data-arg');
+        if (name === 'bar') { return bar(arg); }
+        if (name === 'gaps') { document.body.classList.toggle('nogaps'); render(); return; }
+        if (name === 'toKinds') { S.view = 'kinds'; S.q = ''; S.flash = ''; render(); }
+        else if (name === 'toList') { S.view = 'list'; S.q = ''; render(); }
+        else if (name === 'tab') { S.tab = arg; render(); }
+        else if (name === 'sort') { S.sort = { id: arg, dir: S.sort.id === arg ? -S.sort.dir : 1 }; render(); }
+        else if (name === 'pg') { var st = S.view === 'kinds' ? S.pgK : S.pgD; M.pageStep(st, arg, S.view === 'kinds' ? M.KINDS.length : docs().length); render(); }
+        else if (name === 'clear') { S.q = ''; S.source = 'all'; S.held = 'all'; render(); }
+        else if (name === 'refresh') { S.flash = ''; render(); }
+        else if (name === 'retry') { S.state = ''; render(); }
+        else if (name === 'dialog') { openDialog(arg); }
+        else if (name === 'cancel') { M.closeDialog(); }
+        else if (name === 'propose') {
+            syncText();
+            D.tried = true;
+            if (D.mode === 'add' && (!D.key.trim() || M.doc(S.kind, D.key.trim()))) { drawDialog(); return; }
+            if (D.mode === 'edit' && !D.reason) { drawDialog(); return; }
+            M.closeDialog();
+            S.flash = '<b>Request raised.</b> Market Risk decides it. Nothing changes until it approves. <a href="../decide-a-convention-change/?actor=t.brandt">Open Requests</a>';
+            render();
+        }
+        else if (name === 'revert') {
+            M.dialog('<h2>Revert to version ' + M.esc(arg) + '?</h2><p class="lede">The values of version ' + M.esc(arg) + ' are written back as a new version. No version is lost.</p>' +
+                M.notice('info', 'Market Risk decides this change. Nothing changes until it approves.') +
+                '<div class="foot">' + M.btn('cancel', 'Cancel', { cls: 'ghost', icon: 'dismiss' }) + M.btn('cancel', 'Propose', { cls: 'primary' }) + '</div>');
+        }
+    });
+    document.addEventListener('keydown', function (e) {
+        var tr = e.target.closest && e.target.closest('tr[data-row]');
+        if (tr && e.key === 'Enter') { tr.click(); }
+    });
+
+    function bar(arg) {
+        S.flash = '';
+        if (arg === 'readonly') { S.person = M.PEOPLE['k.mori']; render(); return; }
+        if (arg === 'err') { S.view = 'list'; S.state = 'error'; render(); return; }
+        S.state = '';
+        S.view = arg;
+        if (arg === 'record' && !S.key) { S.key = 'AED-EIBOR-6M-SWAP'; S.kind = 'swap'; }
+        if (arg === 'list') { S.kind = 'swap'; }
+        render();
+    }
+
+    render();
+    if (Q.get('dialog') === 'add' || Q.get('dialog') === 'edit') { openDialog(Q.get('dialog')); }
+})();

@@ -33,6 +33,10 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 3. *The request.* The request with its state: pending, approved, declined or withdrawn. A person can withdraw a pending request.
 4. *The history.* The versions of the document newest first, with the field difference and Revert on every version but the current one.
 
+** How it is reached
+
+It is a line in the Workflows menu of one document's record page: *Retire a convention*. The record page offers no plain Delete, because the delete needs the reach panel and a second person. The owner may decide that Delete stays a button whose dialog carries the reach. The trail is Home › Reference data › Retire a convention.
+
 ** The UX rules it follows
 
 The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],

@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 664E6C87-FB84-47B9-84EE-E1E9433CD2A4
+:END:
+#+title: See the conventions a party uses prototype
+#+description: The plain entity screens of the conventions: the list of the 26 kinds, the list of one kind's documents and the record page of one document, with the management workflows layered on top in a Workflows menu.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:conventions:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:see-the-conventions-a-party-uses/][the prototype]] |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Conventions prototypes]]       |
+
+* Summary
+
+This prototype argues that the conventions need the same plain entity screens as
+every other record kind, and that the management journeys sit on top of them as
+workflows. It answers to
+[[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The page marks each place where the server does not provide
+what the screen needs.
+
+* Detail
+
+** The three screens
+
+1. *The list of kinds.* One row for each of the 26 kinds, with the number of
+   documents, the number of distinct term sets, whether the kind is held for the
+   party or for the whole tenant, and the requests that wait. It has a search, a
+   filter on what the kind is held for, sort and a pager.
+2. *One kind's documents.* The key first, then the main term columns and the
+   source. It has a search on the key, a filter on the source, sort and a pager.
+   Refresh, Workflows and Add stand at the right of the header. The states are
+   loading, no records, no match and a read error with Retry.
+3. *One document.* A record page with the Details, Requests and History tabs.
+   Edit opens a dialog that asks for a reason and a commentary. The Requests tab
+   lists the requests that wait on the document and links to the decision.
+
+** The workflows on top
+
+The Workflows menu holds the guided runs: *Find a convention by its terms*,
+*Name a convention set* and *Define instrument conventions* on the lists, and
+*Retire a convention* on a record page. Each line has the workflow's name and one
+line about it. A line is drawn only for a person who may start the workflow.
+Each workflow opens as its own page with its own trail and a link back here.
+Add and Edit stay buttons, because they are one record and one write. A write
+that needs a second person says Propose, as it does inside the workflows.
+
+** The UX rules it follows
+
+The screens follow [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]],
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] and
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. The access mark
+says Editable or Read only, and an action a person may not take is not drawn.
+Keys are monospace, an empty value is a muted dash, and a time is relative with
+the exact time on hover. The strings are English only.
+
+** States, by query string
+
+=?view=kinds|list|record=, =?kind=, =?key=, =?tab=details|requests|history=, =?q=,
+=?source=curated|authored=, =?held=party|tenant=, =?actor=m.okafor|k.mori=,
+=?dialog=add|edit=, =?menu=1=, =?state=loading|error=, =?empty=1=.
+
+** What is fake
+
+Three of the 26 kinds carry mock documents: swap, deposit and the IBOR index. The
+other 23 list three documents with no terms. The server holds no count of the
+documents or of the term sets of a kind, so the screen reads each list to count.
+The requests that wait are fixtures.
+
+** Where the code lives
+
+=doc/prototypes/conventions/see-the-conventions-a-party-uses/=. The page is
+=index.html= with its own =prototype.js=. =management.css= and =management.js= are
+shared by copy with the four workflow prototypes.
+
+** Verdict
+
+Open. The question for review is whether the list of kinds is a screen of its own
+or a header of the list of one kind. The journey reads kind by kind, so the
+prototype draws both.
+
+* See also
+
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — the journey this prototype answers.
+- [[file:index.org][Conventions prototypes]] — the group page.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the method and the rules.

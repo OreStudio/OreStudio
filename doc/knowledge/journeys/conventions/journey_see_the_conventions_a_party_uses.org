@@ -157,11 +157,14 @@ that no row needs opening to be understood.
 
 * Prototype
 
-No prototype answers this journey today. The prototype that used to draw the
-26-kind table inside the reporting group has been retired: it was built on a
-conventions configuration that carries no children, and the conventions are now
-named convention sets rather than a per-kind list a person assembles. This pass
-writes no prototype.
+A clickable prototype draws this journey:
+[[file:../../../prototypes/conventions/see-the-conventions-a-party-uses/][prototype]], with its design note
+[[file:../../../prototypes/conventions/see-the-conventions-a-party-uses.org][see-the-conventions-a-party-uses]].
+It draws the plain entity screens: the list of the 26 kinds, the list of one
+kind's documents and the record page of one document. The management journeys
+are workflows layered on top of those screens, in a Workflows menu. The
+prototype that used to draw the 26-kind table inside the reporting group has been
+retired: it was built on a conventions configuration that carries no children.
 
 Conventions are named convention sets: a set carries a name, a purpose and a
 description, a system holds few of them, and a report binds one by choosing it.

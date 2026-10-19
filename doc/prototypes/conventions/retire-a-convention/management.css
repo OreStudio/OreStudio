@@ -476,3 +476,12 @@ a { color: var(--accent-bright); }
 .crumbs a, .shell-head a, a.btn { color: inherit; }
 a.btn.primary { color: #06121f; }
 a.btn.danger { color: var(--bad); }
+
+.wf { display: inline-block; position: relative; }
+.wf .btn { white-space: nowrap; }
+.wf-menu { left: auto; right: 0; min-width: 320px; padding: 4px; }
+.wf-menu a { display: block; text-decoration: none; color: var(--ink); border-radius: 6px; padding: 8px 12px; }
+.wf-menu a:hover { background: var(--panel-2); }
+.wf-menu a b { display: block; font-weight: 500; font-size: 13px; }
+.wf-menu a span { display: block; font-size: 12px; color: var(--ink-faint); }
+.access-link { font-size: 12px; }

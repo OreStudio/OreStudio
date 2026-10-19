@@ -152,9 +152,7 @@
     function render() {
         var body = S.step === 0 ? stepTerms() : S.step === 1 ? stepMatches() : stepMatch();
         document.getElementById('app').innerHTML = M.shell('Reference data', S.person) + '<div class="page">' +
-            M.crumbs(S.step === 2
-                ? [{ t: 'Reference data' }, { t: 'Conventions' }, { t: M.kind(S.kind).label, act: 'goto1' }, { t: S.key || '' }]
-                : [{ t: 'Reference data' }, { t: 'Conventions', act: 'goto0' }, { t: 'Find by terms' }]) +
+            M.crumbs([{ t: 'Home' }, { t: 'Reference data' }, { t: 'Find a convention by its terms' }], '../see-the-conventions-a-party-uses/?view=list&kind=' + S.kind) +
             (S.step === 2 ? '' : M.pagehead('Find a convention by its terms', 'Which document of a kind states these terms, or none does.', '')) +
             '<div class="journey">' + M.rail(STEPS, S.step) + '<div class="card">' + body + '</div></div></div>';
         document.getElementById('proto-bar').innerHTML = M.bar([{ v: '0', t: 'Terms' }, { v: '1', t: 'Matches' }, { v: '2', t: 'A match' }, { v: 'fail', t: 'Server error' }], String(S.step));

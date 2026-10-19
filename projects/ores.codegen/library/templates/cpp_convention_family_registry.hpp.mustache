@@ -53,6 +53,24 @@ inline constexpr convention_family_entry convention_families[] = {
 inline constexpr std::size_t convention_family_count =
     sizeof(convention_families) / sizeof(convention_families[0]);
 
+/**
+ * @brief A convention family by its position in the table.
+ *
+ * A switch over this enumeration with no default fails to compile when a
+ * family arrives that the switch does not handle, and the assertions below
+ * tie every enumerator to the table row of the same key.
+ */
+enum class convention_family_key : std::size_t {
+{{#families}}
+    {{key}},
+{{/families}}
+};
+
+{{#families}}
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::{{key}})].key ==
+              "{{key}}");
+{{/families}}
+
 }
 
 #endif

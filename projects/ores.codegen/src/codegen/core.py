@@ -49,8 +49,15 @@ _SHELL_AGGREGATOR_TEMPLATES = {
 # :func:`convention_family_context`.
 _CONVENTION_REGISTRY_TEMPLATES = {
     "cpp_convention_family_registry.hpp.mustache",
-    "cpp_convention_family_apply.inc.mustache",
-    "cpp_convention_family_apply_includes.inc.mustache",
+    "cpp_convention_family_units.hpp.mustache",
+    "cpp_convention_family_dispatch.cpp.mustache",
+}
+
+# The per-family unit renders once for each family entity, from that entity's
+# own model, and reads the one registry entry that entity is. See
+# :func:`convention_unit_context`.
+_CONVENTION_FAMILY_UNIT_TEMPLATES = {
+    "cpp_convention_family_unit.cpp.mustache",
 }
 
 # Maps #+type: frontmatter values to model-type strings.
@@ -2698,6 +2705,21 @@ def shell_command_surface(projects_dir, component):
     return enabled, local_units
 
 
+def _convention_family_row(entry):
+    """One registry entry, with the one-hot mode flags a Mustache section needs."""
+    return {
+        'key': entry.key,
+        'entity': entry.entity,
+        'domain_type': entry.domain_type,
+        'subject_stem': entry.subject_stem,
+        'party_scoped': entry.party_scoped,
+        'write_mode': entry.write_mode,
+        'is_party': entry.write_mode == 'party',
+        'is_by_id': entry.write_mode == 'by_id',
+        'is_world': entry.write_mode == 'world',
+    }
+
+
 def convention_family_context(project_root):
     """The convention family list, projected for the registry templates.
 
@@ -2705,39 +2727,34 @@ def convention_family_context(project_root):
     :func:`convention_family_registry.discover_entries` from the reference-data
     entity models that declare ``#+convention_family:``. This function only
     projects it onto the shape the templates read: one ``families`` list in
-    family-key order, the ``repositories`` the includes fragment emits, and the
-    ``party``, ``by_id`` and ``world`` groupings the apply and read bodies loop
-    over. Each family carries the one-hot mode flags a Mustache section needs,
-    because the mustache language has no equality test.
+    family-key order. Each family carries the one-hot mode flags a Mustache
+    section needs, because the mustache language has no equality test.
     """
     # Deferred import: the registry module reads the modelling tree, and the
     # facet is one of many the generator loads.
     from . import convention_family_registry
 
-    families = []
-    for entry in convention_family_registry.discover_entries(Path(project_root)):
-        families.append({
-            'key': entry.key,
-            'entity': entry.entity,
-            'domain_type': entry.domain_type,
-            'subject_stem': entry.subject_stem,
-            'party_scoped': entry.party_scoped,
-            'write_mode': entry.write_mode,
-            'is_party': entry.write_mode == 'party',
-            'is_by_id': entry.write_mode == 'by_id',
-            'is_world': entry.write_mode == 'world',
-        })
     return {
         'component': convention_family_registry.COMPONENT,
-        'families': families,
-        'repositories': [
-            {'repository': repository}
-            for repository in sorted(
-                f"{family['entity']}_repository" for family in families)],
-        'party': [family for family in families if family['is_party']],
-        'by_id': [family for family in families if family['is_by_id']],
-        'world': [family for family in families if family['is_world']],
+        'families': [
+            _convention_family_row(entry)
+            for entry in convention_family_registry.discover_entries(
+                Path(project_root))],
     }
+
+
+def convention_unit_context(project_root, entity):
+    """The one registry entry an entity model is, for its per-family unit.
+
+    A model that is not a convention family has no unit, so the facet renders
+    nothing for it and this raises rather than rendering an empty file.
+    """
+    from . import convention_family_registry
+
+    for entry in convention_family_registry.discover_entries(Path(project_root)):
+        if entry.entity == entity:
+            return _convention_family_row(entry)
+    raise ValueError(f"{entity!r} is not a convention family entity")
 
 
 # The templates whose body reads the composite family's service view. The
@@ -6551,6 +6568,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             and model_type == 'component'):
         data['convention_registry'] = convention_family_context(
             _repo_root_from(model_path))
+
+    # The per-family unit reads the one registry entry the rendered entity is.
+    if (target_template in _CONVENTION_FAMILY_UNIT_TEMPLATES
+            and model_type == 'domain_entity'):
+        data['convention_unit'] = convention_unit_context(
+            _repo_root_from(model_path),
+            data['domain_entity']['entity_singular'])
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()

@@ -222,6 +222,104 @@ inline constexpr convention_family_entry convention_families[] = {
 inline constexpr std::size_t convention_family_count =
     sizeof(convention_families) / sizeof(convention_families[0]);
 
+/**
+ * @brief A convention family by its position in the table.
+ *
+ * A switch over this enumeration with no default fails to compile when a
+ * family arrives that the switch does not handle, and the assertions below
+ * tie every enumerator to the table row of the same key.
+ */
+enum class convention_family_key : std::size_t {
+    average_ois,
+    bma_basis_swap,
+    bond_yield,
+    cds,
+    cms_spread_option,
+    commodity_forward,
+    commodity_future,
+    convention,
+    cross_currency_basis,
+    cross_currency_fix_float,
+    deposit,
+    fra,
+    future,
+    fx_option,
+    ibor_index,
+    inflation_swap,
+    intraday_power_load,
+    ois,
+    overnight_index,
+    swap,
+    swap_index,
+    tenor_basis_swap_long_short,
+    tenor_basis_swap_pay_receive,
+    tenor_basis_two_swap,
+    zero,
+    zero_inflation_index,
+};
+
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::average_ois)]
+                  .key == "average_ois");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::bma_basis_swap)]
+                  .key == "bma_basis_swap");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::bond_yield)]
+                  .key == "bond_yield");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::cds)].key ==
+              "cds");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::cms_spread_option)].key ==
+    "cms_spread_option");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::commodity_forward)].key ==
+    "commodity_forward");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::commodity_future)]
+                  .key == "commodity_future");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::convention)]
+                  .key == "convention");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::cross_currency_basis)]
+        .key == "cross_currency_basis");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::cross_currency_fix_float)]
+        .key == "cross_currency_fix_float");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::deposit)].key ==
+              "deposit");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::fra)].key ==
+              "fra");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::future)].key ==
+              "future");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::fx_option)].key ==
+              "fx_option");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::ibor_index)]
+                  .key == "ibor_index");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::inflation_swap)]
+                  .key == "inflation_swap");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::intraday_power_load)].key ==
+    "intraday_power_load");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::ois)].key ==
+              "ois");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::overnight_index)]
+                  .key == "overnight_index");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::swap)].key ==
+              "swap");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::swap_index)]
+                  .key == "swap_index");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::tenor_basis_swap_long_short)]
+                  .key == "tenor_basis_swap_long_short");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::tenor_basis_swap_pay_receive)]
+                  .key == "tenor_basis_swap_pay_receive");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::tenor_basis_two_swap)]
+        .key == "tenor_basis_two_swap");
+static_assert(convention_families[static_cast<std::size_t>(convention_family_key::zero)].key ==
+              "zero");
+static_assert(
+    convention_families[static_cast<std::size_t>(convention_family_key::zero_inflation_index)]
+        .key == "zero_inflation_index");
+
 }
 
 #endif

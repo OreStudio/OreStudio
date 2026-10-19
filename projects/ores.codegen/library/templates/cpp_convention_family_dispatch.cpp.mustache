@@ -1,0 +1,82 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.dispatch.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#include "convention_family_apply.hpp"
+#include "convention_family_units.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
+#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <cstddef>
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::refdata::service {
+
+namespace {
+
+struct family_unit {
+    std::string_view key;
+    void (*apply)(const ores::database::context&,
+                  const std::string&,
+                  conventions_apply_result&);
+    std::vector<std::string> (*read)(const ores::database::context&);
+};
+
+// One row per registry family, in the registry's order. A family with no row
+// fails the first assertion, and a row out of order fails the second.
+constexpr family_unit units[] = {
+{{#families}}
+    {"{{key}}", &convention_family::apply_{{key}}, &convention_family::read_{{key}}_payloads},
+{{/families}}
+};
+
+static_assert(std::size(units) == domain::convention_family_count,
+              "Every convention family needs a unit.");
+
+constexpr bool units_follow_the_registry() {
+    for (std::size_t i = 0; i < std::size(units); ++i)
+        if (units[i].key != domain::convention_families[i].key)
+            return false;
+    return true;
+}
+
+static_assert(units_follow_the_registry(), "The units follow the registry's order.");
+
+const family_unit* unit_of(const std::string& family) {
+    for (const auto& unit : units)
+        if (unit.key == family)
+            return &unit;
+    return nullptr;
+}
+
+}
+
+// Staged families: the unit for one family decodes its payload into its own
+// type, so this unit reflects none.
+bool apply_staged_family(const ores::database::context& ctx,
+                         const std::string& family,
+                         const std::string& payload,
+                         conventions_apply_result& result) {
+    const auto* unit = unit_of(family);
+    if (!unit)
+        return false;
+    unit->apply(ctx, payload, result);
+    return true;
+}
+
+// Payload reads: each unit reads one family's live rows and serialises each as
+// its own type, so an in-process caller sees the bytes the wire carries.
+std::vector<std::string> read_family_payloads(const ores::database::context& ctx,
+                                              const std::string& family) {
+    const auto* unit = unit_of(family);
+    if (!unit)
+        throw std::logic_error("The registry does not know the convention family '" + family + "'.");
+    return unit->read(ctx);
+}
+
+}
+{{/convention_registry}}

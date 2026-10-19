@@ -42,7 +42,7 @@ A convention is declared once, in its own entity, and carries only its own field
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A51392C5-F7CE-419C-9671-7F648E83C36C][Model each convention family on its own]] | STARTED | 2026-10-17 | | Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives. |
+| [[id:A51392C5-F7CE-419C-9671-7F648E83C36C][Model each convention family on its own]] | DONE | 2026-10-17 | 2026-10-19 | Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives. |
 | [[id:941E929E-5A51-412F-8092-479F907727C5][Generate a protocol and handler per family]] | DONE | 2026-10-17 | 2026-10-17 | Codegen emits each family's messaging in one registrar translation unit, which includes the generated handler header. The aggregate translation unit still compiles, so the MSVC limit is narrowed and not yet gone. |
 | [[id:DF403F87-5783-4145-A143-BCF03D54CFBE][Declare the conventions bundle]] | DONE | 2026-10-17 | 2026-10-18 | A bundle is a set of related families of one owner applied as one unit. The import applies every family refdata owns in one unit of work, atomically, and reports per family. |
 | [[id:61D203C8-663C-408D-9940-F6100996861A][Rewire the ORE path to families and packages]] | STARTED | 2026-10-17 | | The importer maps a conventions file into per-family messages or one bundle request. The ORE file is a package at the boundary, never a wire type. The exporter reassembles from per-family reads taken at one instant. |

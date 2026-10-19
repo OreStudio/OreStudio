@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 390E401F-EF5C-4E3F-BB18-48A00D37CAA9
+:END:
+#+title: ores.cpp.convention-family
+#+description: The per-family unit of the conventions service: one translation unit for each convention family entity that opts in.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+default: disabled
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is the node for the =ores.cpp.convention-family= facet of the
+codegen template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page.
+
+* Summary
+
+A convention family is an entity model that declares =#+convention_family:=.
+This facet renders, for each such entity that opts in, one translation unit
+holding that family's two functions: the apply of one staged payload and the
+read of its live rows as payloads. The unit decodes and serialises the
+family's own type and no other, so no translation unit of the conventions
+service instantiates the serialisation of two families. That is the budget the
+=check_translation_unit_budget= gate holds.
+
+The facet is opt-in per entity, with
+=:ores.cpp.convention-family.enabled: true= in the model's property drawer. The
+family facts the template reads are the registry's, so the unit agrees with
+the registry header and the dispatch by construction.
+
+* Mustache incantations
+
+The archetype reads one context, =convention_unit=, which the generator builds
+only for this facet's template. It carries the family's =key=, =entity=,
+=domain_type= and the =is_party=, =is_by_id= and =is_world= flags of its write
+mode.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:601253FF-0A74-4B01-959D-BBA6166105BB][ores.cpp.convention-family.unit]] | The apply and payload-read functions of one convention family, in a translation unit of their own. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]] — the component-level registry, units header and dispatch.

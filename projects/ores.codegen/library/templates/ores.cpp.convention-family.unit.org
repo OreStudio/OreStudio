@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 601253FF-0A74-4B01-959D-BBA6166105BB
+:END:
+#+title: ores.cpp.convention-family.unit
+#+description: The apply and payload-read functions of one convention family, in a translation unit of their own.
+#+type: archetype
+#+output: projects/{component_core_dir}/src/service/convention_family_{entity}.cpp
+#+facet: ores.cpp.convention-family
+#+model_types: domain_entity
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+One translation unit for one convention family. =apply_<key>= decodes one
+staged payload into the family's own type, stamps the session's party on it and
+writes it in the family's mode: a party family replaces the party's rows, a
+by-id family replaces the rows the payload names, and a world family adds only
+the rows the tenant lacks. =read_<key>_payloads= serialises the family's live
+rows the way the wire carries them. The unit includes one repository header and
+reflects one type.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_unit.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_unit.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-family.unit.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_unit}}
+#include "convention_family_units.hpp"
+#include "conventions_row_helpers.hpp"
+#include "ores.refdata.core/repository/{{entity}}_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+namespace ores::refdata::service::convention_family {
+
+void apply_{{key}}(const ores::database::context& ctx,
+                   const std::string& payload,
+                   {{^is_world}}[[maybe_unused]] {{/is_world}}conventions_apply_result& result) {
+    const auto decoded = rfl::json::read<{{domain_type}}>(payload);
+    if (!decoded)
+        throw std::runtime_error(
+            "Staged conventions payload for family "
+            "\"{{key}}\" does not decode.");
+    auto rows = std::vector<{{domain_type}}>{std::move(*decoded)};
+    ores::service::messaging::stamp(rows.front(), ctx);
+{{#is_world}}
+    add_missing_world_rows(ctx,
+                           ores::refdata::repository::{{entity}}_repository(),
+                           std::move(rows),
+                           result.world_kept);
+{{/is_world}}
+{{^is_world}}
+    {{#is_party}}replace_party_rows{{/is_party}}{{#is_by_id}}replace_rows_by_id{{/is_by_id}}(ctx,
+                       ores::refdata::repository::{{entity}}_repository(),
+                       std::move(rows));
+{{/is_world}}
+}
+
+std::vector<std::string> read_{{key}}_payloads(const ores::database::context& ctx) {
+    std::vector<std::string> payloads;
+    for (const auto& row : ores::refdata::repository::{{entity}}_repository().read_latest(ctx))
+        payloads.push_back(rfl::json::write(row));
+    return payloads;
+}
+
+}
+{{/convention_unit}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:390E401F-EF5C-4E3F-BB18-48A00D37CAA9][ores.cpp.convention-family]]
+- [[id:52719EAF-3C58-4278-9DD7-784BBFC4DC0B][ores.cpp.convention-registry.unit_declarations]] — the declarations this unit defines.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

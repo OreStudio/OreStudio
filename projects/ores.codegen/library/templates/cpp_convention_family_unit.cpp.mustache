@@ -1,0 +1,46 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-family.unit.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_unit}}
+#include "convention_family_units.hpp"
+#include "conventions_row_helpers.hpp"
+#include "ores.refdata.core/repository/{{entity}}_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+namespace ores::refdata::service::convention_family {
+
+void apply_{{key}}(const ores::database::context& ctx,
+                   const std::string& payload,
+                   {{^is_world}}[[maybe_unused]] {{/is_world}}conventions_apply_result& result) {
+    const auto decoded = rfl::json::read<{{domain_type}}>(payload);
+    if (!decoded)
+        throw std::runtime_error(
+            "Staged conventions payload for family "
+            "\"{{key}}\" does not decode.");
+    auto rows = std::vector<{{domain_type}}>{std::move(*decoded)};
+    ores::service::messaging::stamp(rows.front(), ctx);
+{{#is_world}}
+    add_missing_world_rows(ctx,
+                           ores::refdata::repository::{{entity}}_repository(),
+                           std::move(rows),
+                           result.world_kept);
+{{/is_world}}
+{{^is_world}}
+    {{#is_party}}replace_party_rows{{/is_party}}{{#is_by_id}}replace_rows_by_id{{/is_by_id}}(ctx,
+                       ores::refdata::repository::{{entity}}_repository(),
+                       std::move(rows));
+{{/is_world}}
+}
+
+std::vector<std::string> read_{{key}}_payloads(const ores::database::context& ctx) {
+    std::vector<std::string> payloads;
+    for (const auto& row : ores::refdata::repository::{{entity}}_repository().read_latest(ctx))
+        payloads.push_back(rfl::json::write(row));
+    return payloads;
+}
+
+}
+{{/convention_unit}}

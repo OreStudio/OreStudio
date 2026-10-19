@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 52719EAF-3C58-4278-9DD7-784BBFC4DC0B
+:END:
+#+title: ores.cpp.convention-registry.unit_declarations
+#+description: The declarations of the per-family apply and payload-read functions, one pair per convention family, so the dispatch unit names no family type.
+#+type: archetype
+#+output: projects/ores.refdata/core/src/service/convention_family_units.hpp
+#+facet: ores.cpp.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+The header the dispatch unit and every per-family unit include. It states one
+apply function and one payload-read function per convention family, taking and
+returning only strings, so including it instantiates the serialisation of no
+family. The definitions live in the per-family units that the
+[[id:390E401F-EF5C-4E3F-BB18-48A00D37CAA9][ores.cpp.convention-family]] facet renders.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_units.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_units.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.unit_declarations.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#ifndef ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_UNITS_HPP
+#define ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_UNITS_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::refdata::service::convention_family {
+
+// One pair per convention family. Each pair is defined in a translation unit
+// of its own, so no unit instantiates the serialisation of two families.
+{{#families}}
+
+void apply_{{key}}(const ores::database::context& ctx,
+                   const std::string& payload,
+                   conventions_apply_result& result);
+
+std::vector<std::string> read_{{key}}_payloads(const ores::database::context& ctx);
+{{/families}}
+
+}
+
+#endif
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

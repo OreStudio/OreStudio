@@ -8,7 +8,7 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/rewire-the-ore-path-to-families
-#+pr:
+#+pr: 3567
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -26,11 +26,11 @@ The ORE path stops handing refdata one value that holds every family. It maps a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | The service path imports through begin, stage and commit. The run store still saves and loads one whole document. |
-| Waiting on   | Task 1, which deletes the aggregate the run store uses. |
-| Next         | Move the run store onto the same per-family path. Then take the export reads at one instant, which is task 7. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3567][#3567]] | [agile] Close the rewire task |
 | [[https://github.com/OreStudio/OreStudio/pull/3475][#3475]] | [ore,refdata] Move the ORE path onto the conventions import |
 
 * Review
@@ -89,3 +90,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The ORE path no longer hands refdata one value that holds every family. A conventions file splits into a package of one bundle and the FX projection. The run store and the run configuration operations apply and read that bundle, and the exporter reads each family on its own and joins the rows back into the file.
+
+What shipped:
+
+- #3542 and #3554 wrote and read a bundle of family payloads in the caller's transaction.
+- #3562 made the package the ORE boundary and moved both production callers onto it.
+- #3564 deleted the aggregate, the whole-document service and the mapper pair, which was the work this task waited on.
+
+Acceptance, point by point:
+
+- The importer maps a file into per-family payloads, and no message carries every family. Met.
+- The exporter reads each family on its own and rebuilds the file from those reads. Met.
+- The conventions file is a package at the boundary, and no refdata type that holds every family reaches ores.ore. Met.
+- A file imported and exported unchanged produces the file it started from. Met, and the pinned export digests and the run store round trip prove it.
+
+The export reads at one instant are task 7, which stays open on its own.

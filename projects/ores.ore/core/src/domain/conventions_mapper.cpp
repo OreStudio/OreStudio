@@ -19,11 +19,15 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/emitter.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <functional>
 #include <map>
 #include <rfl/json.hpp>
 #include <sstream>
@@ -35,34 +39,179 @@ using namespace ores::logging;
 
 namespace {
 
-domain::futureDateGenerationRule parse_date_generation_rule(const std::string& v) {
-    using rule = domain::futureDateGenerationRule;
-    if (v == "IMM")
-        return rule::IMM;
-    if (v == "FirstDayOfMonth")
-        return rule::FirstDayOfMonth;
-    if (v == "IMMAUD")
-        return rule::IMMAUD;
-    if (v == "SecondThursday")
-        return rule::SecondThursday;
-    if (v == "IMMNZD")
-        return rule::IMMNZD;
-    if (v == "IMMCAD")
-        return rule::IMMCAD;
-    if (v == "IMMEUR")
-        return rule::IMMEUR;
-    throw std::runtime_error("Unknown future date generation rule: " + v);
-}
+namespace xg = xml::generated::conventions;
+using xml::record_reader;
+using xml::record_writer;
 
-domain::overnightIndexFutureNettingType parse_future_netting_type(const std::string& v) {
-    using netting = domain::overnightIndexFutureNettingType;
-    if (v == "Averaging")
-        return netting::Averaging;
-    if (v == "Compounding")
-        return netting::Compounding;
-    throw std::runtime_error("Unknown overnight index future netting type: " + v);
-}
+// Each table maps every spelling the schema allows for an enumeration to the
+// canonical code the refdata columns hold.
+using code_table = std::map<std::string, std::string, std::less<>>;
 
+const code_table business_day_conventions = {
+    {"F", "Following"},
+    {"Following", "Following"},
+    {"FOLLOWING", "Following"},
+    {"MF", "ModifiedFollowing"},
+    {"ModifiedFollowing", "ModifiedFollowing"},
+    {"Modified Following", "ModifiedFollowing"},
+    {"MODIFIEDF", "ModifiedFollowing"},
+    {"MODFOLLOWING", "ModifiedFollowing"},
+    {"P", "Preceding"},
+    {"Preceding", "Preceding"},
+    {"PRECEDING", "Preceding"},
+    {"MP", "ModifiedPreceding"},
+    {"ModifiedPreceding", "ModifiedPreceding"},
+    {"Modified Preceding", "ModifiedPreceding"},
+    {"MODIFIEDP", "ModifiedPreceding"},
+    {"HMMF", "HalfMonthModifiedFollowing"},
+    {"HalfMonthModifiedFollowing", "HalfMonthModifiedFollowing"},
+    {"HalfMonthMF", "HalfMonthModifiedFollowing"},
+    {"Half Month Modified Following", "HalfMonthModifiedFollowing"},
+    {"HALFMONTHMF", "HalfMonthModifiedFollowing"},
+    {"NEAREST", "Nearest"},
+    {"NONE", "Unadjusted"},
+    {"NotApplicable", "Unadjusted"},
+    {"U", "Unadjusted"},
+    {"Unadjusted", "Unadjusted"},
+    {"INDIFF", "Unadjusted"},
+};
+
+const code_table day_counters = {
+    {"A360", "ACT/360"},
+    {"Actual/360", "ACT/360"},
+    {"ACT/360", "ACT/360"},
+    {"Act/360", "ACT/360"},
+    {"A360 (Incl Last)", "ACT/360 (incl. last)"},
+    {"Actual/360 (Incl Last)", "ACT/360 (incl. last)"},
+    {"ACT/360 (Incl Last)", "ACT/360 (incl. last)"},
+    {"A365", "ACT/365.FIXED"},
+    {"A365F", "ACT/365.FIXED"},
+    {"Actual/365 (Fixed)", "ACT/365.FIXED"},
+    {"Actual/365 (fixed)", "ACT/365.FIXED"},
+    {"ACT/365.FIXED", "ACT/365.FIXED"},
+    {"ACT/365", "ACT/365.FIXED"},
+    {"Act/365", "ACT/365.FIXED"},
+    {"ACT/365L", "ACT/365L"},
+    {"Act/365L", "ACT/365L"},
+    {"Act/365 (Canadian Bond)", "ACT/365 (Canadian Bond)"},
+    {"T360", "T360"},
+    {"30/360", "30/360"},
+    {"30/360 US", "30/360"},
+    {"30/360 (US)", "30/360"},
+    {"30/360 NASD", "30/360"},
+    {"30U/360", "30/360"},
+    {"30US/360", "30/360"},
+    {"30/360 (Bond Basis)", "30/360"},
+    {"ACT/nACT", "ACT/nACT"},
+    {"30E/360 (Eurobond Basis)", "30E/360"},
+    {"30/360 AIBD (Euro)", "30E/360"},
+    {"30E/360.ICMA", "30E/360"},
+    {"30E/360 ICMA", "30E/360"},
+    {"30E/360", "30E/360"},
+    {"30E/360E", "30E/360"},
+    {"30E/360.ISDA", "30E/360.ISDA"},
+    {"30E/360 ISDA", "30E/360.ISDA"},
+    {"30/360 German", "30/360 (German)"},
+    {"30/360 (German)", "30/360 (German)"},
+    {"30/360 Italian", "30/360 (Italian)"},
+    {"30/360 (Italian)", "30/360 (Italian)"},
+    {"ActActISDA", "ACT/ACT.ISDA"},
+    {"ACT/ACT.ISDA", "ACT/ACT.ISDA"},
+    {"Actual/Actual (ISDA)", "ACT/ACT.ISDA"},
+    {"ActualActual (ISDA)", "ACT/ACT.ISDA"},
+    {"ACT/ACT", "ACT/ACT.ISDA"},
+    {"Act/Act", "ACT/ACT.ISDA"},
+    {"ACT29", "ACT/ACT.ISDA"},
+    {"ACT", "ACT/ACT.ISDA"},
+    {"ActActISMA", "ACT/ACT.ISMA"},
+    {"Actual/Actual (ISMA)", "ACT/ACT.ISMA"},
+    {"ActualActual (ISMA)", "ACT/ACT.ISMA"},
+    {"ACT/ACT.ISMA", "ACT/ACT.ISMA"},
+    {"ActActICMA", "ACT/ACT.ISMA"},
+    {"Actual/Actual (ICMA)", "ACT/ACT.ISMA"},
+    {"ActualActual (ICMA)", "ACT/ACT.ISMA"},
+    {"ACT/ACT.ICMA", "ACT/ACT.ISMA"},
+    {"ActActAFB", "ACT/ACT.AFB"},
+    {"ACT/ACT.AFB", "ACT/ACT.AFB"},
+    {"Actual/Actual (AFB)", "ACT/ACT.AFB"},
+    {"1/1", "1/1"},
+    {"BUS/252", "BUS/252"},
+    {"Business/252", "BUS/252"},
+    {"Actual/365 (No Leap)", "NL/365"},
+    {"Act/365 (NL)", "NL/365"},
+    {"NL/365", "NL/365"},
+    {"Actual/365 (JGB)", "ACT/365 (JGB)"},
+    {"Simple", "Simple"},
+    {"Year", "Year"},
+    {"A364", "ACT/364"},
+    {"Actual/364", "ACT/364"},
+    {"Act/364", "ACT/364"},
+    {"ACT/364", "ACT/364"},
+    {"Month", "Month"},
+};
+
+const code_table frequencies = {
+    {"Z", "Once"},
+    {"Once", "Once"},
+    {"A", "Annual"},
+    {"Annual", "Annual"},
+    {"S", "Semiannual"},
+    {"Semiannual", "Semiannual"},
+    {"Q", "Quarterly"},
+    {"Quarterly", "Quarterly"},
+    {"B", "Bimonthly"},
+    {"Bimonthly", "Bimonthly"},
+    {"M", "Monthly"},
+    {"Monthly", "Monthly"},
+    {"L", "Lunarmonth"},
+    {"Lunarmonth", "Lunarmonth"},
+    {"W", "Weekly"},
+    {"Weekly", "Weekly"},
+    {"D", "Daily"},
+    {"Daily", "Daily"},
+};
+
+const code_table compoundings = {
+    {"Simple", "Simple"},
+    {"Compounded", "Compounded"},
+    {"Continuous", "Continuous"},
+    {"SimpleThenCompounded", "SimpleThenCompounded"},
+};
+
+const code_table date_rules = {
+    {"Backward", "Backward"},
+    {"Forward", "Forward"},
+    {"Zero", "Zero"},
+    {"ThirdWednesday", "ThirdWednesday"},
+    {"Twentieth", "Twentieth"},
+    {"TwentiethIMM", "TwentiethIMM"},
+    {"OldCDS", "OldCDS"},
+    {"CDS", "CDS"},
+    {"CDS2015", "CDS2015"},
+    {"ThirdThursday", "ThirdThursday"},
+    {"ThirdFriday", "ThirdFriday"},
+    {"MondayAfterThirdFriday", "MondayAfterThirdFriday"},
+    {"TuesdayAfterThirdFriday", "TuesdayAfterThirdFriday"},
+    {"LastWednesday", "LastWednesday"},
+    {"EveryThursday", "EveryThursday"},
+};
+
+// A day counter's canonical code is not always a spelling the schema allows,
+// so writing one back needs the spelling. A code that is already a spelling
+// is written as it stands.
+const std::map<std::string, std::string, std::less<>> day_counter_spellings = {
+    {"ACT/360", "Actual/360"},
+    {"ACT/360 (incl. last)", "A360 (Incl Last)"},
+    {"ACT/365.FIXED", "A365F"},
+    {"ACT/365 (Canadian Bond)", "Act/365 (Canadian Bond)"},
+    {"30/360 (German)", "30/360 German"},
+    {"30/360 (Italian)", "30/360 Italian"},
+    {"ACT/ACT.ISDA", "ActActISDA"},
+    {"ACT/ACT.ISMA", "ActActISMA"},
+    {"ACT/ACT.AFB", "ActActAFB"},
+    {"ACT/365 (JGB)", "Actual/365 (JGB)"},
+    {"ACT/364", "A364"},
+};
 
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
@@ -91,106 +240,137 @@ boost::uuids::uuid provisional_uuid() {
 }
 
 // ---------------------------------------------------------------------------
-// Reverse parse helpers — canonical string → XSD enum
+// Reading a record
+//
+// A member the document leaves out reads as the value an unset member has, as
+// the generated binding it replaces did: an empty text, a zero, a false. A
+// member that has no such value, an enumeration, stops with its name.
 // ---------------------------------------------------------------------------
 
-domain::dayCounter parse_day_counter(const std::string& s) {
-    using dc = domain::dayCounter;
-    if (s == "ACT/360")
-        return dc::Actual_360;
-    if (s == "ACT/360 (incl. last)")
-        return dc::A360__Incl_Last_;
-    if (s == "ACT/365.FIXED")
-        return dc::A365F;
-    if (s == "ACT/365L")
-        return dc::ACT_365L;
-    if (s == "ACT/365 (Canadian Bond)")
-        return dc::Act_365__Canadian_Bond_;
-    if (s == "T360")
-        return dc::T360;
-    if (s == "30/360")
-        return dc::_30_360;
-    if (s == "ACT/nACT")
-        return dc::ACT_nACT;
-    if (s == "30E/360")
-        return dc::_30E_360;
-    if (s == "30E/360.ISDA")
-        return dc::_30E_360_ISDA;
-    if (s == "30/360 (German)")
-        return dc::_30_360_German;
-    if (s == "30/360 (Italian)")
-        return dc::_30_360_Italian;
-    if (s == "ACT/ACT.ISDA")
-        return dc::ActActISDA;
-    if (s == "ACT/ACT.ISMA")
-        return dc::ActActISMA;
-    if (s == "ACT/ACT.AFB")
-        return dc::ActActAFB;
-    if (s == "1/1")
-        return dc::_1_1;
-    if (s == "BUS/252")
-        return dc::BUS_252;
-    if (s == "NL/365")
-        return dc::NL_365;
-    if (s == "ACT/365 (JGB)")
-        return dc::Actual_365__JGB_;
-    if (s == "Simple")
-        return dc::Simple;
-    if (s == "Year")
-        return dc::Year;
-    if (s == "ACT/364")
-        return dc::A364;
-    if (s == "Month")
-        return dc::Month;
-    throw std::runtime_error("parse_day_counter: unrecognised '" + s + "'");
+std::string text_of(const record_reader& v, std::string_view name) {
+    return v.text(name).value_or(std::string());
 }
 
-domain::businessDayConvention parse_bdc(const std::string& s) {
-    using bdc = domain::businessDayConvention;
-    if (s == "Following")
-        return bdc::Following;
-    if (s == "ModifiedFollowing")
-        return bdc::ModifiedFollowing;
-    if (s == "Preceding")
-        return bdc::Preceding;
-    if (s == "ModifiedPreceding")
-        return bdc::ModifiedPreceding;
-    if (s == "HalfMonthModifiedFollowing")
-        return bdc::HalfMonthModifiedFollowing;
-    if (s == "Nearest")
-        return bdc::NEAREST;
-    if (s == "Unadjusted")
-        return bdc::Unadjusted;
-    throw std::runtime_error("parse_bdc: unrecognised '" + s + "'");
+std::optional<std::string> opt_text(const record_reader& v, std::string_view name) {
+    return v.text(name);
 }
 
-domain::monthType parse_month(const std::string& s) {
-    using m = domain::monthType;
-    if (s == "Jan")
-        return m::Jan;
-    if (s == "Feb")
-        return m::Feb;
-    if (s == "Mar")
-        return m::Mar;
-    if (s == "Apr")
-        return m::Apr;
-    if (s == "May")
-        return m::May;
-    if (s == "Jun")
-        return m::Jun;
-    if (s == "Jul")
-        return m::Jul;
-    if (s == "Aug")
-        return m::Aug;
-    if (s == "Sep")
-        return m::Sep;
-    if (s == "Oct")
-        return m::Oct;
-    if (s == "Nov")
-        return m::Nov;
-    if (s == "Dec")
-        return m::Dec;
-    throw std::runtime_error("parse_month: unrecognised '" + s + "'");
+int integer_of(const record_reader& v, std::string_view name) {
+    return static_cast<int>(v.integer(name).value_or(0));
+}
+
+std::optional<int> opt_integer(const record_reader& v, std::string_view name) {
+    if (const auto x = v.integer(name))
+        return static_cast<int>(*x);
+    return std::nullopt;
+}
+
+bool flag_of(const record_reader& v, std::string_view name) {
+    return v.flag(name).value_or(false);
+}
+
+std::optional<bool> opt_flag(const record_reader& v, std::string_view name) {
+    return v.flag(name);
+}
+
+std::optional<double> opt_real(const record_reader& v, std::string_view name) {
+    return v.real(name);
+}
+
+double decimal_of(const record_reader& v, std::string_view name) {
+    if (const auto x = v.decimal(name))
+        return x->to_double();
+    return 0.0;
+}
+
+std::optional<double> opt_decimal(const record_reader& v, std::string_view name) {
+    if (const auto x = v.decimal(name))
+        return x->to_double();
+    return std::nullopt;
+}
+
+std::string code_of(const code_table& table, std::string_view spelling, std::string_view what) {
+    const auto it = table.find(spelling);
+    if (it == table.end())
+        throw std::runtime_error(std::format("Unknown {} enum value", what));
+    return it->second;
+}
+
+std::string coded(const record_reader& v,
+                  std::string_view name,
+                  const code_table& table,
+                  std::string_view what) {
+    const auto spelling = v.spelling(name);
+    if (!spelling)
+        throw std::runtime_error(std::format("Unknown {} enum value", what));
+    return code_of(table, *spelling, what);
+}
+
+std::optional<std::string> opt_coded(const record_reader& v,
+                                     std::string_view name,
+                                     const code_table& table,
+                                     std::string_view what) {
+    const auto spelling = v.spelling(name);
+    if (!spelling)
+        return std::nullopt;
+    return code_of(table, *spelling, what);
+}
+
+std::string bdc_of(const record_reader& v, std::string_view name) {
+    return coded(v, name, business_day_conventions, "business day convention");
+}
+
+std::optional<std::string> opt_bdc(const record_reader& v, std::string_view name) {
+    return opt_coded(v, name, business_day_conventions, "business day convention");
+}
+
+std::string day_counter_of(const record_reader& v, std::string_view name) {
+    return coded(v, name, day_counters, "day counter");
+}
+
+std::optional<std::string> opt_day_counter(const record_reader& v, std::string_view name) {
+    return opt_coded(v, name, day_counters, "day counter");
+}
+
+std::string frequency_of(const record_reader& v, std::string_view name) {
+    return coded(v, name, frequencies, "frequency type");
+}
+
+std::optional<std::string> opt_frequency(const record_reader& v, std::string_view name) {
+    return opt_coded(v, name, frequencies, "frequency type");
+}
+
+std::optional<std::string> opt_compounding(const record_reader& v, std::string_view name) {
+    return opt_coded(v, name, compoundings, "compounding");
+}
+
+std::optional<std::string> opt_date_rule(const record_reader& v, std::string_view name) {
+    return opt_coded(v, name, date_rules, "date rule");
+}
+
+// The schema's own spelling of an enumeration whose spelling is also the code.
+std::string spelling_of(const record_reader& v, std::string_view name, std::string_view what) {
+    const auto spelling = v.spelling(name);
+    if (!spelling)
+        throw std::runtime_error(std::format("Unknown {} enum value", what));
+    return *spelling;
+}
+
+std::optional<std::string> opt_spelling(const record_reader& v, std::string_view name) {
+    return v.spelling(name);
+}
+
+// Assigns to a member that is a value or an optional, only when the document
+// states one.
+template <typename Target, typename Value>
+void assign(Target& target, const std::optional<Value>& value) {
+    if (value)
+        target = *value;
+}
+
+bool is_true(std::string_view text) {
+    return text == "Y" || text == "YES" || text == "TRUE" || text == "True" || text == "true" ||
+           text == "1";
 }
 
 std::string join_fields(const std::vector<std::string>& fields, char sep) {
@@ -212,1643 +392,883 @@ std::vector<std::string> split_fields(const std::string& s, char sep) {
     return out;
 }
 
-bool bool_value(domain::bool_ v) {
-    using b = domain::bool_;
-    switch (v) {
-        case b::Y:
-        case b::YES:
-        case b::TRUE_:
-        case b::True:
-        case b::true_:
-        case b::_1:
-            return true;
-        default:
-            return false;
+std::string join_with(const std::vector<std::string>& parts, char sep) {
+    std::string out;
+    for (std::size_t i = 0; i < parts.size(); ++i) {
+        if (i != 0)
+            out += sep;
+        out += parts[i];
     }
+    return out;
 }
 
-domain::dateRule parse_date_rule(const std::string& s);
-
-std::string serialize_schedule_rule(const domain::scheduleData_Rules_t& rule) {
-    return join_fields(
-        {std::string(rule.StartDate),
-         rule.EndDate ? (rule.EndDate->empty() ? std::string("~") : std::string(*rule.EndDate)) :
-                        std::string(),
-         rule.AdjustEndDateToPreviousMonthEnd ?
-             (bool_value(*rule.AdjustEndDateToPreviousMonthEnd) ? "true" : "false") :
-             std::string(),
-         std::string(rule.Tenor),
-         rule.Calendar ? std::string(*rule.Calendar) : std::string(),
-         to_string(rule.Convention),
-         rule.TermConvention ? to_string(*rule.TermConvention) : std::string(),
-         rule.Rule ? to_string(*rule.Rule) : std::string(),
-         rule.EndOfMonth ? (bool_value(*rule.EndOfMonth) ? "true" : "false") : std::string(),
-         rule.EndOfMonthConvention ? to_string(*rule.EndOfMonthConvention) : std::string(),
-         rule.FirstDate ?
-             (rule.FirstDate->empty() ? std::string("~") : std::string(*rule.FirstDate)) :
-             std::string(),
-         rule.LastDate ? (rule.LastDate->empty() ? std::string("~") : std::string(*rule.LastDate)) :
-                         std::string(),
-         rule.RemoveFirstDate ? (*rule.RemoveFirstDate ? "true" : "false") : std::string(),
-         rule.RemoveLastDate ? (*rule.RemoveLastDate ? "true" : "false") : std::string()},
-        '|');
+std::string truth(bool v) {
+    return v ? "true" : "false";
 }
 
-domain::scheduleData_Rules_t parse_schedule_rule(const std::string& s) {
-    domain::scheduleData_Rules_t rule;
+// ---------------------------------------------------------------------------
+// Schedules and load profiles
+//
+// The refdata columns hold these as delimited text, one field per member the
+// document states. An empty field is a member the document left out, and a
+// tilde is a date the document states and leaves empty.
+// ---------------------------------------------------------------------------
+
+std::string date_field(const record_reader& v, std::string_view name) {
+    const auto x = v.text(name);
+    if (!x)
+        return {};
+    return x->empty() ? std::string("~") : *x;
+}
+
+std::string flag_field(const record_reader& v, std::string_view name) {
+    const auto x = v.flag(name);
+    return x ? truth(*x) : std::string();
+}
+
+std::string text_flag_field(const record_reader& v, std::string_view name) {
+    const auto x = v.text(name);
+    return x ? truth(is_true(*x)) : std::string();
+}
+
+std::string optional_text_field(const record_reader& v, std::string_view name) {
+    return v.text(name).value_or(std::string());
+}
+
+std::string optional_spelling_field(const record_reader& v, std::string_view name) {
+    return v.spelling(name).value_or(std::string());
+}
+
+std::string serialize_schedule_rule(const record_reader& rule) {
+    return join_fields({text_of(rule, "StartDate"),
+                        date_field(rule, "EndDate"),
+                        flag_field(rule, "AdjustEndDateToPreviousMonthEnd"),
+                        text_of(rule, "Tenor"),
+                        optional_text_field(rule, "Calendar"),
+                        optional_spelling_field(rule, "Convention"),
+                        optional_spelling_field(rule, "TermConvention"),
+                        optional_spelling_field(rule, "Rule"),
+                        flag_field(rule, "EndOfMonth"),
+                        optional_spelling_field(rule, "EndOfMonthConvention"),
+                        date_field(rule, "FirstDate"),
+                        date_field(rule, "LastDate"),
+                        text_flag_field(rule, "RemoveFirstDate"),
+                        text_flag_field(rule, "RemoveLastDate")},
+                       '|');
+}
+
+void set_date_field(record_writer& w, std::string_view name, const std::string& field) {
+    if (field == "~")
+        w.set_text(name, "");
+    else if (!field.empty())
+        w.set_text(name, field);
+}
+
+void set_flag_field(record_writer& w, std::string_view name, const std::string& field) {
+    if (!field.empty())
+        w.set_flag(name, field == "true");
+}
+
+void set_text_flag_field(record_writer& w, std::string_view name, const std::string& field) {
+    if (!field.empty())
+        w.set_text(name, field);
+}
+
+void set_spelling_field(record_writer& w,
+                        std::string_view name,
+                        const std::string& field,
+                        std::string_view what) {
+    if (!field.empty())
+        w.set_spelling(name, field, what);
+}
+
+void write_schedule_rule(const std::string& s, record_writer rule) {
     const auto f = split_fields(s, '|');
     auto at = [&f](std::size_t i) {
         return i < f.size() ? f[i] : std::string();
     };
-    static_cast<std::string&>(rule.StartDate) = at(0);
-    if (at(1) == "~")
-        rule.EndDate = domain::date(std::string());
-    else if (!at(1).empty())
-        rule.EndDate = domain::date(at(1));
-    if (!at(2).empty())
-        rule.AdjustEndDateToPreviousMonthEnd =
-            at(2) == "true" ? domain::bool_::True : domain::bool_::False;
-    static_cast<std::string&>(rule.Tenor) = at(3);
+    rule.set_text("StartDate", at(0));
+    set_date_field(rule, "EndDate", at(1));
+    set_flag_field(rule, "AdjustEndDateToPreviousMonthEnd", at(2));
+    rule.set_text("Tenor", at(3));
     if (!at(4).empty())
-        rule.Calendar = domain::calendar(at(4));
-    rule.Convention = parse_bdc(at(5));
-    if (!at(6).empty())
-        rule.TermConvention = parse_bdc(at(6));
-    if (!at(7).empty())
-        rule.Rule = parse_date_rule(at(7));
-    if (!at(8).empty())
-        rule.EndOfMonth = at(8) == "true" ? domain::bool_::True : domain::bool_::False;
-    if (!at(9).empty())
-        rule.EndOfMonthConvention = parse_bdc(at(9));
-    if (at(10) == "~")
-        rule.FirstDate = domain::date(std::string());
-    else if (!at(10).empty())
-        rule.FirstDate = domain::date(at(10));
-    if (at(11) == "~")
-        rule.LastDate = domain::date(std::string());
-    else if (!at(11).empty())
-        rule.LastDate = domain::date(at(11));
-    if (!at(12).empty())
-        rule.RemoveFirstDate = at(12) == "true";
-    if (!at(13).empty())
-        rule.RemoveLastDate = at(13) == "true";
-    return rule;
+        rule.set_text("Calendar", at(4));
+    set_spelling_field(rule, "Convention", at(5), "business day convention");
+    set_spelling_field(rule, "TermConvention", at(6), "business day convention");
+    set_spelling_field(rule, "Rule", at(7), "date rule");
+    set_flag_field(rule, "EndOfMonth", at(8));
+    set_spelling_field(rule, "EndOfMonthConvention", at(9), "business day convention");
+    set_date_field(rule, "FirstDate", at(10));
+    set_date_field(rule, "LastDate", at(11));
+    set_text_flag_field(rule, "RemoveFirstDate", at(12));
+    set_text_flag_field(rule, "RemoveLastDate", at(13));
 }
 
-std::string serialize_schedule_dates(const domain::scheduleData_Dates_t& block) {
+std::string serialize_schedule_dates(const record_reader& block) {
     std::string dates;
-    for (const auto& d : block.Dates.Date) {
-        if (!dates.empty())
-            dates += ",";
-        dates += static_cast<const std::string&>(d);
+    if (const auto list = block.child("Dates")) {
+        for (const auto& d : list->values("Date")) {
+            if (!dates.empty())
+                dates += ",";
+            dates += d;
+        }
     }
-    return join_fields(
-        {block.Calendar ? std::string(*block.Calendar) : std::string(),
-         block.Convention ? to_string(*block.Convention) : std::string(),
-         block.Tenor ? std::string(*block.Tenor) : std::string(),
-         block.EndOfMonth ? (bool_value(*block.EndOfMonth) ? "true" : "false") : std::string(),
-         block.IncludeDuplicateDates ?
-             (bool_value(*block.IncludeDuplicateDates) ? "true" : "false") :
-             std::string(),
-         dates},
-        '|');
+    return join_fields({optional_text_field(block, "Calendar"),
+                        optional_spelling_field(block, "Convention"),
+                        optional_text_field(block, "Tenor"),
+                        flag_field(block, "EndOfMonth"),
+                        flag_field(block, "IncludeDuplicateDates"),
+                        dates},
+                       '|');
 }
 
-domain::scheduleData_Dates_t parse_schedule_dates(const std::string& s) {
-    domain::scheduleData_Dates_t block;
+void write_schedule_dates(const std::string& s, record_writer block) {
     const auto f = split_fields(s, '|');
     auto at = [&f](std::size_t i) {
         return i < f.size() ? f[i] : std::string();
     };
     if (!at(0).empty())
-        block.Calendar = domain::calendar(at(0));
-    if (!at(1).empty())
-        block.Convention = parse_bdc(at(1));
+        block.set_text("Calendar", at(0));
+    set_spelling_field(block, "Convention", at(1), "business day convention");
     if (!at(2).empty())
-        block.Tenor = domain::scheduleData_Dates_t_Tenor_t(at(2));
-    if (!at(3).empty())
-        block.EndOfMonth = at(3) == "true" ? domain::bool_::True : domain::bool_::False;
-    if (!at(4).empty())
-        block.IncludeDuplicateDates = at(4) == "true" ? domain::bool_::True : domain::bool_::False;
+        block.set_text("Tenor", at(2));
+    set_flag_field(block, "EndOfMonth", at(3));
+    set_flag_field(block, "IncludeDuplicateDates", at(4));
+    auto dates = block.child("Dates");
     for (const auto& d : split_fields(at(5), ',')) {
         if (!d.empty())
-            block.Dates.Date.push_back(domain::date(d));
+            dates.append_value("Date", d);
     }
-    return block;
 }
 
-std::string serialize_derived_schedule(const domain::DerivedScheduleType& d) {
-    return join_fields({std::string(d.BaseSchedule),
-                        d.Shift ? std::string(*d.Shift) : std::string(),
-                        d.Calendar ? std::string(*d.Calendar) : std::string(),
-                        d.Convention ? to_string(*d.Convention) : std::string(),
-                        d.RemoveFirstDate ? (*d.RemoveFirstDate ? "true" : "false") : std::string(),
-                        d.RemoveLastDate ? (*d.RemoveLastDate ? "true" : "false") : std::string(),
-                        std::string(),
-                        std::string()},
+std::string serialize_derived_schedule(const record_reader& d) {
+    return join_fields({text_of(d, "BaseSchedule"),
+                        optional_text_field(d, "Shift"),
+                        optional_text_field(d, "Calendar"),
+                        optional_spelling_field(d, "Convention"),
+                        text_flag_field(d, "RemoveFirstDate"),
+                        text_flag_field(d, "RemoveLastDate"),
+                        optional_spelling_field(d, "ShiftUnit"),
+                        optional_spelling_field(d, "ShiftAnchor")},
                        '|');
 }
 
-domain::DerivedScheduleType parse_derived_schedule(const std::string& s) {
-    domain::DerivedScheduleType d;
+void write_derived_schedule(const std::string& s, record_writer d) {
     const auto f = split_fields(s, '|');
     auto at = [&f](std::size_t i) {
         return i < f.size() ? f[i] : std::string();
     };
-    static_cast<std::string&>(d.BaseSchedule) = at(0);
+    d.set_text("BaseSchedule", at(0));
     if (!at(1).empty())
-        d.Shift = domain::DerivedScheduleType_Shift_t(at(1));
+        d.set_text("Shift", at(1));
     if (!at(2).empty())
-        d.Calendar = domain::calendar(at(2));
-    if (!at(3).empty())
-        d.Convention = parse_bdc(at(3));
-    if (!at(4).empty())
-        d.RemoveFirstDate = at(4) == "true";
-    if (!at(5).empty())
-        d.RemoveLastDate = at(5) == "true";
-    return d;
+        d.set_text("Calendar", at(2));
+    set_spelling_field(d, "Convention", at(3), "business day convention");
+    set_text_flag_field(d, "RemoveFirstDate", at(4));
+    set_text_flag_field(d, "RemoveLastDate", at(5));
+    set_spelling_field(d, "ShiftUnit", at(6), "shift unit");
+    set_spelling_field(d, "ShiftAnchor", at(7), "shift anchor");
 }
 
-std::string serialize_factors(const domain::loadFactorsType& factors) {
+std::string serialize_factors(const std::optional<record_reader>& factors) {
     std::string out;
-    for (const auto& f : factors.LoadFactor) {
+    if (!factors)
+        return out;
+    for (const auto& f : factors->children("LoadFactor")) {
         if (!out.empty())
             out += ",";
-        out += std::to_string(f.from) + ":" + std::to_string(f.to) + ":" +
-               (f.unit ? std::string(*f.unit) : std::string()) + ":" +
-               (f.dst ? (bool_value(*f.dst) ? "true" : "false") : std::string()) + ":" +
-               std::to_string(static_cast<double>(f));
+        out += text_of(f, "from") + ":" + text_of(f, "to") + ":" + text_of(f, "unit") + ":" +
+               text_flag_field(f, "dst") + ":" + f.own_text().value_or(std::string());
     }
     return out;
 }
 
-domain::loadFactorsType parse_factors(const std::string& s) {
-    domain::loadFactorsType factors;
+void write_factors(const std::string& s, record_writer factors) {
     for (const auto& record : split_fields(s, ',')) {
         if (record.empty())
             continue;
         const auto parts = split_fields(record, ':');
         if (parts.size() < 5)
             continue;
-        domain::loadFactorType f;
-        f.from = std::stoll(parts[0]);
-        f.to = std::stoll(parts[1]);
+        auto f = factors.append("LoadFactor");
+        f.set_text("from", parts[0]);
+        f.set_text("to", parts[1]);
         if (!parts[2].empty())
-            f.unit = parts[2];
+            f.set_text("unit", parts[2]);
         if (!parts[3].empty())
-            f.dst = parts[3] == "true" ? domain::bool_::True : domain::bool_::False;
-        static_cast<double&>(f) = std::stod(parts[4]);
-        factors.LoadFactor.push_back(f);
+            f.set_text("dst", parts[3]);
+        f.set_own_text(parts[4]);
     }
-    return factors;
 }
 
-domain::dateRule parse_date_rule(const std::string& s) {
-    using dr = domain::dateRule;
-    if (s == "Backward")
-        return dr::Backward;
-    if (s == "Forward")
-        return dr::Forward;
-    if (s == "Zero")
-        return dr::Zero;
-    if (s == "ThirdWednesday")
-        return dr::ThirdWednesday;
-    if (s == "Twentieth")
-        return dr::Twentieth;
-    if (s == "TwentiethIMM")
-        return dr::TwentiethIMM;
-    if (s == "OldCDS")
-        return dr::OldCDS;
-    if (s == "CDS")
-        return dr::CDS;
-    if (s == "CDS2015")
-        return dr::CDS2015;
-    if (s == "ThirdThursday")
-        return dr::ThirdThursday;
-    if (s == "ThirdFriday")
-        return dr::ThirdFriday;
-    if (s == "MondayAfterThirdFriday")
-        return dr::MondayAfterThirdFriday;
-    if (s == "TuesdayAfterThirdFriday")
-        return dr::TuesdayAfterThirdFriday;
-    if (s == "LastWednesday")
-        return dr::LastWednesday;
-    if (s == "EveryThursday")
-        return dr::EveryThursday;
-    throw std::runtime_error("parse_date_rule: unrecognised '" + s + "'");
+// ---------------------------------------------------------------------------
+// Writing a record
+// ---------------------------------------------------------------------------
+
+std::optional<std::int64_t> as_integer(const std::optional<int>& v) {
+    if (v)
+        return static_cast<std::int64_t>(*v);
+    return std::nullopt;
 }
 
-domain::averagingDataPeriodType parse_averaging_period(const std::string& s) {
-    using p = domain::averagingDataPeriodType;
-    if (s == "PreviousMonth")
-        return p::PreviousMonth;
-    if (s == "ExpiryToExpiry")
-        return p::ExpiryToExpiry;
-    throw std::runtime_error("parse_averaging_period: unrecognised '" + s + "'");
+std::string bdc_spelling(const std::string& code) {
+    return code == "Nearest" ? std::string("NEAREST") : code;
 }
 
-domain::weekdayType parse_weekday(const std::string& s) {
-    using w = domain::weekdayType;
-    if (s == "Mon")
-        return w::Mon;
-    if (s == "Tue")
-        return w::Tue;
-    if (s == "Wed")
-        return w::Wed;
-    if (s == "Thu")
-        return w::Thu;
-    if (s == "Fri")
-        return w::Fri;
-    if (s == "Sat")
-        return w::Sat;
-    if (s == "Sun")
-        return w::Sun;
-    throw std::runtime_error("parse_weekday: unrecognised '" + s + "'");
+std::string day_counter_spelling(const std::string& code) {
+    const auto it = day_counter_spellings.find(code);
+    return it == day_counter_spellings.end() ? code : it->second;
 }
 
-domain::frequencyType parse_frequency(const std::string& s) {
-    using ft = domain::frequencyType;
-    if (s == "Once")
-        return ft::Once;
-    if (s == "Annual")
-        return ft::Annual;
-    if (s == "Semiannual")
-        return ft::Semiannual;
-    if (s == "Quarterly")
-        return ft::Quarterly;
-    if (s == "Bimonthly")
-        return ft::Bimonthly;
-    if (s == "Monthly")
-        return ft::Monthly;
-    if (s == "Lunarmonth")
-        return ft::Lunarmonth;
-    if (s == "Weekly")
-        return ft::Weekly;
-    if (s == "Daily")
-        return ft::Daily;
-    throw std::runtime_error("parse_frequency: unrecognised '" + s + "'");
+void put_bdc(record_writer& w, std::string_view name, const std::string& code) {
+    w.set_spelling(name, bdc_spelling(code), "business day convention");
 }
 
-domain::compounding parse_compounding(const std::string& s) {
-    using cm = domain::compounding;
-    if (s == "Simple")
-        return cm::Simple;
-    if (s == "Compounded")
-        return cm::Compounded;
-    if (s == "Continuous")
-        return cm::Continuous;
-    if (s == "SimpleThenCompounded")
-        return cm::SimpleThenCompounded;
-    throw std::runtime_error("parse_compounding: unrecognised '" + s + "'");
+void put_bdc(record_writer& w, std::string_view name, const std::optional<std::string>& code) {
+    if (code)
+        put_bdc(w, name, *code);
 }
 
-domain::bool_ make_bool(bool v) {
-    return v ? domain::bool_::True : domain::bool_::False;
+void put_day_counter(record_writer& w, std::string_view name, const std::string& code) {
+    w.set_spelling(name, day_counter_spelling(code), "day counter");
 }
 
-domain::currencyCode parse_currency_code(const std::string& s) {
-    using cc = domain::currencyCode;
-    static const std::map<std::string, cc> kMap = {
-        {"AED", cc::AED}, {"AFN", cc::AFN}, {"ALL", cc::ALL}, {"AMD", cc::AMD}, {"ANG", cc::ANG},
-        {"AOA", cc::AOA}, {"ARS", cc::ARS}, {"AUD", cc::AUD}, {"AWG", cc::AWG}, {"AZN", cc::AZN},
-        {"BAM", cc::BAM}, {"BBD", cc::BBD}, {"BDT", cc::BDT}, {"BGN", cc::BGN}, {"BHD", cc::BHD},
-        {"BIF", cc::BIF}, {"BMD", cc::BMD}, {"BND", cc::BND}, {"BOB", cc::BOB}, {"BOV", cc::BOV},
-        {"BRL", cc::BRL}, {"BSD", cc::BSD}, {"BTN", cc::BTN}, {"BWP", cc::BWP}, {"BYN", cc::BYN},
-        {"BZD", cc::BZD}, {"CAD", cc::CAD}, {"CDF", cc::CDF}, {"CHE", cc::CHE}, {"CHF", cc::CHF},
-        {"CHW", cc::CHW}, {"CLF", cc::CLF}, {"CLP", cc::CLP}, {"CNH", cc::CNH}, {"CNT", cc::CNT},
-        {"CNY", cc::CNY}, {"COP", cc::COP}, {"COU", cc::COU}, {"CRC", cc::CRC}, {"CUC", cc::CUC},
-        {"CUP", cc::CUP}, {"CVE", cc::CVE}, {"CYP", cc::CYP}, {"CZK", cc::CZK}, {"DJF", cc::DJF},
-        {"DKK", cc::DKK}, {"DOP", cc::DOP}, {"DZD", cc::DZD}, {"EGP", cc::EGP}, {"ERN", cc::ERN},
-        {"ETB", cc::ETB}, {"EUR", cc::EUR}, {"FJD", cc::FJD}, {"FKP", cc::FKP}, {"GBP", cc::GBP},
-        {"GEL", cc::GEL}, {"GGP", cc::GGP}, {"GHS", cc::GHS}, {"GIP", cc::GIP}, {"GMD", cc::GMD},
-        {"GNF", cc::GNF}, {"GTQ", cc::GTQ}, {"GYD", cc::GYD}, {"HKD", cc::HKD}, {"HNL", cc::HNL},
-        {"HRK", cc::HRK}, {"HTG", cc::HTG}, {"HUF", cc::HUF}, {"IDR", cc::IDR}, {"ILS", cc::ILS},
-        {"IMP", cc::IMP}, {"INR", cc::INR}, {"IQD", cc::IQD}, {"IRR", cc::IRR}, {"ISK", cc::ISK},
-        {"JEP", cc::JEP}, {"JMD", cc::JMD}, {"JOD", cc::JOD}, {"JPY", cc::JPY}, {"KES", cc::KES},
-        {"KGS", cc::KGS}, {"KHR", cc::KHR}, {"KID", cc::KID}, {"KMF", cc::KMF}, {"KPW", cc::KPW},
-        {"KRW", cc::KRW}, {"KWD", cc::KWD}, {"KYD", cc::KYD}, {"KZT", cc::KZT}, {"LAK", cc::LAK},
-        {"LBP", cc::LBP}, {"LKR", cc::LKR}, {"LRD", cc::LRD}, {"LSL", cc::LSL}, {"LTL", cc::LTL},
-        {"LVL", cc::LVL}, {"LYD", cc::LYD}, {"MAD", cc::MAD}, {"MDL", cc::MDL}, {"MGA", cc::MGA},
-        {"MKD", cc::MKD}, {"MMK", cc::MMK}, {"MNT", cc::MNT}, {"MOP", cc::MOP}, {"MRU", cc::MRU},
-        {"MUR", cc::MUR}, {"MVR", cc::MVR}, {"MWK", cc::MWK}, {"MXN", cc::MXN}, {"MXV", cc::MXV},
-        {"MYR", cc::MYR}, {"MZN", cc::MZN}, {"NAD", cc::NAD}, {"NGN", cc::NGN}, {"NIO", cc::NIO},
-        {"NOK", cc::NOK}, {"NPR", cc::NPR}, {"NZD", cc::NZD}, {"OMR", cc::OMR}, {"PAB", cc::PAB},
-        {"PEN", cc::PEN}, {"PGK", cc::PGK}, {"PHP", cc::PHP}, {"PKR", cc::PKR}, {"PLN", cc::PLN},
-        {"PYG", cc::PYG}, {"QAR", cc::QAR}, {"RON", cc::RON}, {"RSD", cc::RSD}, {"RUB", cc::RUB},
-        {"RWF", cc::RWF}, {"SAR", cc::SAR}, {"SBD", cc::SBD}, {"SCR", cc::SCR}, {"SDG", cc::SDG},
-        {"SEK", cc::SEK}, {"SGD", cc::SGD}, {"SHP", cc::SHP}, {"SLL", cc::SLL}, {"SKK", cc::SKK},
-        {"SOS", cc::SOS}, {"SRD", cc::SRD}, {"SSP", cc::SSP}, {"STN", cc::STN}, {"SVC", cc::SVC},
-        {"SYP", cc::SYP}, {"SZL", cc::SZL}, {"THB", cc::THB}, {"TJS", cc::TJS}, {"TMT", cc::TMT},
-        {"TND", cc::TND}, {"TOP", cc::TOP}, {"TRY", cc::TRY}, {"TTD", cc::TTD}, {"TWD", cc::TWD},
-        {"TZS", cc::TZS}, {"UAH", cc::UAH}, {"UGX", cc::UGX}, {"USD", cc::USD}, {"USN", cc::USN},
-        {"UYI", cc::UYI}, {"UYU", cc::UYU}, {"UYW", cc::UYW}, {"UZS", cc::UZS}, {"VES", cc::VES},
-        {"VND", cc::VND}, {"VUV", cc::VUV}, {"WST", cc::WST}, {"XAF", cc::XAF}, {"XAG", cc::XAG},
-        {"XAU", cc::XAU}, {"XCD", cc::XCD}, {"XOF", cc::XOF}, {"XPD", cc::XPD}, {"XPF", cc::XPF},
-        {"XPT", cc::XPT}, {"XSU", cc::XSU}, {"XUA", cc::XUA}, {"YER", cc::YER}, {"ZAR", cc::ZAR},
-        {"ZMW", cc::ZMW}, {"ZWL", cc::ZWL}, {"BTC", cc::BTC}, {"ETH", cc::ETH}, {"XBT", cc::XBT},
-        {"ETC", cc::ETC}, {"BCH", cc::BCH}, {"XRP", cc::XRP}, {"LTC", cc::LTC}, {"ZUR", cc::ZUR},
-        {"ZUG", cc::ZUG},
-    };
-    const auto it = kMap.find(s);
-    if (it == kMap.end())
-        throw std::runtime_error("parse_currency_code: unrecognised '" + s + "'");
-    return it->second;
+void put_day_counter(record_writer& w,
+                     std::string_view name,
+                     const std::optional<std::string>& code) {
+    if (code)
+        put_day_counter(w, name, *code);
+}
+
+void put_enum(record_writer& w, std::string_view name, const std::string& value, std::string_view what) {
+    w.set_spelling(name, value, what);
+}
+
+void put_enum(record_writer& w,
+              std::string_view name,
+              const std::optional<std::string>& value,
+              std::string_view what) {
+    if (value)
+        w.set_spelling(name, *value, what);
+}
+
+void put_decimal(record_writer& w, std::string_view name, double value) {
+    const auto exact = ores::utility::decimal::decimal::from_double(value);
+    if (!exact)
+        throw std::runtime_error(std::format("'{}' is not an exact decimal: {}", name, exact.error()));
+    w.set_decimal(name, *exact);
+}
+
+void put_decimal(record_writer& w, std::string_view name, const std::optional<double>& value) {
+    if (value)
+        put_decimal(w, name, *value);
 }
 
 // ---------------------------------------------------------------------------
 // Individual type reverse mappers
+//
+// Each fills the record of one document element, which the caller appended.
 // ---------------------------------------------------------------------------
 
-zeroType reverse_zero(const refdata::domain::zero_convention& v) {
-    zeroType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.TenorBased = make_bool(v.tenor_based);
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    if (v.compounding)
-        r.Compounding = parse_compounding(*v.compounding);
-    if (v.compounding_frequency)
-        r.CompoundingFrequency = parse_frequency(*v.compounding_frequency);
-    if (v.tenor_calendar) {
-        zeroType_TenorCalendar_t tc;
-        static_cast<std::string&>(tc) = *v.tenor_calendar;
-        r.TenorCalendar = tc;
-    }
-    if (v.spot_lag)
-        r.SpotLag = static_cast<int64_t>(*v.spot_lag);
-    if (v.spot_calendar) {
-        zeroType_SpotCalendar_t sc;
-        static_cast<std::string&>(sc) = *v.spot_calendar;
-        r.SpotCalendar = sc;
-    }
-    if (v.roll_convention)
-        r.RollConvention = parse_bdc(*v.roll_convention);
-    if (v.end_of_month)
-        r.EOM = make_bool(*v.end_of_month);
-    return r;
+void reverse_zero(const refdata::domain::zero_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_flag("TenorBased", v.tenor_based);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    put_enum(w, "Compounding", v.compounding, "compounding");
+    put_enum(w, "CompoundingFrequency", v.compounding_frequency, "frequency type");
+    w.set_optional_text("TenorCalendar", v.tenor_calendar);
+    w.set_optional_integer("SpotLag", as_integer(v.spot_lag));
+    w.set_optional_text("SpotCalendar", v.spot_calendar);
+    put_bdc(w, "RollConvention", v.roll_convention);
+    w.set_optional_flag("EOM", v.end_of_month);
 }
 
-depositType reverse_deposit(const refdata::domain::deposit_convention& v) {
-    depositType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.IndexBased = make_bool(v.index_based);
-    if (v.index) {
-        depositType_Index_t idx;
-        static_cast<std::string&>(idx) = *v.index;
-        r.Index = idx;
-    }
-    if (v.calendar) {
-        depositType_Calendar_t cal;
-        static_cast<std::string&>(cal) = *v.calendar;
-        r.Calendar = cal;
-    }
-    if (v.convention)
-        r.Convention = parse_bdc(*v.convention);
-    if (v.end_of_month)
-        r.EOM = make_bool(*v.end_of_month);
-    if (v.day_count_fraction)
-        r.DayCounter = parse_day_counter(*v.day_count_fraction);
-    if (v.settlement_days)
-        r.SettlementDays = static_cast<uint64_t>(*v.settlement_days);
-    return r;
+void reverse_deposit(const refdata::domain::deposit_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_flag("IndexBased", v.index_based);
+    w.set_optional_text("Index", v.index);
+    w.set_optional_text("Calendar", v.calendar);
+    put_bdc(w, "Convention", v.convention);
+    w.set_optional_flag("EOM", v.end_of_month);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    w.set_optional_integer("SettlementDays", as_integer(v.settlement_days));
 }
 
-swapType reverse_swap(const refdata::domain::swap_convention& v) {
-    swapType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    if (v.fixed_calendar) {
-        swapType_FixedCalendar_t fc;
-        static_cast<std::string&>(fc) = *v.fixed_calendar;
-        r.FixedCalendar = fc;
-    }
-    r.FixedFrequency = parse_frequency(v.fixed_frequency);
-    if (v.fixed_convention)
-        r.FixedConvention = parse_bdc(*v.fixed_convention);
-    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
-    static_cast<std::string&>(r.Index) = v.index;
-    if (v.float_frequency)
-        r.FloatFrequency = parse_frequency(*v.float_frequency);
-    if (v.sub_periods_coupon_type) {
-        const auto& s = *v.sub_periods_coupon_type;
-        if (s == "Compounding")
-            r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
-        else if (s == "Averaging")
-            r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
-        else
-            throw std::runtime_error("reverse_swap: unknown sub_periods_coupon_type: " + s);
-    }
-    return r;
+void reverse_swap(const refdata::domain::swap_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_optional_text("FixedCalendar", v.fixed_calendar);
+    put_enum(w, "FixedFrequency", v.fixed_frequency, "frequency type");
+    put_bdc(w, "FixedConvention", v.fixed_convention);
+    put_day_counter(w, "FixedDayCounter", v.fixed_day_count_fraction);
+    w.set_text("Index", v.index);
+    put_enum(w, "FloatFrequency", v.float_frequency, "frequency type");
+    put_enum(w, "SubPeriodsCouponType", v.sub_periods_coupon_type, "sub-periods coupon type");
 }
 
-oisType reverse_ois(const refdata::domain::ois_convention& v) {
-    oisType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.SpotLag = static_cast<int64_t>(v.spot_lag);
-    static_cast<std::string&>(r.Index) = v.index;
-    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
-    if (v.fixed_calendar) {
-        oisType_FixedCalendar_t fc;
-        static_cast<std::string&>(fc) = *v.fixed_calendar;
-        r.FixedCalendar = fc;
-    }
-    if (v.payment_lag)
-        r.PaymentLag = static_cast<int64_t>(*v.payment_lag);
-    if (v.end_of_month)
-        r.EOM = make_bool(*v.end_of_month);
-    if (v.fixed_frequency)
-        r.FixedFrequency = parse_frequency(*v.fixed_frequency);
-    if (v.fixed_convention)
-        r.FixedConvention = parse_bdc(*v.fixed_convention);
-    if (v.fixed_payment_convention)
-        r.FixedPaymentConvention = parse_bdc(*v.fixed_payment_convention);
-    if (v.rule)
-        r.Rule = parse_date_rule(*v.rule);
-    if (v.payment_calendar) {
-        oisType_PaymentCalendar_t pc;
-        static_cast<std::string&>(pc) = *v.payment_calendar;
-        r.PaymentCalendar = pc;
-    }
-    if (v.rate_cutoff)
-        r.RateCutoff = static_cast<int64_t>(*v.rate_cutoff);
-    return r;
+void reverse_ois(const refdata::domain::ois_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_integer("SpotLag", v.spot_lag);
+    w.set_text("Index", v.index);
+    put_day_counter(w, "FixedDayCounter", v.fixed_day_count_fraction);
+    w.set_optional_text("FixedCalendar", v.fixed_calendar);
+    w.set_optional_integer("PaymentLag", as_integer(v.payment_lag));
+    w.set_optional_flag("EOM", v.end_of_month);
+    put_enum(w, "FixedFrequency", v.fixed_frequency, "frequency type");
+    put_bdc(w, "FixedConvention", v.fixed_convention);
+    put_bdc(w, "FixedPaymentConvention", v.fixed_payment_convention);
+    put_enum(w, "Rule", v.rule, "date rule");
+    w.set_optional_text("PaymentCalendar", v.payment_calendar);
+    w.set_optional_integer("RateCutoff", as_integer(v.rate_cutoff));
 }
 
-fraType reverse_fra(const refdata::domain::fra_convention& v) {
-    fraType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Index) = v.index;
-    return r;
+void reverse_fra(const refdata::domain::fra_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Index", v.index);
 }
 
-iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v) {
-    iborIndexType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    r.BusinessDayConvention = parse_bdc(v.business_day_convention);
-    r.EndOfMonth = make_bool(v.end_of_month);
-    return r;
+void reverse_ibor_index(const refdata::domain::ibor_index_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("FixingCalendar", v.fixing_calendar);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    w.set_integer("SettlementDays", v.settlement_days);
+    put_bdc(w, "BusinessDayConvention", v.business_day_convention);
+    w.set_flag("EndOfMonth", v.end_of_month);
 }
 
-commodityForwardType
-reverse_commodity_forward(const refdata::domain::commodity_forward_convention& v) {
-    commodityForwardType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    if (v.spot_days)
-        r.SpotDays = static_cast<int64_t>(*v.spot_days);
-    if (v.points_factor)
-        r.PointsFactor = *v.points_factor;
-    if (v.advance_calendar) {
-        commodityForwardType_AdvanceCalendar_t x;
-        static_cast<std::string&>(x) = *v.advance_calendar;
-        r.AdvanceCalendar = x;
-    }
-    if (v.spot_relative)
-        r.SpotRelative = make_bool(*v.spot_relative);
-    if (v.delivery_location) {
-        commodityForwardType_DeliveryLocation_t x;
-        static_cast<std::string&>(x) = *v.delivery_location;
-        r.DeliveryLocation = x;
-    }
-    if (v.business_day_convention)
-        r.BusinessDayConvention = parse_bdc(*v.business_day_convention);
-    if (v.outright)
-        r.Outright = make_bool(*v.outright);
-    return r;
+void reverse_commodity_forward(const refdata::domain::commodity_forward_convention& v,
+                               record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_optional_integer("SpotDays", as_integer(v.spot_days));
+    put_decimal(w, "PointsFactor", v.points_factor);
+    w.set_optional_text("AdvanceCalendar", v.advance_calendar);
+    w.set_optional_flag("SpotRelative", v.spot_relative);
+    w.set_optional_text("DeliveryLocation", v.delivery_location);
+    put_bdc(w, "BusinessDayConvention", v.business_day_convention);
+    w.set_optional_flag("Outright", v.outright);
 }
 
-intradayPowerLoad
-reverse_intraday_power_load(const refdata::domain::intraday_power_load_convention& v) {
-    intradayPowerLoad r;
-    static_cast<std::string&>(r.Id) = v.id;
-    if (v.explicit_load_profile || v.business_day_load_rules) {
-        powerLoadProfileDataType profile;
-        if (v.explicit_load_profile) {
-            explicitLoadProfileType explicit_dates;
-            for (const auto& record : split_fields(*v.explicit_load_profile, ';')) {
-                if (record.empty())
-                    continue;
-                const auto parts = split_fields(record, '|');
-                explicitLoadProfileType_LoadProfileDatum_t datum;
-                static_cast<std::string&>(datum.Date) = parts.empty() ? std::string() : parts[0];
-                if (parts.size() > 1)
-                    datum.LoadFactors = parse_factors(parts[1]);
-                explicit_dates.LoadProfileDatum.push_back(datum);
-            }
-            profile.ExplicitDates = explicit_dates;
+void reverse_intraday_power_load(const refdata::domain::intraday_power_load_convention& v,
+                                 record_writer w) {
+    w.set_text("Id", v.id);
+    if (!v.explicit_load_profile && !v.business_day_load_rules)
+        return;
+
+    auto profile = w.child("PowerLoadProfileData");
+    if (v.explicit_load_profile) {
+        auto explicit_dates = profile.child("ExplicitDates");
+        for (const auto& record : split_fields(*v.explicit_load_profile, ';')) {
+            if (record.empty())
+                continue;
+            const auto parts = split_fields(record, '|');
+            auto datum = explicit_dates.append("LoadProfileDatum");
+            datum.set_text("Date", parts.empty() ? std::string() : parts[0]);
+            auto factors = datum.child("LoadFactors");
+            if (parts.size() > 1)
+                write_factors(parts[1], factors);
         }
-        if (v.business_day_load_rules) {
-            ruleBasedLoadProfileType rules;
-            for (const auto& record : split_fields(*v.business_day_load_rules, ';')) {
-                const auto parts = split_fields(record, '|');
-                ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t rule;
-                static_cast<std::string&>(rule.Date) = parts.empty() ? std::string() : parts[0];
-                static_cast<std::string&>(rule.Calendar) =
-                    parts.size() > 1 ? parts[1] : std::string();
-                if (parts.size() > 2 && !parts[2].empty())
-                    rule.BusinessDayLoadFactors = parse_factors(parts[2]);
-                if (parts.size() > 3 && !parts[3].empty())
-                    rule.NonBusinessDayLoadFactors = parse_factors(parts[3]);
-                rules.LoadProfileBusinessDayRule.push_back(rule);
-            }
-            profile.BusinessDayRules = rules;
+    }
+    if (v.business_day_load_rules) {
+        auto rules = profile.child("BusinessDayRules");
+        for (const auto& record : split_fields(*v.business_day_load_rules, ';')) {
+            const auto parts = split_fields(record, '|');
+            auto rule = rules.append("LoadProfileBusinessDayRule");
+            rule.set_text("Date", parts.empty() ? std::string() : parts[0]);
+            rule.set_text("Calendar", parts.size() > 1 ? parts[1] : std::string());
+            if (parts.size() > 2 && !parts[2].empty())
+                write_factors(parts[2], rule.child("BusinessDayLoadFactors"));
+            if (parts.size() > 3 && !parts[3].empty())
+                write_factors(parts[3], rule.child("NonBusinessDayLoadFactors"));
         }
-        r.PowerLoadProfileData = profile;
     }
-    return r;
 }
 
-bondYield reverse_bond_yield(const refdata::domain::bond_yield_convention& v) {
-    bondYield r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Compounding) = v.compounding;
-    if (v.frequency)
-        r.Frequency = parse_frequency(*v.frequency);
-    if (v.price_type) {
-        bondYield_PriceType_t x;
-        static_cast<std::string&>(x) = *v.price_type;
-        r.PriceType = x;
-    }
-    if (v.accuracy)
-        r.Accuracy = static_cast<float>(*v.accuracy);
-    if (v.max_evaluations)
-        r.MaxEvaluations = static_cast<int64_t>(*v.max_evaluations);
-    if (v.guess)
-        r.Guess = static_cast<float>(*v.guess);
-    return r;
+void reverse_bond_yield(const refdata::domain::bond_yield_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Compounding", v.compounding);
+    put_enum(w, "Frequency", v.frequency, "frequency type");
+    w.set_optional_text("PriceType", v.price_type);
+    w.set_optional_real("Accuracy", v.accuracy);
+    w.set_optional_integer("MaxEvaluations", as_integer(v.max_evaluations));
+    w.set_optional_real("Guess", v.guess);
 }
 
-commodityFutureType
-reverse_commodity_future(const refdata::domain::commodity_future_convention& v) {
-    commodityFutureType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.ContractFrequency = parse_frequency(v.contract_frequency);
-    static_cast<std::string&>(r.Calendar) = v.calendar;
-    if (v.expiry_calendar) {
-        commodityFutureType_ExpiryCalendar_t x;
-        static_cast<std::string&>(x) = *v.expiry_calendar;
-        r.ExpiryCalendar = x;
+void write_continuation_mappings(const std::string& s, record_writer mappings) {
+    for (const auto& token : split_fields(s, ',')) {
+        const auto colon = token.find(':');
+        if (colon == std::string::npos)
+            continue;
+        auto m = mappings.append("ContinuationMapping");
+        m.set_integer("From", std::stoll(token.substr(0, colon)));
+        m.set_integer("To", std::stoll(token.substr(colon + 1)));
     }
-    if (v.expiry_month_lag)
-        r.ExpiryMonthLag = static_cast<int64_t>(*v.expiry_month_lag);
-    if (v.one_contract_month)
-        r.OneContractMonth = parse_month(*v.one_contract_month);
-    if (v.offset_days)
-        r.OffsetDays = static_cast<int64_t>(*v.offset_days);
-    if (v.business_day_convention)
-        r.BusinessDayConvention = parse_bdc(*v.business_day_convention);
-    if (v.adjust_before_offset)
-        r.AdjustBeforeOffset = make_bool(*v.adjust_before_offset);
-    if (v.is_averaging)
-        r.IsAveraging = make_bool(*v.is_averaging);
+}
+
+void reverse_commodity_future(const refdata::domain::commodity_future_convention& v,
+                              record_writer w) {
+    w.set_text("Id", v.id);
+    put_enum(w, "ContractFrequency", v.contract_frequency, "frequency type");
+    w.set_text("Calendar", v.calendar);
+    w.set_optional_text("ExpiryCalendar", v.expiry_calendar);
+    w.set_optional_integer("ExpiryMonthLag", as_integer(v.expiry_month_lag));
+    put_enum(w, "OneContractMonth", v.one_contract_month, "month");
+    w.set_optional_integer("OffsetDays", as_integer(v.offset_days));
+    put_bdc(w, "BusinessDayConvention", v.business_day_convention);
+    w.set_optional_flag("AdjustBeforeOffset", v.adjust_before_offset);
+    w.set_optional_flag("IsAveraging", v.is_averaging);
     if (v.valid_contract_months) {
-        commodityFutureType_ValidContractMonths_t months;
+        auto months = w.child("ValidContractMonths");
         std::istringstream in(*v.valid_contract_months);
         std::string token;
         while (std::getline(in, token, ',')) {
             if (!token.empty())
-                months.Month.push_back(parse_month(token));
+                months.append_spelling("Month", token, "month");
         }
-        r.ValidContractMonths = months;
     }
     if (v.anchor_nth_nth || v.anchor_day_of_month || v.anchor_calendar_days_before ||
         v.anchor_business_days_after || v.anchor_nth_weekday || v.anchor_last_weekday ||
         v.anchor_weekly_day_of_the_week) {
-        commodityFutureType_AnchorDay_t a;
+        auto a = w.child("AnchorDay");
         if (v.anchor_nth_nth || v.anchor_nth_weekday) {
-            nthWeekdayType nth;
-            nth.Nth = v.anchor_nth_nth ? static_cast<int64_t>(*v.anchor_nth_nth) : 0;
-            nth.Weekday = parse_weekday(v.anchor_nth_weekday.value_or("Mon"));
-            a.NthWeekday = nth;
+            auto nth = a.child("NthWeekday");
+            nth.set_integer("Nth", v.anchor_nth_nth.value_or(0));
+            nth.set_spelling("Weekday", v.anchor_nth_weekday.value_or("Mon"), "weekday");
         }
-        if (v.anchor_day_of_month)
-            a.DayOfMonth = static_cast<int64_t>(*v.anchor_day_of_month);
-        if (v.anchor_calendar_days_before)
-            a.CalendarDaysBefore = static_cast<uint64_t>(*v.anchor_calendar_days_before);
-        if (v.anchor_last_weekday)
-            a.LastWeekday = parse_weekday(*v.anchor_last_weekday);
-        if (v.anchor_weekly_day_of_the_week)
-            a.WeeklyDayOfTheWeek = parse_weekday(*v.anchor_weekly_day_of_the_week);
-        if (v.anchor_business_days_after)
-            a.BusinessDaysAfter = static_cast<int64_t>(*v.anchor_business_days_after);
-        r.AnchorDay = a;
+        a.set_optional_integer("DayOfMonth", as_integer(v.anchor_day_of_month));
+        a.set_optional_integer("CalendarDaysBefore", as_integer(v.anchor_calendar_days_before));
+        put_enum(a, "LastWeekday", v.anchor_last_weekday, "weekday");
+        put_enum(a, "WeeklyDayOfTheWeek", v.anchor_weekly_day_of_the_week, "weekday");
+        a.set_optional_integer("BusinessDaysAfter", as_integer(v.anchor_business_days_after));
     }
-    if (v.option_expiry_month_lag)
-        r.OptionExpiryMonthLag = static_cast<int64_t>(*v.option_expiry_month_lag);
-    if (v.option_contract_frequency)
-        r.OptionContractFrequency = parse_frequency(*v.option_contract_frequency);
-    if (v.option_expiry_offset)
-        r.OptionExpiryOffset = static_cast<uint64_t>(*v.option_expiry_offset);
-    if (v.option_calendar_days_before)
-        r.OptionCalendarDaysBefore = static_cast<uint64_t>(*v.option_calendar_days_before);
-    if (v.option_min_business_days_before)
-        r.OptionMinBusinessDaysBefore = static_cast<uint64_t>(*v.option_min_business_days_before);
-    if (v.option_expiry_day)
-        r.OptionExpiryDay = static_cast<int64_t>(*v.option_expiry_day);
+    w.set_optional_integer("OptionExpiryMonthLag", as_integer(v.option_expiry_month_lag));
+    put_enum(w, "OptionContractFrequency", v.option_contract_frequency, "frequency type");
+    w.set_optional_integer("OptionExpiryOffset", as_integer(v.option_expiry_offset));
+    w.set_optional_integer("OptionCalendarDaysBefore", as_integer(v.option_calendar_days_before));
+    w.set_optional_integer("OptionMinBusinessDaysBefore",
+                           as_integer(v.option_min_business_days_before));
+    w.set_optional_integer("OptionExpiryDay", as_integer(v.option_expiry_day));
     if (v.option_nth_nth || v.option_nth_weekday) {
-        nthWeekdayType nth;
-        nth.Nth = v.option_nth_nth ? static_cast<int64_t>(*v.option_nth_nth) : 0;
-        nth.Weekday = parse_weekday(v.option_nth_weekday.value_or("Mon"));
-        r.OptionNthWeekday = nth;
+        auto nth = w.child("OptionNthWeekday");
+        nth.set_integer("Nth", v.option_nth_nth.value_or(0));
+        nth.set_spelling("Weekday", v.option_nth_weekday.value_or("Mon"), "weekday");
     }
-    if (v.option_expiry_last_weekday_of_month)
-        r.OptionExpiryLastWeekdayOfMonth = parse_weekday(*v.option_expiry_last_weekday_of_month);
-    if (v.option_expiry_weekly_day_of_the_week)
-        r.OptionExpiryWeeklyDayOfTheWeek = parse_weekday(*v.option_expiry_weekly_day_of_the_week);
-    if (v.option_business_day_convention)
-        r.OptionBusinessDayConvention = parse_bdc(*v.option_business_day_convention);
-    if (v.hours_per_day)
-        r.HoursPerDay = static_cast<uint64_t>(*v.hours_per_day);
+    put_enum(w, "OptionExpiryLastWeekdayOfMonth", v.option_expiry_last_weekday_of_month, "weekday");
+    put_enum(w,
+             "OptionExpiryWeeklyDayOfTheWeek",
+             v.option_expiry_weekly_day_of_the_week,
+             "weekday");
+    put_bdc(w, "OptionBusinessDayConvention", v.option_business_day_convention);
+    w.set_optional_integer("HoursPerDay", as_integer(v.hours_per_day));
     if (v.off_peak_index && v.peak_index && v.off_peak_hours && v.peak_calendar) {
-        offPeakPowerIndexDataType off_peak;
-        static_cast<std::string&>(off_peak.OffPeakIndex) = *v.off_peak_index;
-        static_cast<std::string&>(off_peak.PeakIndex) = *v.peak_index;
-        off_peak.OffPeakHours = *v.off_peak_hours;
-        static_cast<std::string&>(off_peak.PeakCalendar) = *v.peak_calendar;
-        r.OffPeakPowerIndexData = off_peak;
+        auto off_peak = w.child("OffPeakPowerIndexData");
+        off_peak.set_text("OffPeakIndex", *v.off_peak_index);
+        off_peak.set_text("PeakIndex", *v.peak_index);
+        put_decimal(off_peak, "OffPeakHours", *v.off_peak_hours);
+        off_peak.set_text("PeakCalendar", *v.peak_calendar);
     }
-    if (v.index_name) {
-        commodityFutureType_IndexName_t x;
-        static_cast<std::string&>(x) = *v.index_name;
-        r.IndexName = x;
-    }
-    if (v.savings_time) {
-        commodityFutureType_SavingsTime_t x;
-        static_cast<std::string&>(x) = *v.savings_time;
-        r.SavingsTime = x;
-    }
-    if (v.delivery_location) {
-        commodityFutureType_DeliveryLocation_t x;
-        static_cast<std::string&>(x) = *v.delivery_location;
-        r.DeliveryLocation = x;
-    }
-    if (v.balance_of_the_month)
-        r.BalanceOfTheMonth = make_bool(*v.balance_of_the_month);
-    if (v.balance_of_the_month_pricing_calendar) {
-        commodityFutureType_BalanceOfTheMonthPricingCalendar_t x;
-        static_cast<std::string&>(x) = *v.balance_of_the_month_pricing_calendar;
-        r.BalanceOfTheMonthPricingCalendar = x;
-    }
-    if (v.option_underlying_future_convention) {
-        commodityFutureType_OptionUnderlyingFutureConvention_t x;
-        static_cast<std::string&>(x) = *v.option_underlying_future_convention;
-        r.OptionUnderlyingFutureConvention = x;
-    }
+    w.set_optional_text("IndexName", v.index_name);
+    w.set_optional_text("SavingsTime", v.savings_time);
+    w.set_optional_text("DeliveryLocation", v.delivery_location);
+    w.set_optional_flag("BalanceOfTheMonth", v.balance_of_the_month);
+    w.set_optional_text("BalanceOfTheMonthPricingCalendar",
+                        v.balance_of_the_month_pricing_calendar);
+    w.set_optional_text("OptionUnderlyingFutureConvention", v.option_underlying_future_convention);
     if (v.averaging_commodity_name && v.averaging_period && v.averaging_pricing_calendar &&
         v.averaging_conventions) {
-        averagingDataType a;
-        static_cast<std::string&>(a.CommodityName) = *v.averaging_commodity_name;
-        a.Period = parse_averaging_period(*v.averaging_period);
-        static_cast<std::string&>(a.PricingCalendar) = *v.averaging_pricing_calendar;
-        static_cast<std::string&>(a.Conventions) = *v.averaging_conventions;
-        if (v.averaging_use_business_days)
-            a.UseBusinessDays = make_bool(*v.averaging_use_business_days);
-        if (v.averaging_delivery_roll_days)
-            a.DeliveryRollDays = static_cast<uint64_t>(*v.averaging_delivery_roll_days);
-        if (v.averaging_future_month_offset)
-            a.FutureMonthOffset = static_cast<uint64_t>(*v.averaging_future_month_offset);
-        if (v.averaging_daily_expiry_offset)
-            a.DailyExpiryOffset = static_cast<uint64_t>(*v.averaging_daily_expiry_offset);
-        r.AveragingData = a;
+        auto a = w.child("AveragingData");
+        a.set_text("CommodityName", *v.averaging_commodity_name);
+        a.set_spelling("Period", *v.averaging_period, "averaging period");
+        a.set_text("PricingCalendar", *v.averaging_pricing_calendar);
+        a.set_text("Conventions", *v.averaging_conventions);
+        a.set_optional_flag("UseBusinessDays", v.averaging_use_business_days);
+        a.set_optional_integer("DeliveryRollDays", as_integer(v.averaging_delivery_roll_days));
+        a.set_optional_integer("FutureMonthOffset", as_integer(v.averaging_future_month_offset));
+        a.set_optional_integer("DailyExpiryOffset", as_integer(v.averaging_daily_expiry_offset));
     }
     if (v.prohibited_expiries) {
-        prohibitedExpiriesType prohibited;
+        auto dates = w.child("ProhibitedExpiries").child("Dates");
         std::istringstream in(*v.prohibited_expiries);
         std::string token;
         while (std::getline(in, token, ',')) {
-            if (!token.empty()) {
-                prohibitedExpiriesType_Dates_t_Date_t d;
-                static_cast<std::string&>(d) = token;
-                prohibited.Dates.Date.push_back(d);
-            }
-        }
-        r.ProhibitedExpiries = prohibited;
-    }
-    if (v.future_continuation_mappings) {
-        continuationMappingsType mappings;
-        std::istringstream in(*v.future_continuation_mappings);
-        std::string token;
-        while (std::getline(in, token, ',')) {
-            const auto colon = token.find(':');
-            if (colon == std::string::npos)
+            if (token.empty())
                 continue;
-            continuationMappingType m;
-            m.From = static_cast<uint64_t>(std::stoull(token.substr(0, colon)));
-            m.To = static_cast<uint64_t>(std::stoull(token.substr(colon + 1)));
-            mappings.ContinuationMapping.push_back(m);
+            auto d = dates.append("Date");
+            d.set_own_text(token);
         }
-        r.FutureContinuationMappings = mappings;
     }
-    if (v.option_continuation_mappings) {
-        continuationMappingsType mappings;
-        std::istringstream in(*v.option_continuation_mappings);
-        std::string token;
-        while (std::getline(in, token, ',')) {
-            const auto colon = token.find(':');
-            if (colon == std::string::npos)
-                continue;
-            continuationMappingType m;
-            m.From = static_cast<uint64_t>(std::stoull(token.substr(0, colon)));
-            m.To = static_cast<uint64_t>(std::stoull(token.substr(colon + 1)));
-            mappings.ContinuationMapping.push_back(m);
-        }
-        r.OptionContinuationMappings = mappings;
-    }
-    return r;
+    if (v.future_continuation_mappings)
+        write_continuation_mappings(*v.future_continuation_mappings,
+                                    w.child("FutureContinuationMappings"));
+    if (v.option_continuation_mappings)
+        write_continuation_mappings(*v.option_continuation_mappings,
+                                    w.child("OptionContinuationMappings"));
 }
 
-cmsSpreadOptionType
-reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v) {
-    cmsSpreadOptionType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.ForwardStart) = v.forward_start;
-    static_cast<std::string&>(r.SpotDays) = v.spot_days;
-    static_cast<std::string&>(r.SwapTenor) = v.swap_tenor;
-    r.FixingDays = static_cast<int64_t>(v.fixing_days);
-    static_cast<std::string&>(r.Calendar) = v.calendar;
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    r.RollConvention = parse_bdc(v.roll_convention);
-    return r;
+void reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v,
+                               record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("ForwardStart", v.forward_start);
+    w.set_text("SpotDays", v.spot_days);
+    w.set_text("SwapTenor", v.swap_tenor);
+    w.set_integer("FixingDays", v.fixing_days);
+    w.set_text("Calendar", v.calendar);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    put_bdc(w, "RollConvention", v.roll_convention);
 }
 
-crossCurrencyFixFloatType
-reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v) {
-    crossCurrencyFixFloatType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    static_cast<std::string&>(r.SettlementCalendar) = v.settlement_calendar;
-    r.SettlementConvention = parse_bdc(v.settlement_convention);
-    r.FixedCurrency = parse_currency_code(v.fixed_currency);
-    r.FixedFrequency = parse_frequency(v.fixed_frequency);
-    r.FixedConvention = parse_bdc(v.fixed_convention);
-    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
-    static_cast<std::string&>(r.Index) = v.index;
-    if (v.eom)
-        r.EOM = make_bool(*v.eom);
-    if (v.is_resettable)
-        r.IsResettable = make_bool(*v.is_resettable);
-    if (v.float_index_is_resettable)
-        r.FloatIndexIsResettable = make_bool(*v.float_index_is_resettable);
-    if (v.include_spread)
-        r.IncludeSpread = make_bool(*v.include_spread);
-    if (v.lookback) {
-        crossCurrencyFixFloatType_Lookback_t x;
-        static_cast<std::string&>(x) = *v.lookback;
-        r.Lookback = x;
-    }
-    if (v.fixing_days)
-        r.FixingDays = static_cast<int64_t>(*v.fixing_days);
-    if (v.rate_cutoff)
-        r.RateCutoff = static_cast<int64_t>(*v.rate_cutoff);
-    if (v.is_averaged)
-        r.IsAveraged = make_bool(*v.is_averaged);
-    if (v.observation_shift)
-        r.ObservationShift = make_bool(*v.observation_shift);
-    return r;
+void reverse_cross_currency_fix_float(
+    const refdata::domain::cross_currency_fix_float_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_integer("SettlementDays", v.settlement_days);
+    w.set_text("SettlementCalendar", v.settlement_calendar);
+    put_bdc(w, "SettlementConvention", v.settlement_convention);
+    put_enum(w, "FixedCurrency", v.fixed_currency, "currency code");
+    put_enum(w, "FixedFrequency", v.fixed_frequency, "frequency type");
+    put_bdc(w, "FixedConvention", v.fixed_convention);
+    put_day_counter(w, "FixedDayCounter", v.fixed_day_count_fraction);
+    w.set_text("Index", v.index);
+    w.set_optional_flag("EOM", v.eom);
+    w.set_optional_flag("IsResettable", v.is_resettable);
+    w.set_optional_flag("FloatIndexIsResettable", v.float_index_is_resettable);
+    w.set_optional_flag("IncludeSpread", v.include_spread);
+    w.set_optional_text("Lookback", v.lookback);
+    w.set_optional_integer("FixingDays", as_integer(v.fixing_days));
+    w.set_optional_integer("RateCutoff", as_integer(v.rate_cutoff));
+    w.set_optional_flag("IsAveraged", v.is_averaged);
+    w.set_optional_flag("ObservationShift", v.observation_shift);
 }
 
-inflationswapType reverse_inflation_swap(const refdata::domain::inflation_swap_convention& v) {
-    inflationswapType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.FixCalendar) = v.fix_calendar;
-    r.FixConvention = parse_bdc(v.fix_convention);
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    static_cast<std::string&>(r.Index) = v.index;
-    r.Interpolated = make_bool(v.interpolated);
-    static_cast<std::string&>(r.ObservationLag) = v.observation_lag;
-    r.AdjustInflationObservationDates = make_bool(v.adjust_inflation_observation_dates);
-    static_cast<std::string&>(r.InflationCalendar) = v.inflation_calendar;
-    r.InflationConvention = parse_bdc(v.inflation_convention);
-    if (v.publication_roll) {
-        const auto& s = *v.publication_roll;
-        if (s == "None")
-            r.PublicationRoll = publicationRoll::None;
-        else if (s == "OnPublicationDate")
-            r.PublicationRoll = publicationRoll::OnPublicationDate;
-        else if (s == "AfterPublicationDate")
-            r.PublicationRoll = publicationRoll::AfterPublicationDate;
-        else
-            throw std::runtime_error("reverse_inflation_swap: unknown publication_roll: " + s);
-    }
-    if (v.start_delay) {
-        inflationswapType_StartDelay_t x;
-        static_cast<std::string&>(x) = *v.start_delay;
-        r.StartDelay = x;
-    }
-    if (v.start_delay_convention)
-        r.StartDelayConvention = parse_bdc(*v.start_delay_convention);
+void reverse_inflation_swap(const refdata::domain::inflation_swap_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("FixCalendar", v.fix_calendar);
+    put_bdc(w, "FixConvention", v.fix_convention);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    w.set_text("Index", v.index);
+    w.set_flag("Interpolated", v.interpolated);
+    w.set_text("ObservationLag", v.observation_lag);
+    w.set_flag("AdjustInflationObservationDates", v.adjust_inflation_observation_dates);
+    w.set_text("InflationCalendar", v.inflation_calendar);
+    put_bdc(w, "InflationConvention", v.inflation_convention);
+    put_enum(w, "PublicationRoll", v.publication_roll, "publication roll");
+    w.set_optional_text("StartDelay", v.start_delay);
+    put_bdc(w, "StartDelayConvention", v.start_delay_convention);
     if (v.publication_schedule_name || v.publication_schedule_rules ||
         v.publication_schedule_dates || v.publication_schedule_derived_groups) {
-        scheduleData schedule;
-        if (v.publication_schedule_name)
-            schedule.name = xsd::string(*v.publication_schedule_name);
+        auto schedule = w.child("PublicationSchedule");
+        schedule.set_optional_text("name", v.publication_schedule_name);
         if (v.publication_schedule_rules) {
             for (const auto& token : split_fields(*v.publication_schedule_rules, ';')) {
                 if (!token.empty())
-                    schedule.Rules.push_back(parse_schedule_rule(token));
+                    write_schedule_rule(token, schedule.append("Rules"));
             }
         }
         if (v.publication_schedule_dates) {
             for (const auto& token : split_fields(*v.publication_schedule_dates, ';')) {
                 if (!token.empty())
-                    schedule.Dates.push_back(parse_schedule_dates(token));
+                    write_schedule_dates(token, schedule.append("Dates"));
             }
         }
         if (v.publication_schedule_derived_groups) {
             for (const auto& token : split_fields(*v.publication_schedule_derived_groups, ';')) {
                 if (token.size() < 3 || token[1] != '|')
                     continue;
-                DerivedScheduleGroup_group_t group;
-                if (token[0] == 'S')
-                    group.DerivedSchedule = parse_derived_schedule(token.substr(2));
-                else
-                    group.Derived = parse_derived_schedule(token.substr(2));
-                schedule.DerivedScheduleGroup.push_back(group);
+                write_derived_schedule(
+                    token.substr(2), schedule.append(token[0] == 'S' ? "DerivedSchedule" : "Derived"));
             }
         }
-        r.PublicationSchedule = schedule;
     }
-    return r;
 }
 
-bmaBasisSwapType reverse_bma_basis_swap(const refdata::domain::bma_basis_swap_convention& v) {
-    bmaBasisSwapType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Index) = v.index;
-    static_cast<std::string&>(r.BMAIndex) = v.bma_index;
-    if (v.bma_payment_calendar) {
-        bmaBasisSwapType_BMAPaymentCalendar_t x;
-        static_cast<std::string&>(x) = *v.bma_payment_calendar;
-        r.BMAPaymentCalendar = x;
-    }
-    if (v.bma_payment_convention)
-        r.BMAPaymentConvention = parse_bdc(*v.bma_payment_convention);
-    if (v.bma_payment_lag)
-        r.BMAPaymentLag = static_cast<int64_t>(*v.bma_payment_lag);
-    if (v.index_payment_calendar) {
-        bmaBasisSwapType_IndexPaymentCalendar_t x;
-        static_cast<std::string&>(x) = *v.index_payment_calendar;
-        r.IndexPaymentCalendar = x;
-    }
-    if (v.index_payment_convention)
-        r.IndexPaymentConvention = parse_bdc(*v.index_payment_convention);
-    if (v.index_payment_lag)
-        r.IndexPaymentLag = static_cast<int64_t>(*v.index_payment_lag);
-    if (v.index_settlement_days)
-        r.IndexSettlementDays = static_cast<int64_t>(*v.index_settlement_days);
-    if (v.index_payment_period)
-        r.IndexPaymentPeriod = *v.index_payment_period;
-    if (v.overnight_lockout_days)
-        r.OvernightLockoutDays = static_cast<int64_t>(*v.overnight_lockout_days);
-    return r;
+void reverse_bma_basis_swap(const refdata::domain::bma_basis_swap_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Index", v.index);
+    w.set_text("BMAIndex", v.bma_index);
+    w.set_optional_text("BMAPaymentCalendar", v.bma_payment_calendar);
+    put_bdc(w, "BMAPaymentConvention", v.bma_payment_convention);
+    w.set_optional_integer("BMAPaymentLag", as_integer(v.bma_payment_lag));
+    w.set_optional_text("IndexPaymentCalendar", v.index_payment_calendar);
+    put_bdc(w, "IndexPaymentConvention", v.index_payment_convention);
+    w.set_optional_integer("IndexPaymentLag", as_integer(v.index_payment_lag));
+    w.set_optional_integer("IndexSettlementDays", as_integer(v.index_settlement_days));
+    w.set_optional_text("IndexPaymentPeriod", v.index_payment_period);
+    w.set_optional_integer("OvernightLockoutDays", as_integer(v.overnight_lockout_days));
 }
 
-zeroInflationIndexType
-reverse_zero_inflation_index(const refdata::domain::zero_inflation_index_convention& v) {
-    zeroInflationIndexType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.RegionName) = v.region_name;
-    static_cast<std::string&>(r.RegionCode) = v.region_code;
-    r.Revised = make_bool(v.revised);
-    r.Frequency = parse_frequency(v.frequency);
-    static_cast<std::string&>(r.AvailabilityLag) = v.availability_lag;
-    r.Currency = parse_currency_code(v.currency);
-    return r;
+void reverse_zero_inflation_index(const refdata::domain::zero_inflation_index_convention& v,
+                                  record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("RegionName", v.region_name);
+    w.set_text("RegionCode", v.region_code);
+    w.set_flag("Revised", v.revised);
+    put_enum(w, "Frequency", v.frequency, "frequency type");
+    w.set_text("AvailabilityLag", v.availability_lag);
+    put_enum(w, "Currency", v.currency, "currency code");
 }
 
-overnightIndexType reverse_overnight_index(const refdata::domain::overnight_index_convention& v) {
-    overnightIndexType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    return r;
+void reverse_overnight_index(const refdata::domain::overnight_index_convention& v,
+                             record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("FixingCalendar", v.fixing_calendar);
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    w.set_integer("SettlementDays", v.settlement_days);
 }
 
-tenorBasisTwoSwapType
-reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convention& v) {
-    tenorBasisTwoSwapType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Calendar) = v.calendar;
-    r.LongFixedFrequency = parse_frequency(v.long_fixed_frequency);
-    r.LongFixedConvention = parse_bdc(v.long_fixed_convention);
-    r.LongFixedDayCounter = parse_day_counter(v.long_fixed_day_count_fraction);
-    static_cast<std::string&>(r.LongIndex) = v.long_index;
-    r.ShortFixedFrequency = parse_frequency(v.short_fixed_frequency);
-    r.ShortFixedConvention = parse_bdc(v.short_fixed_convention);
-    r.ShortFixedDayCounter = parse_day_counter(v.short_fixed_day_count_fraction);
-    static_cast<std::string&>(r.ShortIndex) = v.short_index;
-    if (v.long_minus_short)
-        r.LongMinusShort = make_bool(*v.long_minus_short);
-    return r;
+void reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convention& v,
+                                  record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Calendar", v.calendar);
+    put_enum(w, "LongFixedFrequency", v.long_fixed_frequency, "frequency type");
+    put_bdc(w, "LongFixedConvention", v.long_fixed_convention);
+    put_day_counter(w, "LongFixedDayCounter", v.long_fixed_day_count_fraction);
+    w.set_text("LongIndex", v.long_index);
+    put_enum(w, "ShortFixedFrequency", v.short_fixed_frequency, "frequency type");
+    put_bdc(w, "ShortFixedConvention", v.short_fixed_convention);
+    put_day_counter(w, "ShortFixedDayCounter", v.short_fixed_day_count_fraction);
+    w.set_text("ShortIndex", v.short_index);
+    w.set_optional_flag("LongMinusShort", v.long_minus_short);
 }
 
-tenorBasisSwapType
-reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
-    tenorBasisSwapType r;
+void reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v,
+                              record_writer w) {
     if (v.convention)
-        static_cast<std::string&>(r.Id) = v.convention->name;
+        w.set_text("Id", v.convention->name);
     if (!v.pay_receive.empty()) {
         const auto& p = v.pay_receive.front();
-        if (p.pay_index) {
-            tenorBasisSwapType_PayIndex_t x;
-            static_cast<std::string&>(x) = *p.pay_index;
-            r.PayIndex = x;
-        }
-        if (p.pay_frequency)
-            r.PayFrequency = *p.pay_frequency;
-        if (p.receive_index) {
-            tenorBasisSwapType_ReceiveIndex_t x;
-            static_cast<std::string&>(x) = *p.receive_index;
-            r.ReceiveIndex = x;
-        }
-        if (p.receive_frequency)
-            r.ReceiveFrequency = *p.receive_frequency;
-        if (p.spread_on_rec)
-            r.SpreadOnRec = make_bool(*p.spread_on_rec);
-        if (p.include_spread)
-            r.IncludeSpread = make_bool(*p.include_spread);
-        if (p.sub_periods_coupon_type) {
-            const auto& s = *p.sub_periods_coupon_type;
-            if (s == "Compounding")
-                r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
-            else if (s == "Averaging")
-                r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
-            else
-                throw std::runtime_error(
-                    "reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " + s);
-        }
-        if (p.pay_is_averaged)
-            r.PayIsAveraged = make_bool(*p.pay_is_averaged);
-        if (p.rec_is_averaged)
-            r.RecIsAveraged = make_bool(*p.rec_is_averaged);
-        return r;
+        w.set_optional_text("PayIndex", p.pay_index);
+        w.set_optional_text("PayFrequency", p.pay_frequency);
+        w.set_optional_text("ReceiveIndex", p.receive_index);
+        w.set_optional_text("ReceiveFrequency", p.receive_frequency);
+        w.set_optional_flag("SpreadOnRec", p.spread_on_rec);
+        w.set_optional_flag("IncludeSpread", p.include_spread);
+        put_enum(w, "SubPeriodsCouponType", p.sub_periods_coupon_type, "sub-periods coupon type");
+        w.set_optional_flag("PayIsAveraged", p.pay_is_averaged);
+        w.set_optional_flag("RecIsAveraged", p.rec_is_averaged);
+        return;
     }
     if (!v.long_short.empty()) {
         const auto& l = v.long_short.front();
-        if (l.long_index) {
-            tenorBasisSwapType_LongIndex_t x;
-            static_cast<std::string&>(x) = *l.long_index;
-            r.LongIndex = x;
-        }
-        if (l.long_pay_tenor)
-            r.LongPayTenor = *l.long_pay_tenor;
-        if (l.short_index) {
-            tenorBasisSwapType_ShortIndex_t x;
-            static_cast<std::string&>(x) = *l.short_index;
-            r.ShortIndex = x;
-        }
-        if (l.short_pay_tenor)
-            r.ShortPayTenor = *l.short_pay_tenor;
-        if (l.spread_on_short)
-            r.SpreadOnShort = make_bool(*l.spread_on_short);
-        if (l.include_spread)
-            r.IncludeSpread = make_bool(*l.include_spread);
-        if (l.sub_periods_coupon_type) {
-            const auto& s = *l.sub_periods_coupon_type;
-            if (s == "Compounding")
-                r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
-            else if (s == "Averaging")
-                r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
-            else
-                throw std::runtime_error(
-                    "reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " + s);
-        }
+        w.set_optional_text("LongIndex", l.long_index);
+        w.set_optional_text("LongPayTenor", l.long_pay_tenor);
+        w.set_optional_text("ShortIndex", l.short_index);
+        w.set_optional_text("ShortPayTenor", l.short_pay_tenor);
+        w.set_optional_flag("SpreadOnShort", l.spread_on_short);
+        w.set_optional_flag("IncludeSpread", l.include_spread);
+        put_enum(w, "SubPeriodsCouponType", l.sub_periods_coupon_type, "sub-periods coupon type");
     }
-    return r;
 }
 
-crossCurrencyBasisType
-reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v) {
-    crossCurrencyBasisType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    if (v.settlement_calendar) {
-        crossCurrencyBasisType_SettlementCalendar_t value;
-        static_cast<std::string&>(value) = *v.settlement_calendar;
-        r.SettlementCalendar = value;
-    }
-    r.RollConvention = parse_bdc(v.roll_convention);
-    static_cast<std::string&>(r.FlatIndex) = v.flat_index;
-    static_cast<std::string&>(r.SpreadIndex) = v.spread_index;
-    if (v.eom)
-        r.EOM = make_bool(*v.eom);
-    if (v.is_resettable)
-        r.IsResettable = make_bool(*v.is_resettable);
-    if (v.flat_index_is_resettable)
-        r.FlatIndexIsResettable = make_bool(*v.flat_index_is_resettable);
-    if (v.flat_tenor) {
-        crossCurrencyBasisType_FlatTenor_t value;
-        static_cast<std::string&>(value) = *v.flat_tenor;
-        r.FlatTenor = value;
-    }
-    if (v.spread_tenor) {
-        crossCurrencyBasisType_SpreadTenor_t value;
-        static_cast<std::string&>(value) = *v.spread_tenor;
-        r.SpreadTenor = value;
-    }
-    if (v.spread_payment_lag)
-        r.SpreadPaymentLag = static_cast<int64_t>(*v.spread_payment_lag);
-    if (v.flat_payment_lag)
-        r.FlatPaymentLag = static_cast<int64_t>(*v.flat_payment_lag);
-    if (v.spread_include_spread)
-        r.SpreadIncludeSpread = make_bool(*v.spread_include_spread);
-    if (v.spread_lookback) {
-        crossCurrencyBasisType_SpreadLookback_t value;
-        static_cast<std::string&>(value) = *v.spread_lookback;
-        r.SpreadLookback = value;
-    }
-    if (v.spread_fixing_days)
-        r.SpreadFixingDays = static_cast<int64_t>(*v.spread_fixing_days);
-    if (v.spread_rate_cutoff)
-        r.SpreadRateCutoff = static_cast<int64_t>(*v.spread_rate_cutoff);
-    if (v.spread_is_averaged)
-        r.SpreadIsAveraged = make_bool(*v.spread_is_averaged);
-    if (v.spread_observation_shift)
-        r.SpreadObservationShift = make_bool(*v.spread_observation_shift);
-    if (v.flat_include_spread)
-        r.FlatIncludeSpread = make_bool(*v.flat_include_spread);
-    if (v.flat_lookback) {
-        crossCurrencyBasisType_FlatLookback_t value;
-        static_cast<std::string&>(value) = *v.flat_lookback;
-        r.FlatLookback = value;
-    }
-    if (v.flat_fixing_days)
-        r.FlatFixingDays = static_cast<int64_t>(*v.flat_fixing_days);
-    if (v.flat_rate_cutoff)
-        r.FlatRateCutoff = static_cast<int64_t>(*v.flat_rate_cutoff);
-    if (v.flat_is_averaged)
-        r.FlatIsAveraged = make_bool(*v.flat_is_averaged);
-    if (v.flat_observation_shift)
-        r.FlatObservationShift = make_bool(*v.flat_observation_shift);
-    return r;
+void reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v,
+                                  record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_integer("SettlementDays", v.settlement_days);
+    w.set_optional_text("SettlementCalendar", v.settlement_calendar);
+    put_bdc(w, "RollConvention", v.roll_convention);
+    w.set_text("FlatIndex", v.flat_index);
+    w.set_text("SpreadIndex", v.spread_index);
+    w.set_optional_flag("EOM", v.eom);
+    w.set_optional_flag("IsResettable", v.is_resettable);
+    w.set_optional_flag("FlatIndexIsResettable", v.flat_index_is_resettable);
+    w.set_optional_text("FlatTenor", v.flat_tenor);
+    w.set_optional_text("SpreadTenor", v.spread_tenor);
+    w.set_optional_integer("SpreadPaymentLag", as_integer(v.spread_payment_lag));
+    w.set_optional_integer("FlatPaymentLag", as_integer(v.flat_payment_lag));
+    w.set_optional_flag("SpreadIncludeSpread", v.spread_include_spread);
+    w.set_optional_text("SpreadLookback", v.spread_lookback);
+    w.set_optional_integer("SpreadFixingDays", as_integer(v.spread_fixing_days));
+    w.set_optional_integer("SpreadRateCutoff", as_integer(v.spread_rate_cutoff));
+    w.set_optional_flag("SpreadIsAveraged", v.spread_is_averaged);
+    w.set_optional_flag("SpreadObservationShift", v.spread_observation_shift);
+    w.set_optional_flag("FlatIncludeSpread", v.flat_include_spread);
+    w.set_optional_text("FlatLookback", v.flat_lookback);
+    w.set_optional_integer("FlatFixingDays", as_integer(v.flat_fixing_days));
+    w.set_optional_integer("FlatRateCutoff", as_integer(v.flat_rate_cutoff));
+    w.set_optional_flag("FlatIsAveraged", v.flat_is_averaged);
+    w.set_optional_flag("FlatObservationShift", v.flat_observation_shift);
 }
 
-averageOISType reverse_average_ois(const refdata::domain::average_ois_convention& v) {
-    averageOISType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.SpotLag = static_cast<int64_t>(v.spot_lag);
-    static_cast<std::string&>(r.FixedTenor) = v.fixed_tenor;
-    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
-    if (v.fixed_calendar) {
-        averageOISType_FixedCalendar_t calendar;
-        static_cast<std::string&>(calendar) = *v.fixed_calendar;
-        r.FixedCalendar = calendar;
-    }
-    if (v.fixed_convention)
-        r.FixedConvention = parse_bdc(*v.fixed_convention);
-    if (v.fixed_payment_convention)
-        r.FixedPaymentConvention = parse_bdc(*v.fixed_payment_convention);
-    if (v.fixed_frequency)
-        r.FixedFrequency = parse_frequency(*v.fixed_frequency);
-    static_cast<std::string&>(r.Index) = v.index;
-    static_cast<std::string&>(r.OnTenor) = v.on_tenor;
-    static_cast<std::string&>(r.RateCutoff) = v.rate_cutoff;
-    return r;
+void reverse_average_ois(const refdata::domain::average_ois_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_integer("SpotLag", v.spot_lag);
+    w.set_text("FixedTenor", v.fixed_tenor);
+    put_day_counter(w, "FixedDayCounter", v.fixed_day_count_fraction);
+    w.set_optional_text("FixedCalendar", v.fixed_calendar);
+    put_bdc(w, "FixedConvention", v.fixed_convention);
+    put_bdc(w, "FixedPaymentConvention", v.fixed_payment_convention);
+    put_enum(w, "FixedFrequency", v.fixed_frequency, "frequency type");
+    w.set_text("Index", v.index);
+    w.set_text("OnTenor", v.on_tenor);
+    w.set_text("RateCutoff", v.rate_cutoff);
 }
 
-fxOption reverse_fx_option(const refdata::domain::fx_option_convention& v) {
-    fxOption r;
-    static_cast<std::string&>(r.Id) = v.id;
-    if (v.fx_convention_id) {
-        fxOption_FXConventionID_t conventions;
-        static_cast<std::string&>(conventions) = *v.fx_convention_id;
-        r.FXConventionID = conventions;
-    }
-    static_cast<std::string&>(r.AtmType) = v.atm_type;
-    static_cast<std::string&>(r.DeltaType) = v.delta_type;
-    if (v.switch_tenor) {
-        fxOption_SwitchTenor_t tenor;
-        static_cast<std::string&>(tenor) = *v.switch_tenor;
-        r.SwitchTenor = tenor;
-    }
-    if (v.long_term_atm_type) {
-        fxOption_LongTermAtmType_t atm;
-        static_cast<std::string&>(atm) = *v.long_term_atm_type;
-        r.LongTermAtmType = atm;
-    }
-    if (v.long_term_delta_type) {
-        fxOption_LongTermDeltaType_t delta;
-        static_cast<std::string&>(delta) = *v.long_term_delta_type;
-        r.LongTermDeltaType = delta;
-    }
-    if (v.risk_reversal_in_favor_of) {
-        fxOption_RiskReversalInFavorOf_t favour;
-        static_cast<std::string&>(favour) = *v.risk_reversal_in_favor_of;
-        r.RiskReversalInFavorOf = favour;
-    }
-    if (v.butterfly_style) {
-        fxOption_ButterflyStyle_t style;
-        static_cast<std::string&>(style) = *v.butterfly_style;
-        r.ButterflyStyle = style;
-    }
-    return r;
+void reverse_fx_option(const refdata::domain::fx_option_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_optional_text("FXConventionID", v.fx_convention_id);
+    w.set_text("AtmType", v.atm_type);
+    w.set_text("DeltaType", v.delta_type);
+    w.set_optional_text("SwitchTenor", v.switch_tenor);
+    w.set_optional_text("LongTermAtmType", v.long_term_atm_type);
+    w.set_optional_text("LongTermDeltaType", v.long_term_delta_type);
+    w.set_optional_text("RiskReversalInFavorOf", v.risk_reversal_in_favor_of);
+    w.set_optional_text("ButterflyStyle", v.butterfly_style);
 }
 
-futureType reverse_future(const refdata::domain::future_convention& v) {
-    futureType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Index) = v.index;
-    if (v.date_generation_rule)
-        r.DateGenerationRule = parse_date_generation_rule(*v.date_generation_rule);
-    if (v.netting_type)
-        r.OvernightIndexFutureNettingType = parse_future_netting_type(*v.netting_type);
-    if (v.calendar) {
-        futureType_Calendar_t calendar;
-        static_cast<std::string&>(calendar) = *v.calendar;
-        r.Calendar = calendar;
-    }
-    if (v.overnight_index_tenor) {
-        futureType_OvernightIndexTenor_t tenor;
-        static_cast<std::string&>(tenor) = *v.overnight_index_tenor;
-        r.OvernightIndexTenor = tenor;
-    }
-    return r;
+void reverse_future(const refdata::domain::future_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Index", v.index);
+    put_enum(w, "DateGenerationRule", v.date_generation_rule, "future date generation rule");
+    put_enum(w,
+             "OvernightIndexFutureNettingType",
+             v.netting_type,
+             "overnight index future netting type");
+    w.set_optional_text("Calendar", v.calendar);
+    w.set_optional_text("OvernightIndexTenor", v.overnight_index_tenor);
 }
 
-swapIndexType reverse_swap_index(const refdata::domain::swap_index_convention& v) {
-    swapIndexType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    static_cast<std::string&>(r.Conventions) = v.conventions;
-    if (v.fixing_calendar) {
-        swapIndexType_FixingCalendar_t calendar;
-        static_cast<std::string&>(calendar) = *v.fixing_calendar;
-        r.FixingCalendar = calendar;
-    }
-    return r;
+void reverse_swap_index(const refdata::domain::swap_index_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_text("Conventions", v.conventions);
+    w.set_optional_text("FixingCalendar", v.fixing_calendar);
 }
 
 std::string fx_convention_id(const std::string& base_currency, const std::string& quote_currency) {
     return base_currency + "-" + quote_currency + "-FX-CONVENTIONS";
 }
 
-fxType reverse_fx(const ores::refdata::messaging::fx_convention& v) {
-    fxType r;
-    static_cast<std::string&>(r.Id) = fx_convention_id(v.pair.base_currency, v.pair.quote_currency);
-    r.SpotDays = static_cast<int64_t>(v.spot_days);
-    r.SourceCurrency = parse_currency_code(v.pair.base_currency);
-    r.TargetCurrency = parse_currency_code(v.pair.quote_currency);
-    r.PointsFactor = v.convention.pip_factor != 0.0 ? 1.0 / v.convention.pip_factor : 0.0;
-    if (!v.advance_calendars.empty()) {
-        std::string joined;
-        for (const auto& code : v.advance_calendars) {
-            if (!joined.empty())
-                joined += ",";
-            joined += code;
-        }
-        fxType_AdvanceCalendar_t ac;
-        static_cast<std::string&>(ac) = joined;
-        r.AdvanceCalendar = ac;
-    }
-    if (v.convention.spot_relative)
-        r.SpotRelative = make_bool(*v.convention.spot_relative);
-    if (v.convention.end_of_month)
-        r.EOM = make_bool(*v.convention.end_of_month);
-    if (v.convention.business_day_convention)
-        r.Convention = parse_bdc(*v.convention.business_day_convention);
-    return r;
+void reverse_fx(const ores::refdata::messaging::fx_convention& v, record_writer w) {
+    w.set_text("Id", fx_convention_id(v.pair.base_currency, v.pair.quote_currency));
+    w.set_integer("SpotDays", v.spot_days);
+    put_enum(w, "SourceCurrency", v.pair.base_currency, "currency code");
+    put_enum(w, "TargetCurrency", v.pair.quote_currency, "currency code");
+    put_decimal(w, "PointsFactor", v.convention.pip_factor != 0.0 ? 1.0 / v.convention.pip_factor : 0.0);
+    if (!v.advance_calendars.empty())
+        w.set_text("AdvanceCalendar", join_with(v.advance_calendars, ','));
+    w.set_optional_flag("SpotRelative", v.convention.spot_relative);
+    w.set_optional_flag("EOM", v.convention.end_of_month);
+    put_bdc(w, "Convention", v.convention.business_day_convention);
 }
 
-cdsConventionsType reverse_cds(const refdata::domain::cds_convention& v) {
-    cdsConventionsType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    cdsConventionsType_Calendar_t calendar;
-    static_cast<std::string&>(calendar) = v.calendar;
-    r.Calendar = calendar;
-    r.Frequency = parse_frequency(v.frequency);
-    r.PaymentConvention = parse_bdc(v.payment_convention);
-    r.Rule = parse_date_rule(v.rule);
-    r.DayCounter = parse_day_counter(v.day_count_fraction);
-    if (v.upfront_settlement_days)
-        r.UpfrontSettlementDays = static_cast<uint64_t>(*v.upfront_settlement_days);
-    r.SettlesAccrual = make_bool(v.settles_accrual);
-    r.PaysAtDefaultTime = make_bool(v.pays_at_default_time);
-    if (v.last_period_day_count_fraction)
-        r.LastPeriodDayCounter = parse_day_counter(*v.last_period_day_count_fraction);
-    return r;
+void reverse_cds(const refdata::domain::cds_convention& v, record_writer w) {
+    w.set_text("Id", v.id);
+    w.set_integer("SettlementDays", v.settlement_days);
+    w.set_text("Calendar", v.calendar);
+    put_enum(w, "Frequency", v.frequency, "frequency type");
+    put_bdc(w, "PaymentConvention", v.payment_convention);
+    put_enum(w, "Rule", v.rule, "date rule");
+    put_day_counter(w, "DayCounter", v.day_count_fraction);
+    w.set_optional_integer("UpfrontSettlementDays", as_integer(v.upfront_settlement_days));
+    w.set_flag("SettlesAccrual", v.settles_accrual);
+    w.set_flag("PaysAtDefaultTime", v.pays_at_default_time);
+    put_day_counter(w, "LastPeriodDayCounter", v.last_period_day_count_fraction);
 }
 
 } // namespace
 
 // ---------------------------------------------------------------------------
-// Normalisation helpers
-// ---------------------------------------------------------------------------
-
-std::string conventions_mapper::normalize_bdc(domain::businessDayConvention v) {
-    using bdc = domain::businessDayConvention;
-    switch (v) {
-        case bdc::F:
-        case bdc::Following:
-        case bdc::FOLLOWING:
-            return "Following";
-        case bdc::MF:
-        case bdc::ModifiedFollowing:
-        case bdc::Modified_Following:
-        case bdc::MODIFIEDF:
-        case bdc::MODFOLLOWING:
-            return "ModifiedFollowing";
-        case bdc::P:
-        case bdc::Preceding:
-        case bdc::PRECEDING:
-            return "Preceding";
-        case bdc::MP:
-        case bdc::ModifiedPreceding:
-        case bdc::Modified_Preceding:
-        case bdc::MODIFIEDP:
-            return "ModifiedPreceding";
-        case bdc::HMMF:
-        case bdc::HalfMonthModifiedFollowing:
-        case bdc::HalfMonthMF:
-        case bdc::Half_Month_Modified_Following:
-        case bdc::HALFMONTHMF:
-            return "HalfMonthModifiedFollowing";
-        case bdc::NEAREST:
-            return "Nearest";
-        case bdc::NONE:
-        case bdc::NotApplicable:
-            return "Unadjusted";
-        case bdc::U:
-        case bdc::Unadjusted:
-        case bdc::INDIFF:
-            return "Unadjusted";
-        case bdc::_:
-        default:
-            throw std::runtime_error("Unknown business day convention enum value");
-    }
-}
-
-std::string conventions_mapper::normalize_day_counter(domain::dayCounter v) {
-    using dc = domain::dayCounter;
-    switch (v) {
-        case dc::A360:
-        case dc::Actual_360:
-        case dc::ACT_360:
-        case dc::Act_360:
-            return "ACT/360";
-        case dc::A360__Incl_Last_:
-        case dc::Actual_360__Incl_Last_:
-        case dc::ACT_360__Incl_Last_:
-            return "ACT/360 (incl. last)";
-        case dc::A365:
-        case dc::A365F:
-        case dc::Actual_365__Fixed_:
-        case dc::Actual_365__fixed_:
-        case dc::ACT_365_FIXED:
-        case dc::ACT_365:
-        case dc::Act_365:
-            return "ACT/365.FIXED";
-        case dc::ACT_365L:
-        case dc::Act_365L:
-            return "ACT/365L";
-        case dc::Act_365__Canadian_Bond_:
-            return "ACT/365 (Canadian Bond)";
-        case dc::T360:
-            return "T360";
-        case dc::_30_360:
-        case dc::_30_360_US:
-        case dc::_30_360__US_:
-        case dc::_30_360_NASD:
-        case dc::_30U_360:
-        case dc::_30US_360:
-        case dc::_30_360__Bond_Basis_:
-            return "30/360";
-        case dc::ACT_nACT:
-            return "ACT/nACT";
-        case dc::_30E_360__Eurobond_Basis_:
-        case dc::_30_360_AIBD__Euro_:
-        case dc::_30E_360_ICMA:
-        case dc::_30E_360_ICMA_2:
-        case dc::_30E_360:
-        case dc::_30E_360E:
-            return "30E/360";
-        case dc::_30E_360_ISDA:
-        case dc::_30E_360_ISDA_2:
-            return "30E/360.ISDA";
-        case dc::_30_360_German:
-        case dc::_30_360__German_:
-            return "30/360 (German)";
-        case dc::_30_360_Italian:
-        case dc::_30_360__Italian_:
-            return "30/360 (Italian)";
-        case dc::ActActISDA:
-        case dc::ACT_ACT_ISDA:
-        case dc::Actual_Actual__ISDA_:
-        case dc::ActualActual__ISDA_:
-        case dc::ACT_ACT:
-        case dc::Act_Act:
-        case dc::ACT29:
-        case dc::ACT:
-            return "ACT/ACT.ISDA";
-        case dc::ActActISMA:
-        case dc::Actual_Actual__ISMA_:
-        case dc::ActualActual__ISMA_:
-        case dc::ACT_ACT_ISMA:
-        case dc::ActActICMA:
-        case dc::Actual_Actual__ICMA_:
-        case dc::ActualActual__ICMA_:
-        case dc::ACT_ACT_ICMA:
-            return "ACT/ACT.ISMA";
-        case dc::ActActAFB:
-        case dc::ACT_ACT_AFB:
-        case dc::Actual_Actual__AFB_:
-            return "ACT/ACT.AFB";
-        case dc::_1_1:
-            return "1/1";
-        case dc::BUS_252:
-        case dc::Business_252:
-            return "BUS/252";
-        case dc::Actual_365__No_Leap_:
-        case dc::Act_365__NL_:
-        case dc::NL_365:
-            return "NL/365";
-        case dc::Actual_365__JGB_:
-            return "ACT/365 (JGB)";
-        case dc::Simple:
-            return "Simple";
-        case dc::Year:
-            return "Year";
-        case dc::A364:
-        case dc::Actual_364:
-        case dc::Act_364:
-        case dc::ACT_364:
-            return "ACT/364";
-        case dc::Month:
-            return "Month";
-        default:
-            throw std::runtime_error("Unknown day counter enum value");
-    }
-}
-
-std::string conventions_mapper::normalize_frequency(domain::frequencyType v) {
-    using ft = domain::frequencyType;
-    switch (v) {
-        case ft::Z:
-        case ft::Once:
-            return "Once";
-        case ft::A:
-        case ft::Annual:
-            return "Annual";
-        case ft::S:
-        case ft::Semiannual:
-            return "Semiannual";
-        case ft::Q:
-        case ft::Quarterly:
-            return "Quarterly";
-        case ft::B:
-        case ft::Bimonthly:
-            return "Bimonthly";
-        case ft::M:
-        case ft::Monthly:
-            return "Monthly";
-        case ft::L:
-        case ft::Lunarmonth:
-            return "Lunarmonth";
-        case ft::W:
-        case ft::Weekly:
-            return "Weekly";
-        case ft::D:
-        case ft::Daily:
-            return "Daily";
-        default:
-            throw std::runtime_error("Unknown frequency type enum value");
-    }
-}
-
-std::string conventions_mapper::normalize_compounding(domain::compounding v) {
-    using cm = domain::compounding;
-    switch (v) {
-        case cm::Simple:
-            return "Simple";
-        case cm::Compounded:
-            return "Compounded";
-        case cm::Continuous:
-            return "Continuous";
-        case cm::SimpleThenCompounded:
-            return "SimpleThenCompounded";
-        case cm::_:
-        default:
-            throw std::runtime_error("Unknown compounding enum value");
-    }
-}
-
-std::string conventions_mapper::normalize_date_rule(domain::dateRule v) {
-    using dr = domain::dateRule;
-    switch (v) {
-        case dr::Backward:
-            return "Backward";
-        case dr::Forward:
-            return "Forward";
-        case dr::Zero:
-            return "Zero";
-        case dr::ThirdWednesday:
-            return "ThirdWednesday";
-        case dr::Twentieth:
-            return "Twentieth";
-        case dr::TwentiethIMM:
-            return "TwentiethIMM";
-        case dr::OldCDS:
-            return "OldCDS";
-        case dr::CDS:
-            return "CDS";
-        case dr::CDS2015:
-            return "CDS2015";
-        case dr::ThirdThursday:
-            return "ThirdThursday";
-        case dr::ThirdFriday:
-            return "ThirdFriday";
-        case dr::MondayAfterThirdFriday:
-            return "MondayAfterThirdFriday";
-        case dr::TuesdayAfterThirdFriday:
-            return "TuesdayAfterThirdFriday";
-        case dr::LastWednesday:
-            return "LastWednesday";
-        case dr::EveryThursday:
-            return "EveryThursday";
-        case dr::_:
-        default:
-            throw std::runtime_error("Unknown date rule enum value");
-    }
-}
-
-bool conventions_mapper::parse_bool(domain::bool_ v) {
-    using b = domain::bool_;
-    switch (v) {
-        case b::Y:
-        case b::YES:
-        case b::TRUE_:
-        case b::True:
-        case b::true_:
-        case b::_1:
-            return true;
-        default:
-            return false;
-    }
-}
-
-// ---------------------------------------------------------------------------
 // Individual type mappers
 // ---------------------------------------------------------------------------
 
-refdata::domain::zero_convention conventions_mapper::map_zero(const zeroType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping zero convention: " << std::string(v.Id);
+refdata::domain::zero_convention conventions_mapper::map_zero(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping zero convention: " << text_of(v, "Id");
 
     refdata::domain::zero_convention r;
-    r.id = std::string(v.Id);
-    r.tenor_based = parse_bool(v.TenorBased);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
-
-    if (v.Compounding)
-        r.compounding = normalize_compounding(*v.Compounding);
-
-    if (v.CompoundingFrequency)
-        r.compounding_frequency = normalize_frequency(*v.CompoundingFrequency);
-
-    if (v.TenorCalendar)
-        r.tenor_calendar = std::string(*v.TenorCalendar);
-
-    if (v.SpotLag)
-        r.spot_lag = static_cast<int>(*v.SpotLag);
-
-    if (v.SpotCalendar)
-        r.spot_calendar = std::string(*v.SpotCalendar);
-
-    if (v.RollConvention)
-        r.roll_convention = normalize_bdc(*v.RollConvention);
-
-    if (v.EOM)
-        r.end_of_month = parse_bool(*v.EOM);
-
+    r.id = text_of(v, "Id");
+    r.tenor_based = flag_of(v, "TenorBased");
+    r.day_count_fraction = day_counter_of(v, "DayCounter");
+    assign(r.compounding, opt_compounding(v, "Compounding"));
+    assign(r.compounding_frequency, opt_frequency(v, "CompoundingFrequency"));
+    assign(r.tenor_calendar, opt_text(v, "TenorCalendar"));
+    assign(r.spot_lag, opt_integer(v, "SpotLag"));
+    assign(r.spot_calendar, opt_text(v, "SpotCalendar"));
+    assign(r.roll_convention, opt_bdc(v, "RollConvention"));
+    assign(r.end_of_month, opt_flag(v, "EOM"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::deposit_convention conventions_mapper::map_deposit(const depositType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping deposit convention: " << std::string(v.Id);
+refdata::domain::deposit_convention conventions_mapper::map_deposit(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping deposit convention: " << text_of(v, "Id");
 
     refdata::domain::deposit_convention r;
-    r.id = std::string(v.Id);
-    r.index_based = parse_bool(v.IndexBased);
-
-    if (v.Index)
-        r.index = std::string(*v.Index);
-
-    if (v.Calendar)
-        r.calendar = std::string(*v.Calendar);
-
-    if (v.Convention)
-        r.convention = normalize_bdc(*v.Convention);
-
-    if (v.EOM)
-        r.end_of_month = parse_bool(*v.EOM);
-
-    if (v.DayCounter)
-        r.day_count_fraction = normalize_day_counter(*v.DayCounter);
-
-    if (v.SettlementDays)
-        r.settlement_days = static_cast<int>(*v.SettlementDays);
-
+    r.id = text_of(v, "Id");
+    r.index_based = flag_of(v, "IndexBased");
+    assign(r.index, opt_text(v, "Index"));
+    assign(r.calendar, opt_text(v, "Calendar"));
+    assign(r.convention, opt_bdc(v, "Convention"));
+    assign(r.end_of_month, opt_flag(v, "EOM"));
+    assign(r.day_count_fraction, opt_day_counter(v, "DayCounter"));
+    assign(r.settlement_days, opt_integer(v, "SettlementDays"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::swap_convention conventions_mapper::map_swap(const swapType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping swap convention: " << std::string(v.Id);
+refdata::domain::swap_convention conventions_mapper::map_swap(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping swap convention: " << text_of(v, "Id");
 
     refdata::domain::swap_convention r;
-    r.id = std::string(v.Id);
-
-    if (v.FixedCalendar)
-        r.fixed_calendar = std::string(*v.FixedCalendar);
-
-    r.fixed_frequency = normalize_frequency(v.FixedFrequency);
-
-    if (v.FixedConvention)
-        r.fixed_convention = normalize_bdc(*v.FixedConvention);
-
-    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
-    r.index = std::string(v.Index);
-
-    if (v.FloatFrequency)
-        r.float_frequency = normalize_frequency(*v.FloatFrequency);
-
-    if (v.SubPeriodsCouponType) {
-        using sp = domain::subPeriodsCouponType;
-        switch (*v.SubPeriodsCouponType) {
-            case sp::Compounding:
-                r.sub_periods_coupon_type = "Compounding";
-                break;
-            case sp::Averaging:
-                r.sub_periods_coupon_type = "Averaging";
-                break;
-            default:
-                throw std::runtime_error("Unknown sub-periods coupon type enum value");
-        }
-    }
-
+    r.id = text_of(v, "Id");
+    assign(r.fixed_calendar, opt_text(v, "FixedCalendar"));
+    r.fixed_frequency = frequency_of(v, "FixedFrequency");
+    assign(r.fixed_convention, opt_bdc(v, "FixedConvention"));
+    r.fixed_day_count_fraction = day_counter_of(v, "FixedDayCounter");
+    r.index = text_of(v, "Index");
+    assign(r.float_frequency, opt_frequency(v, "FloatFrequency"));
+    assign(r.sub_periods_coupon_type, opt_spelling(v, "SubPeriodsCouponType"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::swap_index_convention conventions_mapper::map_swap_index(const swapIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping swap index convention: " << std::string(v.Id);
+refdata::domain::swap_index_convention conventions_mapper::map_swap_index(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping swap index convention: " << text_of(v, "Id");
 
     refdata::domain::swap_index_convention r;
-    r.id = std::string(v.Id);
-    r.conventions = std::string(v.Conventions);
-    if (v.FixingCalendar)
-        r.fixing_calendar = std::string(*v.FixingCalendar);
+    r.id = text_of(v, "Id");
+    r.conventions = text_of(v, "Conventions");
+    assign(r.fixing_calendar, opt_text(v, "FixingCalendar"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::future_convention conventions_mapper::map_future(const futureType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping future convention: " << std::string(v.Id);
+refdata::domain::future_convention conventions_mapper::map_future(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping future convention: " << text_of(v, "Id");
 
     refdata::domain::future_convention r;
-    r.id = std::string(v.Id);
-    r.index = std::string(v.Index);
-    if (v.DateGenerationRule)
-        r.date_generation_rule = to_string(*v.DateGenerationRule);
-    if (v.OvernightIndexFutureNettingType)
-        r.netting_type = to_string(*v.OvernightIndexFutureNettingType);
-    if (v.Calendar)
-        r.calendar = std::string(*v.Calendar);
-    if (v.OvernightIndexTenor)
-        r.overnight_index_tenor = std::string(*v.OvernightIndexTenor);
+    r.id = text_of(v, "Id");
+    r.index = text_of(v, "Index");
+    assign(r.date_generation_rule, opt_spelling(v, "DateGenerationRule"));
+    assign(r.netting_type, opt_spelling(v, "OvernightIndexFutureNettingType"));
+    assign(r.calendar, opt_text(v, "Calendar"));
+    assign(r.overnight_index_tenor, opt_text(v, "OvernightIndexTenor"));
     set_audit(r);
     return r;
 }
 
 refdata::domain::tenor_basis_two_swap_convention
-conventions_mapper::map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping two-tenor basis swap convention: " << std::string(v.Id);
+conventions_mapper::map_tenor_basis_two_swap(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping two-tenor basis swap convention: " << text_of(v, "Id");
 
     refdata::domain::tenor_basis_two_swap_convention r;
-    r.id = std::string(v.Id);
-    r.calendar = std::string(v.Calendar);
-    r.long_fixed_frequency = normalize_frequency(v.LongFixedFrequency);
-    r.long_fixed_convention = normalize_bdc(v.LongFixedConvention);
-    r.long_fixed_day_count_fraction = normalize_day_counter(v.LongFixedDayCounter);
-    r.long_index = std::string(v.LongIndex);
-    r.short_fixed_frequency = normalize_frequency(v.ShortFixedFrequency);
-    r.short_fixed_convention = normalize_bdc(v.ShortFixedConvention);
-    r.short_fixed_day_count_fraction = normalize_day_counter(v.ShortFixedDayCounter);
-    r.short_index = std::string(v.ShortIndex);
-    if (v.LongMinusShort)
-        r.long_minus_short = parse_bool(*v.LongMinusShort);
+    r.id = text_of(v, "Id");
+    r.calendar = text_of(v, "Calendar");
+    r.long_fixed_frequency = frequency_of(v, "LongFixedFrequency");
+    r.long_fixed_convention = bdc_of(v, "LongFixedConvention");
+    r.long_fixed_day_count_fraction = day_counter_of(v, "LongFixedDayCounter");
+    r.long_index = text_of(v, "LongIndex");
+    r.short_fixed_frequency = frequency_of(v, "ShortFixedFrequency");
+    r.short_fixed_convention = bdc_of(v, "ShortFixedConvention");
+    r.short_fixed_day_count_fraction = day_counter_of(v, "ShortFixedDayCounter");
+    r.short_index = text_of(v, "ShortIndex");
+    assign(r.long_minus_short, opt_flag(v, "LongMinusShort"));
     set_audit(r);
     return r;
 }
 
 ores::refdata::messaging::tenor_basis_swap_convention_item
-conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << std::string(v.Id);
+conventions_mapper::map_tenor_basis_swap(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::tenor_basis_swap_convention_item r;
     refdata::domain::convention central;
     central.kind_code = std::string(tenor_basis_swap_kind);
-    central.name = std::string(v.Id);
+    central.name = text_of(v, "Id");
     central.id = provisional_uuid();
     set_audit(central);
     r.key.id = central.id;
@@ -1857,49 +1277,20 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     // The form comes from the leg fields alone. IncludeSpread and
     // SubPeriodsCouponType are written alongside both forms, so they must never
     // decide it.
-    const bool pay_receive_form = v.PayIndex || v.ReceiveIndex;
+    const bool pay_receive_form = v.has("PayIndex") || v.has("ReceiveIndex");
     if (pay_receive_form) {
         refdata::domain::tenor_basis_swap_pay_receive p;
         p.id = provisional_uuid();
         p.convention_id = central.id;
-        if (v.PayIndex)
-            p.pay_index = std::string(*v.PayIndex);
-
-        if (v.PayFrequency)
-            p.pay_frequency = std::string(*v.PayFrequency);
-
-        if (v.ReceiveIndex)
-            p.receive_index = std::string(*v.ReceiveIndex);
-
-        if (v.ReceiveFrequency)
-            p.receive_frequency = std::string(*v.ReceiveFrequency);
-
-        if (v.SpreadOnRec)
-            p.spread_on_rec = parse_bool(*v.SpreadOnRec);
-
-        if (v.IncludeSpread)
-            p.include_spread = parse_bool(*v.IncludeSpread);
-
-        if (v.SubPeriodsCouponType) {
-            using sp = domain::subPeriodsCouponType;
-            switch (*v.SubPeriodsCouponType) {
-                case sp::Compounding:
-                    p.sub_periods_coupon_type = "Compounding";
-                    break;
-                case sp::Averaging:
-                    p.sub_periods_coupon_type = "Averaging";
-                    break;
-                default:
-                    throw std::runtime_error("Unknown sub-periods coupon type enum value");
-            }
-        }
-
-        if (v.PayIsAveraged)
-            p.pay_is_averaged = parse_bool(*v.PayIsAveraged);
-
-        if (v.RecIsAveraged)
-            p.rec_is_averaged = parse_bool(*v.RecIsAveraged);
-
+        assign(p.pay_index, opt_text(v, "PayIndex"));
+        assign(p.pay_frequency, opt_text(v, "PayFrequency"));
+        assign(p.receive_index, opt_text(v, "ReceiveIndex"));
+        assign(p.receive_frequency, opt_text(v, "ReceiveFrequency"));
+        assign(p.spread_on_rec, opt_flag(v, "SpreadOnRec"));
+        assign(p.include_spread, opt_flag(v, "IncludeSpread"));
+        assign(p.sub_periods_coupon_type, opt_spelling(v, "SubPeriodsCouponType"));
+        assign(p.pay_is_averaged, opt_flag(v, "PayIsAveraged"));
+        assign(p.rec_is_averaged, opt_flag(v, "RecIsAveraged"));
         set_audit(p);
         r.pay_receive.push_back(std::move(p));
         return r;
@@ -1908,271 +1299,180 @@ conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     refdata::domain::tenor_basis_swap_long_short l;
     l.id = provisional_uuid();
     l.convention_id = central.id;
-    if (v.LongIndex)
-        l.long_index = std::string(*v.LongIndex);
-
-    if (v.LongPayTenor)
-        l.long_pay_tenor = std::string(*v.LongPayTenor);
-
-    if (v.ShortIndex)
-        l.short_index = std::string(*v.ShortIndex);
-
-    if (v.ShortPayTenor)
-        l.short_pay_tenor = std::string(*v.ShortPayTenor);
-
-    if (v.SpreadOnShort)
-        l.spread_on_short = parse_bool(*v.SpreadOnShort);
-
-    if (v.IncludeSpread)
-        l.include_spread = parse_bool(*v.IncludeSpread);
-
-    if (v.SubPeriodsCouponType) {
-        using sp = domain::subPeriodsCouponType;
-        switch (*v.SubPeriodsCouponType) {
-            case sp::Compounding:
-                l.sub_periods_coupon_type = "Compounding";
-                break;
-            case sp::Averaging:
-                l.sub_periods_coupon_type = "Averaging";
-                break;
-            default:
-                throw std::runtime_error("Unknown sub-periods coupon type enum value");
-        }
-    }
-
+    assign(l.long_index, opt_text(v, "LongIndex"));
+    assign(l.long_pay_tenor, opt_text(v, "LongPayTenor"));
+    assign(l.short_index, opt_text(v, "ShortIndex"));
+    assign(l.short_pay_tenor, opt_text(v, "ShortPayTenor"));
+    assign(l.spread_on_short, opt_flag(v, "SpreadOnShort"));
+    assign(l.include_spread, opt_flag(v, "IncludeSpread"));
+    assign(l.sub_periods_coupon_type, opt_spelling(v, "SubPeriodsCouponType"));
     set_audit(l);
     r.long_short.push_back(std::move(l));
     return r;
 }
 
 refdata::domain::cross_currency_basis_convention
-conventions_mapper::map_cross_currency_basis(const crossCurrencyBasisType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << std::string(v.Id);
+conventions_mapper::map_cross_currency_basis(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << text_of(v, "Id");
 
     refdata::domain::cross_currency_basis_convention r;
-    r.id = std::string(v.Id);
-    r.settlement_days = static_cast<int>(v.SettlementDays);
-    if (v.SettlementCalendar)
-        r.settlement_calendar = std::string(*v.SettlementCalendar);
-    r.roll_convention = normalize_bdc(v.RollConvention);
-    r.flat_index = std::string(v.FlatIndex);
-    r.spread_index = std::string(v.SpreadIndex);
-    if (v.EOM)
-        r.eom = parse_bool(*v.EOM);
-    if (v.IsResettable)
-        r.is_resettable = parse_bool(*v.IsResettable);
-    if (v.FlatIndexIsResettable)
-        r.flat_index_is_resettable = parse_bool(*v.FlatIndexIsResettable);
-    if (v.FlatTenor)
-        r.flat_tenor = std::string(*v.FlatTenor);
-    if (v.SpreadTenor)
-        r.spread_tenor = std::string(*v.SpreadTenor);
-    if (v.SpreadPaymentLag)
-        r.spread_payment_lag = static_cast<int>(*v.SpreadPaymentLag);
-    if (v.FlatPaymentLag)
-        r.flat_payment_lag = static_cast<int>(*v.FlatPaymentLag);
-    if (v.SpreadIncludeSpread)
-        r.spread_include_spread = parse_bool(*v.SpreadIncludeSpread);
-    if (v.SpreadLookback)
-        r.spread_lookback = std::string(*v.SpreadLookback);
-    if (v.SpreadFixingDays)
-        r.spread_fixing_days = static_cast<int>(*v.SpreadFixingDays);
-    if (v.SpreadRateCutoff)
-        r.spread_rate_cutoff = static_cast<int>(*v.SpreadRateCutoff);
-    if (v.SpreadIsAveraged)
-        r.spread_is_averaged = parse_bool(*v.SpreadIsAveraged);
-    if (v.SpreadObservationShift)
-        r.spread_observation_shift = parse_bool(*v.SpreadObservationShift);
-    if (v.FlatIncludeSpread)
-        r.flat_include_spread = parse_bool(*v.FlatIncludeSpread);
-    if (v.FlatLookback)
-        r.flat_lookback = std::string(*v.FlatLookback);
-    if (v.FlatFixingDays)
-        r.flat_fixing_days = static_cast<int>(*v.FlatFixingDays);
-    if (v.FlatRateCutoff)
-        r.flat_rate_cutoff = static_cast<int>(*v.FlatRateCutoff);
-    if (v.FlatIsAveraged)
-        r.flat_is_averaged = parse_bool(*v.FlatIsAveraged);
-    if (v.FlatObservationShift)
-        r.flat_observation_shift = parse_bool(*v.FlatObservationShift);
+    r.id = text_of(v, "Id");
+    r.settlement_days = integer_of(v, "SettlementDays");
+    assign(r.settlement_calendar, opt_text(v, "SettlementCalendar"));
+    r.roll_convention = bdc_of(v, "RollConvention");
+    r.flat_index = text_of(v, "FlatIndex");
+    r.spread_index = text_of(v, "SpreadIndex");
+    assign(r.eom, opt_flag(v, "EOM"));
+    assign(r.is_resettable, opt_flag(v, "IsResettable"));
+    assign(r.flat_index_is_resettable, opt_flag(v, "FlatIndexIsResettable"));
+    assign(r.flat_tenor, opt_text(v, "FlatTenor"));
+    assign(r.spread_tenor, opt_text(v, "SpreadTenor"));
+    assign(r.spread_payment_lag, opt_integer(v, "SpreadPaymentLag"));
+    assign(r.flat_payment_lag, opt_integer(v, "FlatPaymentLag"));
+    assign(r.spread_include_spread, opt_flag(v, "SpreadIncludeSpread"));
+    assign(r.spread_lookback, opt_text(v, "SpreadLookback"));
+    assign(r.spread_fixing_days, opt_integer(v, "SpreadFixingDays"));
+    assign(r.spread_rate_cutoff, opt_integer(v, "SpreadRateCutoff"));
+    assign(r.spread_is_averaged, opt_flag(v, "SpreadIsAveraged"));
+    assign(r.spread_observation_shift, opt_flag(v, "SpreadObservationShift"));
+    assign(r.flat_include_spread, opt_flag(v, "FlatIncludeSpread"));
+    assign(r.flat_lookback, opt_text(v, "FlatLookback"));
+    assign(r.flat_fixing_days, opt_integer(v, "FlatFixingDays"));
+    assign(r.flat_rate_cutoff, opt_integer(v, "FlatRateCutoff"));
+    assign(r.flat_is_averaged, opt_flag(v, "FlatIsAveraged"));
+    assign(r.flat_observation_shift, opt_flag(v, "FlatObservationShift"));
     set_audit(r);
     return r;
 }
 
 refdata::domain::average_ois_convention
-conventions_mapper::map_average_ois(const averageOISType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping averaging OIS convention: " << std::string(v.Id);
+conventions_mapper::map_average_ois(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping averaging OIS convention: " << text_of(v, "Id");
 
     refdata::domain::average_ois_convention r;
-    r.id = std::string(v.Id);
-    r.spot_lag = static_cast<int>(v.SpotLag);
-    r.fixed_tenor = std::string(v.FixedTenor);
-    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
-    // ORE makes the first three of these required, so the binding holds them by
-    // value and every document in the corpus carries them. Only the frequency
-    // is optional, and the corpus never sets it.
-    r.fixed_calendar = std::string(v.FixedCalendar);
-    r.fixed_convention = normalize_bdc(v.FixedConvention);
-    r.fixed_payment_convention = normalize_bdc(v.FixedPaymentConvention);
-    if (v.FixedFrequency)
-        r.fixed_frequency = normalize_frequency(*v.FixedFrequency);
-    r.index = std::string(v.Index);
-    r.on_tenor = std::string(v.OnTenor);
-    r.rate_cutoff = std::string(v.RateCutoff);
+    r.id = text_of(v, "Id");
+    r.spot_lag = integer_of(v, "SpotLag");
+    r.fixed_tenor = text_of(v, "FixedTenor");
+    r.fixed_day_count_fraction = day_counter_of(v, "FixedDayCounter");
+    // ORE makes the first three of these required, so every document in the
+    // corpus carries them. Only the frequency is optional, and the corpus never
+    // sets it.
+    r.fixed_calendar = text_of(v, "FixedCalendar");
+    r.fixed_convention = bdc_of(v, "FixedConvention");
+    r.fixed_payment_convention = bdc_of(v, "FixedPaymentConvention");
+    assign(r.fixed_frequency, opt_frequency(v, "FixedFrequency"));
+    r.index = text_of(v, "Index");
+    r.on_tenor = text_of(v, "OnTenor");
+    r.rate_cutoff = text_of(v, "RateCutoff");
     set_audit(r);
     return r;
 }
 
-refdata::domain::fx_option_convention conventions_mapper::map_fx_option(const fxOption& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << std::string(v.Id);
+refdata::domain::fx_option_convention conventions_mapper::map_fx_option(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << text_of(v, "Id");
 
     refdata::domain::fx_option_convention r;
-    r.id = std::string(v.Id);
-    if (v.FXConventionID)
-        r.fx_convention_id = std::string(*v.FXConventionID);
-    r.atm_type = std::string(v.AtmType);
-    r.delta_type = std::string(v.DeltaType);
-    if (v.SwitchTenor)
-        r.switch_tenor = std::string(*v.SwitchTenor);
-    if (v.LongTermAtmType)
-        r.long_term_atm_type = std::string(*v.LongTermAtmType);
-    if (v.LongTermDeltaType)
-        r.long_term_delta_type = std::string(*v.LongTermDeltaType);
-    if (v.RiskReversalInFavorOf)
-        r.risk_reversal_in_favor_of = std::string(*v.RiskReversalInFavorOf);
-    if (v.ButterflyStyle)
-        r.butterfly_style = std::string(*v.ButterflyStyle);
+    r.id = text_of(v, "Id");
+    assign(r.fx_convention_id, opt_text(v, "FXConventionID"));
+    r.atm_type = text_of(v, "AtmType");
+    r.delta_type = text_of(v, "DeltaType");
+    assign(r.switch_tenor, opt_text(v, "SwitchTenor"));
+    assign(r.long_term_atm_type, opt_text(v, "LongTermAtmType"));
+    assign(r.long_term_delta_type, opt_text(v, "LongTermDeltaType"));
+    assign(r.risk_reversal_in_favor_of, opt_text(v, "RiskReversalInFavorOf"));
+    assign(r.butterfly_style, opt_text(v, "ButterflyStyle"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::ois_convention conventions_mapper::map_ois(const oisType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << std::string(v.Id);
+refdata::domain::ois_convention conventions_mapper::map_ois(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << text_of(v, "Id");
 
     refdata::domain::ois_convention r;
-    r.id = std::string(v.Id);
-    r.spot_lag = static_cast<int>(v.SpotLag);
-    r.index = std::string(v.Index);
-    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
-
-    if (v.FixedCalendar)
-        r.fixed_calendar = std::string(*v.FixedCalendar);
-
-    if (v.PaymentLag)
-        r.payment_lag = static_cast<int>(*v.PaymentLag);
-
-    if (v.EOM)
-        r.end_of_month = parse_bool(*v.EOM);
-
-    if (v.FixedFrequency)
-        r.fixed_frequency = normalize_frequency(*v.FixedFrequency);
-
-    if (v.FixedConvention)
-        r.fixed_convention = normalize_bdc(*v.FixedConvention);
-
-    if (v.FixedPaymentConvention)
-        r.fixed_payment_convention = normalize_bdc(*v.FixedPaymentConvention);
-
-    if (v.Rule)
-        r.rule = normalize_date_rule(*v.Rule);
-
-    if (v.PaymentCalendar)
-        r.payment_calendar = std::string(*v.PaymentCalendar);
-
-    if (v.RateCutoff)
-        r.rate_cutoff = static_cast<int>(*v.RateCutoff);
-
+    r.id = text_of(v, "Id");
+    r.spot_lag = integer_of(v, "SpotLag");
+    r.index = text_of(v, "Index");
+    r.fixed_day_count_fraction = day_counter_of(v, "FixedDayCounter");
+    assign(r.fixed_calendar, opt_text(v, "FixedCalendar"));
+    assign(r.payment_lag, opt_integer(v, "PaymentLag"));
+    assign(r.end_of_month, opt_flag(v, "EOM"));
+    assign(r.fixed_frequency, opt_frequency(v, "FixedFrequency"));
+    assign(r.fixed_convention, opt_bdc(v, "FixedConvention"));
+    assign(r.fixed_payment_convention, opt_bdc(v, "FixedPaymentConvention"));
+    assign(r.rule, opt_date_rule(v, "Rule"));
+    assign(r.payment_calendar, opt_text(v, "PaymentCalendar"));
+    assign(r.rate_cutoff, opt_integer(v, "RateCutoff"));
     set_audit(r);
     return r;
 }
 
-refdata::domain::fra_convention conventions_mapper::map_fra(const fraType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping FRA convention: " << std::string(v.Id);
+refdata::domain::fra_convention conventions_mapper::map_fra(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping FRA convention: " << text_of(v, "Id");
 
     refdata::domain::fra_convention r;
-    r.id = std::string(v.Id);
-    r.index = std::string(v.Index);
+    r.id = text_of(v, "Id");
+    r.index = text_of(v, "Index");
     set_audit(r);
     return r;
 }
 
-refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const iborIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping IBOR index convention: " << std::string(v.Id);
+refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping IBOR index convention: " << text_of(v, "Id");
 
     refdata::domain::ibor_index_convention r;
-    r.id = std::string(v.Id);
-    r.fixing_calendar = std::string(v.FixingCalendar);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
-    r.settlement_days = static_cast<int>(v.SettlementDays);
-    r.business_day_convention = normalize_bdc(v.BusinessDayConvention);
-    r.end_of_month = parse_bool(v.EndOfMonth);
+    r.id = text_of(v, "Id");
+    r.fixing_calendar = text_of(v, "FixingCalendar");
+    r.day_count_fraction = day_counter_of(v, "DayCounter");
+    r.settlement_days = integer_of(v, "SettlementDays");
+    r.business_day_convention = bdc_of(v, "BusinessDayConvention");
+    r.end_of_month = flag_of(v, "EndOfMonth");
     set_audit(r);
     return r;
 }
 
 refdata::domain::commodity_forward_convention
-conventions_mapper::map_commodity_forward(const commodityForwardType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity forward convention: " << std::string(v.Id);
+conventions_mapper::map_commodity_forward(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity forward convention: " << text_of(v, "Id");
 
     refdata::domain::commodity_forward_convention r;
-    r.id = std::string(v.Id);
-
-    if (v.SpotDays)
-        r.spot_days = static_cast<int>(*v.SpotDays);
-
-    if (v.PointsFactor)
-        r.points_factor = *v.PointsFactor;
-
-    if (v.AdvanceCalendar)
-        r.advance_calendar = std::string(*v.AdvanceCalendar);
-
-    if (v.SpotRelative)
-        r.spot_relative = parse_bool(*v.SpotRelative);
-
-    if (v.DeliveryLocation)
-        r.delivery_location = std::string(*v.DeliveryLocation);
-
-    if (v.BusinessDayConvention)
-        r.business_day_convention = normalize_bdc(*v.BusinessDayConvention);
-
-    if (v.Outright)
-        r.outright = parse_bool(*v.Outright);
-
+    r.id = text_of(v, "Id");
+    assign(r.spot_days, opt_integer(v, "SpotDays"));
+    assign(r.points_factor, opt_decimal(v, "PointsFactor"));
+    assign(r.advance_calendar, opt_text(v, "AdvanceCalendar"));
+    assign(r.spot_relative, opt_flag(v, "SpotRelative"));
+    assign(r.delivery_location, opt_text(v, "DeliveryLocation"));
+    assign(r.business_day_convention, opt_bdc(v, "BusinessDayConvention"));
+    assign(r.outright, opt_flag(v, "Outright"));
     set_audit(r);
     return r;
 }
 
 refdata::domain::intraday_power_load_convention
-conventions_mapper::map_intraday_power_load(const intradayPowerLoad& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping intraday power load convention: " << std::string(v.Id);
+conventions_mapper::map_intraday_power_load(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping intraday power load convention: " << text_of(v, "Id");
 
     refdata::domain::intraday_power_load_convention r;
-    r.id = std::string(v.Id);
+    r.id = text_of(v, "Id");
 
-    if (v.PowerLoadProfileData) {
-        const auto& profile = *v.PowerLoadProfileData;
-        if (profile.ExplicitDates) {
+    if (const auto profile = v.child("PowerLoadProfileData")) {
+        if (const auto explicit_dates = profile->child("ExplicitDates")) {
             std::string out;
-            for (const auto& datum : profile.ExplicitDates->LoadProfileDatum) {
+            for (const auto& datum : explicit_dates->children("LoadProfileDatum")) {
                 if (!out.empty())
                     out += ";";
-                out += std::string(datum.Date) + "|" + serialize_factors(datum.LoadFactors);
+                out += text_of(datum, "Date") + "|" +
+                       serialize_factors(datum.child("LoadFactors"));
             }
             r.explicit_load_profile = out;
         }
-        if (profile.BusinessDayRules) {
+        if (const auto rules = profile->child("BusinessDayRules")) {
             std::string out;
-            for (const auto& rule : profile.BusinessDayRules->LoadProfileBusinessDayRule) {
+            for (const auto& rule : rules->children("LoadProfileBusinessDayRule")) {
                 if (!out.empty())
                     out += ";";
-                out +=
-                    std::string(rule.Date) + "|" + std::string(rule.Calendar) + "|" +
-                    (rule.BusinessDayLoadFactors ? serialize_factors(*rule.BusinessDayLoadFactors) :
-                                                   std::string()) +
-                    "|" +
-                    (rule.NonBusinessDayLoadFactors ?
-                         serialize_factors(*rule.NonBusinessDayLoadFactors) :
-                         std::string());
+                out += text_of(rule, "Date") + "|" + text_of(rule, "Calendar") + "|" +
+                       serialize_factors(rule.child("BusinessDayLoadFactors")) + "|" +
+                       serialize_factors(rule.child("NonBusinessDayLoadFactors"));
             }
             r.business_day_load_rules = out;
         }
@@ -2182,312 +1482,203 @@ conventions_mapper::map_intraday_power_load(const intradayPowerLoad& v) {
     return r;
 }
 
-refdata::domain::bond_yield_convention conventions_mapper::map_bond_yield(const bondYield& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << std::string(v.Id);
+refdata::domain::bond_yield_convention conventions_mapper::map_bond_yield(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << text_of(v, "Id");
 
     refdata::domain::bond_yield_convention r;
-    r.id = std::string(v.Id);
-    r.compounding = std::string(v.Compounding);
-
-    if (v.Frequency)
-        r.frequency = normalize_frequency(*v.Frequency);
-
-    if (v.PriceType)
-        r.price_type = std::string(*v.PriceType);
-
-    if (v.Accuracy)
-        r.accuracy = static_cast<double>(*v.Accuracy);
-
-    if (v.MaxEvaluations)
-        r.max_evaluations = static_cast<int>(*v.MaxEvaluations);
-
-    if (v.Guess)
-        r.guess = static_cast<double>(*v.Guess);
-
+    r.id = text_of(v, "Id");
+    r.compounding = text_of(v, "Compounding");
+    assign(r.frequency, opt_frequency(v, "Frequency"));
+    assign(r.price_type, opt_text(v, "PriceType"));
+    assign(r.accuracy, opt_real(v, "Accuracy"));
+    assign(r.max_evaluations, opt_integer(v, "MaxEvaluations"));
+    assign(r.guess, opt_real(v, "Guess"));
     set_audit(r);
     return r;
 }
 
+namespace {
+
+std::string serialize_continuation_mappings(const std::optional<record_reader>& mappings) {
+    std::string out;
+    if (!mappings)
+        return out;
+    for (const auto& m : mappings->children("ContinuationMapping")) {
+        if (!out.empty())
+            out += ",";
+        out += std::to_string(m.integer("From").value_or(0)) + ":" +
+               std::to_string(m.integer("To").value_or(0));
+    }
+    return out;
+}
+
+}
+
 refdata::domain::commodity_future_convention
-conventions_mapper::map_commodity_future(const commodityFutureType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity future convention: " << std::string(v.Id);
+conventions_mapper::map_commodity_future(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity future convention: " << text_of(v, "Id");
 
     refdata::domain::commodity_future_convention r;
-    r.id = std::string(v.Id);
-    r.contract_frequency = normalize_frequency(v.ContractFrequency);
-    r.calendar = std::string(v.Calendar);
+    r.id = text_of(v, "Id");
+    r.contract_frequency = frequency_of(v, "ContractFrequency");
+    r.calendar = text_of(v, "Calendar");
+    assign(r.expiry_calendar, opt_text(v, "ExpiryCalendar"));
+    assign(r.expiry_month_lag, opt_integer(v, "ExpiryMonthLag"));
+    assign(r.one_contract_month, opt_spelling(v, "OneContractMonth"));
+    assign(r.offset_days, opt_integer(v, "OffsetDays"));
+    assign(r.business_day_convention, opt_bdc(v, "BusinessDayConvention"));
+    assign(r.adjust_before_offset, opt_flag(v, "AdjustBeforeOffset"));
+    assign(r.is_averaging, opt_flag(v, "IsAveraging"));
 
-    if (v.ExpiryCalendar)
-        r.expiry_calendar = std::string(*v.ExpiryCalendar);
+    if (const auto months = v.child("ValidContractMonths"))
+        r.valid_contract_months = join_with(months->spellings("Month"), ',');
 
-    if (v.ExpiryMonthLag)
-        r.expiry_month_lag = static_cast<int>(*v.ExpiryMonthLag);
-
-    if (v.OneContractMonth)
-        r.one_contract_month = to_string(*v.OneContractMonth);
-
-    if (v.OffsetDays)
-        r.offset_days = static_cast<int>(*v.OffsetDays);
-
-    if (v.BusinessDayConvention)
-        r.business_day_convention = normalize_bdc(*v.BusinessDayConvention);
-
-    if (v.AdjustBeforeOffset)
-        r.adjust_before_offset = parse_bool(*v.AdjustBeforeOffset);
-
-    if (v.IsAveraging)
-        r.is_averaging = parse_bool(*v.IsAveraging);
-
-    if (v.ValidContractMonths) {
-        std::string months;
-        for (const auto& month : v.ValidContractMonths->Month) {
-            if (!months.empty())
-                months += ",";
-            months += to_string(month);
+    if (const auto a = v.child("AnchorDay")) {
+        if (const auto nth = a->child("NthWeekday")) {
+            r.anchor_nth_nth = integer_of(*nth, "Nth");
+            r.anchor_nth_weekday = opt_spelling(*nth, "Weekday");
         }
-        r.valid_contract_months = months;
+        assign(r.anchor_day_of_month, opt_integer(*a, "DayOfMonth"));
+        assign(r.anchor_calendar_days_before, opt_integer(*a, "CalendarDaysBefore"));
+        assign(r.anchor_last_weekday, opt_spelling(*a, "LastWeekday"));
+        assign(r.anchor_weekly_day_of_the_week, opt_spelling(*a, "WeeklyDayOfTheWeek"));
+        assign(r.anchor_business_days_after, opt_integer(*a, "BusinessDaysAfter"));
     }
 
-    if (v.AnchorDay) {
-        const auto& a = *v.AnchorDay;
-        if (a.NthWeekday) {
-            r.anchor_nth_nth = static_cast<int>(a.NthWeekday->Nth);
-            r.anchor_nth_weekday = to_string(a.NthWeekday->Weekday);
-        }
-        if (a.DayOfMonth)
-            r.anchor_day_of_month = static_cast<int>(*a.DayOfMonth);
-        if (a.CalendarDaysBefore)
-            r.anchor_calendar_days_before = static_cast<int>(*a.CalendarDaysBefore);
-        if (a.LastWeekday)
-            r.anchor_last_weekday = to_string(*a.LastWeekday);
-        if (a.WeeklyDayOfTheWeek)
-            r.anchor_weekly_day_of_the_week = to_string(*a.WeeklyDayOfTheWeek);
-        if (a.BusinessDaysAfter)
-            r.anchor_business_days_after = static_cast<int>(*a.BusinessDaysAfter);
+    assign(r.option_expiry_month_lag, opt_integer(v, "OptionExpiryMonthLag"));
+    assign(r.option_contract_frequency, opt_frequency(v, "OptionContractFrequency"));
+    assign(r.option_expiry_offset, opt_integer(v, "OptionExpiryOffset"));
+    assign(r.option_calendar_days_before, opt_integer(v, "OptionCalendarDaysBefore"));
+    assign(r.option_min_business_days_before, opt_integer(v, "OptionMinBusinessDaysBefore"));
+    assign(r.option_expiry_day, opt_integer(v, "OptionExpiryDay"));
+
+    if (const auto nth = v.child("OptionNthWeekday")) {
+        r.option_nth_nth = integer_of(*nth, "Nth");
+        r.option_nth_weekday = opt_spelling(*nth, "Weekday");
     }
 
-    if (v.OptionExpiryMonthLag)
-        r.option_expiry_month_lag = static_cast<int>(*v.OptionExpiryMonthLag);
+    assign(r.option_expiry_last_weekday_of_month, opt_spelling(v, "OptionExpiryLastWeekdayOfMonth"));
+    assign(r.option_expiry_weekly_day_of_the_week, opt_spelling(v, "OptionExpiryWeeklyDayOfTheWeek"));
+    assign(r.option_business_day_convention, opt_bdc(v, "OptionBusinessDayConvention"));
+    assign(r.hours_per_day, opt_integer(v, "HoursPerDay"));
 
-    if (v.OptionContractFrequency)
-        r.option_contract_frequency = normalize_frequency(*v.OptionContractFrequency);
-
-    if (v.OptionExpiryOffset)
-        r.option_expiry_offset = static_cast<int>(*v.OptionExpiryOffset);
-
-    if (v.OptionCalendarDaysBefore)
-        r.option_calendar_days_before = static_cast<int>(*v.OptionCalendarDaysBefore);
-
-    if (v.OptionMinBusinessDaysBefore)
-        r.option_min_business_days_before = static_cast<int>(*v.OptionMinBusinessDaysBefore);
-
-    if (v.OptionExpiryDay)
-        r.option_expiry_day = static_cast<int>(*v.OptionExpiryDay);
-
-    if (v.OptionNthWeekday) {
-        r.option_nth_nth = static_cast<int>(v.OptionNthWeekday->Nth);
-        r.option_nth_weekday = to_string(v.OptionNthWeekday->Weekday);
+    if (const auto x = v.child("OffPeakPowerIndexData")) {
+        r.off_peak_index = text_of(*x, "OffPeakIndex");
+        r.peak_index = text_of(*x, "PeakIndex");
+        r.off_peak_hours = decimal_of(*x, "OffPeakHours");
+        r.peak_calendar = text_of(*x, "PeakCalendar");
     }
 
-    if (v.OptionExpiryLastWeekdayOfMonth)
-        r.option_expiry_last_weekday_of_month = to_string(*v.OptionExpiryLastWeekdayOfMonth);
+    assign(r.index_name, opt_text(v, "IndexName"));
+    assign(r.savings_time, opt_text(v, "SavingsTime"));
+    assign(r.delivery_location, opt_text(v, "DeliveryLocation"));
+    assign(r.balance_of_the_month, opt_flag(v, "BalanceOfTheMonth"));
+    assign(r.balance_of_the_month_pricing_calendar, opt_text(v, "BalanceOfTheMonthPricingCalendar"));
+    assign(r.option_underlying_future_convention, opt_text(v, "OptionUnderlyingFutureConvention"));
 
-    if (v.OptionExpiryWeeklyDayOfTheWeek)
-        r.option_expiry_weekly_day_of_the_week = to_string(*v.OptionExpiryWeeklyDayOfTheWeek);
-
-    if (v.OptionBusinessDayConvention)
-        r.option_business_day_convention = normalize_bdc(*v.OptionBusinessDayConvention);
-
-    if (v.HoursPerDay)
-        r.hours_per_day = static_cast<int>(*v.HoursPerDay);
-
-    if (v.OffPeakPowerIndexData) {
-        const auto& x = *v.OffPeakPowerIndexData;
-        r.off_peak_index = std::string(x.OffPeakIndex);
-        r.peak_index = std::string(x.PeakIndex);
-        r.off_peak_hours = static_cast<double>(x.OffPeakHours);
-        r.peak_calendar = std::string(x.PeakCalendar);
+    if (const auto a = v.child("AveragingData")) {
+        r.averaging_commodity_name = text_of(*a, "CommodityName");
+        r.averaging_period = spelling_of(*a, "Period", "averaging period");
+        r.averaging_pricing_calendar = text_of(*a, "PricingCalendar");
+        r.averaging_conventions = text_of(*a, "Conventions");
+        assign(r.averaging_use_business_days, opt_flag(*a, "UseBusinessDays"));
+        assign(r.averaging_delivery_roll_days, opt_integer(*a, "DeliveryRollDays"));
+        assign(r.averaging_future_month_offset, opt_integer(*a, "FutureMonthOffset"));
+        assign(r.averaging_daily_expiry_offset, opt_integer(*a, "DailyExpiryOffset"));
     }
 
-    if (v.IndexName)
-        r.index_name = std::string(*v.IndexName);
-
-    if (v.SavingsTime)
-        r.savings_time = std::string(*v.SavingsTime);
-
-    if (v.DeliveryLocation)
-        r.delivery_location = std::string(*v.DeliveryLocation);
-
-    if (v.BalanceOfTheMonth)
-        r.balance_of_the_month = parse_bool(*v.BalanceOfTheMonth);
-
-    if (v.BalanceOfTheMonthPricingCalendar)
-        r.balance_of_the_month_pricing_calendar = std::string(*v.BalanceOfTheMonthPricingCalendar);
-
-    if (v.OptionUnderlyingFutureConvention)
-        r.option_underlying_future_convention = std::string(*v.OptionUnderlyingFutureConvention);
-
-    if (v.AveragingData) {
-        const auto& a = *v.AveragingData;
-        r.averaging_commodity_name = std::string(a.CommodityName);
-        r.averaging_period = to_string(a.Period);
-        r.averaging_pricing_calendar = std::string(a.PricingCalendar);
-        r.averaging_conventions = std::string(a.Conventions);
-        if (a.UseBusinessDays)
-            r.averaging_use_business_days = parse_bool(*a.UseBusinessDays);
-        if (a.DeliveryRollDays)
-            r.averaging_delivery_roll_days = static_cast<int>(*a.DeliveryRollDays);
-        if (a.FutureMonthOffset)
-            r.averaging_future_month_offset = static_cast<int>(*a.FutureMonthOffset);
-        if (a.DailyExpiryOffset)
-            r.averaging_daily_expiry_offset = static_cast<int>(*a.DailyExpiryOffset);
-    }
-
-    if (v.ProhibitedExpiries) {
+    if (const auto prohibited = v.child("ProhibitedExpiries")) {
         std::string dates;
-        for (const auto& d : v.ProhibitedExpiries->Dates.Date) {
-            if (!dates.empty())
-                dates += ",";
-            dates += static_cast<const std::string&>(d);
+        if (const auto list = prohibited->child("Dates")) {
+            for (const auto& d : list->children("Date")) {
+                if (!dates.empty())
+                    dates += ",";
+                dates += d.own_text().value_or(std::string());
+            }
         }
         r.prohibited_expiries = dates;
     }
 
-    if (v.FutureContinuationMappings) {
-        std::string mappings;
-        for (const auto& m : v.FutureContinuationMappings->ContinuationMapping) {
-            if (!mappings.empty())
-                mappings += ",";
-            mappings += std::to_string(m.From) + ":" + std::to_string(m.To);
-        }
-        r.future_continuation_mappings = mappings;
-    }
+    if (const auto mappings = v.child("FutureContinuationMappings"))
+        r.future_continuation_mappings = serialize_continuation_mappings(mappings);
 
-    if (v.OptionContinuationMappings) {
-        std::string mappings;
-        for (const auto& m : v.OptionContinuationMappings->ContinuationMapping) {
-            if (!mappings.empty())
-                mappings += ",";
-            mappings += std::to_string(m.From) + ":" + std::to_string(m.To);
-        }
-        r.option_continuation_mappings = mappings;
-    }
+    if (const auto mappings = v.child("OptionContinuationMappings"))
+        r.option_continuation_mappings = serialize_continuation_mappings(mappings);
 
     set_audit(r);
     return r;
 }
 
 refdata::domain::cms_spread_option_convention
-conventions_mapper::map_cms_spread_option(const cmsSpreadOptionType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping CMS spread option convention: " << std::string(v.Id);
+conventions_mapper::map_cms_spread_option(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping CMS spread option convention: " << text_of(v, "Id");
 
     refdata::domain::cms_spread_option_convention r;
-    r.id = std::string(v.Id);
-    r.forward_start = std::string(v.ForwardStart);
-    r.spot_days = std::string(v.SpotDays);
-    r.swap_tenor = std::string(v.SwapTenor);
-    r.fixing_days = static_cast<int>(v.FixingDays);
-    r.calendar = std::string(v.Calendar);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
-    r.roll_convention = normalize_bdc(v.RollConvention);
+    r.id = text_of(v, "Id");
+    r.forward_start = text_of(v, "ForwardStart");
+    r.spot_days = text_of(v, "SpotDays");
+    r.swap_tenor = text_of(v, "SwapTenor");
+    r.fixing_days = integer_of(v, "FixingDays");
+    r.calendar = text_of(v, "Calendar");
+    r.day_count_fraction = day_counter_of(v, "DayCounter");
+    r.roll_convention = bdc_of(v, "RollConvention");
 
     set_audit(r);
     return r;
 }
 
 refdata::domain::cross_currency_fix_float_convention
-conventions_mapper::map_cross_currency_fix_float(const crossCurrencyFixFloatType& v) {
+conventions_mapper::map_cross_currency_fix_float(const record_reader& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
-                               << std::string(v.Id);
+                               << text_of(v, "Id");
 
     refdata::domain::cross_currency_fix_float_convention r;
-    r.id = std::string(v.Id);
-    r.settlement_days = static_cast<int>(v.SettlementDays);
-    r.settlement_calendar = std::string(v.SettlementCalendar);
-    r.settlement_convention = normalize_bdc(v.SettlementConvention);
-    r.fixed_currency = to_string(v.FixedCurrency);
-    r.fixed_frequency = normalize_frequency(v.FixedFrequency);
-    r.fixed_convention = normalize_bdc(v.FixedConvention);
-    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
-    r.index = std::string(v.Index);
-
-    if (v.EOM)
-        r.eom = parse_bool(*v.EOM);
-
-    if (v.IsResettable)
-        r.is_resettable = parse_bool(*v.IsResettable);
-
-    if (v.FloatIndexIsResettable)
-        r.float_index_is_resettable = parse_bool(*v.FloatIndexIsResettable);
-
-    if (v.IncludeSpread)
-        r.include_spread = parse_bool(*v.IncludeSpread);
-
-    if (v.Lookback)
-        r.lookback = std::string(*v.Lookback);
-
-    if (v.FixingDays)
-        r.fixing_days = static_cast<int>(*v.FixingDays);
-
-    if (v.RateCutoff)
-        r.rate_cutoff = static_cast<int>(*v.RateCutoff);
-
-    if (v.IsAveraged)
-        r.is_averaged = parse_bool(*v.IsAveraged);
-
-    if (v.ObservationShift)
-        r.observation_shift = parse_bool(*v.ObservationShift);
-
+    r.id = text_of(v, "Id");
+    r.settlement_days = integer_of(v, "SettlementDays");
+    r.settlement_calendar = text_of(v, "SettlementCalendar");
+    r.settlement_convention = bdc_of(v, "SettlementConvention");
+    r.fixed_currency = spelling_of(v, "FixedCurrency", "currency code");
+    r.fixed_frequency = frequency_of(v, "FixedFrequency");
+    r.fixed_convention = bdc_of(v, "FixedConvention");
+    r.fixed_day_count_fraction = day_counter_of(v, "FixedDayCounter");
+    r.index = text_of(v, "Index");
+    assign(r.eom, opt_flag(v, "EOM"));
+    assign(r.is_resettable, opt_flag(v, "IsResettable"));
+    assign(r.float_index_is_resettable, opt_flag(v, "FloatIndexIsResettable"));
+    assign(r.include_spread, opt_flag(v, "IncludeSpread"));
+    assign(r.lookback, opt_text(v, "Lookback"));
+    assign(r.fixing_days, opt_integer(v, "FixingDays"));
+    assign(r.rate_cutoff, opt_integer(v, "RateCutoff"));
+    assign(r.is_averaged, opt_flag(v, "IsAveraged"));
+    assign(r.observation_shift, opt_flag(v, "ObservationShift"));
     set_audit(r);
     return r;
 }
 
 refdata::domain::inflation_swap_convention
-conventions_mapper::map_inflation_swap(const inflationswapType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << std::string(v.Id);
+conventions_mapper::map_inflation_swap(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << text_of(v, "Id");
 
     refdata::domain::inflation_swap_convention r;
-    r.id = std::string(v.Id);
-    r.fix_calendar = std::string(v.FixCalendar);
-    r.fix_convention = normalize_bdc(v.FixConvention);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
-    r.index = std::string(v.Index);
-    r.interpolated = parse_bool(v.Interpolated);
-    r.observation_lag = std::string(v.ObservationLag);
-    r.adjust_inflation_observation_dates = parse_bool(v.AdjustInflationObservationDates);
-    r.inflation_calendar = std::string(v.InflationCalendar);
-    r.inflation_convention = normalize_bdc(v.InflationConvention);
+    r.id = text_of(v, "Id");
+    r.fix_calendar = text_of(v, "FixCalendar");
+    r.fix_convention = bdc_of(v, "FixConvention");
+    r.day_count_fraction = day_counter_of(v, "DayCounter");
+    r.index = text_of(v, "Index");
+    r.interpolated = flag_of(v, "Interpolated");
+    r.observation_lag = text_of(v, "ObservationLag");
+    r.adjust_inflation_observation_dates = flag_of(v, "AdjustInflationObservationDates");
+    r.inflation_calendar = text_of(v, "InflationCalendar");
+    r.inflation_convention = bdc_of(v, "InflationConvention");
+    assign(r.publication_roll, opt_spelling(v, "PublicationRoll"));
+    assign(r.start_delay, opt_text(v, "StartDelay"));
+    assign(r.start_delay_convention, opt_bdc(v, "StartDelayConvention"));
 
-    if (v.PublicationRoll) {
-        using pr = domain::publicationRoll;
-        switch (*v.PublicationRoll) {
-            case pr::None:
-                r.publication_roll = "None";
-                break;
-            case pr::OnPublicationDate:
-                r.publication_roll = "OnPublicationDate";
-                break;
-            case pr::AfterPublicationDate:
-                r.publication_roll = "AfterPublicationDate";
-                break;
-            default:
-                throw std::runtime_error("Unknown publication roll enum value");
-        }
-    }
-
-    if (v.StartDelay)
-        r.start_delay = std::string(*v.StartDelay);
-
-    if (v.StartDelayConvention)
-        r.start_delay_convention = normalize_bdc(*v.StartDelayConvention);
-
-    if (v.PublicationSchedule) {
-        const auto& s = *v.PublicationSchedule;
-        if (s.name)
-            r.publication_schedule_name = std::string(*s.name);
+    if (const auto s = v.child("PublicationSchedule")) {
+        assign(r.publication_schedule_name, opt_text(*s, "name"));
 
         std::string rules;
-        for (const auto& rule : s.Rules) {
+        for (const auto& rule : s->children("Rules")) {
             if (!rules.empty())
                 rules += ";";
             rules += serialize_schedule_rule(rule);
@@ -2496,7 +1687,7 @@ conventions_mapper::map_inflation_swap(const inflationswapType& v) {
             r.publication_schedule_rules = rules;
 
         std::string dates;
-        for (const auto& block : s.Dates) {
+        for (const auto& block : s->children("Dates")) {
             if (!dates.empty())
                 dates += ";";
             dates += serialize_schedule_dates(block);
@@ -2505,17 +1696,15 @@ conventions_mapper::map_inflation_swap(const inflationswapType& v) {
             r.publication_schedule_dates = dates;
 
         std::string groups;
-        for (const auto& group : s.DerivedScheduleGroup) {
-            if (group.DerivedSchedule) {
-                if (!groups.empty())
-                    groups += ";";
-                groups += "S|" + serialize_derived_schedule(*group.DerivedSchedule);
-            }
-            if (group.Derived) {
-                if (!groups.empty())
-                    groups += ";";
-                groups += "D|" + serialize_derived_schedule(*group.Derived);
-            }
+        for (const auto& d : s->children("DerivedSchedule")) {
+            if (!groups.empty())
+                groups += ";";
+            groups += "S|" + serialize_derived_schedule(d);
+        }
+        for (const auto& d : s->children("Derived")) {
+            if (!groups.empty())
+                groups += ";";
+            groups += "D|" + serialize_derived_schedule(d);
         }
         if (!groups.empty())
             r.publication_schedule_derived_groups = groups;
@@ -2526,147 +1715,112 @@ conventions_mapper::map_inflation_swap(const inflationswapType& v) {
 }
 
 refdata::domain::bma_basis_swap_convention
-conventions_mapper::map_bma_basis_swap(const bmaBasisSwapType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << std::string(v.Id);
+conventions_mapper::map_bma_basis_swap(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << text_of(v, "Id");
 
     refdata::domain::bma_basis_swap_convention r;
-    r.id = std::string(v.Id);
-    r.index = std::string(v.Index);
-    r.bma_index = std::string(v.BMAIndex);
-
-    if (v.BMAPaymentCalendar)
-        r.bma_payment_calendar = std::string(*v.BMAPaymentCalendar);
-
-    if (v.BMAPaymentConvention)
-        r.bma_payment_convention = normalize_bdc(*v.BMAPaymentConvention);
-
-    if (v.BMAPaymentLag)
-        r.bma_payment_lag = static_cast<int>(*v.BMAPaymentLag);
-
-    if (v.IndexPaymentCalendar)
-        r.index_payment_calendar = std::string(*v.IndexPaymentCalendar);
-
-    if (v.IndexPaymentConvention)
-        r.index_payment_convention = normalize_bdc(*v.IndexPaymentConvention);
-
-    if (v.IndexPaymentLag)
-        r.index_payment_lag = static_cast<int>(*v.IndexPaymentLag);
-
-    if (v.IndexSettlementDays)
-        r.index_settlement_days = static_cast<int>(*v.IndexSettlementDays);
-
-    if (v.IndexPaymentPeriod)
-        r.index_payment_period = std::string(*v.IndexPaymentPeriod);
-
-    if (v.OvernightLockoutDays)
-        r.overnight_lockout_days = static_cast<int>(*v.OvernightLockoutDays);
-
+    r.id = text_of(v, "Id");
+    r.index = text_of(v, "Index");
+    r.bma_index = text_of(v, "BMAIndex");
+    assign(r.bma_payment_calendar, opt_text(v, "BMAPaymentCalendar"));
+    assign(r.bma_payment_convention, opt_bdc(v, "BMAPaymentConvention"));
+    assign(r.bma_payment_lag, opt_integer(v, "BMAPaymentLag"));
+    assign(r.index_payment_calendar, opt_text(v, "IndexPaymentCalendar"));
+    assign(r.index_payment_convention, opt_bdc(v, "IndexPaymentConvention"));
+    assign(r.index_payment_lag, opt_integer(v, "IndexPaymentLag"));
+    assign(r.index_settlement_days, opt_integer(v, "IndexSettlementDays"));
+    assign(r.index_payment_period, opt_text(v, "IndexPaymentPeriod"));
+    assign(r.overnight_lockout_days, opt_integer(v, "OvernightLockoutDays"));
     set_audit(r);
     return r;
 }
 
 refdata::domain::zero_inflation_index_convention
-conventions_mapper::map_zero_inflation_index(const zeroInflationIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: " << std::string(v.Id);
+conventions_mapper::map_zero_inflation_index(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: " << text_of(v, "Id");
 
     refdata::domain::zero_inflation_index_convention r;
-    r.id = std::string(v.Id);
-    r.region_name = std::string(v.RegionName);
-    r.region_code = std::string(v.RegionCode);
-    r.revised = parse_bool(v.Revised);
-    r.frequency = normalize_frequency(v.Frequency);
-    r.availability_lag = std::string(v.AvailabilityLag);
-    r.currency = to_string(v.Currency);
+    r.id = text_of(v, "Id");
+    r.region_name = text_of(v, "RegionName");
+    r.region_code = text_of(v, "RegionCode");
+    r.revised = flag_of(v, "Revised");
+    r.frequency = frequency_of(v, "Frequency");
+    r.availability_lag = text_of(v, "AvailabilityLag");
+    r.currency = spelling_of(v, "Currency", "currency code");
 
     set_audit(r);
     return r;
 }
 
 refdata::domain::overnight_index_convention
-conventions_mapper::map_overnight_index(const overnightIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping overnight index convention: " << std::string(v.Id);
+conventions_mapper::map_overnight_index(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping overnight index convention: " << text_of(v, "Id");
 
     refdata::domain::overnight_index_convention r;
-    r.id = std::string(v.Id);
-    r.fixing_calendar = std::string(v.FixingCalendar);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
-    r.settlement_days = static_cast<int>(v.SettlementDays);
+    r.id = text_of(v, "Id");
+    r.fixing_calendar = text_of(v, "FixingCalendar");
+    r.day_count_fraction = day_counter_of(v, "DayCounter");
+    r.settlement_days = integer_of(v, "SettlementDays");
     set_audit(r);
     return r;
 }
 
-ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const fxType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << std::string(v.Id);
+ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::fx_convention r;
-    r.spot_days = static_cast<int>(v.SpotDays);
+    r.spot_days = integer_of(v, "SpotDays");
+    const double points_factor = decimal_of(v, "PointsFactor");
 
     auto& pair = r.pair;
-    pair.base_currency = to_string(v.SourceCurrency);
-    pair.quote_currency = to_string(v.TargetCurrency);
+    pair.base_currency = spelling_of(v, "SourceCurrency", "currency code");
+    pair.quote_currency = spelling_of(v, "TargetCurrency", "currency code");
     pair.pair_code = pair.base_currency + "/" + pair.quote_currency;
     set_audit(pair);
 
     auto& convention = r.convention;
     convention.pair_code = pair.pair_code;
-    convention.pip_factor = v.PointsFactor != 0.0 ? 1.0 / v.PointsFactor : 0.0;
+    convention.pip_factor = points_factor != 0.0 ? 1.0 / points_factor : 0.0;
     convention.tick_size = 1.0;
     convention.decimal_places =
-        v.PointsFactor > 0.0 ? static_cast<int>(std::lround(std::log10(v.PointsFactor))) : 0;
+        points_factor > 0.0 ? static_cast<int>(std::lround(std::log10(points_factor))) : 0;
 
-    if (v.AdvanceCalendar) {
-        const std::string joined = *v.AdvanceCalendar;
+    if (const auto joined = opt_text(v, "AdvanceCalendar")) {
         std::size_t start = 0;
-        while (start <= joined.size()) {
-            const auto comma = joined.find(',', start);
-            const auto end = comma == std::string::npos ? joined.size() : comma;
+        while (start <= joined->size()) {
+            const auto comma = joined->find(',', start);
+            const auto end = comma == std::string::npos ? joined->size() : comma;
             if (end > start)
-                r.advance_calendars.push_back(joined.substr(start, end - start));
+                r.advance_calendars.push_back(joined->substr(start, end - start));
             if (comma == std::string::npos)
                 break;
             start = comma + 1;
         }
     }
 
-    if (v.SpotRelative)
-        convention.spot_relative = parse_bool(*v.SpotRelative);
-
-    if (v.EOM)
-        convention.end_of_month = parse_bool(*v.EOM);
-
-    if (v.Convention)
-        convention.business_day_convention = normalize_bdc(*v.Convention);
+    assign(convention.spot_relative, opt_flag(v, "SpotRelative"));
+    assign(convention.end_of_month, opt_flag(v, "EOM"));
+    assign(convention.business_day_convention, opt_bdc(v, "Convention"));
 
     set_audit(convention);
     return r;
 }
 
-refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventionsType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping CDS convention: " << std::string(v.Id);
+refdata::domain::cds_convention conventions_mapper::map_cds(const record_reader& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping CDS convention: " << text_of(v, "Id");
 
     refdata::domain::cds_convention r;
-    r.id = std::string(v.Id);
-    if (v.SettlementDays)
-        r.settlement_days = static_cast<int>(*v.SettlementDays);
-    if (v.Calendar)
-        r.calendar = std::string(*v.Calendar);
-    if (v.Frequency)
-        r.frequency = normalize_frequency(*v.Frequency);
-    if (v.PaymentConvention)
-        r.payment_convention = normalize_bdc(*v.PaymentConvention);
-    if (v.Rule)
-        r.rule = normalize_date_rule(*v.Rule);
-    if (v.DayCounter)
-        r.day_count_fraction = normalize_day_counter(*v.DayCounter);
-
-    if (v.UpfrontSettlementDays)
-        r.upfront_settlement_days = static_cast<int>(*v.UpfrontSettlementDays);
-
-    r.settles_accrual = parse_bool(v.SettlesAccrual);
-    r.pays_at_default_time = parse_bool(v.PaysAtDefaultTime);
-
-    if (v.LastPeriodDayCounter)
-        r.last_period_day_count_fraction = normalize_day_counter(*v.LastPeriodDayCounter);
+    r.id = text_of(v, "Id");
+    assign(r.settlement_days, opt_integer(v, "SettlementDays"));
+    assign(r.calendar, opt_text(v, "Calendar"));
+    assign(r.frequency, opt_frequency(v, "Frequency"));
+    assign(r.payment_convention, opt_bdc(v, "PaymentConvention"));
+    assign(r.rule, opt_date_rule(v, "Rule"));
+    assign(r.day_count_fraction, opt_day_counter(v, "DayCounter"));
+    assign(r.upfront_settlement_days, opt_integer(v, "UpfrontSettlementDays"));
+    r.settles_accrual = flag_of(v, "SettlesAccrual");
+    r.pays_at_default_time = flag_of(v, "PaysAtDefaultTime");
+    assign(r.last_period_day_count_fraction, opt_day_counter(v, "LastPeriodDayCounter"));
 
     set_audit(r);
     return r;
@@ -2675,6 +1829,25 @@ refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventions
 // ---------------------------------------------------------------------------
 // Top-level mapper
 // ---------------------------------------------------------------------------
+
+conventions conventions_mapper::read(std::string_view text, std::string_view origin) {
+    conventions record;
+    const auto bound = xml::binder::bind(xg::conventions_document(), text, &record);
+    if (!bound) {
+        const auto where = origin.empty() ? std::string("conventions") : std::string(origin);
+        throw std::invalid_argument(
+            std::format("{}: line {}: {}", where, bound.error().line, bound.error().message));
+    }
+    return record;
+}
+
+std::string conventions_mapper::write(const conventions& v) {
+    std::string out;
+    const auto emitted = xml::emitter::emit(xg::conventions_document(), &v, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
+}
 
 std::map<std::string, std::size_t> conventions_mapper::unmodelled(const conventions& v) {
     // Every category the document carries that this mapper does not model. A
@@ -2685,11 +1858,12 @@ std::map<std::string, std::size_t> conventions_mapper::unmodelled(const conventi
         if (n != 0)
             r.emplace(std::string(name), n);
     };
-    count("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
+    const record_reader root(*xg::conventions_document().root, &v);
+    count("FxOptionTimeWeighting", root.children("FxOptionTimeWeighting").size());
 
     std::size_t rebasing_events = 0;
-    for (const auto& x : v.ZeroInflationIndex)
-        if (x.RebasingEvents)
+    for (const auto& x : root.children("ZeroInflationIndex"))
+        if (x.has("RebasingEvents"))
             ++rebasing_events;
     count("ZeroInflationIndex.RebasingEvents", rebasing_events);
     return r;
@@ -2706,10 +1880,10 @@ using package_row = refdata::service::conventions_bundle_row;
 /**
  * @brief One family's elements, mapped and packed in document order.
  */
-template <typename Rows, typename Convert>
+template <typename Convert>
 void pack_family(refdata::service::conventions_bundle& bundle,
                  std::string_view family,
-                 const Rows& rows,
+                 const std::vector<record_reader>& rows,
                  Convert convert) {
     for (std::size_t i = 0; i < rows.size(); ++i)
         bundle.rows.push_back(
@@ -2747,117 +1921,124 @@ Row unpack_row(const package_row& row) {
  */
 struct family_joiner {
     std::string_view family;
-    void (*join)(const package_row& row, conventions& v);
+    void (*join)(const package_row& row, record_writer& root);
 };
 
 constexpr family_joiner joiners[] = {
     {"average_ois",
-     [](const package_row& row, conventions& v) {
-         v.AverageOIS.push_back(
-             reverse_average_ois(unpack_row<refdata::domain::average_ois_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_average_ois(unpack_row<refdata::domain::average_ois_convention>(row),
+                             root.append("AverageOIS"));
      }},
     {"bma_basis_swap",
-     [](const package_row& row, conventions& v) {
-         v.BMABasisSwap.push_back(
-             reverse_bma_basis_swap(unpack_row<refdata::domain::bma_basis_swap_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_bma_basis_swap(unpack_row<refdata::domain::bma_basis_swap_convention>(row),
+                                root.append("BMABasisSwap"));
      }},
     {"bond_yield",
-     [](const package_row& row, conventions& v) {
-         v.BondYield.push_back(
-             reverse_bond_yield(unpack_row<refdata::domain::bond_yield_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_bond_yield(unpack_row<refdata::domain::bond_yield_convention>(row),
+                            root.append("BondYield"));
      }},
     {"cds",
-     [](const package_row& row, conventions& v) {
-         v.CDS.push_back(reverse_cds(unpack_row<refdata::domain::cds_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_cds(unpack_row<refdata::domain::cds_convention>(row), root.append("CDS"));
      }},
     {"cms_spread_option",
-     [](const package_row& row, conventions& v) {
-         v.CmsSpreadOption.push_back(reverse_cms_spread_option(
-             unpack_row<refdata::domain::cms_spread_option_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_cms_spread_option(unpack_row<refdata::domain::cms_spread_option_convention>(row),
+                                   root.append("CmsSpreadOption"));
      }},
     {"commodity_forward",
-     [](const package_row& row, conventions& v) {
-         v.CommodityForward.push_back(reverse_commodity_forward(
-             unpack_row<refdata::domain::commodity_forward_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_commodity_forward(unpack_row<refdata::domain::commodity_forward_convention>(row),
+                                   root.append("CommodityForward"));
      }},
     {"commodity_future",
-     [](const package_row& row, conventions& v) {
-         v.CommodityFuture.push_back(reverse_commodity_future(
-             unpack_row<refdata::domain::commodity_future_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_commodity_future(unpack_row<refdata::domain::commodity_future_convention>(row),
+                                  root.append("CommodityFuture"));
      }},
     {"cross_currency_basis",
-     [](const package_row& row, conventions& v) {
-         v.CrossCurrencyBasis.push_back(reverse_cross_currency_basis(
-             unpack_row<refdata::domain::cross_currency_basis_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_cross_currency_basis(
+             unpack_row<refdata::domain::cross_currency_basis_convention>(row),
+             root.append("CrossCurrencyBasis"));
      }},
     {"cross_currency_fix_float",
-     [](const package_row& row, conventions& v) {
-         v.CrossCurrencyFixFloat.push_back(reverse_cross_currency_fix_float(
-             unpack_row<refdata::domain::cross_currency_fix_float_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_cross_currency_fix_float(
+             unpack_row<refdata::domain::cross_currency_fix_float_convention>(row),
+             root.append("CrossCurrencyFixFloat"));
      }},
     {"deposit",
-     [](const package_row& row, conventions& v) {
-         v.Deposit.push_back(reverse_deposit(unpack_row<refdata::domain::deposit_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_deposit(unpack_row<refdata::domain::deposit_convention>(row),
+                         root.append("Deposit"));
      }},
     {"fra",
-     [](const package_row& row, conventions& v) {
-         v.FRA.push_back(reverse_fra(unpack_row<refdata::domain::fra_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_fra(unpack_row<refdata::domain::fra_convention>(row), root.append("FRA"));
      }},
     {"future",
-     [](const package_row& row, conventions& v) {
-         v.Future.push_back(reverse_future(unpack_row<refdata::domain::future_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_future(unpack_row<refdata::domain::future_convention>(row),
+                        root.append("Future"));
      }},
     {"fx_option",
-     [](const package_row& row, conventions& v) {
-         v.FxOption.push_back(
-             reverse_fx_option(unpack_row<refdata::domain::fx_option_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_fx_option(unpack_row<refdata::domain::fx_option_convention>(row),
+                           root.append("FxOption"));
      }},
     {"ibor_index",
-     [](const package_row& row, conventions& v) {
-         v.IborIndex.push_back(
-             reverse_ibor_index(unpack_row<refdata::domain::ibor_index_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_ibor_index(unpack_row<refdata::domain::ibor_index_convention>(row),
+                            root.append("IborIndex"));
      }},
     {"inflation_swap",
-     [](const package_row& row, conventions& v) {
-         v.InflationSwap.push_back(
-             reverse_inflation_swap(unpack_row<refdata::domain::inflation_swap_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_inflation_swap(unpack_row<refdata::domain::inflation_swap_convention>(row),
+                                root.append("InflationSwap"));
      }},
     {"intraday_power_load",
-     [](const package_row& row, conventions& v) {
-         v.IntradayPowerLoad.push_back(reverse_intraday_power_load(
-             unpack_row<refdata::domain::intraday_power_load_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_intraday_power_load(
+             unpack_row<refdata::domain::intraday_power_load_convention>(row),
+             root.append("IntradayPowerLoad"));
      }},
     {"ois",
-     [](const package_row& row, conventions& v) {
-         v.OIS.push_back(reverse_ois(unpack_row<refdata::domain::ois_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_ois(unpack_row<refdata::domain::ois_convention>(row), root.append("OIS"));
      }},
     {"overnight_index",
-     [](const package_row& row, conventions& v) {
-         v.OvernightIndex.push_back(
-             reverse_overnight_index(unpack_row<refdata::domain::overnight_index_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_overnight_index(unpack_row<refdata::domain::overnight_index_convention>(row),
+                                 root.append("OvernightIndex"));
      }},
     {"swap",
-     [](const package_row& row, conventions& v) {
-         v.Swap.push_back(reverse_swap(unpack_row<refdata::domain::swap_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_swap(unpack_row<refdata::domain::swap_convention>(row), root.append("Swap"));
      }},
     {"swap_index",
-     [](const package_row& row, conventions& v) {
-         v.SwapIndex.push_back(
-             reverse_swap_index(unpack_row<refdata::domain::swap_index_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_swap_index(unpack_row<refdata::domain::swap_index_convention>(row),
+                            root.append("SwapIndex"));
      }},
     {"tenor_basis_two_swap",
-     [](const package_row& row, conventions& v) {
-         v.TenorBasisTwoSwap.push_back(reverse_tenor_basis_two_swap(
-             unpack_row<refdata::domain::tenor_basis_two_swap_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_tenor_basis_two_swap(
+             unpack_row<refdata::domain::tenor_basis_two_swap_convention>(row),
+             root.append("TenorBasisTwoSwap"));
      }},
     {"zero",
-     [](const package_row& row, conventions& v) {
-         v.Zero.push_back(reverse_zero(unpack_row<refdata::domain::zero_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_zero(unpack_row<refdata::domain::zero_convention>(row), root.append("Zero"));
      }},
     {"zero_inflation_index",
-     [](const package_row& row, conventions& v) {
-         v.ZeroInflationIndex.push_back(reverse_zero_inflation_index(
-             unpack_row<refdata::domain::zero_inflation_index_convention>(row)));
+     [](const package_row& row, record_writer& root) {
+         reverse_zero_inflation_index(
+             unpack_row<refdata::domain::zero_inflation_index_convention>(row),
+             root.append("ZeroInflationIndex"));
      }},
 };
 
@@ -2865,29 +2046,36 @@ constexpr family_joiner joiners[] = {
 
 conventions_package split_conventions(const conventions& v) {
     conventions_package p;
+    const record_reader root(*xg::conventions_document().root, &v);
 
-    pack_family(p.bundle, "average_ois", v.AverageOIS, &conventions_mapper::map_average_ois);
     pack_family(
-        p.bundle, "bma_basis_swap", v.BMABasisSwap, &conventions_mapper::map_bma_basis_swap);
-    pack_family(p.bundle, "bond_yield", v.BondYield, &conventions_mapper::map_bond_yield);
-    pack_family(p.bundle, "cds", v.CDS, &conventions_mapper::map_cds);
+        p.bundle, "average_ois", root.children("AverageOIS"), &conventions_mapper::map_average_ois);
+    pack_family(p.bundle,
+                "bma_basis_swap",
+                root.children("BMABasisSwap"),
+                &conventions_mapper::map_bma_basis_swap);
+    pack_family(
+        p.bundle, "bond_yield", root.children("BondYield"), &conventions_mapper::map_bond_yield);
+    pack_family(p.bundle, "cds", root.children("CDS"), &conventions_mapper::map_cds);
     pack_family(p.bundle,
                 "cms_spread_option",
-                v.CmsSpreadOption,
+                root.children("CmsSpreadOption"),
                 &conventions_mapper::map_cms_spread_option);
     pack_family(p.bundle,
                 "commodity_forward",
-                v.CommodityForward,
+                root.children("CommodityForward"),
                 &conventions_mapper::map_commodity_forward);
-    pack_family(
-        p.bundle, "commodity_future", v.CommodityFuture, &conventions_mapper::map_commodity_future);
+    pack_family(p.bundle,
+                "commodity_future",
+                root.children("CommodityFuture"),
+                &conventions_mapper::map_commodity_future);
 
     // A tenor basis swap is one central convention row plus the parts the
     // document's form populated, and the three are three families.
     int conventions_seen = 0;
     int pay_receives_seen = 0;
     int long_shorts_seen = 0;
-    for (const auto& x : v.TenorBasisSwap) {
+    for (const auto& x : root.children("TenorBasisSwap")) {
         auto item = conventions_mapper::map_tenor_basis_swap(x);
         if (item.convention)
             pack_row(p.bundle, "convention", conventions_seen++, *item.convention);
@@ -2899,43 +2087,51 @@ conventions_package split_conventions(const conventions& v) {
 
     pack_family(p.bundle,
                 "cross_currency_basis",
-                v.CrossCurrencyBasis,
+                root.children("CrossCurrencyBasis"),
                 &conventions_mapper::map_cross_currency_basis);
     pack_family(p.bundle,
                 "cross_currency_fix_float",
-                v.CrossCurrencyFixFloat,
+                root.children("CrossCurrencyFixFloat"),
                 &conventions_mapper::map_cross_currency_fix_float);
-    pack_family(p.bundle, "deposit", v.Deposit, &conventions_mapper::map_deposit);
-    pack_family(p.bundle, "fra", v.FRA, &conventions_mapper::map_fra);
-    pack_family(p.bundle, "future", v.Future, &conventions_mapper::map_future);
-    pack_family(p.bundle, "fx_option", v.FxOption, &conventions_mapper::map_fx_option);
-    pack_family(p.bundle, "ibor_index", v.IborIndex, &conventions_mapper::map_ibor_index);
+    pack_family(p.bundle, "deposit", root.children("Deposit"), &conventions_mapper::map_deposit);
+    pack_family(p.bundle, "fra", root.children("FRA"), &conventions_mapper::map_fra);
+    pack_family(p.bundle, "future", root.children("Future"), &conventions_mapper::map_future);
     pack_family(
-        p.bundle, "inflation_swap", v.InflationSwap, &conventions_mapper::map_inflation_swap);
+        p.bundle, "fx_option", root.children("FxOption"), &conventions_mapper::map_fx_option);
+    pack_family(
+        p.bundle, "ibor_index", root.children("IborIndex"), &conventions_mapper::map_ibor_index);
+    pack_family(p.bundle,
+                "inflation_swap",
+                root.children("InflationSwap"),
+                &conventions_mapper::map_inflation_swap);
     pack_family(p.bundle,
                 "intraday_power_load",
-                v.IntradayPowerLoad,
+                root.children("IntradayPowerLoad"),
                 &conventions_mapper::map_intraday_power_load);
-    pack_family(p.bundle, "ois", v.OIS, &conventions_mapper::map_ois);
+    pack_family(p.bundle, "ois", root.children("OIS"), &conventions_mapper::map_ois);
+    pack_family(p.bundle,
+                "overnight_index",
+                root.children("OvernightIndex"),
+                &conventions_mapper::map_overnight_index);
+    pack_family(p.bundle, "swap", root.children("Swap"), &conventions_mapper::map_swap);
     pack_family(
-        p.bundle, "overnight_index", v.OvernightIndex, &conventions_mapper::map_overnight_index);
-    pack_family(p.bundle, "swap", v.Swap, &conventions_mapper::map_swap);
-    pack_family(p.bundle, "swap_index", v.SwapIndex, &conventions_mapper::map_swap_index);
+        p.bundle, "swap_index", root.children("SwapIndex"), &conventions_mapper::map_swap_index);
     pack_family(p.bundle,
                 "tenor_basis_two_swap",
-                v.TenorBasisTwoSwap,
+                root.children("TenorBasisTwoSwap"),
                 &conventions_mapper::map_tenor_basis_two_swap);
-    pack_family(p.bundle, "zero", v.Zero, &conventions_mapper::map_zero);
+    pack_family(p.bundle, "zero", root.children("Zero"), &conventions_mapper::map_zero);
     pack_family(p.bundle,
                 "zero_inflation_index",
-                v.ZeroInflationIndex,
+                root.children("ZeroInflationIndex"),
                 &conventions_mapper::map_zero_inflation_index);
 
     // An FX convention is a projection of a currency pair, that pair's
     // convention and its advance calendars, so it is kept aside and never
     // packed into a family of its own.
-    p.fx.reserve(v.FX.size());
-    for (const auto& x : v.FX)
+    const auto fx = root.children("FX");
+    p.fx.reserve(fx.size());
+    for (const auto& x : fx)
         p.fx.push_back(conventions_mapper::map_fx(x));
 
     return p;
@@ -2943,6 +2139,7 @@ conventions_package split_conventions(const conventions& v) {
 
 conventions join_conventions(const conventions_package& p) {
     conventions r;
+    record_writer root(*xg::conventions_document().root, &r);
 
     std::vector<refdata::domain::convention> central;
     std::vector<refdata::domain::tenor_basis_swap_pay_receive> pay_receives;
@@ -2973,7 +2170,7 @@ conventions join_conventions(const conventions_package& p) {
             throw std::runtime_error(std::format(
                 "Conventions payload names family \"{}\", which no ORE document element carries.",
                 row.family));
-        joiner->join(row, r);
+        joiner->join(row, root);
     }
 
     // The three families are one document element, so a central row takes back
@@ -2990,12 +2187,11 @@ conventions join_conventions(const conventions_package& p) {
         for (const auto& part : long_shorts)
             if (part.convention_id == c.id)
                 item.long_short.push_back(part);
-        r.TenorBasisSwap.push_back(reverse_tenor_basis_swap(item));
+        reverse_tenor_basis_swap(item, root.append("TenorBasisSwap"));
     }
 
-    r.FX.reserve(p.fx.size());
     for (const auto& fx : p.fx)
-        r.FX.push_back(reverse_fx(fx));
+        reverse_fx(fx, root.append("FX"));
 
     return r;
 }

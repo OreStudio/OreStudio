@@ -19,7 +19,7 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.testing/project_root.hpp"
@@ -61,9 +61,16 @@ std::string read(const std::filesystem::path& path) {
 }
 
 conventions load(const std::filesystem::path& path) {
-    conventions document;
-    load_data(read(path), document);
-    return document;
+    return conventions_mapper::read(read(path), path.string());
+}
+
+ores::ore::xml::record_reader root_of(const conventions& document) {
+    return ores::ore::xml::record_reader(*ores::ore::xml::generated::conventions::conventions_document().root,
+                                         &document);
+}
+
+std::size_t count(const conventions& document, std::string_view element) {
+    return root_of(document).children(element).size();
 }
 
 }
@@ -84,28 +91,28 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
         };
 
         INFO(path.string());
-        CHECK(rows_of("deposit") == document.Deposit.size());
-        CHECK(rows_of("ois") == document.OIS.size());
-        CHECK(rows_of("ibor_index") == document.IborIndex.size());
-        CHECK(rows_of("zero_inflation_index") == document.ZeroInflationIndex.size());
-        CHECK(rows_of("tenor_basis_two_swap") == document.TenorBasisTwoSwap.size());
+        CHECK(rows_of("deposit") == count(document, "Deposit"));
+        CHECK(rows_of("ois") == count(document, "OIS"));
+        CHECK(rows_of("ibor_index") == count(document, "IborIndex"));
+        CHECK(rows_of("zero_inflation_index") == count(document, "ZeroInflationIndex"));
+        CHECK(rows_of("tenor_basis_two_swap") == count(document, "TenorBasisTwoSwap"));
 
         // The one document element that is three families.
-        CHECK(rows_of("convention") == document.TenorBasisSwap.size());
+        CHECK(rows_of("convention") == count(document, "TenorBasisSwap"));
 
         // Every other family packs one row per element, so the rows outside
         // the three tenor basis swap families equal all the elements.
         const std::size_t elements =
-            document.AverageOIS.size() + document.BMABasisSwap.size() + document.BondYield.size() +
-            document.CDS.size() + document.CmsSpreadOption.size() +
-            document.CommodityForward.size() + document.CommodityFuture.size() +
-            document.CrossCurrencyBasis.size() + document.CrossCurrencyFixFloat.size() +
-            document.Deposit.size() + document.FRA.size() + document.Future.size() +
-            document.FxOption.size() + document.IborIndex.size() + document.InflationSwap.size() +
-            document.IntradayPowerLoad.size() + document.OIS.size() +
-            document.OvernightIndex.size() + document.Swap.size() + document.SwapIndex.size() +
-            document.TenorBasisTwoSwap.size() + document.Zero.size() +
-            document.ZeroInflationIndex.size();
+            count(document, "AverageOIS") + count(document, "BMABasisSwap") + count(document, "BondYield") +
+            count(document, "CDS") + count(document, "CmsSpreadOption") +
+            count(document, "CommodityForward") + count(document, "CommodityFuture") +
+            count(document, "CrossCurrencyBasis") + count(document, "CrossCurrencyFixFloat") +
+            count(document, "Deposit") + count(document, "FRA") + count(document, "Future") +
+            count(document, "FxOption") + count(document, "IborIndex") + count(document, "InflationSwap") +
+            count(document, "IntradayPowerLoad") + count(document, "OIS") +
+            count(document, "OvernightIndex") + count(document, "Swap") + count(document, "SwapIndex") +
+            count(document, "TenorBasisTwoSwap") + count(document, "Zero") +
+            count(document, "ZeroInflationIndex");
         const std::size_t outside_tenor_basis_swap =
             package.bundle.rows.size() - rows_of("convention") -
             rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short");
@@ -121,26 +128,26 @@ TEST_CASE("the_package_keeps_the_fx_convention_out_of_the_bundle", tags) {
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         const auto document = load(path);
-        if (document.FX.empty())
+        if (count(document, "FX") == 0)
             continue;
 
         ++files_with_fx;
         const auto package = split_conventions(document);
 
         INFO(path.string());
-        CHECK(package.fx.size() == document.FX.size());
+        CHECK(package.fx.size() == count(document, "FX"));
         for (const auto& row : package.bundle.rows)
             CHECK(row.family != "fx");
 
         // An FX convention is a projection of the pair, its convention and its
         // calendars, so it comes back unchanged and was never stored.
         const auto joined = join_conventions(package);
-        REQUIRE(joined.FX.size() == document.FX.size());
-        for (std::size_t i = 0; i < document.FX.size(); ++i) {
-            CHECK(to_string(joined.FX[i].SourceCurrency) ==
-                  to_string(document.FX[i].SourceCurrency));
-            CHECK(to_string(joined.FX[i].TargetCurrency) ==
-                  to_string(document.FX[i].TargetCurrency));
+        REQUIRE(count(joined, "FX") == count(document, "FX"));
+        const auto before = root_of(document).children("FX");
+        const auto after = root_of(joined).children("FX");
+        for (std::size_t i = 0; i < before.size(); ++i) {
+            CHECK(after[i].spelling("SourceCurrency") == before[i].spelling("SourceCurrency"));
+            CHECK(after[i].spelling("TargetCurrency") == before[i].spelling("TargetCurrency"));
         }
     }
 
@@ -172,7 +179,7 @@ TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap", 
     conventions_package package;
     package.bundle.rows.push_back({"convention", 0, rfl::json::write(c)});
 
-    CHECK(join_conventions(package).TenorBasisSwap.empty());
+    CHECK(count(join_conventions(package), "TenorBasisSwap") == 0);
 }
 
 TEST_CASE("every_family_the_package_names_is_one_the_registry_names", tags) {
@@ -222,11 +229,11 @@ TEST_CASE("the_difference_reports_a_changed_non_tenor_convention", tags) {
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         auto document = load(path);
-        if (document.Deposit.empty() || !conventions_mapper::unmodelled(document).empty())
+        if (count(document, "Deposit") == 0 || !conventions_mapper::unmodelled(document).empty())
             continue;
 
         auto edited = document;
-        static_cast<std::string&>(edited.Deposit.front().Id) += "-CHANGED";
+        edited.deposit.front().id += "-CHANGED";
 
         ++changed;
         INFO(path.string());

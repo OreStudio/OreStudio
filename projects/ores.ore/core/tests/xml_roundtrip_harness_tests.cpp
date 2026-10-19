@@ -19,7 +19,6 @@
 
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -88,9 +87,11 @@ TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "conventions",
         "conventions",
+        &conventions_mapper::read,
+        &conventions_mapper::write,
         &ores::ore::domain::split_conventions,
         &ores::ore::domain::join_conventions,
-        ores::ore::xml::parsed_text_difference<conventions>);
+        ores::ore::domain::conventions_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
@@ -102,9 +103,11 @@ TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "conventions, lossy",
         "conventions",
+        &conventions_mapper::read,
+        &conventions_mapper::write,
         lose_everything,
         rebuild_nothing,
-        ores::ore::xml::parsed_text_difference<conventions>);
+        ores::ore::domain::conventions_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
@@ -117,9 +120,11 @@ TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold"
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "basel traffic light",
         "baselTrafficLight",
+        &conventions_mapper::read,
+        &conventions_mapper::write,
         &ores::ore::domain::split_conventions,
         &ores::ore::domain::join_conventions,
-        ores::ore::xml::parsed_text_difference<conventions>);
+        ores::ore::domain::conventions_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 

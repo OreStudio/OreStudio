@@ -20,11 +20,12 @@
 #include "conventions_rows.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/curve_configuration_projection.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
-#include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
@@ -85,48 +86,28 @@ boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
     return make_definition(h, parties.a, parties.a_context);
 }
 
-template <typename Document>
-Document parse(const std::string& content) {
-    Document d;
-    domain::load_data(content, d);
-    return d;
-}
-
-template <typename Document>
-std::string difference(const store::input_files& original,
-                       const store::input_files& exported,
-                       const std::string& name) {
-    const auto it = exported.find(name);
-    if (it == exported.end())
-        return name + " was not exported";
-    return xml::parsed_text_difference(
-        parse<Document>(original.at(name)), parse<Document>(it->second), example + name);
-}
-
-// Today's market is compared by the table, as the family is read through it.
-std::string market_difference(const store::input_files& original,
+// Two documents are compared as the records the codec reads, so a field the
+// export loses is a named difference.
+template <typename Projection>
+std::string record_difference(const store::input_files& original,
                               const store::input_files& exported,
-                              const std::string& name) {
+                              const std::string& name,
+                              const xml::document_type& type) {
     const auto it = exported.find(name);
     if (it == exported.end())
         return name + " was not exported";
-    using projection = domain::todays_market_projection;
-    const auto left = projection::read(original.at(name), example + name);
-    const auto right = projection::read(it->second, name);
-    const auto found = xml::compare_records(
-        *xml::generated::todays_market::todays_market_document().root, &left, &right);
+    const auto left = Projection::read(original.at(name), example + name);
+    const auto right = Projection::read(it->second, name);
+    const auto found = xml::compare_records(*type.root, &left, &right);
     return found ? example + name + ": " + found->path + ": " + found->detail : std::string();
 }
 
-std::map<std::string, std::string> parameters_of(const domain::parameterListType& list) {
+template <typename List>
+std::map<std::string, std::string> parameters_of(const List& list) {
     std::map<std::string, std::string> out;
-    for (const auto& p : list.Parameter)
-        out[std::string(p.name)] = static_cast<const std::string&>(p);
+    for (const auto& p : list.parameter)
+        out[p.name] = p.value;
     return out;
-}
-
-std::string type_of(const domain::analyticsType_Analytic_t& a) {
-    return a.type ? std::string(*a.type) : std::string();
 }
 
 template <typename Rows>
@@ -157,12 +138,27 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     const auto exported = store::export_run(parties.a_context, definition);
     CHECK(exported.size() == imported.stored.size());
 
-    CHECK(difference<domain::pricingengines>(original, exported, "pricingengine.xml").empty());
-    CHECK(market_difference(original, exported, "todaysmarket.xml").empty());
-    CHECK(difference<domain::curveconfiguration>(original, exported, "curveconfig.xml").empty());
+    CHECK(record_difference<domain::pricing_engine_projection>(
+              original,
+              exported,
+              "pricingengine.xml",
+              xml::generated::pricing_engines::pricing_engines_document())
+              .empty());
+    CHECK(record_difference<domain::todays_market_projection>(
+              original,
+              exported,
+              "todaysmarket.xml",
+              xml::generated::todays_market::todays_market_document())
+              .empty());
+    CHECK(record_difference<domain::curve_configuration_projection>(
+              original,
+              exported,
+              "curveconfig.xml",
+              xml::generated::curve_configuration::curve_configuration_document())
+              .empty());
 
-    const auto run = parse<domain::ore>(original.at("ore.xml"));
-    const auto exported_run = parse<domain::ore>(exported.at("ore.xml"));
+    const auto run = domain::run_document_projection::read(original.at("ore.xml"));
+    const auto exported_run = domain::run_document_projection::read(exported.at("ore.xml"));
     // The export names every file it hands the packaging step, the run's own
     // data files included. The portfolio, the market data and the fixings belong
     // to no configuration, but the packaging step places the gathered market
@@ -170,23 +166,24 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     // named none would leave them out of the package. The names come from the
     // file type catalogue rather than from the document, which is why the
     // example's names come back as the catalogue spells them.
-    CHECK(parameters_of(exported_run.Setup) == parameters_of(run.Setup));
-    REQUIRE(exported_run.Markets);
-    CHECK(parameters_of(*exported_run.Markets) == parameters_of(*run.Markets));
-    REQUIRE(exported_run.Analytics.Analytic.size() == run.Analytics.Analytic.size());
-    for (std::size_t i = 0; i < run.Analytics.Analytic.size(); ++i) {
+    CHECK(parameters_of(exported_run.setup) == parameters_of(run.setup));
+    REQUIRE(xml::is_present(
+        *xml::generated::ore::ore_document().root, &exported_run, "Markets"));
+    CHECK(parameters_of(exported_run.markets) == parameters_of(run.markets));
+    REQUIRE(exported_run.analytics.analytic.size() == run.analytics.analytic.size());
+    for (std::size_t i = 0; i < run.analytics.analytic.size(); ++i) {
         INFO("analytic " << i);
-        CHECK(type_of(exported_run.Analytics.Analytic[i]) == type_of(run.Analytics.Analytic[i]));
-        CHECK(parameters_of(exported_run.Analytics.Analytic[i]) ==
-              parameters_of(run.Analytics.Analytic[i]));
+        CHECK(exported_run.analytics.analytic[i].type == run.analytics.analytic[i].type);
+        CHECK(parameters_of(exported_run.analytics.analytic[i]) ==
+              parameters_of(run.analytics.analytic[i]));
     }
 
     // The export holds every convention the party sees, so it may hold more
     // than the document did, but never less. FX conventions are not stored yet.
     const auto conventions =
-        domain::split_conventions(parse<domain::conventions>(original.at("conventions.xml")));
+        domain::split_conventions(domain::conventions_mapper::read(original.at("conventions.xml")));
     const auto exported_conventions =
-        domain::split_conventions(parse<domain::conventions>(exported.at("conventions.xml")));
+        domain::split_conventions(domain::conventions_mapper::read(exported.at("conventions.xml")));
     const auto holds_all = []<typename Row>(const domain::conventions_package& written,
                                             const domain::conventions_package& read,
                                             std::string_view family) {

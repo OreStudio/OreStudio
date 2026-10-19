@@ -21,7 +21,6 @@
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.testing/project_root.hpp"
@@ -39,11 +38,9 @@ namespace {
 const std::string tags("[ore][conventions][party]");
 
 std::vector<ores::refdata::domain::deposit_convention> corpus_deposits() {
-    ores::ore::domain::conventions c;
-    ores::ore::domain::load_data(
+    const auto c = ores::ore::domain::conventions_mapper::read(
         ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
-            "external/ore/examples/Legacy/Example_62/Input/conventions.xml")),
-        c);
+            "external/ore/examples/Legacy/Example_62/Input/conventions.xml")));
     return ores::ore::tests::rows_of<ores::refdata::domain::deposit_convention>(
         ores::ore::domain::split_conventions(c), "deposit");
 }

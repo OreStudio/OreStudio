@@ -88,4 +88,4 @@ validator does not.
 * See also
 
 - [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.
-- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp: the ORE XML binding generator]] — how the bindings these findings describe are produced.
+- =xsdcpp: the ORE XML binding generator= — how the bindings these findings describe are produced.

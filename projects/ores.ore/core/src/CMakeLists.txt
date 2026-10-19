@@ -26,23 +26,6 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
-set(domain_cpp_warnings "")
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
-    if(WIN32)
-        list(APPEND domain_cpp_warnings "-Wno-unused-function")
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        list(APPEND domain_cpp_warnings
-            "-Wno-implicit-fallthrough"
-            "-Wno-unused-but-set-variable")
-    endif()
-elseif(MSVC)
-    list(APPEND domain_cpp_warnings "/wd4505")
-endif()
-set_source_files_properties(
-    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
-    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_CORE_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

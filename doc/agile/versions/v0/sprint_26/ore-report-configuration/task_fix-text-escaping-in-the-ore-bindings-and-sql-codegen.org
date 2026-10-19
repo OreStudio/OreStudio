@@ -121,7 +121,7 @@ in the same change.
 
 **The generator is out of band.** =xsdcpp= is a sibling checkout, not on
 =PATH=, and regeneration overwrites its output wholesale. See
-[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] for the checkout, the pin
+=xsdcpp= for the checkout, the pin
 and the regeneration steps.
 
 **The SQL codegen writes =error_message= into a literal unescaped.**
@@ -184,7 +184,7 @@ parser hunks of that regeneration, which are byte-identical to the generated
 ones. The same regeneration also changed the =trade= and =componentSubTrade=
 types, an unexplained generator drift unrelated to escaping, which would make
 the trade parser accept unknown child elements. That is recorded on
-[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] and left out.
+=xsdcpp= and left out.
 
 **The harness.** The round-trip harness compares after a save and load cycle
 again, as before PR #2500. The today's market corpus passes with it, and the

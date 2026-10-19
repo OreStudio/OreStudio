@@ -102,6 +102,9 @@ public:
     /// Every iteration of a repeated leaf, in the order the document wrote them.
     auto values(std::string_view name) const -> std::vector<std::string>;
 
+    /// Every value of a repeated enumerated leaf, in the schema's spelling.
+    auto spellings(std::string_view name) const -> std::vector<std::string>;
+
     /**
      * @brief Every value of a repeated exact-decimal leaf, in document order.
      *
@@ -209,6 +212,9 @@ public:
 
     /// States a repeated leaf and appends one value to it.
     void append_value(std::string_view name, std::string_view value);
+
+    /// States a repeated enumerated leaf and appends one value to it.
+    void append_spelling(std::string_view name, std::string_view value, std::string_view what);
 
     /// States a repeated exact-decimal leaf and appends one value to it.
     void append_decimal(std::string_view name, const ores::utility::decimal::decimal& value);

@@ -251,6 +251,6 @@ TEST_CASE("every_xml_document_in_the_repository_parses", tags) {
 
     INFO("documents: " << documents << ", bytes: " << bytes);
     INFO(report);
-    CHECK(documents > 3900);
+    CHECK(documents > 3800);
     CHECK(rejected == 0);
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include <boost/uuid/nil_generator.hpp>

@@ -18,7 +18,18 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/conventions.hpp"
+#include "ores.ore.core/xml/generated/counterparty_information.hpp"
+#include "ores.ore.core/xml/generated/credit_simulation.hpp"
+#include "ores.ore.core/xml/generated/currency_config.hpp"
+#include "ores.ore.core/xml/generated/curve_configuration.hpp"
+#include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
+#include "ores.ore.core/xml/generated/ore.hpp"
+#include "ores.ore.core/xml/generated/pricing_engines.hpp"
+#include "ores.ore.core/xml/generated/stress_testing.hpp"
+#include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -26,7 +37,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <functional>
 #include <iterator>
 #include <map>
 #include <regex>
@@ -36,14 +46,14 @@
 
 /**
  * @file configuration_type_seed_tests.cpp
- * @brief The seeded configuration types against the ORE binding.
+ * @brief The seeded configuration types against the ORE codec.
  *
  * Each configuration type records the root element of the ORE document it
- * serialises to. For every kind the binding can save, an empty document is
- * saved and must open with that element, so the seed cannot name a root the
- * binding does not write. The kinds the binding cannot save yet are listed, so
- * a kind that gains a binding without joining this check fails here. Every
- * seeded run-document parameter must also appear in a shipped run document.
+ * serialises to. For every kind the codec carries, the root element the codec
+ * writes must be that element, so the seed cannot name a root the codec does
+ * not write. The kinds the codec does not carry are listed, so a kind that
+ * gains a table without joining this check fails here. Every seeded
+ * run-document parameter must also appear in a shipped run document.
  */
 
 namespace {
@@ -53,27 +63,29 @@ const std::string tags("[ore][configuration_types][database]");
 
 using namespace ores::logging;
 
-template <typename Document>
-std::string saved_empty() {
-    return ores::ore::domain::save_data(Document{});
-}
+namespace xg = ores::ore::xml::generated;
 
-const std::map<std::string, std::function<std::string()>>& savers() {
-    using namespace ores::ore::domain;
-    static const std::map<std::string, std::function<std::string()>> table = {
-        {"pricing_engines", saved_empty<pricingengines>},
-        {"risk_report_config", saved_empty<ore>},
-        {"todays_market", saved_empty<todaysmarket>},
-        {"simulation", saved_empty<simulation>},
-        {"sensitivity", saved_empty<sensitivityanalysis>},
-        {"stress_test", saved_empty<stresstesting>},
-        {"credit_simulation", saved_empty<creditsimulation>},
-        {"curve_configuration", saved_empty<curveconfiguration>},
-        {"conventions", saved_empty<conventions>},
-        {"calendar_adjustment", saved_empty<calendaradjustment>},
-        {"currency_configuration", saved_empty<currencyConfig>},
-        {"counterparty_information", saved_empty<counterpartyInformation>},
-        {"netting_set_definitions", saved_empty<nettingsetdefinitions>},
+// The root element the codec writes for each kind it carries.
+const std::map<std::string, std::string>& roots_written() {
+    static const std::map<std::string, std::string> table = {
+        {"pricing_engines", std::string(xg::pricing_engines::pricing_engines_document().root_name)},
+        {"risk_report_config", std::string(xg::ore::ore_document().root_name)},
+        {"todays_market", std::string(xg::todays_market::todays_market_document().root_name)},
+        {"stress_test", std::string(xg::stress_testing::stress_testing_document().root_name)},
+        {"credit_simulation",
+         std::string(xg::credit_simulation::credit_simulation_document().root_name)},
+        {"curve_configuration",
+         std::string(xg::curve_configuration::curve_configuration_document().root_name)},
+        {"conventions", std::string(xg::conventions::conventions_document().root_name)},
+        {"calendar_adjustment",
+         std::string(xg::calendar_adjustments::calendar_adjustments_document().root_name)},
+        {"currency_configuration",
+         std::string(xg::currency_config::currency_config_document().root_name)},
+        {"counterparty_information",
+         std::string(xg::counterparty_information::counterparty_information_document().root_name)},
+        {"netting_set_definitions",
+         std::string(
+             xg::netting_set_definitions::netting_set_definitions_document().root_name)},
     };
     return table;
 }
@@ -115,7 +127,9 @@ std::set<std::string> run_document_parameters() {
     return names;
 }
 
-const std::set<std::string> unbound = {"simm_calibration",
+const std::set<std::string> unbound = {"simulation",
+                                       "sensitivity",
+                                       "simm_calibration",
                                        "historical_return",
                                        "basel_traffic_light",
                                        "reference_data",
@@ -123,7 +137,7 @@ const std::set<std::string> unbound = {"simm_calibration",
 
 }
 
-TEST_CASE("every seeded configuration type the binding can save names its root element", tags) {
+TEST_CASE("every seeded configuration type the codec carries names its root element", tags) {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 
@@ -131,7 +145,7 @@ TEST_CASE("every seeded configuration type the binding can save names its root e
     const auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     ores::reporting::repository::configuration_type_repository repo;
     const auto types = repo.read_latest(sys_ctx);
-    REQUIRE(types.size() == savers().size() + unbound.size());
+    REQUIRE(types.size() == roots_written().size() + unbound.size());
 
     const auto parameters = run_document_parameters();
     REQUIRE(!parameters.empty());
@@ -144,14 +158,12 @@ TEST_CASE("every seeded configuration type the binding can save names its root e
         if (type.run_parameter)
             CHECK(parameters.contains(*type.run_parameter));
 
-        const auto saver = savers().find(type.code);
-        if (saver == savers().end()) {
+        const auto written = roots_written().find(type.code);
+        if (written == roots_written().end()) {
             CHECK(unbound.contains(type.code));
             continue;
         }
-        const auto xml = saver->second();
-        INFO(xml.substr(0, 200));
-        CHECK(opens_with_element(xml, type.ore_root_element));
+        CHECK(opens_with_element("<" + written->second + "/>", type.ore_root_element));
     }
     BOOST_LOG_SEV(lg, info) << "Checked " << types.size() << " configuration types";
 }

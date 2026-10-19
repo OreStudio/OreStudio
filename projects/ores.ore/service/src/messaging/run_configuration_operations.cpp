@@ -20,9 +20,9 @@
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
@@ -266,17 +266,6 @@ std::vector<document_kind> document_kinds_of(nats_client& owners) {
     return kinds;
 }
 
-template <typename Document>
-Document parse_file(const std::string& file, const std::string& content) {
-    Document d;
-    try {
-        ores::ore::domain::load_data(content, d);
-    } catch (const std::exception& e) {
-        throw std::invalid_argument(std::format("{}: {}", file, e.what()));
-    }
-    return d;
-}
-
 boost::uuids::uuid parse_id(const std::string& text) {
     return boost::uuids::string_generator()(text);
 }
@@ -297,7 +286,7 @@ void parse_document(std::string_view code,
                     parsed_documents& d) {
     using namespace ores::ore::domain;
     if (code == "conventions")
-        d.conventions = split_conventions(parse_file<conventions>(file, content));
+        d.conventions = split_conventions(conventions_mapper::read(content, file));
     else if (code == "curve_configuration")
         d.curves = curve_configuration_projection::map(
             curve_configuration_projection::read(content, file));
@@ -465,7 +454,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         const auto configuration = boost::uuids::to_string(b.configuration_id);
         const auto& code = b.configuration_type_code;
         if (code == "conventions")
-            files[*file] = save_data(join_conventions(read_conventions(owners, run.party_id)));
+            files[*file] =
+                conventions_mapper::write(join_conventions(read_conventions(owners, run.party_id)));
         else if (code == "curve_configuration")
             files[*file] =
                 curve_configuration_projection::write(curve_configuration_projection::reverse(

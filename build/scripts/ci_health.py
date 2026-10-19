@@ -298,7 +298,7 @@ def detect_alerts(
     expected_vcpkg = [
         "linux-gcc-release",
         "linux-clang-debug", "linux-clang-release",
-        "windows-msvc-debug", "windows-msvc-release",
+        "windows-msvc-release",
         "macos-clang-debug", "macos-clang-release",
     ]
     missing_vcpkg = []

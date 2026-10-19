@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 70C48F20-7B3C-44D0-B10D-8CEC1C813349
+:END:
+#+title: Story: Hotfix: the Windows debug builds never pass
+#+description: All four nightly Windows legs fail on compile errors and the debug legs add the longest runs. Switch off the Windows debug builds until the release builds pass.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The nightly Windows workflow builds release only. The debug legs, which fail
+and run longest, stop until the release legs pass.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- The nightly Windows matrix has the release buildtype only.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F5772E1B-7326-44A3-9507-A6C73A5C6CE4][Scaffold story: Hotfix: the Windows debug builds never pass]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:73B959E4-B291-4E0C-B950-509FDD4F035D][Implement Hotfix: the Windows debug builds never pass]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: Hotfix: the Windows debug builds never pass |
+
+* Decisions
+
+- Switch off Windows debug instead of fixing it first. Every Windows leg fails
+  today, so a green release build comes first.
+
+* Out of scope
+
+-

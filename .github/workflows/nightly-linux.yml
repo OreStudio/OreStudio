@@ -20,11 +20,6 @@ name: Nightly Build
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
   SCCACHE_DIR: '${{ github.workspace }}/.sccache'
-  # sccache defaults to a 10 GB disk cache, the whole of the repository's cache
-  # allowance, and one debug variant alone filled it to 3.9 GB. Four variants
-  # cannot share that, so cap each one: the four then fit with room for vcpkg
-  # and cmake beside them.
-  SCCACHE_CACHE_SIZE: '2G'
 
 on:  # yamllint disable-line rule:truthy
   schedule:
@@ -65,6 +60,12 @@ jobs:
       matrix:
         name: [linux-gcc, linux-clang]
         buildtype: [debug, release]
+        # The gcc debug build never finishes on a hosted runner: the runner
+        # dies before it has compiled half the tree. It saves no compiler
+        # cache, so it never gets faster either.
+        exclude:
+          - name: linux-gcc
+            buildtype: debug
         include:
           - name: linux-gcc
             family: linux
@@ -172,7 +173,19 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 1000M
+          # The cap is the only place that limits the cache: the action starts
+          # the sccache server with it and ignores SCCACHE_CACHE_SIZE.
+          #
+          # A cache smaller than the build gives almost no hits. The build
+          # reads the objects in the same order each time and the oldest go
+          # first, so a cache a quarter of the build gave 2.5% hits. Give each
+          # variant the whole of what it needs, in the 9000 MB the repository
+          # keeps for sccache (see the budget in the make-room step):
+          #   clang debug 4000, clang release 1600, gcc release 1800,
+          #   and 1600 left free. The continuous workflow shares the clang
+          #   entries and must use the same caps, or each workflow cuts the
+          #   other's entry down when it saves.
+          max-size: ${{ matrix.buildtype == 'debug' && '4000M' || (matrix.compiler == 'clang' && '1600M' || '1800M') }}
           save: false
 
       - name: Install dev packages
@@ -311,7 +324,7 @@ jobs:
         run: sccache --show-stats
 
       - name: Make room in the repository cache
-        # The repository gets 10 GB of cache and this project needs four sccache
+        # The repository gets 10 GB of cache and this project needs three sccache
         # variants in it. A run-unique key means every save adds an entry, and
         # the prune that removes the old ones ran only after a save that was
         # itself waiting for the room: once the allowance filled, the save was

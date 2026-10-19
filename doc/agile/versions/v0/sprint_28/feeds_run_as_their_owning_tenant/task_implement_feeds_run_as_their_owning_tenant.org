@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :feeds_run_as_their_owning_tenant:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/feeds-run-as-their-owning-tenant
 #+pr:
 #+blocked_on:
 #+blocked_since:

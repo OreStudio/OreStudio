@@ -94,6 +94,10 @@ Each prototype is registered on the group page, has a design note, and passes
 =build/scripts/check_prototype_inventory.py=. Each journey carries a wireframe.
 None has a Gemini review.
 
+The follow-up task Govern the pricing engine configurations reworked these four for
+the official-configuration model (status, proposal in place of edit, draft copy) and
+added a fifth journey and prototype, Sign off a pricing engine change.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

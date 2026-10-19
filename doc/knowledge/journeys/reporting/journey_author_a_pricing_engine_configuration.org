@@ -2,12 +2,12 @@
 :ID: 0D39E4B7-75FD-480A-A996-2234BCC7BCC8
 :END:
 #+title: User Journey: Author a pricing engine configuration
-#+description: A market-risk owner or tenant administrator builds a pricing engine configuration step by step: the products it covers, the model and engine for each, their parameters, and a check of what the configuration leaves unpriced.
+#+description: A market-risk owner or tenant administrator builds a pricing engine configuration step by step: the products it covers, the model and engine for each, their parameters, and a check of what the reports of a cycle need and the configuration leaves unpriced. The result is a draft, or a candidate for sign-off.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-19
+#+updated: 2026-10-20
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator builds a pricing engine configuration step by step: the products it covers, the model and engine for each, their parameters, and a check of what the configuration leaves unpriced.
@@ -34,9 +34,9 @@ A market-risk owner or a tenant administrator runs this journey, inside their ow
 tenant, for their own party.
 
 The trigger is a party with no configuration for a set of products, a new
-desk that trades a product type the existing configurations do not cover, or a
-report that needs a variant of an existing configuration that must not move the
-other reports bound to it. The journey starts from *Add* on the list in
+desk that trades a product type the existing configurations do not cover, a
+candidate that model risk asked for, or a quant who wants to try a change without
+touching the official configuration. The journey starts from *Add* on the list in
 [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]
 and ends on the new configuration's page, ready to bind to a report.
 
@@ -44,18 +44,35 @@ The journey writes one configuration, its products and its parameters. It binds
 nothing to a report. Binding is a step of
 [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]].
 
+A party holds few official configurations: one for each cycle, signed off by
+model risk. This journey does not make an official configuration. It makes a
+draft. A draft is a place to try a change, and no official report can bind it.
+The person may also say that the configuration is a candidate for the official
+configuration of a cycle. A candidate is submitted for sign-off, and it replaces
+the official configuration only after the sign-off completes. To change an
+official configuration, the person proposes a new version of it, which is
+[[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]]. The
+person should not build a second configuration for the same cycle.
+
 * Steps
 
 The journey is a wizard of six steps on the standard steps UI, titled *Author a
 pricing engine configuration*. The rail is drawn from one computed list, and the
 last step is final.
 
-** Step 1: name it and choose where to start
+** Step 1: name it, say what it is for, and choose where to start
 
 1. *Name the configuration.* The person writes a =name=, a =description= that
    says what it prices and for whom, and an optional =config_variant= tag. The
    name must be new in the party; a name in use is refused where it is typed.
-2. *Choose a starting point.* Three choices, one panel: *Start empty*, *Start from
+2. *Say what it is for.* Three choices. *A draft to try a change* is the default. It
+   cannot be bound by an official report. *A candidate for the official End of day
+   configuration* and *a candidate for the official Intraday configuration* name the
+   cycle. The step names the official configuration of that cycle today and its
+   version, and states how many product types the reports of that cycle need.
+   Before the choice, a notice says that a party holds few official
+   configurations and links to *Propose a change*.
+3. *Choose a starting point.* Three choices, one panel: *Start empty*, *Start from
    a copy of* a configuration the party holds, or *Start from an ORE file*, which
    hands the person to
    [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]
@@ -64,75 +81,85 @@ last step is final.
 
 ** Step 2: choose the products
 
-3. *Pick the product types.* The panel lists the pricing engine types the system
+4. *Pick the product types.* The panel lists the pricing engine types the system
    knows, grouped by asset class (rates, FX, credit, equity, commodity), each
    with its description and the instrument type it maps to. The person ticks the
    ones the configuration covers. A search runs over the code and the description.
-4. *See what a product is.* A row says in plain words what the code means. A code
+5. *See what a product is.* A row says in plain words what the code means. A code
    such as =BermudanSwaption= is not self-evident to everyone who owns a report.
-5. *Start from the party's book.* A button, *Select the products the party trades*,
-   ticks every type the party's trades use. It is offered only when the book can
-   be read, and the panel says so when it cannot.
-6. *Read the count.* The panel states how many types are chosen, and that a type
+6. *Start from the party's book.* A button ticks every
+   type the party's trades use. When the person chose a cycle, the button ticks the
+   product types the reports of that cycle hold instead. It is offered only when
+   the book can be read, and the panel says so when it cannot.
+7. *Read the count.* The panel states how many types are chosen, and that a type
    not chosen will have no model in a run.
 
 ** Step 3: choose the model and the engine
 
-7. *One row for each chosen type.* Each row has two combo boxes: the *model* and
+8. *One row for each chosen type.* Each row has two combo boxes: the *model* and
    the *engine*. Both are searchable. The engine list narrows to the engines that
    are known to run the model chosen.
-8. *Take the usual pair.* Each row offers *Use the usual* for its product, which
+9. *Take the usual pair.* Each row offers *Use the usual* for its product, which
    fills the model and the engine most configurations in the system use for it.
    The pair is a suggestion the person can change, and the row says where the
    suggestion comes from.
-9. *Say what the pair means.* Beside a row, one sentence says what the pair does
+10. *Say what the pair means.* Beside a row, one sentence says what the pair does
    in plain words, for example that =LGM= with the =Grid= engine prices a Bermudan
    swaption by a lattice on a calibrated one-factor model. A pair that is not
    known to work is marked, never refused: the person may know better than the
    list.
-10. *Order the rows.* The rows are written in =position= order. The person drags
+11. *Order the rows.* The rows are written in =position= order. The person drags
     a row, or leaves the order alone.
 
 ** Step 4: set the parameters
 
-11. *Three groups.* The *global* parameters of the whole document, then for each
+12. *Three groups.* The *global* parameters of the whole document, then for each
     product its *model* parameters and its *engine* parameters. A product with no
     parameter says so.
-12. *Add a setting by name.* Each group offers the settings the pair is known to
+13. *Add a setting by name.* Each group offers the settings the pair is known to
     take, with a note on what the setting means and a usual value, and a way to
     add a setting by name when the person knows one the list does not. A value is
     text, because ORE reads text.
-13. *Fill what the pair needs.* A pair such as =LGM= with =Grid= needs
+14. *Fill what the pair needs.* A pair such as =LGM= with =Grid= needs
     calibration settings. The step marks a setting the pair usually needs and the
     row does not have, as a prompt, not a refusal.
-14. *Read the global settings.* The global group holds document-wide settings
+15. *Read the global settings.* The global group holds document-wide settings
     such as =ContinueOnCalibrationError=. It states what each one changes for
     every product.
 
 ** Step 5: check it
 
-15. *Coverage.* One table: each product type the party trades, and whether the
-    configuration covers it. A product the party trades and the configuration does
-    not cover is named. The step offers to go back to step 2.
-16. *Completeness.* One table of the rows that look unfinished: a pair that is
+16. *Coverage.* The step states the rule: a report needs a price for every product
+    type in its portfolio, and a configuration that several reports bind must cover
+    all of their portfolios together. One table lists each product type the reports
+    need, and whether the configuration covers it. For a candidate, a second table
+    lists the reports of the cycle and what the configuration leaves unpriced for
+    each. For a draft the table lists the product types the party trades. A product
+    that is needed and not covered is named. The step offers to go back to step 2.
+17. *Completeness.* One table of the rows that look unfinished: a pair that is
     not known to work, a setting the pair usually needs and the row lacks, and a
     row whose model or engine is empty.
-17. *Nothing here blocks.* A finding is a statement. The person may save a
-    configuration with findings, and the review step repeats them. The server
-    does not check any of them today, so the screen is the only reader.
+18. *Findings do not block a draft.* A finding is a statement. The person may save
+    a draft with findings, and the review step repeats them. The server does not
+    check any of them today, so the screen is the only reader. The next step does
+    not offer *Submit for sign-off* while a needed product type has no row.
 
-** Step 6: review and save
+** Step 6: review and submit
 
-18. *Read it back.* The final step names every value: the name, the products in
-    order with their model and engine, every parameter with its scope, and the
-    findings. It offers no Back, because it is final; the rail goes back.
-19. *Save.* *Save* writes the document in one request. The change reason is
-    =system.new_record=, stated in a note and not asked for. A name that exists is
-    refused and the refusal names it.
-20. *See the result.* The screen opens the new configuration's page. It offers
-    *Bind to a report*, which opens
-    [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] or
-    [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
+19. *Read it back.* The final step names the status the configuration has after
+    the save, whether it is a candidate for a cycle, every value (the name, the
+    products in order with their model and engine, every parameter with its scope)
+    and the findings. The rail goes back.
+20. *Save or submit.* *Save as draft* writes the document in one request. The change
+    reason is =system.new_record=, stated in a note and not asked for. A name that
+    exists is refused and the refusal names it. *Submit for sign-off* is offered
+    when the person chose a cycle and every needed product type has a row. It
+    writes the document and opens the sign-off, as in
+    [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]].
+    The official configuration of the cycle stays in force until the sign-off
+    completes.
+21. *See the result.* A draft opens its page. It offers no *Bind to a report*, because
+    no official report can bind a draft. A submitted candidate opens the sign-off.
 
 * Screens and wireframes
 
@@ -140,7 +167,7 @@ One screen, drawn as six steps on the rail. The rail shows position, not
 readiness, so a step with findings is not marked on the rail; the step 5 table
 carries that state.
 
-#+caption: Author a pricing engine configuration: the rail, and step 3 with a model and an engine for each chosen product.
+#+caption: Author a pricing engine configuration: the rail, the purpose, the coverage against what the reports need, and the submit.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_author_a_pricing_engine_configuration.png]]
 
@@ -156,8 +183,11 @@ prototype. Step 3 must carry =?variant=A|B|C= as three readings of the
 model-and-engine step, because that layout is the open question: a table with two
 combo boxes in a row, a card for each product, and a guided walk one product at a
 time. It must show a pair that is not known to work as a mark and not a refusal,
-the coverage table with a product the party trades and the configuration does not
-cover, and the final step reading every value back. It must state that no server
+the purpose choice with the official configuration of each cycle, the coverage
+table against what the reports of a cycle need, with a product that is needed and
+not covered, and the final step reading every value back with *Save as draft*
+and a *Submit for sign-off* that is not offered while the coverage is incomplete.
+It switches the purpose with =?cycle=none|eod|intraday=. It must state that no server
 check stands behind any finding. Every value is a fixture.
 
 * Entities composed
@@ -187,6 +217,8 @@ carries all three as arrays.
 | 3, the usual pair | Read the pair other configurations use | (no operation) | missing |
 | 4, known settings | Read the settings a pair takes, with notes and usual values | (no operation) | missing |
 | 5, checks | Check a document before saving | (no operation) | missing |
+| 5, the portfolios | Read the product types of the reports of a cycle | (no operation) | missing |
+| 6, submit | Write a candidate and open its sign-off | (no operation for a status or a sign-off) | missing |
 | 6, save | Write the document | =analytics.v1.pricing_engines_documents.put= | exists |
 | The screen | Author from the browser | (no BFF route) | missing |
 
@@ -215,16 +247,24 @@ carries all three as arrays.
    The [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]] records it as
    B3, "wrongly shaped". The screen cannot repair it, and the final step says what
    it would do after a failed write: read the document back and show what landed.
-6. *The party's book.* Steps 2 and 5 need the instrument types of the party's
-   trades, and no operation returns them.
+6. *The party's book and the portfolios.* Steps 2 and 5 need the instrument types
+   of the party's trades and of each report's portfolio, and no operation returns
+   them.
 7. *A copy has no operation.* The copy is the screen reading a document and
    writing a new one with new identifiers. Nothing makes a copy on the server.
+8. *No status, no cycle, no sign-off.* A draft, a candidate and an official
+   configuration are the same row today. The same gap as in
+   [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]].
+   A candidate that replaces the official configuration also rebinds the reports of
+   the cycle in one step. No operation does that, and the sign-off prototype does not
+   draw the step.
 
 * Related journeys
 
 - [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
 - [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — the way to start from an ORE file
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the way to change one row after the configuration exists
+- [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — where a candidate goes after it is submitted
 - [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] — step 4 binds the configuration this journey saves
 
 * Related knowledge

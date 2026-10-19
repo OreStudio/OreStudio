@@ -28,7 +28,9 @@ salt
   Product type FlexiCap: no code. [ Skip ] | [ Add the type first ]
   Element CalibrationBlock: no column, dropped.
   --
-  Target: (X) Save as a new version of ^Europe AMC pricing^
+  Target: ( ) Save as a new draft configuration
+  Target: (X) Put it into ^End of day pricing (approved)^
+  Reach: the file is put forward as version 5, a proposal. Version 4 stays in force until the sign-off completes.
   <b>THE DIFFERENCE</b>
   {#
     Change | Product | What differs | Decision
@@ -36,7 +38,7 @@ salt
     Changed | BermudanSwaption | engine Grid becomes FD | -
     Added | FxOption | not in the configuration | -
   }
-  [ Back ] | [ Next: review and save ]
+  [ Back ] | [ Submit for sign-off ]
 }
 
 @enduml

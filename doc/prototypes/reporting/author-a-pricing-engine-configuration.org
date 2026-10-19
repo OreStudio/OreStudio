@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-19
+#+updated: 2026-10-20
 
 | Item          | Where                                             |
 |---------------+---------------------------------------------------|
@@ -17,7 +17,7 @@
 
 * Summary
 
-This prototype draws the authoring journey on the standard steps UI, copied from the first-run prototype: the rail, its marks and the step foot. Six steps: name it and choose where to start, choose the products, choose the model and engine, set the parameters, check it, and review and save. The last step is final.
+This prototype draws the authoring journey on the standard steps UI, copied from the first-run prototype: the rail, its marks and the step foot. Six steps: name it, say what it is for and choose where to start, choose the products, choose the model and engine, set the parameters, check it, and review and submit. The last step is final. A party holds few official configurations, so what is made here is a draft. The person may say it is a candidate for the official end of day or intraday configuration. Only a candidate whose coverage is complete can be submitted for sign-off.
 
 The one open question is the layout of step 3, where each chosen product gets a model and an engine. The page carries three readings of that step and of nothing else, behind =?variant=A|B|C=.
 
@@ -27,7 +27,7 @@ The page answers to the journey [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Autho
 
 ** The question the screen answers
 
-A pricing engine document is a long list of product types, each with a model, an engine and settings, and the names are ORE's own. The person knows what the party trades and has a view on how each product should be priced. They should not need to know which engines exist or which settings a model needs. The screen offers the usual pair for each product, narrows the engine to the ones known to run the model, says in words what each setting means, and checks the result against the products the party trades.
+A pricing engine document is a long list of product types, each with a model, an engine and settings, and the names are ORE's own. The person knows what the party trades and has a view on how each product should be priced. They should not need to know which engines exist or which settings a model needs. The screen offers the usual pair for each product, narrows the engine to the ones known to run the model, says in words what each setting means, and checks the result against the product types the reports of the chosen cycle need.
 
 ** Three readings of the model and engine step
 
@@ -38,9 +38,11 @@ A pricing engine document is a long list of product types, each with a model, an
 ** Rules the page follows
 
 - *A pair that is not known to work is marked and never refused.* The person may know better than the list, and the server checks none of it.
-- *Nothing in step 5 blocks the save.* A finding is a statement. The review step repeats it.
+- *Nothing in step 5 blocks a draft.* A finding is a statement. The review step repeats it. The next step does not offer *Submit for sign-off* while a needed product type has no row, or a row has no model or engine. The screen is the only reader of this rule.
+- *Coverage follows the portfolios.* A report needs a price for every product type in its portfolio, so the check lists what the reports of the chosen cycle need, and what is left unpriced for each report.
 - *The usual pair is a suggestion.* It is the pair most product entries in the example files use for the product, and the page says where the suggestion comes from.
-- *A copy carries the products and settings and not the report bindings.*
+- *A copy carries the products and settings. It carries no report binding and no sign-off, and it starts as a draft.*
+- *The page names the official configuration of the cycle and says it stays in force until the sign-off completes.*
 
 ** What is fake
 
@@ -59,6 +61,8 @@ No operation returns the models, the engines, the pairs that work or the setting
 - The standard steps UI carries the journey: six steps, the last final, one computed rail.
 - A pair that is not known to work is a mark, not a refusal.
 - The checks are the screen's own, and the page says no server check stands behind them.
+- A configuration made here is a draft. Becoming official is a sign-off, not a save.
+- =?cycle=none|eod|intraday= switches the purpose, so each way to finish is reachable.
 
 ** The verdict
 

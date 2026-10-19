@@ -93,7 +93,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The history uses fixed strings and a fixed delete time | retire-a-convention/prototype.js | Fixed | The design note now says the history is a fixture. |
+| 2 | The request says Asked by M. Okafor for every actor | retire-a-convention/prototype.js | Fixed | The field reads the acting person. |
+| 3 | The Revert dialog does nothing | retire-a-convention/prototype.js | Fixed | The design note says it only closes. |
+| 4 | Interaction was not tested | all four | Open | The owner reviews the prototypes in a browser. |
+| 5 | The branch has no merge base in the reviewer's checkout | none | No change | A property of the reviewer's checkout. |
 
 * Result
 

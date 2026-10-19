@@ -55,7 +55,7 @@ English only; the product needs French and Portuguese before a screen ships.
 
 ** What is fake
 
-Only the curated AED swap is named by a set. The reach of runs is stated as not recorded, because no run stores the version it read. The approval changes nothing in the server, because no apply step exists for a convention.
+Only the curated AED swap is named by a set. The reach of runs is stated as not recorded, because no run stores the version it read. The approval changes nothing in the server, because no apply step exists for a convention. The history is a fixture: every document at version 2 or more shows the same version 2 entry, and the delete entry carries a fixed time. The Revert dialog proposes nothing and only closes.
 
 ** Where the code lives
 

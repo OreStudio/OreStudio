@@ -44,7 +44,7 @@
         var d = doc();
         var v = [];
         if (isDeleted()) {
-            v.push({ n: d.version + 1, by: 'm.okafor', at: '2026-10-19T11:42:00Z', reason: 'Deleted', code: 'common.obsolete',
+            v.push({ n: d.version + 1, by: S.person.id, at: '2026-10-19T11:42:00Z', reason: 'Deleted', code: 'common.obsolete',
                 note: 'Replaced by a newer swap document', diff: [['Valid to', 'open', '2026-10-19']], del: true });
         }
         if (d.version >= 2) {
@@ -123,7 +123,7 @@
         var st = S.withdrawn ? ['inactive', 'Withdrawn'] : S.outcome === 'approved' ? ['ok', 'Approved'] : S.outcome === 'declined' ? ['bad', 'Declined'] : ['pending', 'Pending'];
         var h = '<h2>Your request</h2><p class="lede">A change that touches a convention needs a second person.</p>' +
             '<dl class="plain"><dt>Request</dt><dd>Delete <span class="mono">' + M.esc(d.key) + '</span></dd>' +
-            '<dt>State</dt><dd>' + M.badge(st[0], st[1]) + '</dd><dt>Asked by</dt><dd>M. Okafor</dd>' +
+            '<dt>State</dt><dd>' + M.badge(st[0], st[1]) + '</dd><dt>Asked by</dt><dd>' + M.esc(S.person.name) + '</dd>' +
             '<dt>Decides</dt><dd>Market Risk</dd><dt>Reason</dt><dd>' + M.esc(S.form.reason ? (M.CHANGE_REASONS.delete.filter(function (r) { return r.v === S.form.reason; })[0] || {}).t : 'Obsolete') + '</dd>' +
             '<dt>Asked</dt><dd>' + M.relTime('2026-10-19T11:42:00Z') + '</dd></dl><div style="height:16px"></div>';
         if (S.withdrawn) { h += M.notice('info', '<b>You withdrew this request.</b> The document is unchanged.'); }

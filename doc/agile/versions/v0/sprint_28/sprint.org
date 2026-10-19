@@ -165,6 +165,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:70C48F20-7B3C-44D0-B10D-8CEC1C813349][Hotfix: the Windows debug builds never pass]] | DONE | 2026-10-19 | 2026-10-19 | All four nightly Windows legs fail on compile errors and the debug legs add the longest runs. Switch off the Windows debug builds until the release builds pass. |
 | [[id:B4DD3D99-6C90-4481-80E0-B4D1D41880A7][Tenant auto-start feeds are not restored after a services restart]] | DONE | 2026-10-19 | 2026-10-19 | The boot walk read only the system tenant's feeds. It now visits every active tenant, so ACME's feeds run after a restart. |
 | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] | DONE | 2026-10-19 | 2026-10-19 | A feed's vintage read runs under the run grant of its collection, so a restart starts every tenant's feeds. The caller of Start is checked once, at the command. |
+| [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] | BACKLOG | | | A restart starts every feed that should run, whatever order the services come up in. A provision starts the system feeds. A person's Start subscribes the person's party. A collection's grant ends with the collection. |
 
 * Achievements
 

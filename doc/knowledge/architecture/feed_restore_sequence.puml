@@ -17,15 +17,18 @@
 '
 @startuml
 
-title Restoring the feeds when the synthetic service starts
+title Restoring the feeds
 
 hide footbox
 skinparam sequenceMessageAlign left
 
+participant "Provisioning" as prov
 participant "Synthetic service" as syn
 database "Feed configs" as db
 participant "IAM" as iam
 participant "Marketdata" as md
+
+== The service starts ==
 
 syn -> db : list the active tenants
 loop each tenant, the system tenant first
@@ -38,14 +41,28 @@ loop each tenant, the system tenant first
         alt a token is held, or the feed has a fixed price
             syn -> md : read the vintage series and observations\nAuthorization: the run token
             syn -> syn : start the feed
-        else the feed starts from a vintage and has no token
-            syn -> syn : skip the feed and log the reason
+        else the feed has no token, or a dependency did not answer
+            syn -> syn : keep the feed in the retry set and log the reason
         end
     end
 end
 
+== A dependency was not ready ==
+
+loop the retry set is not empty, 2 s doubling to 30 s, at most five minutes
+    syn -> syn : wait
+    syn -> syn : start each feed of the retry set as above
+end
+syn -> syn : log an error for each feed that still fails
+
+== A provision creates feeds ==
+
+prov -> syn : synthetic.v1.ops.restore_feeds\nAuthorization: the provisioning administrator
+syn -> syn : one pass for the caller's tenant, no retry
+syn --> prov : the feeds started and the reason for each failure
+
 note over syn
-    A restart uses the same exchange as the Start command.
+    A restore uses the same exchange as the Start command.
     No person is present, so the stored consent stands in for the operator.
     A restore creates no binding: the stored bindings stand.
 end note

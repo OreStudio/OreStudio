@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 74A26223-7045-4BD7-80A3-96F149C4BEC7
+:END:
+#+title: Story: Feeds start and restart the same way every time
+#+description: A restart starts every feed that should run, whatever order the services come up in. A provision starts the system feeds. A person's Start subscribes the person's party. Reporting and synthetic create a run grant by one call.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:feeds:restore:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close the faults that the stop and start test of every feed group found, so that each group shows the documented behaviour.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- A restart with marketdata not yet running starts every auto-start feed once marketdata answers.
+- A provision starts the system feeds without a restart.
+- A person's Start of a feed creates the binding of the person's party.
+- Reporting creates its run grant through the shared client call.
+- Every feed group shows the documented behaviour across a stop and a start of the services.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6CE2D817-1316-40FD-8688-765BF8237F3C][Scaffold story: Feeds start and restart the same way every time]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1DE6CDCB-DE6E-4DC9-B238-93DA0A87478C][Implement feeds that start and restart the same way]] | BACKLOG | | | Initial task for: Feeds start and restart the same way every time |
+
+* Decisions
+
+- The =enabled= and =auto_start= flags stay the only stored form of the running set. A Start or a Stop by a person does not survive a restart.
+- A restore tries again for every feed that fails, except a feed whose series another feed holds.
+- A provision calls the restore as an operation, once, and never fails because of it.
+
+* Out of scope
+
+- Revoking a run grant when its collection is deleted. The delete is generated code that has no IAM call. Capture: revoke_a_collections_run_grant_on_delete.
+- A check that the consenting person's party matches the collection's party.

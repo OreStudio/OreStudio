@@ -311,6 +311,7 @@ package "synthetic" #F9FBE7 {
         * enabled : boolean
           dataset_id : uuid <<FK>>
         * provider_code : text
+          run_grant_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -1061,7 +1061,9 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 member = snake(element.get("name"))
                 if (type_name, member) in cut:
                     ops_instance = ops_name(names[type_name], f"{member}_arena")
-                    repeated_arena.append((ops_instance, ops_arguments(target_name, names[target_name])))
+                    repeated_arena.append(
+                        (ops_instance, ops_arguments(target_name, names[target_name]))
+                    )
                     rows.append(
                         f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
                         f"field_kind::indexed_nested, "

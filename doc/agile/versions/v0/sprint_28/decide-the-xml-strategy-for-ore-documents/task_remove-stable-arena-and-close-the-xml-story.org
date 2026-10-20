@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/remove-stable-arena-and-close-the-xml-story
-#+pr:
+#+pr: 3588
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3588][#3588]] | [ore] Remove stable_arena and close the XML story |
 
 * Review
 

@@ -1064,6 +1064,7 @@ a test of that, and still showed a screen with every permission on it.
 - [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the areas of the menu and the screen that belongs to each
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colours, labels, the access mark, History versus Audit
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the rules of this page as a list to tick off
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]]
 - [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]]
 - [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — the allow-list that the self reads belong on

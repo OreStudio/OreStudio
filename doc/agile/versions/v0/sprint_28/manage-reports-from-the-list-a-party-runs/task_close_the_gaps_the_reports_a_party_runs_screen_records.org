@@ -181,6 +181,25 @@ task and name that file in the Command column.
 
 * Notes
 
+** The screen against the UX standards
+
+The report page, its edit dialog, its schedule field and its list were checked
+against the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] on 2026-10-20, by reading the code. Nothing was
+tried in a browser. The lines below are the gaps. Every other line meets the
+checklist.
+
+- [ ] The report shows its configuration and links to it. No configuration page or BFF read exists yet.
+- [ ] A fixed field says why in one line. Name shows its meaning instead of the fixed line.
+- [ ] The page notice that lists the missing features is removed. The screen does not explain what is absent.
+- [ ] A stale save offers a reload. The dialog shows only the server's refusal.
+- [ ] The record dialog listens for a newer version and shows when the record was loaded. Only the person forms do this.
+- [ ] The schedule field and builder use verbs from the list: "Change…" and "Use this schedule" are not on it. The builder buttons also lack icons.
+- [ ] The reasons for a bad cron expression exist in French and Portuguese. They are English only.
+- [ ] The shared Select is a native select element. This holds across the app.
+- [ ] Decide which standard rules where they differ: the place of Edit, the dialog title, the lead line of the header, and whether Save stays disabled until a field changes.
+- [ ] Check that the server accepts a change of report type for a report with bound configurations.
+- [ ] Check that the options of pre-processing and post-processing are codes the server holds.
+
 ** What the tests call, and what they assert
 
 Both tests live in

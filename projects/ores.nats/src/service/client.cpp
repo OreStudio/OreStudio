@@ -683,11 +683,15 @@ void client::disconnect() {
         // cnats runs the closed callback on its own thread, after Close
         // returns. The latch it writes to belongs to this client, so the
         // client must not be destroyed before the callback has run.
+        bool closed = false;
         {
             std::unique_lock lock(impl_->closed_latch.mu);
-            impl_->closed_latch.cv.wait_for(
+            closed = impl_->closed_latch.cv.wait_for(
                 lock, std::chrono::seconds(5), [this] { return impl_->closed_latch.closed; });
         }
+        if (!closed)
+            BOOST_LOG_SEV(lg(), warn) << "NATS closed callback did not run within 5s; "
+                                         "destroying the connection regardless.";
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
     }

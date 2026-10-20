@@ -21,9 +21,16 @@
 #define ORES_REPORTING_CORE_TESTS_REPORT_INSTANCE_TEST_FIXTURE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_trigger_event.hpp"
+#include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <map>
+#include <optional>
+#include <string>
 
 namespace ores::reporting::tests {
 
@@ -45,6 +52,45 @@ ores::reporting::domain::report_trigger_event
 write_trigger_for(ores::database::context ctx,
                   ores::utility::generation::generation_context& gen,
                   const ores::reporting::domain::report_instance& instance);
+
+/**
+ * @brief A party of the test's own, with the session scoped to it.
+ */
+ores::database::context
+write_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                              ores::utility::generation::generation_context& gen);
+
+/**
+ * @brief The id of each state of the report instance lifecycle, by name.
+ *
+ * The states are seed data, so a test asks the store which ones exist rather
+ * than naming an id. They are the system tenant's reference data, so the
+ * context passed must be one that reads under that tenant.
+ */
+std::map<std::string, boost::uuids::uuid> lifecycle_states(const ores::database::context& ctx,
+                                                           ores::logging::logger_t& lg);
+
+/**
+ * @brief Stores a run in the given state, which the lifecycle must admit as an
+ * initial one, and answers its id.
+ *
+ * The store validates every transition, so a run that starts in a later state is
+ * refused; a test that needs one walks the run to it with =move_to=. The run
+ * belongs to the definition named, or to a generated one when none is.
+ */
+boost::uuids::uuid
+write_run_in_state(const ores::database::context& party_ctx,
+                   const std::string& db_user,
+                   ores::utility::generation::generation_context& gen,
+                   const boost::uuids::uuid& state_id,
+                   std::optional<boost::uuids::uuid> definition_id = std::nullopt);
+
+/**
+ * @brief Moves a run to a state the lifecycle allows it to reach.
+ */
+void move_to(ores::reporting::service::report_instance_service& service,
+             const boost::uuids::uuid& instance_id,
+             const boost::uuids::uuid& state_id);
 
 }
 

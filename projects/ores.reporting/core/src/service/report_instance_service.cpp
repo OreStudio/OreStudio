@@ -43,10 +43,15 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_health.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
+#include <array>
+#include <cstdint>
+#include <map>
 
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
@@ -573,6 +578,84 @@ messaging::get_report_instance_health_response report_instance_service::get_repo
         row.state_name = facts.state_name;
         row.health = health_word(facts.state_name, facts.error_count);
         response.health.push_back(std::move(row));
+    }
+    return response;
+}
+
+messaging::count_report_definitions_by_health_response
+report_instance_service::count_report_definitions_by_health(
+    const messaging::count_report_definitions_by_health_request& request) {
+    messaging::count_report_definitions_by_health_response response;
+    // The cap is the same one the generated filter states.
+    if (request.search && request.search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
+        return response;
+    }
+
+    // The words in the order the screen draws them, with the empty word last.
+    constexpr std::array<std::string_view, 6> words{
+        "failed", "completed with errors", "running", "never run", "completed clean", ""};
+    std::map<std::string, std::int64_t> tally;
+    for (const auto word : words)
+        tally.emplace(std::string(word), 0);
+    response.total = 0;
+
+    messaging::list_report_definitions_request list;
+    list.limit = 1000;
+    list.filter = messaging::report_definitions_filter{};
+    list.filter->party_id = request.party_id;
+    list.filter->search = request.search;
+
+    report_definition_service definitions(ctx_);
+    for (;;) {
+        const auto page = definitions.list_report_definitions(list);
+        if (page.result.outcome != ores::utility::domain::outcome::ok) {
+            response.result = page.result;
+            return response;
+        }
+
+        std::vector<boost::uuids::uuid> definition_ids;
+        definition_ids.reserve(page.definitions.size());
+        for (const auto& definition : page.definitions)
+            definition_ids.push_back(definition.id);
+
+        // One latest run per definition that has run, and the health facts of
+        // those runs, so a page costs two reads however many runs exist.
+        std::map<boost::uuids::uuid, boost::uuids::uuid> run_of;
+        std::vector<boost::uuids::uuid> run_ids;
+        for (const auto& run : repo_.read_latest_by_definition_ids(ctx_, definition_ids)) {
+            run_of.emplace(run.definition_id, run.id);
+            run_ids.push_back(run.id);
+        }
+        std::map<boost::uuids::uuid, std::string> word_of;
+        for (const auto& facts : repo_.read_health_facts_by_instance_ids(ctx_, run_ids))
+            word_of.emplace(facts.report_instance_id,
+                            health_word(facts.state_name, facts.error_count));
+
+        for (const auto& id : definition_ids) {
+            const auto run = run_of.find(id);
+            if (run == run_of.end()) {
+                ++tally.at("never run");
+                continue;
+            }
+            // A run the session cannot read states no word, so it is counted
+            // with the runs whose state has none.
+            const auto word = word_of.find(run->second);
+            ++tally.at(word == word_of.end() ? std::string() : word->second);
+        }
+        response.total += static_cast<std::int64_t>(definition_ids.size());
+
+        list.offset += list.limit;
+        if (page.definitions.size() < list.limit)
+            break;
+    }
+
+    for (const auto word : words) {
+        messaging::report_health_count entry;
+        entry.health = std::string(word);
+        entry.count = tally.at(entry.health);
+        response.counts.push_back(std::move(entry));
     }
     return response;
 }

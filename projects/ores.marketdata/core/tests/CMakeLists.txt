@@ -59,6 +59,15 @@ target_link_libraries(${tests_target_name}
         ores.openssl_cleanup
         Threads::Threads)
 
+# This suite carries the whole-corpus import walk. It writes every market
+# payload under external/ore/examples, which takes several minutes and keeps
+# the database busy throughout. It runs alone, because beside another suite it
+# slows that suite's database reads enough to expose a race of its own. It
+# needs a budget well above the default, which the walk has outgrown. The
+# properties are set at the end of the directory, once the test exists.
+cmake_language(DEFER CALL set_tests_properties ${tests_target_name}
+    PROPERTIES RUN_SERIAL TRUE TIMEOUT 3600)
+
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM
     COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}> ${ORES_CATCH2_ARGS}

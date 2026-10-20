@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:navigation:
 #+created: 2026-10-10
-#+updated: 2026-10-12
+#+updated: 2026-10-18
 
 * Summary
 
@@ -164,13 +164,14 @@ The test for a screen is one question: which topic would a person look in?
 | Trades | What does the tenant hold, and what happens to it? |
 | Requests | What is waiting for an answer? |
 | Operations | How is the installation running, and who has signed in? |
+| Reporting | What has a party run, and how did each run go? |
 | Development | What is the team doing to the product, and what can a tester run? |
 | Tenants | Which tenants does this installation hold? |
 
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Development   Tenants
+  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Reporting   Development   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
@@ -182,6 +183,7 @@ The test for a screen is one question: which topic would a person look in?
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
+| Reporting | Reports, the definitions a party runs | =reporting::report_definitions:read= |
 | Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
 | Tenants | The tenants, their parties and people, and onboarding | The read of the deployment |
 
@@ -264,6 +266,24 @@ see the [[id:741FE353-C420-41C1-913D-EA99A73754CA][Trades prototypes]].
 opens the new-trade page. It is not a workflow, because the page has no step
 rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] says how.
 
+*** Reporting
+
+Reporting is the topic of what a party has run. It holds Reports: every report
+definition the session's party owns, with the health of its latest run, and one
+definition's own page. A report is produced by a schedule the party set, so a
+person who asks what the party ran and whether the run worked looks here and not
+in Operations, which says how the installation is running.
+
+The screen reads =reporting::report_definitions:read=, so the area is drawn for a
+person who holds that read and for nobody else. The screen needs no other read,
+so the menu entry asks for that one and the card asks for the same one.
+
+Reporting sits after Operations and before Development: what a party ran follows
+how the installation runs, and it is not work the team does on the product.
+
+The trail of the list is Home, Reporting, Reports. A definition's page adds the
+definition's name: Home, Reporting, Reports, then the name.
+
 ** The account menu
 
 The account menu stands in the header with the notification bell. It holds My
@@ -286,6 +306,7 @@ the first step of every trail.
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account: it unlocks it. Sign-ins only reads sessions, so the two are not the same kind of screen and do not share an area |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
+| Reports | Reporting | A report definition is owned by the party that runs it, and Reporting is the topic a person looks in for what the party ran and how each run went |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
@@ -314,6 +335,9 @@ the same thing. A screen has one address.
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |
 | Sign-ins | =/operations/sign-ins= |
+| Reporting, the area page | =/reporting= |
+| Reports | =/reporting/reports= |
+| A report definition's page | =/reporting/reports/:id= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |
 | A test scenario | =/development/tests/:id= |
 | A document | =/development/docs/:id= |

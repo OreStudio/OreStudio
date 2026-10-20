@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { MOVED, PATHS, personPath, rescuePath, rolePath } from './paths.js';
+import { MOVED, PATHS, personPath, reportPath, rescuePath, rolePath } from './paths.js';
 
 /**
  * Where each screen lives, and where the addresses it used to have lead.
@@ -31,17 +31,26 @@ const CURRENT = new Set<string>(Object.values(PATHS));
 describe('the addresses of the screens', () => {
     it('sit under their area', () => {
         for (const [name, path] of Object.entries(PATHS)) {
-            expect(path, name).toMatch(/^\/(refdata|organisation|operations|market-data)(\/|$)/);
+            expect(path, name).toMatch(
+                /^\/(refdata|organisation|operations|market-data|reporting)(\/|$)/,
+            );
         }
         expect(PATHS.parties).toBe('/refdata/parties');
         expect(PATHS.rescue).toBe('/organisation/rescue');
         expect(PATHS.signIns).toBe('/operations/sign-ins');
+        expect(PATHS.reporting).toBe('/reporting');
+        expect(PATHS.reports).toBe('/reporting/reports');
     });
 
-    it('are named by one helper when they take a name', () => {
+    it('are named by one helper when they take a key', () => {
         expect(personPath('ada lovelace')).toBe('/organisation/people/ada%20lovelace');
         expect(rolePath('r1')).toBe('/organisation/roles/r1');
         expect(rescuePath('ada')).toBe('/organisation/rescue?username=ada');
+        // A report definition is named by its id, because its name is shared
+        // across the parties a session sees.
+        expect(reportPath('55555555-5555-4555-8555-555555555555')).toBe(
+            '/reporting/reports/55555555-5555-4555-8555-555555555555',
+        );
     });
 
     it('leave no earlier address that is also a current one', () => {
@@ -52,7 +61,7 @@ describe('the addresses of the screens', () => {
 
     it('send every earlier address to a screen under an area', () => {
         for (const [, to] of MOVED) {
-            expect(to).toMatch(/^\/(refdata|organisation|operations|market-data)\//);
+            expect(to).toMatch(/^\/(refdata|organisation|operations|market-data|reporting)\//);
         }
     });
 });

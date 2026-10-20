@@ -436,9 +436,9 @@ function ActiveModules(): ReactNode {
 
 function UpcomingModules({ holds }: { readonly holds: (code: Permission) => boolean }): ReactNode {
     const { t } = useTranslation();
-    const icons = { marketdata: 'chart', trading: 'trend', reporting: 'document' } as const;
+    const icons = { marketdata: 'chart', trading: 'trend' } as const;
     // Market data is active for a person who may read it, so it is not also upcoming.
-    const areas = (['marketdata', 'trading', 'reporting'] as const).filter(
+    const areas = (['marketdata', 'trading'] as const).filter(
         (area) => area !== 'marketdata' || !holds(PERMISSION.curveSnapshotsRead),
     );
     const coming: Tile[] = areas.map((area) => ({

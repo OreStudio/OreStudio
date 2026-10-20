@@ -419,6 +419,103 @@ The health of one run, and the lifecycle state it was derived from.
      */
 #+end_src
 
+The =count_report_definitions_by_health= pair, declared here so both the C++
+header and its TypeScript twin render it. It answers how many definitions sit at
+each health word, which a screen cannot add up from one page of rows. The server
+counts, because the five words are its vocabulary and the filter that narrows
+the definitions is its own: the tally means by a party or a search what the list
+means by them.
+
+** report_health_count
+
+The number of definitions at one health word.
+
+*** health
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One of =failed=, =completed with errors=, =running=, =never run=
+     * or =completed clean=, or empty for the definitions whose latest run is in
+     * a state that has no word yet.
+     */
+#+end_src
+
+*** count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many of the counted definitions have this word. */
+#+end_src
+
+** count_report_definitions_by_health_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.count_report_definitions_by_health
+:response: count_report_definitions_by_health_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Counts the definitions at each health word.
+ *
+ * The request names the same party and search the list of definitions is
+ * narrowed by, and the definitions counted are the ones that list would read.
+ * It names no tenant: the session scopes the answer through the row-level
+ * security on the tables.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief Counts only the definitions of this party, or every party in scope when absent. */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief Counts only the definitions whose name or description holds this text. */
+#+end_src
+
+** count_report_definitions_by_health_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** counts
+:PROPERTIES:
+:cpp_type: std::vector<report_health_count>
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One entry per word, in the order failed, completed with errors,
+     * running, never run, completed clean, then the entry with no word. A word
+     * no definition holds is stated with a count of zero.
+     */
+#+end_src
+
+*** total
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many definitions were counted, which is the sum of the counts. */
+#+end_src
+
 * C++
 
 ** Flags
@@ -798,6 +895,114 @@ report_instance_service::get_report_instance_health(
 }
 #+end_src
 
+*** count_report_definitions_by_health
+
+The tally is composed here from the reads the list already makes, so it adds no
+query of its own: the definitions come from the definition service, which is
+what gives a party and a search the same meaning as on the list, the latest run
+of each comes from the run read, and the word comes from =health_word=. A
+definition with no run is =never run=. A run whose state has no word yet is
+counted under the empty word, so the counts always add up to the total.
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief How many definitions sit at each health word.
+     *
+     * The definitions counted are the ones the list of definitions would read
+     * for the same party and search.
+     */
+    messaging::count_report_definitions_by_health_response count_report_definitions_by_health(
+        const messaging::count_report_definitions_by_health_request& request);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.core/service/report_definition_service.hpp"
+#include <array>
+#include <cstdint>
+#include <map>
+#+end_src
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+messaging::count_report_definitions_by_health_response
+report_instance_service::count_report_definitions_by_health(
+    const messaging::count_report_definitions_by_health_request& request) {
+    messaging::count_report_definitions_by_health_response response;
+    // The cap is the same one the generated filter states.
+    if (request.search && request.search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
+        return response;
+    }
+
+    // The words in the order the screen draws them, with the empty word last.
+    constexpr std::array<std::string_view, 6> words{
+        "failed", "completed with errors", "running", "never run", "completed clean", ""};
+    std::map<std::string, std::int64_t> tally;
+    for (const auto word : words)
+        tally.emplace(std::string(word), 0);
+    response.total = 0;
+
+    messaging::list_report_definitions_request list;
+    list.limit = 1000;
+    list.filter = messaging::report_definitions_filter{};
+    list.filter->party_id = request.party_id;
+    list.filter->search = request.search;
+
+    report_definition_service definitions(ctx_);
+    for (;;) {
+        const auto page = definitions.list_report_definitions(list);
+        if (page.result.outcome != ores::utility::domain::outcome::ok) {
+            response.result = page.result;
+            return response;
+        }
+
+        std::vector<boost::uuids::uuid> definition_ids;
+        definition_ids.reserve(page.definitions.size());
+        for (const auto& definition : page.definitions)
+            definition_ids.push_back(definition.id);
+
+        // One latest run per definition that has run, and the health facts of
+        // those runs, so a page costs two reads however many runs exist.
+        std::map<boost::uuids::uuid, boost::uuids::uuid> run_of;
+        std::vector<boost::uuids::uuid> run_ids;
+        for (const auto& run : repo_.read_latest_by_definition_ids(ctx_, definition_ids)) {
+            run_of.emplace(run.definition_id, run.id);
+            run_ids.push_back(run.id);
+        }
+        std::map<boost::uuids::uuid, std::string> word_of;
+        for (const auto& facts : repo_.read_health_facts_by_instance_ids(ctx_, run_ids))
+            word_of.emplace(facts.report_instance_id,
+                            health_word(facts.state_name, facts.error_count));
+
+        for (const auto& id : definition_ids) {
+            const auto run = run_of.find(id);
+            if (run == run_of.end()) {
+                ++tally.at("never run");
+                continue;
+            }
+            // A run the session cannot read states no word, so it is counted
+            // with the runs whose state has none.
+            const auto word = word_of.find(run->second);
+            ++tally.at(word == word_of.end() ? std::string() : word->second);
+        }
+        response.total += static_cast<std::int64_t>(definition_ids.size());
+
+        list.offset += list.limit;
+        if (page.definitions.size() < list.limit)
+            break;
+    }
+
+    for (const auto word : words) {
+        messaging::report_health_count entry;
+        entry.health = std::string(word);
+        entry.count = tally.at(entry.health);
+        response.counts.push_back(std::move(entry));
+    }
+    return response;
+}
+#+end_src
+
 ** Custom NATS handler methods
 
 #+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
@@ -892,6 +1097,54 @@ report_instance_service::get_report_instance_health(
     }
 #+end_src
 
+*** count_report_definitions_by_health
+
+#+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    /**
+     * @brief Serves reporting.v1.ops.count_report_definitions_by_health.
+     *
+     * It counts definitions by the health of their runs, so the caller must be
+     * allowed to read both.
+     */
+    void count_report_definitions_by_health(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            report_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::report_instances:read") ||
+            !has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<count_report_definitions_by_health_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::report_instance_service svc(req_ctx);
+        try {
+            auto response = svc.count_report_definitions_by_health(*req);
+            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            count_report_definitions_by_health_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+#+end_src
+
 ** Custom NATS subscriptions
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
@@ -905,6 +1158,10 @@ report_instance_service::get_report_instance_health(
         get_report_instance_health_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_report_instance_health(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_report_definitions_by_health_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->count_report_definitions_by_health(std::move(msg)); }));
 #+end_src
 
 * See also

@@ -168,6 +168,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] | DONE | 2026-10-19 | 2026-10-19 | A feed's vintage read runs under the run grant of its collection, so a restart starts every tenant's feeds. The caller of Start is checked once, at the command. |
 | [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] | DONE | 2026-10-19 | 2026-10-20 | A restart starts every feed that should run, whatever order the services come up in. A provision starts the system feeds. A person's Start subscribes the person's party. A collection's grant ends with the collection. |
 | [[id:1DD89181-EEC6-431B-B563-C9650983F45D][Hotfix: fix the main CI failures]] | BACKLOG | | | Four CI failures on main: range-loop-construct error in xml_document_tests.cpp (gcc), incomplete component_trade type in deque on windows-msvc, workflow_engine_tests SIGABRT (std::system_error Invalid argument), and the site build broken link to ID 465ca244 in the time-series plot capture. |
+| [[id:6F517239-8845-4F2F-B553-DE9E333FC641][Fix the marketdata suite timeout]] | DONE | | 2026-10-20 | The marketdata core suite outgrew the 600 s ctest default and lost its serial setting in a regeneration. |
 
 * Achievements
 

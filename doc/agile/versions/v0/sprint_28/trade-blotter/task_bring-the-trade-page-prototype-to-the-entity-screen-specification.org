@@ -26,11 +26,11 @@ Fix the eighteen differences recorded in the review task's notes, so the trade p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -220,3 +220,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five prototypes now follow the entity screen specification. The work is in
+commits 796d1887f6, 8899d53abb, 3a7764a929, 46381ed9e1 and 79b304dbcb.
+Scripted checks in headless Chrome pass for each page, the self-check passes,
+and all pages load with no console error.
+
+Known limits: trade ids in the structure editor are mock ids and open nothing;
+reloading with the pricing ticket dialog open loses the typed input; which
+permission shows each trade tab is not yet specified.

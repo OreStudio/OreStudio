@@ -26,11 +26,11 @@ Before the blotter is built, check that the trade prototypes in doc/prototypes/t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -253,3 +253,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five trade prototypes were reviewed against the entity screen
+specification: trade-page, book-a-trade, structure-page, ore-portfolio and
+trade-entry. Each difference is recorded in the Plan section with a decision.
+The three open questions about trade-entry (editing in place, booking from a
+priced ticket, live market data) were settled, and the specification gained
+the section "A workbench".

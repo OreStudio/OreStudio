@@ -934,6 +934,10 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
     def container(type_name, element):
         return f"std::deque<{element}>" if type_name in wide else f"std::vector<{element}>"
 
+    def arena_container(type_name, element):
+        """An arena names a record defined later, so it cannot be a std::deque on MSVC."""
+        return f"stable_arena<{element}>" if type_name in wide else f"std::vector<{element}>"
+
     def ops_arguments(type_name, element):
         """The template arguments of the three functions that grow and index a member."""
         return f"{element}, {container(type_name, element)}" if type_name in wide else element
@@ -973,7 +977,7 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                         # record owns, so no row of the record moves when the
                         # arena grows.
                         body.append(f"    std::vector<std::uint32_t> {member};")
-                        body.append(f"    {container(target, 'struct ' + cpp)} {member}_arena;")
+                        body.append(f"    {arena_container(target, 'struct ' + cpp)} {member}_arena;")
                         field_count += 1
                         continue
                     if (type_name, target) in shadowed:
@@ -1062,7 +1066,13 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 if (type_name, member) in cut:
                     ops_instance = ops_name(names[type_name], f"{member}_arena")
                     repeated_arena.append(
-                        (ops_instance, ops_arguments(target_name, names[target_name]))
+                        (
+                            ops_instance,
+                            f"{names[target_name]}, "
+                            f"{arena_container(target_name, names[target_name])}"
+                            if target_name in wide
+                            else names[target_name],
+                        )
                     )
                     rows.append(
                         f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
@@ -1176,7 +1186,7 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
 #define ORES_ORE_CORE_XML_GENERATED_{header_name.upper()}_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
-#include "ores.utility/decimal/decimal.hpp"
+{'#include "ores.ore.core/xml/stable_arena.hpp"' + chr(10) if wide else ''}#include "ores.utility/decimal/decimal.hpp"
 
 #include <cstdint>
 {'#include <deque>' + chr(10) if wide else ''}#include <string>

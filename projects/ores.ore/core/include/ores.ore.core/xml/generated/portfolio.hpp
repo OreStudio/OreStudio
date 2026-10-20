@@ -22,6 +22,7 @@
 #define ORES_ORE_CORE_XML_GENERATED_PORTFOLIO_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/stable_arena.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <cstdint>
 #include <deque>
@@ -2563,9 +2564,9 @@ struct equity_option_position_data {
 struct composite_trade_components {
     std::uint64_t present = 0;
     std::vector<std::uint32_t> trade;
-    std::deque<struct component_trade> trade_arena;
+    stable_arena<struct component_trade> trade_arena;
     std::vector<std::uint32_t> sub_trade;
-    std::deque<struct component_sub_trade> sub_trade_arena;
+    stable_arena<struct component_sub_trade> sub_trade_arena;
 };
 struct composite_trade_data {
     std::uint64_t present = 0;
@@ -4494,7 +4495,7 @@ struct derivative {
     std::uint64_t present = 0;
     std::string id;
     std::vector<std::uint32_t> trade;
-    std::deque<struct component_trade> trade_arena;
+    stable_arena<struct component_trade> trade_arena;
     component_sub_trade sub_trade;
 };
 struct portfolio_index_trade_data {
@@ -4507,7 +4508,7 @@ struct trs_underlying_data {
     std::uint64_t present = 0;
     std::deque<struct derivative> derivative;
     std::vector<std::uint32_t> trade;
-    std::deque<struct component_trade> trade_arena;
+    stable_arena<struct component_trade> trade_arena;
     std::deque<component_sub_trade> sub_trade;
     std::vector<struct portfolio_index_trade_data> portfolio_index_trade_data;
 };

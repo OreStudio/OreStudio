@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/fix-composite-versioning-for-bonds
-#+pr:
+#+pr: 3599
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3599][#3599]] | [agile] Close the bond composite versioning task |
 
 * Review
 

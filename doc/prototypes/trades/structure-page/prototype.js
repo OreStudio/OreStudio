@@ -14,17 +14,11 @@ const MODE = P.get('mode') === 'group' ? 'group' : '';
 let TAB = P.get('tab') || 'details';
 const STATE_P = P.get('state') || '';
 const REASONS = reasonsFor('amend');
-// The writes the screen has not read back yet, and the history entries they make.
+// The writes the screen has not read back yet.
 const PENDING = [];
-const EXTRA = {};
 
-const KIND = {
-    Strategy: { whole: true, template: true, desc: 'One product family, one pricing model, fixed leg roles.' },
-    Typed: { whole: true, template: true, desc: 'Legs from different families, with roles fixed by the type.' },
-    Dynamic: { whole: true, template: false, desc: 'Roles read from data at run time, as a scripted product does.' },
-    Package: { whole: false, template: false, desc: 'A container. Nothing economic binds the legs, so it has no template and any role.' }
-};
-const TEMPLATES = { Strategy: { Straddle: [['leg', 2, 2]], RiskReversal: [['long', 1, 1], ['short', 1, 1]], Butterfly: [['body', 1, 1], ['wing', 2, 2]], CalendarSpread: [['near', 1, 1], ['far', 1, 1]] }, Typed: { CallableSwap: [['swap', 1, 1], ['call', 1, 1]] } };
+const KIND = STRUCTURE_KINDS;
+const TEMPLATES = STRUCTURE_TEMPLATES;
 const noun = k => k === 'Package' ? 'package' : 'structure';
 const Noun = k => noun(k).replace(/^./, c => c.toUpperCase());
 const confirmText = k => KIND[k].whole ? 'Confirmed as one document' : 'Each leg confirms on its own';
@@ -33,13 +27,7 @@ const pricingText = k => KIND[k].whole ? 'Priced as a whole' : 'Priced leg by le
 /* A structure is a tree. The root is the deal the customer sees. Inner nodes are
  * structures, of any kind, and the leaves are trades. The model nests one level at most:
  * parent is the parent_structure_id of the structure table. */
-const DEALS = Object.assign({
-    'STR-0010': { kind: 'Dynamic', template: '', cp: 'MRDN', parent: '', members: [['ACME-100208', 'hedge']], created: '2026-08-20T14:00:00+01:00', by: 'ada.lovelace' },
-    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100202', 'long'], ['ACME-100209', 'short']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' },
-    'PKG-0021': { kind: 'Package', template: '', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100204', 'leg'], ['ACME-100213', 'leg']], created: '2026-08-20T14:05:00+01:00', by: 'ada.lovelace' },
-    'STR-0009': { kind: 'Typed', template: 'CallableSwap', cp: 'CSTL', parent: '', members: [['ACME-100211', 'swap'], ['ACME-100212', 'call']], created: '2026-09-02T10:30:00+01:00', by: 'ada.lovelace' },
-    'PKG-0004': { kind: 'Package', template: '', cp: 'NWCAP', parent: '', members: [['ACME-100201', 'leg'], ['ACME-100210', 'leg']], created: '2026-10-05T11:20:00+01:00', by: 'ada.lovelace' }
-}, store('structures') || {});
+const DEALS = allDeals();
 const childrenOf = id => Object.entries(DEALS).filter(([, v]) => v.parent === id);
 const rootOf = id => DEALS[id] && DEALS[id].parent ? rootOf(DEALS[id].parent) : id;
 let SID = P.get('deal') || '';
@@ -76,11 +64,11 @@ const wrap = (...kids) => h('div', { class: 'dyn' }, kids);
 function put(el) { main.querySelectorAll('.dyn').forEach(n => n.remove()); main.append(el); }
 const kindRule = s => s.template ? TEMPLATES[s.kind][s.template] : null;
 const tmem = s => s.members.map(([c, r]) => ({ t: trade(c), role: r })).filter(x => x.t);
-const EDITOR = '../trade-entry/';
 
 /* ---------- the page ---------- */
 function refresh() {
     LOADED = NOW; stale = false;
+    if (marketNewer) { Object.assign(MARKET, { spot: 1.0862, vol: 8.4, rate: 3.08, readAt: NOW }); marketNewer = false; }
     for (const w of PENDING.splice(0)) w();
     renderDeal();
 }
@@ -98,12 +86,11 @@ function renderDeal() {
     const head = pageHead({
         title: ttl, id: SID, meta: [chip(s.kind, 'acc'), s.template ? chip(s.template) : null, s.template ? (ok ? chip('complete', 'ok') : chip('legs missing', 'warn')) : null],
         actions: [refreshButton({ stale, onClick: refresh }),
-            workflowMenu([pk ? { title: 'Price the legs', line: 'A package has no price of its own. Open the pricing screen of the trade-entry prototype.', href: EDITOR + 'pricing.html' }
-                : { title: 'Price this structure', line: 'Open the pricing screen of the trade-entry prototype.', href: EDITOR + 'pricing.html' },
-                { title: 'Edit in the ' + N + ' editor', line: 'Manage the legs in the trade-entry prototype.', href: EDITOR }])]
+            workflowMenu([{ title: 'Book a leg', line: 'Book a trade of ' + cpty(s.cp).name + ' and add it to this ' + N + '.', href: '../book-a-trade/?structure=' + SID + (openRoles(s).length ? '&role=' + openRoles(s)[0] : ''), allowed: !!CAN.book && !!CAN.structure && (!kindRule(s) || openRoles(s).length > 0) }])]
     });
     let content;
     if (TAB === 'members') content = membersCard(s, ms, roleCheck);
+    else if (TAB === 'price') content = priceCard(s, ms);
     else if (TAB === 'history') content = STATE_P === 'refused' ? h('div', { class: 'notice' }, h('b', null, 'You may not read the history of this ' + N + '. '), 'Ask the tenant administrator for a role that reads trade history.') : timeline(historyEntries(s, ms), { isService: false });
     else content = h('div', { class: 'cards' }, card({ id: 'identity', title: 'Identity', table: 'structure', version: 1, fields: [
         { label: 'Party', value: PARTY, node: ref('party', PARTY), fixedWhy: 'Shared by every leg, for the life of the ' + (pk ? 'package' : 'deal') + '.', type: 'text' },
@@ -116,7 +103,7 @@ function renderDeal() {
             { label: 'Pricing', value: pricingText(s.kind), type: 'text', fixedWhy: pk ? 'No leg depends on another, so the price is the sum of the parts.' : 'The legs interact, so the deal has one price.' },
             { label: 'External version', value: pk ? 'Of each trade' : 'Of the deal', type: 'text', fixedWhy: pk ? 'Each leg moves on its own: see the Members tab.' : 'Moves when the economics of a leg change. The structure table has no column for it yet.' }] }, { readOnlyNote: true }),
         membersCard(s, ms, roleCheck));
-    const list = [['details', 'Details'], ['members', 'Members'], ['history', 'History']];
+    const list = [['details', 'Details'], ['members', 'Members'], ['price', 'Price'], ['history', 'History']];
     const right = SEL ? tradePanel(SEL) : h('div', null, tabs(list, TAB, id => qs({ tab: id === 'details' ? null : id }), id => go({ tab: id === 'details' ? null : id }, () => { TAB = id; renderDeal(); })), content);
     put(wrap(head, h('div', { class: 'workspace' }, treePanel(), right)));
 }
@@ -126,8 +113,7 @@ window.addEventListener('popstate', () => {
     SID = p.get('deal') || SID; SEL = p.get('trade') || ''; TAB = p.get('tab') || 'details';
     renderDeal();
 });
-/* The tree is its own panel, beside the page, as in the structure editor of the
- * trade-entry prototype: the root, its inner structures, and the trades, one row each. */
+/* The tree is its own panel, beside the page: the root, its inner structures, and the trades, one row each. */
 const title = (v) => v.kind === 'Package' ? 'Package' : (v.template ? v.template.replace(/([A-Z])/g, ' $1').trim() : v.kind + ' structure');
 const productTag = t => ({ swap: 'Rates', fx: 'FX', credit: 'Credit', bond: 'Bond', equity: 'Equity', composite: 'Composite' }[t.product] || t.product);
 function treeRow(depth, selected, onclick, kids) {
@@ -169,20 +155,81 @@ function tradePanel(code) {
 function membersCard(s, ms, roleCheck) {
     const pk = s.kind === 'Package';
     const cols = [pk ? 'Leg' : 'Role', 'Trade', 'Type', 'State', 'Notional'].concat(pk ? ['External version'] : []).concat(['']);
-    return h('section', { class: 'card' }, h('header', null, h('h2', null, 'Trades'), chip(ms.length + ' legs', 'v'), h('span', { class: 'sp' }), CAN.structure ? h('button', { class: 'btn small', onclick: () => linkDialog(s) }, 'Link a trade') : h('span', { class: 'access' }, 'Read only')),
+    return h('section', { class: 'card' }, h('header', null, h('h2', null, 'Trades'), chip(ms.length + ' legs', 'v'), h('span', { class: 'sp' }), CAN.structure ? [CAN.book && (!kindRule(s) || openRoles(s).length) ? h('a', { class: 'btn small', href: '../book-a-trade/?structure=' + SID + (openRoles(s).length ? '&role=' + openRoles(s)[0] : '') }, 'Book a leg') : null, ' ', h('button', { class: 'btn small', onclick: () => linkDialog(s) }, 'Link a trade')] : h('span', { class: 'access' }, 'Read only')),
         h('div', { class: 'body' }, roleCheck.length ? h('div', { class: 'filters', style: 'margin-top:0' }, roleCheck.map(r => chip(r.role + ' ' + r.n + (r.hi ? ' of ' + r.lo + (r.hi !== r.lo ? '–' + r.hi : '') : ''), r.n >= r.lo && (!r.hi || r.n <= r.hi) ? 'ok' : 'warn'))) : null,
+            legChecks(s, ms).map(([okc, text]) => h('div', { class: 'notice ' + (okc ? 'ok' : 'bad'), style: 'margin-bottom:.4rem' }, (okc ? '✓ ' : '✗ ') + text)),
             pk ? h('div', { class: 'notice', style: 'margin-bottom:.6rem' }, 'A package confirms trade by trade. Each leg has its own external version, and the customer quotes the one for the trade they hold.') : null,
             h('table', { class: 'grid' }, h('thead', null, h('tr', null, cols.map(c => h('th', null, c)))),
                 h('tbody', null, ms.map((m, i) => h('tr', null, h('td', null, pk ? String(i + 1) : m.role), h('td', { class: 'nw' }, tradeLink(m.t.code)), h('td', null, ref('trade_type', m.t.type, tradeType(m.t.type).description)), h('td', null, chip(m.t.state, { live: 'ok', draft: 'warn', cancelled: 'bad' }[m.t.state])),
                     h('td', { class: 'num nw' }, moneyRef(m.t.notional, m.t.ccy)), pk ? h('td', { class: 'mono' }, 'ext ' + m.t.ext) : null, h('td', null, CAN.structure ? h('button', { class: 'btn small ghost', onclick: () => unlink(s, m) }, 'Unlink') : null)))))));
 }
+/* What the template of a structure asks of its legs, read from the legs' instruments. */
+function legFacts(t) {
+    const cards = t.table ? instrumentCards(t) : [];
+    const card0 = cards.find(c => c.id === 'instrument');
+    const get = key => { const fd = card0 && card0.fields && card0.fields.find(x => x.key === key); return fd ? String(fd.value) : ''; };
+    return { optionType: get('option_type'), strike: get('strike'), expiry: get('expiry_date'), type: t.type, product: t.product };
+}
+function legChecks(s, ms) {
+    const out = [];
+    if (s.kind === 'Strategy' && ms.length > 1) {
+        const fam = [...new Set(ms.map(m => m.t.product))];
+        out.push([fam.length === 1, fam.length === 1 ? 'Every leg is in one product family (' + fam[0] + ').' : 'A strategy has one product family. These legs are ' + fam.join(' and ') + '.']);
+    }
+    const facts = ms.map(m => Object.assign({ role: m.role, code: m.t.code }, legFacts(m.t)));
+    const two = facts.length === 2;
+    const same = key => new Set(facts.map(f => f[key])).size === 1;
+    const opposite = two && facts[0].optionType && facts[1].optionType && facts[0].optionType !== facts[1].optionType;
+    if (!s.template || !facts.length) return out;
+    if (s.template === 'Straddle' && two) out.push([opposite && same('strike') && same('expiry'), 'A straddle is a call and a put at one strike and one expiry.' + (opposite && same('strike') && same('expiry') ? '' : ' The legs differ: ' + facts.map(f => f.code + ' ' + f.optionType + ' ' + f.strike + ' ' + f.expiry).join(', ') + '.')]);
+    if (s.template === 'RiskReversal' && two) out.push([opposite && same('expiry'), 'A risk reversal is a call and a put at one expiry.' + (opposite && same('expiry') ? '' : ' The legs differ: ' + facts.map(f => f.code + ' ' + f.optionType + ' ' + f.expiry).join(', ') + '.')]);
+    if (s.template === 'CalendarSpread' && two) out.push([same('strike') && !same('expiry'), 'A calendar spread is one option at two expiries.']);
+    if (s.template === 'Butterfly' && facts.length === 3) {
+        const k = facts.map(f => Number(f.strike)).sort((a, b) => a - b);
+        out.push([Math.abs((k[1] - k[0]) - (k[2] - k[1])) < 1e-9, 'The strikes of a butterfly are evenly spaced.']);
+    }
+    if (s.template === 'CallableSwap' && two) {
+        const sw = facts.find(f => f.role === 'swap'), cl = facts.find(f => f.role === 'call');
+        out.push([!!sw && !!cl && /Swap$/.test(sw.type) && /Swaption|Callable/.test(cl.type), 'The swap role holds a swap and the call role holds the right to terminate.']);
+    }
+    return out;
+}
+/* The market is a snapshot, read at a time. A newer snapshot turns Refresh gold. Nothing ticks. */
+const MARKET = { spot: 1.0850, vol: 8.2, rate: 3.10, readAt: LOADED };
+const SHIFT = { spot: '0', vol: '0', rate: '0' };
+let APPLIED = Object.assign({}, SHIFT), PRICED_AT = LOADED, marketNewer = false;
+function indicative(m, shifts) {
+    const n = Number(m.t.code.slice(-2)) || 0;
+    const sign = ['short', 'swap'].includes(m.role) ? -1 : 1;
+    const base = 0.0042 + (((n * 7) % 11) - 5) * 0.0009;
+    const move = (Number(shifts.spot) || 0) * 0.009 + (Number(shifts.vol) || 0) * 0.0006 - (Number(shifts.rate) || 0) * 0.00002;
+    return sign * m.t.notional * (base + move) * (MARKET.spot / 1.085);
+}
+function priceCard(s, ms) {
+    const pk = s.kind === 'Package';
+    const rows = ms.map(m => ({ m, npv: indicative(m, APPLIED) }));
+    const total = rows.reduce((a, r) => a + r.npv, 0);
+    const shiftField = (key, label, unit) => field(label + ' (' + unit + ')', valueInput({ type: 'decimal' }, SHIFT[key], v => { SHIFT[key] = v; }));
+    return h('div', { class: 'cards' },
+        h('section', { class: 'card' }, h('header', null, h('h2', null, pk ? 'Price of the legs' : 'Price of the structure'), h('span', { class: 'sp' }), h('span', { class: 'faint small', title: 'The market snapshot' }, 'Market read ' + iso(MARKET.readAt))),
+            h('div', { class: 'body', style: 'display:grid;gap:.8rem' },
+                h('div', { class: 'notice' }, (pk ? 'A package has no price of its own. The price is the sum of the legs.' : 'The legs interact, so the structure has one price.') + ' The price is indicative and is not the result of a model. The market is a snapshot: it does not tick. Refresh reads a newer one.'),
+                h('dl', { class: 'fields' }, [['Spot', MARKET.spot.toFixed(4)], ['Volatility', MARKET.vol.toFixed(1) + ' %'], ['Rate', MARKET.rate.toFixed(2) + ' %']].map(([k, v]) => h('div', null, h('dt', null, k), h('dd', null, v)))),
+                h('div', { class: 'grid2' }, shiftField('spot', 'Spot shift', '%'), shiftField('vol', 'Volatility shift', 'points'), shiftField('rate', 'Rate shift', 'basis points')),
+                h('div', { class: 'filters', style: 'margin:0' }, h('button', { class: 'btn primary', onclick: () => { APPLIED = Object.assign({}, SHIFT); PRICED_AT = NOW; renderDeal(); } }, 'Reprice'),
+                    h('span', { class: 'faint small' }, 'Priced ' + iso(PRICED_AT) + (APPLIED.spot !== '0' || APPLIED.vol !== '0' || APPLIED.rate !== '0' ? ' with the shifts above.' : '.'))),
+                h('table', { class: 'grid' }, h('thead', null, h('tr', null, [pk ? 'Leg' : 'Role', 'Trade', 'Type', 'Notional', 'Indicative price'].map((c, i) => h('th', { class: i > 2 ? 'num' : '' }, c)))),
+                    h('tbody', null, rows.map(({ m, npv }, i) => h('tr', null, h('td', null, pk ? String(i + 1) : m.role), h('td', { class: 'nw' }, tradeLink(m.t.code)), h('td', null, ref('trade_type', m.t.type, tradeType(m.t.type).description)),
+                        h('td', { class: 'num nw' }, moneyRef(m.t.notional, m.t.ccy)), h('td', { class: 'num nw' }, money(npv, m.t.ccy)))),
+                        h('tr', null, h('td', { colspan: 4 }, h('b', null, pk ? 'Sum of the legs' : 'Price of the structure')), h('td', { class: 'num nw' }, h('b', null, money(total, ms[0] ? ms[0].t.ccy : '')))))))));
+}
 function historyEntries(s, ms) {
     const N = noun(s.kind);
     const e = [{ id: 's1', at: s.created, kind: 'booked', activity: 'new_booking', record: 'Structure', version: 1, actor: s.by, reason: 'system.new_record', note: Noun(s.kind) + ' created with ' + s.members.length + ' legs', diffs: [['kind', '', s.kind], ['counterparty', '', cpty(s.cp).name]] }];
-    const linked = x => (EXTRA[SID] || []).some(z => z.what && z.what.startsWith(x.t.code + ' linked'));
+    const linked = x => (s.events || []).some(z => z.what && z.what.startsWith(x.t.code + ' linked'));
     ms.filter(m => !linked(m)).forEach((m, i) => e.push({ id: 's' + (i + 2), at: new Date(new Date(s.created).getTime() + (i + 1) * 60000).toISOString().slice(0, 19) + '+01:00', kind: 'event', activity: 'new_booking', record: 'Member', what: m.t.code + ' linked as ' + m.role, version: 1, actor: s.by, reason: 'system.update', note: '', diffs: [], noVersion: true }));
     ms.forEach((m, i) => e.push({ id: 'l' + i, at: '2026-10-10T1' + i + ':15:00+01:00', kind: 'amended', activity: 'amendment', record: 'Leg ' + m.t.code, version: m.t.ver, ext: m.t.ext, actor: 'ada.lovelace', reason: 'system.update', note: 'Read from the leg ' + m.t.code + '. Not a version of the ' + N + '.', diffs: [['notional', '', money(m.t.notional, m.t.ccy)]], economic: true }));
-    const all = e.concat(EXTRA[SID] || []).sort((a, b) => a.at.localeCompare(b.at));
+    const all = e.concat((s.events || []).map((z, i) => Object.assign({ id: 'x' + i, kind: 'amended', activity: 'amendment', record: 'Member', version: 1, noVersion: true }, z))).sort((a, b) => a.at.localeCompare(b.at));
     all.forEach(x => { x.current = x.id === 's1'; });
     return all;
 }
@@ -195,7 +242,8 @@ function changeFields(s, call, get) {
 function queueChange(s, apply, entry, message) {
     PENDING.push(() => {
         apply();
-        (EXTRA[SID] = EXTRA[SID] || []).push(Object.assign({ id: 'x' + Date.now(), at: iso(NOW), kind: 'amended', activity: 'correction', record: 'Member', version: 1, actor: ME, noVersion: true }, entry));
+        (s.events = s.events || []).push(Object.assign({ at: iso(NOW), activity: 'amendment', actor: ME }, entry));
+        store('structures', Object.assign(store('structures') || {}, { [SID]: s }));
     });
     stale = true; renderDeal(); toast(message);
 }
@@ -335,5 +383,6 @@ function renderList() {
     put(wrap(head, filters, table, pager({ offset: LQ.offset, limit: LQ.limit, total: shown.length, onChange: v => { Object.assign(LQ, v); renderList(); } }),
         h('div', { class: 'reqline' }, 'trading.v1.structures.list  offset=' + LQ.offset + ' limit=' + LQ.limit + ' order=' + JSON.stringify(order) + ' filter=' + JSON.stringify(filter) + '  →  total=' + shown.length)));
 }
+setTimeout(() => { if (TAB === 'price' && SID && !stale) { marketNewer = true; stale = true; renderDeal(); } }, 8000);
 leaveGuard(() => MODE === 'group' && !G.done && (G.step > 0 || !!G.kind));
 if (MODE) renderGroup(); else if (LIST) renderList(); else renderDeal();

@@ -677,27 +677,24 @@ one screen and its words follow the kind. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE41
 - Grouping trades is a workflow, because the kind to choose has consequences the
   person must read first.
 
-*** A workbench
+*** A priced structure
 
-A workbench is a screen that edits one structure in place, as the structure editor
-and the pricing screen do. It follows the Edit pattern, with one working copy in
-place of one dialog.
+The price of a structure is a tab of the structure page. There is no separate
+workbench that edits a structure in place.
 
-- A change goes to a working copy and writes nothing. The header counts the
-  changes that are not saved, and Discard puts the saved copy back.
-- Save is the Edit pattern for the whole copy: the kind of change, the reason, the
-  commentary, and a claim on the version that was read. It moves the version once,
-  whatever the number of changes in it. The copy is kept when the person leaves.
-- A change of state, such as authorising, is not a change to the copy. It asks for
-  a reason, and it does not move the version.
-- A removal and a change of mode need no confirmation of their own, because Discard
-  undoes them before Save.
-- A workbench does not book. Booking is the Add of the trade list. A priced ticket
-  goes to Book a trade with its type and terms in the address. A price of a
-  structure goes back to the editor as a change to the copy.
-- Market data is a snapshot, and the screen says when it was read. A newer snapshot
+- The members of a structure change through the Edit pattern, one change at a time.
+  A dialog asks for the reason and the commentary. The change waits until the
+  person presses Refresh, and the history of the structure records who made it and
+  why. A change to the members does not move the version of a trade.
+- A leg is booked on Book a trade, with the structure and the role in the address.
+  The booking and the membership are two writes. The result offers the next open
+  role of the template.
+- A strategy states what its template asks of its legs, and the Members tab shows
+  each check as it passes or fails.
+- Market data is a snapshot, and the tab says when it was read. A newer snapshot
   turns Refresh gold, and nothing ticks by itself. A screen that must stream says so
   on its own query, as the notification bell does.
+- A price is indicative. The tab says so, and it names the shifts that were applied.
 
 ** The entity protocol
 

@@ -256,6 +256,40 @@ function tradeId(i) {
     const h8 = (i * 2654435761 >>> 0).toString(16).padStart(8, '0');
     return h8 + '-3b2d-4a91-8f6e-' + (i * 7919).toString(16).padStart(12, '0');
 }
+/* ---------- structures ----------
+ * A structure holds trades under a kind. A template fixes the roles and how many legs each holds.
+ * Members are trades of one counterparty. Booking and grouping write the same store. */
+const STRUCTURE_KINDS = {
+    Strategy: { whole: true, template: true, desc: 'One product family, one pricing model, fixed leg roles.' },
+    Typed: { whole: true, template: true, desc: 'Legs from different families, with roles fixed by the type.' },
+    Dynamic: { whole: true, template: false, desc: 'Roles read from data at run time, as a scripted product does.' },
+    Package: { whole: false, template: false, desc: 'A container. Nothing economic binds the legs, so it has no template and any role.' }
+};
+const STRUCTURE_TEMPLATES = { Strategy: { Straddle: [['leg', 2, 2]], RiskReversal: [['long', 1, 1], ['short', 1, 1]], Butterfly: [['body', 1, 1], ['wing', 2, 2]], CalendarSpread: [['near', 1, 1], ['far', 1, 1]] }, Typed: { CallableSwap: [['swap', 1, 1], ['call', 1, 1]] } };
+const BASE_DEALS = {
+    'STR-0010': { kind: 'Dynamic', template: '', cp: 'MRDN', parent: '', members: [['ACME-100208', 'hedge']], created: '2026-08-20T14:00:00+01:00', by: 'ada.lovelace' },
+    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100202', 'long'], ['ACME-100209', 'short']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' },
+    'PKG-0021': { kind: 'Package', template: '', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100204', 'leg'], ['ACME-100213', 'leg']], created: '2026-08-20T14:05:00+01:00', by: 'ada.lovelace' },
+    'STR-0009': { kind: 'Typed', template: 'CallableSwap', cp: 'CSTL', parent: '', members: [['ACME-100211', 'swap'], ['ACME-100212', 'call']], created: '2026-09-02T10:30:00+01:00', by: 'ada.lovelace' },
+    'PKG-0004': { kind: 'Package', template: '', cp: 'NWCAP', parent: '', members: [['ACME-100201', 'leg'], ['ACME-100210', 'leg']], created: '2026-10-05T11:20:00+01:00', by: 'ada.lovelace' }
+};
+/* The legs of the structure STR-0007 differ in their option type and strike. Every other option is a call at the market strike. */
+const OPTION_LEGS = { 'ACME-100202': { type: 'Call', strike: '1.0900' }, 'ACME-100209': { type: 'Put', strike: '1.0700' } };
+const allDeals = () => Object.assign({}, BASE_DEALS, store('structures') || {});
+const templateRoles = (kind, template) => template && STRUCTURE_TEMPLATES[kind] ? STRUCTURE_TEMPLATES[kind][template] || null : null;
+/* The roles of a template that still need a leg, then the ones that may hold another. */
+function openRoles(deal) {
+    const rule = templateRoles(deal.kind, deal.template);
+    if (!rule) return [];
+    const n = r => deal.members.filter(m => m[1] === r).length;
+    const need = rule.filter(([r, lo]) => n(r) < lo).map(r => r[0]);
+    return need.length ? need : rule.filter(([r, , hi]) => !hi || n(r) < hi).map(r => r[0]);
+}
+function nextStructureId(kind) {
+    const prefix = kind === 'Package' ? 'PKG-' : 'STR-';
+    return prefix + String(100 + Object.keys(allDeals()).length + 1).padStart(4, '0');
+}
+
 let TRADES = buildTrades().concat(store('booked') || []);
 const trade = code => TRADES.find(t => t.code === code || t.id === code);
 
@@ -287,13 +321,14 @@ function instrumentCards(t) {
                     ['1', 'Fixed', moneyRef(t.notional, t.ccy), '2.8500 %', 'Annual'],
                     ['2', 'Floating', moneyRef(t.notional, t.ccy), 'EUR-EURIBOR-6M + 0.00 %', 'Semi-annual']]), economic: true
             }];
-        case 'fx_vanilla_option_instrument':
+        case 'fx_vanilla_option_instrument': {
+            const ol = OPTION_LEGS[t.code] || { type: 'Call', strike: '1.0842' };
             return [{
                 id: 'instrument', title: 'FX vanilla option', table: 'fx_vanilla_option_instrument', version: t.ver,
                 fields: [
-                    f('option_type', 'Option type', 'Call', { ...E, options: ['Call', 'Put'] }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
+                    f('option_type', 'Option type', ol.type, { ...E, options: ['Call', 'Put'] }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
                     f('bought_amount', 'Bought amount', t.notional, { ...E, type: 'money' }), f('sold_currency', 'Sold currency', 'USD', { ...E, type: 'ccy' }),
-                    f('sold_amount', 'Sold amount', t.notional * 1.0842, { ...E, type: 'money' }), f('strike', 'Strike', '1.0842', { ...E, type: 'decimal' }),
+                    f('sold_amount', 'Sold amount', t.notional * 1.0842, { ...E, type: 'money' }), f('strike', 'Strike', ol.strike, { ...E, type: 'decimal' }),
                     f('expiry_date', 'Expiry date', '2027-01-15', { ...E, type: 'date' }), f('delivery_date', 'Delivery date', '2027-01-19', { ...E, type: 'date' }),
                     f('exercise_style', 'Exercise style', 'European', { ...E, options: ['European', 'American', 'Bermudan'] }), f('description', 'Internal description', 'Client hedge', { optional: true })
                 ]
@@ -302,8 +337,9 @@ function instrumentCards(t) {
                 ...rows(['Currency', 'Amount', 'Payment date'], [[ccyRef('USD'), money(112500), '2026-10-10']]), economic: true
             }, {
                 id: 'exercise_prices', title: 'Exercise prices', table: 'option_exercise_price', version: 1, child: true,
-                ...rows(['Exercise date', 'Strike'], [['2027-01-15', '1.0842']]), economic: true, digestGap: !DIGEST_FIXED
+                ...rows(['Exercise date', 'Strike'], [['2027-01-15', ol.strike]]), economic: true, digestGap: !DIGEST_FIXED
             }];
+        }
         case 'bond_instrument':
             return [{
                 id: 'instrument', title: 'Bond', table: 'bond_instrument', version: t.ver,
@@ -433,8 +469,7 @@ function shell(opts) {
         opts.noRoles ? null : [h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'as'),
         ['trader', 'operations', 'reader'].map(r => h('a', { href: qs({ as: r }), class: r === ROLE ? 'on' : '' }, r))],
         h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'prototypes'),
-        SIBLINGS.map(([dir, label]) => h('a', { href: '../' + dir + '/', title: label }, dir)),
-        h('a', { href: '../trade-entry/', title: 'The structure-based booking and pricing prototype' }, 'trade-entry'));
+        SIBLINGS.map(([dir, label]) => h('a', { href: '../' + dir + '/', title: label }, dir)));
     document.body.prepend(note, top, main);
     document.body.append(pills, bar);
     if (opts.says) document.body.append(h('div', { class: 'proto-says' }, h('b', null, 'What this state argues. '), opts.says));

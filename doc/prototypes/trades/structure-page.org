@@ -23,7 +23,7 @@ A structure is an entity: an immutable identity and legs that are trades. A pack
 
 ** A structure is a tree
 
-The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree in its own panel beside the page, in the manner of the structure editor of the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]: one row for the root, one for each inner structure with its kind tag and how it confirms, and one for each trade with its product tag, its role and its notional. The panel shows the whole tree of the root whichever node is open. A click on a structure opens its page. A click on a trade selects it, and the page shows that trade's card in the tree, with a link to the trade.
+The root is the deal the customer sees. Inside it are strategies, packages and plain trades, and the leaves are trades. This is the deal topology of [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]. The page draws it as a tree in its own panel beside the page, one row for the root, one for each inner structure with its kind tag and how it confirms, and one for each trade with its product tag, its role and its notional. The panel shows the whole tree of the root whichever node is open. A click on a structure opens its page. A click on a trade selects it, and the page shows that trade's card in the tree, with a link to the trade.
 
 The model nests one level at most. =parent_structure_id= points to a root, and an inner structure holds only trades. The note draws a deeper tree, and the insert trigger refuses it. The page says so under the tree.
 
@@ -70,11 +70,14 @@ A composite trade is neither. It is one trade with its own legs, and it is not i
 
 ** What the prototype argues
 
-- The version is read from the legs and is never stored beside them. The rule is the one the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] shows: a change to any component moves the structure, and authorisation does not.
+- The version is read from the legs and is never stored beside them. A change to a leg moves that trade's version and not the structure's.
 - The kind is chosen at grouping, with its consequences stated beside each choice, because it decides what the customer receives. Package is one of the four kinds, so there is one workflow, Group trades.
 - The client states the rules the database enforces: every leg shares the party and the counterparty, a structure nests one level at most, and a strategy has one product family. The person sees the check before the server refuses it.
 - A trade moves from one structure to another without being rewritten.
-- Pricing and composition stay in the Trade Entry Prototype. The Workflows menu links to both.
+- Pricing is the Price tab. It reads a market snapshot, says when it was read, and does not tick. A newer snapshot turns Refresh gold, and Refresh reads it. The price is indicative, and the shifts that were applied are named.
+- A leg is booked on [[file:book-a-trade.org][Book a trade]]. Book a leg is in the Workflows menu and on the Members tab, and it carries the structure and the open role in the address. It is not shown when the template has no role left.
+- The Members tab states what the template asks of the legs, as checks that pass or fail: one product family for a strategy, a call and a put at one strike for a straddle, and the other templates by their descriptions. A risk reversal's legs differ in option type and strike in the mock data, so the checks have something to find.
+- A change to the members is recorded in the history of the structure with its reason and commentary, and it stays when the page is loaded again.
 - A tab, a click in the tree and a click on a trade open in place and put their address in the history. Link a trade is the Add of the Trades card and is not in the menu. Link and Unlink ask for a reason and commentary, and the card keeps its old rows until Refresh, which then adds an entry to History.
 
 ** What is fake

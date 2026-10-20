@@ -249,8 +249,24 @@ The prototypes drew several closed sets from memory. They now read from the seed
 Amounts show digit separators.
 
 Still open:
-- Trade-entry structure editor uses groups, packages and strategies that are not the structures model (kind, template, members with a role). "Instrument 2" is not found in the prototypes and probably comes from here.
 - Instrument field names per table (rate, fx option, bond, composite) are not compared with the columns yet.
 - Books in the prototypes have a code and a purpose only. The table also holds parent portfolio, functional currency, status, regulatory type, ledger feed, sweepable, rates centre and sandbox.
 - Link types, long/short, option types and exercise types in the instrument forms are not compared yet.
 - A change reason that requires commentary is not enforced by the screens.
+
+** Trade entry folded into Book a trade and the structure page, 2026-10-20
+
+The trade-entry prototype is retired. It held its own idea of a structure and its own instrument forms. Its work went to the two screens that follow the real model.
+
+| Trade entry had | Now |
+|-----------------|-----|
+| Building a structure leg by leg | Book a trade, Structure card: a new structure or a leg of an existing one. The address carries =structure=, =role=, =kind=, =template= and =cp=. The booking and the membership are two writes. |
+| Strategy and package mode | The kind: Strategy, Typed, Dynamic, Package |
+| Strategy invariants | Checks on the Members tab, read from the legs' instruments |
+| Pricing | Price tab of the structure page: a market snapshot, Refresh gold for a newer one, shifts and Reprice, an indicative price |
+| Add and remove components | Link a trade and Unlink, with a reason, in the history |
+| Authorisation | Not drawn |
+
+The structure model (kinds, templates, base structures) moved into the shared =common.js=. The history of a structure reads persisted events, so a booked leg appears with its reason and commentary. "Instrument 2" came from the old editor and is gone.
+
+Mock data: the two legs of STR-0007 are now a call and a put at different strikes. The fx_vanilla_option_instruments table has no strike, long/short or delivery date column; the prototype still draws them, and the instrument field comparison covers that.

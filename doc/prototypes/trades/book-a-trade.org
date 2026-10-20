@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:trading:ui:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-20
 
 | Item          | Where |
 |---------------+-------|
@@ -30,7 +30,9 @@ Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]
 | =?tab=instrument= | The Instrument tab, with a tab for each part of the instrument |
 | =?tab=identifiers=, =?tab=review= | The other two tabs. Review lists the writes and the refusals |
 | =?like=ACME-100201= | A booking started from an existing trade |
-| =?type=FxOption&terms=…= | A booking started from a priced ticket: the trade type, and the terms as =key:value= pairs, from the pricing screen of the trade entry prototype |
+| =?type=FxOption&terms=…= | A booking started with a trade type and its terms as =key:value= pairs |
+| =?structure=STR-0007&role=short= | A booking of a leg of an existing structure or package. The counterparty is the structure's and cannot change. The role is one the template still holds |
+| =?structure=new&kind=Strategy&template=Straddle&cp=MRDN= | A booking of the first leg of a new structure. The kind, the template and the counterparty are optional |
 | =?fail=instrument= | The half-booked trade: the booking is written and the instrument is not |
 | =?fail=duplicate= | The refusal for a trade id that is already booked |
 | =?as=reader= | The screen names the right it needs and links to a request for each role that gives it |
@@ -38,7 +40,7 @@ Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]
 ** What the prototype argues
 
 - The trade type is a combo box grouped by product, not a grid of cards. It is one choice among 121, and a combo box is quicker to scan and to type into. The 28 types with no instrument table are listed and cannot be chosen, and the option says so.
-- The trade type decides what the Instrument tab holds, because each type routes to one instrument table. A swap has terms and legs. An FX option has terms, a premium and exercise prices. The tabs follow the parts of the instrument, as the tabs of the structure editor in the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] follow its widget.
+- The trade type decides what the Instrument tab holds, because each type routes to one instrument table. A swap has terms and legs. An FX option has terms, a premium and exercise prices. The tabs follow the parts of the instrument, as the tabs of any record follow its parts.
 - A term that has a set of values is a combo box, with the flag for a currency or a calendar. A date is a date input. An optional term has Clear. The Edit dialog of the trade page uses the same input.
 - The Review tab asks for the reason and the commentary, as the Edit dialog does, and counts the refusals on its tab. Book is disabled while one stands, and its tooltip gives the first.
 - A form with changes asks "You have unsaved changes. Close anyway?" before the person leaves.
@@ -46,7 +48,8 @@ Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]
 - A part with rows is a table with Add a row and Remove. A part the economic digest does not read says so where it is edited.
 - A virtual book holds only a draft, a test or a hypothetical. The Review tab refuses a live, real trade in a virtual book.
 - The Review tab lists the writes. =book_trade= is a domain operation, and it does not write the instrument today, so the instrument is a second, standard =put=. The half-booked state shows the outcome.
-- A composite is built from its legs. The prototype links to the structure editor, and a booked trade links to its pricing screen.
+- A trade can be a leg of a structure or a package. The Structure card on the Trade tab makes it the first leg of a new one, or a leg of an existing one. A structure holds trades of one counterparty, so choosing a structure fixes the counterparty. A template fixes the roles and how many legs each holds, and the card says which roles are open. A strategy has one product family. The booking and the membership are two writes, and the Review tab lists both. The result offers the next open role, and links to the structure and its price.
+- A composite is one trade whose legs are other trades. It is not a structure.
 
 ** What is fake
 
@@ -59,5 +62,5 @@ Everything. A booked trade is kept in the browser so that it appears on the trad
 * See also
 
 - [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
-- [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] — the structure editor and the pricing screen.
+- [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]] — the retired structure editor, and where its work went.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]

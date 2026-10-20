@@ -226,6 +226,7 @@ describe('the routes of the application', () => {
         '/where-i-work',
         '/tenants/new',
         '/development',
+        PATHS.reporting,
         // Opened from an oresmd URL, so no card leads to it.
         '/market-data/series',
     ]);

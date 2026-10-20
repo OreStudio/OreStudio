@@ -253,6 +253,14 @@ export const CARDS = {
         icon: 'history',
         screenTitleKey: 'operations.versions.title',
     },
+    reports: {
+        titleKey: 'reporting.area.screens.reports',
+        bodyKey: 'reporting.area.screens.reportsBody',
+        to: PATHS.reports,
+        icon: 'chart',
+        permission: 'reporting::report_definitions:read',
+        screenTitleKey: 'reporting.title',
+    },
     tenants: {
         titleKey: 'home.system.tenants',
         bodyKey: 'home.system.tenantsLead',
@@ -299,6 +307,7 @@ export const AREA_CARDS = {
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'bindings', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
+    reporting: ['reports'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 
@@ -310,6 +319,7 @@ export const AREA_PAGE: Record<CardArea, string> = {
     organisation: PATHS.organisation,
     marketdata: '/market-data',
     operations: PATHS.operations,
+    reporting: PATHS.reporting,
     tenants: '/tenants',
 };
 
@@ -355,6 +365,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: '/market-data', bodyKey: 'home.party.marketdataBody', icon: 'chart' },
     { to: '/requests', bodyKey: 'inbox.queue.lead', icon: 'document' },
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
+    { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },
     { to: '/development', bodyKey: 'development.lead', icon: 'apps' },
     { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },
 ];

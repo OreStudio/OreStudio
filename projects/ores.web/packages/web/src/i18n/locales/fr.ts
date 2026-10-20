@@ -74,6 +74,7 @@ const fr: SourceCatalogue = {
             accounts: 'Comptes',
             tenants: 'Locataires',
             operations: 'Opérations',
+            reporting: 'Rapports',
             development: 'Développement',
             parties: 'Parties',
             rescue: "Récupération d'accès",
@@ -3522,6 +3523,9 @@ const fr: SourceCatalogue = {
             required: 'Ce champ est obligatoire.',
             invalidValue: "Cette valeur n'est pas valide.",
             unsaved: 'Vous avez des modifications non enregistrées. Fermer quand même ?',
+            changedSince:
+                "Quelqu'un a modifié cet enregistrement après votre ouverture. Votre modification n'est pas enregistrée. Rechargez pour voir les nouvelles valeurs.",
+            reload: 'Recharger',
             keepEditing: 'Continuer',
             closeAnyway: 'Fermer quand même',
             lastChanged: 'Dernière modification :',
@@ -3659,6 +3663,10 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            report_type: { risk: 'Rapport de risque' },
+            pre_processing: { execute: 'Exécuter', substitute: 'Substituer' },
+            post_processing: { execute: 'Exécuter', ignore: 'Ignorer' },
+            concurrency_policy: { skip: 'Ignorer', queue: 'Mettre en file', fail: 'Échouer' },
             producer_kind: { SYNTHETIC: 'Synthétique', VENDOR: 'Fournisseur' },
             process_type: {
                 geometric: 'Géométrique',
@@ -4455,6 +4463,171 @@ const fr: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        area: {
+            title: 'Rapports',
+            lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
+            screens: {
+                reports: 'Rapports',
+                reportsBody:
+                    "Les définitions qu'exécutent les parties où vous travaillez, et l'état de leur dernière exécution.",
+            },
+        },
+        title: 'Rapports',
+        lead: "Les définitions de rapport que possèdent les parties où vous travaillez, avec l'état de la dernière exécution de chacune.",
+        choose: {
+            lead: '{count} rapports portent ce nom. Choisissez celui que vous voulez.',
+        },
+        unread: "{cell} n'a pas pu être lu : {message}",
+        filter: {
+            allParties: 'Toutes les parties',
+        },
+        tally: {
+            label: 'Rapports selon l’état de leur dernière exécution',
+            unread: 'Le décompte des rapports par état n’a pas pu être lu : {message}',
+        },
+        columns: {
+            report: 'Rapport',
+            party: 'Partie',
+            reportType: 'Type',
+            schedule: 'Calendrier',
+            latestRun: 'Début de la dernière exécution',
+            duration: 'Durée',
+            health: 'État',
+            errors: 'Erreurs',
+            warnings: 'Avertissements',
+        },
+        health: {
+            failed: 'Échec',
+            completedWithErrors: 'Terminé avec des erreurs',
+            running: 'En cours',
+            neverRun: 'Jamais exécuté',
+            completedClean: 'Terminé proprement',
+            unknown: 'Inconnu',
+            noWord: 'Aucun mot',
+        },
+        cell: {
+            partyNotStated: 'Non énoncée',
+            unread: 'Non lu',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        fields: {
+            name: 'Nom',
+            description: 'Description',
+            report_type: 'Type de rapport',
+            schedule_expression: 'Expression de calendrier',
+            concurrency_policy: 'Politique de concurrence',
+            prepared_input_key: 'Entrée préparée',
+            pre_processing: 'Prétraitement',
+            post_processing: 'Post-traitement',
+            is_official: 'Officielle',
+        },
+        means: {
+            name: 'Le nom du rapport. Il sert de clé à son historique et à son adresse : il est fixé à la création du rapport. Pour un autre nom, créez un nouveau rapport.',
+            reportType: {
+                risk: 'Un calcul de risque complet sur la grille : VAN, flux, sensibilités, XVA, VaR et SIMM. Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+                other: 'Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+            },
+            concurrencyPolicy: {
+                skip: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution ne démarre pas. Elle est enregistrée comme ignorée.',
+                queue: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution attend et démarre à la fin de la précédente.',
+                fail: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution est enregistrée comme échouée et ne démarre pas.',
+                other: 'Ce qui se passe quand le calendrier se déclenche alors que l’exécution précédente tourne encore.',
+            },
+            preProcessing: {
+                execute:
+                    'Chaque exécution construit elle-même l’entrée du moteur : elle rassemble les transactions et les données de marché du rapport et les empaquette.',
+                substitute:
+                    'Chaque exécution saute cette construction et lit une archive d’entrée préparée, nommée sous Entrée préparée.',
+                other: 'Comment une exécution obtient l’entrée du moteur.',
+            },
+            preparedInputKey:
+                'L’archive stockée dont une exécution lit son entrée quand le pré-traitement est Substituer. Elle reste vide tant que les exécutions construisent leur propre entrée.',
+            postProcessing: {
+                execute:
+                    'Les résultats du moteur sont lus dans le magasin de résultats, pour que les chiffres de l’exécution restent consultables.',
+                ignore: 'Une exécution enregistre seulement que le moteur a produit des résultats. Ils ne sont pas stockés.',
+                other: 'Ce qu’une exécution fait des résultats du moteur.',
+            },
+        },
+        detail: {
+            record: 'Définition',
+            party: 'Partie',
+            partyHint: 'La partie qui possède cette définition et qui l’exécute.',
+            health: 'État de la dernière exécution',
+            healthHint: 'Dérivé de la dernière exécution, jamais de la définition.',
+            latestRun: 'Dernière exécution',
+            neverRun:
+                "Cette définition n'a jamais été exécutée. Rien n'a été vérifié, elle ne se lit donc pas comme propre.",
+            couldNotCheck:
+                "La dernière exécution n'a pas pu être vérifiée : {message} Rien n'a été lu, elle ne se lit donc pas comme jamais exécutée.",
+            started: 'Début',
+            completed: 'Fin',
+            noNextFire: "Le planificateur n'énonce aucune prochaine exécution.",
+            scheduleExpressionHint:
+                'Une expression cron. Le moment où le planificateur la déclenche est décidé par la tâche à laquelle la définition est liée.',
+            isOfficialHint: 'La définition officielle de son rapport pour cette partie.',
+        },
+    },
+
+    cron: {
+        open: 'Modifier le calendrier',
+        title: 'Calendrier',
+        none: 'Aucun calendrier',
+        runs: "S'exécute",
+        invalid:
+            "Ce n'est pas un calendrier que le planificateur lit. Une expression cron a cinq parties : minute, heure, jour du mois, mois et jour de la semaine.",
+        presets: {
+            premarket: { name: "Exécution d'avant-marché" },
+            intraday: { name: 'Contrôle intrajournalier' },
+            eod: { name: 'Traitement de fin de journée' },
+        },
+        repeat: 'Répéter',
+        repeats: {
+            interval: 'Toutes les quelques minutes ou heures',
+            daily: 'Une fois par jour, à une heure',
+            monthly: 'Une fois par mois, un jour donné',
+        },
+        every: 'Toutes les',
+        between: 'entre',
+        and: 'et',
+        at: 'À',
+        onDay: 'Le jour',
+        onDays: 'Ces jours-là',
+        steps: { minutes: '{n} minutes', hour: 'heure', hours: '{n} heures' },
+        ways: {
+            common: 'Calendriers courants',
+            custom: 'Calendrier personnalisé',
+            advanced: "Avancé : l'expression cron",
+        },
+        expression: 'Expression cron',
+        weekdaysOnly: 'En semaine seulement',
+        dayShort: { 0: 'dim', 1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam' },
+        problem: {
+            parts: "L'expression a {count} parties. Le planificateur en veut exactement 5 : minute, heure, jour du mois, mois et jour de la semaine.",
+            field: "La partie {part} « {field} » n'est pas valide : {fault}.",
+        },
+        fault: {
+            slashes: "« {item} » contient plus d'une barre oblique",
+            step: "le pas « {step} » doit être un nombre entier d'au moins 1",
+            range: "« {span} » n'est pas une plage : une plage n'a qu'un début et une fin",
+            number: "« {token} » n'est pas un nombre",
+            outside: '{value} est hors de {min} à {max}',
+        },
+        part: {
+            minute: 'minute',
+            hour: 'heure',
+            day: 'jour du mois',
+            month: 'mois',
+            weekday: 'jour de la semaine',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'voir la dernière connexion des personnes',
         partiesRead: 'voir les parties du locataire',
@@ -4477,6 +4650,8 @@ const fr: SourceCatalogue = {
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
         irFeedsRead: 'voir les flux de courbes de taux synthétiques',
         feedsRun: 'démarrer et arrêter les flux synthétiques',
+        reportDefinitionsRead: 'voir les définitions de rapport de vos parties',
+        reportDefinitionsWrite: 'changer les définitions de rapport',
     },
 
     unavailable: {

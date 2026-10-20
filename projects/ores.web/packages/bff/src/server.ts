@@ -30,6 +30,7 @@ import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerCounterpartyRoutes } from './counterparties.js';
+import { registerReportingRoutes } from './reporting.js';
 import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
 import { registerConventionRoutes } from './conventions.js';
@@ -656,7 +657,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         } else {
             request.log.warn(context, 'request refused');
         }
-        await reply.status(failure.status).send(failure.body);
+        await reply.status(failure.status).send({ ...failure.details, ...failure.body });
     });
 
     void server.register(cookie);
@@ -2655,6 +2656,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
 
     registerClassificationRoutes(server, requireSession);
     registerCounterpartyRoutes(server, requireSession);
+    registerReportingRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
     registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);

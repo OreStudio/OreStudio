@@ -351,6 +351,54 @@ struct get_report_instance_health_response {
     std::vector<report_instance_health> health;
 };
 
+struct report_health_count {
+    /**
+     * @brief One of =failed=, =completed with errors=, =running=, =never run=
+     * or =completed clean=, or empty for the definitions whose latest run is in
+     * a state that has no word yet.
+     */
+    std::string health;
+    /** @brief How many of the counted definitions have this word. */
+    std::int64_t count;
+};
+
+/**
+ * @brief Counts the definitions at each health word.
+ *
+ * The request names the same party and search the list of definitions is
+ * narrowed by, and the definitions counted are the ones that list would read.
+ * It names no tenant: the session scopes the answer through the row-level
+ * security on the tables.
+ */
+struct count_report_definitions_by_health_request {
+    using response_type = struct count_report_definitions_by_health_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.count_report_definitions_by_health";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief Counts only the definitions of this party, or every party in scope when absent. */
+    std::optional<boost::uuids::uuid> party_id;
+    /** @brief Counts only the definitions whose name or description holds this text. */
+    std::optional<std::string> search;
+};
+
+struct count_report_definitions_by_health_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief One entry per word, in the order failed, completed with errors,
+     * running, never run, completed clean, then the entry with no word. A word
+     * no definition holds is stated with a count of zero.
+     */
+    std::vector<report_health_count> counts;
+    /** @brief How many definitions were counted, which is the sum of the counts. */
+    std::int64_t total;
+};
+
 /**
  * @brief The subjects this resource's changes are announced on.
  *

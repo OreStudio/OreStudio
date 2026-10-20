@@ -706,7 +706,7 @@ describe("the tenant administrator's home", () => {
             '/?tab=upcoming',
         );
 
-        for (const title of ['Market data', 'Trading', 'Reporting']) {
+        for (const title of ['Market data', 'Trading']) {
             expect(html).toContain(title);
         }
         expect(html).toContain('Coming later');

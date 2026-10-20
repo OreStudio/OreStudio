@@ -47,6 +47,8 @@ export const PATHS = {
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     bindings: '/market-data/bindings',
+    reporting: '/reporting',
+    reports: '/reporting/reports',
 } as const;
 
 /** The address of one person's page. */
@@ -67,6 +69,18 @@ export function gridMachinePath(machine: string): string {
 /** The address of the page of one compute node. */
 export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;
+}
+
+/**
+ * The address of one report definition's page.
+ *
+ * The definition is named by its id, because its name is not unique: the record
+ * is unique on (tenant, name, party), so a person who works in several parties
+ * sees several definitions of one name. The id is the primary key, so the
+ * address names one record exactly.
+ */
+export function reportPath(id: string): string {
+    return `${PATHS.reports}/${encodeURIComponent(id)}`;
 }
 
 /** The address of the rescue screen for one account. */
@@ -95,4 +109,5 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/roles/:roleId', `${PATHS.roles}/:roleId`],
     ['/rescue', PATHS.rescue],
     ['/audit', PATHS.signIns],
+    ['/reporting/:name', `${PATHS.reports}/:name`],
 ];

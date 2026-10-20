@@ -30,6 +30,7 @@ const AREAS = {
     requests: { nameKey: 'shell.menu.requests', to: '/requests' },
     refdata: { nameKey: 'shell.menu.refdata', to: '/refdata' },
     marketdata: { nameKey: 'shell.menu.marketdata', to: '/market-data' },
+    reporting: { nameKey: 'shell.menu.reporting', to: '/reporting' },
     development: { nameKey: 'shell.menu.development', to: '/development' },
     tenants: { nameKey: 'shell.menu.tenants', to: '/tenants' },
 } as const;

@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/profile-the-portfolio-read-again
-#+pr:
+#+pr: 3590
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3590][#3590]] | [platform] Read a seekable stream in one bulk read |
 
 * Review
 

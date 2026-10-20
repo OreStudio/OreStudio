@@ -642,28 +642,65 @@ def nested_target(schema, field):
     return target
 
 
+# A type whose content is a choice of at least this many nested alternatives
+# holds one of them per instance. Giving every alternative its own member would
+# size each instance for all of them, so the alternatives sit in columns that
+# the holder of the type owns and the instance keeps an index into one of them.
+# The trade types have 187 alternatives and the widest other choice has 26.
+COLUMN_CHOICE_MEMBERS = 64
+
+
+def column_members(schema, type_name):
+    """The choice alternatives of `type_name` that a column holds, or none.
+
+    An alternative that is a reference expands to a copy, and the copy is not
+    the node the choice set recorded, so a type that has one keeps its members.
+    """
+    complex_type = schema.complex_types.get(type_name)
+    if complex_type is None:
+        return []
+    elements, _ = children_of(complex_type, schema)
+    members = [
+        element
+        for element in elements
+        if id(element) in CHOICE_CHILDREN
+        and element.get("ref") is None
+        and element.get("maxOccurs", "1") == "1"
+        and nested_target(schema, element) in schema.complex_types
+    ]
+    return members if len(members) >= COLUMN_CHOICE_MEMBERS else []
+
+
 def order_types(schema, root_type):
     """The types a record can hold, dependencies first.
 
     A record is a fixed layout, so a type is defined before the type that holds
     it, and no type holds itself. An edge that closes a cycle is recorded in
     schema.cut_members and emitted as an index row into an arena the holder
-    owns, so the record holds the member without holding its type.
+    owns, so the record holds the member without holding its type. The
+    alternatives a column holds are not held by value, so they order nothing and
+    close no cycle.
     """
     reachable = collect(schema, root_type, dict())
     edges = {}
+    held = {}
     for name in reachable:
         complex_type = schema.complex_types.get(name)
         if complex_type is None:
             continue
         targets = []
+        by_value = []
+        columns = {member.get("name") for member in column_members(schema, name)}
         elements, _ = children_of(complex_type, schema)
         for element in elements:
             for field in expand(schema, element):
                 target = nested_target(schema, field)
                 if target is not None and target in schema.complex_types:
                     targets.append((snake(field.get("name")), target))
+                    if field.get("name") not in columns:
+                        by_value.append((snake(field.get("name")), target))
         edges[name] = targets
+        held[name] = by_value
 
     cut, ordered, done = set(), [], set()
 
@@ -671,7 +708,7 @@ def order_types(schema, root_type):
         if name in done or name not in schema.complex_types:
             return
         stack.add(name)
-        for member, target in edges.get(name, ()):
+        for member, target in held.get(name, ()):
             if target in stack:
                 cut.add((name, member, target))
                 continue
@@ -770,51 +807,46 @@ def vector_element_type(cpp):
     return cpp[len(prefix) : -1]
 
 
-# A record that holds this many members, counting the records it holds by value,
-# is wide: moving one costs more than the work of reading it. Repeated children
-# of a wide record sit in a std::deque, which never moves an element, instead of
-# a std::vector, which moves every element each time it grows. The widest record
-# below the line holds 454 members and the narrowest above it holds 10,837, so
-# the value does not sit on a boundary.
-WIDE_RECORD_MEMBERS = 1000
+class Columns:
+    """The columns of the types whose content is a wide choice.
 
+    `members` maps a columnar type to its alternatives. `struct_of` maps it to
+    the struct that holds one vector of rows per alternative type, and `kinds`
+    maps that struct to the alternative types in the order it declares them.
+    Types that name the same alternatives share one struct. `holder` maps a type
+    that holds a columnar type to the struct it owns as `kind_columns`.
+    """
 
-def member_counts(schema, emitted, names, cut, exact_decimals):
-    """How many members each emitted record holds, records held by value included."""
-    own = {}
-    held = {}
-    for type_name in emitted:
-        complex_type = schema.complex_types[type_name]
-        elements, attributes = children_of(complex_type, schema)
-        count = len(attributes)
-        if content_kind(schema, complex_type) is not None:
-            count += 1
-        if is_residual(complex_type):
-            count += 1
-        by_value = []
-        for element in elements:
-            for field in expand(schema, element):
-                _member, kind, _cpp, repeated = member_declaration(schema, field, exact_decimals)
-                if kind != "nested":
-                    count += 1
-                    continue
-                target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
-                if repeated or (type_name, snake(field.get("name"))) in cut or target not in names:
-                    # A vector, or an arena and its index row, is a few words.
-                    count += 1
-                else:
-                    by_value.append(target)
-        own[type_name] = count
-        held[type_name] = by_value
-
-    totals = {}
-
-    def total(type_name):
-        if type_name not in totals:
-            totals[type_name] = own[type_name] + sum(total(t) for t in held[type_name] if t in own)
-        return totals[type_name]
-
-    return {type_name: total(type_name) for type_name in emitted}
+    def __init__(self, schema, emitted, names):
+        self.members = {}
+        for type_name in emitted:
+            alternatives = column_members(schema, type_name)
+            if alternatives:
+                self.members[type_name] = alternatives
+        self.names = {t: {m.get("name") for m in members} for t, members in self.members.items()}
+        groups = {}
+        for type_name, members in self.members.items():
+            kinds = list(dict.fromkeys(nested_target(schema, m) for m in members))
+            groups.setdefault(frozenset(kinds), []).append((type_name, kinds))
+        self.struct_of = {}
+        self.kinds = {}
+        for sharing in groups.values():
+            owner = min((t for t, _ in sharing), key=lambda t: (len(names[t]), names[t]))
+            struct = f"{names[owner]}_kind_columns"
+            self.kinds[struct] = sharing[0][1]
+            for type_name, _ in sharing:
+                self.struct_of[type_name] = struct
+        self.holder = {}
+        for type_name in emitted:
+            elements, _ = children_of(schema.complex_types[type_name], schema)
+            for element in elements:
+                for field in expand(schema, element):
+                    target = nested_target(schema, field)
+                    if target not in self.struct_of or field.get("name") in self.names.get(type_name, ()):
+                        continue
+                    struct = self.holder.setdefault(type_name, self.struct_of[target])
+                    if struct != self.struct_of[target]:
+                        raise SystemExit(f"{type_name} holds types with two sets of columns")
 
 
 def member_declaration(schema, element, exact_decimals):
@@ -928,21 +960,24 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
     cut = {(holder, member) for holder, member, _target in schema.cut_members}
     emitted = [name for name in ordered if name in schema.used_types]
     shadowed = shadowed_types(schema, ordered, names)
-    counts = member_counts(schema, emitted, names, cut, exact_decimals)
-    wide = {t for t, c in counts.items() if c >= WIDE_RECORD_MEMBERS}
-
-    def container(type_name, element):
-        return f"std::deque<{element}>" if type_name in wide else f"std::vector<{element}>"
-
-    def ops_arguments(type_name, element):
-        """The template arguments of the three functions that grow and index a member."""
-        return f"{element}, {container(type_name, element)}" if type_name in wide else element
-
+    columns = Columns(schema, emitted, names)
     header_name = accessor.replace("_document", "")
+
+    def columns_offset(type_name, target):
+        """Where a holder keeps the columns of `target`, as an offsetof, or None."""
+        if target not in columns.struct_of:
+            return None
+        return f"std::uint32_t(offsetof({names[type_name]}, kind_columns))"
 
     unresolved = []
     declarations = []
     declares = []
+    column_declarations = []
+    for struct, kinds in columns.kinds.items():
+        rows = [
+            f"    std::vector<struct {names[kind]}> {names[kind]}_rows;" for kind in kinds
+        ]
+        column_declarations.append("\n".join([f"struct {struct} {{", *rows, "};"]))
     for type_name in emitted:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type, schema)
@@ -961,6 +996,11 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
             field_count += 1
         for element in elements:
             for field in expand(schema, element):
+                if field.get("name") in columns.names.get(type_name, ()):
+                    # An alternative of the choice has no member of its own: its
+                    # presence bit says which one the row holds.
+                    field_count += 1
+                    continue
                 member, kind, cpp, repeated = member_declaration(schema, field, exact_decimals)
                 if kind == "nested":
                     target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
@@ -973,15 +1013,19 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                         # record owns, so no row of the record moves when the
                         # arena grows.
                         body.append(f"    std::vector<std::uint32_t> {member};")
-                        body.append(f"    {container(target, 'struct ' + cpp)} {member}_arena;")
+                        body.append(f"    std::vector<struct {cpp}> {member}_arena;")
                         field_count += 1
                         continue
                     if (type_name, target) in shadowed:
                         cpp = f"struct {cpp}"
                     if repeated:
-                        cpp = container(target, cpp)
+                        cpp = f"std::vector<{cpp}>"
                 body.append(f"    {cpp} {member}{CPP_ZERO.get(cpp, '')};")
                 field_count += 1
+        if type_name in columns.members:
+            body.append("    std::uint32_t kind_index = 0;")
+        if type_name in columns.holder:
+            body.append(f"    {columns.holder[type_name]} kind_columns;")
         if is_residual(complex_type):
             body.append("    std::vector<residual_element> extras;")
             field_count += 1
@@ -999,12 +1043,14 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
             f"{holder}.{member} holds {target}, which is not a complexType this generator read"
         )
 
-    # The cut edges whose target is emitted: the only tables a row names before
-    # this file defines them.
+    # The tables a row names before this file defines them: the targets of the
+    # cut edges, and the alternatives a column holds, which order nothing.
+    column_kinds = {kind for kinds in columns.kinds.values() for kind in kinds}
     indexed_targets = [
         name
         for name in emitted
-        if any(target == name for _holder, _member, target in schema.cut_members)
+        if name in column_kinds
+        or any(target == name for _holder, _member, target in schema.cut_members)
     ]
     indexed_declarations = ""
     if indexed_targets:
@@ -1012,13 +1058,16 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
             f"extern const record_type {names[name]}_record;" for name in indexed_targets
         )
         indexed_declarations = (
-            "// A row that indexes an arena names a record, and the edge that closes\n"
-            "// a type cycle is always a back edge, so the record is defined later in\n"
-            "// this file.\n" + tables_declared_later + "\n\n"
+            "// A row that indexes an arena or a column names a record that is\n"
+            "// defined later in this file: the edge that closes a type cycle is a\n"
+            "// back edge, and an alternative held in a column orders nothing.\n"
+            + tables_declared_later
+            + "\n\n"
         )
     tables = []
     repeated_members = []
     repeated_arena = []
+    column_ops = {}
     for type_name in emitted:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type, schema)
@@ -1052,6 +1101,21 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
             member, kind, cpp, repeated = member_declaration(schema, element, exact_decimals)
             required = element.get("minOccurs", "1") != "0" and id(element) not in CHOICE_CHILDREN
             scalar = SCALAR.get(kind, "scalar_kind::text")
+            if element.get("name") in columns.names.get(type_name, ()):
+                kind_name = nested_target(schema, element)
+                struct = columns.struct_of[type_name]
+                ops_instance = ops_name(struct, f"{names[kind_name]}_rows")
+                if ops_instance not in column_ops:
+                    column_ops[ops_instance] = names[kind_name]
+                rows.append(
+                    f'    {{"{name}", {hash_name(name)}u, field_kind::column_nested, '
+                    f"std::uint32_t(offsetof({names[type_name]}, kind_index)), {bit}, false, "
+                    f"false, nullptr, &{names[kind_name]}_record, scalar_kind::text, "
+                    f"&{ops_instance}, "
+                    f"std::uint32_t(offsetof({struct}, {names[kind_name]}_rows))}},"
+                )
+                bit += 1
+                continue
             if kind == "nested":
                 target_name = element.get("type") or schema.inline_name.get(
                     id(element), element.get("name")
@@ -1059,10 +1123,11 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 if target_name not in names:
                     continue
                 member = snake(element.get("name"))
+                held_at = columns_offset(type_name, target_name)
                 if (type_name, member) in cut:
                     ops_instance = ops_name(names[type_name], f"{member}_arena")
                     repeated_arena.append(
-                        (ops_instance, ops_arguments(target_name, names[target_name]))
+                        (ops_instance, names[target_name])
                     )
                     rows.append(
                         f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
@@ -1072,7 +1137,8 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                         f"&{names[target_name]}_record, "
                         f"scalar_kind::text, &{ops_instance}, "
                         f"std::uint32_t(offsetof({names[type_name]}, {member}_arena)), "
-                        f"{'true' if not repeated else 'false'}}},"
+                        f"{'true' if not repeated else 'false'}"
+                        f"{', ' + held_at if held_at else ''}}},"
                     )
                     bit += 1
                     continue
@@ -1084,13 +1150,14 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 if repeated:
                     ops = f"&{ops_name(names[type_name], member)}"
                     repeated_members.append(
-                        (ops_name(names[type_name], member), ops_arguments(target_name, nested))
+                        (ops_name(names[type_name], member), nested)
                     )
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
                     f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, nullptr, "
-                    f"&{nested}_record, scalar_kind::text, {ops}}},"
+                    f"&{nested}_record, scalar_kind::text, {ops}"
+                    f"{', no_arena, false, ' + held_at if held_at else ''}}},"
                 )
             else:
                 # A repeated leaf is one value of the element's own kind, so
@@ -1133,7 +1200,7 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
         )
 
     ops = []
-    for instance, arguments in repeated_arena + repeated_members:
+    for instance, arguments in repeated_arena + list(column_ops.items()) + repeated_members:
         ops.append(
             f"constexpr vector_ops {instance}{{&append_to<{arguments}>, "
             f"&count_of<{arguments}>, &at_of<{arguments}>}};"
@@ -1179,14 +1246,14 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
 #include "ores.utility/decimal/decimal.hpp"
 
 #include <cstdint>
-{'#include <deque>' + chr(10) if wide else ''}#include <string>
+#include <string>
 #include <vector>
 
 namespace {namespace} {{
 
 {chr(10).join(declares)}
 
-{chr(10).join(declarations)}
+{chr(10).join(column_declarations) + chr(10) * 2 if column_declarations else ''}{chr(10).join(declarations)}
 
 ORES_ORE_CORE_EXPORT auto {accessor}() -> const document_type&;
 
@@ -1205,21 +1272,21 @@ namespace {{
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto append_to(void* container, void** slot) -> void {{
-    auto* held = static_cast<Container*>(container);
+    auto* held = static_cast<std::vector<T>*>(container);
     held->emplace_back();
     *slot = &held->back();
 }}
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto count_of(const void* container) -> std::size_t {{
-    return static_cast<const Container*>(container)->size();
+    return static_cast<const std::vector<T>*>(container)->size();
 }}
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto at_of(const void* container, std::size_t index) -> const void* {{
-    return &(*static_cast<const Container*>(container))[index];
+    return &(*static_cast<const std::vector<T>*>(container))[index];
 }}
 
 {chr(10).join(spellings)}

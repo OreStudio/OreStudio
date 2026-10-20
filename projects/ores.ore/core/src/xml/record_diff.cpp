@@ -34,6 +34,13 @@ auto slot_of(const void* record, const field& f) -> const void* {
     return static_cast<const std::byte*>(record) + f.offset;
 }
 
+/// The columns struct a record keeps for the type member `f` holds, or null.
+auto columns_held(const void* record, const field& f) -> const void* {
+    if (f.columns_offset == no_arena)
+        return nullptr;
+    return static_cast<const std::byte*>(record) + f.columns_offset;
+}
+
 auto describe(std::string_view value) -> std::string {
     return "'" + std::string(value) + "'";
 }
@@ -100,20 +107,29 @@ auto compare_value(std::string& path, const field& f, const void* left, const vo
         case field_kind::repeated_leaf:
         case field_kind::repeated_nested:
         case field_kind::indexed_nested:
+        case field_kind::column_nested:
         case field_kind::residual:
             return record_difference{path, "a row that names no single value reached the walk"};
     }
     return record_difference{path, "a row of an unknown kind reached the walk"};
 }
 
-auto compare_record(std::string& path, const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference>;
+auto compare_record(std::string& path,
+                    const record_type& type,
+                    const void* left,
+                    const void* right,
+                    const void* left_columns,
+                    const void* right_columns) -> std::optional<record_difference>;
 
 /**
  * @brief Compares one repeated member, element by element.
  */
-auto compare_repeated(std::string& path, const field& f, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_repeated(std::string& path,
+                      const field& f,
+                      const void* left,
+                      const void* right,
+                      const void* left_columns,
+                      const void* right_columns) -> std::optional<record_difference> {
     const auto count_left = f.repeated->count(left);
     const auto count_right = f.repeated->count(right);
     if (count_left != count_right)
@@ -126,7 +142,8 @@ auto compare_repeated(std::string& path, const field& f, const void* left, const
         const auto* rhs = f.repeated->at(right, i);
         if (f.kind == field_kind::repeated_nested) {
             auto nested = here;
-            const auto found = compare_record(nested, *f.type, lhs, rhs);
+            const auto found =
+                compare_record(nested, *f.type, lhs, rhs, left_columns, right_columns);
             if (found)
                 return found;
             continue;
@@ -145,8 +162,12 @@ auto compare_repeated(std::string& path, const field& f, const void* left, const
     return {};
 }
 
-auto compare_record(std::string& path, const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_record(std::string& path,
+                    const record_type& type,
+                    const void* left,
+                    const void* right,
+                    const void* left_columns,
+                    const void* right_columns) -> std::optional<record_difference> {
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         const bool here = present(left, f);
@@ -165,16 +186,50 @@ auto compare_record(std::string& path, const record_type& type, const void* left
 
         switch (f.kind) {
             case field_kind::nested:
-                if (const auto found =
-                        compare_record(member, *f.type, slot_of(left, f), slot_of(right, f)))
+                if (const auto found = compare_record(member,
+                                                      *f.type,
+                                                      slot_of(left, f),
+                                                      slot_of(right, f),
+                                                      columns_held(left, f),
+                                                      columns_held(right, f)))
                     return found;
                 break;
             case field_kind::repeated_leaf:
             case field_kind::repeated_nested:
-                if (const auto found =
-                        compare_repeated(member, f, slot_of(left, f), slot_of(right, f)))
+                if (const auto found = compare_repeated(member,
+                                                        f,
+                                                        slot_of(left, f),
+                                                        slot_of(right, f),
+                                                        columns_held(left, f),
+                                                        columns_held(right, f)))
                     return found;
                 break;
+            case field_kind::column_nested: {
+                // Each side keeps the alternative in its own column, so the
+                // rows are compared, not the indices that name them.
+                if (left_columns == nullptr || right_columns == nullptr || f.repeated == nullptr ||
+                    f.type == nullptr || f.arena_offset == no_arena)
+                    return record_difference{member,
+                                             "the record carries no column for an alternative"};
+                const auto* left_rows =
+                    static_cast<const std::byte*>(left_columns) + f.arena_offset;
+                const auto* right_rows =
+                    static_cast<const std::byte*>(right_columns) + f.arena_offset;
+                const auto lhs_index = *static_cast<const std::uint32_t*>(slot_of(left, f));
+                const auto rhs_index = *static_cast<const std::uint32_t*>(slot_of(right, f));
+                if (lhs_index >= f.repeated->count(left_rows) ||
+                    rhs_index >= f.repeated->count(right_rows))
+                    return record_difference{member,
+                                             "an index names a row its column does not hold"};
+                if (const auto found = compare_record(member,
+                                                      *f.type,
+                                                      f.repeated->at(left_rows, lhs_index),
+                                                      f.repeated->at(right_rows, rhs_index),
+                                                      nullptr,
+                                                      nullptr))
+                    return found;
+                break;
+            }
             case field_kind::indexed_nested: {
                 // The indices and the rows they name are compared in order, so
                 // a difference inside a second-level row is named by its path.
@@ -203,7 +258,9 @@ auto compare_record(std::string& path, const record_type& type, const void* left
                     if (const auto found = compare_record(nested,
                                                           *f.type,
                                                           f.repeated->at(left_arena, lhs_index),
-                                                          f.repeated->at(right_arena, rhs_index)))
+                                                          f.repeated->at(right_arena, rhs_index),
+                                                          columns_held(left, f),
+                                                          columns_held(right, f)))
                         return found;
                 }
                 break;
@@ -242,7 +299,7 @@ auto compare_record(std::string& path, const record_type& type, const void* left
 auto compare_records(const record_type& type, const void* left, const void* right)
     -> std::optional<record_difference> {
     std::string path(type.name);
-    return compare_record(path, type, left, right);
+    return compare_record(path, type, left, right, nullptr, nullptr);
 }
 
 }

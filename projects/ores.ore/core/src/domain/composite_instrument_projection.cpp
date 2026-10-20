@@ -81,14 +81,14 @@ auto read_leg(xml::record_reader component, std::string_view type_name, int sequ
  * document wrote.
  */
 auto underlying_type(const xml::record_reader& underlying) -> std::optional<std::string> {
-    if (const auto trades = underlying.indexed("Trade"); !trades.empty())
+    if (const auto trades = underlying.children("Trade"); !trades.empty())
         return trades.front().spelling("TradeType");
     if (const auto sub_trades = underlying.children("SubTrade"); !sub_trades.empty())
         return sub_trades.front().spelling("SubTradeType");
     if (const auto derivatives = underlying.children("Derivative"); !derivatives.empty()) {
         const auto& derivative = derivatives.front();
-        if (const auto trades = derivative.indexed("Trade"); !trades.empty())
-            return trades.front().spelling("TradeType");
+        if (const auto trade = derivative.child("Trade"))
+            return trade->spelling("TradeType");
         if (const auto sub_trade = derivative.child("SubTrade"))
             return sub_trade->spelling("SubTradeType");
     }
@@ -102,12 +102,12 @@ auto read_components(const xml::record_reader& data) -> std::vector<composite_le
         return legs;
 
     int sequence = 1;
-    // The two kinds are separate index lists into separate arenas. No ORE
-    // document mixes them under one Components element, so reading one list
-    // after the other keeps the order the document wrote.
-    for (const auto& component : components->indexed("Trade"))
+    // The two kinds are separate lists. No ORE document mixes them under one
+    // Components element, so reading one list after the other keeps the order
+    // the document wrote.
+    for (const auto& component : components->children("Trade"))
         legs.push_back(read_leg(component, "TradeType", sequence++));
-    for (const auto& component : components->indexed("SubTrade"))
+    for (const auto& component : components->children("SubTrade"))
         legs.push_back(read_leg(component, "SubTradeType", sequence++));
     return legs;
 }

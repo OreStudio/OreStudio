@@ -78,6 +78,14 @@ private:
                          const domain::trade_generation_scope& scope);
 
     /**
+     * @brief Whether the tenant already holds the bond issue.
+     *
+     * A security belongs to the tenant and not to a config, so another config
+     * of the same tenant, or an earlier run, may have written it already.
+     */
+    bool issue_exists(const boost::uuids::uuid& issue_id);
+
+    /**
      * @brief Issues an entity write, stating the entity on a refusal.
      *
      * @return True when the store took the write.
@@ -89,9 +97,9 @@ private:
 
     ores::nats::service::nats_client& nats_;
     /*
-     * The issues whose rows this run has already written. A security's terms
-     * are one set of rows that its trades read through, so a run writes them
-     * once and every later trade of the same security only writes its own
+     * The issues this run has written or found already written. A security's
+     * terms are one set of rows that its trades read through, so a run writes
+     * them once and every later trade of the same security only writes its own
      * instrument.
      */
     std::set<boost::uuids::uuid> issues_written_;

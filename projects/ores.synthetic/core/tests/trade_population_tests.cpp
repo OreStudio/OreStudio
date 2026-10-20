@@ -24,6 +24,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <algorithm>
+#include <chrono>
 #include <map>
 #include <set>
 #include <string>
@@ -171,11 +173,7 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    const auto expected_maturity = [](const domain::trade_population_slot& slot) {
-        return slot.trade_date + std::chrono::years{static_cast<int>(slot.tenor_years)};
-    };
-    REQUIRE(first.slots.front().maturity_date == expected_maturity(first.slots.front()));
-    REQUIRE(second.slots.front().maturity_date == expected_maturity(second.slots.front()));
+    REQUIRE(first.slots.front().maturity_date < second.slots.front().maturity_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
@@ -223,14 +221,57 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
     }
 }
 
-TEST_CASE("one_security_is_shared_by_every_trade_of_a_book", tags) {
+TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    std::map<std::string, domain::trade_population_slot> first_of;
+    for (const auto& slot : plan.slots) {
+        const auto [found, inserted] = first_of.emplace(slot.security_id, slot);
+        if (inserted)
+            continue;
+        REQUIRE(slot.issue_id == found->second.issue_id);
+        REQUIRE(slot.issuer_id == found->second.issuer_id);
+        REQUIRE(slot.issue_date == found->second.issue_date);
+        REQUIRE(slot.maturity_date == found->second.maturity_date);
+        REQUIRE(slot.tenor_years == found->second.tenor_years);
+    }
+}
+
+TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.maturity_date ==
+                slot.issue_date + std::chrono::years{static_cast<int>(slot.tenor_years)});
+        REQUIRE(slot.trade_date >= slot.issue_date);
+        REQUIRE(slot.trade_date < slot.maturity_date);
+    }
+}
+
+TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
     const auto plan = plan_population(bond_scope());
 
     std::set<std::string> securities;
-    for (const auto& slot : plan.slots)
+    std::set<std::uint32_t> terms;
+    for (const auto& slot : plan.slots) {
         securities.insert(slot.security_id);
+        terms.insert(slot.tenor_years);
+    }
 
-    REQUIRE(securities.size() == 2);
+    REQUIRE(securities.size() == terms.size());
+    REQUIRE(terms.size() > 1);
+}
+
+TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    std::map<std::string, std::set<boost::uuids::uuid>> books_of;
+    for (const auto& slot : plan.slots)
+        books_of[slot.security_id].insert(slot.book_id);
+
+    const auto shared = std::ranges::any_of(
+        books_of, [](const auto& entry) { return entry.second.size() > 1; });
+    REQUIRE(shared);
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {

@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -48,7 +48,7 @@ The investigation this story commissioned is
 | [[id:75A7D09B-C79D-46B6-8FFE-9B4B9266BE7A][Anchor the dates and seed the content]] | DONE | | 2026-10-15 | Take the as-of date as an input and derive every trade date from it. Derive the economic content from a stable seed, so a second provision writes no new version rather than reading every trade as customer-amended. |
 | [[id:F3F542E5-680D-499F-8E08-CD61F62B17CC][Resolve the references the trade names]] | DONE | | 2026-10-15 | A generated trade resolves its book, its counterparty and its trader from ACME's real data and refuses to invent one, so a missing reference fails loudly instead of producing a fixture. |
 | [[id:34F9483C-16D0-4913-BB76-6095AEA812DA][Give each trade a deterministic Internal identifier]] | DONE | | 2026-10-15 | Derive an Internal trade identifier from stable inputs so a re-provision upserts rather than duplicates. Build the trade and its identifier in one write, because the identifier is a composite child that bumps its parent. |
-| [[id:A7600639-BBC8-472E-94BE-9B24BF7F300E][Generate the bond population into the ACME books]] | DONE | | 2026-10-15 | Bonds first, into each party's bond book, across a range of counterparties and tenors, so the pattern is proved on one instrument family before it is repeated. |
+| [[id:A7600639-BBC8-472E-94BE-9B24BF7F300E][Generate the bond population into the ACME books]] | DONE | 2026-10-19 | 2026-10-20 | Bonds first, into each party's bond book, across a range of counterparties and tenors, so the pattern is proved on one instrument family before it is repeated. |
 | [[id:CF5876D6-721E-434C-83FD-286D861EF265][Prove a bond rewrite versions the parent]] | DONE | | 2026-10-16 | Rewrite a bond leg and show the parent version moves and the as-of read reports the right legs. This is what demonstrates the versioning fix on real generated data rather than declaring it done. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | BACKLOG | | | Repeat the pattern for the remaining families, each landing with its own acceptance rather than a general claim of coverage. Order the work from the ORE generator's coverage list and the shipped sample corpus. |
 | [[id:6172EE1E-5895-4F11-A6A0-08989B4D15A2][Add the generate_trades step to the ACME profile]] | DONE | | 2026-10-16 | ACME provisioning runs the population, so the step belongs in the acme_demo profile after load_staff and start_market_feeds. One step or one per party depends on the party question, which decide rather than discover. |

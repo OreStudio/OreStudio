@@ -75,6 +75,13 @@ constexpr std::string_view internal_id_type = "Internal";
  */
 constexpr double coupon_rate = 0.05;
 
+/*
+ * The face value of a generated security. A trade's size is the instrument's
+ * notional, which the engine reads as the bond notional, so the security
+ * itself states a unit face and carries no trade's size.
+ */
+constexpr double security_face_value = 1.0;
+
 }
 
 trading_trade_population_writer::trading_trade_population_writer(
@@ -279,6 +286,30 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
 }
 
+bool trading_trade_population_writer::issue_exists(const boost::uuids::uuid& issue_id) {
+    const auto& codec = ores::nats::default_wire_codec();
+    ores::trading::messaging::list_bond_issues_request req;
+    req.limit = 1;
+    ores::trading::messaging::bond_issues_filter filter;
+    filter.issue_id_one_of = std::vector<boost::uuids::uuid>{issue_id};
+    req.filter = filter;
+
+    const auto reply = nats_.authenticated_request(
+        ores::trading::messaging::list_bond_issues_request::nats_subject, codec.encode(req));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(std::format("Reading bond issue {} was refused: {}",
+                                                       boost::uuids::to_string(issue_id),
+                                                       error->second));
+    auto decoded = codec.decode<ores::trading::messaging::list_bond_issues_response>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(
+            std::format("Reading bond issue {} answered something unreadable: {}",
+                        boost::uuids::to_string(issue_id),
+                        decoded.error().what()));
+    return !decoded->issues.empty();
+}
+
 void trading_trade_population_writer::write_trade(const trade_population_write& write,
                                                   const domain::trade_generation_scope& scope) {
     const auto& codec = ores::nats::default_wire_codec();
@@ -359,17 +390,21 @@ void trading_trade_population_writer::write_instrument(
                                            "with.");
 
     /*
-     * The issue's own rows are written once per run: a security's terms are one
-     * set of rows that every trade of it reads through, so a run that rewrote
-     * them per trade would leave the population reading as amended.
+     * The issue's own rows are written once: a security's terms are one set of
+     * rows that every trade of it reads through, so a rewrite per trade would
+     * leave the population reading as amended. The security belongs to the
+     * tenant, so a config that finds it written by another leaves it alone.
      */
+    if (!issues_written_.contains(write.issue_id) && issue_exists(write.issue_id))
+        issues_written_.insert(write.issue_id);
+
     if (!issues_written_.contains(write.issue_id)) {
         ores::trading::messaging::put_bond_issue_request issue_req;
         issue_req.change.write.issue_id = write.issue_id;
         issue_req.change.write.security_id = write.security_id;
-        issue_req.change.write.issuer = boost::uuids::to_string(slot.counterparty_id);
+        issue_req.change.write.issuer = boost::uuids::to_string(slot.issuer_id);
         issue_req.change.write.face_value =
-            ores::utility::decimal::decimal::from_double(slot.notional).value();
+            ores::utility::decimal::decimal::from_double(security_face_value).value();
         issue_req.change.write.issue_date = slot.issue_date;
         issue_req.change.write.settlement_days = 2;
         issue_req.change.write.calendar = slot.calendar;
@@ -388,10 +423,9 @@ void trading_trade_population_writer::write_instrument(
         issue_req.intent.reason_code = std::string(population_reason);
         issue_req.intent.commentary = "Generated trade population.";
 
-        if (!call_ok(ores::trading::messaging::put_bond_issue_request::nats_subject,
-                     issue_req,
-                     "bond issue " + write.security_id))
-            return;
+        call_ok(ores::trading::messaging::put_bond_issue_request::nats_subject,
+                issue_req,
+                "bond issue " + write.security_id);
 
         write_issue_leg(write, scope);
         issues_written_.insert(write.issue_id);
@@ -440,7 +474,7 @@ void trading_trade_population_writer::write_issue_leg(const trade_population_wri
     amount_req.change.write.amount_role = "notional";
     amount_req.change.write.sequence_number = 1;
     amount_req.change.write.value =
-        ores::utility::decimal::decimal::from_double(slot.notional).value();
+        ores::utility::decimal::decimal::from_double(security_face_value).value();
     amount_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
                                       std::nullopt};
     amount_req.intent.reason_code = std::string(population_reason);

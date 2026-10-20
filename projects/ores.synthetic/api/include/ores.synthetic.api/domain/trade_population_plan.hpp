@@ -101,9 +101,15 @@ struct trade_population_slot final {
     std::string internal_identifier;
     std::string security_id;
     boost::uuids::uuid issue_id;
+    /**
+     * @brief The counterparty that issued the security. It is a fact of the
+     * security and not of the trade, so it need not be the trade's own.
+     */
+    boost::uuids::uuid issuer_id;
     std::chrono::year_month_day trade_date;
     std::chrono::year_month_day issue_date;
     std::chrono::year_month_day maturity_date;
+    /// The security's original term in years, not the trade's remaining life.
     std::uint32_t tenor_years = 1;
     double notional = 0.0;
     std::string currency;

@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/store-each-trade-kind-in-its-own-column
-#+pr:
+#+pr: 3583
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -194,7 +194,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3583][#3583]] | [ore] Store each trade kind in its own column |
 
 * Review
 

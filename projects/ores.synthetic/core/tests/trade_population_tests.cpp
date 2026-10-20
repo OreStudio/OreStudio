@@ -262,6 +262,16 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
     REQUIRE(terms.size() > 1);
 }
 
+TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", tags) {
+    auto euro = bond_scope();
+    euro.currency_code = "EUR";
+    auto dollar = bond_scope();
+    dollar.currency_code = "USD";
+
+    REQUIRE(security_id_for(euro, 5) != security_id_for(dollar, 5));
+    REQUIRE(security_id_for(euro, 5) == security_id_for(euro, 5));
+}
+
 TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
     const auto plan = plan_population(bond_scope());
 

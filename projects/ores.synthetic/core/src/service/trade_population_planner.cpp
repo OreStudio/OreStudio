@@ -278,11 +278,12 @@ std::string internal_identifier_for(const domain::trade_generation_scope& scope,
 std::string security_id_for(const domain::trade_generation_scope& scope,
                             std::uint32_t tenor_years) {
     /*
-     * A security is named by the tenant's anchor and its original term, and by
-     * nothing about a book or a trade, so any book may hold it and two trades of
-     * it name one issue.
+     * A security is named by its currency, the anchor and its original term,
+     * and by nothing about a book or a trade. Any book that keeps the currency
+     * may hold it, and two trades of it name one issue.
      */
-    const auto digest = named(std::format("bond:{}:{}Y", format_date(scope.as_of_date), tenor_years));
+    const auto digest = named(std::format(
+        "bond:{}:{}:{}Y", scope.currency_code, format_date(scope.as_of_date), tenor_years));
     static constexpr char alphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string body;
     body.reserve(9);

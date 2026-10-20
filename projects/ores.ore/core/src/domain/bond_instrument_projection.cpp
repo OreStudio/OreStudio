@@ -940,8 +940,9 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
-    -> bool {
+auto accepts_spelling(const record_writer& w,
+                      std::string_view name,
+                      std::string_view value) -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;

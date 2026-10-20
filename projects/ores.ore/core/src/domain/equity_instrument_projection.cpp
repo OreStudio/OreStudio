@@ -357,8 +357,8 @@ auto parse_range_bounds(std::string_view json) -> std::vector<range_bound_text> 
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade,
+                        std::string_view trade_type) -> equity_option_instrument {
     auto r = make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)

@@ -100,8 +100,8 @@ compare_documents(const curve_document& lhs, const curve_document& rhs, const st
 
 
 conventions load_conventions(const std::string& path) {
-    return conventions_mapper::read(
-        file::read_content(ores::testing::project_root::resolve(path)), path);
+    return conventions_mapper::read(file::read_content(ores::testing::project_root::resolve(path)),
+                                    path);
 }
 
 const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";

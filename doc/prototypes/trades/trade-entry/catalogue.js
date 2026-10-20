@@ -575,13 +575,12 @@ if (typeof window !== 'undefined' && window.location.search.includes('selfcheck=
     window.addEventListener('DOMContentLoaded', runSelfCheck);
 }
 
-/* The running valuation the pricing screen fakes. Ticks move the spots;
+/* The running valuation the pricing screen fakes. A Refresh moves the spots;
  * the vols and rates are the trader's to tweak. */
 function marketState() {
     return {
         spots: { EURUSD: 1.1180, GBPUSD: 1.2640, USDJPY: 149.20 },
         vols: { EURUSD: 7.80, GBPUSD: 8.40, USDJPY: 9.10 },
-        rates: { EUR: 2.15, USD: 4.33, GBP: 4.05 },
-        ticking: true
+        rates: { EUR: 2.15, USD: 4.33, GBP: 4.05 }
     };
 }

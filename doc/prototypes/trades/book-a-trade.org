@@ -30,6 +30,7 @@ Booking is the journey [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][Book a trade]]
 | =?tab=instrument= | The Instrument tab, with a tab for each part of the instrument |
 | =?tab=identifiers=, =?tab=review= | The other two tabs. Review lists the writes and the refusals |
 | =?like=ACME-100201= | A booking started from an existing trade |
+| =?type=FxOption&terms=…= | A booking started from a priced ticket: the trade type, and the terms as =key:value= pairs, from the pricing screen of the trade entry prototype |
 | =?fail=instrument= | The half-booked trade: the booking is written and the instrument is not |
 | =?fail=duplicate= | The refusal for a trade id that is already booked |
 | =?as=reader= | The screen names the right it needs and links to a request for each role that gives it |

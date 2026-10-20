@@ -20,10 +20,13 @@ const main = shell({
 
 /* ---------- the form ---------- */
 const bookable = TRADE_TYPES.filter(t => t.instrument);
+/* The pricing screen hands over a type and its terms in the address. */
+const START_TYPE = TRADE_TYPES.some(t => t.code === P.get('type') && t.instrument) ? P.get('type') : '';
+const START_TERMS = Object.fromEntries((P.get('terms') || '').split(',').filter(Boolean).map(x => [x.slice(0, x.indexOf(':')), x.slice(x.indexOf(':') + 1)]));
 const F = {
-    type: LIKE ? LIKE.type : '',
+    type: LIKE ? LIKE.type : START_TYPE,
     cp: LIKE ? LIKE.cp : '', book: LIKE ? LIKE.book : 'EMEA-RATES', date: '2026-10-11', time: '16:40', nature: 'Real', channel: 'Manual', scope: 'Bilateral',
-    mode: 'live', terms: {}, rows: {}, ids: { firm: 'ACME-100309', ore: '' }, portfolio: 'Rates and credit', trader: ME, reason: 'trade.client_request', note: ''
+    mode: 'live', terms: Object.assign({}, START_TERMS), rows: {}, ids: { firm: 'ACME-100309', ore: '' }, portfolio: 'Rates and credit', trader: ME, reason: 'trade.client_request', note: ''
 };
 const REASONS = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
 const activityOf = () => (F.mode === 'live' ? 'new_booking' : 'draft_capture');

@@ -1,22 +1,14 @@
-/* The booking screen.
+/* The structure editor.
  *
- * The screen is deliberately not interactive in the pricing sense: no
- * live market data, no model inputs. It concentrates on the correctness
- * of the booking.
- *
- * The load-bearing rule is the version rule, so it is modelled literally
- * rather than asserted. Every mutating action routes through mutate(),
- * which bumps the version and appends to the audit log. authorise() does
- * not route through it, because authorisation is metadata about the deal,
- * not a term of it. See the Trade Structures and Deal Composition page.
- */
-
-const STORAGE_KEY = 'ores.trade-entry.structure';
+ * It is a workbench: a person edits a working copy of one structure, and Save writes it
+ * as one version with a kind of change, a reason and a commentary (see draft.js).
+ * Authorisation is a state of the deal, and it does not move the version. */
 
 let structure = null;
 let selected = null;          // { kind: 'structure' | 'group' | 'component', id }
 let pendingComponents = [];   // candidates ticked in the "form from trades" dialog
 let activeTab = 'terms';      // which economics section the component pane shows
+let stale = false;
 
 /* --- Utilities ------------------------------------------------------ */
 
@@ -28,10 +20,6 @@ function esc(value) {
 
 function clone(value) {
     return JSON.parse(JSON.stringify(value));
-}
-
-function nowIso() {
-    return new Date().toISOString().replace(/\.\d+Z$/, 'Z');
 }
 
 function shortTime(iso) {
@@ -57,53 +45,74 @@ function nextId(prefix, list) {
     return `${prefix}-${n}`;
 }
 
-function persist() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(structure));
-    } catch (err) {
-        /* A private window or blocked site data. The prototype still runs;
-         * the Book handoff simply does not survive the page change. */
-        console.warn('prototype: could not persist structure', err);
-    }
+/* The selected row and the tab are in the address, so a reload and Back return to them. */
+function addressOf() {
+    const sel = selected && selected.kind !== 'structure' ? selected.id : null;
+    return qs({ node: sel, tab: sel && selected.kind === 'component' && activeTab !== 'terms' ? activeTab : null });
 }
 
-function load() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-    } catch (err) {
-        console.warn('prototype: could not read stored structure', err);
-    }
-    return null;
-}
-
-/* --- The version rule ----------------------------------------------- */
-
-/* The one path that changes the deal. It bumps the version and records
- * why, so the header and the audit trail can never disagree. */
-function mutate(text) {
-    structure.version += 1;
-    structure.audit.push({ at: nowIso(), actor: 'marco', text });
-    persist();
+function go(next, tab) {
+    selected = next;
+    activeTab = tab || 'terms';
+    history.pushState(null, '', addressOf());
     render();
-    flashVersion();
 }
 
-/* Authorisation is metadata about the deal, not a term of it, so it does
- * not touch the version. The audit trail still records it. */
+function readAddress() {
+    const q = new URLSearchParams(location.search);
+    const id = q.get('node');
+    if (id && findComponent(id)) selected = { kind: 'component', id };
+    else if (id && findGroup(id)) selected = { kind: 'group', id };
+    else selected = { kind: 'structure', id: structure.id };
+    activeTab = q.get('tab') || 'terms';
+    render();
+}
+
+/* --- Changes ------------------------------------------------------------ */
+
+/* An edit changes the working copy and names itself in the list of changes. Save writes
+ * the list as one version. */
+function mutate(text, redraw) {
+    stage(structure, text);
+    if (redraw === false) renderLight();
+    else render();
+}
+
+/* The control to change the state of the deal asks for a reason first. */
 function authorise() {
     const next = structure.authorisation === 'Draft' ? 'Authorised' : 'Draft';
-    structure.authorisation = next;
-    structure.audit.push({ at: nowIso(), actor: 'marco', text: next });
-    persist();
-    render();
+    const state = { reason: 'trade.client_request', note: '' };
+    const d = openDialog({
+        title: next === 'Authorised' ? 'Authorise this structure' : 'Withdraw the authorisation', loadedAt: LOADED,
+        body: [h('p', null, next === 'Authorised' ? 'The structure becomes Authorised. The version does not move.' : 'The structure goes back to Draft. The version does not move.'),
+            changeFields(Object.assign(state, { activity: 'amendment_reference' }), 'PUT ' + structure.id + ' · claims version ' + structure.version)
+                .filter((_, i) => i > 0)],
+        buttons: [h('button', { class: 'btn ghost', onclick: () => d.close() }, 'Cancel'),
+            h('button', { class: 'btn primary', onclick: () => { setAuthorisation(structure, next, state); d.close(); render(); } }, next === 'Authorised' ? 'Authorise' : 'Withdraw')]
+    });
 }
 
-function flashVersion() {
-    const chip = document.getElementById('version-chip');
-    chip.classList.remove('bump');
-    void chip.offsetWidth;
-    chip.classList.add('bump');
+/* Save is the Edit pattern: the kind of change, the reason, the commentary, and a claim on the version read. */
+function saveChanges() {
+    const state = { activity: 'amendment_economic', reason: 'trade.client_request', note: '' };
+    const d = openDialog({
+        title: 'Save the structure', loadedAt: LOADED,
+        body: [h('p', null, 'Save writes ' + structure.pending.length + ' change' + (structure.pending.length === 1 ? '' : 's') + ' as version ' + (structure.version + 1) + '. Authorisation does not change.'),
+            h('ul', { class: 'pending' }, structure.pending.map(t => h('li', null, t))),
+            changeFields(state, 'PUT ' + structure.id + ' · claims version ' + structure.version)],
+        buttons: [h('button', { class: 'btn ghost', onclick: () => { if (!state.note || confirm('You have unsaved changes. Close anyway?')) d.close(); } }, 'Cancel'),
+            h('button', { class: 'btn primary', onclick: () => { saveStructure(structure, state); d.close(); stale = true; render(); } }, 'Save')]
+    });
+    d.addEventListener('cancel', e => { if (state.note && !confirm('You have unsaved changes. Close anyway?')) e.preventDefault(); });
+}
+
+function discard() {
+    const n = structure.pending.length;
+    if (!confirm('Discard ' + n + ' change' + (n === 1 ? '' : 's') + '?')) return;
+    discardChanges(structure);
+    selected = { kind: 'structure', id: structure.id };
+    history.replaceState(null, '', addressOf());
+    render();
 }
 
 /* --- Strategy invariants --------------------------------------------- */
@@ -157,84 +166,54 @@ function render() {
     renderAudit();
 }
 
-/* The structure is a trade too, so it carries a trade header as well. It
- * sits here, above everything, and never moves. The reader always knows
- * where the deal's reference data lives. */
-function renderStructEnvelope() {
-    const fields = [
-        ['Structure ID', structure.id],
-        ['Counterparty', structure.counterparty],
-        ['Portfolio', structure.portfolio],
-        ['Netting set', structure.nettingSet],
-        ['Book', structure.book],
-        ['Trade date', structure.tradeDate]
-    ];
-    document.getElementById('struct-envelope').innerHTML = `
-        <div class="env-label">
-            Envelope<span class="legend">Reference data</span>
-        </div>`
-        + fields.map(([k, v]) => `
-        <div class="env-pair">
-            <span class="env-key">${esc(k)}</span>
-            <span class="env-val">${esc(v || '—')}</span>
-        </div>`).join('');
+/* A field typed into changes the copy without drawing the form again, which would end the typing. */
+function renderLight() {
+    renderHeader();
+    renderValidation();
+    renderTree();
+    renderNpv();
+}
+
+const REFKINDS = { Counterparty: 'counterparty', Book: 'book', Portfolio: 'portfolio', 'Netting set': 'netting_set', 'Trade type': 'trade_type', Successor: 'trade' };
+
+function refHtml(kind, key, flag) {
+    return `<a class="ref" href="#" data-ref="${esc(kind)}:${esc(key)}">${flag ? `<span class="flag">${flag}</span>` : ''}${esc(key)}</a>`;
+}
+
+function ccyHtml(code) {
+    return code ? refHtml('currency', code, FLAGS[code]) : esc('—');
 }
 
 function renderHeader() {
-    document.getElementById('struct-name').textContent = structure.name;
-    document.getElementById('struct-sub').textContent =
-        `${structure.id} · ${structure.groups.length} group${structure.groups.length === 1 ? '' : 's'} · `
-        + `${allComponents().length} component${allComponents().length === 1 ? '' : 's'}`;
-
-    renderStructEnvelope();
-
-    document.getElementById('version-chip').textContent = `v${structure.version}`;
-
-    const authChip = document.getElementById('auth-chip');
-    authChip.textContent = structure.authorisation;
-    authChip.className = `chip auth-${structure.authorisation.toLowerCase()}`;
-
-    const authBtn = document.getElementById('authorise-btn');
-    authBtn.textContent = structure.authorisation === 'Draft' ? 'Authorise' : 'Withdraw';
-
-    document.querySelectorAll('#mode-switch button').forEach(btn => {
-        btn.classList.toggle('on', btn.dataset.mode === structure.mode);
-    });
-
-    const select = document.getElementById('strategy-select');
-    select.hidden = structure.mode !== 'strategy';
-    select.innerHTML = STRATEGIES.map(s =>
-        `<option value="${esc(s.code)}"${s.code === structure.strategy ? ' selected' : ''}>${esc(s.name)}</option>`
-    ).join('');
-
-    document.getElementById('topology-note').textContent =
-        'Structure → group → component. Two levels, as the composition rule allows.';
-}
-
-/* Why the structure passes. It names the hedge exclusion, because a reader
- * counting components would otherwise expect the invariant to cover them. */
-function validNote() {
-    if (structure.mode !== 'strategy') return 'Package mode enforces nothing structural.';
-    const hedged = structure.groups.some(g => g.hedge);
-    return hedged
-        ? `${currentStrategy().name} invariant holds on the strategy legs. Hedge legs sit outside it.`
-        : `${currentStrategy().name} invariant holds.`;
+    const dirty = structure.pending.length;
+    const meta = [
+        chip('v' + structure.version, 'v', 'Version of this structure'),
+        h('span', { class: 'chip auth-' + structure.authorisation.toLowerCase() }, structure.authorisation),
+        chip(structure.mode === 'strategy' ? 'Strategy' : 'Package'),
+        dirty ? chip(dirty + ' unsaved', 'warn', structure.pending.join('; ')) : null
+    ];
+    const actions = [
+        refreshButton({ stale, onClick: () => { stale = false; LOADED = new Date(NOW.getTime()); render(); toast('Read again at ' + iso(LOADED)); } }),
+        h('div', { class: 'mode-switch', role: 'group', 'aria-label': 'Composition rung' },
+            ['strategy', 'package'].map(m => h('button', { class: structure.mode === m ? 'on' : '', onclick: () => setMode(m) }, m === 'strategy' ? 'Strategy' : 'Package'))),
+        structure.mode === 'strategy' ? h('select', { class: 'field-select', title: 'Strategy this structure follows', onchange: e => setStrategy(e.target.value) },
+            STRATEGIES.map(s => h('option', { value: s.code, selected: s.code === structure.strategy }, s.name))) : null,
+        h('button', { class: 'btn', onclick: authorise }, structure.authorisation === 'Draft' ? 'Authorise' : 'Withdraw'),
+        h('a', { href: 'pricing.html', class: 'btn' }, 'Price this structure'),
+        dirty ? h('button', { class: 'btn ghost', onclick: discard }, 'Discard changes') : null,
+        h('button', { class: 'btn primary', disabled: !dirty, title: dirty ? 'Save ' + dirty + ' change' + (dirty === 1 ? '' : 's') : 'Nothing has changed.', onclick: saveChanges }, 'Save')
+    ];
+    const id = h('span', null, structure.id, ' · ', ref('counterparty', structure.counterparty), ' · ', ref('book', structure.book), ' · ', ref('portfolio', structure.portfolio), ' · ', ref('netting_set', structure.nettingSet), ' · ', structure.tradeDate);
+    fill($('#head'), pageHead({ title: structure.name, id, meta, actions }));
 }
 
 function renderValidation() {
     const banner = document.getElementById('validation');
     const problem = validate();
-
-    if (!problem) {
-        banner.className = 'validation ok';
-        document.getElementById('validation-what').textContent = 'Valid';
-        document.getElementById('validation-why').textContent = validNote();
-        return;
-    }
-
-    banner.className = 'validation bad';
-    document.getElementById('validation-what').textContent = problem.what;
-    document.getElementById('validation-why').textContent = problem.why;
+    banner.hidden = !problem;
+    if (!problem) return;
+    banner.className = 'notice warn';
+    banner.replaceChildren(h('b', null, problem.what + '. '), problem.why);
 }
 
 /* The side chip is coloured by its class, and the generic form lets the
@@ -302,10 +281,7 @@ function renderTree() {
     tree.innerHTML = rows.join('');
 
     tree.querySelectorAll('.node-row').forEach(row => {
-        row.addEventListener('click', () => {
-            selected = { kind: row.dataset.kind, id: row.dataset.id || structure.id };
-            render();
-        });
+        row.addEventListener('click', () => go({ kind: row.dataset.kind, id: row.dataset.id || structure.id }));
     });
 }
 
@@ -314,6 +290,7 @@ function renderTree() {
  * product type. The economics below it is the instrument, and only that
  * part changes with the product type. */
 function renderEditor() {
+    SLOTS = {};
     const editor = document.getElementById('editor');
     const removeBtn = document.getElementById('remove-component');
     const envelope = document.getElementById('envelope');
@@ -358,13 +335,16 @@ function renderEditor() {
     bindGroupField(component);
 }
 
+function envValue(key, value) {
+    if (value === undefined || value === null || value === '') return esc('—');
+    if (REFKINDS[key]) return refHtml(REFKINDS[key], value);
+    if (key === 'Modified by') return esc(PEOPLE[value] ? PEOPLE[value].name : value);
+    return esc(value);
+}
+
 function renderEnvelope(component) {
     document.getElementById('envelope').innerHTML = `
-        <div class="envelope-title">
-            Envelope
-            <span class="legend">Reference data. The trade header, the same fields for every
-                product type. The instrument below carries the economics.</span>
-        </div>
+        <div class="envelope-title">Envelope</div>
         <div class="env-board">
             ${envelopeOf(component).map(g => `
                 <div class="env-group">
@@ -372,7 +352,7 @@ function renderEnvelope(component) {
                     ${g.fields.map(([k, v]) => `
                         <div class="env-pair">
                             <span class="env-key">${esc(k)}</span>
-                            <span class="env-val">${esc(v === undefined || v === null || v === '' ? '—' : v)}</span>
+                            <span class="env-val">${envValue(k, v)}</span>
                         </div>`).join('')}
                 </div>`).join('')}
         </div>`;
@@ -385,17 +365,13 @@ function structureOverview() {
         <div class="widget">
             <h3>${esc(structure.name)}</h3>
             <div class="widget-kind">Structure · ${esc(structure.mode)} mode</div>
-            <p class="field-note">
-                Select a component to edit it. A change to any component
-                increments the structure version.
-            </p>
             <div class="subhead">Components by type</div>
             <table class="legs">
                 <thead><tr><th>ID</th><th>Type</th><th>Label</th><th>Widget</th></tr></thead>
                 <tbody>
                     ${allComponents().map(c => `
                         <tr>
-                            <td>${esc(c.id)}</td>
+                            <td>${refHtml('trade', c.id)}</td>
                             <td>${esc(productTypeName(c.productType))}</td>
                             <td>${esc(c.label)}</td>
                             <td>${esc(WIDGET_NAMES[widgetFor(c.productType, c.tradeTypeCode)])}</td>
@@ -407,18 +383,20 @@ function structureOverview() {
 
 function bindTabs() {
     document.querySelectorAll('#tabs button[data-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            activeTab = btn.dataset.tab;
-            render();
-        });
+        btn.addEventListener('click', () => go(selected, btn.dataset.tab));
     });
 }
 
 /* The last audit line that names this component. The trade header reads
  * its audit group from here, so the header and the drawer cannot drift
  * apart. */
+function lastActor(component) {
+    const hit = structure.audit.filter(a => String(a.what || a.text).includes(component.id)).pop();
+    return hit ? hit.actor : ME;
+}
+
 function lastTouchOf(component) {
-    const hit = structure.audit.filter(a => String(a.text).includes(component.id)).pop();
+    const hit = structure.audit.filter(a => String(a.what || a.text).includes(component.id)).pop();
     return hit ? `${hit.at.slice(0, 10)} ${shortTime(hit.at)}` : structure.tradeDate;
 }
 
@@ -471,7 +449,7 @@ function envelopeOf(component) {
         {
             group: 'Audit',
             fields: [
-                ['Modified by', 'marco'],
+                ['Modified by', lastActor(component)],
                 ['Change reason', e.changeReasonCode || 'NEW'],
                 ['Recorded at', lastTouchOf(component)]
             ]
@@ -560,25 +538,24 @@ function sectionsFor(widget, component) {
     return [{ id: 'terms', label: 'Terms', html: genericTerms(component) }];
 }
 
-function field(key, label, value, kind, extra) {
-    const type = kind || 'text';
-    const attrs = extra || '';
+/* Each field is a slot. bindWidget fills a slot with valueInput(), the input every
+ * screen uses: a combo box for a value that exists, a date input for a date, and Clear
+ * on an optional field. */
+let SLOTS = {};
+const BUSINESS_DAY_CONVENTIONS = ['Following', 'ModifiedFollowing', 'Preceding', 'Unadjusted'];
+
+function slot(key, label, value, fd) {
+    SLOTS[key] = { fd: Object.assign({}, fd), value: value === undefined || value === null ? '' : value };
     return `
         <div class="field">
-            <label for="f-${esc(key)}">${esc(label)}</label>
-            <input id="f-${esc(key)}" data-field="${esc(key)}" type="${type}" value="${esc(value)}" ${attrs}>
+            <label data-for="${esc(key)}">${esc(label)}</label>
+            <div data-slot="${esc(key)}"></div>
         </div>`;
 }
 
-function selectField(key, label, value, options) {
-    return `
-        <div class="field">
-            <label for="f-${esc(key)}">${esc(label)}</label>
-            <select id="f-${esc(key)}" data-field="${esc(key)}">
-                ${options.map(o => `<option${o === value ? ' selected' : ''}>${esc(o)}</option>`).join('')}
-            </select>
-        </div>`;
-}
+const termField = (key, label, value, kind, extra) => slot(key, label, value, { type: kind || 'text', optional: !!(extra && extra.optional) });
+const ccyField = (key, label, value, optional) => slot(key, label, value, { type: 'ccy', optional });
+const selectField = (key, label, value, options) => slot(key, label, value, { options });
 
 function vanillaTerms(c) {
     const f = c.fields;
@@ -588,12 +565,12 @@ function vanillaTerms(c) {
             ${selectField('optionType', 'Option type', f.optionType, ['Call', 'Put'])}
             ${selectField('style', 'Style', f.style, ['European', 'American', 'Bermudan'])}
             ${selectField('settlement', 'Settlement', f.settlement, ['Cash', 'Physical'])}
-            ${field('boughtCurrency', 'Bought currency', f.boughtCurrency)}
-            ${field('boughtAmount', 'Bought amount', f.boughtAmount, 'number')}
-            ${field('soldCurrency', 'Sold currency', f.soldCurrency)}
-            ${field('soldAmount', 'Sold amount', f.soldAmount, 'number')}
-            ${field('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
-            ${field('notional', 'Notional', f.notional, 'number')}
+            ${ccyField('boughtCurrency', 'Bought currency', f.boughtCurrency)}
+            ${termField('boughtAmount', 'Bought amount', f.boughtAmount, 'number')}
+            ${ccyField('soldCurrency', 'Sold currency', f.soldCurrency)}
+            ${termField('soldAmount', 'Sold amount', f.soldAmount, 'number')}
+            ${termField('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
+            ${termField('notional', 'Notional', f.notional, 'number')}
         </div>`;
 }
 
@@ -601,7 +578,7 @@ function scheduleSection(c) {
     const f = c.fields;
     return `
         <div class="field-grid">
-            ${field('expiry', 'Expiry', f.expiry, 'date')}
+            ${termField('expiry', 'Expiry', f.expiry, 'date')}
             ${selectField('payOffAtExpiry', 'Pay off at expiry', f.payOffAtExpiry, ['false', 'true'])}
         </div>
         <div class="subhead">Exercise dates</div>
@@ -609,8 +586,7 @@ function scheduleSection(c) {
             <thead><tr><th>#</th><th>Date</th><th>Type</th></tr></thead>
             <tbody><tr><td>1</td><td>${esc(f.expiry || '—')}</td><td>Expiry</td></tr></tbody>
         </table>
-        <div class="legend">Rebuilt from the expiry. A Bermudan lists one row per
-            exercise date.</div>`;
+`;
 }
 
 /* The premium is a sub-leg: a trade in its own right with its own
@@ -619,9 +595,6 @@ function scheduleSection(c) {
 function premiumSection(c) {
     if (!c.premium) {
         return `
-            <p class="field-note">
-                This option pays nothing up front. Add the sub-leg when it carries a premium.
-            </p>
             <button class="primary" id="add-premium">Add premium sub-leg</button>`;
     }
 
@@ -635,45 +608,24 @@ function premiumSection(c) {
                 <button class="danger ghost" id="remove-premium">Remove</button>
             </div>
             <div class="field-grid">
-                <div class="field">
-                    <label for="f-premiumAmount">Amount</label>
-                    <input id="f-premiumAmount" data-premium-field="amount"
-                           type="number" value="${esc(p.amount)}">
-                </div>
-                <div class="field">
-                    <label for="f-premiumCurrency">Currency</label>
-                    <input id="f-premiumCurrency" data-premium-field="currency"
-                           value="${esc(p.currency)}">
-                </div>
-                <div class="field">
-                    <label for="f-premiumPayDate">Pay date</label>
-                    <input id="f-premiumPayDate" data-premium-field="payDate"
-                           type="date" value="${esc(p.payDate)}">
-                </div>
+                ${slot('premium.amount', 'Amount', p.amount, { type: 'number' })}
+                ${ccyField('premium.currency', 'Currency', p.currency)}
+                ${slot('premium.payDate', 'Pay date', p.payDate, { type: 'date', optional: true })}
             </div>
-            <div class="legend">Its own identifier, currency and payment date. The structure
-                references it by key; it does not own it.</div>
         </div>`;
 }
 
 function barriersSection(c) {
     const f = c.fields;
-    const levels = [f.barrierLevel, f.barrierLevel2].filter(Boolean);
     return `
         <div class="field-grid">
-            <div class="field">
-                <label for="f-barrierType">Barrier type</label>
-                <select id="f-barrierType" data-field="barrierType">
-                    ${['UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut'].map(t =>
-                        `<option${t === f.barrierType ? ' selected' : ''}>${t}</option>`).join('')}
-                </select>
-            </div>
-            ${field('barrierLevel', 'Level 1', f.barrierLevel, 'number', 'step="0.0001"')}
-            ${field('barrierLevel2', 'Level 2 (double barrier)', f.barrierLevel2 || '', 'number', 'step="0.0001"')}
-            ${field('rebate', 'Rebate', f.rebate, 'number', 'step="0.0001"')}
-            ${field('fxIndex', 'FX index', f.fxIndex)}
+            ${selectField('barrierType', 'Barrier type', f.barrierType, ['UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut'])}
+            ${termField('barrierLevel', 'Level 1', f.barrierLevel, 'number', 'step="0.0001"')}
+            ${slot('barrierLevel2', 'Level 2 (double barrier)', f.barrierLevel2 || '', { type: 'number', optional: true })}
+            ${slot('rebate', 'Rebate', f.rebate, { type: 'number', optional: true })}
+            ${slot('fxIndex', 'FX index', f.fxIndex, { optional: true })}
         </div>
-        <div class="legend">${levels.length} level${levels.length === 1 ? '' : 's'} set.</div>`;
+`;
 }
 
 function swapTerms(c) {
@@ -682,10 +634,10 @@ function swapTerms(c) {
         <div class="field-grid">
             ${selectField('legType', 'Leg type', f.legType, ['Fixed', 'Floating'])}
             ${selectField('payer', 'Payer', f.payer, ['true', 'false'])}
-            ${field('currency', 'Currency', f.currency)}
-            ${field('notional', 'Notional', f.notional, 'number')}
-            ${field('rate', 'Rate', f.rate, 'number', 'step="0.0001"')}
-            ${field('dayCounter', 'Day counter', f.dayCounter)}
+            ${ccyField('currency', 'Currency', f.currency)}
+            ${termField('notional', 'Notional', f.notional, 'number')}
+            ${termField('rate', 'Rate', f.rate, 'number', 'step="0.0001"')}
+            ${selectField('dayCounter', 'Day counter', f.dayCounter, DAY_COUNTS)}
         </div>`;
 }
 
@@ -693,13 +645,13 @@ function swapScheduleSection(c) {
     const f = c.fields;
     return `
         <div class="field-grid">
-            ${field('startDate', 'Start date', f.startDate, 'date')}
-            ${field('endDate', 'End date', f.endDate, 'date')}
-            ${field('tenor', 'Tenor', f.tenor)}
-            ${field('calendar', 'Calendar', f.calendar)}
-            ${field('convention', 'Business day convention', f.convention)}
+            ${termField('startDate', 'Start date', f.startDate, 'date')}
+            ${termField('endDate', 'End date', f.endDate, 'date')}
+            ${selectField('tenor', 'Tenor', f.tenor, ['1M', '3M', '6M', '1Y'])}
+            ${slot('calendar', 'Calendar', f.calendar, { type: 'calendar', optional: true })}
+            ${selectField('convention', 'Business day convention', f.convention, BUSINESS_DAY_CONVENTIONS)}
             ${selectField('rule', 'Rule', f.rule, ['Forward', 'Backward'])}
-            ${field('paymentConvention', 'Payment convention', f.paymentConvention)}
+            ${selectField('paymentConvention', 'Payment convention', f.paymentConvention, BUSINESS_DAY_CONVENTIONS)}
         </div>
 
         <div class="subhead">Generated schedule</div>
@@ -707,7 +659,7 @@ function swapScheduleSection(c) {
             <thead><tr><th>#</th><th>Accrual start</th><th>Accrual end</th></tr></thead>
             <tbody>${scheduleRows(f)}</tbody>
         </table>
-        <div class="legend">Rebuilt from the rules above. The leg is priced from this schedule.</div>`;
+`;
 }
 
 /* The schedule is rebuilt from the rules above rather than stored, which
@@ -726,12 +678,12 @@ function compositeTerms(c) {
     const f = c.fields;
     return `
         <div class="field-grid">
-            ${field('currency', 'Currency', f.currency)}
+            ${ccyField('currency', 'Currency', f.currency)}
             ${selectField('notionalCalculation', 'Notional calculation', f.notionalCalculation, ['Mean', 'Sum', 'Min', 'Max'])}
-            ${field('underlying', 'Underlying', f.underlying)}
-            ${field('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
-            ${field('expiry', 'Expiry', f.expiry, 'date')}
-            ${field('quantity', 'Quantity', f.quantity, 'number')}
+            ${termField('underlying', 'Underlying', f.underlying)}
+            ${termField('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
+            ${termField('expiry', 'Expiry', f.expiry, 'date')}
+            ${termField('quantity', 'Quantity', f.quantity, 'number')}
         </div>`;
 }
 
@@ -751,8 +703,7 @@ function legsSection(c) {
                     </tr>`).join('')}
             </tbody>
         </table>
-        <div class="legend">A composite is our untyped structure: it bundles legs and reports one NPV.
-            The legs keep their own identifiers.</div>`;
+`;
 }
 
 /* The fallback. It captures the instrument and nothing else: the
@@ -761,33 +712,38 @@ function legsSection(c) {
 function genericTerms(c) {
     const f = c.fields;
     return `
-        <div class="generic-note">
-            No dedicated form exists for <strong>${esc(c.tradeTypeCode || 'this type code')}</strong>.
-            The generic form captures the instrument by hand. This is the path most
-            product types take, and it is the one that proves the picker is extensible.
-        </div>
-
         <div class="field-grid">
-            ${field('longShort', 'Long / short', f.longShort || '')}
-            ${field('notional', 'Notional', f.notional || '', 'number')}
-            ${field('currency', 'Currency', f.currency || '')}
-            ${field('expiry', 'Expiry', f.expiry || '', 'date')}
-        </div>
-        <div class="legend">The trade header above carries the counterparty and the book.
-            This form carries only the instrument.</div>`;
+            ${selectField('longShort', 'Long / short', f.longShort || 'Long', ['Long', 'Short'])}
+            ${termField('notional', 'Notional', f.notional || '', 'number')}
+            ${ccyField('currency', 'Currency', f.currency || '')}
+            ${termField('expiry', 'Expiry', f.expiry || '', 'date')}
+        </div>`;
 }
 
 function bindWidget(component) {
     const editor = document.getElementById('editor');
 
-    editor.querySelectorAll('[data-field]').forEach(input => {
-        const key = input.dataset.field;
-        input.addEventListener('change', () => {
-            if (JSON.stringify(component.fields[key]) === JSON.stringify(input.value)) return;
-            component.fields[key] = input.value;
-            component.label = relabel(component);
-            mutate(`${component.id} ${key} changed`);
-        });
+    editor.querySelectorAll('[data-slot]').forEach(host => {
+        const key = host.dataset.slot;
+        const { fd, value } = SLOTS[key];
+        const premium = key.startsWith('premium.');
+        const name = premium ? key.slice(8) : key;
+        const target = premium ? component.premium : component.fields;
+        const typed = !fd.options && !['ccy', 'calendar', 'date'].includes(fd.type);
+        const set = (v, redraw) => {
+            if (target[name] === v) return;
+            target[name] = v;
+            if (!premium) component.label = relabel(component);
+            mutate(`${component.id} ${premium ? 'premium ' : ''}${name} changed`, !typed || !!redraw);
+            if (redraw || !typed) return;
+            const clear = host.querySelector('button');
+            if (clear) clear.disabled = v === '';
+        };
+        host.append(valueInput(fd, value, set, false));
+        const input = host.querySelector('input, select');
+        const label = editor.querySelector(`label[data-for="${key}"]`);
+        if (input && label) { input.id = 'f-' + key; label.htmlFor = input.id; }
+        if (input && fd.type === 'number') input.inputMode = 'decimal';
     });
 
     const addPremium = document.getElementById('add-premium');
@@ -799,8 +755,8 @@ function bindWidget(component) {
                 currency: component.fields.boughtCurrency || component.fields.currency || 'USD',
                 payDate: ''
             };
-            activeTab = 'premium';
             mutate(`${component.id} premium sub-leg ${component.premium.id} added`);
+            go(selected, 'premium');
         });
     }
 
@@ -812,15 +768,6 @@ function bindWidget(component) {
             mutate(`${component.id} premium sub-leg ${id} removed`);
         });
     }
-
-    editor.querySelectorAll('[data-premium-field]').forEach(input => {
-        const key = input.dataset.premiumField;
-        input.addEventListener('change', () => {
-            if (component.premium[key] === input.value) return;
-            component.premium[key] = input.value;
-            mutate(`${component.id} premium ${key} changed`);
-        });
-    });
 }
 
 /* The label follows the economics, so the tree stays readable while the
@@ -846,8 +793,7 @@ function renderNpv() {
 
     if (!npv) {
         value.textContent = 'Not valued';
-        document.getElementById('provenance').innerHTML =
-            `<div><strong>Provenance</strong>Price this structure to capture an initial NPV.</div>`;
+        document.getElementById('provenance').innerHTML = '';
         return;
     }
 
@@ -857,15 +803,11 @@ function renderNpv() {
         <div><strong>Market data cut</strong>${esc(npv.snapshot)}</div>
         <div><strong>Model</strong>${esc(npv.model)}</div>
         <div><strong>Run</strong>${esc(npv.runId)}</div>
-        <div><strong>Source</strong>${esc(npv.source || 'Pricing screen handoff')}</div>`;
+        <div><strong>Source</strong>${esc(npv.source || 'Pricing screen')}</div>`;
 }
 
 function renderAudit() {
-    document.getElementById('audit').innerHTML = structure.audit.slice().reverse().map(a => `
-        <li>
-            <span class="when">${esc(shortTime(a.at))}</span>
-            <span>${esc(a.text)}</span>
-        </li>`).join('');
+    fill($('#audit'), timeline(historyEntries(structure), { isService: false }));
 }
 
 /* --- Actions ---------------------------------------------------------- */
@@ -894,9 +836,6 @@ function openPicker() {
             </div>`;
     }).join('');
 
-    document.getElementById('picker-note').textContent =
-        'Specialised widgets are named. Every other choice opens the generic form.';
-
     body.querySelectorAll('.pick').forEach(btn => {
         btn.addEventListener('click', () => {
             addComponent(btn.dataset.product, btn.dataset.code);
@@ -904,7 +843,14 @@ function openPicker() {
         });
     });
 
-    document.getElementById('picker-dialog').showModal();
+    openStatic('picker-dialog');
+}
+
+/* A dialog drawn in the page says when the record it started from was loaded. */
+function openStatic(id) {
+    const d = document.getElementById(id);
+    d.querySelectorAll('[data-loaded]').forEach(el => { el.textContent = 'Loaded ' + iso(LOADED); el.title = 'Loaded'; });
+    d.showModal();
 }
 
 function addComponent(productType, tradeTypeCode) {
@@ -916,8 +862,8 @@ function addComponent(productType, tradeTypeCode) {
 
     const component = blankComponent(productType, tradeTypeCode, allComponents());
     targetGroup.components.push(component);
-    selected = { kind: 'component', id: component.id };
-    mutate(`${component.id} added to ${targetGroup.name}`);
+    mutate(`${component.id} added to ${targetGroup.name}`, false);
+    go({ kind: 'component', id: component.id });
 }
 
 /* A premium sub-leg is a trade, so it takes an identifier from the same
@@ -952,10 +898,6 @@ function openFormFromTrades() {
     const body = document.getElementById('trades-body');
 
     body.innerHTML = `
-        <p class="legend" style="margin-top:0">
-            A structure can be formed from trades already booked. Forming it changes no
-            economics until the structure is confirmed; the links are keys, not ownership.
-        </p>
         <div class="candidate-list">
             ${existingTrades().map(t => `
                 <div class="candidate" data-id="${esc(t.id)}">
@@ -963,13 +905,14 @@ function openFormFromTrades() {
                     <span class="type-tag">${esc(productTypeName(t.productType))}</span>
                     <span class="grow">
                         <strong>${esc(t.label)}</strong>
-                        <span class="meta">${esc(t.id)} · ${Number(t.notional).toLocaleString()} ${esc(t.ccy)}</span>
+                        <span class="meta">${refHtml('trade', t.id)} · ${Number(t.notional).toLocaleString()} ${ccyHtml(t.ccy)}</span>
                     </span>
                 </div>`).join('')}
         </div>`;
 
     body.querySelectorAll('.candidate').forEach(row => {
         row.addEventListener('click', event => {
+            if (event.target.closest('a')) { event.preventDefault(); return; }
             if (event.target.tagName !== 'INPUT') {
                 const box = row.querySelector('input');
                 box.checked = !box.checked;
@@ -979,7 +922,7 @@ function openFormFromTrades() {
         });
     });
 
-    document.getElementById('trades-dialog').showModal();
+    openStatic('trades-dialog');
 }
 
 function syncPending(body) {
@@ -1010,10 +953,10 @@ function formFromTrades() {
     structure.groups.push(group);
     structure.mode = 'package';
     structure.strategy = '';
-    selected = { kind: 'group', id: group.id };
-    mutate(`Structure formed from ${chosen.length} existing trades`);
-
+    mutate(`Structure formed from ${chosen.length} existing trades`, false);
+    pendingComponents = [];
     document.getElementById('trades-dialog').close();
+    go({ kind: 'group', id: group.id });
 }
 
 function removeComponent() {
@@ -1022,16 +965,16 @@ function removeComponent() {
     structure.groups.forEach(g => {
         g.components = g.components.filter(c => c.id !== id);
     });
-    selected = { kind: 'structure', id: structure.id };
-    mutate(`${id} removed`);
+    mutate(`${id} removed`, false);
+    go({ kind: 'structure', id: structure.id });
 }
 
 function setMode(mode) {
     if (structure.mode === mode) return;
     structure.mode = mode;
     if (mode === 'strategy' && !structure.strategy) structure.strategy = STRATEGIES[0].code;
-    selected = { kind: 'structure', id: structure.id };
-    mutate(`Mode changed to ${mode}`);
+    mutate(`Mode changed to ${mode}`, false);
+    go({ kind: 'structure', id: structure.id });
 }
 
 function setStrategy(code) {
@@ -1042,34 +985,37 @@ function setStrategy(code) {
 
 /* --- Wiring ----------------------------------------------------------- */
 
+function addGroup() {
+    const state = { name: `Group ${structure.groups.length + 1}`, touched: false };
+    const d = openDialog({
+        title: 'Add a group', loadedAt: LOADED,
+        body: field('Name', h('input', { class: 'field-input', value: state.name, oninput: e => { state.name = e.target.value; state.touched = true; } })),
+        buttons: [h('button', { class: 'btn ghost', onclick: () => { if (!state.touched || confirm('You have unsaved changes. Close anyway?')) d.close(); } }, 'Cancel'),
+            h('button', { class: 'btn primary', onclick: () => {
+                if (!state.name.trim()) return;
+                const group = { id: `G-${structure.groups.length + 1}`, name: state.name.trim(), components: [] };
+                structure.groups.push(group);
+                mutate(`Group ${group.name} added`, false);
+                d.close();
+                go({ kind: 'group', id: group.id });
+            } }, 'Add')]
+    });
+    d.addEventListener('cancel', e => { if (state.touched && !confirm('You have unsaved changes. Close anyway?')) e.preventDefault(); });
+}
+
 function wire() {
     document.getElementById('add-component').addEventListener('click', openPicker);
     document.getElementById('remove-component').addEventListener('click', removeComponent);
-    document.getElementById('authorise-btn').addEventListener('click', authorise);
     document.getElementById('form-from-trades').addEventListener('click', openFormFromTrades);
     document.getElementById('trades-confirm').addEventListener('click', formFromTrades);
-
-    document.getElementById('mode-switch').addEventListener('click', event => {
-        const btn = event.target.closest('button[data-mode]');
-        if (btn) setMode(btn.dataset.mode);
-    });
-
-    document.getElementById('strategy-select').addEventListener('change', event => {
-        setStrategy(event.target.value);
-    });
-
-    document.getElementById('add-group').addEventListener('click', () => {
-        const name = prompt('Group name', `Group ${structure.groups.length + 1}`);
-        if (!name) return;
-        const group = { id: `G-${structure.groups.length + 1}`, name, components: [] };
-        structure.groups.push(group);
-        selected = { kind: 'group', id: group.id };
-        mutate(`Group ${name} added`);
-    });
+    document.getElementById('add-group').addEventListener('click', addGroup);
 
     document.querySelectorAll('dialog [data-close]').forEach(btn => {
-        btn.addEventListener('click', () => btn.closest('dialog').close());
+        const dialog = btn.closest('dialog');
+        const close = dialog.id === 'trades-dialog' ? guardDialog(dialog, () => pendingComponents.length > 0) : () => dialog.close();
+        btn.addEventListener('click', close);
     });
+    window.addEventListener('popstate', readAddress);
 }
 
 /* A structure stored by an earlier version of the page carries no trade
@@ -1083,14 +1029,16 @@ function backfill() {
 }
 
 function boot() {
-    structure = load() || openingStructure();
-    if (!structure.mode) structure.mode = 'package';
-    if (!structure.audit) structure.audit = [];
-    if (!structure.groups) structure.groups = [];
+    if (!CAN.structure) {
+        document.querySelector('.app').replaceChildren(pageHead({ title: 'Structure editor' }),
+            needsRole('the structure editor', 'change structures', STRUCTURE_ROLES));
+        return;
+    }
+    structure = normaliseStructure(loadStructure() || openingStructure());
     backfill();
-    selected = { kind: 'structure', id: structure.id };
+    stale = P.get('state') === 'stale';
     wire();
-    render();
+    readAddress();
 }
 
 /* The guard lets the widget renderers be exercised outside a browser, the

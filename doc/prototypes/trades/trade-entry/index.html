@@ -10,39 +10,15 @@
 
 <div class="app">
 
-    <header class="struct-header">
-        <div class="identity">
-            <h1 id="struct-name">Structure</h1>
-            <div class="sub" id="struct-sub"></div>
-        </div>
+    <div id="head"></div>
 
-        <div class="mode-switch" id="mode-switch" role="group" aria-label="Composition rung">
-            <button data-mode="strategy">Strategy</button>
-            <button data-mode="package">Package</button>
-        </div>
-
-        <div class="badges">
-            <span class="chip version" id="version-chip">v0</span>
-            <span class="chip" id="auth-chip">Draft</span>
-            <select id="strategy-select" title="Strategy this structure follows"></select>
-            <button id="authorise-btn">Authorise</button>
-            <a href="pricing.html" id="price-link" class="btn ghost">Price this structure</a>
-        </div>
-
-        <div class="envelope-strip" id="struct-envelope"></div>
-    </header>
-
-    <div class="validation ok" id="validation">
-        <span class="what" id="validation-what">Valid</span>
-        <span class="why" id="validation-why"></span>
-    </div>
+    <div id="validation" hidden></div>
 
     <div class="workspace">
 
         <section class="panel">
             <header>
                 <h2>Structure</h2>
-                <span class="legend" id="topology-note"></span>
             </header>
             <div class="tree" id="tree"></div>
             <div class="tree-actions">
@@ -72,30 +48,28 @@
         <div class="provenance" id="provenance"></div>
     </div>
 
-    <details class="drawer" id="audit-drawer">
-        <summary>
-            <span class="summary-title">Audit and version</span>
-            <span class="legend">A component change bumps the version. Authorisation does not.</span>
-        </summary>
-        <ul class="audit-list" id="audit"></ul>
-    </details>
+    <section class="panel">
+        <header>
+            <h2>History</h2>
+        </header>
+        <div class="body" id="audit"></div>
+    </section>
 
 </div>
 
 <dialog id="picker-dialog">
     <header>
         <h2>Choose a product type</h2>
+        <span class="faint small" data-loaded></span>
         <button class="ghost" data-close>Close</button>
     </header>
     <div class="dialog-body" id="picker-body"></div>
-    <footer>
-        <span class="legend" id="picker-note"></span>
-    </footer>
 </dialog>
 
 <dialog id="trades-dialog">
     <header>
         <h2>Form a structure from existing trades</h2>
+        <span class="faint small" data-loaded></span>
         <button class="ghost" data-close>Close</button>
     </header>
     <div class="dialog-body" id="trades-body"></div>
@@ -108,6 +82,7 @@
 <script src="common.js"></script>
 <script src="entry-shell.js"></script>
 <script src="catalogue.js"></script>
+<script src="draft.js"></script>
 <script src="booking.js"></script>
 </body>
 </html>

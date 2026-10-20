@@ -163,6 +163,39 @@ A function named =history= in the structure page hid =window.history=. It is now
 
 Checked in headless Chrome. Scripted runs pass for the list (sort, kind, address), the page (tab in place, Unlink, Refresh, History, tree click, Back), the grouping workflow, the reader view, and the loading, error, empty and refused states. The import (every step, the failure, the rollback) and the export (done and failed) pass too. All nine pages load without a console error. The scripts are not kept.
 
+** Trade entry, 2026-10-20
+
+The numbers are those of the review in the task "Check the trade prototypes against the entity screen specification". This time I read all of =booking.js=, =pricing.js= and the two pages. I read only the parts of =catalogue.js= that the screens call.
+
+The three gaps are settled, and the specification has a new section, "A workbench".
+
+| Gap | Decision |
+|-----+----------|
+| A workbench that edits in place | It follows the Edit pattern with one working copy. A change writes nothing. Save asks for the kind of change, the reason and the commentary, claims the version read, and moves the version once. Discard puts the saved copy back. A removal and a change of mode need no confirmation of their own |
+| Booking from a priced ticket | The pricing screen does not book. A new trade goes to Book a trade with its type and terms in the address. The price of a structure goes back to the editor as a change to the copy ("Use this price") |
+| Live market data | The screen shows a snapshot and says when it was read. A newer snapshot turns Refresh gold, and Refresh reads it. Nothing ticks by itself |
+
+| # | Fix |
+|---+-----|
+| 1 | A reader gets =needsRole()= and nothing else. The role bar is back. =CAN.structure= decides |
+| 2 | The working copy and Save, in the new =draft.js=. The version moves once per save |
+| 3 | Authorise and Withdraw ask for a reason, and say the version does not move |
+| 4 | Remove and the mode switch are changes to the copy. Discard undoes them |
+| 5 | The header is =pageHead()= with the version, the state and the mode, and =refreshButton()= with its loaded-at time |
+| 6 | History is =timeline()=, with the author, the version, the kind of change, the reason and the commentary |
+| 7 | The author is the signed-in person, not the text "marco" |
+| 8 | Terms use =valueInput()=: combo boxes for currency, calendar, side, option type, tenor and the conventions, date inputs, Clear on an optional term. The pricing ticket does the same |
+| 9 | The selected row and its tab are in the address (=?node=&tab=), with Back |
+| 10 | Every dialog says when it was loaded. Cancel asks first when the dialog has input. Add a group is a dialog and no longer a =prompt()= |
+| 11 | The valid banner, the topology note, the envelope explanation, the generic form note and the legends that narrate are gone. A refusal still shows |
+| 12 | The counterparty, book, portfolio, netting set, trade type and trades are links. The currencies in the trades dialog have flags |
+| 13 | The ticker is gone. Refresh reads the next snapshot |
+| 14 | The Book button is gone. =Use this price= and =Book a trade= replace it. Book a trade reads =?type== and =?terms== |
+
+Not done: the trades in the editor are mock ids (T-8841), so their links name the record and open nothing, as other references do in the prototypes. A reload with the pricing ticket dialog open loses what was typed in it.
+
+Checked in headless Chrome. Scripted runs pass for the editor (header, address, edit, save, discard, authorise, group, picker, form from trades, the reader), the pricing screen (no tick, stale after news, Refresh, ticket, book link, the reader) and Book a trade with a seed. The self-check passes. All nine pages load with no console error. The scripts are not kept.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

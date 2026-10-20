@@ -227,6 +227,8 @@ Gaps in the specification found by the three reviews:
 - Booking from a priced ticket.
 - Live market data on a screen.
 
+All three are settled. See the section "Trade entry, 2026-10-20" of the task "Bring the trade page prototype to the entity screen specification", and the section "A workbench" of the specification.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

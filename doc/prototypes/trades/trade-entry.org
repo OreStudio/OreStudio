@@ -2,12 +2,12 @@
 :ID: 7B737119-099C-451D-9319-1D6BEE73A063
 :END:
 #+title: Trade Entry Prototype
-#+description: A clickable prototype of a structure-based trade entry flow: a booking screen that manages a structure and its components, and a pricing screen whose Book button hands the economics across.
+#+description: A clickable prototype of a structure-based trade entry flow: a booking screen that manages a structure and its components, and a pricing screen whose price goes back to the editor and whose new trades go to Book a trade.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:trading:structures:booking:ui:
 #+created: 2026-09-11
-#+updated: 2026-10-09
+#+updated: 2026-10-20
 
 | Item          | Where                                               |
 |---------------+-----------------------------------------------------|
@@ -19,8 +19,8 @@
 
 The trade entry prototype shows a booking flow built around structures
 rather than single trades. It has two screens. The booking screen manages
-a structure and its components, and the pricing screen carries the Book
-button that hands the economics across.
+a structure and its components, and the pricing screen prices it. A price goes
+back to the editor, and a new trade goes to Book a trade.
 
 The prototype is throwaway. It is not production code and it does not
 ship to users. It exists so that the layout and the behaviour can be
@@ -29,7 +29,8 @@ argued about with something concrete in front of us.
 Open the [[file:trade-entry/][booking screen]], or go straight to the
 [[file:trade-entry/pricing.html][pricing screen]]. The pricing screen is one
 click away from the booking screen, under *Price this structure*. From
-there, *New trade* starts a deal and *Book* brings it back.
+there, *Price a new trade* starts a deal, *Use this price* brings the price back
+to the editor, and *Book a trade* opens the booking page.
 
 Everything on both screens is mock data, transcribed from
 =external/ore/examples/Products/Example_Trades=. Neither screen reads a
@@ -77,30 +78,33 @@ correctness and the validity of the booking.
 
 ** What the pricing screen does
 
-The pricing screen is the dynamic half. Market data ticks, and the vols
-and the rates are the trader's to move.
+The pricing screen reads a market data snapshot. The vols and the rates are
+the trader's to move. Nothing ticks by itself: a newer snapshot turns Refresh
+gold, and Refresh reads it.
 
 - *Two pricing modes.* Structure mode prices the deal as one unit. Leg
   mode prices each trade on its own and reports the results side by side.
 - *Two presentations.* The condensed view shows the structure as one
   line. The expanded view shows the legs. Both read the same data.
-- *The NPV readout.* It moves as the market moves and as the trader
-  tweaks.
+- *The NPV readout.* It moves with the tweaks and with each snapshot.
 - *New trade.* A deal can start here, from the least reference data the
   screen can price from: the product type, the currencies and their
   amounts, the strike, the option type and the expiry.
-- *The Book button.* Book carries the economics to the booking screen,
-  and stamps the initial NPV with its provenance. Book works on a deal
-  started with *New trade* and on one that is already booked, which is the
-  amend half of the flow.
+- *Use this price.* The price becomes the initial NPV of the structure,
+  with its provenance, as a change to the working copy. The editor saves it.
+- *Book a trade.* A trade priced from a new ticket is booked on the Book a
+  trade page, which opens with the type and the terms in its address. The
+  pricing screen does not book. Booking is the Add of the trade list, and
+  there is one page for it.
 
 ** The rule the prototype exists to show
 
-A change to any component increments the structure version. Authorisation
-does not. The prototype models this literally rather than asserting it:
-every mutating action routes through one function that bumps the version
-and writes the audit trail, and the authorise action deliberately does
-not. Watch the version chip while you change a strike.
+The editor is a workbench. A person edits a working copy, and nothing is
+written until Save. Save asks for the kind of change, the reason and the
+commentary, claims the version that was read, and moves the structure version
+once, whatever the number of changes in it. Discard puts the saved copy back.
+Authorisation is a state of the deal: it asks for a reason and does not move
+the version. Watch the version chip while you change a strike and save.
 
 This rule comes from
 [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
@@ -113,9 +117,9 @@ Do not read a number on either screen as a price.
 - The valuation is not real. The model is monotonic in vol and in
   moneyness, so a tweak moves the number the way a trader expects. It is
   not a price.
-- The market data is not real. The spots random-walk on a timer.
-- There is no backend. State lives in the browser, so the Book handoff
-  works and a reload keeps your place.
+- The market data is not real. Each Refresh moves the spots by a small random step.
+- There is no backend. The working copy lives in the browser, so the price
+  handoff works and a reload keeps your changes.
 
 ** On the Trades shell
 
@@ -129,7 +133,7 @@ Two things did not change on purpose. The booking and pricing screens keep their
 
 ** Where the code lives
 
-=doc/prototypes/trades/trade-entry/=. Eight files, no framework and no build step. =common.js= and =entry-shell.js= are the Trades group's shell, and the stylesheet is the group's shared one with this prototype's own rules after it.
+=doc/prototypes/trades/trade-entry/=. Nine files, no framework and no build step. =common.js= and =entry-shell.js= are the Trades group's shell, =draft.js= holds the working copy, and the stylesheet is the group's shared one with this prototype's own rules after it.
 The site build copies the directory through =ores-deploy-web-app=, which
 already deploys the other static apps.
 

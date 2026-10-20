@@ -1,15 +1,13 @@
 /* The pricing screen.
  *
- * This is the dynamic half: market data ticking, vols and rates the
- * trader can play with, and a NPV readout. It carries the Book button
- * that hands the economics to the booking screen.
+ * It reads a market data snapshot and values the structure from it. Nothing ticks by
+ * itself: a screen does not read again unless the person asks, so a newer snapshot turns
+ * Refresh gold and Refresh reads it. The valuation is faked on purpose. The number moves
+ * with the tweaks because a static number would hide how the screen answers a change.
  *
- * The valuation is faked on purpose. The story rules the pricing layer
- * itself out of scope, and the point here is the handoff and the two
- * views, not the number.
+ * A price of a structure goes back to the editor as a change to its working copy. A new
+ * trade is booked on Book a trade, the one page that books.
  */
-
-const STORAGE_KEY = 'ores.trade-entry.structure';
 
 const market = marketState();
 const openingSpots = { ...market.spots };
@@ -20,6 +18,7 @@ let structure = null;
 let priceMode = 'structure';
 let viewMode = 'condensed';
 let lastNpv = null;
+let stale = false;
 
 /* --- Utilities -------------------------------------------------------- */
 
@@ -29,30 +28,8 @@ function esc(value) {
         .replace(/"/g, '&quot;');
 }
 
-function load() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-    } catch (err) {
-        console.warn('prototype: could not read stored structure', err);
-    }
-    return null;
-}
-
-function persist() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(structure));
-    } catch (err) {
-        console.warn('prototype: could not persist structure', err);
-    }
-}
-
 function money(value) {
     return Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
-
-function nowIso() {
-    return new Date().toISOString().replace(/\.\d+Z$/, 'Z');
 }
 
 function allLegs() {
@@ -107,16 +84,42 @@ function render() {
 }
 
 function renderHeader() {
-    document.getElementById('instrument-name').textContent = structure.name;
-    document.getElementById('instrument-sub').textContent =
-        `${structure.id} · ${allLegs().length} legs · ${structure.mode} mode`;
+    const meta = [chip(structure.mode === 'strategy' ? 'Strategy' : 'Package'), structure.pending.length ? chip(structure.pending.length + ' unsaved', 'warn', structure.pending.join('; ')) : null];
+    const toggle = (label, items, current, pick) => h('div', { class: 'mode-switch', role: 'group', 'aria-label': label },
+        items.map(([id, text]) => h('button', { class: id === current ? 'on' : '', onclick: () => pick(id) }, text)));
+    const actions = [
+        refreshButton({ stale, onClick: refreshMarket }),
+        toggle('Pricing mode', [['structure', 'Structure'], ['leg', 'Leg']], priceMode, id => { priceMode = id; render(); }),
+        toggle('Presentation', [['condensed', 'Condensed'], ['expanded', 'Expanded']], viewMode, id => { viewMode = id; render(); }),
+        h('a', { class: 'btn', href: 'index.html' }, 'Structure editor')
+    ];
+    const id = h('span', null, structure.id, ' · ', allLegs().length, allLegs().length === 1 ? ' leg' : ' legs');
+    fill($('#head'), pageHead({ title: structure.name, id, meta, actions }));
+    renderActions();
+}
 
-    document.querySelectorAll('#price-mode button').forEach(btn => {
-        btn.classList.toggle('on', btn.dataset.pmode === priceMode);
-    });
-    document.querySelectorAll('#view-mode button').forEach(btn => {
-        btn.classList.toggle('on', btn.dataset.view === viewMode);
-    });
+/* The price of a structure is a change to its working copy. A single priced trade can be booked. */
+function renderActions() {
+    const book = bookLink();
+    fill($('#price-actions'),
+        h('button', { class: 'btn ghost', onclick: openTicket }, 'Price a new trade'),
+        book ? h('a', { class: 'btn', href: book }, 'Book a trade') : null,
+        h('button', { class: 'btn primary', onclick: usePrice, title: 'Stage this price as the initial NPV of the structure' }, 'Use this price'));
+}
+
+/* A priced ticket carries its type and terms to Book a trade in the address. */
+function bookLink() {
+    const legs = allLegs();
+    if (legs.length !== 1) return '';
+    const leg = legs[0];
+    const type = TRADE_TYPES.find(t => t.code === leg.tradeTypeCode && t.instrument) || TRADE_TYPES.find(t => t.product === leg.productType && t.instrument);
+    if (!type) return '';
+    const f = leg.fields;
+    const terms = type.instrument === 'fx_vanilla_option_instrument'
+        ? { option_type: f.optionType, bought_currency: f.boughtCurrency, bought_amount: f.boughtAmount, sold_currency: f.soldCurrency, sold_amount: f.soldAmount, strike: f.strike, expiry_date: f.expiry }
+        : {};
+    const pairs = Object.entries(terms).filter(([, v]) => v).map(([k, v]) => k + ':' + v).join(',');
+    return '../book-a-trade/?type=' + type.code + (pairs ? '&terms=' + encodeURIComponent(pairs) : '');
 }
 
 function renderMarket() {
@@ -131,6 +134,7 @@ function renderMarket() {
         </tr>`);
     });
     document.getElementById('market-rows').innerHTML = rows.join('');
+    document.getElementById('market-note').textContent = market.snapshot;
 }
 
 function renderTweaks() {
@@ -200,12 +204,6 @@ function renderValuation() {
             <td class="num">${money(npv)}</td>
             <td class="num">${money(allLegs().reduce((s, l) => s + Number(l.fields.notional || 0), 0))}</td>
         </tr>`);
-
-        if (priceMode === 'leg') {
-            rows.push(`<tr><td colspan="3" class="legend">
-                Leg mode prices each leg on its own. Switch to the expanded view to see them.
-            </td></tr>`);
-        }
     } else {
         rows.push(`<tr>
             <td><strong>${esc(structure.name)}</strong></td>
@@ -226,74 +224,63 @@ function renderValuation() {
     }
 
     document.getElementById('price-rows').innerHTML = rows.join('');
-    document.getElementById('mode-note').textContent = priceMode === 'structure'
-        ? 'Structure mode: one model for the parts that interact, one price for the deal.'
-        : 'Leg mode: what each piece is worth, side by side. This is what the trader hedges against.';
-
-    document.getElementById('valuation-note').textContent =
-        `As of ${new Date().toISOString().slice(0, 19).replace('T', ' ')}Z · ${market.snapshot}`;
+    document.getElementById('valuation-note').textContent = market.snapshot;
 
     lastNpv = npv;
 }
 
-/* --- Ticking ----------------------------------------------------------- */
+/* --- Market data -------------------------------------------------------- */
 
-let ticker = null;
-
-function startTicking() {
-    if (ticker) return;
-    ticker = setInterval(() => {
-        Object.keys(market.spots).forEach(pair => {
-            const drift = (Math.random() - 0.5) * 0.0016;
-            market.spots[pair] = Math.max(0.0001, market.spots[pair] * (1 + drift));
-        });
-        const dot = document.getElementById('tick-dot');
-        dot.classList.remove('tick');
-        void dot.offsetWidth;
-        dot.classList.add('tick');
-        /* A tick must not rebuild the tweak sliders: that would end a drag
-         * in progress every 1.2 seconds. */
-        renderMarket();
-        renderValuation();
-    }, 1200);
+function snapshotId() {
+    return `MDS-${iso(LOADED).slice(0, 10)}-${iso(LOADED).slice(11, 16).replace(':', '')}`;
 }
 
-function stopTicking() {
-    clearInterval(ticker);
-    ticker = null;
-    document.getElementById('tick-dot').classList.add('paused');
-    document.getElementById('tick-text').textContent = 'Market data paused';
-    document.getElementById('tick-toggle').textContent = 'Resume';
-}
-
-function resumeTicking() {
-    document.getElementById('tick-dot').classList.remove('paused');
-    document.getElementById('tick-text').textContent = 'Market data live';
-    document.getElementById('tick-toggle').textContent = 'Pause';
-    startTicking();
+/* Refresh reads the next snapshot. A newer one is only announced: it turns Refresh gold. */
+function refreshMarket() {
+    Object.keys(market.spots).forEach(pair => {
+        const drift = (Math.random() - 0.5) * 0.0016;
+        market.spots[pair] = Math.max(0.0001, market.spots[pair] * (1 + drift));
+    });
+    LOADED = new Date(NOW.getTime());
+    market.snapshot = snapshotId();
+    stale = false;
+    render();
+    toast('Read the snapshot ' + market.snapshot);
 }
 
 /* --- The pricing ticket ------------------------------------------------ */
 
 /* The pricing screen starts a deal from the least reference data it can
  * price from. Every other field the booking needs is the booker's job, and
- * Book carries this much across to them. */
+ * Book a trade carries this much across. */
+const TICKET = {};
+let ticketDirty = false;
+
 function openTicket() {
     const leg = allLegs()[0] || { fields: {} };
     const f = leg.fields || {};
-    const set = (id, value) => { document.getElementById(id).value = value; };
-
-    set('t-product', leg.productType || 'fx');
-    set('t-longshort', f.longShort || 'Long');
-    set('t-option', f.optionType === 'Put' ? 'Put' : 'Call');
-    set('t-bought-ccy', f.boughtCurrency || 'EUR');
-    set('t-bought-amt', f.boughtAmount || '1000000');
-    set('t-sold-ccy', f.soldCurrency || 'USD');
-    set('t-sold-amt', f.soldAmount || '1090000');
-    set('t-strike', f.strike || '1.09');
-    set('t-expiry', (f.expiry || '2026-03-10').slice(0, 10));
-
-    document.getElementById('ticket-dialog').showModal();
+    Object.assign(TICKET, {
+        product: leg.productType || 'fx', longShort: f.longShort || 'Long', optionType: f.optionType === 'Put' ? 'Put' : 'Call',
+        boughtCurrency: f.boughtCurrency || 'EUR', boughtAmount: f.boughtAmount || '1000000',
+        soldCurrency: f.soldCurrency || 'USD', soldAmount: f.soldAmount || '1090000',
+        strike: f.strike || '1.09', expiry: (f.expiry || '2026-03-10').slice(0, 10)
+    });
+    ticketDirty = false;
+    const mark = key => (v) => { TICKET[key] = v; ticketDirty = true; };
+    const input = (label, key, fd) => field(label, valueInput(fd, TICKET[key], mark(key)));
+    fill($('#ticket-fields'),
+        field('Product type', select(PRODUCT_TYPES.map(p => [p.code, p.name]), TICKET.product, mark('product'))),
+        input('Long or short', 'longShort', { options: ['Long', 'Short'] }),
+        input('Option type', 'optionType', { options: ['Call', 'Put'] }),
+        input('Bought currency', 'boughtCurrency', { type: 'ccy' }),
+        input('Bought amount', 'boughtAmount', {}),
+        input('Sold currency', 'soldCurrency', { type: 'ccy' }),
+        input('Sold amount', 'soldAmount', {}),
+        input('Strike', 'strike', {}),
+        input('Expiry', 'expiry', { type: 'date' }));
+    const d = $('#ticket-dialog');
+    d.querySelectorAll('[data-loaded]').forEach(el => { el.textContent = 'Loaded ' + iso(LOADED); el.title = 'Loaded'; });
+    d.showModal();
 }
 
 function nextComponentId() {
@@ -304,61 +291,46 @@ function nextComponentId() {
 }
 
 function confirmTicket() {
-    const value = id => document.getElementById(id).value.trim();
-    const bought = value('t-bought-ccy').toUpperCase();
-    const sold = value('t-sold-ccy').toUpperCase();
-    const amount = value('t-bought-amt');
-    const expiry = value('t-expiry');
-    const optionType = value('t-option');
+    const bought = TICKET.boughtCurrency;
+    const sold = TICKET.soldCurrency;
+    const amount = String(TICKET.boughtAmount).trim();
+    const expiry = TICKET.expiry;
+    const optionType = TICKET.optionType;
     const label = `${bought}${sold} ${optionType.toLowerCase()} ${expiry}`;
 
     const ticket = {
         id: nextComponentId(),
-        productType: value('t-product'),
-        tradeTypeCode: '',
+        productType: TICKET.product,
+        tradeTypeCode: TICKET.product === 'fx' ? 'FxOption' : '',
         label,
         fields: {
-            longShort: value('t-longshort'), optionType, style: 'European',
+            longShort: TICKET.longShort, optionType, style: 'European',
             settlement: 'Cash', payOffAtExpiry: 'false', expiry,
             boughtCurrency: bought, boughtAmount: amount,
-            soldCurrency: sold, soldAmount: value('t-sold-amt'),
-            strike: value('t-strike'), notional: amount
+            soldCurrency: sold, soldAmount: String(TICKET.soldAmount).trim(),
+            strike: String(TICKET.strike).trim(), notional: amount
         },
         premium: null
     };
 
     /* Pricing is the first act, so there is nothing to amend: the ticket
-     * becomes the whole structure. The booking screen does the rest. */
-    structure = {
-        id: structure.id,
-        name: label,
-        counterparty: structure.counterparty,
-        nettingSet: structure.nettingSet,
-        book: structure.book,
-        portfolio: structure.portfolio,
-        tradeDate: structure.tradeDate,
-        mode: 'package',
-        strategy: null,
-        version: structure.version + 1,
-        authorisation: 'Draft',
-        initialNpv: null,
-        audit: structure.audit.concat([
-            { at: nowIso(), actor: 'marco', text: `Priced from a new ticket: ${label}` }
-        ]),
+     * becomes the whole working copy. Save in the editor writes it. */
+    Object.assign(structure, {
+        name: label, mode: 'package', strategy: null, authorisation: 'Draft', initialNpv: null,
         groups: [{ id: 'G-1', name: 'Priced legs', components: [ticket] }]
-    };
-
-    persist();
+    });
+    stage(structure, `Priced from a new ticket: ${label}`);
+    ticketDirty = false;
     document.getElementById('ticket-dialog').close();
     lastNpv = null;
     render();
 }
 
-/* --- The handoff ------------------------------------------------------- */
+/* --- The price ---------------------------------------------------------- */
 
-/* Book carries the economics across, and stamps the initial NPV with the
- * provenance the booking screen cannot derive. */
-function bookDeal() {
+/* The price is the initial NPV of the structure, with the provenance the editor cannot
+ * derive. It is a change to the working copy, and the editor saves it. */
+function usePrice() {
     const npv = structureNpv();
     structure.initialNpv = {
         amount: String(Math.round(npv * 100) / 100),
@@ -367,15 +339,9 @@ function bookDeal() {
         snapshot: market.snapshot,
         model: modelFor(),
         runId: nextRunId(),
-        source: 'Pricing screen handoff'
+        source: 'Pricing screen'
     };
-    structure.version += 1;
-    structure.audit.push({
-        at: nowIso(),
-        actor: 'marco',
-        text: `Booked from pricing screen (${money(npv)})`
-    });
-    persist();
+    stage(structure, `Initial NPV set to ${money(npv)} from the pricing screen`);
     window.location.href = 'index.html';
 }
 
@@ -394,25 +360,6 @@ function nextRunId() {
 /* --- Wiring ------------------------------------------------------------ */
 
 function wire() {
-    document.getElementById('price-mode').addEventListener('click', event => {
-        const btn = event.target.closest('button[data-pmode]');
-        if (!btn) return;
-        priceMode = btn.dataset.pmode;
-        render();
-    });
-
-    document.getElementById('view-mode').addEventListener('click', event => {
-        const btn = event.target.closest('button[data-view]');
-        if (!btn) return;
-        viewMode = btn.dataset.view;
-        render();
-    });
-
-    document.getElementById('tick-toggle').addEventListener('click', () => {
-        if (ticker) stopTicking();
-        else resumeTicking();
-    });
-
     document.getElementById('reset-tweaks').addEventListener('click', () => {
         Object.assign(market.spots, openingSpots);
         Object.assign(market.vols, openingVols);
@@ -420,33 +367,26 @@ function wire() {
         render();
     });
 
-    document.getElementById('reprice').addEventListener('click', () => {
-        lastNpv = null;
-        render();
-    });
-
-    document.getElementById('new-trade').addEventListener('click', openTicket);
     document.getElementById('ticket-confirm').addEventListener('click', confirmTicket);
 
-    document.querySelectorAll('dialog [data-close]').forEach(btn => {
-        btn.addEventListener('click', () => btn.closest('dialog').close());
-    });
-
-    document.getElementById('book').addEventListener("click", bookDeal);
-}
-
-function fillProductTypes() {
-    document.getElementById('t-product').innerHTML = PRODUCT_TYPES
-        .map(p => `<option value="${esc(p.code)}">${esc(p.name)}</option>`).join('');
+    const dialog = $('#ticket-dialog');
+    const close = guardDialog(dialog, () => ticketDirty);
+    dialog.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
 }
 
 function boot() {
-    structure = load() || openingStructure();
-    market.snapshot = `MDS-${new Date().toISOString().slice(0, 10)}-${new Date().toISOString().slice(11, 16).replace(':', '')}`;
-    fillProductTypes();
+    if (!CAN.structure) {
+        document.querySelector('.app').replaceChildren(pageHead({ title: 'Price a structure' }),
+            needsRole('the pricing screen', 'change structures', STRUCTURE_ROLES));
+        return;
+    }
+    structure = normaliseStructure(loadStructure() || openingStructure());
+    LOADED = new Date(NOW.getTime() - 4 * 60000);
+    market.snapshot = snapshotId();
+    stale = P.get('state') === 'stale';
     wire();
     render();
-    startTicking();
+    if (!stale) setTimeout(() => { stale = true; renderHeader(); }, 8000);
 }
 
 boot();

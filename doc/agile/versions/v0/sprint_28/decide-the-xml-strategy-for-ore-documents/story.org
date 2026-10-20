@@ -32,12 +32,12 @@ the work that follows is broken into tasks.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Nine families are on tables. Calendar adjustments, currency config, pricing engines and credit simulation read and write through the codec. Four families still read through xsdcpp, and the generator expresses every one of their schemas. |
+| Now           | Every ORE document family reads and writes through generated tables. xsdcpp and the generated domain are gone. The portfolio read costs 54 percent fewer instructions than before the codec work, and a trade record is 432 bytes, down from 346,624. |
 | Waiting on    | Nothing.                               |
-| Next          | Curve configuration, stress testing, the run document and portfolio, in that order, then xsdcpp. The generator expresses every one of their schemas, a restriction aside, which none of them uses. |
-| Last touched  | 2026-10-17                               |
+| Next          | Nothing. A fresh profile of the portfolio read and a peak memory measurement follow as their own tasks. |
+| Last touched  | 2026-10-20                               |
 
 * Acceptance
 

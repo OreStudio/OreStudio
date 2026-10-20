@@ -228,6 +228,43 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   current point. Each index costs a write. A measurement with a batch decides
   which of them the hot path needs.
 
+** What the first consumer needs: Hedgr
+
+Hedgr is the new desktop client. Its plan, =docs/plans/market-eventing.md= in the
+Hedgr repository, shows how a real consumer reads the pipeline.
+
+- *Live values come from the party tick stream.* Hedgr subscribes once for each
+  session to =marketdata.v1.ops.market_tick.<tenant>.<party>.>=. This is the subject
+  that the ingest loop publishes to after it stores a row. Hedgr has no
+  subscription to any observation change event. That confirms that the database
+  notification serves no client here.
+- *Hedgr waits for the store without knowing it.* The subject carries a tick only
+  after the ingest has stored it. When the ingest fell behind, the chart showed ticks
+  that were 70 minutes old, and nothing in Hedgr was at fault. The live path of
+  this proposal removes that coupling.
+- *Hedgr measures freshness itself.* It judges the age of a tick from the
+  =observation_time= of the tick, and it draws that age beside the verdict. This is
+  the right measure. It is also the acceptance measure for the pipeline: the age of
+  a tick as the client sees it, at the 99th percentile.
+- *Hedgr already conflates.* It buckets ticks into 1 second, 1 minute and 1 hour
+  levels on the NATS thread, and it passes closed buckets to the frame loop through a
+  fixed ring. A chart needs at most one point for each second. A lane could therefore
+  conflate the live path for such a consumer to one tick for each datum in every
+  100 milliseconds and lose nothing the chart shows. That cuts the fan-out from tens of
+  thousands of ticks each second to a few for each datum. The conflation interval
+  becomes a setting for each class of consumer.
+- *The subject is scoped to a party.* The live publish must still go to one subject
+  for each binding. Its cost is small compared with a commit, because core NATS
+  carries it without an acknowledgement. The cost grows with the number of parties
+  that watch a source.
+- *Hedgr seeds a chart from the store.* On open, on reconnect and on a manual
+  refresh it asks for the newest 2,000 points of a series. A window of recent ticks
+  held in each lane would serve this read from memory. This is one more reason to
+  keep such a window.
+- *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
+  it is full. The freshness rule says to overwrite the oldest. The two rules differ
+  only when the frame loop stalls, but they should agree.
+
 ** How tick systems are built in practice
 
 Tick processing is an old problem, and the industry has settled on a small number of
@@ -395,6 +432,8 @@ a burst of ticks at a chosen rate and times the drain.
   and FX spot ticks fast.
 - Should the CRM bridge read from the conflated live path and not from the store path?
 - Is the second row for each tick worth its cost at scale?
+- Should the ring of Hedgr overwrite its oldest bucket when it is full, to follow the
+  freshness rule?
 - Should each lane keep a window of recent ticks in memory, as the real-time database
   of a kdb+ system does, so that charts and late joiners never read the store?
 - Does any client need to learn that a series changed? If so, the signal belongs on

@@ -26,11 +26,11 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Step 0: prove the write ceiling of the batch writer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1: remove the per-row costs, once step 0 states the ceiling. |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -248,3 +248,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The lag reproduces locally, its cause is found, and the pipeline that removes it is designed
+and reviewed. The first step of that pipeline is built in its own task.
+
+- *Cause.* The ingest handled each tick on one thread. For each binding it paid a commit, a
+  series read, a row trigger that called =NOTIFY=, and a wait for two JetStream
+  acknowledgements. The ingest wrote about 143 rows each second against a demand of about
+  120, so a short slowdown built a backlog that took hours to drain. The =NOTIFY= commit takes a
+  database-wide lock that every database on the server shares, so the ingests of five
+  environments on one server slowed each other.
+- *Reproduction.* The lag appeared in a second environment after a disk load, and a burst of
+  ticks from the injector in =evidence/= reproduces the drain rate on demand.
+- *Design.* =tick_ingest_pipeline.org= proposes lanes, a bounded ring, an age gate,
+  conflation, a recent window, batched writes, two durability tiers and a contract for every
+  asset class. Three reviews are recorded under Notes, and each finding is fixed in the note.
+- *Step 0.* The present observation table stops at about 8,300 rows each second for one
+  connection because of its insert trigger. An append-only table reaches about 187,000 at 162
+  bytes for each row against 1,199.
+- *Step 1.* Built and merged in the task "Remove the per-row costs of the tick ingest". A
+  burst drains about 16 times faster, and the live stream carries no tick older than 5 seconds.
+
+Open, each its own task:
+- The append-only tick table with its reader migration, which lifts the ceiling of the
+  present table.
+- Step 2: the lanes, the ring, the recent window and the live subject with tokens.
+- Step 3: the policy table, the durable tier, the taps, and scale out.
+- A decision on how an existing database drops the old notification trigger.
+- Hedgr: the live tick carries no coordinate, and its ring drops the newest bucket when full.

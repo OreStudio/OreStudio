@@ -77,14 +77,15 @@
         var tw = twins();
         var k = M.kind(S.kind);
         var rows = [
-            ['ACME’s conventions file', 'Carries every ' + k.label.toLowerCase() + ' document of the party', '<span class="num">' + M.docs(S.kind).length + ' documents</span>'],
+            k.party ? ['ACME’s conventions file', 'Carries every ' + k.label.toLowerCase() + ' document of the party', '<span class="num">' + M.docs(S.kind).length + ' documents</span>']
+                : ['The conventions file of every party', 'Carries every ' + k.label.toLowerCase() + ' document of the tenant', '<span class="num">' + M.docs(S.kind).length + ' documents</span>'],
             ['Convention sets', 'Name this document', r.sets.length ? '<span>' + r.sets.map(M.esc).join(', ') + '</span>' : M.dash('')],
             ['Report definitions', 'Bound to those sets', '<span class="num">' + r.reports + '</span>'],
             ['Trades', 'Carry their terms inline', M.dash('')],
             ['Runs', 'Read the document the file carries', '<span class="faint">Not recorded</span>']
         ];
         var h = '<h2>What reads ' + M.esc(d.key) + '</h2><p class="lede">Read this before you delete the document.</p>';
-        if (!k.party) { h += M.notice('warn', '<b>Every party reads this document.</b> It is held once for the tenant.'); }
+        if (!k.party) { h += M.sharedWarn('this document'); }
         if (r.sets.length) {
             h += M.notice('warn', '<b>' + r.sets.length + ' set names this document.</b> After the delete the set names a row that is gone.');
         }

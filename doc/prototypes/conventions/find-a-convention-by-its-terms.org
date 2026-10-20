@@ -28,7 +28,7 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 
 ** The steps
 
-1. *The terms.* A kind select and one control for each term column of the kind. A term left as Any matches every value. A term left as Not stated matches only a document that states nothing for it. The page states how many documents the kind holds and how many distinct term sets they state.
+1. *The terms.* A kind select and one control for each term column of the kind. A term left as Any matches every value. A term left as Not stated matches only a document that states nothing for it. The page states the asset class of the kind, how many documents it holds and how many distinct term sets they state. A shared kind such as the IBOR index carries a warning that every party reads its documents.
 2. *The matches.* The documents that state the terms, with the term columns the person left open beside the key. A notice says how many rows the screen read. A kind with no match says so and offers to add a document. Several keys that state the same terms are noted.
 3. *A match.* The document as a record page: details, the same-terms tab, and the last-changed line. Edit and Delete are drawn for a person who may write, and both lead to the prototype that owns the act.
 

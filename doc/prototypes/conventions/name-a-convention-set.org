@@ -30,7 +30,7 @@ what the screen needs. A toggle in the bar at the foot hides those notes.
 
 1. *The sets.* The list of sets with name, purpose, kinds covered and reports that use each. A system holds few sets, so the list is one page.
 2. *Describe it.* Name, purpose and description. The name is fixed once the set exists, and a name that another set holds is refused under the field.
-3. *The documents.* One row for each of the 26 kinds. A picker opens over the kind's documents, searched by key, with a link to the find prototype for a search by terms. A kind held for the whole tenant is marked.
+3. *The documents.* One row for each of the 26 kinds, in two tabs: Party conventions (22) and Shared conventions (4). The shared tab and the picker for a shared kind carry a warning that every party reads the documents. Inside a tab the kinds sit under their asset class. A picker opens over the kind's documents, searched by key, with a link to the find prototype for a search by terms. The review marks a shared kind.
 4. *Review.* The three fields, the documents named, the reach, and the rule that Market Risk decides.
 5. *The request.* The request waits with its state. The person can withdraw it. A link opens it as a Market Risk approver.
 

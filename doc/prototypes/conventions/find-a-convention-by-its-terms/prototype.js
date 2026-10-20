@@ -69,8 +69,8 @@
         return '<h2>The terms I hold</h2><p class="lede">Set the terms you know. A term left as Any matches every value.</p>' +
             '<div class="field"><span class="lbl">Kind</span>' +
             M.select('kind', KINDS.map(function (x) { return { v: x, t: M.kind(x).label }; }), S.kind, { inline: true }) +
-            '<p class="hint"><b>' + total + ' documents</b> state <b>' + M.termSets(S.kind) + ' distinct term sets</b>. ' +
-            (k.party ? 'They belong to ACME’s party.' : 'They are held once for the tenant, so every party reads them.') + '</p></div>' +
+            '<p class="hint">' + M.esc(M.classOf(k)) + ' · <b>' + total + ' documents</b> state <b>' + M.termSets(S.kind) + ' distinct term sets</b>.</p>' +
+            (k.party ? '' : '<div style="margin-top:8px">' + M.sharedWarn('these documents') + '</div>') + '</div>' +
             '<div class="grid2">' + cols.map(function (c) {
                 var opts = [{ v: '*', t: 'Any' }];
                 if (c.optional) { opts.push({ v: '', t: 'Not stated' }); }

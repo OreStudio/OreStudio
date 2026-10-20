@@ -29,7 +29,8 @@
         withdrawn: false,
         sort: { id: 'name', dir: 1 },
         pg: { page: 0, size: 15 },
-        kpg: { page: 0, size: 15 }
+        kpg: { page: 0, size: 15 },
+        kscope: Q.get('scope') === 'shared' ? 'shared' : 'party'
     };
     (Q.get('pick') || '').split(',').filter(Boolean).forEach(function (p) { var a = p.split(':'); S.picks[a[0]] = a[1]; });
     if (Q.get('gaps') === '0') { document.body.classList.add('nogaps'); }
@@ -78,7 +79,7 @@
     }
 
     function docsStep() {
-        var rows = M.KINDS;
+        var rows = M.scopeKinds(S.kscope);
         var cols = [
             { id: 'kind', h: 'Kind', cell: function (k) { return M.esc(k.label); } },
             { id: 'doc', h: 'Document', cell: function (k) {
@@ -86,15 +87,13 @@
             { id: 'terms', h: 'Terms in words', cell: function (k) {
                 var d = S.picks[k.key] && M.doc(k.key, S.picks[k.key]);
                 return d ? '<span class="dim">' + M.esc(M.words(d)) + '</span>' : M.dash(''); } },
-            { id: 'scope', h: 'Held for', cell: function (k) { return k.party ? 'ACME' : M.badge('class', 'Whole tenant'); } },
             { id: 'act', h: '', cls: 'right', cell: function (k) {
                 return M.btn('pick', S.picks[k.key] ? 'Change' : 'Choose', { cls: 'small', arg: k.key }) +
                     (S.picks[k.key] ? M.btn('unpick', 'Clear', { cls: 'small ghost', arg: k.key }) : ''); } }
         ];
-        var page = rows.slice(S.kpg.page * S.kpg.size, (S.kpg.page + 1) * S.kpg.size);
-        var t = M.table(cols, page, { plain: true });
+        var t = M.kindTable(cols, rows).html;
         return '<h2>Choose a document for each kind</h2><p class="lede">The set covers a kind when it names one document of that kind. <b>' + covered() + ' of 26</b> kinds covered.</p>' +
-            t + M.pager(S.kpg, rows.length) +
+            M.scopeTabs(S.kscope) + (S.kscope === 'shared' ? M.sharedWarn('these conventions') : '') + t +
             M.gap('A set holds no rows today, so it cannot name a document. The set needs one row for each covered kind carrying the key of one document.') +
             '<div class="stepfoot">' + M.btn('goto', 'Back', { cls: 'ghost', arg: 1 }) + '<span class="ml-auto"></span>' + M.btn('toReview', 'Review', { cls: 'primary', disabled: covered() === 0 }) + '</div>';
     }
@@ -106,7 +105,7 @@
             '<dt>Kinds covered</dt><dd><span class="num">' + covered() + ' of 26</span></dd></dl>' +
             '<h3>Documents the set names</h3><table class="rows"><thead><tr><th>Kind</th><th>Document</th><th>Terms in words</th></tr></thead><tbody>' +
             Object.keys(S.picks).map(function (k) {
-                return '<tr><td>' + M.esc(M.kind(k).label) + '</td><td class="key">' + M.esc(S.picks[k]) + '</td><td class="dim">' + M.esc(M.words(M.doc(k, S.picks[k]))) + '</td></tr>';
+                return '<tr><td>' + M.esc(M.kind(k).label) + (M.kind(k).party ? '' : ' ' + M.badge('class', 'Shared')) + '</td><td class="key">' + M.esc(S.picks[k]) + '</td><td class="dim">' + M.esc(M.words(M.doc(k, S.picks[k]))) + '</td></tr>';
             }).join('') + '</tbody></table>';
         h += '<h3>What it reaches</h3>';
         if (tenant.length) { h += M.notice('warn', '<b>' + tenant.length + ' of these documents are held for the whole tenant.</b> Every party of the tenant reads them through this set.'); }
@@ -137,6 +136,7 @@
         var all = M.docs(P.kind).filter(function (d) { return !P.q || d.key.toLowerCase().indexOf(P.q.toLowerCase()) >= 0; });
         var page = all.slice(P.pg.page * P.pg.size, (P.pg.page + 1) * P.pg.size);
         var html = '<h2>Choose a ' + M.esc(k.label.toLowerCase()) + ' document</h2><p class="lede">The set names one document of this kind.</p>' +
+            (k.party ? '' : M.sharedWarn('these documents')) +
             '<div class="listtools"><div class="searchbox">' + M.icon('search') + '<input type="text" placeholder="Search by key" data-input="pq" value="' + M.esc(P.q) + '"></div></div>' +
             (M.modelled(P.kind) ? '<p class="listnote">The search matches the key. To find a document by its terms, <a href="../find-a-convention-by-its-terms/?kind=' + P.kind + '" target="_blank" rel="noopener">find a convention by its terms</a>.</p>' : '') +
             (all.length === 0 ? '<div class="tblstate">No ' + M.esc(k.label.toLowerCase()) + ' documents match the search. ' + M.btn('pclear', 'Clear', { cls: 'small' }) + '</div>' :
@@ -188,7 +188,8 @@
         else if (name === 'toDocs') { S.tried = true; if (Object.keys(problems()).length) { render(); } else { go(2); } }
         else if (name === 'toReview') { go(3); }
         else if (name === 'sort') { S.sort = { id: arg, dir: S.sort.id === arg ? -S.sort.dir : 1 }; render(); }
-        else if (name === 'pg') { M.pageStep(S.step === 2 ? S.kpg : S.pg, arg, S.step === 2 ? M.KINDS.length : SETS.length); render(); }
+        else if (name === 'scope') { S.kscope = arg; render(); }
+        else if (name === 'pg') { M.pageStep(S.pg, arg, SETS.length); render(); }
         else if (name === 'pick') { P = { kind: arg, q: '', pg: { page: 0, size: 15 } }; pickerDialog(); }
         else if (name === 'ppg') { var tot = M.docs(P.kind).filter(function (d) { return !P.q || d.key.toLowerCase().indexOf(P.q.toLowerCase()) >= 0; }).length; M.pageStep(P.pg, arg, tot); pickerDialog(); }
         else if (name === 'pclear') { P.q = ''; pickerDialog(); }

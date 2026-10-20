@@ -302,6 +302,56 @@
     M.KINDS = PARTY.map(function (k) { return { key: k, label: label(k), party: true }; })
         .concat(TENANT.map(function (k) { return { key: k, label: label(k), party: false }; }))
         .sort(function (a, b) { return a.key < b.key ? -1 : (a.key > b.key ? 1 : 0); });
+    /* The asset classes of the product model, and the class each kind serves. */
+    M.CLASSES = ['Interest rates', 'FX', 'Inflation', 'Credit', 'Commodity', 'Bond'];
+    var CLASS_OF = {
+        average_ois: 'Interest rates', bma_basis_swap: 'Interest rates', cms_spread_option: 'Interest rates', deposit: 'Interest rates',
+        fra: 'Interest rates', future: 'Interest rates', ibor_index: 'Interest rates', ois: 'Interest rates', overnight_index: 'Interest rates',
+        swap: 'Interest rates', swap_index: 'Interest rates', tenor: 'Interest rates', tenor_basis_swap: 'Interest rates',
+        tenor_basis_two_swap: 'Interest rates', zero: 'Interest rates',
+        cross_currency_basis: 'FX', cross_currency_fix_float: 'FX', currency_pair: 'FX', fx_option: 'FX',
+        inflation_swap: 'Inflation', zero_inflation_index: 'Inflation',
+        cds: 'Credit',
+        commodity_forward: 'Commodity', commodity_future: 'Commodity', intraday_power_load: 'Commodity',
+        bond_yield: 'Bond'
+    };
+    M.classOf = function (k) { return CLASS_OF[k.key]; };
+    M.scopeKinds = function (scope) { return M.KINDS.filter(function (k) { return k.party === (scope === 'party'); }); };
+
+    /* A table of kinds in one section for each asset class. It returns the
+       markup and the kinds in the order drawn, so a row index names a kind. */
+    M.kindTable = function (cols, kinds, o) {
+        o = o || {};
+        var shown = [];
+        var body = '';
+        M.CLASSES.forEach(function (c) {
+            var inClass = kinds.filter(function (k) { return M.classOf(k) === c; });
+            if (!inClass.length) { return; }
+            var n = inClass.reduce(function (t, k) { return t + M.docs(k.key).length; }, 0);
+            body += '<tr class="grp"><th colspan="' + cols.length + '" scope="rowgroup">' + M.esc(c) + '<span class="dim"> · ' + inClass.length + (inClass.length === 1 ? ' kind' : ' kinds') + ' · ' + n + ' documents</span></th></tr>';
+            inClass.forEach(function (k) {
+                body += '<tr' + (o.pick ? ' class="pick" tabindex="0"' : '') + ' data-row="' + shown.length + '">' +
+                    cols.map(function (c2) { return '<td class="' + (c2.cls || '') + '">' + c2.cell(k) + '</td>'; }).join('') + '</tr>';
+                shown.push(k);
+            });
+        });
+        var head = '<thead><tr>' + cols.map(function (c) {
+            var on = o.sort && o.sort.id === c.id;
+            return '<th class="' + (c.cls || '') + '" aria-sort="' + (on ? (o.sort.dir > 0 ? 'ascending' : 'descending') : 'none') + '">' +
+                (o.sort ? '<button type="button" class="btn ghost small" data-act="sort" data-arg="' + c.id + '">' + M.esc(c.h) + (on ? (o.sort.dir > 0 ? ' ↑' : ' ↓') : '') + '</button>' : M.esc(c.h)) + '</th>';
+        }).join('') + '</tr></thead>';
+        return { shown: shown, html: '<table class="rows grouped">' + head + '<tbody>' + body + '</tbody></table>' };
+    };
+
+    /* The tabs that keep the shared kinds apart from the party's own. */
+    M.scopeTabs = function (scope) {
+        return '<div class="tabs">' + [['party', 'Party conventions'], ['shared', 'Shared conventions']].map(function (t) {
+            return '<button class="' + (scope === t[0] ? 'on' : '') + '" data-act="scope" data-arg="' + t[0] + '">' + t[1] + ' (' + M.scopeKinds(t[0]).length + ')</button>';
+        }).join('') + '</div>';
+    };
+    M.sharedWarn = function (what) {
+        return M.notice('warn', '<b>Every party reads ' + what + '.</b> ' + (what === 'these conventions' ? 'They are' : what === 'these documents' ? 'They are' : 'It is') + ' held once for the tenant, and a change applies to all parties.');
+    };
     M.kind = function (key) { return M.KINDS.filter(function (k) { return k.key === key; })[0]; };
 
     var CAL = ['AED', 'EUR', 'USD', 'GBP', 'JPY', 'CHF', 'SGD', 'HKD'];

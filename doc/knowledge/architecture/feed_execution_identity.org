@@ -152,8 +152,10 @@ leaves the running feeds as they are.
 *** The restore as an operation
 
 The restore is also an operation, =synthetic.v1.ops.restore_feeds=. One call
-makes one pass for the caller's tenant, and for the system feeds when the caller
-is the system tenant. It does not try again. It answers how many feeds it started
+makes one pass in the caller's tenant and party, and for the system feeds when
+the caller is the system tenant. A party that is not a root party shows only its
+own subtree, so the system provision is the caller that this operation serves.
+It does not try again. It answers how many feeds it started
 and which ones failed, with the reason for each. It needs =synthetic::feeds:run=.
 It carries no person's consent, so it creates no grant and no binding.
 

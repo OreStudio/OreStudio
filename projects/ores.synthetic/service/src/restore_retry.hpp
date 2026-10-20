@@ -61,7 +61,7 @@ std::size_t retry_restore(const restore_retry_policy& policy,
     while (remaining > 0 && !stopped() && spent + wait <= policy.budget) {
         sleep(wait);
         spent += wait;
-        remaining = static_cast<std::size_t>(pass());
+        remaining = pass();
         wait = std::min(wait * 2, policy.longest_wait);
     }
     return remaining;

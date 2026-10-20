@@ -143,6 +143,10 @@ describe('problemWithCron', () => {
         expect(problemWithCron('61 * * * *', 'en')).toBe('minutes part must be >= 0 and <= 59');
     });
 
+    it('words an expression with too many parts', () => {
+        expect(problemWithCron('0 0 9 * * ?', 'en')).toContain('has 6 parts');
+    });
+
     it('says nothing of a valid expression', () => {
         expect(problemWithCron('0 8 * * 1-5', 'en')).toBeUndefined();
     });

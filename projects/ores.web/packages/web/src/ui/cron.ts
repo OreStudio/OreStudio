@@ -291,12 +291,17 @@ export function describeCron(expression: string, language: Language): string | u
 /**
  * What the cron library says is wrong with an expression, for the person who
  * typed it. Nothing when the expression is valid, or when the library finds no
- * fault the server would still refuse, such as a sixth field.
+ * fault the server would still refuse. A sixth field is such a fault, so it is
+ * worded here.
  */
 export function problemWithCron(expression: string, language: Language): string | undefined {
     const text = expression.trim();
     if (cronValid(text)) {
         return undefined;
+    }
+    const count = cronParts(text).length;
+    if (count > FIELD_RANGES.length) {
+        return `Expression has ${count} parts. The scheduler needs exactly ${FIELD_RANGES.length}: minute, hour, day of month, month and day of week.`;
     }
     try {
         cronstrue.toString(text, { locale: LOCALE[language], throwExceptionOnParseError: true });

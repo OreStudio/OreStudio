@@ -69,12 +69,12 @@ describe('the schedule field', () => {
     it('refuses what is not an expression, and says what it needs', () => {
         const html = field('0 0 9 * * ?');
         expect(html).toContain('aria-invalid="true"');
-        expect(html).toContain('five parts');
+        expect(html).toContain('needs exactly 5');
     });
 
     it('does not call an empty field wrong; the form asks for it when it must', () => {
         const html = field('');
-        expect(html).not.toContain('five parts');
+        expect(html).not.toContain('needs exactly 5');
         expect(html).toContain('placeholder="No schedule"');
     });
 
@@ -132,7 +132,7 @@ describe('the schedule builder', () => {
         expect(html).toContain('Advanced: the cron expression');
         expect(html).toContain('value="5/15 * * * *"');
         expect(html).toContain('Every 15 minutes, starting at 5 minutes past the hour');
-        expect(html).not.toContain('five parts');
+        expect(html).not.toContain('needs exactly 5');
         expect(liveGroup(html)).toBe('advanced');
     });
 
@@ -141,7 +141,7 @@ describe('the schedule builder', () => {
         expect(liveGroup(html)).toBe('advanced');
         expect(html).toContain('aria-invalid="true"');
         expect(html).toContain('border-down');
-        expect(html).toContain('five parts');
+        expect(html).toContain('needs exactly 5');
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Use this schedule/);
     });
 });

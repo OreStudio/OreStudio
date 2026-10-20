@@ -110,7 +110,8 @@ ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_gener
 
 /**
  * @brief The counterparty that issued the security with the given original
- * term, drawn from the scope's counterparties.
+ * term, drawn from the tenant's counterparties in id order. The draw ignores
+ * the config, so every config of a tenant names the same issuer for a security.
  */
 ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
 issuer_id_for(const domain::trade_generation_scope& scope, std::uint32_t tenor_years);

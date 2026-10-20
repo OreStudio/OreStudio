@@ -86,11 +86,12 @@ master. A trade names it through =bond_instrument.issue_id=. The schedule
 
 Open items, not done here:
 
-- The issuer of a security comes from the counterparties of the config that
-  writes it first. Two configs of one tenant could name different issuers for
-  one security. The issuer needs a tenant-wide source.
-- A run that stops half way through the legs of a new issue leaves an issue
-  that the next run treats as complete.
+- A trade that was booked without its bond instrument stays booked and is
+  taken as present by every later run. The issue is now written before the
+  trade, so a cut-short issue heals. A cut between the booking and the
+  instrument does not.
+- The repair of a cut-short issue is not tested on a database. No run cut an
+  issue short.
 - Pricing is not proven. The ORE validator found no quotes for the as-of date.
 - The writer has no database-backed test.
 - The pool is thin: 32 trades spread over 20 securities, so most securities
@@ -134,6 +135,12 @@ Review found that the first version named a security by anchor and term only.
 The first config to write it then fixed its currency and curve, and 7 of the 9
 securities were held by books in other currencies. A security is now named by
 its currency, the anchor and its term.
+
+A second review round fixed two findings. The issuer of a security is now drawn
+from all counterparties of the tenant, in id order, so no config decides it. The
+writer now writes the issue before it books the trade. It reads the schedule of
+the leg, which is the last row written, to tell a whole issue from a cut-short
+one, and it writes a cut-short issue again.
 
 Result on a provisioned database: 20 issues with maturities from 2027 to 2036.
 Every issue has the currency of each book that holds it. They hold 32 trades in

@@ -309,9 +309,11 @@ std::string security_id_for(const domain::trade_generation_scope& scope,
 
 boost::uuids::uuid issuer_id_for(const domain::trade_generation_scope& scope,
                                  std::uint32_t tenor_years) {
-    if (scope.counterparty_ids.empty())
-        throw trade_population_error("An issuer needs the scope's counterparties.");
-    return scope.counterparty_ids[tenor_years % scope.counterparty_ids.size()];
+    if (scope.issuer_ids.empty())
+        throw trade_population_error("An issuer needs the tenant's counterparties.");
+    auto issuers = scope.issuer_ids;
+    std::ranges::sort(issuers);
+    return issuers[tenor_years % issuers.size()];
 }
 
 }

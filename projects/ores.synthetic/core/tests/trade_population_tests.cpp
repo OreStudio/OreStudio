@@ -69,6 +69,7 @@ domain::trade_generation_scope bond_scope() {
     scope.seed = 7;
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
+    scope.issuer_ids = {bank, second_bank};
     scope.trader_usernames = {"trader.one"};
     scope.currency_code = "EUR";
     return scope;
@@ -197,6 +198,10 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
     no_counterparty.counterparty_ids.clear();
     CHECK_THROWS_AS(plan_population(no_counterparty), trade_population_error);
 
+    auto no_issuer = bond_scope();
+    no_issuer.issuer_ids.clear();
+    CHECK_THROWS_AS(plan_population(no_issuer), trade_population_error);
+
     auto no_trader = bond_scope();
     no_trader.trader_usernames.clear();
     CHECK_THROWS_AS(plan_population(no_trader), trade_population_error);
@@ -317,4 +322,21 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
                 versions_after_first.at(first.outcomes[i].trade_id));
     }
     REQUIRE(writer.versions == versions_after_first);
+}
+
+TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes", tags) {
+    const auto wide = bond_scope();
+    auto narrow = bond_scope();
+    narrow.counterparty_ids = {second_bank};
+    std::ranges::reverse(narrow.issuer_ids);
+
+    std::map<std::string, boost::uuids::uuid> issuer_of;
+    for (const auto& slot : plan_population(wide).slots)
+        issuer_of.emplace(slot.security_id, slot.issuer_id);
+
+    for (const auto& slot : plan_population(narrow).slots) {
+        const auto found = issuer_of.find(slot.security_id);
+        if (found != issuer_of.end())
+            REQUIRE(slot.issuer_id == found->second);
+    }
 }

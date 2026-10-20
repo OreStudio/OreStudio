@@ -262,15 +262,15 @@ function historyTab(t) {
 
 /* ---------- Edit: the kind of change comes first ---------- */
 function allowedActivities(c) {
-    if (c.id === 'instrument' || c.digestGap || c.economic) return ['amendment_economic', 'misbooking_correction', 'amendment_reference', 'null_amend'];
-    return ['amendment_reference', 'misbooking_correction', 'null_amend'];
+    if (c.id === 'instrument' || c.digestGap || c.economic) return ['amendment', 'rebook', 'correction', 'null_amend'];
+    return ['correction', 'rebook', 'null_amend'];
 }
 function openAmend(t, c) {
     const loadedAt = LOADED;
     const rowsMode = !c.fields;
     const cur = rowsMode ? c.rows.map(r => r.map(plain)) : c.fields.map(fd => fd.value);
     let draft = JSON.parse(JSON.stringify(cur));
-    let act = allowedActivities(c)[0], reason = 'trade.client_request', note = '';
+    let act = allowedActivities(c)[0], reason = 'system.update', note = '';
     const body = h('div', { style: 'display:grid;gap:.8rem' });
     const saveBtn = h('button', { class: 'btn primary' }, 'Save');
     const changedFields = () => rowsMode ? (JSON.stringify(draft) !== JSON.stringify(cur) ? [['rows', '', 'changed']] : [])
@@ -279,9 +279,9 @@ function openAmend(t, c) {
         const a = activityType(act), diff = changedFields();
         const econChange = diff.some(([fd]) => fd.economic || (rowsMode && c.economic)) && a.real;
         const folded = econChange && !c.digestGap;
-        const allowed = fd => !fd.fixed && (act === 'null_amend' ? false : act === 'misbooking_correction' ? true : a.economic ? !!fd.economic : !fd.economic);
-        const rowsOff = act === 'null_amend' || (!a.economic && c.economic && act !== 'misbooking_correction');
-        const reasons = REASON_CODES.filter(r => diff.length ? r[0] !== 'trade.no_change' : r[0] === 'trade.no_change');
+        const allowed = fd => !fd.fixed && (act === 'null_amend' ? false : act === 'rebook' ? true : a.economic ? !!fd.economic : !fd.economic);
+        const rowsOff = act === 'null_amend' || (!a.economic && c.economic && act !== 'rebook');
+        const reasons = (diff.length ? reasonsFor('amend').filter(r => r[0] !== 'common.non_material_update') : reasonsFor('amend').filter(r => r[0] === 'common.non_material_update'));
         if (!reasons.find(r => r[0] === reason)) reason = reasons[0][0];
         const inputFor = (fd, i) => valueInput(fd, draft[i], (v, redraw) => { draft[i] = v; redraw ? draw() : draw2(); }, !allowed(fd));
         fill(body,
@@ -346,11 +346,11 @@ function effect(t, a, diff, econChange, folded, c) {
 /* ---------- the lifecycle workflow: a page of its own, with its own address and trail ---------- */
 function lifecycleEvents(t) {
     const hasOptions = /Option|Swaption|CapFloor/.test(t.type);
-    if (t.state === 'draft') return [['execute', 'Execute', 'The agreement is struck. The draft goes live.', 'new_booking'], ['discard', 'Discard', 'The draft comes to nothing.', 'cancellation']];
-    if (t.state === 'expired' || t.state === 'cancelled') return [['reinstate', 'Reinstate', 'The ' + (t.state === 'expired' ? 'expiry' : 'cancellation') + ' was recorded in error.', 'reinstatement']];
+    if (t.state === 'draft') return [['execute', 'Execute', 'The agreement is struck. The draft goes live.', 'execution'], ['discard', 'Discard', 'The draft comes to nothing.', 'cancel']];
+    if (t.state === 'expired' || t.state === 'cancelled') return [['reinstate', 'Reinstate', 'The ' + (t.state === 'expired' ? 'expiry' : 'cancellation') + ' was recorded in error.', t.state === 'expired' ? 'maturity_reversal' : 'cancellation_reversal']];
     return [hasOptions ? ['exercise', 'Exercise', 'The holder exercises the option.', 'exercise'] : null, ['partial', 'Partial termination', 'Part of the notional is closed out.', 'partial_termination'],
-        ['expire', 'Expiry', 'The contract ceases naturally.', 'expiry'], ['cancel', 'Cancel', 'Remove the trade from the book. The record stays.', 'cancellation'],
-        ['novate', 'Novation', 'The counterparty changes. Cancel and rebook, joined by a link.', 'novation'], ['bookmove', 'Book move', 'Move to a book of another legal entity. Cancel and rebook.', 'novation']].filter(Boolean);
+        ['expire', 'Expiry', 'The contract ceases naturally.', 'maturity'], ['cancel', 'Cancel', 'Remove the trade from the book. The record stays.', 'cancel_confirmed'],
+        ['novate', 'Novation', 'The counterparty changes. Cancel and rebook, joined by a link.', 'novation'], ['bookmove', 'Book move', 'Move to a book of another legal entity. Cancel and rebook.', 'transfer']].filter(Boolean);
 }
 function closeWorkflow() {
     go({ workflow: null }, () => { WORKFLOW = ''; renderPage(); });
@@ -359,13 +359,14 @@ function renderLifecycle(t) {
     setCrumbs([['Home', '#'], ['Trades', '../trade-page/'], ['Record a lifecycle event']], 'Record a lifecycle event');
     if (!CAN.event) return put(wrap(h('div', { class: 'notice' }, h('b', null, 'You may not record lifecycle events. '), 'Ask the tenant administrator for a role that does.')));
     const evs = lifecycleEvents(t);
-    let step = 0, ev = evs[0], when_ = '2026-10-11', amount = '', newCp = COUNTERPARTIES.find(c => c.open && c.code !== t.cp).code, newBook = 'EMEA-RATES', reason = 'trade.client_request', note = '', done = null;
+    let step = 0, ev = evs[0], when_ = '2026-10-11', amount = '', newCp = COUNTERPARTIES.find(c => c.open && c.code !== t.cp).code, newBook = 'EMEA-RATES', reason = 'system.update', note = '', done = null;
     const body = h('div');
     const STEPS = ['Event', 'Facts', 'Effect', 'Record'];
     const next = h('button', { class: 'btn primary' }, 'Next');
     const cancel = h('button', { class: 'btn', onclick: closeWorkflow }, 'Cancel');
     function draw() {
         const a = activityType(ev[3]);
+        const rs = reasonsFor(a.category === 'cancellation' ? 'delete' : 'amend'); if (!rs.find(r => r[0] === reason)) reason = rs[0][0];
         const rail = h('div', { class: 'steps' }, STEPS.map((s, i) => h('span', { class: 'step' + (i === step ? ' on' : i < step ? ' done' : '') }, (i + 1) + ' ' + s)));
         let pane;
         if (done) pane = h('div', { class: 'notice ok' }, h('b', null, ev[1] + ' recorded. '), 'Refresh the page to read it. ', done.map(x => x));
@@ -374,7 +375,7 @@ function renderLifecycle(t) {
             ev[0] === 'exercise' || ev[0] === 'partial' ? field(ev[0] === 'exercise' ? 'Exercised amount' : 'Terminated amount', h('input', { class: 'field-input', value: amount, placeholder: money(t.notional, t.ccy), oninput: e => { amount = e.target.value; } })) : null,
             ev[0] === 'novate' ? field('New counterparty', select(COUNTERPARTIES.filter(c => c.open && c.code !== t.cp).map(c => [c.code, c.name]), newCp, v => { newCp = v; })) : null,
             ev[0] === 'bookmove' ? field('Destination book', select(BOOKS.filter(b => !b.virtual && b.code !== t.book).map(b => [b.code, b.name]), newBook, v => { newBook = v; })) : null),
-            h('div', { class: 'grid2' }, field('Reason', select(REASON_CODES.filter(r => r[0] !== 'trade.no_change'), reason, v => { reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { note = e.target.value; } }, note))));
+            h('div', { class: 'grid2' }, field('Reason', select(reasonsFor(a.category === 'cancellation' ? 'delete' : 'amend').filter(r => r[0] !== 'common.non_material_update'), reason, v => { reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { note = e.target.value; } }, note))));
         else if (step === 2) pane = h('div', { class: 'notice acc' }, h('b', null, 'What this will do'),
             h('div', null, 'Activity ' + a.label + ' (' + a.category.replace('_', ' ') + ').'),
             ['novate', 'bookmove'].includes(ev[0]) ? [h('div', null, 'Cancels ' + t.code + '.'), h('div', null, 'Books a new trade with a fresh id ' + (ev[0] === 'novate' ? 'against ' + cpty(newCp).name : 'in ' + book(newBook).name) + '.'), h('div', null, 'Joins the two with a ' + (ev[0] === 'novate' ? 'Novation' : 'Book move') + ' link. One transaction.')]

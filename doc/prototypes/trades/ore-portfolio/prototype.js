@@ -4,8 +4,26 @@
 
 const MODE = P.get('mode') === 'export' ? 'export' : 'import';
 const FAIL = P.get('fail') || '';
-const REASONS = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
-const PORTFOLIOS = ['ORE examples', 'Rates and credit', 'FX flow', 'Equity'];
+const REASONS = reasonsFor('new');
+const OFFICIAL_PORTFOLIOS = ['Rates and credit', 'FX flow', 'Equity'];
+const landing = () => I.land === 'official' ? { official: true, name: 'the official portfolio tree', portfolios: OFFICIAL_PORTFOLIOS, books: BOOKS.filter(b => !b.virtual) } : (() => { const s = sandbox(I.land); return { official: false, name: 'the sandbox ' + s.name, portfolios: s.portfolios, books: BOOKS.filter(b => b.sandbox === s.code) }; })();
+function landingFields() {
+    const L = landing();
+    if (!L.portfolios.includes(I.parentExisting)) I.parentExisting = L.portfolios[0];
+    if (!L.books.some(b => b.code === I.book)) I.book = L.books[0] ? L.books[0].code : '';
+    return [
+        field('Where the trades land', select(SANDBOXES.filter(s => s.status === 'open').map(s => [s.code, 'Sandbox: ' + s.name + ' (' + s.visibility + ')']).concat([['official', 'The official portfolio tree']]), I.land, v => { I.land = v; renderImport(); }),
+            L.official ? 'Official data changes. Choose this on purpose.' : sandbox(I.land).purpose + '. Nothing enters the official portfolio tree.'),
+        field('What the import creates', select([['folders', 'Portfolios and books from the folders'], ['book', 'Nothing: put every trade in one existing book']], I.target, v => { I.target = v; renderImport(); }),
+            I.target === 'book' ? 'No portfolio or book is created.' : 'The folders become portfolios and books. A folder named Input is not a level.'),
+        I.target === 'book'
+            ? field('Book', select(L.books.map(b => [b.code, b.name]), I.book, v => { I.book = v; }), L.books.length ? 'The books of ' + L.name + '.' : 'There is no book in ' + L.name + '.')
+            : [field('Parent portfolio', select([['new', 'Create a new one'], ['existing', 'Use one of ' + L.name]], I.parentMode, v => { I.parentMode = v; renderImport(); }), 'One portfolio wraps every imported portfolio.'),
+                I.parentMode === 'new'
+                    ? field('Name of the new portfolio', h('input', { class: 'field-input', value: I.parent, oninput: e => { I.parent = e.target.value; } }))
+                    : field('Existing portfolio', select(L.portfolios, I.parentExisting, v => { I.parentExisting = v; }))]
+    ];
+}
 /* A form the person has touched is not thrown away without asking. */
 let touched = false;
 const main = shell({
@@ -50,7 +68,7 @@ const SCAN = {
     '/data/ore/Examples/Example_1': { scanned: 31, ignored: [['Input/ore.xml', 'ORE run configuration']], files: [{ path: 'Input/portfolio.xml', size: '38 KB', rows: [['Trade_0001', 'Swap', 'NWCAP'], ['Trade_0002', 'Swap', 'NWCAP']] }] },
     '/data/ore/Empty': { scanned: 9, ignored: [], files: [] }
 };
-let I = { dir: '/data/ore/Examples', scanned: false, exclude: ['Output'], sel: new Set(), step: 0, imported: null, rolledBack: false, parent: 'ORE examples', reimport: 'add_trades_only', defCp: '', activity: 'new_booking', reason: 'trade.client_request', note: '', po: 0, pl: 15, busy: false, failed: false };
+let I = { dir: '/data/ore/Examples', scanned: false, exclude: ['Output'], sel: new Set(), step: 0, imported: null, rolledBack: false, land: 'ORE-SAMPLES', target: 'folders', parentMode: 'new', parent: 'ORE examples', parentExisting: '', book: '', currencies: 'missing_only', reimport: 'add_trades_only', defCp: '', activity: 'new_booking', reason: 'system.import', note: '', po: 0, pl: 15, busy: false, failed: false };
 const stripInput = p => p.split('/').slice(0, -1).filter(s => s !== 'Input').join(' / ') || '(top)';
 function matches() { return SCAN[I.dir].files.filter(f => !I.exclude.some(x => f.path.split('/').includes(x))); }
 function excludedFiles() { return SCAN[I.dir].files.filter(f => I.exclude.some(x => f.path.split('/').includes(x))); }
@@ -94,10 +112,11 @@ function renderImport() {
         nav = [h('button', { class: 'btn primary', disabled: !I.scanned || !sel.length, title: !I.scanned ? 'Find the portfolio files first.' : !sel.length ? 'Choose at least one file.' : '', onclick: () => { setStep(1); } }, 'Continue with ' + sel.length + ' file' + (sel.length === 1 ? '' : 's'))];
     } else if (I.step === 1) {
         pane = h('section', { class: 'card' }, h('header', null, h('h2', null, 'Choices')), h('div', { class: 'body', style: 'display:grid;gap:.8rem' }, h('div', { class: 'grid2' },
-            field('Parent portfolio', select(PORTFOLIOS, I.parent, v => { I.parent = v; }), 'One portfolio wraps every imported portfolio. The folders become portfolios and books under it. A folder named Input is not a level.'),
+            landingFields(),
+            field('Currencies already held', select([['missing_only', 'Skip them'], ['all', 'Import them again']], I.currencies, v => { I.currencies = v; })),
             field('Portfolios and books that already exist', select([['add_trades_only', 'Add the new trades to them as they are'], ['create_new_versions', 'Save a new version of them, then add the trades']], I.reimport, v => { I.reimport = v; })),
             field('Default counterparty', select([['', 'None: refuse a trade whose counterparty is unknown']].concat(COUNTERPARTIES.filter(c => c.open).map(c => [c.code, c.name])), I.defCp, v => { I.defCp = v; }), 'Used when a trade names a counterparty that matches no alias.'),
-            field('Activity of the first booking', select([['new_booking', 'New booking'], ['draft_capture', 'Draft capture']], I.activity, v => { I.activity = v; })))));
+            field('Activity of the first booking', select([['new_booking', 'new_booking'], ['draft_capture', 'draft_capture']].map(([c]) => [c, activityType(c).label + ' — ' + activityType(c).description]), I.activity, v => { I.activity = v; })))));
         nav = [h('button', { class: 'btn', onclick: () => { setStep(0); } }, 'Back'), h('button', { class: 'btn primary', onclick: () => { setStep(2); } }, 'Preview')];
     } else if (I.step === 2) {
         pane = h('section', { class: 'card' }, h('header', null, h('h2', null, 'Preview'), h('span', { class: 'sp' }), chip(ok.length + ' to import', 'ok'), bad.length ? chip(bad.length + ' refused', 'bad') : null),
@@ -110,7 +129,7 @@ function renderImport() {
         const books = [...new Set(ok.map(r => r.book))];
         pane = h('section', { class: 'card' }, h('header', null, h('h2', null, 'Confirm')), h('div', { class: 'body', style: 'display:grid;gap:.6rem' },
             h('div', { class: 'notice acc' }, h('b', null, ok.length + ' trades from ' + I.sel.size + ' files will be booked.'),
-                h('div', null, 'Under the portfolio ' + I.parent + ', ' + books.length + ' book(s): ' + books.join(', ') + '.'), h('div', null, rows.filter(r => r.netting === 'created').length + ' netting set(s) will be created.'),
+                h('div', null, 'Into ' + landing().name + '. ' + (I.target === 'book' ? 'Every trade goes in the book ' + (book(I.book) ? book(I.book).name : I.book) + '. No portfolio or book is created.' : 'Under ' + (I.parentMode === 'new' ? 'a new portfolio ' + I.parent : 'the portfolio ' + I.parentExisting) + ', ' + books.length + ' book(s) from the folders: ' + books.join(', ') + '.')), landing().official ? h('div', { class: 'notice warn' }, 'These trades enter the official portfolio tree.') : null, h('div', null, rows.filter(r => r.netting === 'created').length + ' netting set(s) will be created.'),
                 bad.length ? h('div', null, bad.length + ' trade(s) will be refused and skipped. The import is partial.') : null),
             h('div', { class: 'grid2' }, field('Reason', select(REASONS, I.reason, v => { I.reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { I.note = e.target.value; } }, I.note))),
             h('div', { class: 'mono small' }, 'ore.v1.ops.ore_import_execute  (the files chosen go in import_choices_json; change intent: reason, commentary)')));
@@ -134,14 +153,19 @@ function execute() {
     I.busy = true; renderImport();
     setTimeout(() => { I.busy = false; if (FAIL === 'import') { I.failed = true; renderImport(); } else writeImport(); }, 400);
 }
+function bookFor(r, i) {
+    if (I.target === 'book') return I.book;
+    const L = landing();
+    return L.books.length ? L.books[i % L.books.length].code : 'EMEA-RATES';
+}
 function writeImport() {
     const ok = plan().filter(r => r.status === 'ok');
-    const made = ok.map((r, i) => ({ id: tradeId(200 + i), code: 'ACME-1004' + String(i).padStart(2, '0'), type: r.type, product: r.tt.product, table: r.tt.instrument, cp: r.known.code, book: 'EMEA-RATES', state: I.activity === 'draft_capture' ? 'draft' : 'live', auth: I.activity === 'draft_capture' ? null : false, date: '2026-10-11', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, nature: 'actual', channel: 'stp', scope: 'external', structure: null, updated: '2026-10-11T16:41:00+01:00' }));
+    const made = ok.map((r, i) => ({ id: tradeId(200 + i), code: 'ACME-1004' + String(i).padStart(2, '0'), type: r.type, product: r.tt.product, table: r.tt.instrument, cp: r.known.code, book: bookFor(r, i), state: I.activity === 'draft_capture' ? 'draft' : 'live', auth: I.activity === 'draft_capture' ? null : false, date: '2026-10-11', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, nature: 'actual', channel: 'stp', scope: 'external', structure: null, updated: '2026-10-11T16:41:00+01:00' }));
     store('booked', (store('booked') || []).concat(made));
     I.imported = made; setStep(4);
 }
 function rollback() {
-    let reason = 'trade.correction', note = '';
+    let reason = 'common.rectification', note = '';
     const d = openDialog({ title: 'Roll back this import', loadedAt: LOADED,
         body: h('div', { style: 'display:grid;gap:.8rem' }, h('div', { class: 'notice warn' }, I.imported.length + ' trades and the portfolios, books and netting sets the import created are removed.'),
             h('div', { class: 'grid2' }, field('Reason', select(REASONS, reason, v => { reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { note = e.target.value; } })))),

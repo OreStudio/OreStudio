@@ -108,8 +108,16 @@ const BOOKS = [
     { code: 'EMEA-FX', name: 'EMEA FX', purpose: 'Trading' },
     { code: 'EMEA-CREDIT', name: 'EMEA Credit', purpose: 'Trading' },
     { code: 'EMEA-EQ', name: 'EMEA Equity', purpose: 'Trading' },
-    { code: 'VIRT-DRAFT', name: 'Virtual draft book', purpose: 'Virtual', virtual: true }
+    { code: 'VIRT-DRAFT', name: 'Virtual draft book', purpose: 'Virtual', virtual: true, sandbox: 'RATES-WHATIF' },
+    { code: 'ORE-EX-SWAPS', name: 'ORE examples: swaps', purpose: 'Virtual', virtual: true, sandbox: 'ORE-SAMPLES' },
+    { code: 'ORE-EX-FX', name: 'ORE examples: FX', purpose: 'Virtual', virtual: true, sandbox: 'ORE-SAMPLES' }
 ];
+/* A sandbox is a space where actions have no effect outside it. Its books are virtual books and its portfolios carry its id. */
+const SANDBOXES = [
+    { code: 'ORE-SAMPLES', name: 'ORE samples', purpose: 'The sample portfolios of the ORE distribution', visibility: 'shared', status: 'open', owner: 'ada.lovelace', review: '2027-01-31', portfolios: ['ORE examples'] },
+    { code: 'RATES-WHATIF', name: 'Rates what-ifs', purpose: 'Try a restructure of the rates book without touching official data', visibility: 'private', status: 'open', owner: 'ada.lovelace', review: '2026-12-15', portfolios: ['What-if rates'] }
+];
+const sandbox = code => SANDBOXES.find(s => s.code === code);
 const COUNTERPARTIES = [
     { code: 'NWCAP', name: 'Northwind Capital Ltd', open: true },
     { code: 'MRDN', name: 'Meridian Bank AG', open: true },
@@ -130,26 +138,67 @@ const PRODUCTS = ['swap', 'fx', 'credit', 'bond', 'equity', 'composite'];
 
 /* The four axes an activity type sits on. Codes marked * are in the model's
  * documentation; the rest are illustrative. */
+/* The activity types the trading tables seed. The label is the code in words. */
 const ACTIVITY_TYPES = [
-    { code: 'new_booking', label: 'New booking', category: 'new_activity', economic: true, confirmable: true, real: true },
-    { code: 'draft_capture', label: 'Draft capture', category: 'new_activity', economic: false, confirmable: false, real: true },
-    { code: 'amendment_economic', label: 'Amendment: economic terms', category: 'lifecycle_event', economic: true, confirmable: true, real: true },
-    { code: 'amendment_reference', label: 'Amendment: reference details', category: 'lifecycle_event', economic: false, confirmable: false, real: true },
-    { code: 'null_amend', label: 'No change in substance', category: 'lifecycle_event', economic: false, confirmable: false, real: false },
-    { code: 'misbooking_correction', label: 'Correction of a misbooking', category: 'misbooking', economic: true, confirmable: true, real: true },
-    { code: 'exercise', label: 'Exercise', category: 'lifecycle_event', economic: true, confirmable: true, real: true },
-    { code: 'partial_termination', label: 'Partial termination', category: 'lifecycle_event', economic: true, confirmable: true, real: true },
-    { code: 'expiry', label: 'Expiry', category: 'lifecycle_event', economic: false, confirmable: false, real: true },
-    { code: 'novation', label: 'Novation', category: 'lifecycle_event', economic: true, confirmable: true, real: true },
-    { code: 'cancellation', label: 'Cancellation', category: 'cancellation', economic: true, confirmable: true, real: true },
-    { code: 'reinstatement', label: 'Reinstatement', category: 'cancellation', economic: true, confirmable: true, real: true },
-    { code: 'confirmation', label: 'Counterparty confirmation', category: 'lifecycle_event', economic: false, confirmable: false, real: false }
+    { code: 'new_booking', label: 'New booking', category: 'new_activity', economic: true, confirmable: true, real: true, priority: 9, description: 'Initial booking of a new trade.' },
+    { code: 'new_internal_transfer', label: 'New internal transfer', category: 'new_activity', economic: true, confirmable: false, real: true, priority: 9, description: 'Internal transfer creating a new trade record.' },
+    { code: 'draft_capture', label: 'Draft capture', category: 'new_activity', economic: false, confirmable: false, real: true, priority: 9, description: 'Capture of a trade the desk has not yet executed. The trade starts in draft and carries no market risk until it is executed.' },
+    { code: 'execution', label: 'Execution', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Execution of a captured draft. The trade becomes live and starts to carry market risk.' },
+    { code: 'amendment', label: 'Amendment', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Change to trade economics or contractual terms.' },
+    { code: 'null_amend', label: 'Null amend', category: 'lifecycle_event', economic: false, confirmable: false, real: false, priority: 9, description: 'Amendment whose entered values equal the values held. Recorded for the audit trail; it versions nothing and raises no confirmation.' },
+    { code: 'confirmation', label: 'Confirmation', category: 'lifecycle_event', economic: false, confirmable: false, real: true, priority: 9, description: 'Trade confirmed by both counterparties. Confirmation is its own machine: this moves the confirmation status, not the lifecycle.' },
+    { code: 'novation', label: 'Novation', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Transfer of a trade to a new counterparty.' },
+    { code: 'partial_termination', label: 'Partial termination', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 4, description: 'Reduction of notional on a live trade.' },
+    { code: 'full_termination', label: 'Full termination', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 4, description: 'Full early termination of a live trade.' },
+    { code: 'maturity', label: 'Maturity', category: 'lifecycle_event', economic: true, confirmable: false, real: true, priority: 6, description: 'Trade has reached its contractual maturity date.' },
+    { code: 'exercise', label: 'Exercise', category: 'lifecycle_event', economic: true, confirmable: false, real: true, priority: 6, description: 'Option exercise event.' },
+    { code: 'assignment', label: 'Assignment', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Assignment of trade rights to another party.' },
+    { code: 'increase', label: 'Increase', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Increase of notional on a live trade.' },
+    { code: 'decrease', label: 'Decrease', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 4, description: 'Decrease of notional on a live trade (partial unwind).' },
+    { code: 'roll', label: 'Roll', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Extension of maturity date (roll or extension).' },
+    { code: 'compression', label: 'Compression', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 4, description: 'Portfolio compression: partial termination of offsetting trades.' },
+    { code: 'clearing', label: 'Clearing', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 9, description: 'Trade submitted for central clearing.' },
+    { code: 'netting', label: 'Netting', category: 'lifecycle_event', economic: true, confirmable: true, real: true, priority: 4, description: 'Netting of offsetting positions.' },
+    { code: 'rate_reset', label: 'Rate reset', category: 'valuation_change', economic: true, confirmable: false, real: true, priority: 7, description: 'Floating rate fixing or reset event.' },
+    { code: 'fx_reset', label: 'Fx reset', category: 'valuation_change', economic: true, confirmable: false, real: true, priority: 7, description: 'FX rate reset for cross-currency trades.' },
+    { code: 'accrual', label: 'Accrual', category: 'valuation_change', economic: false, confirmable: false, real: true, priority: 9, description: 'Accrual period end-of-day valuation update.' },
+    { code: 'cashflow', label: 'Cashflow', category: 'valuation_change', economic: false, confirmable: false, real: true, priority: 9, description: 'Scheduled cashflow payment event.' },
+    { code: 'correction', label: 'Correction', category: 'misbooking', economic: false, confirmable: false, real: true, priority: 8, description: 'Correction of a data entry error; no economic change.' },
+    { code: 'rebook', label: 'Rebook', category: 'misbooking', economic: true, confirmable: true, real: true, priority: 8, description: 'Cancellation and re-booking of a misbooking.' },
+    { code: 'maturity_reversal', label: 'Maturity reversal', category: 'misbooking', economic: true, confirmable: false, real: true, priority: 6, description: 'Reversal of a maturity applied in error. The trade returns to live.' },
+    { code: 'cancellation_reversal', label: 'Cancellation reversal', category: 'misbooking', economic: true, confirmable: false, real: true, priority: 9, description: 'Reversal of a cancellation applied in error. The trade returns to live.' },
+    { code: 'transfer', label: 'Transfer', category: 'misbooking', economic: false, confirmable: false, real: true, priority: 1, description: 'Transfer of a trade between books within the firm.' },
+    { code: 'split', label: 'Split', category: 'misbooking', economic: true, confirmable: true, real: true, priority: 9, description: 'Split of a trade into two or more trades.' },
+    { code: 'merge', label: 'Merge', category: 'misbooking', economic: true, confirmable: true, real: true, priority: 9, description: 'Merge of two or more trades into one.' },
+    { code: 'cancel', label: 'Cancel', category: 'cancellation', economic: true, confirmable: false, real: true, priority: 9, description: 'Cancellation of a new trade before confirmation.' },
+    { code: 'cancel_confirmed', label: 'Cancel confirmed', category: 'cancellation', economic: true, confirmable: false, real: true, priority: 9, description: 'Cancellation of a live (confirmed) trade.' },
+    { code: 'void', label: 'Void', category: 'cancellation', economic: true, confirmable: false, real: true, priority: 9, description: 'Void of a trade that should never have been booked.' }
 ];
 const activityType = code => ACTIVITY_TYPES.find(a => a.code === code);
+/* The change reasons the data quality tables seed, as [code, description, for new, for amend, for delete]. */
 const REASON_CODES = [
-    ['trade.client_request', 'Client request'], ['trade.correction', 'Correction of an error'],
-    ['trade.restructure', 'Restructure'], ['trade.upsize', 'Upsize'], ['trade.no_change', 'No change in substance']
+    ['system.new_record', 'New record created during normal operations', true, false, false],
+    ['system.update', 'Existing record changed during normal operations', false, true, false],
+    ['system.import', 'Data imported via CLI import command', true, true, false],
+    ['common.non_material_update', 'Non-material update (Touch)', false, true, false],
+    ['common.rectification', 'User/Booking Error', false, true, true],
+    ['common.duplicate', 'Duplicate Record', false, false, true],
+    ['common.stale_data', 'Data not updated within required liquidity horizon', false, true, true],
+    ['common.outlier_correction', 'Manual override after plausibility check failure', false, true, true],
+    ['common.feed_failure', 'Upstream vendor/API data issue', false, true, true],
+    ['common.mapping_error', 'Incorrect ID translation (e.g., ISIN to FIGI)', false, true, true],
+    ['common.judgmental_override', 'Expert judgment when market prices unavailable', false, true, true],
+    ['common.regulatory', 'Mandatory compliance adjustment', false, true, true],
+    ['common.other', 'Exceptional (requires audit note)', false, true, true],
+    ['trade.fat_finger', 'Erroneous execution (wrong quantity/price)', false, true, true],
+    ['trade.system_malfunction', 'Technical glitch or algorithm issue', false, true, true],
+    ['trade.corporate_action', 'Stock split, dividend, or merger adjustment', false, true, true],
+    ['trade.allocation_swap', 'House to client sub-account reallocation', false, true, true],
+    ['trade.re_booking', 'Wrong legal entity correction', false, true, true],
+    ['trade.other', 'Exceptional (requires audit note)', false, true, true]
 ];
+/* The reasons that apply to a new record, an amendment or a deletion, as [code, description]. */
+const reasonsFor = kind => REASON_CODES.filter(r => r[{ new: 2, amend: 3, delete: 4 }[kind]]).map(r => [r[0], r[1]]);
 
 /* ---------- the trades ---------- */
 /* Seven trades are written out by hand because the journeys walk through them.
@@ -297,11 +346,11 @@ function otherCards(t) {
     return {
         identifiers: {
             id: 'identifiers', title: 'Identifiers', table: 'trade_identifier', version: 1, child: true,
-            columns: ['Scheme', 'Value'], rows: [['Firm trade id', t.code], ['ORE trade id', 'Trade_' + t.code.slice(-4)], ['Venue reference', t.channel === 'manual' ? '' : 'VEN-' + t.code.slice(-5)]].filter(r => r[1])
+            columns: ['Id type', 'Value'], rows: [['Internal', t.code], ['ORE', 'Trade_' + t.code.slice(-4)], ['UTI', t.channel === 'manual' ? '' : 'UTI-' + t.code.slice(-5)]].filter(r => r[1])
         },
         roles: {
             id: 'roles', title: 'Party roles', table: 'trade_party_role', version: 1, child: true,
-            columns: ['Role', 'Party'], rows: [['Executing trader', person('ada.lovelace')], ['Counterparty contact', ref('counterparty', t.cp, cpty(t.cp).name)]]
+            columns: ['Role', 'Party'], rows: [['CalculationAgent', ref('counterparty', t.cp, cpty(t.cp).name)]]
         },
         portfolios: {
             id: 'portfolios', title: 'Portfolios', table: 'trade_portfolio', version: 1, child: true,
@@ -320,44 +369,44 @@ function historyOf(t) {
     const entries = [];
     const first = t.state === 'draft' ? 'draft_capture' : 'new_booking';
     entries.push({
-        id: 'a1', at: day(t.ver * 6 + 4, 9, 41), kind: first === 'draft_capture' ? 'booked' : 'booked', activity: first, version: 1, ext: 1, actor: 'ada.lovelace',
-        reason: 'trade.client_request', note: first === 'draft_capture' ? 'Recorded from a phone call, awaiting counterparty details' : 'Booked from the confirmation',
+        id: 'a1', at: day(t.ver * 6 + 4, 9, 41), kind: 'booked', activity: first, version: 1, ext: 1, actor: 'ada.lovelace',
+        reason: 'system.new_record', note: first === 'draft_capture' ? 'Recorded from a phone call, awaiting counterparty details' : 'Booked from the confirmation',
         diffs: [['trade_type', '', t.type], ['counterparty', '', cpty(t.cp).name], ['book', '', book(t.book).name], ['notional', '', money(t.notional, t.ccy)]]
     });
     entries.push({
-        id: 'c1', at: day(t.ver * 6 + 4, 9, 42), kind: 'booked', activity: 'draft_capture', record: 'Identifiers', what: 'Identifiers recorded', version: 1, ext: 1, actor: 'ada.lovelace',
-        reason: 'trade.client_request', note: '', diffs: [['firm_trade_id', '', t.code]]
+        id: 'c1', at: day(t.ver * 6 + 4, 9, 42), kind: 'booked', activity: first, record: 'Identifiers', what: 'Identifiers recorded', version: 1, ext: 1, actor: 'ada.lovelace',
+        reason: 'system.new_record', note: '', diffs: [['internal_trade_id', '', t.code]]
     }, {
-        id: 'c2', at: day(t.ver * 6 + 4, 9, 43), kind: 'booked', activity: 'draft_capture', record: 'Party roles', what: 'Party roles recorded', version: 1, ext: 1, actor: 'ada.lovelace',
-        reason: 'trade.client_request', note: '', diffs: [['executing_trader', '', 'ada.lovelace']]
+        id: 'c2', at: day(t.ver * 6 + 4, 9, 43), kind: 'booked', activity: first, record: 'Party roles', what: 'Party roles recorded', version: 1, ext: 1, actor: 'ada.lovelace',
+        reason: 'system.new_record', note: '', diffs: [['calculation_agent', '', cpty(t.cp).name]]
     });
     if (t.ver >= 3) entries.push({
-        id: 'c3', at: day(t.ver * 3 - 0.2, 12, 10), kind: 'amended', activity: 'amendment_reference', record: 'Additional fields', what: 'Additional field added', version: 2, ext: 1, actor: 'ada.lovelace',
-        reason: 'trade.client_request', note: 'EMIR reporting flag', diffs: [['regulatory_reporting', '', 'EMIR']]
+        id: 'c3', at: day(t.ver * 3 - 0.2, 12, 10), kind: 'amended', activity: 'correction', record: 'Additional fields', what: 'Additional field added', version: 2, ext: 1, actor: 'ada.lovelace',
+        reason: 'system.update', note: 'EMIR reporting flag', diffs: [['regulatory_reporting', '', 'EMIR']]
     });
     if (t.ver >= 2) entries.push({
-        id: 'a2', at: day(t.ver * 5, 14, 12), kind: 'amended', activity: 'amendment_reference', version: 2, ext: 1, actor: 'ada.lovelace',
-        reason: 'trade.correction', note: 'Corrected the internal description', diffs: [['description', 'Hedge', 'Hedges the Q3 bond issue']]
+        id: 'a2', at: day(t.ver * 5, 14, 12), kind: 'amended', activity: 'correction', version: 2, ext: 1, actor: 'ada.lovelace',
+        reason: 'common.rectification', note: 'Corrected the internal description', diffs: [['description', 'Hedge', 'Hedges the Q3 bond issue']]
     });
     if (t.ver >= 3) entries.push({
-        id: 'a3', at: day(t.ver * 3, 11, 5), kind: 'amended', activity: 'amendment_economic', version: 3, ext: Math.min(2, t.ext), actor: 'ada.lovelace',
-        reason: 'trade.upsize', note: 'Client asked for a larger notional', diffs: [['notional', money(t.notional * 0.8, t.ccy), money(t.notional, t.ccy)]], economic: true
+        id: 'a3', at: day(t.ver * 3, 11, 5), kind: 'amended', activity: 'amendment', version: 3, ext: Math.min(2, t.ext), actor: 'ada.lovelace',
+        reason: 'system.update', note: 'Client asked for a larger notional', diffs: [['notional', money(t.notional * 0.8, t.ccy), money(t.notional, t.ccy)]], economic: true
     });
     if (t.ver >= 3) entries.push({
         id: 'a3c', at: day(t.ver * 3 - 0.5, 11, 40), kind: 'confirmed', activity: 'confirmation', version: 3, ext: Math.min(2, t.ext), actor: 'ores.trading.service',
-        reason: 'trade.no_change', note: 'Matched by ' + cpty(t.cp).name, diffs: [], noVersion: true
+        reason: 'common.non_material_update', note: 'Matched by ' + cpty(t.cp).name, diffs: [], noVersion: true
     });
     if (t.channel === 'stp') entries.unshift({
         id: 'a0', at: day(t.ver * 6 + 4.1, 9, 5), kind: 'imported', activity: 'new_booking', version: 1, ext: 1, actor: 'ores.ore.service',
-        reason: 'trade.client_request', note: 'Imported from an ORE portfolio file', diffs: [['ore_trade_id', '', 'Trade_' + t.code.slice(-4)]]
+        reason: 'system.import', note: 'Imported from an ORE portfolio file', diffs: [['ore_trade_id', '', 'Trade_' + t.code.slice(-4)]]
     });
     if (t.ver >= 5) entries.push({
-        id: 'a5', at: day(2, 10, 20), kind: 'amended', activity: 'amendment_economic', version: 5, ext: t.ext, actor: 'ada.lovelace',
-        reason: 'trade.restructure', note: 'New fixed rate agreed on the call', diffs: [['fixed_rate', '2.7500 %', '2.8500 %']], economic: true
+        id: 'a5', at: day(2, 10, 20), kind: 'amended', activity: 'amendment', version: 5, ext: t.ext, actor: 'ada.lovelace',
+        reason: 'system.update', note: 'New fixed rate agreed on the call', diffs: [['fixed_rate', '2.7500 %', '2.8500 %']], economic: true
     });
     if (t.state === 'cancelled') entries.push({
         id: 'a9', at: day(1, 9, 12), kind: 'cancelled', activity: 'novation', version: t.ver, ext: t.ext, actor: 'grace.hopper',
-        reason: 'trade.client_request', note: 'Novated to Meridian Bank AG. Rebooked as ACME-100208.', diffs: [['state', 'live', 'cancelled']]
+        reason: 'system.update', note: 'Novated to Meridian Bank AG. Rebooked as ACME-100208.', diffs: [['state', 'live', 'cancelled']]
     });
     return entries;
 }

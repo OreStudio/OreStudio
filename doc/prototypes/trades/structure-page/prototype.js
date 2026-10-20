@@ -13,7 +13,7 @@
 const MODE = P.get('mode') === 'group' ? 'group' : '';
 let TAB = P.get('tab') || 'details';
 const STATE_P = P.get('state') || '';
-const REASONS = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
+const REASONS = reasonsFor('amend');
 // The writes the screen has not read back yet, and the history entries they make.
 const PENDING = [];
 const EXTRA = {};
@@ -24,7 +24,7 @@ const KIND = {
     Dynamic: { whole: true, template: false, desc: 'Roles read from data at run time, as a scripted product does.' },
     Package: { whole: false, template: false, desc: 'A container. Nothing economic binds the legs, so it has no template and any role.' }
 };
-const TEMPLATES = { Strategy: { Straddle: [['leg', 2, 2]], RiskReversal: [['call', 1, 1], ['put', 1, 1]], Butterfly: [['wing', 2, 2], ['body', 1, 1]] }, Typed: { CallableSwap: [['swap', 1, 1], ['call_right', 1, 1]] } };
+const TEMPLATES = { Strategy: { Straddle: [['leg', 2, 2]], RiskReversal: [['long', 1, 1], ['short', 1, 1]], Butterfly: [['body', 1, 1], ['wing', 2, 2]], CalendarSpread: [['near', 1, 1], ['far', 1, 1]] }, Typed: { CallableSwap: [['swap', 1, 1], ['call', 1, 1]] } };
 const noun = k => k === 'Package' ? 'package' : 'structure';
 const Noun = k => noun(k).replace(/^./, c => c.toUpperCase());
 const confirmText = k => KIND[k].whole ? 'Confirmed as one document' : 'Each leg confirms on its own';
@@ -35,9 +35,9 @@ const pricingText = k => KIND[k].whole ? 'Priced as a whole' : 'Priced leg by le
  * parent is the parent_structure_id of the structure table. */
 const DEALS = Object.assign({
     'STR-0010': { kind: 'Dynamic', template: '', cp: 'MRDN', parent: '', members: [['ACME-100208', 'hedge']], created: '2026-08-20T14:00:00+01:00', by: 'ada.lovelace' },
-    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100202', 'call'], ['ACME-100209', 'put']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' },
+    'STR-0007': { kind: 'Strategy', template: 'RiskReversal', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100202', 'long'], ['ACME-100209', 'short']], created: '2026-10-08T09:05:00+01:00', by: 'ada.lovelace' },
     'PKG-0021': { kind: 'Package', template: '', cp: 'MRDN', parent: 'STR-0010', members: [['ACME-100204', 'leg'], ['ACME-100213', 'leg']], created: '2026-08-20T14:05:00+01:00', by: 'ada.lovelace' },
-    'STR-0009': { kind: 'Typed', template: 'CallableSwap', cp: 'CSTL', parent: '', members: [['ACME-100211', 'swap'], ['ACME-100212', 'call_right']], created: '2026-09-02T10:30:00+01:00', by: 'ada.lovelace' },
+    'STR-0009': { kind: 'Typed', template: 'CallableSwap', cp: 'CSTL', parent: '', members: [['ACME-100211', 'swap'], ['ACME-100212', 'call']], created: '2026-09-02T10:30:00+01:00', by: 'ada.lovelace' },
     'PKG-0004': { kind: 'Package', template: '', cp: 'NWCAP', parent: '', members: [['ACME-100201', 'leg'], ['ACME-100210', 'leg']], created: '2026-10-05T11:20:00+01:00', by: 'ada.lovelace' }
 }, store('structures') || {});
 const childrenOf = id => Object.entries(DEALS).filter(([, v]) => v.parent === id);
@@ -178,10 +178,10 @@ function membersCard(s, ms, roleCheck) {
 }
 function historyEntries(s, ms) {
     const N = noun(s.kind);
-    const e = [{ id: 's1', at: s.created, kind: 'booked', activity: 'new_booking', record: 'Structure', version: 1, actor: s.by, reason: 'trade.client_request', note: Noun(s.kind) + ' created with ' + s.members.length + ' legs', diffs: [['kind', '', s.kind], ['counterparty', '', cpty(s.cp).name]] }];
+    const e = [{ id: 's1', at: s.created, kind: 'booked', activity: 'new_booking', record: 'Structure', version: 1, actor: s.by, reason: 'system.new_record', note: Noun(s.kind) + ' created with ' + s.members.length + ' legs', diffs: [['kind', '', s.kind], ['counterparty', '', cpty(s.cp).name]] }];
     const linked = x => (EXTRA[SID] || []).some(z => z.what && z.what.startsWith(x.t.code + ' linked'));
-    ms.filter(m => !linked(m)).forEach((m, i) => e.push({ id: 's' + (i + 2), at: new Date(new Date(s.created).getTime() + (i + 1) * 60000).toISOString().slice(0, 19) + '+01:00', kind: 'event', activity: 'new_booking', record: 'Member', what: m.t.code + ' linked as ' + m.role, version: 1, actor: s.by, reason: 'trade.client_request', note: '', diffs: [], noVersion: true }));
-    ms.forEach((m, i) => e.push({ id: 'l' + i, at: '2026-10-10T1' + i + ':15:00+01:00', kind: 'amended', activity: 'amendment_economic', record: 'Leg ' + m.t.code, version: m.t.ver, ext: m.t.ext, actor: 'ada.lovelace', reason: 'trade.restructure', note: 'Read from the leg ' + m.t.code + '. Not a version of the ' + N + '.', diffs: [['notional', '', money(m.t.notional, m.t.ccy)]], economic: true }));
+    ms.filter(m => !linked(m)).forEach((m, i) => e.push({ id: 's' + (i + 2), at: new Date(new Date(s.created).getTime() + (i + 1) * 60000).toISOString().slice(0, 19) + '+01:00', kind: 'event', activity: 'new_booking', record: 'Member', what: m.t.code + ' linked as ' + m.role, version: 1, actor: s.by, reason: 'system.update', note: '', diffs: [], noVersion: true }));
+    ms.forEach((m, i) => e.push({ id: 'l' + i, at: '2026-10-10T1' + i + ':15:00+01:00', kind: 'amended', activity: 'amendment', record: 'Leg ' + m.t.code, version: m.t.ver, ext: m.t.ext, actor: 'ada.lovelace', reason: 'system.update', note: 'Read from the leg ' + m.t.code + '. Not a version of the ' + N + '.', diffs: [['notional', '', money(m.t.notional, m.t.ccy)]], economic: true }));
     const all = e.concat(EXTRA[SID] || []).sort((a, b) => a.at.localeCompare(b.at));
     all.forEach(x => { x.current = x.id === 's1'; });
     return all;
@@ -195,13 +195,13 @@ function changeFields(s, call, get) {
 function queueChange(s, apply, entry, message) {
     PENDING.push(() => {
         apply();
-        (EXTRA[SID] = EXTRA[SID] || []).push(Object.assign({ id: 'x' + Date.now(), at: iso(NOW), kind: 'amended', activity: 'amendment_reference', record: 'Member', version: 1, actor: ME, noVersion: true }, entry));
+        (EXTRA[SID] = EXTRA[SID] || []).push(Object.assign({ id: 'x' + Date.now(), at: iso(NOW), kind: 'amended', activity: 'correction', record: 'Member', version: 1, actor: ME, noVersion: true }, entry));
     });
     stale = true; renderDeal(); toast(message);
 }
 function unlink(s, m) {
     const N = noun(s.kind), pk = s.kind === 'Package';
-    const st = { reason: 'trade.correction', note: '' };
+    const st = { reason: 'common.rectification', note: '' };
     const d = openDialog({ title: 'Unlink ' + m.t.code, loadedAt: LOADED,
         body: h('div', { style: 'display:grid;gap:.8rem' }, h('div', { class: 'notice' }, 'The trade stays as it is. It is no longer a leg of ' + SID + ', and can be linked to another ' + N + ' without being rewritten.'),
             pk ? h('div', { class: 'notice acc' }, 'A package binds nothing economic, so the other legs are unaffected and keep their own confirmations.')
@@ -214,7 +214,7 @@ function linkDialog(s) {
     const pk = s.kind === 'Package';
     const free = TRADES.filter(t => t.cp === s.cp && !s.members.some(m => m[0] === t.code) && !t.structure && t.state !== 'cancelled').slice(0, 8);
     let pick = free[0] && free[0].code, role = s.template ? kindRule(s)[0][0] : 'leg';
-    const st = { reason: 'trade.client_request', note: '' };
+    const st = { reason: 'system.update', note: '' };
     const d = openDialog({ title: 'Link a trade to ' + SID, loadedAt: LOADED,
         body: h('div', { style: 'display:grid;gap:.8rem' }, free.length ? field('Trade', select(free.map(t => [t.code, t.code + ' · ' + tradeType(t.type).description]), pick, v => { pick = v; }), 'Only trades of ' + PARTY + ' and ' + cpty(s.cp).name + ' that are not a leg of a structure or a package.') : h('div', { class: 'notice' }, 'No trade of this counterparty is free to link.'),
             pk ? null : field('Role', select(kindRule(s) ? kindRule(s).map(r => r[0]) : ['leg'], role, v => { role = v; }), kindRule(s) ? 'The template allows these roles.' : 'Roles are read from data.'),
@@ -226,7 +226,7 @@ function linkDialog(s) {
 /* ---------- grouping ---------- */
 const CHOSEN = (P.get('trades') || '').split(',').filter(Boolean).map(trade).filter(Boolean);
 const GROUP_LEAD = 'Hold several trades together, as one deal or as a package. The kind decides what the customer receives.';
-let G = { step: 0, kind: '', template: '', roles: {}, done: null, reason: 'trade.client_request', note: '' };
+let G = { step: 0, kind: '', template: '', roles: {}, done: null, reason: 'system.update', note: '' };
 function renderGroup() {
     if (!CAN.structure) return put(wrap(pageHead({ title: 'Group trades', lead: GROUP_LEAD }), needsRole('Group trades', 'group trades', ['Trader'])));
     const cps = new Set(CHOSEN.map(t => t.cp)), shared = cps.size === 1;

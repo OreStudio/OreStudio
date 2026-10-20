@@ -26,15 +26,15 @@ const START_TERMS = Object.fromEntries((P.get('terms') || '').split(',').filter(
 const F = {
     type: LIKE ? LIKE.type : START_TYPE,
     cp: LIKE ? LIKE.cp : '', book: LIKE ? LIKE.book : 'EMEA-RATES', date: '2026-10-11', time: '16:40', nature: 'actual', channel: 'manual', scope: 'external',
-    mode: 'live', terms: Object.assign({}, START_TERMS), rows: {}, ids: { firm: 'ACME-100309', ore: '' }, portfolio: 'Rates and credit', trader: ME, reason: 'trade.client_request', note: ''
+    mode: 'live', terms: Object.assign({}, START_TERMS), rows: {}, ids: { firm: 'ACME-100309', ore: '' }, portfolio: 'Rates and credit', trader: ME, reason: 'system.new_record', note: ''
 };
-const REASONS = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
+const REASONS = reasonsFor('new');
 const activityOf = () => (F.mode === 'live' ? 'new_booking' : 'draft_capture');
 /* A form the person has touched is not thrown away without asking. */
 let touched = false;
 function seed() {
     const tt = tradeType(F.type);
-    const base = LIKE || { code: 'new', type: F.type, notional: 10000000, ccy: 'EUR', date: F.date, ver: 1, ext: 1, state: 'draft', product: tt.product, cp: F.cp || 'NWCAP', channel: 'Manual' };
+    const base = LIKE || { code: 'new', type: F.type, notional: 10000000, ccy: 'EUR', date: F.date, ver: 1, ext: 1, state: 'draft', product: tt.product, cp: F.cp || 'NWCAP', channel: 'manual' };
     return Object.assign({}, base, { table: tt.instrument, type: F.type });
 }
 /* The parts of the instrument: its terms, then each child table. */
@@ -106,9 +106,9 @@ function instrumentTab() {
 }
 function identifiersTab() {
     return h('section', { class: 'card' }, h('header', null, h('h2', null, 'Identifiers, roles and portfolio'), h('span', { class: 'sp' }), h('span', { class: 'faint small' }, 'All optional')),
-        h('div', { class: 'body' }, h('div', { class: 'grid2' }, field('Firm trade id', h('input', { class: 'field-input', value: F.ids.firm, oninput: e => { F.ids.firm = e.target.value; } })),
+        h('div', { class: 'body' }, h('div', { class: 'grid2' }, field('Internal trade id', h('input', { class: 'field-input', value: F.ids.firm, oninput: e => { F.ids.firm = e.target.value; } })),
             field('ORE trade id', h('input', { class: 'field-input', value: F.ids.ore, placeholder: 'Trade_100309', oninput: e => { F.ids.ore = e.target.value; } })),
-            field('Executing trader', h('div', null, person(F.trader))), field('Portfolio', select(['Rates and credit', 'FX flow', 'Equity'], F.portfolio, v => { F.portfolio = v; })))));
+            field('Booked by', h('div', null, person(F.trader))), field('Portfolio', select(['Rates and credit', 'FX flow', 'Equity'], F.portfolio, v => { F.portfolio = v; })))));
 }
 function reviewTab() {
     const ps = problems();

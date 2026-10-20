@@ -81,11 +81,11 @@ function mutate(text, redraw) {
 /* The control to change the state of the deal asks for a reason first. */
 function authorise() {
     const next = structure.authorisation === 'Draft' ? 'Authorised' : 'Draft';
-    const state = { reason: 'trade.client_request', note: '' };
+    const state = { reason: 'system.update', note: '' };
     const d = openDialog({
         title: next === 'Authorised' ? 'Authorise this structure' : 'Withdraw the authorisation', loadedAt: LOADED,
         body: [h('p', null, next === 'Authorised' ? 'The structure becomes Authorised. The version does not move.' : 'The structure goes back to Draft. The version does not move.'),
-            changeFields(Object.assign(state, { activity: 'amendment_reference' }), 'PUT ' + structure.id + ' · claims version ' + structure.version)
+            changeFields(Object.assign(state, { activity: 'correction' }), 'PUT ' + structure.id + ' · claims version ' + structure.version)
                 .filter((_, i) => i > 0)],
         buttons: [h('button', { class: 'btn ghost', onclick: () => d.close() }, 'Cancel'),
             h('button', { class: 'btn primary', onclick: () => { setAuthorisation(structure, next, state); d.close(); render(); } }, next === 'Authorised' ? 'Authorise' : 'Withdraw')]
@@ -94,7 +94,7 @@ function authorise() {
 
 /* Save is the Edit pattern: the kind of change, the reason, the commentary, and a claim on the version read. */
 function saveChanges() {
-    const state = { activity: 'amendment_economic', reason: 'trade.client_request', note: '' };
+    const state = { activity: 'amendment', reason: 'system.update', note: '' };
     const d = openDialog({
         title: 'Save the structure', loadedAt: LOADED,
         body: [h('p', null, 'Save writes ' + structure.pending.length + ' change' + (structure.pending.length === 1 ? '' : 's') + ' as version ' + (structure.version + 1) + '. Authorisation does not change.'),

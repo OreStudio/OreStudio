@@ -123,8 +123,8 @@ function guardDialog(dialog, isDirty) {
 
 /* The reason and the commentary of a change, with the claim it makes on the version. */
 function changeFields(state, claim) {
-    const reasons = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
-    const kinds = ['amendment_economic', 'amendment_reference', 'misbooking_correction'];
+    const reasons = reasonsFor('amend');
+    const kinds = ['amendment', 'correction', 'rebook'];
     return [
         field('What kind of change is this?', select(kinds.map(k => [k, activityType(k).label]), state.activity, v => { state.activity = v; })),
         field('Reason', select(reasons.map(r => [r[0], r[1]]), state.reason, v => { state.reason = v; })),

@@ -229,3 +229,28 @@ and all pages load with no console error.
 Known limits: trade ids in the structure editor are mock ids and open nothing;
 reloading with the pricing ticket dialog open loses the typed input; which
 permission shows each trade tab is not yet specified.
+
+** Data model audit, 2026-10-20 (in progress)
+
+The prototypes drew several closed sets from memory. They now read from the seed files.
+
+| Set | Source | Change |
+|-----|--------|--------|
+| Entry channel | trading_entry_channel_types_populate.sql | manual, stp, ecn, allocation |
+| Booking nature | trading_booking_nature_types_populate.sql | actual, test, hypothetical. "Pre-agreement draft" removed (draft is a state) |
+| Counterparty scope | trading_counterparty_scope_types_populate.sql | external, inter_entity, intra_entity |
+| Activity type | trading_activity_types_populate.sql | all 33 codes with category, economic, confirmable, real |
+| Change reason | dq_change_reasons_populate.sql | real codes, filtered by new, amend and delete |
+| Trade identifier type | trading_trade_id_types_populate.sql | Internal, ORE, UTI (USI) |
+| Party role | trading_party_role_types_populate.sql | CalculationAgent; the trader is the actor, not a role |
+| Structure template roles | trading_structure_reference_data_populate.sql | RiskReversal long/short, CallableSwap swap/call, CalendarSpread added |
+| Sandbox | refdata_sandboxes_create.sql, import_choices.hpp | ORE import chooses a sandbox (or the official tree), then creates from folders or uses one existing book |
+
+Amounts show digit separators.
+
+Still open:
+- Trade-entry structure editor uses groups, packages and strategies that are not the structures model (kind, template, members with a role). "Instrument 2" is not found in the prototypes and probably comes from here.
+- Instrument field names per table (rate, fx option, bond, composite) are not compared with the columns yet.
+- Books in the prototypes have a code and a purpose only. The table also holds parent portfolio, functional currency, status, regulatory type, ledger feed, sweepable, rates centre and sandbox.
+- Link types, long/short, option types and exercise types in the instrument forms are not compared yet.
+- A change reason that requires commentary is not enforced by the screens.

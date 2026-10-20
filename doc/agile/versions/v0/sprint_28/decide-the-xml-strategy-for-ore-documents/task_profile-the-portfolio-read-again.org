@@ -125,3 +125,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The file read copied each file one character at a time and cost 11.7 percent of
+the portfolio read test. A seekable stream now reads in one call. The test falls
+from 1,864,312,400 to 1,646,496,411 instructions. Peak heap of the all-examples
+import is 40.5 MB, 14.5 MB above a small import. The trade columns cost 3.5 KB
+per document, not per trade. The affected test binaries pass: platform,
+marketdata core, testing, storage core and ore core.

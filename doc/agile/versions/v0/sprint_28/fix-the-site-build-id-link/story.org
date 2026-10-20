@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: A8668F2D-1E73-4598-B06D-10DDD75C5E45
+:END:
+#+title: Story: Fix the site build id link
+#+description: The site build fails on an uppercase id link to a page that defines its id in lowercase.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-20                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BED95748-A206-437A-BDC9-9C9DCB6A195F][Scaffold story: Fix the site build id link]] | DONE | 2026-10-20 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F549E6BC-0F1E-49A8-925C-03BE91FC8894][Implement Fix the site build id link]] | DONE | | 2026-10-21 | Initial task for: Fix the site build id link |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The site build passes. The create-a-report prototype defines its id in uppercase.

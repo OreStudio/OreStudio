@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4e0f3f61-7c25-44b5-9c3f-2f4b7b2e9a10
+:ID: 4E0F3F61-7C25-44B5-9C3F-2F4B7B2E9A10
 :END:
 #+title: Create a report prototype
 #+description: Creating a report on the standard steps UI: seven fixed steps, the analytics the bound configuration carries read only on step 7, and a final review, on a throwaway page that hands analytic management to its own prototype and states the missing scope write, the absent service check behind the pfe rule, and the four configuration types with no screen.

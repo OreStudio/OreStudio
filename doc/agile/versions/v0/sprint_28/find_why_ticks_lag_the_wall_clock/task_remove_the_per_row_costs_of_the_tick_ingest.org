@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/remove-the-per-row-costs-of-the-tick-ingest
-#+pr:
+#+pr: 3593
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3593][#3593]] | [marketdata,synthetic] Store ticks in batches, drop the notification |
 
 * Review
 

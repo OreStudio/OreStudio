@@ -48,6 +48,8 @@ what a feed owes the pipeline and what the pipeline owes the feed.
    live stream is the signal.
 7. *Recent data without the store.* A chart that opens, and a consumer that joins
    late, get recent values from memory. The store serves older data.
+8. *A consumer receives what it watches.* A consumer selects a class, a series or a
+   datum on the broker. It does not receive every tick of its party and discard most.
 
 ** Why the present path cannot meet them
 
@@ -159,6 +161,29 @@ lane publishes that last tick at the end of the interval even when no newer tick
 arrives, so no value waits longer than the interval. A class with =consistency= of
 =series= publishes the changed quotes of one series together at the end of a cycle.
 
+
+*** The live subject
+
+Today the republish subject ends in one token: the whole canonical URI of the datum,
+percent-encoded. A wildcard can then select a whole party and nothing smaller. The
+Hedgr client subscribes to the whole party and discards the ticks of series that it
+does not watch. Each session decodes every tick of its party. At tens of thousands of
+ticks each second, that costs a delivery thread for each session, and it costs the
+broker the same traffic for each session. It breaks requirement 8.
+
+The live subject splits its tail into tokens:
+
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<instrument_type>.<series_token>.<coordinate_token>=
+
+The series token is the percent-encoded series URI. The coordinate token is the
+percent-encoded coordinates, or one fixed character for a series without any. A
+consumer then subscribes to a class with =...<instrument_type>.>=, to a series with
+=...<instrument_type>.<series_token>.>=, or to one datum. A chart subscribes to the
+series that it shows, and the broker sends nothing else.
+
+The change touches every consumer of the stream. Hedgr is the only client today, and
+the Qt client no longer exists, so the cost of the change is at its lowest now. The
+producer subject, =synthetic.v1.ops.tick.<source>=, does not change.
 
 *** The recent window
 
@@ -287,8 +312,10 @@ type, and never by the kind of the feed.
 
 - A *datum* is one quote. Its URI names the instrument and every coordinate, such as
   the term of a swap.
-- A *series* is the datum without its coordinates. A curve is one series with many
-  datums.
+- A *series* is the datum without its coordinates. The schema row of an instrument
+  type says which fields are identity and which are coordinates. A curve whose pillars
+  are coordinates is one series with many datums. A curve whose tenor is an identity
+  field is many series.
 - A *lane key* is the series. All quotes of a curve share a lane.
 - Conflation, the recent window and thinning work on the datum. Ordering works on the
   series.
@@ -432,9 +459,10 @@ It becomes a tool in the repository, so that anyone can reproduce a lag.
 When the pipeline replaces the loop, these notes change: the ingest loop note, which
 states that a republish follows the stored row; the note on adding an asset class,
 which gains the rules above; the PostgreSQL architecture note, which states that a
-time-series table sets the notification knob to false; and the feed binding note. A
-client of the observation change event must not exist when the trigger goes away. The
-Hedgr client has none. The Qt client lives in another repository and needs a check.
+time-series table sets the notification knob to false; the notes on the producer
+subject and the market tick, which state the live subject; and the feed binding note.
+No client of the observation change event exists. Hedgr has none, and the Qt client is
+decommissioned.
 
 ** What the first consumer needs: Hedgr
 
@@ -443,9 +471,20 @@ Hedgr repository, shows how a real consumer reads the pipeline.
 
 - *Live values come from the party tick stream.* Hedgr subscribes once for each
   session to =marketdata.v1.ops.market_tick.<tenant>.<party>.>=. This is the subject
-  that the ingest loop publishes to after it stores a row. Hedgr has no
-  subscription to any observation change event. That confirms that the database
-  notification serves no client here.
+  that the ingest loop publishes to after it stores a row. The tick stream is the
+  only subscription that Hedgr makes in its own code. Hedgr has no subscription to
+  any observation change event. That confirms that the database notification serves
+  no client here.
+- *Hedgr filters on the client.* The tick sink of Hedgr says that the party
+  subscription delivers every tick of the party, and that it keeps the ticks of the
+  watched series and drops the rest. Each tick costs a decode, two calls of the URI
+  codec, a number parse, a lock and a map lookup, on the one NATS delivery thread.
+  The section on the live subject makes the broker do the selection.
+- *The live tick has no coordinate.* The backfill of Hedgr gives each point its term.
+  The live tick carries a series URI, a time and a value, and the aggregator takes no
+  term. A series with coordinates, such as the pillars of a curve, would mix its
+  pillars in one live bucket stream. This was read in the code and not run against a
+  live curve. FX spot has no coordinate and is not affected.
 - *Hedgr waits for the store without knowing it.* The subject carries a tick only
   after the ingest has stored it. When the ingest fell behind, the chart showed ticks
   that were 70 minutes old, and nothing in Hedgr was at fault. The live path of
@@ -468,8 +507,12 @@ Hedgr repository, shows how a real consumer reads the pipeline.
   refresh it asks for the newest 2,000 points of a series. The recent window of the
   lane serves the part that it covers from memory, and the store serves the rest.
 - *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
-  it is full. The freshness rule says to overwrite the oldest. The two rules differ
-  only when the frame loop stalls, but they should agree.
+  it is full. Its source comment gives the reason: a tick is worth less than the
+  progress of the dispatch thread, and the chart shows the points it did receive.
+  The freshness rule says to overwrite the oldest. The two rules differ only when the
+  frame loop stalls by more than 4,096 buckets, but they should agree.
+- *The reconnect gap.* Hedgr loses the ticks between a drop and a reconnect, and it
+  fills the gap with a backfill read. The recent window serves that read from memory.
 
 ** How tick systems are built in practice
 
@@ -623,7 +666,7 @@ It departs from practice in two points, and both follow from the requirements.
 | One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
 | One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
 | The windows use too much memory. | The memory of a lane against the number of watched datums. | Bound the window by bytes, and keep a bucketed window. |
-| A client of the observation event exists and is unknown. | A search of every repository for a subscriber of the event. | Keep a coarse series-changed signal on the tick stream for that client. |
+| The live subject change breaks a consumer. | A search for every subscriber of the republish subject. Hedgr is the only client. | Migrate the client in the same wave, and keep no old subject. |
 
 ** Delivery in four steps
 
@@ -641,8 +684,9 @@ a burst of ticks at a chosen rate and times the drain.
    of a loaded system. The ten-fold gain is a target and not a result until step 0
    confirms it.
 2. *Lanes, the ring, the age gate, the overload states and the recent window.*
-   Add a read operation for the last value and for the recent ticks of a series,
-   and move Hedgr to it. Acceptance: a burst of ten times the sustained rate leaves
+   Add a read operation for the last value and for the recent ticks of a series, and
+   split the live subject into tokens. Move Hedgr to both: a subscription for each
+   watched series, and a read of the window. Acceptance: a burst of ten times the sustained rate leaves
    no backlog after the burst ends. The lag of the live path stays below the age
    limit at all times. A chart opens from the window in under 100 ms and does not
    read the store for the span that the window covers.
@@ -668,6 +712,9 @@ a burst of ticks at a chosen rate and times the drain.
   longer window or a bucketed window may be needed.
 - How does the lane learn which datums a consumer watches? A subscription, a request
   to open a chart, or a setting for each source are the choices.
+- Which tokens does the live subject need beyond the instrument type and the series?
+  A venue or a currency token would let a client select more finely, and each token
+  adds a level to every subscription.
 - Does any client need to learn that a series changed? If so, the signal belongs on
   the live tick stream, at most once each second for each series. A database
   notification is not the way.

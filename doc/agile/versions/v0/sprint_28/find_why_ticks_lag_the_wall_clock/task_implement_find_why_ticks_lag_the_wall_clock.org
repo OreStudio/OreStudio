@@ -149,8 +149,13 @@ Hedgr. It found these faults. Each one is fixed in the note.
 | The write ceiling of PostgreSQL is untested. | The whole plan rests on it. | A step 0 prototype, and a table of risks with what would change the design. |
 | No place to say what a new feed must do. | The pipeline must be the base for all ticking data. | The sections on what a feed owes the pipeline and what the pipeline owes the feed. |
 
-Not yet checked: whether the Qt client subscribes to the observation change event.
-The client lives in another repository.
+The Qt client is decommissioned, so it is no longer a consumer to check. Hedgr was read
+in its code, not only in its plan: the tick stream at =tick_stream.cpp= line 151 is
+the only subscription it makes outside its tests. That review found three more points,
+each recorded in the note: Hedgr filters the whole party subtree on the client, the live
+tick has no coordinate, and its ring drops the newest bucket when full. The first one
+changed the design. The live subject now splits into tokens, so a consumer selects a
+series on the broker.
 
 ** The report that opened this task
 

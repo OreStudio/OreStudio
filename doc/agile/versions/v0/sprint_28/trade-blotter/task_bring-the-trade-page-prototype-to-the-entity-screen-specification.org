@@ -249,7 +249,6 @@ The prototypes drew several closed sets from memory. They now read from the seed
 Amounts show digit separators.
 
 Still open:
-- The other instrument families (equity, commodity, credit, scripted) are not compared yet. They draw the generic card.
 - A change reason that requires commentary is not enforced by the screens.
 
 ** Instrument fields compared with the tables, 2026-10-20
@@ -289,6 +288,17 @@ The Links tab of the trade page now reads the 12 link types of the seed file, ea
 - The structure page no longer names =trade_links.put_many=. A structure joins its trades through =structure_members=.
 
 Not done: a screen to add a link by hand (Hedge and UserDefined), and the links that the other lifecycle events write (Exercise, CloseOut, Roll, MisbookingCorrection). The prototype records those events without a new trade.
+
+** The other product families, 2026-10-21
+
+Every instrument table that a trade type uses now has a card built from its columns: commodity, credit, scripted, the nine equity tables (accumulator, Asian, barrier, digital, forward, option, position, swap, variance swap) and the six remaining FX tables (accumulator, Asian forward, barrier, digital, forward, variance swap). The column lists were read from the create scripts, so a column that the table adds or drops shows up when the list is read again.
+
+- A required column is filled; an optional one is empty and marked optional. The audit columns and the trade type are not fields.
+- A column that has a soft foreign key to a code set offers that set: option type, exercise type, settlement, long or short, barrier type, average type, return type, moment type, payoff type, target type, payment frequency, day count fraction.
+- The credit card also draws the shared swap leg and leg rate tables, and a premium for the options on credit swaps.
+- The JSON columns of the equity swap and the scripted trade show as text.
+
+Limits: the cards do not state the rules between columns, such as the cliquet frequency being set for a cliquet option only, or the barrier a touch option needs. The child tables of the equity, commodity and FX families (premiums, exercise prices, schedules) are drawn for rates, FX vanilla options, bonds, composite trades and credit only. A trade type with no instrument table still draws the generic card.
 
 ** Trade entry folded into Book a trade and the structure page, 2026-10-20
 

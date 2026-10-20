@@ -255,6 +255,62 @@ const CALENDARS = ['TARGET', 'GBLO', 'USNY'];
 const OPTION_TYPES = [['Call', 'The holder may buy the underlying'], ['Put', 'The holder may sell the underlying']];
 const EXERCISE_STYLES = [['European', 'Exercisable only at maturity'], ['Bermudan', 'Exercisable on a set of dates'], ['American', 'Exercisable at any time up to maturity']];
 const SETTLEMENT_TYPES = [['Physical', 'Settlement delivers the underlying'], ['Cash', 'Settlement pays the cash value']];
+/* The columns of the instrument tables that have no card of their own: [name, type, required]. The type is t text, n number, d date, b boolean, i integer.
+ * The code sets are the soft foreign keys of the trading and refdata seeds. */
+const INSTRUMENT_COLUMNS = {
+    commodity_instrument: [['commodity_code','t',1],['currency','t',1],['quantity','n',1],['unit','t',1],['start_date','d',0],['maturity_date','d',0],['fixed_price','n',0],['option_type','t',0],['strike_price','n',0],['exercise_type','t',0],['average_type','t',0],['averaging_start_date','d',0],['averaging_end_date','d',0],['spread_commodity_code','t',0],['spread_amount','n',0],['strip_frequency_code','t',0],['variance_strike','n',0],['accumulation_amount','n',0],['knock_out_barrier','n',0],['barrier_type','t',0],['lower_barrier','n',0],['upper_barrier','n',0],['day_count_fraction_code','t',0],['payment_frequency_code','t',0],['swaption_expiry_date','d',0],['description','t',0]],
+    credit_instrument: [['reference_entity','t',1],['start_date','d',0],['maturity_date','d',0],['description','t',0]],
+    equity_accumulator_instrument: [['underlying_name','t',1],['currency','t',1],['strike','n',1],['fixing_amount','n',1],['start_date','d',1],['expiry_date','d',1],['fixing_frequency','t',1],['long_short','t',1],['knock_out_level','n',0],['range_bounds_json','t',0],['target_amount','n',0],['target_type','t',0],['payoff_type','t',1],['description','t',0]],
+    equity_asian_option_instrument: [['underlying_name','t',1],['currency','t',1],['notional','n',1],['option_type','t',1],['strike','n',1],['expiry_date','d',1],['exercise_type','t',1],['long_short','t',1],['average_type','t',1],['averaging_start_date','d',1],['averaging_end_date','d',1],['description','t',0]],
+    equity_barrier_option_instrument: [['underlying_name','t',1],['currency','t',1],['notional','n',1],['option_type','t',1],['strike','n',1],['expiry_date','d',1],['exercise_type','t',1],['long_short','t',1],['lower_barrier','n',1],['lower_barrier_type','t',1],['upper_barrier','n',0],['upper_barrier_type','t',0],['rebate','n',0],['description','t',0]],
+    equity_digital_option_instrument: [['underlying_name','t',1],['currency','t',1],['notional','n',1],['option_type','t',0],['strike','n',0],['barrier_level','n',0],['barrier_type','t',0],['expiry_date','d',1],['long_short','t',1],['payout_amount','n',0],['description','t',0]],
+    equity_forward_instrument: [['underlying_name','t',1],['currency','t',1],['quantity','n',1],['forward_price','n',0],['expiry_date','d',1],['long_short','t',1],['settlement_type','t',0],['description','t',0]],
+    equity_option_instrument: [['underlying_name','t',1],['currency','t',1],['notional','n',1],['option_type','t',1],['strike','n',1],['expiry_date','d',1],['exercise_type','t',1],['long_short','t',1],['settlement_type','t',0],['cliquet_frequency','t',0],['description','t',0]],
+    equity_position_instrument: [['underlying_name','t',1],['currency','t',1],['quantity','n',1],['price','n',0],['description','t',0]],
+    equity_swap_instrument: [['underlying_name','t',0],['basket_json','t',0],['initial_prices_json','t',0],['knock_out_levels_json','t',0],['fixed_trigger_levels_json','t',0],['currency','t',1],['notional','n',1],['return_type','t',1],['start_date','d',1],['maturity_date','d',1],['long_short','t',1],['payment_frequency_code','t',1],['description','t',0]],
+    equity_variance_swap_instrument: [['underlying_name','t',1],['currency','t',1],['notional','n',1],['variance_strike','n',1],['start_date','d',1],['maturity_date','d',1],['long_short','t',1],['description','t',0]],
+    fx_accumulator_instrument: [['currency','t',1],['fixing_amount','n',1],['strike','n',1],['underlying_code','t',1],['long_short','t',1],['start_date','d',1],['knock_out_barrier','n',0],['description','t',0]],
+    fx_asian_forward_instrument: [['fx_index','t',1],['reference_currency','t',0],['reference_notional','n',0],['settlement_currency','t',0],['settlement_notional','n',0],['payment_date','d',0],['long_short','t',0],['currency','t',0],['fixing_amount','n',0],['target_amount','n',0],['strike','n',0],['description','t',0]],
+    fx_barrier_option_instrument: [['bought_currency','t',1],['bought_amount','n',1],['sold_currency','t',1],['sold_amount','n',1],['option_type','t',0],['expiry_date','d',1],['settlement','t',0],['barrier_type','t',1],['lower_barrier','n',0],['upper_barrier','n',0],['underlying_code','t',0],['description','t',0]],
+    fx_digital_option_instrument: [['foreign_currency','t',1],['domestic_currency','t',1],['payoff_currency','t',1],['payoff_amount','n',1],['option_type','t',0],['expiry_date','d',1],['long_short','t',1],['strike','n',0],['barrier_type','t',0],['lower_barrier','n',0],['upper_barrier','n',0],['description','t',0]],
+    fx_forward_instrument: [['bought_currency','t',1],['bought_amount','n',1],['sold_currency','t',1],['sold_amount','n',1],['value_date','d',1],['settlement','t',0],['description','t',0]],
+    fx_variance_swap_instrument: [['start_date','d',1],['end_date','d',1],['currency','t',1],['underlying_code','t',1],['long_short','t',1],['strike','n',1],['notional','n',1],['moment_type','t',1],['description','t',0]],
+    scripted_instrument: [['script_name','t',1],['script_body','t',0],['events_json','t',0],['underlyings_json','t',0],['parameters_json','t',0],['description','t',0]],
+};
+const COLUMN_SETS = {
+    option_type: OPTION_TYPES.map(x => x[0]), exercise_type: EXERCISE_STYLES.map(x => x[0]), settlement: SETTLEMENT_TYPES.map(x => x[0]), settlement_type: SETTLEMENT_TYPES.map(x => x[0]),
+    long_short: ['Long', 'Short'], average_type: ['Arithmetic', 'Geometric'], return_type: ['Total', 'Price'], moment_type: ['Variance', 'Volatility'],
+    payoff_type: ['Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla'], target_type: ['TargetFull', 'TargetExact'],
+    barrier_type: ['UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'],
+    payment_frequency_code: ['Once', 'Annual', 'Semiannual', 'Quarterly', 'Bimonthly', 'Monthly', 'Lunarmonth', 'Weekly', 'Daily'],
+    day_count_fraction_code: ['A360', 'A365F', 'A365', 'ActAct(ISDA)', 'ActAct(ISMA)', 'ActAct(AFB)', '30/360', '30E/360', '30E/360(ISDA)', 'Business252', '1/1', 'Simple']
+};
+COLUMN_SETS.lower_barrier_type = COLUMN_SETS.upper_barrier_type = COLUMN_SETS.barrier_type;
+COLUMN_SETS.strip_frequency_code = COLUMN_SETS.payment_frequency_code;
+const COLUMN_VALUES = {
+    commodity_code: 'WTI', unit: 'BBL', underlying_name: 'SX5E', underlying_code: 'EURUSD', reference_entity: 'Acme Holdings plc', fx_index: 'ECB/EURUSD', script_name: 'Autocallable',
+    fixing_frequency: 'Monthly', cliquet_frequency: 'Annual', option_type: 'Call', exercise_type: 'European', long_short: 'Long', settlement_type: 'Cash', settlement: 'Cash',
+    barrier_type: 'UpAndOut', lower_barrier_type: 'DownAndOut', average_type: 'Arithmetic', return_type: 'Total', moment_type: 'Variance', payoff_type: 'Accumulator',
+    payment_frequency_code: 'Quarterly', quantity: 10000, strike: '1.0842', price: '102.5000'
+};
+function columnCard(t, table) {
+    const label = k => k === 'long_short' ? 'Long or short' : k.replace(/_/g, ' ').replace(/ code$/, '').replace(/^./, c => c.toUpperCase());
+    const fields = INSTRUMENT_COLUMNS[table].map(([k, ty, req]) => {
+        const o = { economic: k !== 'description', optional: !req };
+        let type = 'text', value = '';
+        if (k === 'description') value = '';
+        else if (/(^|_)currency$/.test(k)) { type = 'ccy'; value = req || /^(bought|sold)/.test(k) ? (/^sold/.test(k) ? 'USD' : t.ccy) : ''; }
+        else if (ty === 'd') { type = 'date'; value = req ? (/start|averaging_start/.test(k) ? t.date : '2027-01-15') : ''; }
+        else if (ty === 'b') { o.options = ['Yes', 'No']; value = req ? 'No' : ''; }
+        else if (ty === 'n') {
+            type = /amount|notional|quantity/.test(k) ? 'money' : 'decimal';
+            value = req ? (k === 'notional' ? t.notional : k in COLUMN_VALUES ? (table.startsWith('equity') && /strike|price/.test(k) ? '4500.0000' : COLUMN_VALUES[k]) : /amount/.test(k) ? t.notional : table.startsWith('equity') ? '4500.0000' : '1.0842') : '';
+        } else if (req || COLUMN_VALUES[k]) value = req ? (COLUMN_VALUES[k] || (/_json$/.test(k) ? '[]' : label(k))) : '';
+        if (COLUMN_SETS[k]) { o.options = COLUMN_SETS[k]; }
+        return { key: k, label: label(k), value, type, ...o };
+    });
+    return { id: 'instrument', title: tradeTypeName(table), table, version: t.ver, fields };
+}
 const BOND_ISSUES = ['Acme 3.25 % 2031', 'Acme 2.10 % 2029'];
 
 function buildTrades() {
@@ -324,6 +380,22 @@ function nextStructureId(kind) {
 let TRADES = buildTrades().concat(store('booked') || []);
 const trade = code => TRADES.find(t => t.code === code || t.id === code);
 
+/* A credit trade states its legs in the shared swap leg tables, and an option on it adds a premium and an exercise price. */
+function creditChildren(t, d, rows) {
+    const out = [{
+        id: 'legs', title: 'Legs', table: 'swap_leg', version: t.ver, child: true,
+        ...rows(['Leg', 'Payer', 'Leg type', 'Currency', 'Day count', 'Business day convention', 'Frequency'], [
+            ['1', 'No', 'Fixed', ccyRef(t.ccy), 'A360', 'ModifiedFollowing', 'Quarterly']]), economic: true
+    }, {
+        id: 'leg_rates', title: 'Leg rates', table: 'swap_leg_rate', version: t.ver, child: true,
+        ...rows(['Leg', 'Rate role', 'Sequence', 'Start date', 'Value'], [['1', 'fixed', '1', d, '0.010000']]), economic: true
+    }];
+    if (/Option$/.test(t.type)) out.push({
+        id: 'premium', title: 'Premium', table: 'instrument_option_premium', version: 1, child: true,
+        ...rows(['Sequence', 'Amount', 'Currency', 'Pay date'], [['1', money(75000), ccyRef(t.ccy), d]]), economic: true
+    });
+    return out;
+}
 /* ---------- the fields of an instrument ----------
  * economic:true is the model's declaration (:economic: true on the column). The
  * digest folds only those. digestGap marks the two tables the digest does not
@@ -397,6 +469,8 @@ function instrumentCards(t) {
                 economic: true, digestGap: !DIGEST_FIXED
             }];
         default:
+            if (INSTRUMENT_COLUMNS[t.table]) return [columnCard(t, t.table)].concat(
+                t.table === 'credit_instrument' ? creditChildren(t, d, rows) : []);
             return [{
                 id: 'instrument', title: t.table ? tradeTypeName(t.table) : 'Instrument', table: t.table || '(none)', version: t.ver,
                 fields: [

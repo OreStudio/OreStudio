@@ -28,10 +28,10 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Step 0: prove the write ceiling of the batch writer. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-20                               |
+| Next         | Step 1: remove the per-row costs, once step 0 states the ceiling. |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
@@ -44,9 +44,22 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The design is in =doc/knowledge/architecture/tick_ingest_pipeline.org=. Three reviews
+of it are recorded under Notes. The work follows its delivery steps, and each step
+ends with a measurement.
+
+0. Prove the write ceiling. A prototype in scratch tables of this environment's
+   database, with no product code. It times batched inserts for four table shapes and
+   four batch sizes, and it times =COPY=. Its result goes into the note.
+1. Remove the per-row costs: the notification trigger, the series read for each tick,
+   the commit for each row, and the wait for acknowledgements on producers and on the
+   republish. Remove the two tick streams for perishable subjects.
+2. Lanes, the ring, the age gate, the overload states and the recent window. Split
+   the live subject into tokens, and move Hedgr to it.
+3. The policy table, the durable tier, taps, a rollout by source, and scale out.
+
+Each step is its own task and its own pull request. This task holds the investigation
+and the plan.
 
 * Measurements
 

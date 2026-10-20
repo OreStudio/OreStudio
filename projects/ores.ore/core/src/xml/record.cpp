@@ -245,15 +245,16 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
 auto record_reader::spellings(std::string_view name) const -> std::vector<std::string> {
     const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
     if (f.scalar != scalar_kind::enumeration || f.tokens == nullptr)
-        throw std::runtime_error(std::format(
-            "'{}' of the {} table does not hold enumerated values", name, type_->name));
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold enumerated values", name, type_->name));
     std::vector<std::string> out;
     if (!bit_is_set(record_, f) || f.repeated == nullptr)
         return out;
     const auto count = f.repeated->count(slot_of(record_, f));
     out.reserve(count);
     for (std::size_t i = 0; i < count; ++i) {
-        const auto index = *static_cast<const std::int16_t*>(f.repeated->at(slot_of(record_, f), i));
+        const auto index =
+            *static_cast<const std::int16_t*>(f.repeated->at(slot_of(record_, f), i));
         if (index < 0)
             throw std::runtime_error(std::format(
                 "'{}' of the {} table holds a value with no spelling", name, type_->name));
@@ -521,8 +522,8 @@ void record_writer::append_spelling(std::string_view name,
                                     std::string_view what) {
     const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
     if (f.scalar != scalar_kind::enumeration || f.tokens == nullptr)
-        throw std::runtime_error(std::format(
-            "'{}' of the {} table does not hold enumerated values", name, type_->name));
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold enumerated values", name, type_->name));
     for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i) {
         if (value != f.tokens[i])
             continue;
@@ -573,8 +574,8 @@ void record_writer::append_residual(std::string_view name, std::string_view valu
         if (f.kind != field_kind::residual)
             continue;
         set_bit(record_, f);
-        static_cast<std::vector<residual_element>*>(slot_of(f))->push_back(
-            residual_element{std::string(name), std::string(value)});
+        static_cast<std::vector<residual_element>*>(slot_of(f))
+            ->push_back(residual_element{std::string(name), std::string(value)});
         return;
     }
     throw std::runtime_error(

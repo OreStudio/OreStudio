@@ -98,8 +98,8 @@ auto spelling_of(const record_reader& r, std::string_view name) -> std::string {
     return {};
 }
 
-auto optional_date_of(const record_reader& r, std::string_view name)
-    -> std::optional<std::chrono::year_month_day> {
+auto optional_date_of(const record_reader& r,
+                      std::string_view name) -> std::optional<std::chrono::year_month_day> {
     return to_domain_date(text_of(r, name));
 }
 

@@ -20,10 +20,10 @@
 salt
 {
   <b>ORE STUDIO - REPORTING: CHANGE HOW A PRODUCT IS PRICED</b>
-  <b>Edit BermudanSwaption</b>
+  <b>Propose a change to BermudanSwaption</b>
   --
-  Bound by 4 reports: Group Consolidated Exposure, Board Risk Dashboard, Treasury Sensitivity, Group DV01 by book.
-  A change reaches the next run of each. A run already produced keeps what it ran with.
+  Nothing changes now. Version 4 stays in force until the sign-off completes.
+  After that the change reaches the next run of each of the 4 reports that bind it.
   { Model | ^BlackBachelier^ }
   { Engine | ^BlackBachelierSwaptionEngine^ }
   {#
@@ -33,13 +33,16 @@ salt
     sx | 3.0 | - | will be dropped
   }
   {
-    Scope
-    (X) Make a copy for this report only
-    ( ) Change this configuration for all 4 reports
+    What to do with the change
+    (X) Propose a new version of End of day pricing
+    ( ) Try it in a draft copy
   }
+  Version 5 waits for Quant team, Market risk and Model validation. The proposer cannot sign off.
   { Change reason | ^Rectification^ }
   { Commentary | "Desk moved to the Bachelier model" }
-  [ Cancel ] | [ Save ]
+  [ Cancel ] | [ Submit for sign-off ]
+  --
+  A draft changes in place, with no sign-off, and reaches no run.
 }
 
 @enduml

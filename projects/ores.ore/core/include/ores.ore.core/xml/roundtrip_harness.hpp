@@ -104,7 +104,8 @@ roundtrip_kind make_roundtrip_kind(std::string name,
     roundtrip_kind kind;
     kind.name = std::move(name);
     kind.file_prefix = std::move(file_prefix);
-    kind.check = [read, write, map, reverse, compare](const std::filesystem::path& path) -> roundtrip_outcome {
+    kind.check = [read, write, map, reverse, compare](
+                     const std::filesystem::path& path) -> roundtrip_outcome {
         std::ifstream in(path, std::ios::binary);
         if (!in)
             return {false, path.string() + ": cannot be read"};

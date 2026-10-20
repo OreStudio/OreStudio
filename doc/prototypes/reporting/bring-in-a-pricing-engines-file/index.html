@@ -230,7 +230,23 @@ const P = (scope, name, value) => ({ scope, name, value });
 const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
 const clone = x => JSON.parse(JSON.stringify(x));
 const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
-const REPORTS_ALL = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity', 'Cross-Entity Counterparty Concentration', 'Large Exposures'];
+const EOD_REPORTS = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Large Exposures', 'Cross-Entity Counterparty Concentration'];
+const INTRA_REPORTS = ['Treasury Sensitivity', 'Group DV01 by book'];
+const REPORTS_ALL = EOD_REPORTS.concat(INTRA_REPORTS);
+// FIXTURE. The product types each report's portfolio holds. No operation returns them.
+const REPORT_META = {
+  'Group Consolidated Exposure': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Board Risk Dashboard': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Large Exposures': { cycle: 'eod', portfolio: 'Group counterparties', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap', 'CreditDefaultSwap'] },
+  'Cross-Entity Counterparty Concentration': { cycle: 'eod', portfolio: 'European entities', needs: ['Swap', 'FxForward', 'Bond', 'CreditDefaultSwap', 'CapFloor', 'EuropeanSwaption'] },
+  'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
+  'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
+};
+const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
+// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
+const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
+const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
 const NOW = Date.parse('2026-10-19T10:00:00Z');
 const AMC_NOW = [
   { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
@@ -241,27 +257,50 @@ const AMC_NOW = [
   { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
   { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
   { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
-  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] }
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
 ];
 const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
-const amcV3 = withEdit(AMC_NOW, c => { c[2].params.find(p => p.name === 'VolatilityType').value = 'HullWhite'; });
+const setParam = (p, name, value) => { p.params.find(x => x.name === name).value = value; };
+const amcV3 = withEdit(AMC_NOW, c => setParam(c[2], 'VolatilityType', 'HullWhite'));
 const amcV2 = amcV3.filter(p => p.type !== 'CMS');
-const amcV1 = withEdit(amcV2, c => { c[2].params.find(p => p.name === 'ShiftHorizon').value = '1.0'; });
+const amcV1 = withEdit(amcV2, c => setParam(c[2], 'ShiftHorizon', '1.0'));
+const INTRA_V2 = [
+  { type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM().map(p => (p.name === 'nx' || p.name === 'ny') ? P(p.scope, p.name, '6') : p) },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '1Y')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'DiscountedCashflows', engine: 'DiscountingCrossCurrencySwapEngine', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(c[2], 'ny', '10'); });
 const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
 const CONFIGS = [
-  { id: 'c1', name: 'Group pricing engines', desc: 'The model and engine that price each product ACME Corporation Group trades.', variant: '', cfgRow: 'configuration 3b4103d0', reports: REPORTS_ALL.slice(0, 4), globals: clone(GLOBAL_CFG),
-    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] }, { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] }],
-    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', by: 'tenant provisioning service', reason: 'New record', note: '' }] },
-  { id: 'c2', name: 'Europe AMC pricing', desc: 'Pricing for the European entities, with the AMC engine for swaps and cross currency swaps.', variant: 'AMC', cfgRow: 'configuration 7a91c2e4', reports: REPORTS_ALL.slice(4), globals: clone(GLOBAL_CFG), products: AMC_NOW,
-    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', by: 'tenant provisioning service', reason: 'New record', note: '', snap: { products: amcV1, globals: GLOBAL_CFG } },
-      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', snap: { products: amcV2, globals: GLOBAL_CFG } },
-      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', snap: { products: amcV3, globals: GLOBAL_CFG } },
-      { v: 4, at: '2026-10-16T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
-  { id: 'c3', name: 'US swaptions SABR', desc: 'A trial configuration for the US swaption desk.', variant: 'SABR', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
+  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
     products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
-    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '' }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here' }] }
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
 ];
 CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
+const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
+  note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
+  products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
+  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
 // A flat view of a document, so two documents can be compared as rows.
 const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
 const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
@@ -309,6 +348,17 @@ const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</sp
 const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
 const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
 const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+const STATUS = { approved: ['Approved', 'ok'], in_review: ['In review', 'warn'], draft: ['Draft', 'info'], retired: ['Retired', 'off'] };
+const statusTag = s => tag(STATUS[s][0], STATUS[s][1]);
+const officialTag = c => c.status === 'approved' && c.cycle ? tag('Official · ' + CYCLE_NAME[c.cycle], 'cls') : dash;
+const RULE = 'A report needs a price for every product type in its portfolio. A configuration that several reports bind must cover all of their portfolios together.';
+// What a configuration must cover: the union of the portfolios of the reports that bind it. With no report, the whole traded list.
+const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
+const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
+const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
@@ -318,22 +368,39 @@ function historyTab(c) {
   const entry = x => {
     const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
     return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
-      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
-      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
       ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
-  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
-  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${rows.map(entry).join('')}</div>`;
+  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
 }
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
+  return p; };
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
 function revertDialog(c, v) {
-  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap);
-  dialog('Revert ' + c.name + '?', `<div>Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
+  dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
   ready('d-save');
-  document.getElementById('d-save').onclick = () => { c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason: document.getElementById('f-reason').value, note: document.getElementById('f-note').value || 'Reverted to v' + v, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+  document.getElementById('d-save').onclick = () => {
+    const reason = document.getElementById('f-reason').value, note = document.getElementById('f-note').value || 'Reverted to v' + v;
+    if (official) { c.proposal = newProposal(c, old.snap.products, reason, note); closeDlg(); render(); return; }
+    c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason, note, approvals: null, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
 }
 function reportsTab(c) {
-  return `<div class="notice">A change to this configuration reaches the next run of each report below. A run already produced keeps what it ran with, and no operation says which version of the configuration that was.</div>
-  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Binds it as</th></tr></thead><tbody>${c.reports.map(r => `<tr><td><span class="link">${esc(r)}</span></td><td class="mono">pricing_engines</td></tr>`).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
-  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist: this is a fixture.</div>`;
+  const row = r => { const m = REPORT_META[r] || { cycle: '', portfolio: '', needs: TRADED }, g = reportGaps(c, r), off = c.cycle && m.cycle && m.cycle !== c.cycle;
+    return `<tr><td><span class="link">${esc(r)}</span></td><td>${m.cycle ? tag(CYCLE_NAME[m.cycle], 'cls') : dash}${off ? ' ' + tag('cycle differs', 'warn') : ''}</td><td>${esc(m.portfolio)}</td><td class="num">${m.needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td><td class="mono">${c.status === 'approved' ? 'version ' + c.ver : '—'}</td></tr>`; };
+  const un = gaps(c);
+  return `<div class="notice">${RULE}</div>
+  ${c.status === 'approved' ? `<div class="notice">A report binds this configuration and runs with the version in force, which is version ${c.ver}. A change reaches the next run of each report below once it is approved. A run already produced keeps what it ran with, and no operation says which version that was.</div>` : `<div class="warnbox">${c.status === 'draft' ? 'This is a draft. No official report can bind it, so a change here reaches no run.' : 'This configuration is not in force.'}</div>`}
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Cycle</th><th>Portfolio</th><th>Product types it needs</th><th>Priced here</th><th>Runs with</th></tr></thead><tbody>${c.reports.map(row).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  ${c.reports.length ? `<div class="${un.length ? 'warnbox' : 'okbox'}">${un.length ? `Together the reports need ${needed(c).length} product types. Not priced here: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}.` : `Together the reports need ${needed(c).length} product types, and this configuration prices all of them.`}</div>` : ''}
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
 }
 
 const fileKey0 = P0.get('file') || 'clean', actor = 'analyst', actorName = 'market risk owner';
@@ -346,7 +413,7 @@ const FILES = {
   unknown: { file: 'pricingengine_sabr.xml', products: [PR('Swap', 'DiscountedCashflows', 'DiscountingSwapEngine'), PR('FlexiCap', 'LGM', 'Grid'), PR('BermudanSwaption', 'LGM', 'Grid', BERM()), PR('CapFloor', 'IborCapModel', 'IborCapEngine'), PR('CapFloor', 'BlackOrBachelier', 'BlackIborCouponPricer')], globals: [], unreadable: [{ where: 'BermudanSwaption', what: 'The CalibrationBlock element holds an inline calibration. The tables have no column for it.' }], dups: ['CapFloor'] },
   omits: { file: 'pricingengine_basic.xml', products: [PR('Swap', 'DiscountedCashflows', 'DiscountingSwapEngine'), PR('FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine')], globals: [], unreadable: [], dups: [] }
 };
-const STEPS = [['file', 'The file', 'Choose the file and read what it holds.'], ['unknown', 'What the system does not know', 'Product types without a code, elements with no column, and duplicates.'], ['target', 'The target', 'Save as a new configuration, or as a new version of one the party holds.'], ['diff', 'The difference', 'What the file adds, changes and removes.'], ['review', 'Review and save', 'Every value, read back before it is written.']];
+const STEPS = [['file', 'The file', 'Choose the file and read what it holds.'], ['unknown', 'What the system does not know', 'Product types without a code, elements with no column, and duplicates.'], ['target', 'The target', 'Save as a new draft, or propose a new version of a configuration the party holds.'], ['diff', 'The difference', 'What the file adds, changes and removes.'], ['review', 'Review and submit', 'Every value, read back before it is written.']];
 const S = { key: fileKey0, target: P0.get('target') || 'new', name: '', desc: '', skip: {}, dup: {}, removed: {}, saved: null };
 let step = Math.min(Math.max((Number(P0.get('step')) || 1) - 1, 0), 4), maxStep = step;
 const F = () => FILES[S.key], tgt = () => S.target === 'new' ? null : CONFIGS.find(c => c.id === S.target);
@@ -385,10 +452,10 @@ function s2() {
 }
 function s3() {
   const t = tgt(), nameTaken = S.name.trim() && CONFIGS.some(c => c.name.toLowerCase() === S.name.trim().toLowerCase());
-  return `<div class="field"><label class="plain"><input type="radio" name="tg" value="new" ${S.target === 'new' ? 'checked' : ''}> Save as a new configuration</label>
-  <label class="plain"><input type="radio" name="tg" value="ver" ${S.target !== 'new' ? 'checked' : ''}> Save as a new version of a configuration the party holds</label></div>
-  ${S.target === 'new' ? `<div class="field"><label>Name</label><input type="text" id="f-name" value="${esc(S.name)}"><div class="help">${nameTaken ? '<span style="color:var(--bad)">A configuration with this name exists.</span>' : 'The name is new in this party.'}</div></div><div class="field"><label>Description</label><textarea id="f-desc">${esc(S.desc)}</textarea></div><div class="field"><label>Variant tag</label><input type="text" value="${esc(variantOf(F().file))}" readonly><div class="help">Filled from the file name when it follows the ORE naming. An empty tag when it does not.</div></div><div class="notice">A new configuration has nothing to compare, so the next step lists every product as added.</div>`
-  : `<div class="field"><label>Configuration</label><select id="f-tg">${CONFIGS.map(c => `<option value="${c.id}" ${S.target === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>${t.reports.length ? `<div class="warnbox"><b>Reach.</b> ${t.reports.length} report${t.reports.length === 1 ? '' : 's'} bind${t.reports.length === 1 ? 's' : ''} this configuration: ${t.reports.map(esc).join(', ')}. The change reaches the next run of ${t.reports.length === 1 ? 'it' : 'each'}. A run already produced keeps what it ran with.</div>` : '<div class="notice">No report binds this configuration, so the change reaches no run.</div>'}`}`;
+  return `<div class="field"><label class="plain"><input type="radio" name="tg" value="new" ${S.target === 'new' ? 'checked' : ''}> Save as a new draft configuration</label>
+  <label class="plain"><input type="radio" name="tg" value="ver" ${S.target !== 'new' ? 'checked' : ''}> Put it into a configuration the party holds</label></div>
+  ${S.target === 'new' ? `<div class="field"><label>Name</label><input type="text" id="f-name" value="${esc(S.name)}"><div class="help">${nameTaken ? '<span style="color:var(--bad)">A configuration with this name exists.</span>' : 'The name is new in this party.'}</div></div><div class="field"><label>Description</label><textarea id="f-desc">${esc(S.desc)}</textarea></div><div class="field"><label>Variant tag</label><input type="text" value="${esc(variantOf(F().file))}" readonly><div class="help">Filled from the file name when it follows the ORE naming. An empty tag when it does not.</div></div><div class="notice">A new configuration is a draft. No official report can bind it until it is submitted for sign-off as a candidate for a cycle. It has nothing to compare, so the next step lists every product as added.</div>`
+  : `<div class="field"><label>Configuration</label><select id="f-tg">${CONFIGS.map(c => `<option value="${c.id}" ${S.target === c.id ? 'selected' : ''}>${esc(c.name)} (${STATUS[c.status][0].toLowerCase()})</option>`).join('')}</select></div>${t.status !== 'approved' ? '<div class="notice"><b>Reach.</b> This is a draft. It changes in place, with no sign-off, and reaches no run.</div>' : t.reports.length ? `<div class="warnbox"><b>Reach.</b> The file is put forward as version ${t.ver + 1}, a proposal. Version ${t.ver} stays in force until the sign-off completes. After that, the change reaches the next run of ${t.reports.length === 1 ? 'the one report' : 'each of the ' + t.reports.length + ' reports'} that bind${t.reports.length === 1 ? 's' : ''} this configuration: ${t.reports.map(esc).join(', ')}. A run already produced keeps what it ran with.</div>` : '<div class="notice">No report binds this configuration, so the change reaches no run once it is approved.</div>'}`}`;
 }
 function s4() {
   const t = tgt(), c = compare();
@@ -400,21 +467,21 @@ function s4() {
   <div class="faint">The difference is the screen's own computation over two documents. No operation returns a diff.</div>`;
 }
 function s5() {
-  if (S.saved) return `<div class="okbox"><b>Saved.</b> ${esc(S.saved)}</div><div class="actions"><a class="btn primary" href="../see-the-pricing-engines-a-party-holds/?screen=record&id=c2&tab=history">Open the configuration's page</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. This page writes to its own memory only.</div>`;
+  if (S.saved) return `<div class="okbox"><b>Saved.</b> ${esc(S.saved)}</div><div class="actions"><a class="btn primary" href="../${tgt() && tgt().status === 'approved' ? 'sign-off-a-pricing-engine-change/?screen=proposal&proposal=pending' : 'see-the-pricing-engines-a-party-holds/?screen=record&id=c3&tab=history'}">${tgt() && tgt().status === 'approved' ? 'Open the sign-off' : "Open the configuration's page"}</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. This page writes to its own memory only.</div>`;
   const t = tgt(), c = compare(), fin = finalProducts(), skipped = unknownTypes().filter(x => S.skip[x] !== false), drops = c.removed.filter(x => decision(x.type) === 'drop');
   return `<div class="statline"><span><b>${fin.length}</b> products written</span><span><b>${c.added.length}</b> added</span><span><b>${c.changed.length}</b> changed</span><span><b>${c.removed.length - drops.length}</b> kept</span><span><b>${drops.length}</b> dropped</span></div>
   <table><thead><tr><th>#</th><th>Product</th><th>Model</th><th>Engine</th></tr></thead><tbody>${fin.map((p, i) => `<tr><td>${i + 1}</td><td class="mono">${p.type}</td><td class="mono">${p.model}</td><td class="mono">${p.engine}</td></tr>`).join('')}</tbody></table>
   ${skipped.length ? `<div class="warnbox">Skipped, no code: ${skipped.map(x => `<span class="mono">${x}</span>`).join(', ')}.</div>` : ''}${F().unreadable.length ? `<div class="warnbox">Dropped, no column: ${F().unreadable.map(x => esc(x.where + ' › CalibrationBlock')).join(', ')}.</div>` : ''}
-  ${t ? reasonField(true).replace('<textarea id="f-note">', '<textarea id="f-note">Brought in from ' + F().file) + '<div class="faint">The write claims the version read. A configuration that changed since is refused with 409.</div>' : '<div class="notice">A new record is saved with the reason new record.</div>'}
+  ${t ? reasonField(true).replace('<textarea id="f-note">', '<textarea id="f-note">Brought in from ' + F().file) + '<div class="faint">The write claims the version read. A configuration that changed since is refused with 409.</div>' + (t.status === 'approved' ? `<div class="warnbox">Submit for sign-off does not change ${esc(t.name)}. Version ${t.ver} stays in force. Version ${t.ver + 1} waits for ${ROLES.map(r => r.name).join(', ')}, and the person who submits cannot sign off.</div>` : '') : '<div class="notice">A new draft is saved with the reason new record. No official report can bind it.</div>'}
   <div class="notice">Save writes the document in one request. The service writes the three tables one after another with no unit of work, so a failure part way can leave a partial document. After a failed write the screen reads the document back and shows what landed.</div>`;
 }
 function render() {
   const rail = STEPS.map((s, i) => { const st = i < step ? 'done' : i === step ? 'current' : 'ahead'; return `<li class="railentry ${st}" data-go="${i}"><span class="railmark ${st}">${i < step ? '✓' : i + 1}</span><span>${s[1]}</span>${i === 4 ? '<span class="railtag">final</span>' : ''}</li>`; }).join('');
   const last = step === 4, body = [s1, s2, s3, s4, s5][step]();
-  const foot = `<div class="stepfoot">${step > 0 && !(last && S.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (S.saved ? '' : btn('Save', 'save', 'primary', 'id="b-save"')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
+  const foot = `<div class="stepfoot">${step > 0 && !(last && S.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (S.saved ? '' : btn(!tgt() ? 'Save as draft' : tgt().status === 'approved' ? 'Submit for sign-off' : 'Save', 'save', 'primary', 'id="b-save"')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
   document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', '../see-the-pricing-engines-a-party-holds/'], ['Bring in a file']])}<div class="titlebar"><div><h1>Bring in a pricing engines file</h1><div class="sub">A workflow of five steps. Every value on this page is a fixture, and nothing is written to a server.</div></div></div>
   <div class="journey"><nav class="railnav"><ol>${rail}</ol></nav><div><div class="stepcard"><h2>${step + 1}. ${STEPS[step][1]}</h2><div class="lead">${STEPS[step][2]}</div>${body}</div>${foot}</div></div>`;
-  chrome('bring in a pricing engines file · step ' + (step + 1) + ' of 5 · ' + F().file, [['file', ['clean', 'unknown', 'omits'], S.key], ['target', ['new', 'c2'], S.target]]);
+  chrome('bring in a pricing engines file · step ' + (step + 1) + ' of 5 · ' + F().file, [['file', ['clean', 'unknown', 'omits'], S.key], ['target', ['new', 'c2', 'c3'], S.target]]);
   wire();
 }
 function go(i) { step = i; maxStep = Math.max(maxStep, i); const p = new URLSearchParams(location.search); p.set('step', i + 1); history.replaceState({}, '', '?' + p.toString()); render(); }
@@ -431,7 +498,7 @@ function wire() {
   if ($('f-tg')) $('f-tg').onchange = e => { S.target = e.target.value; render(); };
   if ($('f-name')) $('f-name').oninput = e => { S.name = e.target.value; const b = $('b-next'); if (b) b.disabled = !valid(2); const h = e.target.parentNode.querySelector('.help'); h.innerHTML = CONFIGS.some(c => c.name.toLowerCase() === S.name.trim().toLowerCase()) ? '<span style="color:var(--bad)">A configuration with this name exists.</span>' : 'The name is new in this party.'; };
   if ($('f-desc')) $('f-desc').oninput = e => { S.desc = e.target.value; };
-  if ($('b-save')) { if (tgt()) ready('b-save'); $('b-save').onclick = () => { const t = tgt(), n = finalProducts().length; S.saved = t ? `${t.name} was written as version ${t.ver + 1} with ${n} products, from ${F().file}.` : `${S.name} was written as version 1 with ${n} products, with the reason new record.`; render(); }; }
+  if ($('b-save')) { if (tgt()) ready('b-save'); $('b-save').onclick = () => { const t = tgt(), n = finalProducts().length; S.saved = t ? (t.status === 'approved' ? `Version ${t.ver + 1} of ${t.name} was proposed with ${n} products, from ${F().file}. It waits for sign-off. Version ${t.ver} stays in force.` : `${t.name} was written as version ${t.ver + 1} with ${n} products, from ${F().file}. It is a draft.`) : `${S.name} was saved as a draft, version 1, with ${n} products, with the reason new record.`; render(); }; }
 }
 render();
 

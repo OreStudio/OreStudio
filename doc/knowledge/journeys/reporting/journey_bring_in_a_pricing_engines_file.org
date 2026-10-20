@@ -2,15 +2,15 @@
 :ID: BC2066E8-C595-47C0-97CE-19DF182F616E
 :END:
 #+title: User Journey: Bring in a pricing engines file
-#+description: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new configuration or as a new version of one.
+#+description: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-19
+#+updated: 2026-10-20
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new configuration or as a new version of one.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -23,9 +23,12 @@ each step needs.
 want to know what it changes before it does." Most pricing configurations start
 life as an ORE file; the project holds about seventy variants. The person should
 not retype a file. The journey is done when the file's products and settings are
-saved as a configuration, and the person has read what the file holds, what it
-adds to or changes in a configuration the party already has, and what it holds
-that the system cannot read.
+saved, and the person has read what the file holds, what it adds to or changes in
+a configuration the party already has, and what it holds that the system cannot
+read. A file never becomes an official configuration directly. A new file is saved
+as a draft. A file put into an approved configuration is a proposal for a new
+version, and it waits for sign-off. A file put into a draft changes the draft in
+place.
 
 * Actor and trigger
 
@@ -64,13 +67,17 @@ party. That is covered by the data exchange journeys.
    - *Duplicates.* A product type that appears twice. The screen shows both and
      asks which one to keep.
 4. *Choose the target.* Two choices:
-   - *Save as a new configuration.* The person gives a name, a description and a
-     variant. The variant tag is filled from the file name when it follows the
-     ORE naming, such as =pricingengine_amc.xml= giving =AMC=.
-   - *Save as a new version of* a configuration the party holds. The person
-     chooses the configuration from a combo box. The reach panel names the
-     reports that bind it, as in
-     [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]].
+   - *Save as a new draft configuration.* The person gives a name, a description
+     and a variant. The variant tag is filled from the file name when it follows the
+     ORE naming, such as =pricingengine_amc.xml= giving =AMC=. No official report can
+     bind a draft.
+   - *Put it into a configuration the party holds.* The person chooses the
+     configuration from a combo box, which shows each status. For an approved
+     configuration the file is a proposal: version N+1 waits for sign-off, version N
+     stays in force, and the reach panel names the reports that the change would
+     reach after the sign-off, as in
+     [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]]. For
+     a draft the file changes the draft in place and reaches no run.
 5. *Read the difference.* When the target is an existing configuration, a
    three-part table compares it with the file: *added* products, *changed*
    products with the model, engine or parameter that differs, and *removed*
@@ -81,13 +88,17 @@ party. That is covered by the data exchange journeys.
    *Keep it* or *Drop it*. The default is *Keep it*, because a file that omits a
    product usually leaves it out by accident. A product kept stays in the new
    version unchanged.
-7. *Review and save.* The final step names the products that will be written, in
+7. *Review and submit.* The final step names the products that will be written, in
    order, with the counts of added, changed, kept and dropped, and the elements
-   that were dropped because they cannot be read. *Save* writes the document. A
-   new configuration is written with the reason =system.new_record=. A new version
-   asks for a change reason and a commentary and claims the version read.
-8. *See the result.* The screen opens the configuration's page. The History tab
-   shows the new version with its diff, and the commentary names the file.
+   that were dropped because they cannot be read. A new draft has *Save as draft*
+   and is written with the reason =system.new_record=. A draft target has *Save* and
+   asks for a change reason and a commentary. An approved target has *Submit for
+   sign-off*, asks for a change reason and a commentary, claims the version read, and
+   states that the configuration does not change and that the person who submits
+   cannot sign off.
+8. *See the result.* A draft opens its page, where the History tab shows the new
+   version with its diff, and the commentary names the file. A proposal opens
+   [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]].
 
 * Screens and wireframes
 
@@ -108,7 +119,8 @@ fake. It belongs at =doc/prototypes/reporting/bring-in-a-pricing-engines-file/=.
 It must draw the five panels on the standard steps UI. It must offer three
 fixture files behind =?file=|=: a clean file, a file with a product type the
 system has no code for and an element the screen cannot read, and a file that
-omits a product the target already has. It must draw the added, changed and
+omits a product the target already has. It must offer three targets behind
+=?target=new|c2|c3=: a new draft, an approved configuration and a draft. It must draw the added, changed and
 removed table and the keep-or-drop choice, and the final review. It must state
 that the parse is a mock and which operation would parse a file. Every value is a
 fixture.
@@ -133,7 +145,8 @@ fixture.
 | 3, a new type | Write a product type | =analytics.v1.pricing_engine_types.put= | exists |
 | 4, the target | List the configurations | =analytics.v1.pricing_model_configs.list= | exists |
 | 5, the difference | Read the target document | =analytics.v1.pricing_engines_documents.get= | exists |
-| 7, save | Write the document | =analytics.v1.pricing_engines_documents.put= | exists |
+| 7, save a draft | Write the document | =analytics.v1.pricing_engines_documents.put= | exists |
+| 7, a proposal | Hold the new version apart from the version in force | (no operation) | missing |
 | The screen | Import from the browser | (no BFF route) | missing |
 
 * What is missing
@@ -158,10 +171,13 @@ fixture.
    configuration. It does not state which products were kept and which were
    dropped. The history shows the configuration as changed and the diff is
    recomputed from the versions.
-5. *The unreadable elements.* ORE files hold elements the tables do not, such as
+5. *No home for a proposal.* A file put into an approved configuration must not
+   replace the rows that a run reads. The same gap as in
+   [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]].
+6. *The unreadable elements.* ORE files hold elements the tables do not, such as
    an inline calibration block. The screen lists them and drops them. A later
    model can keep them.
-6. *The write is not one transaction.* The same gap as in
+7. *The write is not one transaction.* The same gap as in
    [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
 
 * Related journeys
@@ -169,6 +185,7 @@ fixture.
 - [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — step 1 hands a person here, and takes the rows back
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the reach statement, and the changes one row at a time
+- [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — where a proposal from a file goes
 
 * Related knowledge
 

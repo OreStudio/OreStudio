@@ -149,7 +149,10 @@ label.plain{white-space:nowrap}
   A pair that is not known to work is marked, never refused. No server check stands
   behind any finding: the page says so.
 
-  Addresses: ?step=1..6&variant=A|B|C&start=empty|copy
+  What it is for: a draft to try a change, or a candidate for the official intraday or end of day
+  configuration. Only a candidate whose coverage is complete can be submitted for sign-off.
+
+  Addresses: ?step=1..6&variant=A|B|C&start=empty|copy&cycle=none|eod|intraday
   The product, model and engine triples are counted from 110 ORE example files;
   the notes and usual values are this page's own wording.
 -->
@@ -232,7 +235,23 @@ const P = (scope, name, value) => ({ scope, name, value });
 const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
 const clone = x => JSON.parse(JSON.stringify(x));
 const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
-const REPORTS_ALL = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity', 'Cross-Entity Counterparty Concentration', 'Large Exposures'];
+const EOD_REPORTS = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Large Exposures', 'Cross-Entity Counterparty Concentration'];
+const INTRA_REPORTS = ['Treasury Sensitivity', 'Group DV01 by book'];
+const REPORTS_ALL = EOD_REPORTS.concat(INTRA_REPORTS);
+// FIXTURE. The product types each report's portfolio holds. No operation returns them.
+const REPORT_META = {
+  'Group Consolidated Exposure': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Board Risk Dashboard': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Large Exposures': { cycle: 'eod', portfolio: 'Group counterparties', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap', 'CreditDefaultSwap'] },
+  'Cross-Entity Counterparty Concentration': { cycle: 'eod', portfolio: 'European entities', needs: ['Swap', 'FxForward', 'Bond', 'CreditDefaultSwap', 'CapFloor', 'EuropeanSwaption'] },
+  'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
+  'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
+};
+const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
+// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
+const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
+const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
 const NOW = Date.parse('2026-10-19T10:00:00Z');
 const AMC_NOW = [
   { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
@@ -243,27 +262,50 @@ const AMC_NOW = [
   { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
   { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
   { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
-  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] }
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
 ];
 const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
-const amcV3 = withEdit(AMC_NOW, c => { c[2].params.find(p => p.name === 'VolatilityType').value = 'HullWhite'; });
+const setParam = (p, name, value) => { p.params.find(x => x.name === name).value = value; };
+const amcV3 = withEdit(AMC_NOW, c => setParam(c[2], 'VolatilityType', 'HullWhite'));
 const amcV2 = amcV3.filter(p => p.type !== 'CMS');
-const amcV1 = withEdit(amcV2, c => { c[2].params.find(p => p.name === 'ShiftHorizon').value = '1.0'; });
+const amcV1 = withEdit(amcV2, c => setParam(c[2], 'ShiftHorizon', '1.0'));
+const INTRA_V2 = [
+  { type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM().map(p => (p.name === 'nx' || p.name === 'ny') ? P(p.scope, p.name, '6') : p) },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '1Y')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'DiscountedCashflows', engine: 'DiscountingCrossCurrencySwapEngine', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(c[2], 'ny', '10'); });
 const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
 const CONFIGS = [
-  { id: 'c1', name: 'Group pricing engines', desc: 'The model and engine that price each product ACME Corporation Group trades.', variant: '', cfgRow: 'configuration 3b4103d0', reports: REPORTS_ALL.slice(0, 4), globals: clone(GLOBAL_CFG),
-    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] }, { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] }],
-    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', by: 'tenant provisioning service', reason: 'New record', note: '' }] },
-  { id: 'c2', name: 'Europe AMC pricing', desc: 'Pricing for the European entities, with the AMC engine for swaps and cross currency swaps.', variant: 'AMC', cfgRow: 'configuration 7a91c2e4', reports: REPORTS_ALL.slice(4), globals: clone(GLOBAL_CFG), products: AMC_NOW,
-    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', by: 'tenant provisioning service', reason: 'New record', note: '', snap: { products: amcV1, globals: GLOBAL_CFG } },
-      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', snap: { products: amcV2, globals: GLOBAL_CFG } },
-      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', snap: { products: amcV3, globals: GLOBAL_CFG } },
-      { v: 4, at: '2026-10-16T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
-  { id: 'c3', name: 'US swaptions SABR', desc: 'A trial configuration for the US swaption desk.', variant: 'SABR', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
+  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
     products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
-    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '' }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here' }] }
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
 ];
 CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
+const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
+  note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
+  products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
+  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
 // A flat view of a document, so two documents can be compared as rows.
 const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
 const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
@@ -311,6 +353,17 @@ const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</sp
 const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
 const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
 const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+const STATUS = { approved: ['Approved', 'ok'], in_review: ['In review', 'warn'], draft: ['Draft', 'info'], retired: ['Retired', 'off'] };
+const statusTag = s => tag(STATUS[s][0], STATUS[s][1]);
+const officialTag = c => c.status === 'approved' && c.cycle ? tag('Official · ' + CYCLE_NAME[c.cycle], 'cls') : dash;
+const RULE = 'A report needs a price for every product type in its portfolio. A configuration that several reports bind must cover all of their portfolios together.';
+// What a configuration must cover: the union of the portfolios of the reports that bind it. With no report, the whole traded list.
+const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
+const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
+const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
@@ -320,30 +373,51 @@ function historyTab(c) {
   const entry = x => {
     const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
     return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
-      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
-      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
       ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
-  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
-  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${rows.map(entry).join('')}</div>`;
+  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
 }
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
+  return p; };
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
 function revertDialog(c, v) {
-  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap);
-  dialog('Revert ' + c.name + '?', `<div>Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
+  dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
   ready('d-save');
-  document.getElementById('d-save').onclick = () => { c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason: document.getElementById('f-reason').value, note: document.getElementById('f-note').value || 'Reverted to v' + v, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+  document.getElementById('d-save').onclick = () => {
+    const reason = document.getElementById('f-reason').value, note = document.getElementById('f-note').value || 'Reverted to v' + v;
+    if (official) { c.proposal = newProposal(c, old.snap.products, reason, note); closeDlg(); render(); return; }
+    c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason, note, approvals: null, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
 }
 function reportsTab(c) {
-  return `<div class="notice">A change to this configuration reaches the next run of each report below. A run already produced keeps what it ran with, and no operation says which version of the configuration that was.</div>
-  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Binds it as</th></tr></thead><tbody>${c.reports.map(r => `<tr><td><span class="link">${esc(r)}</span></td><td class="mono">pricing_engines</td></tr>`).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
-  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist: this is a fixture.</div>`;
+  const row = r => { const m = REPORT_META[r] || { cycle: '', portfolio: '', needs: TRADED }, g = reportGaps(c, r), off = c.cycle && m.cycle && m.cycle !== c.cycle;
+    return `<tr><td><span class="link">${esc(r)}</span></td><td>${m.cycle ? tag(CYCLE_NAME[m.cycle], 'cls') : dash}${off ? ' ' + tag('cycle differs', 'warn') : ''}</td><td>${esc(m.portfolio)}</td><td class="num">${m.needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td><td class="mono">${c.status === 'approved' ? 'version ' + c.ver : '—'}</td></tr>`; };
+  const un = gaps(c);
+  return `<div class="notice">${RULE}</div>
+  ${c.status === 'approved' ? `<div class="notice">A report binds this configuration and runs with the version in force, which is version ${c.ver}. A change reaches the next run of each report below once it is approved. A run already produced keeps what it ran with, and no operation says which version that was.</div>` : `<div class="warnbox">${c.status === 'draft' ? 'This is a draft. No official report can bind it, so a change here reaches no run.' : 'This configuration is not in force.'}</div>`}
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Cycle</th><th>Portfolio</th><th>Product types it needs</th><th>Priced here</th><th>Runs with</th></tr></thead><tbody>${c.reports.map(row).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  ${c.reports.length ? `<div class="${un.length ? 'warnbox' : 'okbox'}">${un.length ? `Together the reports need ${needed(c).length} product types. Not priced here: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}.` : `Together the reports need ${needed(c).length} product types, and this configuration prices all of them.`}</div>` : ''}
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
 }
 
 const variant = (P0.get('variant') || 'A').toUpperCase(), start0 = P0.get('start') || 'empty';
-KEEP = ['variant', 'start'];
-const STEPS = [['name', 'Name it', 'Name the configuration and choose where to start.'], ['products', 'Choose the products', 'Tick every product type this configuration covers.'], ['pairs', 'Choose the model and engine', 'Give each product a model and an engine.'], ['params', 'Set the parameters', 'Settings of the document and of each pair.'], ['check', 'Check it', 'What the configuration leaves unpriced, and what looks unfinished.'], ['review', 'Review and save', 'Every value, read back before it is written.']];
-const D = { name: '', desc: '', variant: '', start: start0, from: 'c2', rows: [], globals: [], cursor: 0, saved: null };
+KEEP = ['variant', 'start', 'cycle'];
+const STEPS = [['name', 'Name it', 'Name the configuration and choose where to start.'], ['products', 'Choose the products', 'Tick every product type this configuration covers.'], ['pairs', 'Choose the model and engine', 'Give each product a model and an engine.'], ['params', 'Set the parameters', 'Settings of the document and of each pair.'], ['check', 'Check it', 'What the configuration leaves unpriced, and what looks unfinished.'], ['review', 'Review and submit', 'Every value, read back before it is written. Save it as a draft, or submit it for sign-off.']];
+const D = { name: '', desc: '', variant: '', cycle: ['eod', 'intraday'].includes(P0.get('cycle')) ? P0.get('cycle') : '', start: start0, from: 'c2', rows: [], globals: [], cursor: 0, saved: null };
 let step = Math.min(Math.max((Number(P0.get('step')) || 1) - 1, 0), 5), maxStep = step, typeSearch = '';
 if (start0 === 'copy') { const c = byId2(D.from); D.name = ''; D.rows = clone(c.products); D.globals = clone(c.globals); }
+const officialOf = cy => CONFIGS.find(c => c.cycle === cy && c.status === 'approved');
+const cycleReports = () => REPORTS_ALL.filter(r => REPORT_META[r].cycle === D.cycle);
+const neededNow = () => D.cycle ? TRADED.filter(t => cycleReports().some(r => REPORT_META[r].needs.includes(t))) : TRADED;
+const gapsNow = () => neededNow().filter(t => !rowOf(t));
 function byId2(id) { return CONFIGS.find(c => c.id === id); }
 const rowOf = t => D.rows.find(r => r.type === t);
 const nameTaken = () => CONFIGS.some(c => c.name.toLowerCase() === D.name.trim().toLowerCase());
@@ -368,17 +442,21 @@ function s1() {
   return `<div class="field"><label>Name</label><input type="text" id="f-name" value="${esc(D.name)}" placeholder="For example: Europe pricing engines"><div class="help">${taken ? '<span style="color:var(--bad)">A configuration with this name exists. Choose another name.</span>' : 'The name is new in this party.'}</div></div>
   <div class="field"><label>Description</label><textarea id="f-desc">${esc(D.desc)}</textarea><div class="help">Say what it prices and for whom.</div></div>
   <div class="field"><label>Variant tag (optional)</label><input type="text" id="f-var" value="${esc(D.variant)}" placeholder="AMC, SABR…"></div>
+  <div class="notice">A party holds few official pricing configurations: one for each cycle, signed off by model risk. A configuration made here starts as a draft. To change an official one, <a class="link" href="../change-how-a-product-is-priced/">propose a change to it</a> instead of building a second.</div>
+  <div class="field"><label>What is it for</label><label class="plain"><input type="radio" name="purpose" value="" ${!D.cycle ? 'checked' : ''}> A draft to try a change. No official report can bind it.</label>
+  ${['eod', 'intraday'].map(cy => `<label class="plain"><input type="radio" name="purpose" value="${cy}" ${D.cycle === cy ? 'checked' : ''}> A candidate for the official ${CYCLE_NAME[cy]} configuration</label>`).join('')}
+  ${D.cycle ? `<div class="help">The official ${CYCLE_NAME[D.cycle]} configuration today is ${esc(officialOf(D.cycle).name)}, version ${officialOf(D.cycle).ver}. A candidate replaces it only after sign-off. It must price the ${neededNow().length} product types that the ${cycleReports().length} ${CYCLE_NAME[D.cycle].toLowerCase()} reports need.</div>` : ''}</div>
   <div class="field"><label>Where to start</label><div>${[['empty', 'Start empty'], ['copy', 'Start from a copy of a configuration the party holds'], ['file', 'Start from an ORE file']].map(([k, l]) => `<div><label class="plain"><input type="radio" name="start" value="${k}" ${D.start === k ? 'checked' : ''}> ${l}</label></div>`).join('')}</div>
-  ${D.start === 'copy' ? `<select id="f-from">${CONFIGS.map(c => `<option value="${c.id}" ${D.from === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select><div class="help">A copy carries the products and settings of the source. It does not carry the source's report bindings.</div>` : ''}
+  ${D.start === 'copy' ? `<select id="f-from">${CONFIGS.map(c => `<option value="${c.id}" ${D.from === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select><div class="help">A copy carries the products and settings of the source. It carries no report binding and no sign-off, and it starts as a draft.</div>` : ''}
   ${D.start === 'file' ? `<div class="notice">This opens <a class="link" href="../bring-in-a-pricing-engines-file/">Bring in a pricing engines file</a>, which returns here with the rows read. That prototype is the owner of the file step.</div>` : ''}</div>`;
 }
 function s2() {
   const cls = [...new Set(TYPES.map(t => t.cls))];
   const shown = TYPES.filter(t => !typeSearch || (t.code + ' ' + t.desc).toLowerCase().includes(typeSearch.toLowerCase()));
-  return `<div class="row"><div class="field" style="flex:1"><label>Search</label><input type="text" id="f-ts" value="${esc(typeSearch)}" placeholder="Search the code and the description"></div>${btn('Select the products the party trades', '', '', 'id="b-trade"')}</div>
+  return `<div class="row"><div class="field" style="flex:1"><label>Search</label><input type="text" id="f-ts" value="${esc(typeSearch)}" placeholder="Search the code and the description"></div>${btn(D.cycle ? 'Select the products the ' + CYCLE_NAME[D.cycle].toLowerCase() + ' reports need' : 'Select the products the party trades', '', '', 'id="b-trade"')}</div>
   <div class="faint">The list of traded products is a fixture: no operation returns it.</div>
   ${cls.map(c => { const l = shown.filter(t => t.cls === c); return l.length ? `<h2>${c}</h2><table><tbody>${l.map(t => `<tr><td style="width:2rem"><input type="checkbox" class="chk" data-type="${t.code}" ${rowOf(t.code) ? 'checked' : ''}></td><td class="mono">${t.code}</td><td>${esc(t.desc)}</td><td class="faint">instrument ${esc(t.instrument)}</td></tr>`).join('')}</tbody></table>` : ''; }).join('') || '<div class="muted">No product type matches the search.</div>'}
-  <div class="statline"><span><b>${D.rows.length}</b> chosen</span><span>A product type that is not chosen has no model in a run.</span></div>`;
+  <div class="statline"><span><b>${D.rows.length}</b> chosen</span><span>A product type that is not chosen has no model in a run.${D.cycle ? ' ' + neededNow().length + ' are needed.' : ''}</span></div>`;
 }
 const pairOpts = r => ({ models: MODELS, engines: r.model ? enginesFor(r.model) : ALL_ENGINES });
 function selects(r, i) { const o = pairOpts(r); return `<select class="sel" data-m="${i}"><option value="">Model…</option>${o.models.map(m => `<option ${m === r.model ? 'selected' : ''}>${m}</option>`).join('')}</select> <select class="sel" data-e="${i}"><option value="">Engine…</option>${(o.engines.includes(r.engine) || !r.engine ? o.engines : [r.engine].concat(o.engines)).map(e => `<option ${e === r.engine ? 'selected' : ''}>${e}</option>`).join('')}</select>`; }
@@ -399,30 +477,37 @@ function s4() {
   return `<div class="card" style="padding:12px;display:grid;gap:8px"><b>Global settings</b> <span class="faint">They apply to every product.</span><div class="row"><div class="field"><label>${g.name}</label><select class="sel" id="f-glob"><option value="">Not set</option>${g.opts.map(o => `<option ${o === gv ? 'selected' : ''}>${o}</option>`).join('')}</select></div><div class="help" style="max-width:34rem">${g.note}</div></div></div>${blocks}`;
 }
 function s5() {
-  const un = TRADED.filter(t => !rowOf(t)), f = findings();
-  return `<div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage.</b> ${TRADED.length - un.length} of ${TRADED.length} product types this party trades have a row.${un.length ? ' Not covered: ' + un.map(u => `<span class="mono">${u}</span>`).join(', ') + '. A product with no row has no model in a run.' : ''}</div>
-  <table><thead><tr><th>Traded product type</th><th>Covered</th></tr></thead><tbody>${TRADED.map(t => `<tr><td class="mono">${t}</td><td>${rowOf(t) ? tag('Yes', 'ok') : tag('No', 'warn')}</td></tr>`).join('')}</tbody></table>
+  const un = gapsNow(), f = findings(), need = neededNow();
+  const repTable = D.cycle ? `<h2>Reports of the ${CYCLE_NAME[D.cycle].toLowerCase()} cycle</h2><table><thead><tr><th>Report</th><th>Portfolio</th><th>Needs</th><th>Priced here</th></tr></thead><tbody>${cycleReports().map(r => { const g = REPORT_META[r].needs.filter(t => !rowOf(t)); return `<tr><td>${esc(r)}</td><td>${esc(REPORT_META[r].portfolio)}</td><td class="num">${REPORT_META[r].needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td></tr>`; }).join('')}</tbody></table>` : '';
+  return `<div class="notice">${RULE}</div><div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage.</b> ${need.length - un.length} of the ${need.length} product types ${D.cycle ? 'the ' + CYCLE_NAME[D.cycle].toLowerCase() + ' reports need' : 'this party trades'} have a row.${un.length ? ' Not covered: ' + un.map(u => `<span class="mono">${u}</span>`).join(', ') + '. A product with no row has no model in a run.' : ''}</div>${repTable}
+  <table><thead><tr><th>${D.cycle ? 'Product type the reports need' : 'Traded product type'}</th><th>Covered</th></tr></thead><tbody>${need.map(t => `<tr><td class="mono">${t}</td><td>${rowOf(t) ? tag('Yes', 'ok') : tag('No', 'warn')}</td></tr>`).join('')}</tbody></table>
   <h2>Rows that look unfinished</h2>${f.length ? `<table><thead><tr><th>Product</th><th>Finding</th></tr></thead><tbody>${f.map(([t, m]) => `<tr><td class="mono">${t}</td><td>${esc(m)}</td></tr>`).join('')}</tbody></table>` : '<div class="okbox">Nothing looks unfinished.</div>'}
-  <div class="notice">Nothing here blocks the save. The server checks none of these: a document with an empty model, a pair that does not run or a missing setting is accepted, and the failure arrives in the run. The screen is the only reader.</div>`;
+  <div class="notice">Nothing here stops a draft from being saved. ${D.cycle ? 'The next step does not offer Submit for sign-off while a needed product type has no row.' : 'A draft cannot be submitted for sign-off unless it is made for a cycle.'} The server checks none of these: a document with an empty model, a pair that does not run or a missing setting is accepted, and the failure arrives in the run. The screen is the only reader.</div>`;
 }
+const blocked = () => !D.cycle || gapsNow().length > 0 || D.rows.some(r => !r.model || !r.engine);
 function s6() {
-  if (D.saved) return `<div class="okbox"><b>Saved.</b> ${esc(D.saved.name)} was written with ${D.saved.products.length} products as version 1, with the reason <span class="mono">system.new_record</span>.</div>
-  <div class="actions"><a class="btn primary" href="../see-the-pricing-engines-a-party-holds/?screen=record&id=c2">Open the configuration's page</a><a class="btn" href="../create-a-report/">Bind it to a report</a></div><div class="faint">Both links open the neighbouring prototypes. This prototype writes to its own memory only, so the page of the saved configuration is the neighbour's fixture.</div>`;
+  if (D.saved) return D.saved.kind === 'submit'
+    ? `<div class="okbox"><b>Submitted.</b> ${esc(D.saved.name)} is a candidate for the official ${CYCLE_NAME[D.cycle]} configuration, with ${D.saved.products.length} products, as version 1. Its status is In review. It waits for sign-off by ${ROLES.map(r => r.name).join(', ')}. ${esc(officialOf(D.cycle).name)} stays official until then.</div>
+  <div class="actions"><a class="btn primary" href="../sign-off-a-pricing-engine-change/?screen=proposal&proposal=pending">Open the sign-off</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. A candidate that replaces the official configuration is the same flow as a new version, with a step that rebinds the reports of the cycle. That step is not drawn.</div>`
+    : `<div class="okbox"><b>Saved as a draft.</b> ${esc(D.saved.name)} was written with ${D.saved.products.length} products as version 1, with the reason <span class="mono">system.new_record</span>. No official report can bind a draft.</div>
+  <div class="actions"><a class="btn primary" href="../see-the-pricing-engines-a-party-holds/?screen=record&id=c3">Open the configuration's page</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. This prototype writes to its own memory only.</div>`;
   const f = findings();
-  return `<table><thead><tr><th>#</th><th>Product</th><th>Model</th><th>Engine</th><th>Settings</th></tr></thead><tbody>${D.rows.map((r, i) => `<tr><td>${i + 1}</td><td class="mono">${r.type}</td><td class="mono">${esc(r.model) || dash}</td><td class="mono">${esc(r.engine) || dash} ${pairTag(r.model, r.engine)}</td><td class="mono">${r.params.map(p => p.scope + ' ' + esc(p.name) + '=' + esc(p.value)).join(', ') || dash}</td></tr>`).join('')}</tbody></table>
+  return `<div class="statline"><span>Status after you save: ${statusTag('draft')}</span><span>${D.cycle ? 'Candidate for the official ' + CYCLE_NAME[D.cycle] + ' configuration' : 'Not a candidate for any cycle'}</span></div>
+  <table><thead><tr><th>#</th><th>Product</th><th>Model</th><th>Engine</th><th>Settings</th></tr></thead><tbody>${D.rows.map((r, i) => `<tr><td>${i + 1}</td><td class="mono">${r.type}</td><td class="mono">${esc(r.model) || dash}</td><td class="mono">${esc(r.engine) || dash} ${pairTag(r.model, r.engine)}</td><td class="mono">${r.params.map(p => p.scope + ' ' + esc(p.name) + '=' + esc(p.value)).join(', ') || dash}</td></tr>`).join('')}</tbody></table>
   <div class="dl"><div class="k">Global settings</div><div class="v mono">${D.globals.map(g => g.name + '=' + g.value).join(', ') || '—'}</div></div>
-  <div class="${f.length ? 'warnbox' : 'okbox'}">${f.length} findings from step 5. They do not block the save.</div>
+  <div class="${f.length ? 'warnbox' : 'okbox'}">${f.length} findings from step 5. They do not stop a draft from being saved.</div>
+  ${D.cycle ? (blocked() ? '<div class="warnbox">Submit for sign-off is not offered: a product type the reports need has no row, or a row has no model or engine. Go back to step 5.</div>' : `<div class="okbox">Every product type the ${CYCLE_NAME[D.cycle].toLowerCase()} reports need has a row. The sign-off asks ${ROLES.map(r => r.name).join(', ')}, and the person who submits cannot sign off.</div>`) : '<div class="notice">To submit it for sign-off, go back to step 1 and choose a cycle.</div>'}
   <div class="notice">Save writes one document, the configuration with its products and parameters, in one request. The service writes the three tables one after another with no unit of work, so a failure part way can leave a configuration without its parameters. After a failed write the screen reads the document back and shows what landed.</div>
-  <div class="notice">A new record is saved with the reason new record.</div>`;
+  <div class="notice">A new record is saved with the reason new record. No operation holds a status: the draft, in review and approved states are this page's own.</div>`;
 }
 const BODIES = [s1, s2, s3, s4, s5, s6];
 function render() {
   const rail = STEPS.map((s, i) => { const st = i < step ? 'done' : i === step ? 'current' : 'ahead'; return `<li class="railentry ${st}" data-go="${i}"><span class="railmark ${st}">${i < step ? '✓' : i + 1}</span><span>${s[1]}</span>${i === 5 ? '<span class="railtag">final</span>' : ''}</li>`; }).join('');
   const last = step === 5;
-  const foot = `<div class="stepfoot">${step > 0 && !(last && D.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (D.saved ? '' : btn('Save', 'save', 'primary', 'id="b-save"')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
+  const foot = `<div class="stepfoot">${step > 0 && !(last && D.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (D.saved ? '' : btn('Save as draft', 'save', D.cycle ? '' : 'primary', 'id="b-save"') + (D.cycle ? ' ' + btn('Submit for sign-off', 'save', 'primary', `id="b-submit" ${blocked() ? 'disabled' : ''}`) : '')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
   document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', '../see-the-pricing-engines-a-party-holds/'], ['Add']])}<div class="titlebar"><div><h1>Author a pricing engine configuration</h1><div class="sub">Six steps. Every value on this page is a fixture, and nothing is written to a server.</div></div></div>
   <div class="journey"><nav class="railnav"><ol>${rail}</ol></nav><div><div class="stepcard"><h2>${step + 1}. ${STEPS[step][1]}</h2><div class="lead">${STEPS[step][2]}</div>${BODIES[step]()}</div>${foot}</div></div>`;
-  chrome('author a pricing engine configuration · step ' + (step + 1) + ' of 6 · step 3 reading ' + variant, [['variant', ['A', 'B', 'C'], variant], ['start', ['empty', 'copy'], start0]]);
+  chrome('author a pricing engine configuration · step ' + (step + 1) + ' of 6 · step 3 reading ' + variant, [['variant', ['A', 'B', 'C'], variant], ['start', ['empty', 'copy'], start0], ['cycle', ['none', 'eod', 'intraday'], D.cycle || 'none']]);
   wire();
 }
 function go(i) { step = i; maxStep = Math.max(maxStep, i); const p = new URLSearchParams(location.search); p.set('step', i + 1); history.replaceState({}, '', '?' + p.toString()); render(); }
@@ -431,13 +516,15 @@ function wire() {
   qa('[data-go]').forEach(x => x.onclick = () => { const i = Number(x.dataset.go); if (i <= maxStep || i < step) go(i); });
   if ($('b-next')) $('b-next').onclick = () => { if (step === 0 && D.start === 'file') { location.href = '../bring-in-a-pricing-engines-file/'; return; } go(step + 1); };
   if ($('b-back')) $('b-back').onclick = () => go(step - 1);
-  if ($('b-save')) $('b-save').onclick = () => { D.saved = { name: D.name, products: clone(D.rows) }; render(); };
+  if ($('b-save')) $('b-save').onclick = () => { D.saved = { kind: 'draft', name: D.name, products: clone(D.rows) }; render(); };
+  if ($('b-submit')) $('b-submit').onclick = () => { D.saved = { kind: 'submit', name: D.name, products: clone(D.rows) }; render(); };
+  qa('[name=purpose]').forEach(x => x.onchange = () => { D.cycle = x.value; render(); });
   const nm = $('f-name'); if (nm) { nm.oninput = () => { D.name = nm.value; const b = $('b-next'); if (b) b.disabled = !valid(0); const h = nm.parentNode.querySelector('.help'); h.innerHTML = nameTaken() ? '<span style="color:var(--bad)">A configuration with this name exists. Choose another name.</span>' : 'The name is new in this party.'; }; }
   if ($('f-desc')) $('f-desc').oninput = e => { D.desc = e.target.value; }; if ($('f-var')) $('f-var').oninput = e => { D.variant = e.target.value; };
   qa('[name=start]').forEach(x => x.onchange = () => { D.start = x.value; if (D.start === 'copy') { const c = byId2(D.from); D.rows = clone(c.products); D.globals = clone(c.globals); } render(); });
   if ($('f-from')) $('f-from').onchange = e => { D.from = e.target.value; const c = byId2(D.from); D.rows = clone(c.products); D.globals = clone(c.globals); render(); };
   if ($('f-ts')) $('f-ts').oninput = e => { typeSearch = e.target.value; render(); const n = $('f-ts'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
-  if ($('b-trade')) $('b-trade').onclick = () => { TRADED.filter(t => typeOf(t) && !rowOf(t)).forEach(t => D.rows.push({ type: t, model: '', engine: '', params: [] })); render(); };
+  if ($('b-trade')) $('b-trade').onclick = () => { neededNow().filter(t => typeOf(t) && !rowOf(t)).forEach(t => D.rows.push({ type: t, model: '', engine: '', params: [] })); render(); };
   qa('[data-type]').forEach(x => x.onchange = () => { if (x.checked) D.rows.push({ type: x.dataset.type, model: '', engine: '', params: [] }); else D.rows = D.rows.filter(r => r.type !== x.dataset.type); render(); });
   if ($('b-all')) $('b-all').onclick = () => { D.rows.forEach(useUsual); render(); };
   qa('[data-use]').forEach(x => x.onclick = () => { useUsual(D.rows[Number(x.dataset.use)]); render(); });

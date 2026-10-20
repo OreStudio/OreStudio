@@ -2,15 +2,15 @@
 :ID: D998F36A-9716-48E7-BC70-BC4813115591
 :END:
 #+title: User Journey: Change how a product is priced
-#+description: A market-risk owner changes the model, engine or parameters of one product in a pricing engine configuration, reads which reports the change reaches before it is saved, and may keep the change to one report by making a copy.
+#+description: A market-risk owner proposes a change to the model, engine or parameters of one product in a pricing engine configuration, reads which reports the change reaches once it is approved, and may try the change in a draft copy first.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-19
+#+updated: 2026-10-20
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner changes the model, engine or parameters of one product in a pricing engine configuration, reads which reports the change reaches before it is saved, and may keep the change to one report by making a copy.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner proposes a change to the model, engine or parameters of one product in a pricing engine configuration, reads which reports the change reaches once it is approved, and may try the change in a draft copy first.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -21,11 +21,14 @@ each step needs.
 
 "The desk says my Bermudan swaption price is off, so I want to price it another
 way, and I want to know what else that moves." The person owns one report. The
-report binds a configuration, and the configuration is shared. A change to a
-product row is a change to every report that binds it. The journey is done when
-the product is priced the way the person meant, and the person has read which
-reports the change reached, what it did not reach, and has either made the change
-for all of them or for one.
+report binds a configuration, and the configuration is shared. A party holds few
+official configurations, one for each cycle, and model risk signs them off. An
+approved version never changes in place. A change to a product row is therefore a
+proposal for a new version, and it reaches every report that binds the
+configuration only after the sign-off completes. The journey is done when the
+proposal is submitted, and the person has read which reports it would reach, what
+it would not reach, and what stays in force until then. A person who only wants to
+test an idea tries it in a draft copy, which touches no report.
 
 * Actor and trigger
 
@@ -36,23 +39,33 @@ The trigger is a figure the desk disputes, a model the desk has changed its mind
 about, or a parameter that is wrong for the book. The journey starts on the
 Products tab of a configuration in
 [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]
-and ends on the same page, on the History tab, with the new version at the top.
+and ends on the same page, with the proposal shown as a banner and on the History
+tab. The sign-off itself is
+[[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]].
 
 The journey changes one product row and the parameters of that row. It does not
 add or remove a product type, and it does not rebind a report. Adding a product
 is *Add* on the Products tab. Moving a report to another configuration is a step
-of [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
+of [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]]. A draft
+needs no sign-off, so on a draft the journey changes the row in place and reaches
+no run.
 
 * Steps
 
 1. *Open the row.* On the Products tab the person opens one product. The product
    page shows the product type with its description, the model, the engine, and
-   its parameters in two groups, model and engine. *Edit* opens the record dialog.
-2. *Read who else is bound.* Before anything is typed, the dialog states the
-   reach: the configuration is bound by N report definitions, named, and a change
-   reaches the next run of each. It states what the change does not reach: a run
-   already produced keeps what it ran with, and no operation says which version a
-   run used. When only one report binds the configuration, the dialog says so.
+   its parameters in two groups, model and engine. On an approved configuration the
+   action is *Propose a change*. On a draft it is *Edit*. A product that a pending
+   proposal changes carries a tag that says so.
+2. *Read the reach.* Before anything is typed, the dialog states the reach. Nothing
+   changes now: the version in force stays in force until the sign-off completes.
+   After that, the change reaches the next run of each of the N report definitions
+   that bind the configuration, named. It does not reach a run already produced: a
+   run keeps what it ran with, and no operation says which version a run used.
+   When no report binds the configuration, the dialog says so. When a proposal is
+   already open, the dialog says that a second proposal sits on the same version,
+   that the first one approved becomes the version in force, and that the other must
+   be rebased.
 3. *Change the pair.* The model and the engine are combo boxes, as in
    [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
    A pair that is not known to work is marked, never refused. Changing the model
@@ -63,39 +76,48 @@ of [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
    dropped or added until the person says so.
 5. *Read the difference.* A panel in the dialog shows the row before and after as
    a diff: the model, the engine, each parameter added, changed or dropped. It is
-   the same diff the History tab draws, so the person reads one thing twice.
-6. *Choose the scope.* Two choices, with the first selected when only one report
-   binds the configuration and the second when several do:
-   - *Change this configuration.* The change reaches every report named in the
-     reach panel.
-   - *Make a copy for this report.* The dialog asks for a name, copies the whole
-     configuration with the change applied, and rebinds only the report the person
-     came from. The other reports keep the configuration they have. The copy is the
-     safe choice when the person does not own the other reports.
+   the same diff the sign-off and the History tab draw, so the person reads one
+   thing three times.
+6. *Choose what to do with the change.* This choice appears on an approved
+   configuration only:
+   - *Propose a new version of* the configuration. This is the default. Version
+     N+1 waits for the roles model risk names, and the person who proposes it
+     cannot sign it off. Version N stays in force.
+   - *Try it in a draft copy.* The dialog asks for a name and copies the whole
+     configuration with the change applied, as a draft. No report is rebound, and
+     no official report can bind a draft. The copy is for testing. A copy never
+     replaces the official configuration. To make it official, the person submits
+     it as a candidate, as in
+     [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
 7. *Give the reason.* The person chooses a change reason for an amendment and
    writes a commentary when the reason needs one. The set of reasons follows
-   whether a field changed, as the standard says. The write claims the version
-   read; a configuration that changed since is refused with 409 and the screen
-   offers to reload.
-8. *Save.* The dialog closes and the page shows the new values. The Products tab
-   marks the row for three seconds. A copy opens the copy's page, with a notice
-   that the report is now bound to it.
-9. *Read the history.* The History tab is the shared timeline of the
-   configuration and its parts. The new version is at the top with its reason and
-   its diff. *Revert to this version* is offered on any older version and writes
-   its values back as a new version.
-10. *Leave, or go on.* The person returns to the report and runs it. The run
-    uses the new pricing. A run made after the change is not comparable with a run
-    made before it for this product, and the page says so, with the same
-    statement as [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
+   whether a field changed, as the standard says. The proposal claims the version
+   it was written on. A configuration that moved since is refused with 409, and the
+   screen offers to reload.
+8. *Submit.* The dialog closes and the page shows a banner: version N+1 is
+   proposed, version N stays in force, and the next run of each report still uses
+   version N. The Products tab marks the row. A draft copy opens the copy's page,
+   with a notice that no report is bound to it. A change to a draft saves in place
+   and says so.
+9. *Read the history.* The History tab is the shared timeline of the configuration
+   and its parts. The proposal is at the top with its reason, and is marked as a
+   proposal and not as a version in force. Each version in force shows who signed
+   it off. *Propose a revert* is offered on any older version of an approved
+   configuration and writes its values as a new proposal. On a draft, *Revert* writes
+   them as a new version.
+10. *Leave, or go on.* The person follows the banner to the sign-off, or returns to
+    the report. A run made after the change is in force is not comparable with a run
+    made before it for this product, and the page says so, with the same statement
+    as [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
 
 * Screens and wireframes
 
 Two screens on the record page: the product row dialog with the reach, the
-difference and the scope choice, and the History tab with the revert. The dialog
-is one dialog, not a wizard, because the change is one write.
+difference and the choice of what to do with the change, and the History tab with
+the proposed revert. The dialog is one dialog, not a wizard, because the change is
+one write.
 
-#+caption: The product dialog: the model and engine, the parameters, the reach, the difference and the scope choice.
+#+caption: The product dialog: the model and engine, the parameters, the reach, the difference and the choice between a proposal and a draft copy.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_change_how_a_product_is_priced.png]]
 
@@ -105,14 +127,17 @@ The [[file:../../prototypes/reporting/change-how-a-product-is-priced/][change ho
 [[file:../../prototypes/reporting/change-how-a-product-is-priced.org][its design note]] says what it argues, which states it can reach and what is
 fake. It belongs at =doc/prototypes/reporting/change-how-a-product-is-priced/=.
 
-It must draw the record page and the Edit dialog as the Record screen standard
-draws them, with the reach, the difference and the scope choice added inside the
-one dialog. It must show a configuration bound by one report and a configuration
-bound by four, because the default scope choice differs. It must show the
-parameters that will be dropped and the ones usually needed. It must show the
-409 refusal and the History tab with a revert. It must state that no operation
-makes a copy and no operation says which configuration version a run used. Every
-value is a fixture.
+It must draw the record page and the dialog as the Record screen standard draws
+them, with the reach, the difference and the choice of what to do with the change
+added inside the one dialog. It must show an approved configuration, where the
+dialog proposes a version and offers a draft copy, and a draft, where it changes in
+place with no choice. It must show a configuration bound by four reports, by one
+and by none, because the reach text differs, and a proposal already open. It must
+show the parameters that will be dropped and the ones usually needed. It must show
+the 409 refusal and the History tab with a proposed revert. It must state that no
+operation makes a copy, no operation holds a proposal and no operation says which
+configuration version a run used. Switches: =?status=approved|draft=,
+=?bound=0|1|4=, =?pending=1= and =?conflict=1=. Every value is a fixture.
 
 * Entities composed
 
@@ -131,11 +156,13 @@ value is a fixture.
 |------+-----------+---------+--------|
 | 1, the row | Read the document | =analytics.v1.pricing_engines_documents.get= | exists |
 | 2, the reach | Read the definitions bound to the configuration | =reporting.v1.report_configurations.list= | partial; no read by configuration id |
+| 2, the open proposal | Read the proposals of a configuration | (no operation) | missing |
 | 3 and 4, the combo boxes | Read the models, engines and settings | (no operation) | missing |
-| 7, save in place | Write one product | =analytics.v1.pricing_model_products.put= | exists |
-| 7, save in place | Write one parameter | the =put= subject of =pricing_model_product_parameter= | exists |
-| 7, save in place | Write the whole document | =analytics.v1.pricing_engines_documents.put= | exists |
-| 6, a copy | Write a new document and rebind one report | =analytics.v1.pricing_engines_documents.put= and =reporting.v1.report_configurations.put= | exists, in two requests |
+| 8, a draft | Write one product | =analytics.v1.pricing_model_products.put= | exists |
+| 8, a draft | Write one parameter | the =put= subject of =pricing_model_product_parameter= | exists |
+| 8, a draft | Write the whole document | =analytics.v1.pricing_engines_documents.put= | exists |
+| 8, a proposal | Hold a new version apart from the version in force | (no operation) | missing |
+| 6, a draft copy | Write a new document as a draft | =analytics.v1.pricing_engines_documents.put= | exists; no status |
 | 9, history | Read the versions of the configuration and its parts | (the generic history request) | partial |
 | The screen | Change from the browser | (no BFF route) | missing |
 
@@ -147,19 +174,25 @@ value is a fixture.
 2. *Which reports bind a configuration.* The reach panel needs the definitions
    for a configuration. The read exists for a definition and not for a
    configuration.
-3. *A change to a product is not one write.* A product and its parameters are
+3. *A proposal has no home.* Nothing holds a new version apart from the version
+   in force. A write to the document replaces the rows that a run reads. A
+   proposal needs its own record, and the sign-off needs a status on the
+   configuration and a record of each decision. The prototype keeps both in the
+   page.
+4. *A change to a product is not one write.* A product and its parameters are
    written by separate requests, or by the whole document. A change of pair that
    drops three parameters and adds two is six writes. The screen would use the
    document write and send everything, which makes the version of the whole
    document move for a change of one row. The history shows the document as
    changed, not the row.
-4. *The version a run used.* No operation says which version of a configuration
+5. *The version a run used.* No operation says which version of a configuration
    a run was made with. The screen states that a run keeps its configuration and
-   cannot say which version that was.
-5. *A copy is two requests.* The copy and the rebinding are separate writes. A
-   failure between them leaves a copy that no report binds. The screen reads the
-   result back and says what landed.
-6. *No check on write.* A pair that does not work, or a missing setting, is
+   cannot say which version that was. With a sign-off, a person must be able to
+   prove which approved version priced a figure. This gap matters more now.
+6. *A copy has no operation.* The draft copy is the screen reading a document and
+   writing a new one. Nothing makes a copy on the server. The copy and a later
+   candidate submission are separate requests.
+7. *No check on write.* A pair that does not work, or a missing setting, is
    accepted and fails in the run.
 
 * Related journeys
@@ -167,6 +200,7 @@ value is a fixture.
 - [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — the combo boxes and the notes the dialog shares
 - [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — a file that replaces the rows rather than changing one
+- [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — what happens to the proposal this journey submits
 - [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the same reach statement, for the analytics
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — where the person sees the effect of the change
 

@@ -943,6 +943,7 @@ private:
             publish_bundle_or_throw(
                 admin_client, bundle_code, super_actor.username, params_json, command.kind);
             complete_system_onboarding(admin_client);
+            restore_system_feeds(admin_client);
             wf.complete(rfl::json::write(
                 provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
             return;
@@ -1937,6 +1938,29 @@ private:
             return false;
         }
         return true;
+    }
+
+    // Starts the system feeds that the system bundle just created, so a new
+    // installation runs them without a restart. A synthetic service that is not
+    // up yet restores the same feeds when it starts, so no failure here fails
+    // the step.
+    static void restore_system_feeds(internal_request_client& client) {
+        try {
+            const auto resp = client.request(ores::synthetic::messaging::restore_feeds_request{});
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    << "restore_system_feeds: " << resp.message;
+                return;
+            }
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "restore_system_feeds: " << resp.message;
+            for (const auto& failure : resp.failures)
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    << "restore_system_feeds: " << failure;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                << "restore_system_feeds: the synthetic service did not answer: " << e.what();
+        }
     }
 
     // Finds the tenant's system party (party_category == "System", created

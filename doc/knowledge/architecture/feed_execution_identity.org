@@ -101,30 +101,68 @@ created.
 A feed binding records that a party consumes a producer source. A Start by a
 person subscribes that person's party, whether the feed was already running or
 not, and a second party that starts the same feed gets a binding of its own.
-The service creates it with the caller's token, in the caller's party. It is the
-caller's act, so it does not use the run token. A restore subscribes no party,
+The service creates it with the caller's token, in the caller's party, and it
+names the producer kind =SYNTHETIC=, because the service generates the feed. It
+is the caller's act, so it does not use the run token. A restore subscribes no party,
 because the stored bindings stand. A bound feed that a restore starts keeps
 every binding it had.
 
 ** The restore
 
-The synthetic service restores its feeds when it starts. The running set is not
-stored. The =enabled= and =auto_start= flags of the configs are the stored form
-of it.
+The synthetic service restores its feeds when it starts, and when a provision
+asks. The running set is not stored. The =enabled= and =auto_start= flags of the
+configs are the stored form of it. A Start or a Stop by a person changes the
+running set and no flag, so a restore returns every feed to what its flags say.
+A person who wants a feed to stay stopped sets =enabled= to false.
 
-#+caption: Restoring the feeds: every active tenant is walked, and each feed gets its token by the same exchange as a Start.
+#+caption: Restoring the feeds: every active tenant is walked, each feed gets its token by the same exchange as a Start, and a feed that fails is tried again until its dependency answers.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/feed_restore_sequence.png]]
 
 Source: [[proj:doc/knowledge/architecture/feed_restore_sequence.puml][=feed_restore_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/feed_restore_sequence.puml=.
 
-The walk reads each tenant's configs in a context of that tenant, opened on the
-tenant's root party. Row-level security shows a tenant context its own
+The walk reads each tenant's configs in a context of that tenant, opened on one
+root party at a time. Row-level security shows a tenant context its own
 collections. The party policy shows a party's collection only to a context whose
-visible parties include that party, and the root party's subtree is every party
-of the tenant. A system feed starts only in the pass of the system tenant. A
-tenant that fails is logged and does not stop the others.
+visible parties include that party, and a root party's subtree is the visible
+set. A tenant can have more than one root party, for example its system party
+and its top operational party, so the walk makes one pass for each root party.
+The collections of the system party belong to a different subtree than the
+collections of the operational parties, and a walk on one root alone would miss
+the other. A system feed starts only in the pass of the system tenant. A pass
+that fails is logged and does not stop the others.
+
+*** The restore waits for its dependencies
+
+The services of an installation start in no fixed order. A vintage-priced feed
+reads marketdata, and its token comes from IAM, so the first pass of a restore
+can run before either one answers. A feed that does not start in a pass is tried
+again. The tries come 2 seconds after the pass, then twice as far apart each
+time, to a gap of 30 seconds. They stop when every feed runs or after five
+minutes. A feed that still fails at that time is logged as an error with its
+reason, and a later restart or a Start by a person is the way to start it.
+
+The restore cannot tell a service that is not up yet from one that refuses, so it
+tries again whatever the reason. Another feed that holds the same series is the
+exception. A wait does not free a series, so the restore logs it once and does
+not try again. A feed that is already running is not a failure, so every pass
+leaves the running feeds as they are.
+
+*** The restore as an operation
+
+The restore is also an operation, =synthetic.v1.ops.restore_feeds=. One call
+makes one pass in the caller's tenant and party, and for the system feeds when
+the caller is the system tenant. A party that is not a root party shows only its
+own subtree, so the system provision is the caller that this operation serves.
+It does not try again. It answers how many feeds it started
+and which ones failed, with the reason for each. It needs =synthetic::feeds:run=.
+It carries no person's consent, so it creates no grant and no binding.
+
+The provisioning of the system calls it after the system bundle is published.
+The system feeds exist from that moment, and a new installation runs them
+without a restart. The call does not fail the provision. A synthetic service
+that is not up yet restores the same feeds when it starts.
 
 ** The states of a feed
 
@@ -144,7 +182,8 @@ Source: [[proj:doc/knowledge/architecture/feed_run_states.puml][=feed_run_states
 | The grantor lacks a permission of the role | no grant is made | IAM's refusal, naming the permission |
 | The grant lapsed or is revoked | does not start | the reason, in the reply or in the log |
 | A vintage-priced feed finds no grant at a restore | is skipped | a log line that names the feed and says a Start gives the consent |
-| IAM does not answer | does not start | the reason, in the reply or in the log |
+| IAM does not answer | does not start; a restore tries again | the reason, in the reply or in the log |
+| Marketdata does not answer at a restore | tries again for five minutes, then does not start | a warning at each try and an error at the end, in the log |
 | Another feed holds the series | does not start | the name of the holder |
 
 * Patterns used

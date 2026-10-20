@@ -39,17 +39,17 @@ using settings_t = reporting::domain::risk_report_config;
 // projection is a rename table rather than forty branches.
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> settings_t::* member;
+    std::optional<std::string> settings_t::*member;
 };
 
 struct required_binding {
     std::string_view parameter;
-    std::string settings_t::* member;
+    std::string settings_t::*member;
 };
 
 struct int_binding {
     std::string_view parameter;
-    std::optional<int> settings_t::* member;
+    std::optional<int> settings_t::*member;
 };
 
 const std::array<text_binding, 20> text_bindings = {{

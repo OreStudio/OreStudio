@@ -116,8 +116,9 @@ auto append_real(std::string& out, double value) -> void {
 /**
  * @brief Appends one spelling of an enumeration, which the row carries.
  */
-auto append_spelling(std::string& out, const field& f, std::int16_t index)
-    -> std::expected<void, emit_error> {
+auto append_spelling(std::string& out,
+                     const field& f,
+                     std::int16_t index) -> std::expected<void, emit_error> {
     if (index < 0 || f.tokens == nullptr)
         return std::unexpected(emit_error{"an enumeration holds no spelling"});
     for (std::int16_t i = 0; i <= index; ++i)
@@ -131,8 +132,9 @@ auto append_spelling(std::string& out, const field& f, std::int16_t index)
 /**
  * @brief Appends one value of a repeated leaf, which its row names the type of.
  */
-auto append_scalar(std::string& out, const field& f, const void* slot)
-    -> std::expected<void, emit_error> {
+auto append_scalar(std::string& out,
+                   const field& f,
+                   const void* slot) -> std::expected<void, emit_error> {
     switch (f.scalar) {
         case scalar_kind::text:
             append_escaped(out, *static_cast<const std::string*>(slot), false);
@@ -169,8 +171,9 @@ auto slot_of(const void* record, const field& f) -> const void* {
  * @param f The row the value belongs to, which names the type it holds.
  * @param slot The member's address.
  */
-auto append_value(std::string& out, const field& f, const void* slot)
-    -> std::expected<void, emit_error> {
+auto append_value(std::string& out,
+                  const field& f,
+                  const void* slot) -> std::expected<void, emit_error> {
     switch (f.kind) {
         case field_kind::text:
             append_escaped(out, *static_cast<const std::string*>(slot), false);
@@ -205,8 +208,10 @@ auto write_element(std::string& out,
                    std::string_view name,
                    const void* columns) -> std::expected<void, emit_error>;
 
-auto write_indexed(std::string& out, const field& f, const void* record, std::size_t depth)
-    -> std::expected<void, emit_error> {
+auto write_indexed(std::string& out,
+                   const field& f,
+                   const void* record,
+                   std::size_t depth) -> std::expected<void, emit_error> {
     if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
         return std::unexpected(emit_error{"an indexed member names no arena"});
     const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record, f));
@@ -245,8 +250,10 @@ auto write_element(std::string& out,
 /**
  * @brief Appends one repeated member's rows, each under its own element.
  */
-auto write_repeated(std::string& out, const field& f, const void* record, std::size_t depth)
-    -> std::expected<void, emit_error> {
+auto write_repeated(std::string& out,
+                    const field& f,
+                    const void* record,
+                    std::size_t depth) -> std::expected<void, emit_error> {
     const auto* slot = slot_of(record, f);
     const auto count = f.repeated->count(slot);
     for (std::size_t i = 0; i < count; ++i) {
@@ -440,8 +447,9 @@ auto write_element(std::string& out,
 
 }
 
-auto emitter::emit(const document_type& doc, const void* root, std::string& out)
-    -> std::expected<void, emit_error> {
+auto emitter::emit(const document_type& doc,
+                   const void* root,
+                   std::string& out) -> std::expected<void, emit_error> {
     out.clear();
     out.append(declaration);
     const auto written = write_element(out, *doc.root, root, 0, doc.root_name, nullptr);

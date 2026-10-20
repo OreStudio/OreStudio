@@ -48,8 +48,8 @@ using portfolio_reference_curves = std::function<std::string(const std::string&)
  * The table keeps the digits the document wrote, and the domain column is a
  * double. The conversion happens here, once, at the boundary.
  */
-inline auto decimal_as_double(const xml::record_reader& r, std::string_view name)
-    -> std::optional<double> {
+inline auto decimal_as_double(const xml::record_reader& r,
+                              std::string_view name) -> std::optional<double> {
     if (const auto value = r.decimal(name))
         return value->to_double();
     return std::nullopt;
@@ -127,11 +127,11 @@ ORES_ORE_CORE_EXPORT auto read_rate_instrument(xml::record_reader trade,
                                                std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto write_rate_instrument(xml::record_writer& trade,
-                                                std::string_view trade_type,
-                                                const trading::domain::trade_instrument& instrument,
-                                                const portfolio_reference_curves& reference_curves)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+write_rate_instrument(xml::record_writer& trade,
+                      std::string_view trade_type,
+                      const trading::domain::trade_instrument& instrument,
+                      const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
  * @brief The bond family: an issue row shared by the products built on it.
@@ -145,11 +145,11 @@ ORES_ORE_CORE_EXPORT auto read_bond_instrument(xml::record_reader trade,
                                                std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto write_bond_instrument(xml::record_writer& trade,
-                                                std::string_view trade_type,
-                                                const trading::domain::trade_instrument& instrument,
-                                                const portfolio_reference_curves& reference_curves)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+write_bond_instrument(xml::record_writer& trade,
+                      std::string_view trade_type,
+                      const trading::domain::trade_instrument& instrument,
+                      const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
  * @brief The credit family: a routed header, one fact row per product and legs
@@ -220,11 +220,11 @@ write_commodity_instrument(xml::record_writer& trade,
 ORES_ORE_CORE_EXPORT auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto write_fx_instrument(xml::record_writer& trade,
-                                              std::string_view trade_type,
-                                              const trading::domain::trade_instrument& instrument,
-                                              const portfolio_reference_curves& reference_curves)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+write_fx_instrument(xml::record_writer& trade,
+                    std::string_view trade_type,
+                    const trading::domain::trade_instrument& instrument,
+                    const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
  * @brief The composite family: a basket of constituent trades.

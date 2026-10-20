@@ -107,12 +107,20 @@ next, because it is not stored: it is the producer service's memory.
 
 A restart of the producer service starts every enabled auto-start feed of every
 active tenant again, so a quiet binding after a restart is a feed that did not
-start. The log of the producer service names the reason for each feed it skipped.
-There are three:
+start. A feed that cannot start because marketdata or IAM is not up yet is tried
+again for five minutes, so the order in which the services start does not matter.
+A new installation starts its system feeds when the system is provisioned. The
+log of the producer service names the reason for each feed it skipped.
+There are four:
 
 - The feed starts from a vintage price and its collection holds no run grant, because no person has started the collection yet.
 - The grant lapsed, because its grantor lost a permission of the role or left.
 - Another running feed holds the same series.
+- Marketdata or IAM did not answer in five minutes.
+
+A feed that a person started and that is not auto-start does not come back after
+a restart, and a feed that a person stopped and that is auto-start does. The
+flags decide, not the last Start or Stop.
 
 A person who holds the permissions starts the collection from the shell, which
 gives a new consent and starts the feed. A feed that was running when the service

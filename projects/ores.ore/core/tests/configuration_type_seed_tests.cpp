@@ -84,8 +84,7 @@ const std::map<std::string, std::string>& roots_written() {
         {"counterparty_information",
          std::string(xg::counterparty_information::counterparty_information_document().root_name)},
         {"netting_set_definitions",
-         std::string(
-             xg::netting_set_definitions::netting_set_definitions_document().root_name)},
+         std::string(xg::netting_set_definitions::netting_set_definitions_document().root_name)},
     };
     return table;
 }

@@ -90,7 +90,7 @@ task and name that file in the Command column.
 | Burst drain, sync off and the NOTIFY function empty | about 210 rows per second from t=20 s, peaks near 280 | =capacity.sh nonotify= after replacing =..._notify_fn()= with a no-op | same |
 | Wait events of the one active marketdata session, sync off, 70 samples | 29 =Lock:object=, 24 CPU, 17 =Client:ClientRead= | =pg_stat_activity= sampled every 0.25 s | same |
 | The lock that waits | =AccessExclusiveLock= on =pg_database= object 0, waiting statement =COMMIT=, blockers are marketdata sessions of two other environments | =pg_locks= joined to =pg_stat_activity= during a burst | same |
-| Step 0, observation table as built, 10,000 rows in a transaction | 8,301 rows per second, 1,199 bytes per row | =evidence/step0_write_ceiling.sql=, output in =step0_write_ceiling_output.txt= | a943595339 |
+| Step 0, observation table as built, 10,000 rows in a transaction | 8,301 rows per second, 1,199 bytes per row | =evidence/step0_write_ceiling.sql.txt=, output in =step0_write_ceiling_output.txt= | a943595339 |
 | Step 0, same table without the trigger | 32,751 rows per second, 942 bytes per row | same | same |
 | Step 0, append-only table with one index | 186,824 rows per second, 162 bytes per row | same | same |
 | Step 0, =COPY= of 300,000 rows from a client file | 41,000 rows per second without the trigger, 188,000 into the append-only table | same | same |

@@ -154,6 +154,13 @@ auto append_scalar(std::string& out,
     return std::unexpected(emit_error{"a repeated leaf of an unknown kind reached the writer"});
 }
 
+/// The columns struct a record keeps for the type member `f` holds, or null.
+auto columns_held(const void* record, const field& f) -> const void* {
+    if (f.columns_offset == no_arena)
+        return nullptr;
+    return static_cast<const std::byte*>(record) + f.columns_offset;
+}
+
 auto slot_of(const void* record, const field& f) -> const void* {
     return static_cast<const std::byte*>(record) + f.offset;
 }
@@ -186,6 +193,7 @@ auto append_value(std::string& out,
         case field_kind::repeated_leaf:
         case field_kind::repeated_nested:
         case field_kind::indexed_nested:
+        case field_kind::column_nested:
         case field_kind::residual:
             return std::unexpected(emit_error{"a row that names no single value reached the "
                                               "value writer"});
@@ -197,7 +205,8 @@ auto write_element(std::string& out,
                    const record_type& type,
                    const void* record,
                    std::size_t depth,
-                   std::string_view name) -> std::expected<void, emit_error>;
+                   std::string_view name,
+                   const void* columns) -> std::expected<void, emit_error>;
 
 auto write_indexed(std::string& out,
                    const field& f,
@@ -217,8 +226,8 @@ auto write_indexed(std::string& out,
             return std::unexpected(
                 emit_error{"an indexed member names a row the arena does not hold"});
         named[index] = true;
-        const auto written =
-            write_element(out, *f.type, f.repeated->at(arena, index), depth, f.name);
+        const auto written = write_element(
+            out, *f.type, f.repeated->at(arena, index), depth, f.name, columns_held(record, f));
         if (!written)
             return written;
     }
@@ -235,7 +244,8 @@ auto write_element(std::string& out,
                    const record_type& type,
                    const void* record,
                    std::size_t depth,
-                   std::string_view name) -> std::expected<void, emit_error>;
+                   std::string_view name,
+                   const void* columns) -> std::expected<void, emit_error>;
 
 /**
  * @brief Appends one repeated member's rows, each under its own element.
@@ -249,7 +259,8 @@ auto write_repeated(std::string& out,
     for (std::size_t i = 0; i < count; ++i) {
         const void* element = f.repeated->at(slot, i);
         if (f.kind == field_kind::repeated_nested) {
-            const auto written = write_element(out, *f.type, element, depth, f.name);
+            const auto written =
+                write_element(out, *f.type, element, depth, f.name, columns_held(record, f));
             if (!written)
                 return written;
             continue;
@@ -272,7 +283,8 @@ auto write_element(std::string& out,
                    const record_type& type,
                    const void* record,
                    std::size_t depth,
-                   std::string_view name) -> std::expected<void, emit_error> {
+                   std::string_view name,
+                   const void* columns) -> std::expected<void, emit_error> {
     // The binder holds max_depth frames, so an element this writer places at
     // that depth would not bind again.
     if (depth >= max_emit_depth)
@@ -361,8 +373,24 @@ auto write_element(std::string& out,
             continue;
         switch (f.kind) {
             case field_kind::nested: {
-                const auto written =
-                    write_element(out, *f.type, slot_of(record, f), depth + 1, f.name);
+                const auto written = write_element(
+                    out, *f.type, slot_of(record, f), depth + 1, f.name, columns_held(record, f));
+                if (!written)
+                    return written;
+                break;
+            }
+            case field_kind::column_nested: {
+                if (columns == nullptr || f.repeated == nullptr || f.arena_offset == no_arena)
+                    return std::unexpected(
+                        emit_error{"an alternative of '" + std::string(type.name) +
+                                   "' names a column the record does not carry"});
+                const auto* rows = static_cast<const std::byte*>(columns) + f.arena_offset;
+                const auto index = *static_cast<const std::uint32_t*>(slot_of(record, f));
+                if (index >= f.repeated->count(rows))
+                    return std::unexpected(
+                        emit_error{"an alternative names a row its column does not hold"});
+                const auto written = write_element(
+                    out, *f.type, f.repeated->at(rows, index), depth + 1, f.name, nullptr);
                 if (!written)
                     return written;
                 break;
@@ -424,7 +452,7 @@ auto emitter::emit(const document_type& doc,
                    std::string& out) -> std::expected<void, emit_error> {
     out.clear();
     out.append(declaration);
-    const auto written = write_element(out, *doc.root, root, 0, doc.root_name);
+    const auto written = write_element(out, *doc.root, root, 0, doc.root_name, nullptr);
     if (!written) {
         out.clear();
         return written;

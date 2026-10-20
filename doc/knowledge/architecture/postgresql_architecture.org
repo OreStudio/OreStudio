@@ -442,6 +442,13 @@ how live-update eventing works:
 Trigger files follow the naming pattern:
 =<domain>_<table>_notify_trigger_create.sql=.
 
+A table that records a stream of facts does not have this trigger. The signal says
+that an entity changed so that a client reloads it, and a time series changes many times
+each second. A transaction that calls =NOTIFY= also takes a database-wide lock at
+commit, and every database on the server waits for that lock. The model of such a
+table sets =ores.sql.schema.notify_trigger= and its drop to false. The market
+observation table is one. Its values reach clients on the live tick stream.
+
 ** PostgreSQL channel naming
 
 Every =pg_notify= channel follows the rule:

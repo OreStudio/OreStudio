@@ -44,6 +44,7 @@ set(files
     "repository_report_type_repository_tests.cpp"
     "run_document_handler_tests.cpp"
     "run_document_service_tests.cpp"
+    "service_count_report_definitions_by_health_tests.cpp"
     "service_engine_error_log_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_next_fire_tests.cpp"

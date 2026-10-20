@@ -44,7 +44,11 @@ namespace ores::ore::xml {
  */
 class ORES_ORE_CORE_EXPORT record_reader {
 public:
-    record_reader(const record_type& type, const void* record);
+    /**
+     * @param columns The columns struct of the holder of this record, for a
+     * record whose type keeps its alternatives there. Null for any other.
+     */
+    record_reader(const record_type& type, const void* record, const void* columns = nullptr);
 
     auto type() const -> const record_type&;
 
@@ -132,6 +136,7 @@ public:
 private:
     const record_type* type_;
     const void* record_;
+    const void* columns_;
 };
 
 /**
@@ -149,7 +154,11 @@ private:
  */
 class ORES_ORE_CORE_EXPORT record_writer {
 public:
-    record_writer(const record_type& type, void* record);
+    /**
+     * @param columns The columns struct of the holder of this record, for a
+     * record whose type keeps its alternatives there. Null for any other.
+     */
+    record_writer(const record_type& type, void* record, void* columns = nullptr);
 
     auto type() const -> const record_type&;
 
@@ -235,6 +244,7 @@ private:
 
     const record_type* type_;
     void* record_;
+    void* columns_;
 };
 
 }

@@ -104,7 +104,7 @@ void ir_curve_feed::start() {
                 tick.observation_time = now;
                 tick.source = source_name_;
 
-                nats_.js_publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
+                nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
             }
             return std::to_string(entries_.size());
         },

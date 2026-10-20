@@ -1,0 +1,27 @@
+#!/bin/sh
+# One burst of RATE ticks each second for SECONDS, then the rows that arrived and the ingest gauge.
+# usage: burst2.sh LABEL RATE SECONDS
+label=${1:-run}
+rate=${2:-1000}
+seconds=${3:-1}
+export KEYS=$PWD/build/keys/nats
+q() { ./compass.sh sql -- -t -A -c "$1"; }
+probe="select count(*) from ores_marketdata_market_observations_tbl where observation_datetime between now() - interval '3 days' and now() and value::numeric = 999"
+gauge() { journalctl --user -u ores.marketdata.service-brave_hopper.service --since "-2 min" --no-pager | grep "INGEST STATUS: queue" | tail -1 | sed 's/.*INGEST STATUS: //'; }
+
+before=$(q "$probe")
+echo "[$label] gauge before: $(gauge)"
+./tmp/tickprobe/v/bin/python -u tmp/tickprobe/inject.py "$rate" "$seconds" 2>&1 | grep sent=
+start=$(date +%s)
+last=-1
+stable=0
+while [ $stable -lt 3 ] && [ $(( $(date +%s) - start )) -lt 120 ]; do
+    sleep 3
+    got=$(q "$probe")
+    got=$((got - before))
+    echo "[$label] t=$(( $(date +%s) - start ))s rows=$got"
+    if [ "$got" -eq "$last" ]; then stable=$((stable + 1)); else stable=0; fi
+    last=$got
+done
+sleep 62
+echo "[$label] gauge after: $(gauge)"

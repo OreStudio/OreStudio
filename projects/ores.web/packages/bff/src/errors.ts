@@ -42,12 +42,21 @@ import type { ApiError } from '@ores/wire-protocol';
 export class HttpFailure extends Error {
     readonly status: number;
     readonly body: ApiError;
+    /**
+     * What the failure states beside its code and message.
+     *
+     * A refusal can carry the values that let the caller act on it, such as the
+     * records an ambiguous address could have meant. They travel with the body
+     * rather than as a second response, so one status stays one answer.
+     */
+    readonly details: Readonly<Record<string, unknown>>;
 
-    constructor(status: number, body: ApiError) {
+    constructor(status: number, body: ApiError, details: Readonly<Record<string, unknown>> = {}) {
         super(body.message);
         this.name = 'HttpFailure';
         this.status = status;
         this.body = body;
+        this.details = details;
     }
 }
 

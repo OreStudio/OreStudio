@@ -1,0 +1,37 @@
+# Burst A, 1,000 ticks in 1 s, before the adaptive batch size
+[A] gauge before: queue=0 dropped=0 stale=0 store_unavailable=0 batches=140 last_batch_ticks=1 last_batch_ms=10
+sent=1000 in 1.0s = 999/s on synthetic.bloomberg.usdtry
+[A] t=3s rows=2850
+[A] t=6s rows=10000
+[A] t=9s rows=10000
+[A] t=13s rows=10000
+[A] t=16s rows=10000
+[A] gauge after: queue=0 dropped=0 stale=0 store_unavailable=0 batches=588 last_batch_ticks=1 last_batch_ms=10
+
+[exited with code 0]
+
+# Burst B, 4,000 ticks in 4 s, before the adaptive batch size
+[B] gauge before: queue=0 dropped=0 stale=0 store_unavailable=0 batches=588 last_batch_ticks=1 last_batch_ms=10
+sent=4000 in 4.0s = 1000/s on synthetic.bloomberg.usdtry
+[B] t=4s rows=15350
+[B] t=7s rows=15350
+[B] t=10s rows=15350
+[B] t=13s rows=35690
+[B] t=17s rows=35690
+[B] t=20s rows=35690
+[B] t=23s rows=35690
+[B] gauge after: queue=0 dropped=0 stale=502 store_unavailable=0 batches=1725 last_batch_ticks=1 last_batch_ms=11
+
+[exited with code 0]
+
+# Burst B again, with the adaptive batch size and the late-publish check
+[B2] gauge before: queue=0 dropped=0 stale=502 store_unavailable=0 batches=2392 last_batch_ticks=1 last_batch_ms=11
+sent=4000 in 4.0s = 1000/s on synthetic.bloomberg.usdtry
+[B2] t=4s rows=16070
+[B2] t=7s rows=21550
+[B2] t=10s rows=21550
+[B2] t=13s rows=21550
+[B2] t=17s rows=21550
+[B2] gauge after: queue=0 dropped=0 stale=1878 late_unpublished=3940 store_unavailable=0 batches=576 last_batch_ticks=1 last_batch_ms=12
+
+[exited with code 0]

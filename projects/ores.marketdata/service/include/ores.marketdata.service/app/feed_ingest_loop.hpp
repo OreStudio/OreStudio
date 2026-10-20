@@ -28,10 +28,14 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/drop_oldest_queue.hpp"
+#include "ores.marketdata.service/app/store_backoff.hpp"
+#include "ores.marketdata.service/app/tick_age.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <chrono>
@@ -40,6 +44,7 @@
 #include <mutex>
 #include <optional>
 #include <set>
+#include <span>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -102,8 +107,25 @@ observation_dates(std::chrono::system_clock::time_point published_at);
  *
  * A series a tick lands in for the first time is created and classified the
  * way the file import classifies it, from the datum. An FX spot tick is also
- * offered to the CRM bridge. Republish waits for the stored observation, so
- * the republished stream cannot diverge from the table.
+ * offered to the CRM bridge.
+ *
+ * The subscription only decodes a tick and queues it. A worker thread takes
+ * every tick that has arrived and stores them as one batch: one transaction for
+ * each tenant, one series read for each series, and no commit for each tick.
+ * Republish follows the commit of the batch that stored the tick, on core NATS
+ * with no wait for an acknowledgement. A tick is perishable, because an old tick
+ * that waits while a newer one arrives is worse than a tick that is lost. So the
+ * queue is bounded and a full queue drops its oldest tick, and the worker drops a
+ * tick that has aged past max_tick_age when it takes the tick. A batch takes about one
+ * second, so a tick does not wait long inside a slow batch, and a tick that has aged past
+ * the limit by the time its batch commits is stored and not republished.
+ *
+ * A store that does not answer does not stop the live path. The loop leaves the
+ * store alone for a growing wait, and it still republishes the ticks it could not
+ * store. A shutdown stops the subscription first, then works through the queued
+ * ticks for a short time and drops the rest.
+ *
+ * @see The tick ingest pipeline (doc/knowledge/architecture/tick_ingest_pipeline.org)
  */
 class ORES_MARKETDATA_SERVICE_EXPORT feed_ingest_loop {
 private:
@@ -136,14 +158,44 @@ public:
      */
     std::optional<tick_drop> handle_tick(const messaging::market_tick& tick);
 
-private:
-    void on_tick(const ores::nats::message& msg);
+    /**
+     * @brief Stores @p ticks as one batch, the way the worker does.
+     *
+     * @return One entry for each tick: the reason it was dropped, or nothing when
+     * it was accepted.
+     */
+    std::vector<std::optional<tick_drop>>
+    handle_batch(const std::vector<messaging::market_tick>& ticks);
 
-    /// Stores @p tick for the consumer @p binding names. Returns true when the
-    /// observation was written, so the caller can gate the republish on it.
-    bool persist(const domain::feed_binding& binding,
-                 const datum::market_datum& tick_datum,
-                 const messaging::market_tick& tick);
+private:
+    struct item;
+
+    /// Whether a fresh transaction opens. It tells a store that is down from a row that
+    /// the store refuses.
+    [[nodiscard]] static bool store_reachable(const ores::database::context& tenant_ctx);
+
+    void on_tick(const ores::nats::message& msg);
+    void worker_loop();
+
+    /// Plans, stores and republishes @p ticks. Fills @p outcomes when it is set.
+    void process(const std::vector<messaging::market_tick>& ticks,
+                 std::vector<std::optional<tick_drop>>* outcomes);
+
+    /// Writes the rows of the items at @p indexes in one transaction of @p tenant_ctx.
+    /// A batch that fails is split in two until the failing item is alone.
+    void write_items(const ores::database::context& tenant_ctx,
+                     std::vector<item>& items,
+                     std::span<const std::size_t> indexes);
+
+    /// The id of the series that @p tick_datum belongs to for @p binding's party,
+    /// created and classified on the first tick that lands in it. Read once for
+    /// each series and then cached until refresh().
+    boost::uuids::uuid series_id_for(const ores::database::context& tenant_ctx,
+                                     const domain::feed_binding& binding,
+                                     const datum::market_datum& tick_datum,
+                                     boost::uuids::random_generator& uuid_gen);
+
+    void warn_dropped(const messaging::market_tick& tick, tick_drop reason);
 
     /// The classifier for @p tenant_ctx's tenant, read once per refresh(). It is
     /// shared, so a refresh() on another thread cannot destroy it while in use.
@@ -167,6 +219,8 @@ private:
         std::atomic<std::uint64_t> tick_count{0};
         std::atomic<std::chrono::system_clock::time_point::rep> last_tick_rep{
             std::chrono::system_clock::time_point::min().time_since_epoch().count()};
+        /// The age of the newest stored tick when its batch committed.
+        std::atomic<std::int64_t> last_lag_ms{0};
     };
 
     void status_loop();
@@ -177,8 +231,11 @@ private:
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
-    /// Enabled bindings by source, rebuilt by refresh().
-    std::map<std::string, std::vector<domain::feed_binding>> bindings_by_source_;
+    using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
+    /// Enabled bindings by source, rebuilt by refresh(). A batch reads one snapshot.
+    std::shared_ptr<const bindings_map> bindings_by_source_ = std::make_shared<bindings_map>();
+    /// Series ids by tenant, party and series URI, cleared by refresh().
+    std::map<std::string, boost::uuids::uuid> series_ids_;
     std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
     /// Classifiers by tenant id, cleared by refresh().
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
@@ -188,8 +245,33 @@ private:
     std::set<std::string> unnameable_warned_;
     std::set<std::string> bad_value_warned_;
 
+    static constexpr std::size_t queue_capacity = 65536;
+    /// The most ticks one batch holds. A batch takes about target_batch_ms: the worker sizes
+    /// the next batch from the speed of the last one, between min_batch_ticks and this limit.
+    static constexpr std::size_t batch_limit = 20000;
+    static constexpr std::size_t initial_batch_ticks = 500;
+    static constexpr std::size_t min_batch_ticks = 50;
+    static constexpr std::int64_t target_batch_ms = 1000;
+    /// A live tick older than this is dropped when the worker takes it.
+    static constexpr std::chrono::milliseconds max_tick_age{5000};
+    /// How long a shutdown works through the queued ticks.
+    static constexpr std::chrono::milliseconds shutdown_drain{2000};
     static constexpr std::chrono::minutes status_interval_{1};
+
+    /// The ticks that arrived and wait for the worker.
+    drop_oldest_queue<messaging::market_tick> queue_{queue_capacity};
+    store_backoff store_backoff_;
+    std::atomic<std::uint64_t> stale_dropped_{0};
+    std::atomic<std::uint64_t> late_unpublished_{0};
+    std::atomic<std::uint64_t> store_unavailable_{0};
+    std::atomic<std::uint64_t> shutdown_dropped_{0};
+    std::atomic<std::chrono::steady_clock::rep> drain_deadline_rep_{
+        std::chrono::steady_clock::time_point::max().time_since_epoch().count()};
+    std::atomic<std::uint64_t> batches_{0};
+    std::atomic<std::uint64_t> last_batch_ticks_{0};
+    std::atomic<std::int64_t> last_batch_ms_{0};
     std::atomic<bool> stop_flag_{false};
+    std::thread worker_;
     std::thread status_thread_;
 };
 

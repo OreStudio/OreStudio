@@ -42,10 +42,11 @@ outlive both the publisher and the subscriber.
 
 * Why we use it
 
-- *Market and synthetic ticks.* A producer publishes continuously and the
-  ingest loop stores what it reads. Plain pub/sub would drop every tick
-  published while the loop was restarting, and the corpus would show gaps
-  nobody could explain.
+- *Not market and synthetic ticks.* A tick is perishable. A tick that arrives late,
+  while a newer tick waits, is worse than a tick that is lost, so ticks travel on core
+  NATS and no stream stores them. A stream would replay old ticks first after a
+  restart, and it would make each publish wait for an acknowledgement. See
+  [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]].
 - *The workflow engine.* A workflow run is a sequence of persisted steps. The
   engine subscribes durably, so a run that is mid-flight when the engine
   restarts resumes rather than stalls.
@@ -124,17 +125,14 @@ Each stream is created by the service that owns the data or the work in it.
 
 | Stream (after the prefix) | Subject filter | Retention | Created by |
 |---------------------------+----------------+-----------+------------|
-| =marketdata_ticks= | =marketdata.v1.ops.market_tick.>= | limits, 7 days | =ores.marketdata.service= |
-| =synthetic_ticks= | =synthetic.v1.ops.tick.>= | limits, 7 days | =ores.marketdata.service= and =ores.synthetic.service= |
-| =synthetic_sandbox_ticks= | =synthetic.v1.ops.sandbox_tick.>= | limits, 7 days | =ores.synthetic.service= |
 | =workflow= | =workflow.v1.ops.start_workflow= and =workflow.v1.ops.step_completed= | limits, 7 days | =ores.workflow.service= |
 | =<service>_steps= | the service's step-command subjects | interest, 1 day backstop | the service, through =serve_step_commands= |
 | =<service>_<group>_steps= | a second family of step commands | interest, 1 day backstop | the service, through =serve_step_commands= |
 
-=synthetic_ticks= is created by two services on purpose: the marketdata ingest
-loop has to be able to read synthetic ticks whether or not the synthetic
-service has ever run in this deployment. =ensure_stream= is idempotent, so the
-second caller finds it and reconciles rather than failing.
+The tick subjects have no stream. Both services delete the three tick streams
+=marketdata_ticks=, =synthetic_ticks= and =synthetic_sandbox_ticks= when they start. The
+delete is idempotent, so a server that still holds them from an older deployment
+loses them.
 
 A service that serves two independent families of step commands declares two
 =step_routes= tables, and the group names the second one. The groups in use are

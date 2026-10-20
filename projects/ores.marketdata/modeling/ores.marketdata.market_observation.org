@@ -1033,3 +1033,20 @@ a manual point, by a path of its own.
 :PROPERTIES:
 :iterator_var: o
 :END:
+
+* Physical space
+
+A tick is a fact that arrives many times each second, and a client has no reason to
+reload it. The change signal that most tables send, a notification for each row that a
+service turns into an event, serves an entity that people edit. For this table it would
+take a database-wide lock at every commit, and it would tell a client to reload a series
+that changes faster than the client can read it. The live tick stream carries each new
+value, so this table sends no notification and has no event.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |

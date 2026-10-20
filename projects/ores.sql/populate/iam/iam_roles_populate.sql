@@ -219,6 +219,12 @@ BEGIN
     -- schedule cell reads the definition's job in the scheduler.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'dq::fsm_states:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::job_instances:read');
+    -- Editing one of those definitions is the screen's other half, and the put
+    -- handler gates it with this code (report_definition_handler.hpp). It is held
+    -- by the two administrative roles and by ReportingService, so before this line
+    -- a person could read the list and change nothing on it. The row is
+    -- party-scoped by the same policy as the reads above.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_definitions:write');
 
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');

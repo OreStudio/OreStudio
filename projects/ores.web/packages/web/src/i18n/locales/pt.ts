@@ -79,6 +79,7 @@ const pt: SourceCatalogue = {
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
+            reporting: 'Relatórios',
             development: 'Desenvolvimento',
             parties: 'Partes',
             rescue: 'Recuperação de acesso',
@@ -3500,6 +3501,9 @@ const pt: SourceCatalogue = {
             required: 'Este campo é obrigatório.',
             invalidValue: 'Este valor não é válido.',
             unsaved: 'Tem alterações por guardar. Fechar mesmo assim?',
+            changedSince:
+                'Alguém alterou este registo depois de o abrir. A sua alteração não foi guardada. Recarregue para ver os novos valores.',
+            reload: 'Recarregar',
             keepEditing: 'Continuar a editar',
             closeAnyway: 'Fechar mesmo assim',
             lastChanged: 'Última alteração:',
@@ -3637,6 +3641,10 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            report_type: { risk: 'Relatório de risco' },
+            pre_processing: { execute: 'Executar', substitute: 'Substituir' },
+            post_processing: { execute: 'Executar', ignore: 'Ignorar' },
+            concurrency_policy: { skip: 'Ignorar', queue: 'Pôr em fila', fail: 'Falhar' },
             producer_kind: { SYNTHETIC: 'Sintético', VENDOR: 'Fornecedor' },
             process_type: {
                 geometric: 'Geométrico',
@@ -4425,6 +4433,171 @@ const pt: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        area: {
+            title: 'Relatórios',
+            lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
+            screens: {
+                reports: 'Relatórios',
+                reportsBody:
+                    'As definições que as partes onde trabalha executam, e o estado da última execução de cada uma.',
+            },
+        },
+        title: 'Relatórios',
+        lead: 'As definições de relatório que as partes onde trabalha possuem, com o estado da última execução de cada uma.',
+        choose: {
+            lead: '{count} relatórios têm este nome. Escolha o que quer abrir.',
+        },
+        unread: 'Não foi possível ler {cell}: {message}',
+        filter: {
+            allParties: 'Todas as partes',
+        },
+        tally: {
+            label: 'Relatórios segundo o estado da sua última execução',
+            unread: 'A contagem de relatórios por estado não pôde ser lida: {message}',
+        },
+        columns: {
+            report: 'Relatório',
+            party: 'Parte',
+            reportType: 'Tipo',
+            schedule: 'Calendário',
+            latestRun: 'Início da última execução',
+            duration: 'Duração',
+            health: 'Estado',
+            errors: 'Erros',
+            warnings: 'Avisos',
+        },
+        health: {
+            failed: 'Falhou',
+            completedWithErrors: 'Concluído com erros',
+            running: 'Em curso',
+            neverRun: 'Nunca executado',
+            completedClean: 'Concluído sem erros',
+            unknown: 'Desconhecido',
+            noWord: 'Sem palavra',
+        },
+        cell: {
+            partyNotStated: 'Não enunciada',
+            unread: 'Não lido',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        fields: {
+            name: 'Nome',
+            description: 'Descrição',
+            report_type: 'Tipo de relatório',
+            schedule_expression: 'Expressão de calendário',
+            concurrency_policy: 'Política de concorrência',
+            prepared_input_key: 'Entrada preparada',
+            pre_processing: 'Pré-processamento',
+            post_processing: 'Pós-processamento',
+            is_official: 'Oficial',
+        },
+        means: {
+            name: 'O nome do relatório. É a chave do seu histórico e do seu endereço, por isso é fixado quando o relatório é criado. Para outro nome, crie um novo relatório.',
+            reportType: {
+                risk: 'Um cálculo de risco completo na grelha: VAL, fluxos, sensibilidades, XVA, VaR e SIMM. O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
+                other: 'O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
+            },
+            concurrencyPolicy: {
+                skip: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução não começa. Fica registada como ignorada.',
+                queue: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução espera e começa quando a anterior terminar.',
+                fail: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução fica registada como falhada e não começa.',
+                other: 'O que acontece quando o calendário dispara com a execução anterior ainda a decorrer.',
+            },
+            preProcessing: {
+                execute:
+                    'Cada execução constrói a própria entrada do motor: reúne as transações e os dados de mercado do relatório e empacota-os.',
+                substitute:
+                    'Cada execução salta essa construção e lê um arquivo de entrada preparado, indicado em Entrada preparada.',
+                other: 'Como uma execução obtém a entrada do motor.',
+            },
+            preparedInputKey:
+                'O arquivo guardado de onde uma execução lê a sua entrada quando o pré-processamento é Substituir. Fica vazio enquanto as execuções constroem a sua própria entrada.',
+            postProcessing: {
+                execute:
+                    'Os resultados do motor são lidos para o armazém de resultados, para que os números da execução possam ser consultados depois.',
+                ignore: 'Uma execução regista apenas que o motor produziu resultados. Os resultados não são guardados.',
+                other: 'O que uma execução faz com os resultados do motor.',
+            },
+        },
+        detail: {
+            record: 'Definição',
+            party: 'Parte',
+            partyHint: 'A parte que possui esta definição e que a executa.',
+            health: 'Estado da última execução',
+            healthHint: 'Derivado da última execução, nunca da definição.',
+            latestRun: 'Última execução',
+            neverRun:
+                'Esta definição nunca foi executada. Nada foi verificado, pelo que não se lê como limpa.',
+            couldNotCheck:
+                'A última execução não pôde ser verificada: {message} Nada foi lido, pelo que não se lê como nunca executada.',
+            started: 'Início',
+            completed: 'Fim',
+            noNextFire: 'O agendador não enuncia qualquer próxima execução.',
+            scheduleExpressionHint:
+                'Uma expressão cron. O momento em que o agendador a dispara é decidido pela tarefa a que a definição está ligada.',
+            isOfficialHint: 'A definição oficial do seu relatório para esta parte.',
+        },
+    },
+
+    cron: {
+        open: 'Alterar o calendário',
+        title: 'Calendário',
+        none: 'Sem calendário',
+        runs: 'Executa',
+        invalid:
+            'Não é um calendário que o agendador leia. Uma expressão cron precisa de cinco partes: minuto, hora, dia do mês, mês e dia da semana.',
+        presets: {
+            premarket: { name: 'Execução pré-mercado' },
+            intraday: { name: 'Verificação intradiária' },
+            eod: { name: 'Lote de fim de dia' },
+        },
+        repeat: 'Repetir',
+        repeats: {
+            interval: 'A cada alguns minutos ou horas',
+            daily: 'Uma vez por dia, a uma hora',
+            monthly: 'Uma vez por mês, num dia',
+        },
+        every: 'A cada',
+        between: 'entre',
+        and: 'e',
+        at: 'Às',
+        onDay: 'No dia',
+        onDays: 'Nestes dias',
+        steps: { minutes: '{n} minutos', hour: 'hora', hours: '{n} horas' },
+        ways: {
+            common: 'Calendários comuns',
+            custom: 'Calendário personalizado',
+            advanced: 'Avançado: a expressão cron',
+        },
+        expression: 'Expressão cron',
+        weekdaysOnly: 'Só dias úteis',
+        dayShort: { 0: 'dom', 1: 'seg', 2: 'ter', 3: 'qua', 4: 'qui', 5: 'sex', 6: 'sáb' },
+        problem: {
+            parts: 'A expressão tem {count} partes. O agendador precisa de exatamente 5: minuto, hora, dia do mês, mês e dia da semana.',
+            field: 'A parte {part} "{field}" não é válida: {fault}.',
+        },
+        fault: {
+            slashes: '"{item}" tem mais de uma barra',
+            step: 'o passo "{step}" deve ser um número inteiro de pelo menos 1',
+            range: '"{span}" não é um intervalo: um intervalo tem só um início e um fim',
+            number: '"{token}" não é um número',
+            outside: '{value} está fora de {min} a {max}',
+        },
+        part: {
+            minute: 'minuto',
+            hour: 'hora',
+            day: 'dia do mês',
+            month: 'mês',
+            weekday: 'dia da semana',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'ver o último início de sessão das pessoas',
         partiesRead: 'ver as partes do inquilino',
@@ -4447,6 +4620,8 @@ const pt: SourceCatalogue = {
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
         feedsRun: 'iniciar e parar os feeds sintéticos',
+        reportDefinitionsRead: 'ver as definições de relatório das suas partes',
+        reportDefinitionsWrite: 'alterar definições de relatório',
     },
 
     unavailable: {

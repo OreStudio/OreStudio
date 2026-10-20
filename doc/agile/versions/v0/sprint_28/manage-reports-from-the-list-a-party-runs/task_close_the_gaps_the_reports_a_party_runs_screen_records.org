@@ -110,6 +110,24 @@ read back from one.
       caller's own parties; =refdata.v1.parties.list= would need
       =refdata::parties:read=.
 
+** The list's own controls
+
+The list could not draw three controls, because the server answered none of
+them. Each now has a server answer, and the screen says nothing about a gap.
+
+- [X] Search the name and the description on the server. The model declares
+      both columns =:searchable:=, and the generated filter gains the =search=
+      member. Read =reporting.v1.report_definitions.list=.
+- [X] Order the list by name, type or schedule on the server. The model declares
+      the three columns =:sortable:=. The BFF keeps the order it is given, so it
+      no longer sorts a page by name. Read =reporting.v1.report_definitions.list=.
+- [X] Count the definitions by health. The new read
+      =reporting.v1.ops.count_report_definitions_by_health= takes the party and
+      the search of the list, so the five words add up to the list total. It
+      reads the definitions through the definition service, which gives both
+      filters the same meaning as on the list. Read
+      =reporting::report_instances:read= and =reporting::report_definitions:read=.
+
 * Plan
 
 Phase 1 closes the grants first, because a read no person role may call is not a
@@ -162,6 +180,25 @@ task and name that file in the Command column.
 | Local checks, phase 2 | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | 894b967c9c |
 
 * Notes
+
+** The screen against the UX standards
+
+The report page, its edit dialog, its schedule field and its list were checked
+against the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] on 2026-10-20, by reading the code. Nothing was
+tried in a browser. The lines below are the gaps. Every other line meets the
+checklist.
+
+- [ ] The report shows its configuration and links to it. No configuration page or BFF read exists yet.
+- [ ] A fixed field says why in one line. Name shows its meaning instead of the fixed line.
+- [X] The page notice that lists the missing features is removed. The screen does not explain what is absent.
+- [X] A stale save offers a reload. The dialog says the record changed and offers Reload. Not tried against a real conflict.
+- [ ] The record dialog listens for a newer version and shows when the record was loaded. Only the person forms do this.
+- [X] The schedule field and builder use verbs from the list, with their icons: Edit, Save and Cancel.
+- [X] The reasons for a bad cron expression exist in French and Portuguese. Only a fault the cron library finds and this code does not stays English.
+- [ ] The shared Select is a native select element. This holds across the app.
+- [ ] Decide which standard rules where they differ: the place of Edit, the dialog title, the lead line of the header, and whether Save stays disabled until a field changes.
+- [ ] Check that the server accepts a change of report type for a report with bound configurations.
+- [ ] Check that the options of pre-processing and post-processing are codes the server holds.
 
 ** What the tests call, and what they assert
 

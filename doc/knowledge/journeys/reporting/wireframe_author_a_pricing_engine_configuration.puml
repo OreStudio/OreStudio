@@ -34,7 +34,7 @@ salt
   <b>STEP 1 - WHAT IS IT FOR</b>
   A party holds few official configurations. A configuration made here starts as a draft.
   { (X) A draft to try a change. No official report can bind it. }
-  { ( ) A candidate for the official End of day configuration }
+  { ( ) A candidate for the official EOD configuration }
   { ( ) A candidate for the official Intraday configuration }
   --
   <b>STEP 3 - THE MODEL AND THE ENGINE</b>
@@ -49,7 +49,7 @@ salt
   --
   <b>STEP 5 - CHECK IT</b>
   A report needs a price for every product type in its portfolio.
-  Coverage: 9 of the 11 product types the end of day reports need have a row.
+  Coverage: 9 of the 11 product types the EOD reports need have a row.
   Not covered: CreditDefaultSwap, EquityOption.
   --
   <b>STEP 6 - REVIEW AND SUBMIT</b>

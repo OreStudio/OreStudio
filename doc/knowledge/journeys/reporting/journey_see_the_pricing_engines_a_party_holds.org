@@ -101,10 +101,10 @@ tag. The list is short on purpose, and the screen says so.
    access mark, and the actions for a person who may take them. On an approved
    configuration the action is *Propose a change*, not *Edit*, and *Delete* is not
    offered. On a draft the actions are *Edit* and *Delete*. A banner states a
-   pending proposal, how many roles have approved it, and that the version in
+   pending proposal, how many approval parts have approved it, and that the version in
    force stays in force. The tabs are held in the address.
 6. *Read Details.* The name, the status, the cycle it is official for, the version
-   in force and the roles that signed it off, the description, the variant, and the
+   in force and the approval parts that signed it off, the description, the variant, and the
    last-changed line. A configuration carries a link to the reporting configuration row it is
    bound through, and the page names it, because that row is what a report
    definition binds.
@@ -128,7 +128,7 @@ tag. The list is short on purpose, and the screen says so.
    these reports once it is approved, and a run already produced keeps what it ran
    with.
 10. *Read History.* The shared timeline of the configuration and its products,
-    newest first. Each version in force shows the roles that signed it off. A
+    newest first. Each version in force shows the approval parts that signed it off. A
     proposal that waits shows at the top and is not a version in force. On an
     approved configuration, *Propose a revert* replaces *Revert*: it writes an older
     version's values as a new proposal, which needs the same sign-off.

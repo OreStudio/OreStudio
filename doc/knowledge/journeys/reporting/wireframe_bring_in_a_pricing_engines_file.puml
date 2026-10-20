@@ -29,7 +29,7 @@ salt
   Element CalibrationBlock: no column, dropped.
   --
   Target: ( ) Save as a new draft configuration
-  Target: (X) Put it into ^End of day pricing (approved)^
+  Target: (X) Put it into ^EOD pricing (approved)^
   Reach: the file is put forward as version 5, a proposal. Version 4 stays in force until the sign-off completes.
   <b>THE DIFFERENCE</b>
   {#

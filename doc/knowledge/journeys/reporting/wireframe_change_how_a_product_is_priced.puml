@@ -34,7 +34,7 @@ salt
   }
   {
     What to do with the change
-    (X) Propose a new version of End of day pricing
+    (X) Propose a new version of EOD pricing
     ( ) Try it in a draft copy
   }
   Version 5 waits for Quant team, Market risk and Model validation. The proposer cannot sign off.

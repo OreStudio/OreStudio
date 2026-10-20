@@ -17,7 +17,7 @@
 
 * Summary
 
-This prototype draws the authoring journey on the standard steps UI, copied from the first-run prototype: the rail, its marks and the step foot. Six steps: name it, say what it is for and choose where to start, choose the products, choose the model and engine, set the parameters, check it, and review and submit. The last step is final. A party holds few official configurations, so what is made here is a draft. The person may say it is a candidate for the official end of day or intraday configuration. Only a candidate whose coverage is complete can be submitted for sign-off.
+This prototype draws the authoring journey on the standard steps UI, copied from the first-run prototype: the rail, its marks and the step foot. Six steps: name it, say what it is for and choose where to start, choose the products, choose the model and engine, set the parameters, check it, and review and submit. The last step is final. A party holds few official configurations, so what is made here is a draft. The person may say it is a candidate for the official EOD or intraday configuration. Only a candidate whose coverage is complete can be submitted for sign-off.
 
 The one open question is the layout of step 3, where each chosen product gets a model and an engine. The page carries three readings of that step and of nothing else, behind =?variant=A|B|C=.
 

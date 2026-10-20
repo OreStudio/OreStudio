@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Build the sign-off that the sign-off journey and prototype draw. Each role that model risk names approves each change to an official pricing engine configuration before a report can run with it, and the person who proposed a change cannot sign it off. This is the implementation, and it starts after the main configuration UI is implemented. The journey and the prototype are in the task Govern the pricing engine configurations.
+Build the sign-off that the sign-off journey and prototype draw. Each approval part that model risk names approves each change to an official pricing engine configuration before a report can run with it, and the person who proposed a change cannot sign it off. The approval runs on the inbox approval engine in =ores.inbox=, which already holds requests, decisions, parts and the four-eyes rules. The work is the pricing engines side of it. This is the implementation, and it starts after the main configuration UI is implemented. The journey and the prototype are in the task Govern the pricing engine configurations.
 
 * Status
 
@@ -35,11 +35,16 @@ Build the sign-off that the sign-off journey and prototype draw. Each role that 
 
 * Acceptance
 
-- The server holds a proposal, a decision and a status, and a policy that names the roles.
-- The server refuses an approval from the person who proposed the change, and from a person with no role for the row.
+- An approval kind =analytics.pricing_engines_change= exists, with a detail row that holds the proposed version apart from the version in force.
+- The approval parts =quant= and =model_validation= exist beside =market_risk=, each with its decide permission and answer order, as model risk confirms them.
+- A policy row for a put of =pricing_model_config= sends a write to an approved version through a request, and the pricing engines service reads the policy.
+- The inbox refuses an approval from the person who proposed the change, and from a person who lacks the part's permission. A test proves both for this kind.
+- A status and a cycle on the configuration say which version is in force.
 - A proposal never replaces the rows that a run reads. Making it official changes the version in force in one step.
 - A run records the version of the configuration it used.
 - A direct write to an approved version is refused.
+- Rebase of an out-of-date proposal exists, because the inbox has none.
+- An approved proposal becomes the version in force, through the apply workflow of the kind or through a person who makes it official. Model risk chooses.
 - The screens follow the sign-off prototype.
 
 * Plan

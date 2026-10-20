@@ -30,7 +30,7 @@ The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring
 ** States and switches
 
 - =?file=clean|unknown|omits=. =clean= reads without a finding. =unknown= holds a product type with no code, an element with no column and a type that appears twice. =omits= holds two products, so the target loses seven.
-- =?target=new|c2|c3=: save as a new draft, put the file into the approved End of day pricing, which four reports bind, or put it into the draft US swaptions SABR trial. Each target has its own button: *Save as draft*, *Submit for sign-off* or *Save*.
+- =?target=new|c2|c3=: save as a new draft, put the file into the approved EOD pricing, which four reports bind, or put it into the draft US swaptions SABR trial. Each target has its own button: *Save as draft*, *Submit for sign-off* or *Save*.
 - =?step=1..5=.
 
 ** Rules the page follows

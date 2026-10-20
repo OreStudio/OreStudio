@@ -2,7 +2,7 @@
 :ID: 41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93
 :END:
 #+title: User Journey: Sign off a pricing engine change
-#+description: Each role that model risk names reads a proposed change to an official pricing engine configuration, approves or rejects it, and a proposal that every role approved is made official. The person who proposed a change cannot sign it off.
+#+description: Each approval part that model risk names reads a proposed change to an official pricing engine configuration, approves or refuses it, and a proposal that every part approved is made official. The person who proposed a change cannot sign it off.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-20
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: Each role that model risk names reads a proposed change to an official pricing engine configuration, approves or rejects it, and a proposal that every role approved is made official. The person who proposed a change cannot sign it off.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: Each approval part that model risk names reads a proposed change to an official pricing engine configuration, approves or refuses it, and a proposal that every part approved is made official. The person who proposed a change cannot sign it off.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -24,9 +24,36 @@ record that I decided." The model settings of a party are under model risk
 control. A party holds few official pricing configurations, one for each cycle,
 and every official report of that cycle runs with one of them. A change to an
 official configuration therefore changes the numbers of every report that binds
-it. Each role that model risk names must read the change, and the system must keep
-who approved it and when. The journey is done when the proposal is in force, or
-rejected, or withdrawn, and the record says which and who decided.
+it. Each approval part that model risk names must read the change, and the system
+must keep who approved it and when. The journey is done when the proposal is in
+force, or refused, or withdrawn, and the record says which and who decided.
+
+* The approval is the inbox's
+
+The platform already has an approval engine in [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]], and this
+journey uses it. It does not invent a second one.
+
+- A proposal is an approval request ([[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]]) of a
+  kind ([[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]]). The kind here would be
+  =analytics.pricing_engines_change=. The component that owns the kind owns the
+  detail row, which holds the proposed version.
+- A part ([[id:B4BE73C7-E847-46BA-82A5-9A411E275B88][ores.inbox.approval_part]]) is a function whose approval a request
+  needs. A part is not a role. It names a permission, such as
+  =inbox::approvals:decide_market_risk=, and a tenant grants that permission to
+  whichever role does the work. Each part has an answer order. A part with a lower
+  order approves first. Parts with the same order answer together.
+- A decision ([[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]]) is one row for each act: approve,
+  refuse, hold, resume, withdraw, reverse. A decision is never edited.
+- A refusal from a part that can answer ends the request. The requester alone may
+  withdraw it.
+- The schema enforces four eyes. A trigger refuses a decision from the person who
+  raised the request, and a unique index lets one person approve a request once.
+
+Four parts exist today: =controller=, =finance=, =market_risk= and =operations=.
+This journey needs three. *Market Risk* is the seeded part. *Quant* and *Model
+Validation* are new, and their names are *assumed* until model risk confirms them.
+The prototype draws Quant first, then Market Risk and Model Validation together.
+That order is also an assumption.
 
 * Actor and trigger
 
@@ -35,14 +62,10 @@ Four people take part. All act inside their own tenant, for their own party.
 #+ATTR_HTML: :class hug-leading
 | Actor | What they do |
 |-------+--------------|
-| The proposer, usually a market-risk owner | Submits the proposal, answers a rejection, rebases an out-of-date proposal, withdraws it. Cannot sign it off, even when the proposer holds one of the roles. |
-| A signer, one for each role | Reads the proposal and approves it or rejects it for their role. |
-| Whoever makes a proposal official | Any person who may write the configuration. They do it after every role approved. |
+| The proposer, usually a market-risk owner | Raises the request, answers a refusal, rebases an out-of-date proposal, withdraws it. Cannot decide it, even when the proposer holds one of the parts. |
+| A signer, one for each part | Holds the part's permission. Reads the proposal and approves it or refuses it for that part. |
+| Whoever makes a proposal official | Any person who may write the configuration. They do it after every part approved. |
 | A viewer | Reads the queue and the proposals. Changes nothing. |
-
-The roles are *assumed*: the quant team, market risk and model validation. Model
-risk confirms the roles, their order, and how many people each role needs. A build
-reads them from a policy and does not fix them in code.
 
 The trigger is a proposal. It comes from
 [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]], from
@@ -58,9 +81,9 @@ The journey ends on the proposal's page, with the proposal in a final state.
 1. *Open the queue.* The person opens *Sign-off*. The screen is a record list as the
    [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws one.
    A row is one proposal: the configuration, the cycle it serves, the change as
-   =version N to N+1=, who proposed it, when, the roles that approved so far, its
+   =version N to N+1=, who proposed it, when, the parts that approved so far, its
    state and what it needs from the reader. A tag says *Needs your sign-off* when the
-   reader holds a role that has not decided and did not propose the change. A search
+   reader holds a part that can answer now and did not propose the change. A search
    runs over the configuration and the change. A filter shows the open proposals,
    the ones that need the reader, or all, with the closed ones.
 2. *Open a proposal.* The title names the configuration and the proposed version.
@@ -76,23 +99,24 @@ The journey ends on the proposal's page, with the proposal in a final state.
    change, and whether the proposal still prices every product type the report
    needs. It states that a run made after the change is in force is not comparable
    with an earlier run for the changed products.
-5. *Read the sign-off.* The Sign-off tab lists each role, its decision, the person
-   who decided, when, and the comment. It states the four-eyes rule: the person
-   who proposed a change cannot sign it off, even when they hold one of the roles,
-   and each role needs one person.
-6. *Approve.* A signer who holds a role that has not decided sees *Approve* and
-   *Reject* on that role's row. *Approve* opens a dialog that asks the signer to
+5. *Read the sign-off.* The Sign-off tab lists each approval part, its decision, the
+   person who decided, when, and the comment. A part that must wait for an earlier
+   part says so: *Waits for Quant*. It states the four-eyes rule: the person who
+   raised the request cannot decide it, even when they hold one of the parts, and one
+   person approves a request once.
+6. *Approve.* A signer who holds a part that can answer now sees *Approve* and
+   *Refuse* on that part's row. *Approve* opens a dialog that asks the signer to
    confirm that they read the changes and the reports they reach, and takes an
-   optional comment. After the last role approves, the proposal moves to
+   optional comment. After the last part approves, the proposal moves to
    *Approved, not in force*.
 7. *Refuse the proposer.* When the signer proposed the change, the row shows no
-   button and says: you proposed this change, another person in the role must sign
-   it off. The server must refuse the same request. No operation does today.
-8. *Reject.* *Reject* opens a dialog that needs a reason. The proposal moves to
-   *Rejected*. The version in force stays in force. The proposer reads the reason and
+   button and says: you proposed this change, another person who holds the part
+   must sign it off. The inbox refuses the same decision already.
+8. *Refuse.* *Refuse* opens a dialog that needs a reason. The request ends and the
+   proposal moves to *Rejected*. The version in force stays in force. The proposer reads the reason and
    changes the proposal and submits it again, or withdraws it. A rejection never
    deletes the proposal.
-9. *Make it official.* When every role approved, any person who may write the
+9. *Make it official.* When every part approved, any person who may write the
    configuration sees *Make version N+1 official*. The dialog names the reports it
    reaches and states that no report is rebound and that the previous version stays in
    the history. After it, the version is in force, and the next run of each report that
@@ -100,20 +124,20 @@ The journey ends on the proposal's page, with the proposal in a final state.
 10. *Rebase an out-of-date proposal.* When another proposal became the version in
     force first, this proposal sits on an old version. The page says so and offers
     the proposer *Rebase*. A rebase moves the proposal onto the version in force and
-    clears the approvals, because the roles approved a different base.
+    clears the approvals, because the parts approved a different base.
 11. *Withdraw.* The proposer may withdraw an open proposal. It changes nothing and
     stays in the history.
 12. *Read the history.* The History tab lists what happened to the proposal, newest
-    first: who proposed it, each approval and rejection with its comment, and when it
+    first: who proposed it, each approval and refusal with its comment, and when it
     was made official.
 
 * Screens and wireframes
 
 Two screens: the queue, and the proposal's page with four tabs. The sign-off has
-its own screen because it is the control: a role reads one change and decides, and
+its own screen because it is the control: a part reads one change and decides, and
 the screen keeps the decision.
 
-#+caption: The sign-off queue and one proposal's page: the roles, the four-eyes rule, and the actions.
+#+caption: The sign-off queue and one proposal's page: the approval parts, the four-eyes rule, and the actions.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_sign_off_a_pricing_engine_change.png]]
 
@@ -126,17 +150,18 @@ fake. It belongs at =doc/prototypes/reporting/sign-off-a-pricing-engine-change/=
 It must draw the queue and the proposal page as the Record screen standard draws
 them. It must switch the state of the first proposal behind
 =?proposal=pending|partly|ready|rejected|superseded= and the person behind
-=?actor=proposer|quant|risk|validator|viewer=. The proposer must hold a market-risk
-role, so that the four-eyes refusal is reachable. It must show an approval, a
-rejection with a reason, the point where every role has approved, the making of a
-proposal official, a rebase and a withdrawal. It must state that the roles are
-assumed and that no operation holds a proposal or a decision. Every value is a
-fixture.
+=?actor=proposer|quant|risk|validator|viewer=. The proposer must hold the Market
+Risk part, so that the four-eyes refusal is reachable. It must show the answer
+order: Quant answers first, and the other two rows say *Waits for Quant*. It must
+show an approval, a refusal with a reason, the point where every part has
+approved, the making of a proposal official, a rebase and a withdrawal. It must
+state that the kind, the Quant part and the Model Validation part do not exist, and
+that their names and order are assumed. Every value is a fixture.
 
 * Entities composed
 
-No entity holds a proposal, a decision or a role today. The first three rows below
-exist. The last three are the entities the journey needs.
+The first three rows exist in the pricing engines and reporting services. The next
+four exist in the inbox. The last two are new.
 
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
@@ -144,53 +169,67 @@ exist. The last three are the entities the journey needs.
 | =pricing_model_config= | The configuration, and the version in force | [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][ores.analytics.pricing_model_config]] |
 | =pricing_model_product= | The rows that change | [[id:BDECF3A4-4A7C-4F64-94C1-A106E215F88D][ores.analytics.pricing_model_product]] |
 | =report_configuration= | The bindings that give the reach | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
-| a proposal | A new version held apart from the version in force, with its base version, its reason and its state | (missing) |
-| a decision | One role's approval or rejection of a proposal, with the person, the time and the comment | (missing) |
-| a sign-off policy | The roles, their order and the number of people each needs | (missing) |
+| =approval_request= | The proposal: who raised it, when, why, its state | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_decision= | One part's approval or refusal, with the person, the time and the comment | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =approval_part= | The parts, their permission and their answer order | [[id:B4BE73C7-E847-46BA-82A5-9A411E275B88][ores.inbox.approval_part]] |
+| =approval_kind= | What the request asks for, and how many approvals close it | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| a pricing engines change detail | The proposed version, held apart from the version in force, with its base version | (missing) |
+| a policy row for a put of =pricing_model_config= | Says which parts must approve a write, so that a direct write to an approved version is refused | (missing; the inbox holds the table) |
 
 * Operations and messages
+
+The inbox operations are generic. The queue, the decision and the withdrawal need
+no new subject. The kind, two parts, a policy row and the detail are the new work.
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| 1, the queue | List the proposals | (no operation) | missing |
-| 3, the changes | Read the proposal and the version it sits on | =analytics.v1.pricing_engines_documents.get= for the version; none for the proposal | partial |
+| 1, the queue | List the approvals that wait for the reader | =inbox.v1.ops.list_approval_queue= | exists; the kind and its detail are missing |
+| 1, the reader's own | List the requests the reader raised | =inbox.v1.ops.list_my_approval_requests= | exists |
+| 2, raise the proposal | Raise an approval request with its parts | =inbox.v1.ops.raise_approval= | exists; the kind is missing |
+| 3, the changes | Read the proposal and the version it sits on | =analytics.v1.pricing_engines_documents.get= for the version; none for the proposed one | partial |
 | 4, the reach | Read the definitions bound to the configuration | =reporting.v1.report_configurations.list= | partial; no read by configuration id |
 | 4, the portfolios | Read the product types of a report's portfolio | (no operation) | missing |
-| 5, the roles | Read the sign-off policy | (no operation) | missing |
-| 6 to 8, decide | Approve or reject for a role, and refuse the proposer | (no operation) | missing |
-| 9, make official | Make a proposal the version in force | (no operation) | missing |
-| 10 and 11, rebase and withdraw | Move or close a proposal | (no operation) | missing |
-| 12, the history | Read the events of a proposal | (the audit log) | partial |
+| 5, the parts | Read the parts, their order and their permission | the =approval_part= read | exists as data; Quant and Model Validation are missing |
+| 6 to 8, decide | Approve or refuse for a part | =inbox.v1.ops.decide_approval= | exists; four eyes enforced in the schema |
+| 9, make official | Make a proposal the version in force | (no operation) | missing; the apply workflow of the kind may do it |
+| 10, rebase | Move a proposal onto the version in force | (no operation) | missing |
+| 11, withdraw | Close an open proposal | =inbox.v1.ops.withdraw_approval= | exists |
+| 12, the history | Read the events of a proposal | the request's versions and decisions | exists as data |
 | The screen | Sign off from the browser | (no BFF route) | missing |
 
 * What is missing
 
-1. *Everything about the proposal.* The pricing engines service has no proposal, no
-   decision and no status. A proposal must not replace the rows that a run reads.
-   The prototype keeps all three in the page.
-2. *The enforcement of four eyes.* The screen refuses the proposer. A screen is not
-   a control. The server must refuse an approval from the person who proposed the
-   change, and from a person who has no role for the row.
-3. *The roles.* The roles are assumed. A policy must hold them, and model risk must
-   own it. The number of people for each role and the order of the roles are open.
-4. *The version a run used.* No operation says which version of a configuration a
-   run was made with. The sign-off proves that a version was approved, and the
-   run cannot prove it was made with that version. Model risk needs both.
-5. *A report binds a configuration, not a version.* =report_configuration= holds
+1. *The kind and its detail.* No approval kind names a pricing engines change, and
+   no detail row holds the proposed version. A proposal must not replace the rows
+   that a run reads, so the detail holds it apart.
+2. *Two parts.* =market_risk= exists. A =quant= part and a =model_validation= part
+   do not, and neither do their decide permissions. Model risk must confirm the
+   names, the answer order and which role holds each permission. The kind says how many approvals close a
+   request, and one person approves once.
+3. *The policy row.* The inbox policy says which part must approve a put of an
+   entity. A row for =pricing_model_config= makes a direct write to an approved
+   version go through a request. Without it, a person who holds a part can write
+   the configuration directly, and the sign-off controls nothing. The service must
+   also read the policy.
+4. *Make it official.* An approved request applies through the kind's apply
+   workflow, inside an apply window. The prototype draws a person who makes the
+   proposal official instead. The choice is open.
+5. *The version a run used.* No operation says which version of a configuration a
+   run was made with. The sign-off proves that a version was approved, and the run
+   cannot prove it was made with that version. Model risk needs both.
+6. *A report binds a configuration, not a version.* =report_configuration= holds
    the configuration. Making a version official must change what the next run
    reads, in one step, with no rebinding.
-6. *A candidate that replaces the official configuration.* A candidate from
+7. *A candidate that replaces the official configuration.* A candidate from
    [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]]
    also moves the reports of a cycle from one configuration to another. That is a
    rebinding step, and the prototype does not draw it.
-7. *The evidence.* A proposal carries a back-test or a note. No operation attaches
+8. *Rebase.* The inbox has no operation that moves a request onto a newer base.
+9. *The evidence.* A proposal carries a back-test or a note. No operation attaches
    a document, and the prototype draws the files as a fixture.
-8. *Notification.* A signer learns of a proposal from the queue only. Nothing tells
-   them. A build needs a notice, and a reminder when a proposal waits.
-9. *Segregation outside this screen.* A person who holds a role can also write the
-   configuration directly. The permissions must stop a direct write to an approved
-   version, or the sign-off controls nothing.
+10. *Hold, resume, expiry and reversal.* The inbox has these decisions and an
+    expiry. The prototype draws approve, refuse and withdraw only.
 
 * Related journeys
 

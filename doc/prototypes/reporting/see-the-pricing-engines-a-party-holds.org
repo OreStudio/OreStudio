@@ -33,7 +33,7 @@ The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See t
 
 ** States and switches
 
-- =?screen=list= and =?screen=record&id=c1|c2|c3&tab=...=. =c1= is the approved Intraday pricing, official for the intraday cycle, with eleven products and two reports. =c2= is the approved End of day pricing, official for the end of day cycle, with eleven products, four reports, four versions each signed off by three roles, and a proposal for version 5 that waits for sign-off. =c3= is a draft that no report binds.
+- =?screen=list= and =?screen=record&id=c1|c2|c3&tab=...=. =c1= is the approved Intraday pricing, official for the intraday cycle, with eleven products and two reports. =c2= is the approved EOD pricing, official for the EOD cycle, with eleven products, four reports, four versions each signed off by three approval parts, and a proposal for version 5 that waits for sign-off. =c3= is a draft that no report binds.
 - =?state=all|empty|error|loading= for the four list states.
 - =?actor=viewer|analyst|admin=: a viewer reads, an analyst adds and edits, and only the administrator deletes. An action a person may not take is not drawn.
 - Delete is offered on a draft only. A report that binds a draft is refused, and the page says that no service refuses it today.
@@ -49,6 +49,7 @@ Every value. The product and report counts in the list are fixtures, because no 
 
 ** What it argues
 
+- The History tab draws the shared timeline as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws it: an event chart split by kind, a rail grouped by day with the time in the left gutter, one header line for each entry, the note on its own line, a collapsed detail, the current-version emblem and the *Hide system activity* toggle. The prototype does not draw batches of entries that are one act, and the toggle is always on, because the fixture has no reader without the account permission.
 - The list is drawn as the record screen standard draws it, without a variation.
 - The coverage strip belongs on the Products tab, above the table, and states the products left unpriced by name.
 - The Reports tab states the rule and the reach before it lists a report.

@@ -66,12 +66,7 @@ th.sort{cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
 .chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
 .axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
-.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
-.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
-.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
-.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
 .avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
-.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
 .dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
 .dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
 .dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
@@ -133,6 +128,22 @@ details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}detail
 label.plain{white-space:nowrap}
 .tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
 
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px;border-bottom:1px solid var(--line-soft)}
+.tl .item{display:grid;grid-template-columns:96px 14px 1fr;gap:0 8px;scroll-margin-top:16px}.tl .item.mark{background:#1d2530}
+.tl .gut{display:flex;justify-content:flex-end;gap:6px;padding-top:9px;font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)}
+.tl .rail{position:relative;display:flex;justify-content:center}.tl .rail:before{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.tl .dot{position:relative;margin-top:13px;width:9px;height:9px;border-radius:50%;border:1px solid var(--ink-faint);background:var(--bg)}
+.tl .dot.ok{border-color:var(--ok)}.tl .dot.info{border-color:var(--accent)}.tl .dot.warn{border-color:var(--warn)}.tl .dot.bad{border-color:var(--bad)}
+.tl .body{display:grid;gap:5px;padding:8px 0 12px;min-width:0}
+.tl .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl .who{font-weight:600}.tl .did{color:var(--ink-dim)}
+.tl .note{color:var(--ink-dim);font-style:italic;font-size:.85rem}
+.tl details summary{cursor:pointer;color:var(--ink-faint);font-size:.8rem;width:fit-content}.tl details>div{margin-top:6px}
+.evchart{border:1px solid var(--line-soft);border-radius:var(--radius);padding:8px 12px;display:grid;gap:6px;margin:8px 0}
+.evchart .bars{display:flex;align-items:flex-end;gap:2px;height:96px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.evchart .bar{flex:none;width:14px;height:100%;display:flex;flex-direction:column-reverse;padding:0;border:0;background:none;cursor:pointer}.evchart .bar:hover{background:var(--panel-2)}
+.evchart .span{display:flex;justify-content:space-between;font-size:.7rem;color:var(--ink-faint)}
+.evchart .leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.75rem;color:var(--ink-dim)}.evchart .leg i,.evchart .bar i{display:block;border-radius:2px}.evchart .leg i{display:inline-block;width:10px;height:10px;margin-right:6px}
+.k-ok{background:var(--ok)}.k-info{background:var(--accent)}.k-warn{background:var(--warn)}.k-bad{background:var(--bad)}.k-off{background:var(--ink-faint)}
 </style>
 </head>
 <body>
@@ -141,15 +152,16 @@ label.plain{white-space:nowrap}
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
   The queue of proposals to change an official pricing engine configuration, and one
-  proposal's page: the sign-off by role, the changes against the version it was written
+  proposal's page: the sign-off by approval part, the changes against the version it was written
   on, the reach, and the history. Four eyes: the person who proposed cannot sign off.
-  The roles (quant team, market risk, model validation) are assumed until model risk confirms them.
+  The approval parts are those of ores.inbox: Market Risk exists; Quant and Model Validation are new, and
+  their names and answer order are assumed until model risk confirms them.
 
   Addresses: ?screen=queue | proposal&id=pr1|pr2|pr3&tab=signoff|changes|reach|history
   Switches in the bottom bar:
     ?state=all|empty|error
     ?proposal=pending|partly|ready|rejected|superseded   the state of the first proposal
-    ?actor=proposer|quant|risk|validator|viewer          the proposer also holds a market risk role
+    ?actor=proposer|quant|risk|validator|viewer          the proposer also holds the Market Risk part
 -->
 
 <div class="proto-note" id="note"></div>
@@ -242,11 +254,12 @@ const REPORT_META = {
   'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
   'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
 };
-const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
-// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
-const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
-const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
-const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
+const CYCLE_NAME = { eod: 'EOD', intraday: 'Intraday' };
+// The approval parts of ores.inbox. Market Risk is seeded today. Quant and Model Validation are new, and their names and answer order are ASSUMED until model risk confirms them.
+const PARTS = [{ id: 'quant', name: 'Quant', code: 'quant', order: 1, isNew: true }, { id: 'mr', name: 'Market Risk', code: 'market_risk', order: 2, isNew: false }, { id: 'mv', name: 'Model Validation', code: 'model_validation', order: 2, isNew: true }];
+const KIND = 'analytics.pricing_engines_change';
+const PART_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => PARTS.map(r => ({ role: r.id, by: PART_PEOPLE[r.id], at, state: 'approved' }));
 const NOW = Date.parse('2026-10-19T10:00:00Z');
 const AMC_NOW = [
   { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
@@ -286,7 +299,7 @@ const CONFIGS = [
   { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
     versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
-  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+  { id: 'c2', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
     versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
       { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
@@ -300,7 +313,7 @@ CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = 
 const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
   note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
   products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
-  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
+  approvals: PARTS.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
 // A flat view of a document, so two documents can be compared as rows.
 const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
 const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
@@ -356,33 +369,60 @@ const RULE = 'A report needs a price for every product type in its portfolio. A 
 const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
 const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
 const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
-const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
-const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => PARTS.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint">Signed off by ${v.approvals.map(a => esc(PARTS.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint">Provisioned by the seed. No sign-off is recorded.</div>' : '');
 const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
-function historyTab(c) {
-  const all = c.versions.slice().reverse(), cur = all[0];
-  const rows = all.filter(x => !(hideSystem && /service/.test(x.by)));
-  const entry = x => {
-    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
-    return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
-      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
-      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
-      ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
-  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
-  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
-  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
+const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Rejected: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
+const pad2 = n => String(n).padStart(2, '0');
+const clock = ms => { const d = new Date(ms); return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':' + pad2(d.getUTCSeconds()); };
+const dayName = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const isSvc = who => /service/.test(who);
+function timeline(entries) {
+  const rows = entries.filter(x => !(hideSystem && isSvc(x.who))).map(x => Object.assign({ ms: Date.parse(x.at) }, x)).sort((a, b) => b.ms - a.ms);
+  const toggle = `<div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>`;
+  if (!rows.length) return toggle + '<div class="muted">No entries.</div>';
+  const first = rows[rows.length - 1].ms, last = rows[0].ms, daily = last - first > 2 * 86400000, step = daily ? 86400000 : 3600000;
+  const startOf = ms => Math.floor(ms / step) * step, from = startOf(first), n = Math.floor((startOf(last) - from) / step) + 1;
+  const buckets = Array.from({ length: n }, () => ({})), kinds = {};
+  rows.forEach(x => { const b = buckets[Math.floor((startOf(x.ms) - from) / step)]; b[x.kind] = (b[x.kind] || 0) + 1; kinds[x.kind] = (kinds[x.kind] || 0) + 1; });
+  const tallest = Math.max(1, ...buckets.map(b => Object.values(b).reduce((a, v) => a + v, 0)));
+  const when = ms => daily ? dayName(ms).replace(/^\w+, /, '') : clock(ms).slice(0, 5);
+  const chart = `<div class="evchart"><div class="bars">${buckets.map((b, i) => { const t = from + i * step, tot = Object.values(b).reduce((a, v) => a + v, 0);
+    return `<button class="bar" data-bar="${t}" data-step="${step}" title="${daily ? dayName(t) : dayName(t) + ' ' + clock(t).slice(0, 5)}: ${tot}">${Object.keys(kinds).filter(k => b[k]).map(k => `<i class="k-${KIND_TONE[k] || 'off'}" style="height:${b[k] / tallest * 100}%" title="${k}: ${b[k]}"></i>`).join('')}</button>`; }).join('')}</div>
+    <div class="span"><span>${esc(daily ? dayName(first) : dayName(first) + ' ' + clock(first).slice(0, 5))}</span><span>${esc(daily ? dayName(last) : dayName(last) + ' ' + clock(last).slice(0, 5))}</span></div>
+    <div class="leg">${Object.keys(kinds).map(k => `<span><i class="k-${KIND_TONE[k] || 'off'}"></i>${k} ${kinds[k]}</span>`).join('')}</div></div>`;
+  let day = '';
+  const rail = rows.map(x => { const dn = dayName(x.ms), div = dn !== day ? `<div class="daydiv">${dn}</div>` : ''; day = dn; const tone = KIND_TONE[x.kind] || 'off';
+    return div + `<div class="item" data-ms="${x.ms}"><div class="gut"><span title="${exact(x.at)}">${clock(x.ms)}</span>${x.current ? '<span class="emblem" title="Current version">✓</span>' : ''}</div><div class="rail"><span class="dot ${tone}"></span></div>
+      <div class="body"><div class="head">${tag(x.kind, tone)}<span class="mono faint">${esc(x.rec)}${x.ver ? ' v' + x.ver : ''}</span>${x.reason ? `<span class="tag warn mono">${esc(x.reason)}</span>` : ''}<span class="who">${esc(x.who)}</span><span class="did">${x.did || ''}</span>${x.actions || ''}<span class="faint" style="margin-left:auto">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}${x.extra || ''}
+      ${x.detail === undefined ? '' : x.detail === null ? '<div class="faint">No changes</div>' : `<details><summary>Details</summary><div>${x.detail}</div></details>`}</div></div>`; }).join('');
+  return toggle + chart + `<div class="tl">${rail}</div>`;
 }
-const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+document.addEventListener('click', e => { const b = e.target.closest('[data-bar]'); if (!b) return; const t = +b.dataset.bar, items = [...document.querySelectorAll('.tl .item')]; if (!items.length) return;
+  const hit = items.map(i => [Math.abs(+i.dataset.ms - (t + (+b.dataset.step) / 2)), i]).sort((a, c) => a[0] - c[0])[0][1]; hit.scrollIntoView({ block: 'center', behavior: 'smooth' }); hit.classList.add('mark'); setTimeout(() => hit.classList.remove('mark'), 1200); });
+function historyTab(c) {
+  const cur = c.versions[c.versions.length - 1];
+  const ent = c.versions.map(x => {
+    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : undefined;
+    return { at: x.at, kind: x.v === 1 ? 'Created' : 'Changed', rec: 'pricing_model_config', ver: x.v, reason: x.reason, who: x.by, did: x.v === 1 ? 'created the configuration' : 'changed the configuration', note: x.note, current: x.v === cur.v,
+      extra: (c.status === 'approved' && x.approvals ? '<div>' + tag('Approved', 'ok') + '</div>' : '') + approvalsLine(x),
+      detail: d === undefined ? (x.v === 1 ? '<div class="muted">The fixture keeps the first version as a whole record only for the version in force.</div>' : '<div class="muted">The fixture keeps no values for this version.</div>') : d.length ? diffTable(d) : null,
+      actions: x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : '' }; });
+  if (c.proposal) ent.push({ at: c.proposal.at, kind: 'Proposed', rec: 'pricing_model_config', ver: c.proposal.ver, reason: c.proposal.reason, who: c.proposal.by, did: 'proposed a new version', note: c.proposal.note, extra: '<div class="faint">Waiting for sign-off. It is not a version in force.</div>', actions: `<a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a>` });
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>${timeline(ent)}`;
+}
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: PARTS.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
 const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
-  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
-  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
-  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, PART_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, PART_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, PART_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: PART_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
   if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
   return p; };
-const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${PARTS.length} approval parts have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
 function revertDialog(c, v) {
   const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
   dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
@@ -405,8 +445,8 @@ function reportsTab(c) {
 
 const state = P0.get('state') || 'all', stateP = P0.get('proposal') || 'partly', actor = P0.get('actor') || 'quant';
 KEEP = ['state', 'proposal', 'actor'];
-// The people the bottom bar can act as. The proposer holds a Market risk role too, so the four-eyes refusal is reachable.
-const WHO = { proposer: { name: 'market risk owner', role: 'mr', label: 'the proposer' }, quant: { name: ROLE_PEOPLE.quant, role: 'quant' }, risk: { name: ROLE_PEOPLE.mr, role: 'mr' }, validator: { name: ROLE_PEOPLE.mv, role: 'mv' }, viewer: { name: 'a viewer', role: '' } };
+// The people the bottom bar can act as. The proposer holds the Market Risk part too, so the four-eyes refusal is reachable.
+const WHO = { proposer: { name: 'market risk owner', role: 'mr', label: 'the proposer' }, quant: { name: PART_PEOPLE.quant, role: 'quant' }, risk: { name: PART_PEOPLE.mr, role: 'mr' }, validator: { name: PART_PEOPLE.mv, role: 'mv' }, viewer: { name: 'a viewer', role: '' } };
 const me = WHO[actor] || WHO.quant, actorName = me.name;
 const byId = id => CONFIGS.find(c => c.id === id);
 const PR1 = Object.assign(proposalIn(stateP), { title: 'Calibrate the Bermudan swaption with BestFit' });
@@ -423,9 +463,11 @@ const nOk = p => p.approvals.filter(a => a.state === 'approved').length;
 const PSTATE = { pending: ['Awaiting sign-off', 'warn'], partly: ['Awaiting sign-off', 'warn'], ready: ['Approved, not in force', 'info'], rejected: ['Rejected', 'bad'], superseded: ['Out of date', 'warn'], official: ['In force', 'ok'], withdrawn: ['Withdrawn', 'off'] };
 const pTag = p => tag(PSTATE[p.state][0], PSTATE[p.state][1]);
 const canSign = (p, a) => !closed(p) && p.state !== 'rejected' && p.state !== 'superseded' && a.state === 'pending';
-const myAction = p => { if (closed(p)) return dash; if (p.by === me.name) return tag('You proposed it', 'info'); const a = p.approvals.find(x => x.role === me.role); return a && canSign(p, a) ? tag('Needs your sign-off', 'warn') : dash; };
-const roleName = id => ROLES.find(r => r.id === id).name;
-const chips = p => p.approvals.map(a => `<span class="tag ${a.state === 'approved' ? 'ok' : a.state === 'rejected' ? 'bad' : 'off'}" title="${esc(roleName(a.role))}: ${a.state}">${esc(roleName(a.role).split(' ')[0])}</span>`).join(' ');
+const ordOf = id => PARTS.find(r => r.id === id).order;
+const waitsFor = (p, a) => p.approvals.filter(x => ordOf(x.role) < ordOf(a.role) && x.state !== 'approved').map(x => partName(x.role));
+const myAction = p => { if (closed(p)) return dash; if (p.by === me.name) return tag('You proposed it', 'info'); const a = p.approvals.find(x => x.role === me.role); return a && canSign(p, a) && !waitsFor(p, a).length ? tag('Needs your sign-off', 'warn') : dash; };
+const partName = id => PARTS.find(r => r.id === id).name;
+const chips = p => p.approvals.map(a => `<span class="tag ${a.state === 'approved' ? 'ok' : a.state === 'rejected' ? 'bad' : 'off'}" title="${esc(partName(a.role))}: ${a.state}">${esc(partName(a.role).split(' ')[0])}</span>`).join(' ');
 const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'queue', id: p.get('id') || 'pr1', tab: p.get('tab') || 'signoff' }; };
 const QUEUE = () => href({ screen: 'queue' });
 const LIST = '../see-the-pricing-engines-a-party-holds/';
@@ -433,14 +475,14 @@ const iso = () => new Date(NOW).toISOString();
 
 function queueScreen() {
   const head = `${crumbs([['Home', QUEUE()], ['Reporting', QUEUE()], ['Pricing engines', LIST], ['Sign-off']])}
-  <div class="titlebar"><div><h1>Sign-off</h1><div class="sub">Changes to pricing engine configurations that wait for the roles model risk names.</div></div><div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}</div></div>`;
+  <div class="titlebar"><div><h1>Sign-off</h1><div class="sub">Changes to pricing engine configurations that wait for the approval parts model risk names.</div></div><div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}</div></div>`;
   if (state === 'empty') return head + '<div class="card"><div class="body"><div class="muted">Nothing waits for sign-off. A change to an official configuration appears here when someone proposes it.</div></div></div>';
   if (state === 'error') return head + '<div class="badbox">The proposals could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
   let rows = PRS.filter(p => (showF === 'all' || (showF === 'open') === !closed(p)) && (showF !== 'mine' || (!closed(p) && myAction(p) !== dash)) && (!search || (cfgOf(p).name + ' ' + p.title).toLowerCase().includes(search.toLowerCase())));
   if (showF === 'mine') rows = PRS.filter(p => !closed(p) && myAction(p).includes('Needs your'));
-  const tr = p => `<tr class="rec" tabindex="0" data-open="${p.id}"><td><a data-nav class="link" href="${href({ screen: 'proposal', id: p.id })}">${esc(cfgOf(p).name)}</a><div class="faint" style="font-size:.78rem">${esc(p.title)}</div></td><td>${tag(CYCLE_NAME[cfgOf(p).cycle], 'cls')}</td><td class="mono">v${p.base} → v${p.ver}</td><td>${esc(p.by)}</td><td title="${exact(p.at)}">${rel(p.at)}</td><td>${chips(p)} <span class="faint">${nOk(p)} of ${ROLES.length}</span></td><td>${pTag(p)}</td><td>${myAction(p)}</td></tr>`;
+  const tr = p => `<tr class="rec" tabindex="0" data-open="${p.id}"><td><a data-nav class="link" href="${href({ screen: 'proposal', id: p.id })}">${esc(cfgOf(p).name)}</a><div class="faint" style="font-size:.78rem">${esc(p.title)}</div></td><td>${tag(CYCLE_NAME[cfgOf(p).cycle], 'cls')}</td><td class="mono">v${p.base} → v${p.ver}</td><td>${esc(p.by)}</td><td title="${exact(p.at)}">${rel(p.at)}</td><td>${chips(p)} <span class="faint">${nOk(p)} of ${PARTS.length}</span></td><td>${pTag(p)}</td><td>${myAction(p)}</td></tr>`;
   const body = rows.length ? `<table><thead><tr><th>Configuration</th><th>Cycle</th><th>Change</th><th>Proposed by</th><th>Submitted</th><th>Sign-off</th><th>State</th><th>For you</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>` : '<div class="notice">No proposal matches. <button class="btn" id="clear">Clear</button></div>';
-  return head + `<div class="notice"><b>Roles are assumed.</b> ${ROLES.map(r => r.name).join(', ')}. Model risk confirms the roles, their order and how many people each needs. No operation holds a proposal, a role or a decision: every value here is a fixture.</div>
+  return head + `<div class="notice"><b>The approval is the inbox's.</b> A proposal is an approval request of the kind <span class="mono">${KIND}</span>, and each approval part answers it: ${PARTS.map(r => esc(r.name) + (r.isNew ? ' (new)' : '')).join(', ')}. The kind, two of the parts and the policy row do not exist yet, so every value here is a fixture. Model risk confirms the parts and their order.</div>
   <div class="card"><div class="listbar"><input id="search" placeholder="Search the configuration and the change" value="${esc(search)}"><select id="showf"><option value="open" ${showF === 'open' ? 'selected' : ''}>Show: open</option><option value="mine" ${showF === 'mine' ? 'selected' : ''}>Needs my sign-off</option><option value="all" ${showF === 'all' ? 'selected' : ''}>All, with closed</option></select></div>${body}
   <div class="pager"><span>${rows.length ? '1–' + rows.length + ' of ' + rows.length : '0 of 0'}</span><span><button class="btn" disabled>« First</button> <button class="btn" disabled>‹ Previous</button> <button class="btn" disabled>Next ›</button> <button class="btn" disabled>Last »</button></span><span>Page size <select><option>15</option><option>25</option><option>50</option></select></span></div></div>`;
 }
@@ -449,18 +491,19 @@ function signoffTab(p) {
   const c = cfgOf(p), own = p.by === me.name;
   const rows = p.approvals.map((a, i) => {
     const mine = me.role === a.role;
-    const act = !mine || !canSign(p, a) ? '' : own ? `<span class="faint">You proposed this change. Another person in ${esc(roleName(a.role))} must sign it off.</span>` : btn('Approve', 'save', 'small', `data-ap="${i}"`) + ' ' + btn('Reject', 'cancel', 'small danger', `data-rj="${i}"`);
-    return `<tr><td><b>${esc(roleName(a.role))}</b></td><td>${a.state === 'approved' ? tag('Approved', 'ok') : a.state === 'rejected' ? tag('Rejected', 'bad') : '<span class="faint">Waiting</span>'}</td><td>${a.by ? esc(a.by) : dash}</td><td>${a.at ? `<span title="${exact(a.at)}">${rel(a.at)}</span>` : dash}</td><td>${a.comment ? esc(a.comment) : dash}</td><td>${act}</td></tr>`; });
+    const wait = canSign(p, a) ? waitsFor(p, a) : [];
+    const act = !mine || !canSign(p, a) || wait.length ? '' : own ? `<span class="faint">You proposed this change. Another person who holds the ${esc(partName(a.role))} part must sign it off.</span>` : btn('Approve', 'save', 'small', `data-ap="${i}"`) + ' ' + btn('Reject', 'cancel', 'small danger', `data-rj="${i}"`);
+    return `<tr><td><b>${esc(partName(a.role))}</b></td><td>${a.state === 'approved' ? tag('Approved', 'ok') : a.state === 'rejected' ? tag('Rejected', 'bad') : `<span class="faint">${wait.length ? 'Waits for ' + esc(wait.join(', ')) : 'Waiting'}</span>`}</td><td>${a.by ? esc(a.by) : dash}</td><td>${a.at ? `<span title="${exact(a.at)}">${rel(a.at)}</span>` : dash}</td><td>${a.comment ? esc(a.comment) : dash}</td><td>${act}</td></tr>`; });
   const rej = p.approvals.find(a => a.state === 'rejected');
-  const top = { superseded: `<div class="warnbox"><b>This proposal is out of date.</b> Version ${c.ver} was approved after this proposal was written on version ${p.base}. A proposal must sit on the version in force. ${me.name === p.by ? 'Rebase it, and the roles sign off again.' : 'The proposer must rebase it.'} ${me.name === p.by ? '<button class="btn" id="b-rebase">Rebase on version ' + c.ver + '</button>' : ''}</div>`,
-    rejected: `<div class="badbox"><b>Rejected.</b> ${esc(rej ? roleName(rej.role) : '')} rejected version ${p.ver}. Version ${c.ver} stays in force. ${me.name === p.by ? 'Change the proposal and submit it again, or withdraw it.' : ''}</div>`,
-    ready: `<div class="okbox"><b>All ${ROLES.length} roles approved.</b> Version ${p.ver} is not in force yet. Someone must make it official. Until then version ${c.ver} stays in force. ${me.role || own ? '<button class="btn primary" id="b-official">Make version ' + p.ver + ' official</button>' : ''}</div>`,
+  const top = { superseded: `<div class="warnbox"><b>This proposal is out of date.</b> Version ${c.ver} was approved after this proposal was written on version ${p.base}. A proposal must sit on the version in force. ${me.name === p.by ? 'Rebase it, and the parts sign off again.' : 'The proposer must rebase it.'} ${me.name === p.by ? '<button class="btn" id="b-rebase">Rebase on version ' + c.ver + '</button>' : ''}</div>`,
+    rejected: `<div class="badbox"><b>Rejected.</b> ${esc(rej ? partName(rej.role) : '')} rejected version ${p.ver}. Version ${c.ver} stays in force. ${me.name === p.by ? 'Change the proposal and submit it again, or withdraw it.' : ''}</div>`,
+    ready: `<div class="okbox"><b>All ${PARTS.length} approval parts approved.</b> Version ${p.ver} is not in force yet. Someone must make it official. Until then version ${c.ver} stays in force. ${me.role || own ? '<button class="btn primary" id="b-official">Make version ' + p.ver + ' official</button>' : ''}</div>`,
     official: `<div class="okbox"><b>In force.</b> Version ${p.ver} of ${esc(c.name)} is the version in force. The next run of each report that binds it uses it.</div>`,
     withdrawn: '<div class="notice">The proposer withdrew this proposal. It changed nothing.</div>' }[p.state] || '';
-  return `${top}<div class="notice"><b>Four eyes.</b> The person who proposes a change cannot sign it off, even when they hold one of the roles below. Each role needs one person. The screen shows the refusal. The server must also enforce it, and no operation does today.</div>
-  <div class="card"><table><thead><tr><th>Role</th><th>Decision</th><th>Person</th><th>When</th><th>Comment</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
+  return `${top}<div class="notice"><b>Four eyes.</b> The inbox already refuses a decision from the person who raised the request, and a second approval from one person. So a proposer who holds a part cannot sign it off, and a person who holds two parts approves one of them. The Quant part answers first. The other parts answer together, and a refusal from a part that can answer ends the request.</div>
+  <div class="card"><table><thead><tr><th>Approval part</th><th>Decision</th><th>Person</th><th>When</th><th>Comment</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
   ${!closed(p) && own ? `<div class="actions"><button class="btn danger" id="b-withdraw">Withdraw the proposal</button></div>` : ''}
-  <div class="faint">Roles are assumed until model risk confirms them. A build reads the roles, their order and the number of people each needs from a policy. Nothing stores a decision today.</div>`;
+  <div class="faint">A part is decided by a permission, and a tenant grants it to whichever role does that work: ${PARTS.map(r => `${esc(r.name)} <span class="mono">inbox::approvals:decide_${r.code}</span>${r.isNew ? ' (new)' : ''}`).join(' · ')}. The kind <span class="mono">${KIND}</span> and a policy row for a put of <span class="mono">pricing_model_config</span> do not exist yet.</div>`;
 }
 function changesTab(p) {
   const c = cfgOf(p), base = c.versions.find(v => v.v === p.base), d = diffDocs(base.snap, { products: p.products, globals: p.globals });
@@ -480,31 +523,30 @@ function reachTab(p) {
   <div class="faint">The reports, their portfolios and their product types are fixtures. The read that lists the reports bound to one configuration does not exist.</div>`;
 }
 function historyTab(p) {
-  const ev = [{ at: p.at, who: p.by, what: tag('Proposed', 'info') + ` version ${p.ver} on version ${p.base}`, note: p.note }];
-  p.approvals.filter(a => a.at).forEach(a => ev.push({ at: a.at, who: a.by, what: (a.state === 'approved' ? tag('Approved', 'ok') : tag('Rejected', 'bad')) + ' for ' + esc(roleName(a.role)), note: a.comment }));
-  if (p.state === 'official') ev.push({ at: p.madeAt || p.approvals.map(a => a.at).sort().pop(), who: p.madeBy || 'tenant administrator', what: tag('Made official', 'ok') + ` version ${p.ver}`, note: '' });
-  ev.sort((a, b) => b.at.localeCompare(a.at));
-  return `<div class="muted">Everything that happened to this proposal, newest first. The audit log holds the same events with the request details.</div><div class="tl">${ev.map(x => `<div class="item"><div class="when">${x.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(x.who.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${x.what}<span class="who">${esc(x.who)}</span><span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}</div></div>`).join('')}</div>`;
+  const rec = 'pricing_model_config', ev = [{ at: p.at, kind: 'Proposed', rec, ver: p.ver, reason: p.reason, who: p.by, did: 'proposed version ' + p.ver + ' on version ' + p.base, note: p.note }];
+  p.approvals.filter(a => a.at).forEach(a => ev.push({ at: a.at, kind: a.state === 'approved' ? 'Approved' : 'Rejected', rec, ver: p.ver, who: a.by, did: (a.state === 'approved' ? 'approved' : 'rejected') + ' for ' + esc(partName(a.role)), note: a.comment }));
+  if (p.state === 'official') ev.push({ at: p.madeAt || p.approvals.map(a => a.at).sort().pop(), kind: 'Made official', rec, ver: p.ver, who: p.madeBy || 'tenant administrator', did: 'made version ' + p.ver + ' official', current: true });
+  return `<div class="muted">Everything that happened to this proposal, newest first. The audit log holds the same events with the request details.</div>${timeline(ev)}`;
 }
 function proposalScreen(p) {
   const c = cfgOf(p), r = route(), tabs = [['signoff', 'Sign-off'], ['changes', 'Changes'], ['reach', 'Reach'], ['history', 'History']];
   const body = { signoff: signoffTab, changes: changesTab, reach: reachTab, history: historyTab }[r.tab](p);
   return `${crumbs([['Home', QUEUE()], ['Reporting', QUEUE()], ['Pricing engines', LIST], ['Sign-off', QUEUE()], [esc(c.name) + ' · version ' + p.ver]])}
-  <div class="titlebar"><div><h1>${esc(c.name)}: version ${p.ver}</h1><div class="sub">${pTag(p)} ${tag(CYCLE_NAME[c.cycle], 'cls')} ${esc(p.title)} · version ${c.ver} is in force${closed(p) ? '' : ' until this is approved'}</div></div><div class="actions"><span class="access">${me.name === p.by ? '🔒 You proposed it, so you cannot sign off' : me.role ? '✎ Signs off for ' + esc(roleName(me.role)) : '🔒 Read only'}</span><a class="btn" href="${LIST}?screen=record&id=${c.id}">${G.edit} Open ${esc(c.name)}</a></div></div>
+  <div class="titlebar"><div><h1>${esc(c.name)}: version ${p.ver}</h1><div class="sub">${pTag(p)} ${tag(CYCLE_NAME[c.cycle], 'cls')} ${esc(p.title)} · version ${c.ver} is in force${closed(p) ? '' : ' until this is approved'}</div></div><div class="actions"><span class="access">${me.name === p.by ? '🔒 You proposed it, so you cannot sign off' : me.role ? '✎ Signs off for ' + esc(partName(me.role)) : '🔒 Read only'}</span><a class="btn" href="${LIST}?screen=record&id=${c.id}">${G.edit} Open ${esc(c.name)}</a></div></div>
   ${banner ? `<div class="okbox">${esc(banner)}</div>` : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${href({ screen: 'proposal', id: p.id, tab: k })}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
 }
 function decide(p, i, kind) {
   const a = p.approvals[i], c = cfgOf(p), ok = kind === 'approve';
-  const body = ok ? `<div>You sign off version ${p.ver} of ${esc(c.name)} for ${esc(roleName(a.role))}, as ${esc(me.name)}.</div><div class="field"><label class="plain"><input type="checkbox" id="f-att"> I have read the changes and the reports they reach.</label></div><div class="field"><label>Comment (optional)</label><textarea id="f-cm"></textarea></div>`
-    : `<div>You reject version ${p.ver} of ${esc(c.name)} for ${esc(roleName(a.role))}. Version ${c.ver} stays in force, and the proposer is told why.</div><div class="field"><label>Reason</label><textarea id="f-cm"></textarea><div class="help" id="f-nh">A rejection needs a reason.</div></div>`;
+  const body = ok ? `<div>You sign off version ${p.ver} of ${esc(c.name)} for ${esc(partName(a.role))}, as ${esc(me.name)}.</div><div class="field"><label class="plain"><input type="checkbox" id="f-att"> I have read the changes and the reports they reach.</label></div><div class="field"><label>Comment (optional)</label><textarea id="f-cm"></textarea></div>`
+    : `<div>You reject version ${p.ver} of ${esc(c.name)} for ${esc(partName(a.role))}. Version ${c.ver} stays in force, and the proposer is told why.</div><div class="field"><label>Reason</label><textarea id="f-cm"></textarea><div class="help" id="f-nh">A rejection needs a reason.</div></div>`;
   dialog((ok ? 'Approve' : 'Reject') + ' version ' + p.ver + '?', body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn ${ok ? 'primary' : 'danger'}" id="d-save" disabled>${ok ? 'Approve' : 'Reject'}</button>`);
   const chk = () => { document.getElementById('d-save').disabled = ok ? !document.getElementById('f-att').checked : !document.getElementById('f-cm').value.trim(); };
   (ok ? document.getElementById('f-att') : document.getElementById('f-cm')).oninput = chk; if (ok) document.getElementById('f-att').onchange = chk;
   document.getElementById('d-save').onclick = () => {
     Object.assign(a, { by: me.name, at: iso(), state: ok ? 'approved' : 'rejected', comment: document.getElementById('f-cm').value.trim() });
-    p.state = !ok ? 'rejected' : nOk(p) === ROLES.length ? 'ready' : 'partly';
-    banner = ok ? (p.state === 'ready' ? `All ${ROLES.length} roles approved version ${p.ver}. It is not in force yet.` : `You approved for ${roleName(a.role)}. ${nOk(p)} of ${ROLES.length} roles have approved.`) : `You rejected version ${p.ver}. Version ${c.ver} stays in force.`;
+    p.state = !ok ? 'rejected' : nOk(p) === PARTS.length ? 'ready' : 'partly';
+    banner = ok ? (p.state === 'ready' ? `All ${PARTS.length} approval parts approved version ${p.ver}. It is not in force yet.` : `You approved for ${partName(a.role)}. ${nOk(p)} of ${PARTS.length} approval parts have approved.`) : `You rejected version ${p.ver}. Version ${c.ver} stays in force.`;
     closeDlg(); render();
   };
 }
@@ -531,13 +573,14 @@ function wire() {
   qa('[data-ap]').forEach(x => x.onclick = () => decide(p, Number(x.dataset.ap), 'approve'));
   qa('[data-rj]').forEach(x => x.onclick = () => decide(p, Number(x.dataset.rj), 'reject'));
   if ($('b-official')) $('b-official').onclick = () => makeOfficial(p);
+  if ($('sys')) $('sys').onclick = () => { hideSystem = !hideSystem; render(); };
   if ($('b-withdraw')) $('b-withdraw').onclick = () => confirmDlg('Withdraw the proposal?', `Version ${p.ver} of ${esc(cfgOf(p).name)} will not be signed off. Version ${cfgOf(p).ver} stays in force. The proposal stays in the history.`, 'Withdraw', () => { p.state = 'withdrawn'; cfgOf(p).proposal = null; banner = 'The proposal is withdrawn.'; });
-  if ($('b-rebase')) $('b-rebase').onclick = () => { const c = cfgOf(p); p.base = c.ver; p.ver = c.ver + 1; p.state = 'pending'; p.approvals.forEach(a => Object.assign(a, { by: '', at: '', state: 'pending', comment: '' })); banner = `Rebased on version ${c.ver}. The roles sign off again, because the approvals given were for another base.`; render(); };
+  if ($('b-rebase')) $('b-rebase').onclick = () => { const c = cfgOf(p); p.base = c.ver; p.ver = c.ver + 1; p.state = 'pending'; p.approvals.forEach(a => Object.assign(a, { by: '', at: '', state: 'pending', comment: '' })); banner = `Rebased on version ${c.ver}. The parts sign off again, because the approvals given were for another base.`; render(); };
 }
 function render() {
   const r = route(), p = prById(r.id);
   document.getElementById('app').innerHTML = r.screen === 'proposal' ? proposalScreen(p) : queueScreen();
-  chrome('sign off a pricing engine change · ' + r.screen + ' · acting as ' + me.name + (me.role ? ' (' + roleName(me.role) + ')' : ''), [['state', ['all', 'empty', 'error'], state], ['proposal', ['pending', 'partly', 'ready', 'rejected', 'superseded'], stateP], ['actor', ['proposer', 'quant', 'risk', 'validator', 'viewer'], actor]]);
+  chrome('sign off a pricing engine change · ' + r.screen + ' · acting as ' + me.name + (me.role ? ' (' + partName(me.role) + ')' : ''), [['state', ['all', 'empty', 'error'], state], ['proposal', ['pending', 'partly', 'ready', 'rejected', 'superseded'], stateP], ['actor', ['proposer', 'quant', 'risk', 'validator', 'viewer'], actor]]);
   wire();
 }
 render();

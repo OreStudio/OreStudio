@@ -29,7 +29,7 @@ Show that a party holds few official pricing engine configurations, one per cycl
 | State        | STARTED                              |
 | Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
 | Now          | Journeys, wireframes and prototypes are reworked. Waiting for review of the PR. |
-| Waiting on   | Model risk, to confirm the sign-off roles. |
+| Waiting on   | Model risk, to confirm the approval parts and their order. |
 | Next         | Merge the PR. Then the next configuration type. |
 | Last touched | 2026-10-20                               |
 
@@ -39,7 +39,7 @@ Show that a party holds few official pricing engine configurations, one per cycl
 - Editing an approved configuration proposes a new version. No screen changes an approved version in place.
 - A report binds an approved version, and the screens say which version.
 - A copy is a draft sandbox that cannot bind an official report.
-- A fifth journey and prototype show the sign-off, with the roles marked as assumed until model risk confirms them.
+- A fifth journey and prototype show the sign-off, with the approval parts of the inbox, two of them new and marked as assumed until model risk confirms them.
 - The prototypes pass check_prototype_inventory.py.
 
 * Plan
@@ -59,9 +59,9 @@ The first four prototypes treated a pricing engine configuration as something ea
 - A copy is a draft. It rebinds nothing, and no official report can bind a draft.
 - A report needs a price for every product type in its portfolio. The coverage check follows the reports of a cycle, and a configuration that several reports bind must cover the union.
 - A configuration made on the authoring screens is a draft, or a candidate for a cycle. A candidate is submitted only when its coverage is complete.
-- The sign-off has its own journey and prototype. The proposer cannot sign off, even when they hold a role.
-- The roles (quant team, market risk, model validation) are assumed until model risk confirms them.
-- Not decided: one official configuration for each cycle as a rule or as a mark; making a proposal official needing a role of its own; the rebinding step of a candidate that replaces the official configuration.
+- The sign-off has its own journey and prototype. The proposer cannot sign off, even when they hold a part. The inbox enforces that already.
+- The approval parts are those of =ores.inbox=. Market Risk is seeded. Quant and Model Validation are new, and their names and answer order (Quant first) are assumed until model risk confirms them.
+- Not decided: one official configuration for each cycle as a rule or as a mark; making a proposal official needing a permission of its own; the rebinding step of a candidate that replaces the official configuration.
 
 ** Steps
 

@@ -22,17 +22,17 @@
 #include <string>
 #include <utility>
 
-    namespace {
+namespace {
 
-    const std::string_view test_suite("ores.ore.tests");
-    const std::string tags("[ore][xml][arena]");
+const std::string_view test_suite("ores.ore.tests");
+const std::string tags("[ore][xml][arena]");
 
-    using ores::ore::xml::stable_arena;
-    using namespace ores::logging;
+using ores::ore::xml::stable_arena;
+using namespace ores::logging;
 
-    struct row {
-        std::string name;
-    };
+struct row {
+    std::string name;
+};
 }
 
 TEST_CASE("an_arena_keeps_every_element_where_it_was_put", tags) {

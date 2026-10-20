@@ -107,7 +107,7 @@ function partiesCard() {
         h('div', { class: 'body', style: 'display:grid;gap:.8rem' }, h('div', { class: 'grid2' },
             field('Party', h('div', { class: 'static' }, ref('party', 'ACME-LON', PARTY)), 'Fixed for the life of the trade.'),
             field('Counterparty', (() => { const el = select([['', 'Choose…']].concat(COUNTERPARTIES.filter(c => c.open).map(c => [c.code, c.name])), F.cp, v => { F.cp = v; redraw(); }); el.disabled = F.struct.mode === 'existing'; return el; })(), F.struct.mode === 'existing' ? 'Shared by every leg of ' + F.struct.id + '.' : 'Only counterparties this party may trade with.'),
-            field('Book', select(BOOKS.map(x => [x.code, x.name + (x.virtual ? ' (virtual)' : '')]), F.book, v => { F.book = v; redraw(); }), b.virtual ? 'A virtual book holds only a draft, a test or a hypothetical.' : ''),
+            field('Book', select(BOOKS.map(x => [x.code, x.name + (x.virtual ? ' (virtual)' : '') + (bookOpen(x) ? '' : ' (' + x.status + ')'), !bookOpen(x)]), F.book, v => { F.book = v; redraw(); }), (b.virtual ? 'A virtual book holds only a draft, a test or a hypothetical. ' : '') + bookFacts(b)),
             field('Booking nature', select(BOOKING_NATURES, F.nature, v => { F.nature = v; redraw(); })),
             field('Trade date', h('input', { class: 'field-input', type: 'date', value: F.date, oninput: e => { F.date = e.target.value; } })),
             field('Execution time', h('input', { class: 'field-input', type: 'time', value: F.time, oninput: e => { F.time = e.target.value; } })),

@@ -6,7 +6,7 @@ const MODE = P.get('mode') === 'export' ? 'export' : 'import';
 const FAIL = P.get('fail') || '';
 const REASONS = reasonsFor('new');
 const OFFICIAL_PORTFOLIOS = ['Rates and credit', 'FX flow', 'Equity'];
-const landing = () => I.land === 'official' ? { official: true, name: 'the official portfolio tree', portfolios: OFFICIAL_PORTFOLIOS, books: BOOKS.filter(b => !b.virtual) } : (() => { const s = sandbox(I.land); return { official: false, name: 'the sandbox ' + s.name, portfolios: s.portfolios, books: BOOKS.filter(b => b.sandbox === s.code) }; })();
+const landing = () => I.land === 'official' ? { official: true, name: 'the official portfolio tree', portfolios: OFFICIAL_PORTFOLIOS, books: BOOKS.filter(b => !b.virtual && bookOpen(b)) } : (() => { const s = sandbox(I.land); return { official: false, name: 'the sandbox ' + s.name, portfolios: s.portfolios, books: BOOKS.filter(b => b.sandbox === s.code && bookOpen(b)) }; })();
 function landingFields() {
     const L = landing();
     if (!L.portfolios.includes(I.parentExisting)) I.parentExisting = L.portfolios[0];
@@ -17,8 +17,9 @@ function landingFields() {
         field('What the import creates', select([['folders', 'Portfolios and books from the folders'], ['book', 'Nothing: put every trade in one existing book']], I.target, v => { I.target = v; renderImport(); }),
             I.target === 'book' ? 'No portfolio or book is created.' : 'The folders become portfolios and books. A folder named Input is not a level.'),
         I.target === 'book'
-            ? field('Book', select(L.books.map(b => [b.code, b.name]), I.book, v => { I.book = v; }), L.books.length ? 'The books of ' + L.name + '.' : 'There is no book in ' + L.name + '.')
+            ? field('Book', select(L.books.map(b => [b.code, b.name]), I.book, v => { I.book = v; renderImport(); }), L.books.length ? bookFacts(book(I.book)) : 'There is no open book in ' + L.name + '.')
             : [field('Parent portfolio', select([['new', 'Create a new one'], ['existing', 'Use one of ' + L.name]], I.parentMode, v => { I.parentMode = v; renderImport(); }), 'One portfolio wraps every imported portfolio.'),
+                field('Functional currency of the new books', select(CCYS, I.ccy, v => { I.ccy = v; }), 'Each new book is active and a Trading book. In a sandbox its purpose is Test and its ledger feed is none.'),
                 I.parentMode === 'new'
                     ? field('Name of the new portfolio', h('input', { class: 'field-input', value: I.parent, oninput: e => { I.parent = e.target.value; } }))
                     : field('Existing portfolio', select(L.portfolios, I.parentExisting, v => { I.parentExisting = v; }))]
@@ -68,7 +69,7 @@ const SCAN = {
     '/data/ore/Examples/Example_1': { scanned: 31, ignored: [['Input/ore.xml', 'ORE run configuration']], files: [{ path: 'Input/portfolio.xml', size: '38 KB', rows: [['Trade_0001', 'Swap', 'NWCAP'], ['Trade_0002', 'Swap', 'NWCAP']] }] },
     '/data/ore/Empty': { scanned: 9, ignored: [], files: [] }
 };
-let I = { dir: '/data/ore/Examples', scanned: false, exclude: ['Output'], sel: new Set(), step: 0, imported: null, rolledBack: false, land: 'ORE-SAMPLES', target: 'folders', parentMode: 'new', parent: 'ORE examples', parentExisting: '', book: '', currencies: 'missing_only', reimport: 'add_trades_only', defCp: '', activity: 'new_booking', reason: 'system.import', note: '', po: 0, pl: 15, busy: false, failed: false };
+let I = { dir: '/data/ore/Examples', scanned: false, exclude: ['Output'], sel: new Set(), step: 0, imported: null, rolledBack: false, ccy: 'USD', land: 'ORE-SAMPLES', target: 'folders', parentMode: 'new', parent: 'ORE examples', parentExisting: '', book: '', currencies: 'missing_only', reimport: 'add_trades_only', defCp: '', activity: 'new_booking', reason: 'system.import', note: '', po: 0, pl: 15, busy: false, failed: false };
 const stripInput = p => p.split('/').slice(0, -1).filter(s => s !== 'Input').join(' / ') || '(top)';
 function matches() { return SCAN[I.dir].files.filter(f => !I.exclude.some(x => f.path.split('/').includes(x))); }
 function excludedFiles() { return SCAN[I.dir].files.filter(f => I.exclude.some(x => f.path.split('/').includes(x))); }
@@ -197,7 +198,7 @@ function renderExport() {
     const pane = result || h('div', { class: 'cards' },
         h('section', { class: 'card' }, h('header', null, h('h2', null, 'Choose the trades')), h('div', { class: 'body', style: 'display:grid;gap:.8rem' },
             h('div', { class: 'grid2' }, field('Which trades', select([['book', 'All trades in a book'], PRESET.length ? ['chosen', 'The ' + PRESET.length + ' trades chosen in the list'] : null].filter(Boolean), X.scope, v => { X.scope = v; X.po = 0; renderExport(); })),
-                X.scope === 'book' ? field('Book', select(BOOKS.filter(b => !b.virtual).map(b => [b.code, b.name]), X.book, v => { X.book = v; X.po = 0; renderExport(); })) : null),
+                X.scope === 'book' ? field('Book', select(BOOKS.filter(b => !b.virtual && bookOpen(b)).map(b => [b.code, b.name]), X.book, v => { X.book = v; X.po = 0; renderExport(); })) : null),
             field('Send it to', select([['file', 'A file for me'], ['storage', 'Storage, for a run']], X.to, v => { X.to = v; renderExport(); }), X.to === 'storage' ? 'trading.v1.ops.export_trades_to_storage' : 'trading.v1.ops.export_portfolio'))),
         h('section', { class: 'card' }, h('header', null, h('h2', null, 'Check'), h('span', { class: 'sp' }), chip(good.length + ' can be written', 'ok'), bad.length ? chip(bad.length + ' cannot', 'bad') : null),
             h('div', { class: 'body' }, set.length ? h('table', { class: 'grid' }, h('thead', null, h('tr', null, ['Trade', 'Type', 'State', 'Result'].map(c => h('th', null, c)))),

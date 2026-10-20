@@ -249,7 +249,6 @@ The prototypes drew several closed sets from memory. They now read from the seed
 Amounts show digit separators.
 
 Still open:
-- Books in the prototypes have a code and a purpose only. The table also holds parent portfolio, functional currency, status, regulatory type, ledger feed, sweepable, rates centre and sandbox.
 - Link types and the other instrument families (equity, commodity, credit, scripted) are not compared yet. They draw the generic card.
 - A change reason that requires commentary is not enforced by the screens.
 
@@ -267,6 +266,18 @@ The four instrument cards now follow the columns of their tables. Terms that the
 Removed from the cards: delivery date, strike on the option, long or short, payment calendar, yield convention, settlement days, coupon, face amount and the composite weight. None of them has a column. The option type, exercise style and settlement lists come from the seed files. The structure page reads the strike from the first exercise price row.
 
 Rate trades booked in the prototype take a default notional, because the notional now lives in the leg amounts.
+
+** Book fields and structures in the list, 2026-10-21
+
+A book in the prototypes now carries the columns of the book table: parent portfolio, owner unit, functional currency, ledger account, cost centre, status, regulatory type, purpose, ledger feed, sweepable, rates centre and sandbox. The code sets come from the seed files: purpose (9 codes), status (Active, Frozen, Closed), regulatory type (Trading, Banking) and ledger feed (None, Automatic, Manual).
+
+- The purpose "Virtual" never existed. A virtual book is a book with a sandbox. In a sandbox the table requires no ledger account and no sweeping.
+- Book a trade offers a book that is not Active as a disabled choice with its status, and shows the facts of the chosen book under the field. The book move and the ORE export offer open books only.
+- The ORE import asks for the functional currency of the books it creates. The planner sets them Active and Trading; in a sandbox the purpose is Test and the ledger feed is None.
+- Two books were added: EMEA-RATES-2025 (Closed) and EMEA-CMDTY (Frozen).
+- Open question: the database does not refuse a trade in a Frozen or Closed book. The prototype does. The rule needs a decision.
+
+The trade list now shows structures and trades as rows of one level (=?show=trades|structures=). The real read model, trade_summaries, holds trades only. A mixed list needs either a read model that unions both, or two reads that the screen merges; a merged page then cannot be exact about paging and order. The request line shows both reads. This also needs a decision.
 
 ** Trade entry folded into Book a trade and the structure page, 2026-10-20
 

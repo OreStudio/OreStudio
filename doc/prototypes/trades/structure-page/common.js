@@ -103,15 +103,26 @@ const plain = x => x && x.nodeType ? (x.dataset.text || x.textContent) : x;
 /* ---------- reference data ---------- */
 const TENANT = 'Acme Corporation';
 const PARTY = 'Acme London';
-const BOOKS = [
-    { code: 'EMEA-RATES', name: 'EMEA Rates', purpose: 'Trading' },
-    { code: 'EMEA-FX', name: 'EMEA FX', purpose: 'Trading' },
-    { code: 'EMEA-CREDIT', name: 'EMEA Credit', purpose: 'Trading' },
-    { code: 'EMEA-EQ', name: 'EMEA Equity', purpose: 'Trading' },
-    { code: 'VIRT-DRAFT', name: 'Virtual draft book', purpose: 'Virtual', virtual: true, sandbox: 'RATES-WHATIF' },
-    { code: 'ORE-EX-SWAPS', name: 'ORE examples: swaps', purpose: 'Virtual', virtual: true, sandbox: 'ORE-SAMPLES' },
-    { code: 'ORE-EX-FX', name: 'ORE examples: FX', purpose: 'Virtual', virtual: true, sandbox: 'ORE-SAMPLES' }
+/* The closed sets of the book table, as [code, description]. A book in a sandbox is a virtual book: it has a sandbox_id, no ledger account and is not sweepable. */
+const BOOK_PURPOSES = [['Trading', 'Positions the desk takes risk in'], ['Reserve', 'Reserves held against risk'], ['Funding', 'Funding positions'], ['Wash', 'Clearing book that nets to nothing'], ['WriteOff', 'Positions written off'], ['Test', 'Test positions'], ['Sales', 'Sales positions'], ['SweepTarget', 'Receives swept balances'], ['RemittanceTarget', 'Receives remitted balances']];
+const BOOK_STATUSES = [['Active', 'The book takes trades'], ['Frozen', 'The book takes no trade until it is thawed'], ['Closed', 'The book is closed for good']];
+const REGULATORY_BOOK_TYPES = [['Trading', 'Trading book'], ['Banking', 'Banking book']];
+const LEDGER_FEEDS = [['None', 'No ledger feed'], ['Automatic', 'Posted to the ledger by the system'], ['Manual', 'Posted to the ledger by hand']];
+const BOOK_ROWS = [
+    { code: 'EMEA-RATES', name: 'EMEA Rates', description: 'Interest rate and inflation risk of the London desk', parent: 'Rates and credit', unit: 'EMEA Rates desk', ccy: 'EUR', gl: '1210-RATES', cost: 'CC-4100', status: 'Active', reg: 'Trading', purpose: 'Trading', feed: 'Automatic', sweepable: false, centre: 'GBLO' },
+    { code: 'EMEA-FX', name: 'EMEA FX', description: 'Spot, forward and option flow', parent: 'FX flow', unit: 'EMEA FX desk', ccy: 'EUR', gl: '1210-FX', cost: 'CC-4200', status: 'Active', reg: 'Trading', purpose: 'Trading', feed: 'Automatic', sweepable: true, centre: 'GBLO' },
+    { code: 'EMEA-CREDIT', name: 'EMEA Credit', description: 'Credit default swaps and bonds', parent: 'Rates and credit', unit: 'EMEA Credit desk', ccy: 'EUR', gl: '1210-CREDIT', cost: 'CC-4300', status: 'Active', reg: 'Banking', purpose: 'Trading', feed: 'Automatic', sweepable: false, centre: 'GBLO' },
+    { code: 'EMEA-EQ', name: 'EMEA Equity', description: 'Equity forwards and options', parent: 'Equity', unit: 'EMEA Equity desk', ccy: 'EUR', gl: '1210-EQ', cost: 'CC-4400', status: 'Active', reg: 'Trading', purpose: 'Trading', feed: 'Manual', sweepable: false, centre: 'GBLO' },
+    { code: 'EMEA-RATES-2025', name: 'EMEA Rates 2025', description: 'The 2025 rates book, closed at the year end', parent: 'Rates and credit', unit: 'EMEA Rates desk', ccy: 'EUR', gl: '1210-RATES25', cost: 'CC-4100', status: 'Closed', reg: 'Trading', purpose: 'Trading', feed: 'None', sweepable: false, centre: 'GBLO' },
+    { code: 'EMEA-CMDTY', name: 'EMEA Commodity', description: 'Frozen while the desk is reviewed', parent: 'Rates and credit', unit: 'EMEA Rates desk', ccy: 'USD', gl: '1210-CMDTY', cost: 'CC-4500', status: 'Frozen', reg: 'Trading', purpose: 'Trading', feed: 'Automatic', sweepable: false, centre: 'USNY' },
+    { code: 'VIRT-DRAFT', name: 'Virtual draft book', description: 'Drafts for the rates what-if', parent: 'What-if rates', unit: '', ccy: 'EUR', gl: '', cost: '', status: 'Active', reg: 'Trading', purpose: 'Test', feed: 'None', sweepable: false, centre: 'GBLO', sandbox: 'RATES-WHATIF' },
+    { code: 'ORE-EX-SWAPS', name: 'ORE examples: swaps', description: 'The swap examples of the ORE distribution', parent: 'ORE examples', unit: '', ccy: 'USD', gl: '', cost: '', status: 'Active', reg: 'Trading', purpose: 'Test', feed: 'None', sweepable: false, centre: 'USNY', sandbox: 'ORE-SAMPLES' },
+    { code: 'ORE-EX-FX', name: 'ORE examples: FX', description: 'The FX examples of the ORE distribution', parent: 'ORE examples', unit: '', ccy: 'USD', gl: '', cost: '', status: 'Active', reg: 'Trading', purpose: 'Test', feed: 'None', sweepable: false, centre: 'USNY', sandbox: 'ORE-SAMPLES' }
 ];
+const BOOKS = BOOK_ROWS.map(b => Object.assign({ virtual: !!b.sandbox }, b));
+const bookOpen = b => !!b && b.status === 'Active';
+/* The facts a person needs to choose a book, in one line. */
+const bookFacts = b => b ? [b.parent, b.ccy, b.reg + ' book', 'purpose ' + b.purpose, 'ledger feed ' + b.feed.toLowerCase(), 'rates centre ' + b.centre, b.sweepable ? 'sweepable' : null, b.status !== 'Active' ? b.status : null].filter(Boolean).join(' · ') : '';
 /* A sandbox is a space where actions have no effect outside it. Its books are virtual books and its portfolios carry its id. */
 const SANDBOXES = [
     { code: 'ORE-SAMPLES', name: 'ORE samples', purpose: 'The sample portfolios of the ORE distribution', visibility: 'shared', status: 'open', owner: 'ada.lovelace', review: '2027-01-31', portfolios: ['ORE examples'] },
@@ -550,7 +561,7 @@ function openDialog({ title, loadedAt, body, buttons, onclose }) {
 function field(label, input, hint) { return h('div', { class: 'fld' }, h('label', null, label), input, hint ? h('span', { class: 'hint' }, hint) : null); }
 function select(options, value, onchange) {
     return h('select', { class: 'field-select', onchange: e => onchange && onchange(e.target.value) },
-        options.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return h('option', { value: v, selected: v === value }, l); }));
+        options.map(o => { const [v, l, off] = Array.isArray(o) ? o : [o, o]; return h('option', { value: v, selected: v === value, disabled: !!off }, l); }));
 }
 
 /* The input for one field of a card. A value that exists is chosen from a combo box, a date has a date input,

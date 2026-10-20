@@ -2,7 +2,7 @@
 :ID: 8940DE7A-49AC-4435-8FEB-C676F1915A37
 :END:
 #+title: Task: Store each trade kind in its own column
-#+description: The generated trade record holds one inline member per instrument kind, so it is 346,624 bytes and every new trade zeroes all of it. That zero fill is 33 percent of the portfolio read test. Hold the kinds as columns instead: the trade keeps its common fields, a kind tag and an index, and the portfolio owns one container per kind. This follows the arena idiom the recursive members already use and adds no variant.
+#+description: The generated trade record holds one inline member per instrument kind, so it is 346,624 bytes and every new trade zeroes all of it. That zero fill is 33 percent of the portfolio read test. The kinds now sit in columns: the trade keeps its common fields and one index, the presence bit says which kind, and the holder of the trade owns one vector of rows per kind type. A trade is 432 bytes and the test costs 39 percent fewer instructions. No variant is used.
 #+type: task
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
@@ -207,7 +207,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| sizeof of a trade, before | 346,624 bytes | a throwaway program printing =sizeof= of every generated struct | =7515c50292= |
+| sizeof of a trade, after | 432 bytes; the columns struct is 3,576 bytes; a derivative is 4,480 bytes | a throwaway file that names each size in a template error, compiled with =clang++ -fsyntax-only= | =ec1c3ca051= |
+| Instructions, portfolio import test, before | 3,070,700,246; =import_portfolio_with_context= 1,952,347,014; =memset= 33% | =valgrind --tool=callgrind ores.ore.core.tests "import_portfolio_all_ore_example_files_can_be_parsed"= | =a6c7e6f7da= |
+| Instructions, same test, after | 1,864,475,726; =import_portfolio_with_context= 746,129,229; =memset= 66,709,706 (3.6%) | same command | =ec1c3ca051= |
+| Instructions, same test, before #3579 | 4,028,918,281 | same command | =7515c50292= |
+| Cut edges and arenas in the portfolio tables | none after; eight before | =Schema.cut_members= printed after =order_types= | =ec1c3ca051= |
+| Largest record by member count | 491 (=total_return_swap_data=); a trade has 14 | the generator's member count, printed once | =ec1c3ca051= |
+| Generator tests | 39 pass, four of them new | =python3 -m pytest projects/ores.codegen/tests/test_generate_xml_bindings_derivation.py= | =ec1c3ca051= |
+| Full test binary | 377 cases, 475,405 assertions, all pass | =ores.ore.core.tests= | =ec1c3ca051= |
+| Drift check, census, benchmark gate | pass | =check_xml_bindings_drift.py=, =check_xml_family_coverage.py=, =check_xml_benchmark_recorded.py= | =ec1c3ca051= |
 
 * Notes
 
@@ -235,3 +244,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Each instrument kind of a trade now sits in a column. The trade, the component
+trade and the component sub trade keep their common fields and one
+=std::uint32_t= index. The presence bit of the chosen kind says which kind it
+is. The holder of the trade owns a =trade_kind_columns= struct: one vector of
+rows per kind type, 149 of them. The three trade types name the same kinds and
+share the struct. A field row of the holder says where the struct is
+(=columns_offset=), and a kind row says where its vector is inside the struct.
+The engine, the reader, the writer, the emitter and the diff take that pointer
+from the holder's row when they step into a trade.
+
+A trade falls from 346,624 to 432 bytes. Reading the portfolio test falls from
+3,070,700,246 to 1,864,475,726 instructions, 39.3%. Since before the deque
+change (4,028,918,281) it falls 53.7%. The zero fill is 3.6% of the test and was
+33%.
+
+The kinds no longer sit inside a trade by value, so the type cycles through a
+trade end. The eight cut edges and their arenas and index vectors are gone, and
+=derivative= holds its =component_trade= by value. No record is wide, so the
+wide-record rule of #3579 had no user and is removed with the deque. The
+generator keeps the arena for a schema that recurses, and its tests still cover
+it. A test now pins the size of the three trade types under 1 KB, in place of
+the one that pinned the address of a trade.
+
+Two things the design note said were wrong. The kinds are =xs:choice=
+children, not substitution members. The projections did need a change: four
+reads of the composite and total return swap projections called =indexed()=,
+and read the nested trades with =children()= and =child()= now.
+
+A document that states two kinds under one trade is now refused by the reader
+and by the writer. The inline layout accepted it and kept both. No document in
+the corpus does it.
+
+Not done: MSVC is not built. The 149 empty vectors of a columns struct cost
+3,576 bytes for each holder of a trade, which is one per composite trade.

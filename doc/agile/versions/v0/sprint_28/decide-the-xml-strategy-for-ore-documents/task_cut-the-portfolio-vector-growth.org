@@ -133,3 +133,7 @@ separate program, not by building the old tree again.
 The benchmark gate asked for a row because the generated headers sit under the
 watched path. The XML benchmark measures scanning and the tape, not the binder,
 so its numbers did not move.
+
+The deque rule this task added is removed again by
+[[id:8940DE7A-49AC-4435-8FEB-C676F1915A37][Store each trade kind in its own column]]:
+a trade no longer holds every kind, so no record is wide.

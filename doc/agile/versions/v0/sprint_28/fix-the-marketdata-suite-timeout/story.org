@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 6F517239-8845-4F2F-B553-DE9E333FC641
+:END:
+#+title: Story: Fix the marketdata suite timeout
+#+description: The marketdata core suite outgrew the 600 s ctest default and lost its serial setting in a regeneration.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-20                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ED08D69C-AEDD-4373-876B-747928BA5649][Scaffold story: Fix the marketdata suite timeout]] | DONE | 2026-10-20 | 2026-10-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:847A0207-54BF-4ECC-BA05-ECB996D19436][Implement Fix the marketdata suite timeout]] | DONE | 2026-10-20 | 2026-10-20 | Initial task for: Fix the marketdata suite timeout |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The marketdata core suite has a 3600 s timeout and runs alone again. The
+suite had outgrown the 600 s ctest default. See the implement task.

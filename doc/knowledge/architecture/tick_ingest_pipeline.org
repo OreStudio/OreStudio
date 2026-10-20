@@ -348,14 +348,16 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   it stores the series and the coordinate as identifiers, not the URI text in each
   row. A view joins it with the observation table for a reader that wants both. The
   step 0 prototype measures the gain before the choice is made.
-- *The volume.* One row takes about 200 bytes with its identifiers and its URI text,
-  and the indexes add more. Thirty thousand ticks each second reach about 276,000 rows
-  each second with today's fan-out, which is about 24 billion rows each day and several
-  terabytes each day. These are estimates to check. No store holds that without a plan.
-  The plan has three parts. Raw ticks stay for a short time, such as a week. Older
-  chunks are compressed, with the series as the segment key and the time as the order.
-  Bars of one second and one minute are kept for good. The class policy states the
-  retention of each part.
+- *The volume.* A row of the observation table takes 1,199 bytes with its indexes,
+  as step 0 measured. An append-only row takes 162 bytes. Thirty thousand ticks each
+  second reach about 276,000 rows each second with today's fan-out, which is about 24
+  billion rows each day. That is 29 terabytes each day in the observation table, and 3.9
+  terabytes each day in an append-only table, before any compression. With one row for
+  each source, the append-only table takes about 0.4 terabytes each day. No store holds
+  the first figure, and the plan has three parts. Raw ticks stay for a short time, such
+  as a week. Older chunks are compressed, with the series as the segment key and the
+  time as the order. Bars of one second and one minute are kept for good. The class
+  policy states the retention of each part.
 - *One row for each source.* The largest factor that the design controls is the
   fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
   each source, with parties reading it through the bindings, removes both factors.
@@ -743,12 +745,55 @@ It departs from practice in two points, and both follow from the requirements.
   rows each second. It is a large change, and a batched write to the present store
   may be enough. Measure first. The decision belongs to steps 0 and 3 below.
 
+** Step 0: the measured write ceiling
+
+The first pass of step 0 times batched inserts into scratch tables of one environment,
+on one connection. The rows are made inside the database, so the figures leave out the
+client and the network. They are upper bounds. The script and the raw output are in the
+=evidence= folder of the investigation task.
+
+#+ATTR_HTML: :class hug-leading
+| Rows in a transaction | Observation table, as built | Same table, no trigger | Append-only table |
+|-----------------------+-----------------------------+------------------------+-------------------|
+| 1 | 231 each second | 273 | 226 |
+| 100 | 6,024 | 18,225 | 22,890 |
+| 1,000 | 7,815 | 28,716 | 111,028 |
+| 10,000 | 8,301 | 32,751 | 186,824 |
+| Bytes for each row, with indexes | 1,199 | 942 | 162 |
+
+Four facts follow.
+
+- *One row for each commit is commit-bound.* The three shapes give 226 to 273 rows each
+  second, and that is the 230 syncs each second of the disk.
+- *Batching alone does not help the present table.* It rises from 231 to 8,301 rows each
+  second and stops there. The trigger and its two lookups of the tenant table for each
+  row set the ceiling. Removing the trigger gives four times more, and the seven indexes
+  then set a new ceiling of about 33,000.
+- *The append-only table is 22 times faster than the present one.* One index and no
+  trigger give 187,000 rows each second on one connection, at 162 bytes for each row.
+- *=COPY= from a client file* loaded 300,000 rows into the table without a trigger in
+  7.3 seconds, which is 41,000 each second, and into the append-only table in 1.6
+  seconds, which is 188,000 each second.
+
+The demand of 276,000 rows each second needs 34 connections of the present table, at
+perfect scaling, and a disk that writes 330 megabytes each second. It needs two
+connections of the append-only table, and a disk that writes 45 megabytes each second. With
+one row for each source it needs less than one connection.
+
+These figures have limits. The scratch tables were empty at the start, so the indexes
+were small and warm. A real table with years of data has colder indexes, and the
+random series order costs more. The server was shared with four other environments.
+Row-level security and the tenant-aware connection were not in the test. The rows
+of one batch had one tenant. Compression was not measured. A later pass of step 0
+repeats the test from the application, with =COPY= through libpq, with batches that
+hold one tenant, and with a table that has more history.
+
 ** The risks, and what would change the design
 
 #+ATTR_HTML: :class hug-leading
 | Risk | What would show it | What changes if it is true |
 |------+--------------------+----------------------------|
-| PostgreSQL cannot sustain the batch rate. The target is about 280,000 rows each second with today's fan-out. | The prototype of step 0. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
+| PostgreSQL cannot sustain the batch rate. The target is about 280,000 rows each second with today's fan-out. Step 0 shows that the present table cannot, at 8,300 each second for each connection, and that an append-only table can, at 187,000. | The next pass of step 0, from the application. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
 | The write for each party multiplies with the number of parties. | The count of bindings for each source, against the row rate. | Keep one row for each source and let a party read through a view. |
 | One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
 | One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
@@ -771,9 +816,11 @@ a burst of ticks at a chosen rate and times the drain.
    with the append-only table, and with the policy of one tenant for each batch. It
    also states the bytes for each row. The result decides whether the later steps need
    a column store.
-1. *Remove the per-row costs. No new structure.* Drop the notification trigger of the
-   observation table, add a series cache and a multi-row insert, and stop waiting for
-   acknowledgements on the live publish and on the producers. Remove the two tick
+1. *Remove the per-row costs.* Step 0 shows that batching the present table stops at
+   8,300 rows each second, so this step moves ticks to the append-only table. Drop the
+   notification trigger of the observation table, add a series cache and a batch
+   writer, and stop waiting for acknowledgements on the live publish and on the
+   producers. Remove the two tick
    streams for perishable subjects. Add the lag gauge. Acceptance: the burst
    drain rate reaches the rate that step 0 measured, and the lag gauge shows the lag
    of a loaded system. The ten-fold gain is a target and not a result until step 0

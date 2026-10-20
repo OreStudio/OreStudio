@@ -141,7 +141,7 @@ documents hold a rule a plot can use:
 - The two reporting journeys state the plot vocabulary, the rule that chooses a
   form, and the honesty rules. They are
   [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] and
-  [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]].
+  [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]].
 - [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] states one convention for a chart card: the card
   heads with what it shows and the high and the low, and an optional EMA over
   twenty ticks is drawn dashed over the line. That is a precedent for the header
@@ -269,7 +269,7 @@ decides what the band means.
   =doc/agile/versions/v0/sprint_28/manage-reports-from-the-list-a-party-runs/story.org=.
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][User Journey: Read what a run produced]] — the journey that states the plot
   vocabulary and the rule that picks a form, =doc/knowledge/journeys/reporting/journey_read_what_a_run_produced.org=.
-- [[id:465ca244-c488-4c69-aca3-c694d104a42a][User Journey: Look back over a report's history]] — the journey that states
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][User Journey: Look back over a report's history]] — the journey that states
   the trend, its marked latest run, the stated axis range and the table under
   the plot, =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=.
 - [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the only place under =doc/knowledge/= that states a

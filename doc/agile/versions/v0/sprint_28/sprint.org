@@ -166,6 +166,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] | BACKLOG | | | A person creates and edits a report configuration on screens that guide each step. A configuration holds many related entities, so each entity gets a screen that helps the person choose, check and connect its parts. The configuration screens link later to the report definition screens. |
 | [[id:B4DD3D99-6C90-4481-80E0-B4D1D41880A7][Tenant auto-start feeds are not restored after a services restart]] | DONE | 2026-10-19 | 2026-10-19 | The boot walk read only the system tenant's feeds. It now visits every active tenant, so ACME's feeds run after a restart. |
 | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] | DONE | 2026-10-19 | 2026-10-19 | A feed's vintage read runs under the run grant of its collection, so a restart starts every tenant's feeds. The caller of Start is checked once, at the command. |
+| [[id:1DD89181-EEC6-431B-B563-C9650983F45D][Hotfix: fix the main CI failures]] | BACKLOG | | | Four CI failures on main: range-loop-construct error in xml_document_tests.cpp (gcc), incomplete component_trade type in deque on windows-msvc, workflow_engine_tests SIGABRT (std::system_error Invalid argument), and the site build broken link to ID 465ca244 in the time-series plot capture. |
 
 * Achievements
 

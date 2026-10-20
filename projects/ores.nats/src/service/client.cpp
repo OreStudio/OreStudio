@@ -239,10 +239,11 @@ void on_conn_reconnected(natsConnection* /*nc*/, void* /*closure*/) {
  */
 void on_conn_closed(natsConnection* /*nc*/, void* closure) {
     auto* latch = static_cast<connection_closed_latch*>(closure);
-    {
-        std::lock_guard lock(latch->mu);
-        latch->closed = true;
-    }
+    // Notify under the lock: disconnect() destroys the latch as soon as it
+    // sees closed, and a notify after the unlock would touch a dead condition
+    // variable.
+    std::lock_guard lock(latch->mu);
+    latch->closed = true;
     latch->cv.notify_all();
 }
 
@@ -679,6 +680,14 @@ void client::disconnect() {
     }
     if (impl_->conn) {
         natsConnection_Close(impl_->conn);
+        // cnats runs the closed callback on its own thread, after Close
+        // returns. The latch it writes to belongs to this client, so the
+        // client must not be destroyed before the callback has run.
+        {
+            std::unique_lock lock(impl_->closed_latch.mu);
+            impl_->closed_latch.cv.wait_for(
+                lock, std::chrono::seconds(5), [this] { return impl_->closed_latch.closed; });
+        }
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
     }
@@ -1259,6 +1268,12 @@ void client::drain() {
     const natsStatus drained = natsConnection_DrainTimeout(impl_->conn, drain_budget_ms);
     // Already closed means already drained, and its dispatch threads are gone.
     bool closed = drained == NATS_CONNECTION_CLOSED;
+    if (closed) {
+        // The callback fired before the latch was cleared above and will not
+        // fire again, so disconnect() must still find the latch set.
+        std::lock_guard lock(impl_->closed_latch.mu);
+        impl_->closed_latch.closed = true;
+    }
     if (drained == NATS_OK) {
         std::unique_lock lock(impl_->closed_latch.mu);
         closed = impl_->closed_latch.cv.wait_for(lock,

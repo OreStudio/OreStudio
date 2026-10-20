@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 1DD89181-EEC6-431B-B563-C9650983F45D
+:END:
+#+title: Story: Hotfix: fix the main CI failures
+#+description: Four CI failures on main: range-loop-construct error in xml_document_tests.cpp (gcc), incomplete component_trade type in deque on windows-msvc, workflow_engine_tests SIGABRT (std::system_error Invalid argument), and the site build broken link to ID 465ca244 in the time-series plot capture.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-20                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4A8B1915-A6D0-4D2B-BE0A-9E7C4B3BA265][Scaffold story: Hotfix: fix the main CI failures]] | STARTED | 2026-10-20 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EACB8ACA-3093-4FAF-9545-2217A006BC2E][Implement Hotfix: fix the main CI failures]] | BACKLOG | | | Initial task for: Hotfix: fix the main CI failures |
+
+* Decisions
+
+* Out of scope
+
+-

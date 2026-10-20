@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
 #+branch: feature/trade-blotter
-#+pr:
+#+pr: 3586
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -244,7 +244,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3586][#3586]] | [agile] Bring the trade prototypes to the entity screen specification |
 
 * Review
 

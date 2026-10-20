@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-20
 #+updated: 2026-10-20
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1DD89181-EEC6-431B-B563-C9650983F45D][Hotfix: fix the main CI failures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1DD89181-EEC6-431B-B563-C9650983F45D][Hotfix: fix the main CI failures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-20                               |
 
 * Acceptance
@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four CI failures on main are fixed in commit 438ed5e525. The gcc loop in
+=xml_document_tests.cpp= copies each string. The generator emits =stable_arena=
+for the recursive arenas of wide records, so MSVC no longer sees a =std::deque=
+of an incomplete type. =client::disconnect= waits for the closed callback, so
+the callback no longer locks a destroyed mutex. The two id links in the
+time-series plot capture are uppercase. Only CI proves the gcc, MSVC and
+workflow results.

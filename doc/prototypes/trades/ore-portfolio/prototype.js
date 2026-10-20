@@ -136,7 +136,7 @@ function execute() {
 }
 function writeImport() {
     const ok = plan().filter(r => r.status === 'ok');
-    const made = ok.map((r, i) => ({ id: tradeId(200 + i), code: 'ACME-1004' + String(i).padStart(2, '0'), type: r.type, product: r.tt.product, table: r.tt.instrument, cp: r.known.code, book: 'EMEA-RATES', state: I.activity === 'draft_capture' ? 'draft' : 'live', auth: I.activity === 'draft_capture' ? null : false, date: '2026-10-11', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, nature: 'Real', channel: 'ORE import', scope: 'Bilateral', structure: null, updated: '2026-10-11T16:41:00+01:00' }));
+    const made = ok.map((r, i) => ({ id: tradeId(200 + i), code: 'ACME-1004' + String(i).padStart(2, '0'), type: r.type, product: r.tt.product, table: r.tt.instrument, cp: r.known.code, book: 'EMEA-RATES', state: I.activity === 'draft_capture' ? 'draft' : 'live', auth: I.activity === 'draft_capture' ? null : false, date: '2026-10-11', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, nature: 'actual', channel: 'stp', scope: 'external', structure: null, updated: '2026-10-11T16:41:00+01:00' }));
     store('booked', (store('booked') || []).concat(made));
     I.imported = made; setStep(4);
 }

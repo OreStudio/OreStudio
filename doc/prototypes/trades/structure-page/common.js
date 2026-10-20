@@ -118,9 +118,10 @@ const COUNTERPARTIES = [
 ];
 const cpty = code => COUNTERPARTIES.find(c => c.code === code);
 const book = code => BOOKS.find(b => b.code === code);
-const BOOKING_NATURES = ['Real', 'Test', 'Hypothetical', 'Pre-agreement draft'];
-const ENTRY_CHANNELS = ['Manual', 'Venue', 'ORE import', 'API'];
-const COUNTERPARTY_SCOPES = ['Bilateral', 'Cleared', 'Internal'];
+/* The closed sets of the trading tables, as [code, description]. */
+const BOOKING_NATURES = [['actual', 'actual — the firm did a deal'], ['test', 'test — the booking exercises the system'], ['hypothetical', 'hypothetical — the booking answers a question']];
+const ENTRY_CHANNELS = [['manual', 'manual — a user captured the trade'], ['stp', 'stp — straight-through processing from an upstream system'], ['ecn', 'ecn — an electronic communication network'], ['allocation', 'allocation — an allocation split from a block trade']];
+const COUNTERPARTY_SCOPES = [['external', 'external — a party outside the group'], ['inter_entity', 'inter_entity — another legal entity of the same group'], ['intra_entity', 'intra_entity — another book in the same legal entity and branch']];
 
 const TRADE_TYPES_RAW = [["CompositeTrade","Composite Trade","composite","composite_instrument"],["RateDigitalOption","Rate Digital Option","swap",""],["SwaptionStraddle","Swaption Straddle","swap",""],["ForwardVolatilityAgreement","Forward Volatility Agreement","swap",""],["Swap","Interest Rate Swap","swap","rate_instrument"],["CrossCurrencySwap","Cross Currency Swap","swap","rate_instrument"],["ForwardRateAgreement","Forward Rate Agreement","swap","rate_instrument"],["CapFloor","Cap or Floor","swap","rate_instrument"],["Swaption","Swaption","swap","rate_instrument"],["FlexiSwap","Flexi Swap","swap","rate_instrument"],["BalanceGuaranteedSwap","Balance Guaranteed Swap","swap","rate_instrument"],["CallableSwap","Callable Swap","swap","rate_instrument"],["KnockOutSwap","Knock-Out Swap","swap","rate_instrument"],["RiskParticipationAgreement","Risk Participation Agreement","credit","credit_instrument"],["InflationSwap","Inflation Swap","swap","rate_instrument"],["FxForwardVolatilityAgreement","FX Forward Volatility Agreement","fx",""],["FxForward","FX Forward","fx","fx_forward_instrument"],["FxSwap","FX Swap","fx","fx_forward_instrument"],["FxOption","FX Option","fx","fx_vanilla_option_instrument"],["FxDigitalOption","FX Digital Option","fx","fx_digital_option_instrument"],["FxAverageForward","FX Average Forward","fx","fx_asian_forward_instrument"],["FxAsianOption","FX Asian Option","fx",""],["FxBarrierOption","FX Barrier Option","fx","fx_barrier_option_instrument"],["FxDoubleBarrierOption","FX Double Barrier Option","fx","fx_barrier_option_instrument"],["FxEuropeanBarrierOption","FX European Barrier Option","fx","fx_barrier_option_instrument"],["FxWindowBarrierOption","FX Window Barrier Option","fx",""],["FxGenericBarrierOption","FX Generic Barrier Option","fx","fx_barrier_option_instrument"],["FxKIKOBarrierOption","FX Knock-In Knock-Out Barrier Option","fx","fx_barrier_option_instrument"],["FxTouchOption","FX Touch Option","fx","fx_digital_option_instrument"],["FxDoubleTouchOption","FX Double Touch Option","fx","fx_digital_option_instrument"],["FxDigitalBarrierOption","FX Digital Barrier Option","fx","fx_digital_option_instrument"],["FxVarianceSwap","FX Variance Swap","fx","fx_variance_swap_instrument"],["FxPairwiseVarianceSwap","FX Pairwise Variance Swap","fx",""],["FxBasketVarianceSwap","FX Basket Variance Swap","fx",""],["FxAccumulator","FX Accumulator","fx","fx_accumulator_instrument"],["FxTaRF","FX Target Redemption Forward","fx","fx_asian_forward_instrument"],["FxWorstOfBasketSwap","FX Worst-Of Basket Swap","fx",""],["FxBestEntryOption","FX Best Entry Option","fx",""],["FxBasketOption","FX Basket Option","fx",""],["FxRainbowOption","FX Rainbow Option","fx",""],["FxStrikeResettableOption","FX Strike Resettable Option","fx",""],["CreditDefaultSwap","Credit Default Swap","credit","credit_instrument"],["CreditDefaultSwapOption","Credit Default Swap Option","credit","credit_instrument"],["IndexCreditDefaultSwap","Index Credit Default Swap","credit","credit_instrument"],["IndexCreditDefaultSwapOption","Index Credit Default Swap Option","credit","credit_instrument"],["SyntheticCDO","Synthetic CDO","credit","credit_instrument"],["CreditLinkedSwap","Credit Linked Swap","credit","credit_instrument"],["CBO","Collateralised Bond Obligation","credit","credit_instrument"],["BondFutureOption","Bond Future Option","bond",""],["Bond","Fixed Income Bond","bond","bond_instrument"],["ForwardBond","Forward Bond","bond","bond_instrument"],["BondFuture","Bond Future","bond","bond_instrument"],["BondOption","Bond Option","bond","bond_instrument"],["BondRepo","Bond Repo","bond","bond_instrument"],["BondTRS","Bond Total Return Swap","bond","bond_instrument"],["BondPosition","Bond Position","bond","bond_instrument"],["CallableBond","Callable Bond","bond","bond_instrument"],["ConvertibleBond","Convertible Bond","bond","bond_instrument"],["Ascot","Asset Swapped Convertible Option Transaction","bond","bond_instrument"],["EquityAutoDeltaHedgedOption","Equity Auto Delta Hedged Option","equity",""],["EquityForwardVolatilityAgreement","Equity Forward Volatility Agreement","equity",""],["EquityOption","Equity Option","equity","equity_option_instrument"],["EquityFutureOption","Equity Future Option","equity",""],["EquityAsianOption","Equity Asian Option","equity","equity_asian_option_instrument"],["EquityBarrierOption","Equity Barrier Option","equity","equity_barrier_option_instrument"],["EquityDoubleBarrierOption","Equity Double Barrier Option","equity","equity_barrier_option_instrument"],["EquityEuropeanBarrierOption","Equity European Barrier Option","equity","equity_barrier_option_instrument"],["EquityWindowBarrierOption","Equity Window Barrier Option","equity",""],["EquityGenericBarrierOption","Equity Generic Barrier Option","equity",""],["EquityTouchOption","Equity Touch Option","equity","equity_digital_option_instrument"],["EquityDoubleTouchOption","Equity Double Touch Option","equity",""],["EquityDigitalOption","Equity Digital Option","equity","equity_digital_option_instrument"],["EquityForward","Equity Forward","equity","equity_forward_instrument"],["EquitySwap","Equity Swap","equity","equity_swap_instrument"],["EquityVarianceSwap","Equity Variance Swap","equity","equity_variance_swap_instrument"],["EquityPairwiseVarianceSwap","Equity Pairwise Variance Swap","equity",""],["EquityBasketVarianceSwap","Equity Basket Variance Swap","equity",""],["EquityCliquetOption","Equity Cliquet Option","equity","equity_option_instrument"],["EquityAccumulator","Equity Accumulator","equity","equity_accumulator_instrument"],["EquityTaRF","Equity Target Redemption Forward","equity","equity_accumulator_instrument"],["EquityWorstOfBasketSwap","Equity Worst-Of Basket Swap","equity","equity_swap_instrument"],["EquityBestEntryOption","Equity Best Entry Option","equity",""],["EquityBasketOption","Equity Basket Option","equity",""],["EquityRainbowOption","Equity Rainbow Option","equity",""],["EquityOutperformanceOption","Equity Outperformance Option","equity","equity_option_instrument"],["EquityStrikeResettableOption","Equity Strike Resettable Option","equity",""],["TotalReturnSwap","Total Return Swap","equity","composite_instrument"],["ContractForDifference","Contract for Difference","equity","composite_instrument"],["EquityPosition","Equity Position","equity","equity_position_instrument"],["EquityOptionPosition","Equity Option Position","equity","equity_position_instrument"],["CommodityForwardVolatilityAgreement","Commodity Forward Volatility Agreement","commodity","commodity_instrument"],["IntradayPowerForward","Intraday Power Forward","commodity","commodity_instrument"],["CommodityForward","Commodity Forward","commodity","commodity_instrument"],["CommodityOption","Commodity Option","commodity","commodity_instrument"],["CommodityDigitalOption","Commodity Digital Option","commodity","commodity_instrument"],["CommodityDigitalAveragePriceOption","Commodity Digital Average Price Option","commodity","commodity_instrument"],["CommodityAsianOption","Commodity Asian Option","commodity","commodity_instrument"],["CommodityAveragePriceOption","Commodity Average Price Option","commodity","commodity_instrument"],["CommoditySpreadOption","Commodity Spread Option","commodity","commodity_instrument"],["CommodityOptionStrip","Commodity Option Strip","commodity","commodity_instrument"],["CommoditySwap","Commodity Swap","commodity","commodity_instrument"],["CommoditySwaption","Commodity Swaption","commodity","commodity_instrument"],["CommodityVarianceSwap","Commodity Variance Swap","commodity","commodity_instrument"],["CommodityPairwiseVarianceSwap","Commodity Pairwise Variance Swap","commodity","commodity_instrument"],["CommodityBasketVarianceSwap","Commodity Basket Variance Swap","commodity","commodity_instrument"],["CommodityAccumulator","Commodity Accumulator","commodity","commodity_instrument"],["CommodityTaRF","Commodity Target Redemption Forward","commodity","commodity_instrument"],["CommodityWorstOfBasketSwap","Commodity Worst-Of Basket Swap","commodity","commodity_instrument"],["CommodityBestEntryOption","Commodity Best Entry Option","commodity","commodity_instrument"],["CommodityWindowBarrierOption","Commodity Window Barrier Option","commodity","commodity_instrument"],["CommodityGenericBarrierOption","Commodity Generic Barrier Option","commodity","commodity_instrument"],["CommodityBasketOption","Commodity Basket Option","commodity","commodity_instrument"],["CommodityRainbowOption","Commodity Rainbow Option","commodity","commodity_instrument"],["CommodityStrikeResettableOption","Commodity Strike Resettable Option","commodity","commodity_instrument"],["CommodityPosition","Commodity Position","commodity","commodity_instrument"],["CashPosition","Cash Position","equity",""],["ScriptedTrade","Scripted Trade (ORE generic payoff engine)","scripted","scripted_instrument"],["Autocallable_01","Autocallable (variant 01)","scripted","scripted_instrument"],["DoubleDigitalOption","Double Digital Option","scripted","scripted_instrument"],["EuropeanOptionBarrier","European Option with Barrier","scripted",""],["PerformanceOption_01","Performance Option (variant 01)","scripted","scripted_instrument"]];
 const TRADE_TYPES = TRADE_TYPES_RAW.map(([code, description, product, instrument]) => ({ code, description, product, instrument }));
@@ -159,7 +160,7 @@ const FEATURED = [
     { n: 3, type: 'Bond', cp: 'CSTL', book: 'EMEA-CREDIT', state: 'live', date: '2026-08-02', notional: 25000000, ccy: 'EUR', ext: 1, ver: 1 },
     { n: 4, type: 'BondRepo', cp: 'MRDN', book: 'EMEA-CREDIT', state: 'live', date: '2026-09-30', notional: 20000000, ccy: 'EUR', ext: 2, ver: 3, structure: 'PKG-0021' },
     { n: 5, type: 'CompositeTrade', cp: 'NWCAP', book: 'EMEA-RATES', state: 'live', date: '2026-10-05', notional: 30000000, ccy: 'EUR', ext: 1, ver: 1 },
-    { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'Pre-agreement draft' },
+    { n: 6, type: 'Swap', cp: 'CSTL', book: 'VIRT-DRAFT', state: 'draft', date: '2026-10-10', notional: 5000000, ccy: 'EUR', ext: 1, ver: 2, nature: 'hypothetical' },
     { n: 7, type: 'FxForward', cp: 'NWCAP', book: 'EMEA-FX', state: 'cancelled', date: '2026-07-21', notional: 8000000, ccy: 'GBP', ext: 2, ver: 4, rebookedTo: 'ACME-100208' },
     { n: 8, type: 'FxForward', cp: 'MRDN', book: 'EMEA-FX', state: 'live', date: '2026-10-09', notional: 8000000, ccy: 'GBP', ext: 1, ver: 1, rebookedFrom: 'ACME-100207', structure: 'STR-0010' },
     { n: 9, type: 'FxOption', cp: 'MRDN', book: 'EMEA-FX', state: 'live', date: '2026-10-08', notional: 10000000, ccy: 'EUR', ext: 1, ver: 1, structure: 'STR-0007' },
@@ -195,8 +196,8 @@ function buildTrades() {
             notional: f.notional || (1 + (i * 37) % 20) * 1000000,
             ccy: f.ccy || CCYS[i % CCYS.length],
             ext: f.ext || 1 + (i % 3), ver: f.ver || 1 + (i % 3) + (i % 2),
-            nature: f.nature || 'Real', channel: i % 5 === 0 ? 'ORE import' : 'Manual',
-            scope: 'Bilateral', structure: f.structure || null, rebookedTo: f.rebookedTo || null, rebookedFrom: f.rebookedFrom || null,
+            nature: f.nature || 'actual', channel: i % 5 === 0 ? 'stp' : 'manual',
+            scope: 'external', structure: f.structure || null, rebookedTo: f.rebookedTo || null, rebookedFrom: f.rebookedFrom || null,
             updated: new Date(NOW.getTime() - (i * 5.3) * 3600000).toISOString().slice(0, 19) + '+01:00'
         });
     }
@@ -296,7 +297,7 @@ function otherCards(t) {
     return {
         identifiers: {
             id: 'identifiers', title: 'Identifiers', table: 'trade_identifier', version: 1, child: true,
-            columns: ['Scheme', 'Value'], rows: [['Firm trade id', t.code], ['ORE trade id', 'Trade_' + t.code.slice(-4)], ['Venue reference', t.channel === 'Manual' ? '' : 'VEN-' + t.code.slice(-5)]].filter(r => r[1])
+            columns: ['Scheme', 'Value'], rows: [['Firm trade id', t.code], ['ORE trade id', 'Trade_' + t.code.slice(-4)], ['Venue reference', t.channel === 'manual' ? '' : 'VEN-' + t.code.slice(-5)]].filter(r => r[1])
         },
         roles: {
             id: 'roles', title: 'Party roles', table: 'trade_party_role', version: 1, child: true,
@@ -346,7 +347,7 @@ function historyOf(t) {
         id: 'a3c', at: day(t.ver * 3 - 0.5, 11, 40), kind: 'confirmed', activity: 'confirmation', version: 3, ext: Math.min(2, t.ext), actor: 'ores.trading.service',
         reason: 'trade.no_change', note: 'Matched by ' + cpty(t.cp).name, diffs: [], noVersion: true
     });
-    if (t.channel === 'ORE import') entries.unshift({
+    if (t.channel === 'stp') entries.unshift({
         id: 'a0', at: day(t.ver * 6 + 4.1, 9, 5), kind: 'imported', activity: 'new_booking', version: 1, ext: 1, actor: 'ores.ore.service',
         reason: 'trade.client_request', note: 'Imported from an ORE portfolio file', diffs: [['ore_trade_id', '', 'Trade_' + t.code.slice(-4)]]
     });
@@ -466,6 +467,26 @@ function select(options, value, onchange) {
 
 /* The input for one field of a card. A value that exists is chosen from a combo box, a date has a date input,
  * a fixed value is shown and never edited, and an optional value has Clear. */
+/* An amount shows digit separators as it is typed. The value that is set holds digits and a point only. */
+function groupDigits(raw) {
+    const [whole, frac] = String(raw).split('.');
+    return whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (frac !== undefined ? '.' + frac : '');
+}
+function moneyInput(value, set) {
+    const plain = v => String(v == null ? '' : v).replace(/[^0-9.]/g, '').replace(/^(\d*\.\d*).*$/, (m, a) => a);
+    return h('input', {
+        class: 'field-input', type: 'text', inputmode: 'decimal', style: 'text-align:right', value: groupDigits(plain(value)),
+        oninput: e => {
+            const el = e.target, before = el.value.slice(0, el.selectionStart).replace(/[^0-9.]/g, '').length;
+            const raw = plain(el.value);
+            el.value = groupDigits(raw);
+            let n = 0, pos = 0;
+            while (pos < el.value.length && n < before) { if (/[0-9.]/.test(el.value[pos])) n++; pos++; }
+            el.setSelectionRange(pos, pos);
+            set(raw);
+        }
+    });
+}
 function valueInput(fd, value, set, off) {
     if (fd.fixed) return h('div', { class: 'static' }, ivalue(value));
     let el;
@@ -473,7 +494,8 @@ function valueInput(fd, value, set, off) {
     if (fd.type === 'ccy' || fd.type === 'calendar' || fd.options) {
         const list = fd.type === 'ccy' ? CCYS : fd.type === 'calendar' ? CALENDARS : fd.options;
         el = select(flagged(list.includes(value) ? list : [value].concat(list)), value, set);
-    } else el = h('input', { class: 'field-input', type: fd.type === 'date' ? 'date' : 'text', value, oninput: e => set(e.target.value) });
+    } else if (fd.type === 'money') el = moneyInput(value, set);
+    else el = h('input', { class: 'field-input', type: fd.type === 'date' ? 'date' : 'text', value, oninput: e => set(e.target.value) });
     el.disabled = !!off;
     return fd.optional ? h('div', { class: 'withclear' }, el, h('button', { class: 'btn small', disabled: !!off || value === '', onclick: () => set('', true) }, 'Clear')) : el;
 }

@@ -273,9 +273,9 @@ function openTicket() {
         input('Long or short', 'longShort', { options: ['Long', 'Short'] }),
         input('Option type', 'optionType', { options: ['Call', 'Put'] }),
         input('Bought currency', 'boughtCurrency', { type: 'ccy' }),
-        input('Bought amount', 'boughtAmount', {}),
+        input('Bought amount', 'boughtAmount', { type: 'money' }),
         input('Sold currency', 'soldCurrency', { type: 'ccy' }),
-        input('Sold amount', 'soldAmount', {}),
+        input('Sold amount', 'soldAmount', { type: 'money' }),
         input('Strike', 'strike', {}),
         input('Expiry', 'expiry', { type: 'date' }));
     const d = $('#ticket-dialog');

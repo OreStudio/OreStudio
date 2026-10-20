@@ -25,7 +25,7 @@ const START_TYPE = TRADE_TYPES.some(t => t.code === P.get('type') && t.instrumen
 const START_TERMS = Object.fromEntries((P.get('terms') || '').split(',').filter(Boolean).map(x => [x.slice(0, x.indexOf(':')), x.slice(x.indexOf(':') + 1)]));
 const F = {
     type: LIKE ? LIKE.type : START_TYPE,
-    cp: LIKE ? LIKE.cp : '', book: LIKE ? LIKE.book : 'EMEA-RATES', date: '2026-10-11', time: '16:40', nature: 'Real', channel: 'Manual', scope: 'Bilateral',
+    cp: LIKE ? LIKE.cp : '', book: LIKE ? LIKE.book : 'EMEA-RATES', date: '2026-10-11', time: '16:40', nature: 'actual', channel: 'manual', scope: 'external',
     mode: 'live', terms: Object.assign({}, START_TERMS), rows: {}, ids: { firm: 'ACME-100309', ore: '' }, portfolio: 'Rates and credit', trader: ME, reason: 'trade.client_request', note: ''
 };
 const REASONS = REASON_CODES.filter(r => r[0] !== 'trade.no_change');
@@ -48,7 +48,7 @@ function problems() {
     else if (!tradeType(F.type).instrument) out.push(F.type + ' has no instrument table yet, so its terms cannot be held.');
     if (!F.cp) out.push('Choose a counterparty.');
     const b = book(F.book);
-    if (b && b.virtual && !(F.mode === 'draft' || ['Test', 'Hypothetical', 'Pre-agreement draft'].includes(F.nature))) out.push('A virtual book holds only a draft, a test or a hypothetical. This trade is live and real: choose a real book.');
+    if (b && b.virtual && !(F.mode === 'draft' || ['test', 'hypothetical'].includes(F.nature))) out.push('A virtual book holds only a draft, a test or a hypothetical. This trade is live and real: choose a real book.');
     return out;
 }
 function show(next) {
@@ -82,7 +82,7 @@ function partiesCard() {
             field('Execution time', h('input', { class: 'field-input', type: 'time', value: F.time, oninput: e => { F.time = e.target.value; } })),
             field('Entry channel', select(ENTRY_CHANNELS, F.channel, v => { F.channel = v; })), field('Counterparty scope', select(COUNTERPARTY_SCOPES, F.scope, v => { F.scope = v; }))),
             h('div', { class: 'grid2' }, h('label', null, h('input', { type: 'radio', name: 'mode', checked: F.mode === 'live', onchange: () => { F.mode = 'live'; redraw(); } }), ' Book against an agreement already struck'),
-                h('label', null, h('input', { type: 'radio', name: 'mode', checked: F.mode === 'draft', onchange: () => { F.mode = 'draft'; if (F.nature === 'Real') F.nature = 'Pre-agreement draft'; redraw(); } }), ' Capture as a draft'))));
+                h('label', null, h('input', { type: 'radio', name: 'mode', checked: F.mode === 'draft', onchange: () => { F.mode = 'draft'; redraw(); } }), ' Capture as a draft'))));
 }
 function instrumentTab() {
     const list = parts();

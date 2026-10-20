@@ -566,11 +566,11 @@ function vanillaTerms(c) {
             ${selectField('style', 'Style', f.style, ['European', 'American', 'Bermudan'])}
             ${selectField('settlement', 'Settlement', f.settlement, ['Cash', 'Physical'])}
             ${ccyField('boughtCurrency', 'Bought currency', f.boughtCurrency)}
-            ${termField('boughtAmount', 'Bought amount', f.boughtAmount, 'number')}
+            ${termField('boughtAmount', 'Bought amount', f.boughtAmount, 'money')}
             ${ccyField('soldCurrency', 'Sold currency', f.soldCurrency)}
-            ${termField('soldAmount', 'Sold amount', f.soldAmount, 'number')}
+            ${termField('soldAmount', 'Sold amount', f.soldAmount, 'money')}
             ${termField('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
-            ${termField('notional', 'Notional', f.notional, 'number')}
+            ${termField('notional', 'Notional', f.notional, 'money')}
         </div>`;
 }
 
@@ -608,7 +608,7 @@ function premiumSection(c) {
                 <button class="danger ghost" id="remove-premium">Remove</button>
             </div>
             <div class="field-grid">
-                ${slot('premium.amount', 'Amount', p.amount, { type: 'number' })}
+                ${slot('premium.amount', 'Amount', p.amount, { type: 'money' })}
                 ${ccyField('premium.currency', 'Currency', p.currency)}
                 ${slot('premium.payDate', 'Pay date', p.payDate, { type: 'date', optional: true })}
             </div>
@@ -622,7 +622,7 @@ function barriersSection(c) {
             ${selectField('barrierType', 'Barrier type', f.barrierType, ['UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut'])}
             ${termField('barrierLevel', 'Level 1', f.barrierLevel, 'number', 'step="0.0001"')}
             ${slot('barrierLevel2', 'Level 2 (double barrier)', f.barrierLevel2 || '', { type: 'number', optional: true })}
-            ${slot('rebate', 'Rebate', f.rebate, { type: 'number', optional: true })}
+            ${slot('rebate', 'Rebate', f.rebate, { type: 'money', optional: true })}
             ${slot('fxIndex', 'FX index', f.fxIndex, { optional: true })}
         </div>
 `;
@@ -635,7 +635,7 @@ function swapTerms(c) {
             ${selectField('legType', 'Leg type', f.legType, ['Fixed', 'Floating'])}
             ${selectField('payer', 'Payer', f.payer, ['true', 'false'])}
             ${ccyField('currency', 'Currency', f.currency)}
-            ${termField('notional', 'Notional', f.notional, 'number')}
+            ${termField('notional', 'Notional', f.notional, 'money')}
             ${termField('rate', 'Rate', f.rate, 'number', 'step="0.0001"')}
             ${selectField('dayCounter', 'Day counter', f.dayCounter, DAY_COUNTS)}
         </div>`;
@@ -683,7 +683,7 @@ function compositeTerms(c) {
             ${termField('underlying', 'Underlying', f.underlying)}
             ${termField('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
             ${termField('expiry', 'Expiry', f.expiry, 'date')}
-            ${termField('quantity', 'Quantity', f.quantity, 'number')}
+            ${termField('quantity', 'Quantity', f.quantity, 'money')}
         </div>`;
 }
 
@@ -699,7 +699,7 @@ function legsSection(c) {
                         <td>${esc(l.fields.optionType || '—')}</td>
                         <td><span class="${sideClass(l.fields.longShort)}">${esc(l.fields.longShort || '—')}</span></td>
                         <td>${esc(l.fields.strike || '—')}</td>
-                        <td class="num">${esc(l.fields.notional || '—')}</td>
+                        <td class="num">${esc(l.fields.notional ? Number(l.fields.notional).toLocaleString('en-GB') : '—')}</td>
                     </tr>`).join('')}
             </tbody>
         </table>
@@ -714,7 +714,7 @@ function genericTerms(c) {
     return `
         <div class="field-grid">
             ${selectField('longShort', 'Long / short', f.longShort || 'Long', ['Long', 'Short'])}
-            ${termField('notional', 'Notional', f.notional || '', 'number')}
+            ${termField('notional', 'Notional', f.notional || '', 'money')}
             ${ccyField('currency', 'Currency', f.currency || '')}
             ${termField('expiry', 'Expiry', f.expiry || '', 'date')}
         </div>`;

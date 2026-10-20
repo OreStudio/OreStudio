@@ -1,0 +1,22 @@
+85: NOTICE:  RESULT shape=a0 batch=1 rows=1500 secs=6.50 rows_per_s=231
+86: NOTICE:  RESULT shape=a0 batch=100 rows=20000 secs=3.32 rows_per_s=6024
+87: NOTICE:  RESULT shape=a0 batch=1000 rows=100000 secs=12.80 rows_per_s=7815
+88: NOTICE:  RESULT shape=a0 batch=10000 rows=200000 secs=24.09 rows_per_s=8301
+90: NOTICE:  RESULT shape=a1 batch=1 rows=1500 secs=5.49 rows_per_s=273
+91: NOTICE:  RESULT shape=a1 batch=100 rows=20000 secs=1.10 rows_per_s=18225
+92: NOTICE:  RESULT shape=a1 batch=1000 rows=100000 secs=3.48 rows_per_s=28716
+93: NOTICE:  RESULT shape=a1 batch=10000 rows=200000 secs=6.11 rows_per_s=32751
+95: NOTICE:  RESULT shape=b batch=1 rows=1500 secs=6.65 rows_per_s=226
+96: NOTICE:  RESULT shape=b batch=100 rows=20000 secs=0.87 rows_per_s=22890
+97: NOTICE:  RESULT shape=b batch=1000 rows=100000 secs=0.90 rows_per_s=111028
+98: NOTICE:  RESULT shape=b batch=10000 rows=200000 secs=1.07 rows_per_s=186824
+ shape |  rows  |   bytes   | bytes_per_row 
+ a0    | 321500 | 385433600 |          1199
+ a1    | 321500 | 302809088 |           942
+ b     | 321500 |  52207616 |           162
+COPY 300000
+COPY 300000
+COPY 300000
+Time: 7261.531 ms (00:07.262)
+COPY 300000
+Time: 1598.071 ms (00:01.598)

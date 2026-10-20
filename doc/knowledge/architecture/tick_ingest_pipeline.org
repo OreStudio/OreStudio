@@ -1,0 +1,882 @@
+:PROPERTIES:
+:ID: 6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2
+:END:
+#+title: The tick ingest pipeline: freshness first
+#+description: Proposal for an ingest pipeline that keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second: lanes, latest-value conflation, batched writes and a bounded ring. It compares the design with the tickerplant, conflated feeds and time-series stores.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+
+* Summary
+
+This note proposes an ingest pipeline for market ticks. It is a proposal. The
+code does not work this way today.
+
+The pipeline puts freshness first. A tick that arrives late, while a newer tick
+waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
+of each datum, it drops ticks that are too old, and it never lets a consumer wait
+for the store. Work is split into lanes. Each lane has one writer thread, a bounded
+ring buffer, a window of recent ticks in memory, and a batch write to the store.
+Charts and late joiners read the window and not the store. The design follows the
+LMAX Disruptor where that helps, and it sets the rest aside.
+
+The target is tens of thousands of ticks each second, across every asset class and
+instrument. The present loop writes about 150 rows each second.
+
+The pipeline is the base for all ticking data. A new feed in any asset class uses it
+without a change to its code. The section "One pipeline for every asset class" states
+what a feed owes the pipeline and what the pipeline owes the feed.
+
+* Detail
+
+** The requirements
+
+1. *Freshness over completeness, for perishable ticks.* A quote is perishable. A stale
+   tick is worse than a missing tick. A tick that the queue loses is bad. A tick that
+   the pipeline processes late, while newer ticks wait behind it, is worse.
+2. *Volume.* The pipeline holds tens of thousands of ticks each second, once every
+   asset class and instrument ticks.
+3. *The live view does not wait for the store.* A chart reads the newest value at
+   once, whatever the database does.
+4. *Overload is visible.* A lag of seconds shows on a gauge. A lag of 70 minutes
+   cannot pass unseen.
+5. *A fault stays in its lane.* A slow or failing write for one series does not
+   stop the others.
+6. *No change signal for each row.* A time series does not announce each new row. The
+   live stream is the signal.
+7. *Recent data without the store.* A chart that opens, and a consumer that joins
+   late, get recent values from memory. The store serves older data.
+8. *A consumer receives what it watches.* A consumer selects a class, a series or a
+   datum on the broker. It does not receive every tick of its party and discard most.
+
+** Why the present path cannot meet them
+
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handles each tick on
+one thread, in arrival order. For each binding of the tick, it reads the series,
+inserts two observations, and publishes to JetStream. Each insert is a commit. The
+publish waits for an acknowledgement. The rule that the republish follows the stored
+row ties the live view to the speed of the database.
+
+The queue sits inside the NATS client. It has no age limit, and it serves the oldest
+tick first. When the loop falls behind, it spends its time on old ticks while newer
+ticks wait. This is the behaviour that requirement 1 forbids.
+
+Measurements on one environment (release build, one server shared by five
+environments, a burst of 4,000 ticks) show the limit.
+
+#+ATTR_HTML: :class hug-leading
+| Configuration | Rows written each second |
+|---------------+--------------------------|
+| As built: synchronous commit on, one NOTIFY for each row | 143 |
+| Synchronous commit off for the marketdata role | 166 |
+| Synchronous commit off, and the NOTIFY function empty | 210 |
+
+Three facts come from the samples.
+
+- Exactly one database session of the marketdata service is active. The work is
+  serial.
+- With the commit sync removed, 41 percent of the samples of that session wait on a
+  database-wide lock, 34 percent run on the CPU, and 24 percent wait for the
+  service. The lock is the one that a transaction takes at commit after it calls
+  =NOTIFY=. PostgreSQL takes it so that notifications enter the queue in commit
+  order. The row trigger =ores_marketdata_market_observations_notify_trg= calls
+  =pg_notify= for every row.
+- The blockers of that lock were the marketdata sessions of two other environments
+  on the same server. The lock is shared across databases, so ingests that share
+  one server slow each other.
+
+A commit sync is also slow on this disk. One =fdatasync= takes about 4.3 ms.
+
+The write path has more costs for each row than the commit. Each row passes a
+before-insert trigger that runs an =UPDATE= on the same table and calls
+=ores_iam_validate_tenant_fn=. The table has seven indexes, and one of them is a
+partial unique index. Each statement runs through a tenant-aware connection that sets
+=app.current_tenant_id= when it takes the connection.
+
+Two JetStream streams also store every tick. The stream =synthetic_ticks= covers the
+producer subjects, and the stream =marketdata_ticks= covers the republish subjects. Both
+keep their messages in files for 7 days, and both have no consumer. A producer waits
+for an acknowledgement of each tick, and the ingest waits for one more for each
+binding. The streams give nothing that a client reads. In one environment the second
+stream holds 1,812 subjects after two days.
+
+The demand is small today. One environment receives 13 ticks each second. Each tick
+reaches 4.6 bindings on average, and each binding stores two rows. That is about 120
+rows each second against a ceiling of about 150. At 30,000 ticks each second the
+same fan-out is about 280,000 rows each second.
+
+** The proposal
+
+The pipeline has a receive stage and a set of lanes. The receive stage decodes ticks
+and routes each one to a lane. A bounded ring buffer in each lane holds the ticks. A
+lane worker takes everything that has arrived and does three things with it. It publishes the newest
+value of each datum to live consumers, it adds the ticks to a window of recent ticks
+in memory, and it writes the batch to the store in one transaction.
+
+#+caption: The tick ingest pipeline: one path to live consumers that never waits for the store, and one batched path to the store.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_pipeline.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_pipeline.puml][=tick_ingest_pipeline.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_pipeline.puml=.
+
+*** Receive
+
+The NATS callback does four things and no input or output. It decodes the tick. It
+looks up the policy of the class of the tick. It checks the age of the tick. It
+writes the tick into the ring of its lane. A lane is chosen by a hash of the series
+key. A tick of one series always reaches the
+same lane, and so do all quotes of one curve. The order of a series holds without a
+lock, and an operation on a whole curve stays inside one lane.
+
+Parsing an oresmd URI costs more than the rest of the receive stage. The receiver keeps
+a table that maps a URI string to its parsed datum, its series key and its class. The
+codec runs once for each datum, and a later tick of the datum costs one lookup.
+
+*** The ring buffer
+
+Each lane owns one ring buffer of fixed size. The slots are allocated once, and the
+ring is a power of two in size. A sequence number marks each slot, in the style of
+the Disruptor. The receiver claims the next slot and publishes it. The lane worker
+reads up to the newest published slot.
+
+The ring never blocks the receiver. The receiver writes the next slot whether or not the
+worker has read the slot before it. The worker checks the sequence number of each
+slot that it reads. When the receiver has lapped the worker, the numbers show it. The
+worker skips to the oldest slot that is still valid, and it adds the number of skipped
+slots to a counter of dropped ticks. The newest tick always wins, and the writer
+never touches a slot that the worker is reading. A starting size is 65,536 slots for
+each lane. At 10,000 ticks each second in one lane, the ring holds about six seconds.
+
+*** The age gate
+
+Every tick has an age: the time now minus the =observation_time= of the tick. The
+receiver drops a tick that is older than the limit of its class, and it counts the
+drop. The lane worker checks again when it takes the tick from the ring. A starting
+limit is 5 seconds for a live tick. The limit is a setting for each asset class.
+
+The gate changes the order of service in one more way. A lane of a perishable class
+that is behind takes the newest ticks first and drops the old ones. It does not work
+through the old ticks.
+
+*** Conflation and the live path
+
+A lane worker keeps the newest tick of each datum in the batch it took. It publishes
+those ticks to the live consumers on the party subjects. The publish uses core NATS
+and waits for no acknowledgement. The live path ends here, and it never waits for the
+store.
+
+The class sets a conflation interval. The lane publishes a datum at most once in each
+interval, and the lane keeps the newest tick of the datum until the interval ends. The
+lane publishes that last tick at the end of the interval even when no newer tick
+arrives, so no value waits longer than the interval. A class with =consistency= of
+=series= publishes the changed quotes of one series together at the end of a cycle.
+
+
+*** The live subject
+
+Today the republish subject ends in one token: the whole canonical URI of the datum,
+percent-encoded. A wildcard can then select a whole party and nothing smaller. The
+Hedgr client subscribes to the whole party and discards the ticks of series that it
+does not watch. Each session decodes every tick of its party. At tens of thousands of
+ticks each second, that costs a delivery thread for each session, and it costs the
+broker the same traffic for each session. It breaks requirement 8.
+
+The live subject splits its tail into tokens:
+
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<instrument_type>.<series_token>.<coordinate_token>=
+
+The series token is the percent-encoded series URI. The coordinate token is the
+percent-encoded coordinates, or one fixed character for a series without any. A
+consumer then subscribes to a class with =...<instrument_type>.>=, to a series with
+=...<instrument_type>.<series_token>.>=, or to one datum. A chart subscribes to the
+series that it shows, and the broker sends nothing else.
+
+The change touches every consumer of the stream. Hedgr is the only client today, and
+the Qt client no longer exists, so the cost of the change is at its lowest now. The
+producer subject, =synthetic.v1.ops.tick.<source>=, does not change.
+
+*** The recent window
+
+Each lane keeps the recent ticks of its datums in memory. This is the real-time tier
+of a tickerplant system. A tick enters the window when the lane worker takes it from
+the ring, so the window is as fresh as the live path and does not wait for the store.
+
+- *What it holds.* The last tick of every datum, always. For a datum that a
+  consumer watches, it also holds a bounded run of recent ticks. A starting bound is
+  the last 600 ticks or the last 10 minutes, whichever is smaller. A datum with no
+  watcher keeps only its last tick, so the memory use follows the number of watched
+  datums and not the number of all datums.
+- *Who reads it.* A consumer that joins late asks for the last value of a datum. A
+  chart that opens or reconnects asks for the recent ticks of a series. The lane that
+  owns the datum answers both from memory, and the store takes no part. The read checks
+  the tenant and the party of the caller against the bindings of the datum, as any
+  read of the store does.
+- *How a read reaches it.* The lane worker is the only writer of the window. A read
+  is a request that the lane worker answers between two cycles from the window of
+  its own lane. The reader never touches the window, so the single writer rule holds.
+- *Where it ends.* A request for data older than the window goes to the store. The
+  reader merges by time, as Hedgr already does for a backfill and a live point.
+- *What it can differ on.* The window holds every tick that the lane took, and the
+  store may hold fewer when a lane is catching up or shedding. A reader that sees both
+  prefers the window for the span that it covers.
+- *Restart.* The window is empty after a restart and fills as ticks arrive. A chart
+  reads the store for the span before that.
+
+*** Batched persistence
+
+The same cycle writes every tick that passed the age gate in one transaction, with a
+multi-row insert or a =COPY=. One commit now covers hundreds or thousands of rows.
+The cost of the commit is shared by all of them.
+
+- The series identity of each key comes from a cache in memory. A binding event
+  clears the cache. A series that does not exist yet is created on a slow path,
+  outside the batch.
+- The shape check and the manual point check run once for the batch.
+- A batch that fails is split in two and tried again. The split continues until it
+  isolates the row that the database refuses. The lane drops that row, counts it, and
+  logs it.
+- The size of a batch has a cap. A starting value is 5,000 rows.
+
+*** The overload states
+
+A lane measures its lag from the oldest tick that it processes. The lag selects
+one of three states.
+
+#+caption: The overload states of a lane. The live path stays fresh in every state. Only the history in the store gets thinner.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_overload_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_overload_states.puml][=tick_ingest_overload_states.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_overload_states.puml=.
+
+- *Live.* The lag is small. The lane writes every tick.
+- *Catching up.* The lag is above the first limit. The lane writes only the newest
+  tick of each datum for each second, or one bar for each datum for each second when
+  its class keeps the extremes. The shape of the history stays, and the volume falls.
+- *Shedding.* The lag is above the second limit. The lane drops every tick older
+  than the age limit and counts each drop.
+
+A store that does not answer counts as an infinite lag. The lane keeps its live path
+and its window. It holds a bounded number of batches, and after the second limit it
+sheds. It tries the connection again with a growing gap, and it writes the newest ticks
+first when the store returns. A shutdown flushes the open batch within a set time.
+
+The lane goes back one state when the lag falls below half of the limit. The gap
+stops the lane from flipping between two states. Starting values are 5 seconds for
+the first limit and 30 seconds for the second. Tuning by measurement sets the final
+values.
+
+*** The cycle of a lane
+
+#+caption: One cycle of a lane: take, gate, conflate, publish live, write the batch, report.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_lane_cycle.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_lane_cycle.puml][=tick_ingest_lane_cycle.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_lane_cycle.puml=.
+
+*** Observability
+
+Each lane reports these values to the status log and to telemetry.
+
+- The depth of the ring and the age of its oldest slot.
+- The lag from the tick time to the commit, and from the tick time to the live
+  publish.
+- The size of each batch and the time of each commit.
+- The ticks dropped, by source and by reason: the ring was lapped, the tick was too
+  old, the datum was thinned, or the database refused the row.
+- The share of the time that the worker is busy, for each lane, so that an uneven
+  split of series over lanes shows.
+
+An alert fires when the lag is above the first limit for longer than a set time.
+The lag of 70 minutes that started this work would have fired it within seconds.
+
+** What changes in the broker
+
+- *Perishable ticks use core NATS, on both subjects.* A producer publishes a quote
+  without waiting for an acknowledgement. The lane publishes the live tick without
+  waiting. A producer that waits for an acknowledgement on each tick limits its own
+  rate to the round trip of the broker, and a feed of tens of thousands of ticks each
+  second cannot work that way.
+- *The two streams go away for perishable subjects.* They have no consumer, and they
+  store every tick for 7 days. At 30,000 ticks each second and 5.6 publishes for each
+  tick, that is about 170,000 stream writes each second, and about 100 billion messages
+  in a week. A broker that wants to serve the last value uses a stream with one
+  message for each subject, in memory and with a short age. The recent window of the
+  lane makes even that unnecessary.
+- *Durable classes keep a stream.* A durable class has its own stream and its own
+  consumer, as the section on durability describes.
+- *Loss is counted.* Core NATS drops a message for a slow client and reports it only
+  through a callback. The receiver counts that callback. A per-source sequence number
+  on the tick lets the receiver count the ticks that never arrived. Without both, a
+  loss that the freshness rule allows cannot be told from a fault.
+- *More subjects.* The tokenised live subject has one subject for each datum and party.
+  The count of subjects is a cost in the memory of the broker and a limit to check.
+
+** What changes in the store
+
+- *No notification at all.* The observation table has a row trigger that calls
+  =pg_notify=. The code generator adds it to a table by default. The pattern behind
+  it, in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][the PostgreSQL architecture note]],
+  is a signal that an entity changed, so that a client marks its copy stale and
+  reloads it. That fits a table that changes now and then. It does not fit a time
+  series. The series changes many times each second, and no client can reload at that
+  rate. The live path already carries each new value to the consumers that need it.
+  So the trigger goes away, and so does the event mapping that republishes it.
+  The model of the table sets the =ores.sql.schema.notify_trigger= knob to false.
+  Three other marketdata tables already do this. Without the trigger, a commit never
+  takes the notification lock, and the ingests of other databases on the same
+  server no longer wait for it.
+- *The second row for each tick.* The ingest stores each tick twice, once at its own
+  time and once under the previous business day. At scale this doubles the writes.
+  It is an open question whether a snapshot job should build that row instead.
+- *One row for each party.* A tick is stored once for each binding. The cost grows
+  with the number of parties that consume a source. It is an open question whether
+  the store should keep one row for each source and let parties read it through a
+  view.
+- *Indexes.* The table has seven indexes and a trigger that closes the previous
+  current point. Each index costs a write. A measurement with a batch decides
+  which of them the hot path needs.
+- *A tick is an immutable fact.* The observation table is bitemporal. Each row has a
+  =valid_from= and a =valid_to=, and a trigger closes the previous row of the same key.
+  That serves curated and manual points that people correct. It does not serve a tick,
+  which nobody corrects. The proposal gives ticks their own append-only hypertable. It
+  has no trigger and no =valid_to=. It has one index on the series and the time, and
+  it stores the series and the coordinate as identifiers, not the URI text in each
+  row. A view joins it with the observation table for a reader that wants both. The
+  step 0 prototype measures the gain before the choice is made.
+- *The volume.* A row of the observation table takes 1,199 bytes with its indexes,
+  as step 0 measured. An append-only row takes 162 bytes. Thirty thousand ticks each
+  second reach about 276,000 rows each second with today's fan-out, which is about 24
+  billion rows each day. That is 29 terabytes each day in the observation table, and 3.9
+  terabytes each day in an append-only table, before any compression. With one row for
+  each source, the append-only table takes about 0.4 terabytes each day. No store holds
+  the first figure, and the plan has three parts. Raw ticks stay for a short time, such
+  as a week. Older chunks are compressed, with the series as the segment key and the
+  time as the order. Bars of one second and one minute are kept for good. The class
+  policy states the retention of each part.
+- *One row for each source.* The largest factor that the design controls is the
+  fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
+  each source, with parties reading it through the bindings, removes both factors.
+- *A batch belongs to one tenant.* The row-level security policy checks the tenant of
+  each row against the tenant of the connection, and the connection takes its tenant
+  when it is acquired. One transaction therefore holds the rows of one tenant. A lane
+  groups the rows of a cycle by tenant and writes one transaction for each. A lane
+  that serves many tenants writes smaller batches. This is one more reason to store a
+  row for each source and not for each party.
+- *Two rows of one key never share a batch.* =current_timestamp= is the start of the
+  transaction. The trigger closes only rows that began before it, so two rows with the
+  same key in one batch would break the unique index. The lane keeps the last row of
+  each key in a batch.
+
+** One pipeline for every asset class
+
+The pipeline serves every asset class and every future feed. The rules below keep it
+so. The ingest sees only a source and an oresmd URI. It does not see the feed kind.
+So every per-class rule is keyed by what the URI names, which is the instrument
+type, and never by the kind of the feed.
+
+*** The words
+
+- A *datum* is one quote. Its URI names the instrument and every coordinate, such as
+  the term of a swap.
+- A *series* is the datum without its coordinates. The schema row of an instrument
+  type says which fields are identity and which are coordinates. A curve whose pillars
+  are coordinates is one series with many datums. A curve whose tenor is an identity
+  field is many series.
+- A *lane key* is the series. All quotes of a curve share a lane.
+- Conflation, the recent window and thinning work on the datum. Ordering works on the
+  series.
+
+*** The policy of a tick class
+
+A tick class is an instrument type, such as =fx_spot= or =ir_swap=. A policy table
+holds one row for each class, and a default row covers every class without a row.
+A lane reads the table as an immutable snapshot, and a change reaches the lane as a
+message. The fields of a row are these.
+
+#+ATTR_HTML: :class hug-leading
+| Field | Meaning | Default |
+|-------+---------+---------|
+| =durability= | =perishable= or =durable=. See below. | =perishable= |
+| =age_limit= | The age after which a live tick is dropped. | 5 s |
+| =conflation= | =latest=, =none= or a named reducer. | =latest= |
+| =conflation_interval= | The shortest gap between two live publishes of one datum. | 100 ms |
+| =persistence= | =all=, =last_per_second=, =bars= or =none=. | =all=, thinned when catching up |
+| =window= | The recent ticks kept for a watched datum. | 600 ticks or 10 minutes |
+| =overload_limits= | The two lags that change the state of a lane. | 5 s and 30 s |
+| =consistency= | =none= or =series=. A series publishes as one consistent set. | =none= |
+| =retention= | How long raw ticks stay, when they are compressed, and how long bars stay. | 7 days, then compressed, bars for good |
+| =silence_after= | The gap after which a source counts as silent. | 15 minutes |
+
+A new asset class works with the default row. It needs a row only when a field
+differs. That keeps the property that a new kind needs no change in the ingest. An
+equity feed would set =bars=, because its high and low matter. An interest rate curve
+would set a longer =age_limit=, because it ticks slowly, and =consistency= of =series=,
+because a curve must not publish half old and half new quotes. A trade feed would
+set =durable= and =conflation= of =none=.
+
+*** Two durability tiers
+
+A quote is perishable, and the rules above apply to it. Some ticks are not perishable.
+A trade, an official fixing and a close must not be lost, and an old one is still
+correct. A class of =durable= ticks changes the rules in four ways.
+
+- The age gate does not apply.
+- Conflation is =none=.
+- The lane never sheds. A full ring makes the receiver wait, and the producer feels
+  the back-pressure.
+- The lane stores the batch before it publishes the batch to live consumers.
+
+A durable tick never shares the receiver of the quotes. A full durable ring would
+make its receiver wait, and every quote behind it on the same thread would wait too.
+Durable ticks use their own entry: a JetStream consumer on its own thread that
+acknowledges a tick after the commit. The consumer feeds lanes of its own. Back-pressure
+reaches the producer through the acknowledgements, and a restart replays what the
+consumer did not acknowledge. Both tiers share the lane code, the batch writer and the
+gauges.
+
+*** Derived data
+
+Some consumers sit inside the service. The CRM bridge turns an FX spot rate into a
+driver update. Cross rates and blended rates are derived from observed rates. The
+loop has one =if= for the CRM bridge today. The pipeline replaces it with taps.
+
+- A tap is registered for an instrument type. It reads the conflated live output of
+  the lanes, so it sees the newest value and never a backlog. The CRM bridge fits this.
+  It keeps one rate and one observation time for each pair of each party, and it asks
+  for no more.
+- A tap runs outside the lanes, because a derived value can depend on inputs from
+  several lanes.
+- A derived value enters the pipeline again as a tick with its own source and
+  producer kind =DERIVED=. It follows the same rules as any other tick.
+
+*** Time
+
+A tick has three times. The producer stamps the observation time. The receiver stamps
+the arrival time. The store records the commit time.
+
+- The age of a tick is now minus the observation time. The age limit uses it.
+- The transport lag is the arrival time minus the observation time. A large lag,
+  or a negative one, points at clock skew between the producer and the service.
+- A tick stamped in the future by more than a set allowance takes the arrival time
+  as its observation time, and the lane counts it.
+- A tick older than the newest tick of its datum is not published live. The store
+  keeps it, because it is history.
+
+*** Lag and silence
+
+Two different conditions look alike to a consumer. A tick that is old is a lag. A
+source that sends no tick is silence. The age limit handles the first. The second needs
+its own rule. The pipeline keeps the time of the last tick of each source, and it
+reports a source as silent after the =silence_after= of its class. Hedgr shows a
+stale verdict, and the CRM bridge reports a rate as stale after 15 minutes and
+disconnected after 60 minutes. Both are silence rules. They stay with their consumers.
+The pipeline gives them the time of the last tick and the lag of the source, so they
+need not guess.
+
+*** Live ticks and bulk loads
+
+The age gate and the shedding apply to live ticks only. An import of ORE market data
+and a backfill from a vendor are bulk loads. They use the batch writer through their
+own entry. They carry old observation times on purpose, and no gate drops them. The
+entry controls its own pace, so a bulk load does not starve the live lanes. A vendor
+snapshot that follows a reconnect is a live tick, with its own time.
+
+*** Isolation and fairness
+
+- A hot source cannot fill a ring for the others. The conflation interval limits the
+  live rate of each datum. The lane counts drops for each source, so a hot source
+  shows by name.
+- A tick that fails to decode, or that names no datum, is counted and dropped at the
+  receiver. It never reaches a lane.
+- A lane catches an exception in a cycle, logs it, counts it, and goes on. A lane that
+  stops is restarted, and its ring is kept.
+- The tenants share lanes. A write that fails for one tenant is split off by the
+  bisect step and does not fail the batch of the others.
+
+*** Memory
+
+The lane keeps one last tick for each datum. At a million datums and 100 bytes for
+each, that is about 100 MB, which is an estimate to check. Windows exist only for
+watched datums. The ring and the window are bounded, so the memory of a lane does not
+grow with the tick rate.
+
+*** What a feed owes the pipeline
+
+A producer follows these rules, whatever its asset class.
+
+1. Publish a =market_tick= on the producer subject. Name the datum by its canonical
+   oresmd URI.
+2. Stamp the observation time from the clock of the source. Add a sequence number for
+   each source, so that the receiver counts the ticks that it never saw.
+3. Publish a quote without waiting for an acknowledgement.
+4. Publish a series from one producer only, as the rule of series exclusivity says.
+5. Use an existing instrument type, or add one. A new instrument type works with the
+   default policy row.
+6. Declare the expected rate and the number of datums, so that capacity is planned.
+7. State the durability tier. A quote needs no statement.
+8. Add a policy row only when a default field is wrong for the class.
+
+*** What the pipeline owes the feed
+
+A tick of any class reaches live consumers within the age limit of its class, or the
+pipeline counts it as dropped, by source and by reason. The newest tick of a datum is
+never behind an older one. A feed needs no code in the pipeline.
+
+*** Scale beyond one process
+
+One process holds many lanes. A single process has limits: one NATS delivery thread
+decodes every tick, and one database serves every lane. When these bind, run several
+ingest instances. Each takes a share of the sources, which a setting assigns, and the
+series key keeps one series in one instance. The lane design does not change.
+
+*** How the design is tested
+
+The core of a lane is a pure function of a batch, a policy and a clock. A test injects
+the clock and checks the rules without a broker: no tick older than its limit is
+published, the newest tick of a datum is never behind an older one, the memory stays
+bounded, and the states change at their limits. Failure injection covers a slow commit, a store that is down, a lane that throws,
+and a full ring. The tick injector is the load test.
+It becomes a tool in the repository, so that anyone can reproduce a lag.
+
+*** Notes to update when this is built
+
+When the pipeline replaces the loop, these notes change: the ingest loop note, which
+states that a republish follows the stored row; the note on adding an asset class,
+which gains the rules above; the PostgreSQL architecture note, which states that a
+time-series table sets the notification knob to false; the notes on the producer
+subject and the market tick, which state the live subject; and the feed binding note.
+No client of the observation change event exists. Hedgr has none, and the Qt client is
+decommissioned.
+
+** What the first consumer needs: Hedgr
+
+Hedgr is the new desktop client. Its plan, =docs/plans/market-eventing.md= in the
+Hedgr repository, shows how a real consumer reads the pipeline.
+
+- *Live values come from the party tick stream.* Hedgr subscribes once for each
+  session to =marketdata.v1.ops.market_tick.<tenant>.<party>.>=. This is the subject
+  that the ingest loop publishes to after it stores a row. The tick stream is the
+  only subscription that Hedgr makes in its own code. Hedgr has no subscription to
+  any observation change event. That confirms that the database notification serves
+  no client here.
+- *Hedgr filters on the client.* The tick sink of Hedgr says that the party
+  subscription delivers every tick of the party, and that it keeps the ticks of the
+  watched series and drops the rest. Each tick costs a decode, two calls of the URI
+  codec, a number parse, a lock and a map lookup, on the one NATS delivery thread.
+  The section on the live subject makes the broker do the selection.
+- *The live tick has no coordinate.* The backfill of Hedgr gives each point its term.
+  The live tick carries a series URI, a time and a value, and the aggregator takes no
+  term. A series with coordinates, such as the pillars of a curve, would mix its
+  pillars in one live bucket stream. This was read in the code and not run against a
+  live curve. FX spot has no coordinate and is not affected.
+- *Hedgr waits for the store without knowing it.* The subject carries a tick only
+  after the ingest has stored it. When the ingest fell behind, the chart showed ticks
+  that were 70 minutes old, and nothing in Hedgr was at fault. The live path of
+  this proposal removes that coupling.
+- *Hedgr measures freshness itself.* It judges the age of a tick from the
+  =observation_time= of the tick, and it draws that age beside the verdict. This is
+  the right measure. It is also the acceptance measure for the pipeline: the age of
+  a tick as the client sees it, at the 99th percentile.
+- *Hedgr already conflates.* It buckets ticks into 1 second, 1 minute and 1 hour
+  levels on the NATS thread, and it passes closed buckets to the frame loop through a
+  fixed ring. A chart needs at most one point for each second. The class interval of
+  100 milliseconds therefore loses nothing that a chart shows. It cuts the fan-out
+  from tens of thousands of ticks each second to at most ten for each datum. A
+  consumer that wants less conflates for itself, as Hedgr does.
+- *The subject is scoped to a party.* The live publish must still go to one subject
+  for each binding. Its cost is small compared with a commit, because core NATS
+  carries it without an acknowledgement. The cost grows with the number of parties
+  that watch a source.
+- *Hedgr seeds a chart from the store.* On open, on reconnect and on a manual
+  refresh it asks for the newest 2,000 points of a series. The recent window of the
+  lane serves the part that it covers from memory, and the store serves the rest.
+- *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
+  it is full. Its source comment gives the reason: a tick is worth less than the
+  progress of the dispatch thread, and the chart shows the points it did receive.
+  The freshness rule says to overwrite the oldest. The two rules differ only when the
+  frame loop stalls by more than 4,096 buckets, but they should agree.
+- *The reconnect gap.* Hedgr loses the ticks between a drop and a reconnect, and it
+  fills the gap with a backfill read. The recent window serves that read from memory.
+
+** How tick systems are built in practice
+
+Tick processing is an old problem, and the industry has settled on a small number of
+shapes. This section lists them. The sources are linked where this session read
+them. Claims that come from a vendor are marked as such.
+
+*** The tickerplant, the real-time store and the history store
+
+The shape that many trading firms use comes from kdb+. A feed handler captures the
+raw feed. A tickerplant receives each update, writes it to a log file, and publishes
+it to subscribers. A real-time database subscribes, holds the current day in memory,
+and answers intraday queries. At the end of the day it writes its data to a
+historical database that is partitioned by date. The
+[[https://code.kx.com/q/architecture/][KX architecture guide]] and the
+[[https://code.kx.com/q/kb/kdb-tick/][kdb+tick page]] describe the parts. The log is
+the recovery source: a restarted real-time database replays it.
+
+Two details matter here. First, the tickerplant can run in zero-latency mode or
+publish in batches on a timer. The KX guidance says that a subscriber that only plots
+graphs needs an update every few seconds, so a chained tickerplant serves slow
+subscribers. That is conflation by another name. Second, the split between a
+real-time tier in memory and a history tier on disk is the norm. A chart of the
+last few minutes reads memory. It does not query the history store.
+
+*** Conflated feeds
+
+Exchanges and vendors sell the same idea as a product. The CME MDP 3.0 conflated
+feed sends only the most recent update of each instrument, which cuts the bandwidth
+and the work of the consumer. See the
+[[https://b2bits.atlassian.net/wiki/spaces/B2BITS/pages/286294017/Java+TCP+Handler+for+CME+MDP+3.0+Conflated+Feed][description of a handler for it]].
+A patent that came up in the same search notes the limit: some data conflates well,
+such as the current price, and some does not, such as a trade cancellation.
+This pipeline carries observed values, so it can conflate them. A trade or an event
+needs a lane that does not conflate.
+
+Chronicle sells a ring buffer in two forms: one that delivers every message in order,
+and one that conflates to the newest value for a reader that wants only that. It
+claims under 200 nanoseconds at the 99.9th percentile for the conflating form. That
+is a vendor figure on one machine, so treat it as indicative. See the
+[[https://chronicle.software/ring-buffer][Chronicle page]].
+
+*** In-process hand-off
+
+Low-latency trading systems pass messages between threads on a ring buffer. The LMAX
+Disruptor, Aeron with its ring-buffer adaptors, and Chronicle Queue are the common
+tools. They exist for nanosecond hand-off. This pipeline needs a millisecond commit, so
+it takes the pattern and not the tools.
+
+*** Time-series databases
+
+A database that is built for ticks ingests in batches and makes the commit interval an
+explicit setting.
+
+- *QuestDB* writes through a write-ahead log and takes data over its line protocol.
+  Its out-of-order handling holds rows in memory and commits after a lag. The
+  [[https://questdb.com/docs/guides/out-of-order-commit-lag][commit lag guide]]
+  calls the setting a trade between throughput and the time until data is readable.
+  A forum answer in the same results says the cost sits mostly in the commit and not
+  in the number of rows. The lane cycle makes the same trade, and it sets the lag
+  from the measured lag of the lane.
+- *ClickHouse* wants
+  [[https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy.md][inserts of 10,000 to 100,000 rows]],
+  about one each second. When clients cannot batch, its
+  [[https://clickhouse.com/docs/concepts/features/operations/insert/asyncinserts][asynchronous inserts]]
+  batch in the server and accept a loss on a crash.
+- *TimescaleDB* groups rows by chunk and writes each chunk in one transaction. It
+  recommends =COPY= for bulk loads. See the
+  [[https://www.tigerdata.com/docs/build/data-management/write-data/insert][insert documentation]].
+
+All three say one thing: never commit once for each tick.
+
+*** Streams with a compacted topic
+
+Kafka offers log compaction, which keeps the last record of each key. A common
+design puts ticks on a Kafka topic and loads a column store from it, for example
+through the ClickHouse Kafka table engine and a materialized view. It fits a system
+that must replay. It adds a broker, and a consumer that falls behind reads old
+records first, which is the behaviour this pipeline avoids.
+
+*** The last value for a late joiner
+
+A consumer that starts late needs the current value at once. The kdb+ real-time
+database serves it from memory. A compacted topic serves it as the last record of a
+key. This proposal serves it from the memory of the lane, as the real-time database does.
+It needs no extra stream.
+
+** Where the proposal follows practice and where it departs
+
+It follows practice in these points.
+
+- It has a receive stage, a fan-out to live consumers, and a store writer, which is the
+  tickerplant, the real-time store and the history writer in the kdb+ shape.
+- A lane that conflates for its live consumers is a chained tickerplant.
+- Writes to the store are batched with an explicit commit interval, as in QuestDB,
+  ClickHouse and TimescaleDB.
+- The recent window is the real-time database of a kdb+ system, held in each lane. It
+  answers recent reads from memory, and the history store serves only older data.
+- The store has no change signal for each row, because none of these systems has one.
+
+It departs from practice in two points, and both follow from the requirements.
+
+- *No replay log.* A tickerplant logs every tick so that a restart can replay it.
+  This pipeline keeps no log, because a replayed tick is a stale tick. A restart
+  resumes at the newest tick.
+- *Age-based shedding.* A tickerplant keeps every tick and lets a slow subscriber
+  fall behind. This pipeline drops old ticks and keeps the newest.
+
+** Prior art
+
+- *The LMAX Disruptor* (Thompson, Farley and others, 2011). A ring buffer with
+  slots allocated once, sequence numbers, one writer for each ring, and a consumer
+  that takes every available event as a batch. It avoids locks and queue
+  contention. This pipeline takes four ideas from it: the bounded ring, the
+  pre-allocated slots, the single writer, and batching without a timer. It does not
+  take the library, the busy-spin wait strategies or the graph of consumers. The
+  cost here is milliseconds for a commit and not nanoseconds for a hand-off, so a
+  plain mutex and a condition variable are enough for the receive side.
+- *The single writer principle* (Martin Thompson, "Mechanical Sympathy"). One thread
+  owns each piece of mutable state. The lane follows it: one writer owns the ring
+  and the connection of its lane.
+- *Reactive libraries.* Reactive Streams libraries name the same drop-the-old idea
+  =onBackpressureLatest=. A consumer that cannot keep up gets the newest item and not
+  the oldest.
+
+** Options set aside
+
+- *A durable JetStream consumer as the buffer for quotes.* It makes the backlog
+  visible, and it loses nothing at a restart. It also replays old ticks in order, and
+  requirement 1 forbids that. It fits data that must not be lost, and the durable tier
+  uses it. It does not fit a perishable tick.
+- *Back-pressure that blocks the producer, for quotes.* It protects every tick and
+  makes the newest tick wait for the oldest. It breaks requirement 1. The durable tier
+  uses it.
+- *A JetStream stream with one message for each subject, for late joiners.* It holds
+  the last value. The window in each lane holds it already, and it also holds the
+  recent run that a chart needs. A second copy would need its own upkeep.
+- *A GPU.* The work waits for commits and locks and does little arithmetic. A GPU
+  has nothing to speed up on this path.
+- *A column store for the history now.* A column store takes more than a million
+  rows each second. It is a large change, and a batched write to the present store
+  may be enough. Measure first. The decision belongs to steps 0 and 3 below.
+
+** Step 0: the measured write ceiling
+
+The first pass of step 0 times batched inserts into scratch tables of one environment,
+on one connection. The rows are made inside the database, so the figures leave out the
+client and the network. They are upper bounds. The script and the raw output are in the
+=evidence= folder of the investigation task.
+
+#+ATTR_HTML: :class hug-leading
+| Rows in a transaction | Observation table, as built | Same table, no trigger | Append-only table |
+|-----------------------+-----------------------------+------------------------+-------------------|
+| 1 | 231 each second | 273 | 226 |
+| 100 | 6,024 | 18,225 | 22,890 |
+| 1,000 | 7,815 | 28,716 | 111,028 |
+| 10,000 | 8,301 | 32,751 | 186,824 |
+| Bytes for each row, with indexes | 1,199 | 942 | 162 |
+
+Four facts follow.
+
+- *One row for each commit is commit-bound.* The three shapes give 226 to 273 rows each
+  second, and that is the 230 syncs each second of the disk.
+- *Batching alone does not help the present table.* It rises from 231 to 8,301 rows each
+  second and stops there. The trigger and its two lookups of the tenant table for each
+  row set the ceiling. Removing the trigger gives four times more, and the seven indexes
+  then set a new ceiling of about 33,000.
+- *The append-only table is 22 times faster than the present one.* One index and no
+  trigger give 187,000 rows each second on one connection, at 162 bytes for each row.
+- *=COPY= from a client file* loaded 300,000 rows into the table without a trigger in
+  7.3 seconds, which is 41,000 each second, and into the append-only table in 1.6
+  seconds, which is 188,000 each second.
+
+The demand of 276,000 rows each second needs 34 connections of the present table, at
+perfect scaling, and a disk that writes 330 megabytes each second. It needs two
+connections of the append-only table, and a disk that writes 45 megabytes each second. With
+one row for each source it needs less than one connection.
+
+These figures have limits. The scratch tables were empty at the start, so the indexes
+were small and warm. A real table with years of data has colder indexes, and the
+random series order costs more. The server was shared with four other environments.
+Row-level security and the tenant-aware connection were not in the test. The rows
+of one batch had one tenant. Compression was not measured. A later pass of step 0
+repeats the test from the application, with =COPY= through libpq, with batches that
+hold one tenant, and with a table that has more history.
+
+** The risks, and what would change the design
+
+#+ATTR_HTML: :class hug-leading
+| Risk | What would show it | What changes if it is true |
+|------+--------------------+----------------------------|
+| PostgreSQL cannot sustain the batch rate. The target is about 280,000 rows each second with today's fan-out. Step 0 shows that the present table cannot, at 8,300 each second for each connection, and that an append-only table can, at 187,000. | The next pass of step 0, from the application. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
+| The write for each party multiplies with the number of parties. | The count of bindings for each source, against the row rate. | Keep one row for each source and let a party read through a view. |
+| One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
+| One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
+| The volume of rows exceeds what the store holds. | The bytes for each row and the rows each day, measured in step 0. | Store bars only for the high-rate classes, and keep raw ticks for a short time. |
+| The trigger and the indexes cap the rows each second of one connection. | The step 0 table with and without the trigger and with fewer indexes. | The append-only tick table of the store section. |
+| The tick streams of JetStream cap the rate of the producers. | The rate of a feed with and without the acknowledgement. | Core publish, and no stream, for perishable subjects. |
+| The windows use too much memory. | The memory of a lane against the number of watched datums. | Bound the window by bytes, and keep a bucketed window. |
+| The live subject change breaks a consumer. | A search for every subscriber of the republish subject. Hedgr is the only client. | Migrate the client in the same wave, and keep no old subject. |
+
+** Delivery in four steps
+
+Each step ends with a measurement. The test tool is the tick injector, which sends
+a burst of ticks at a chosen rate and times the drain.
+
+0. *Prove the write ceiling.* Build a prototype of the batch writer and time it. No
+   product code changes. Find how =sqlgen::insert= writes a vector: the library splits
+   it into batches of 50,000 rows, and the form of the statement is not yet verified,
+   so the prototype may need =COPY= from libpq. Acceptance: a table of rows each second
+   for each batch size, with and without the trigger that closes the previous point,
+   with the append-only table, and with the policy of one tenant for each batch. It
+   also states the bytes for each row. The result decides whether the later steps need
+   a column store.
+1. *Remove the per-row costs.* Step 0 shows that batching the present table stops at
+   8,300 rows each second, so this step moves ticks to the append-only table. Drop the
+   notification trigger of the observation table, add a series cache and a batch
+   writer, and stop waiting for acknowledgements on the live publish and on the
+   producers. Remove the two tick
+   streams for perishable subjects. Add the lag gauge. Acceptance: the burst
+   drain rate reaches the rate that step 0 measured, and the lag gauge shows the lag
+   of a loaded system. The ten-fold gain is a target and not a result until step 0
+   confirms it.
+2. *Lanes, the ring, the age gate, the overload states and the recent window.*
+   Add a read operation for the last value and for the recent ticks of a series, and
+   split the live subject into tokens. Move Hedgr to both: a subscription for each
+   watched series, and a read of the window. Acceptance: a burst of ten times the sustained rate leaves
+   no backlog after the burst ends. The lag of the live path stays below the age
+   limit at all times. A chart opens from the window in under 100 ms and does not
+   read the store for the span that the window covers.
+3. *Scale out, and open the policy table.* Several lanes, each with its own connection.
+   The policy table with its default row, the durable tier, the taps that replace the
+   CRM =if=, and a rollout by source: a setting moves one source at a time to the new
+   pipeline. Tune the indexes and chunks. Decide on a column store for history. Acceptance: 30,000 ticks each second
+   for ten minutes, with the lag of the store below 1 second at the 99th percentile.
+
+** Open questions
+
+- Does a stream that can carry a tick that the store dropped cause a problem for any
+  consumer? This note accepts it. The stream is the live view, and the table is the
+  record of what the pipeline wrote.
+- What is the age limit for each asset class? Interest rate curves tick slowly,
+  and FX spot ticks fast.
+- Should the CRM bridge read from the conflated live path and not from the store path?
+- Is the second row for each tick worth its cost at scale?
+- Should the ring of Hedgr overwrite its oldest bucket when it is full, to follow the
+  freshness rule?
+- How large is the recent window? The starting bound is 600 ticks or 10 minutes for a
+  watched datum. Hedgr keeps 2 hours of 1 second points for a watched series, so a
+  longer window or a bucketed window may be needed.
+- How does the lane learn which datums a consumer watches? A subscription, a request
+  to open a chart, or a setting for each source are the choices.
+- Which tokens does the live subject need beyond the instrument type and the series?
+  A venue or a currency token would let a client select more finely, and each token
+  adds a level to every subscription.
+- Does any client need to learn that a series changed? If so, the signal belongs on
+  the live tick stream, at most once each second for each series. A database
+  notification is not the way.
+- Which classes need =bars= and which need a =reducer=? The answer comes from the
+  first equity and option feeds. The default row serves FX and rates.
+- How does a client learn that a curve published as one consistent set? The tick has
+  no field for it today, so a curve may need a set marker on the tick.
+- Does any series need a lane key below the series? A very large surface in one series
+  may overload one lane. The busy share of each lane answers it.
+- Does the reader of the store need the bitemporal observation table for ticks? A
+  view over an append-only tick table and the observation table is the proposal.
+- How long does the store keep raw ticks, and which classes keep bars only? The
+  answer is a policy row for each class.
+- How many lanes does one server need, and how many connections can the database
+  give them?
+
+* See also
+
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the code this note proposes to change.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the source of the fan-out.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub for this cluster.

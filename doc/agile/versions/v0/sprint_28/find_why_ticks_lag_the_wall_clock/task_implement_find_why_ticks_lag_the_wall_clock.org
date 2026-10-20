@@ -1,0 +1,278 @@
+:PROPERTIES:
+:ID: A6D20F16-3F4F-426D-976B-221A201AF4DE
+:END:
+#+title: Task: Investigate the tick lag in marketdata ingest
+#+description: Initial task for: Find why market data ticks lag the wall clock
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch: feature/find-why-ticks-lag-the-wall-clock
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Find where the backlog of ticks builds up between the feed and the chart, why it builds, and how long it takes to drain. Then state the fix.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The place where ticks queue is found, with a measurement.
+- The cause is stated, and it explains why the lag drains at 1.16 times real time.
+- The fix is stated, and a follow-up story or task exists for it.
+- A tick that is late shows how old it is, or the reason it does not is recorded.
+- The ingest keeps up with a sustained load of thousands of ticks, shown by a measurement.
+- The lag reproduces locally with a script that anyone can run.
+
+* Plan
+
+The design is in =doc/knowledge/architecture/tick_ingest_pipeline.org=. Three reviews
+of it are recorded under Notes. The work follows its delivery steps, and each step
+ends with a measurement.
+
+0. Prove the write ceiling. A prototype in scratch tables of this environment's
+   database, with no product code. It times batched inserts for four table shapes and
+   four batch sizes, and it times =COPY=. Its result goes into the note.
+1. Remove the per-row costs: the notification trigger, the series read for each tick,
+   the commit for each row, and the wait for acknowledgements on producers and on the
+   republish. Remove the two tick streams for perishable subjects.
+2. Lanes, the ring, the age gate, the overload states and the recent window. Split
+   the live subject into tokens, and move Hedgr to it.
+3. The policy table, the durable tier, taps, a rollout by source, and scale out.
+
+Each step is its own task and its own pull request. This task holds the investigation
+and the plan.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Newest chart tick against the wall clock, 17:43:59 UTC | 4,255 s behind (tick stamped 16:33:04 UTC) | Read from the Hedgr log of the reporting environment | not recorded |
+| Lag three minutes later | 4,223 s, a drain of about 1.16 times real time | Same log | not recorded |
+| Tick arrival | one new point about every 2 s | Same log | not recorded |
+| NATS slow consumers and pending bytes on the bright_faraday broker | 0 and 0 on every connection | Broker connection list of the reporting environment | not recorded |
+| =ores.marketdata.service= CPU and its postgres connection | 18 % CPU; connection 41 % in "idle in transaction", sustained | Process and connection view of the reporting environment | not recorded |
+| Machine load over 15 minutes | 5.3 on 8 cores, then 2.1 | Load average of the reporting environment | not recorded |
+| Ticks on the wire, brave_hopper, 15 s | 197 ticks, 13 per second | =nats sub "ores.dev.brave_hopper.synthetic.v1.ops.tick.>" --dump= | 3ffd309812 + main merge |
+| Bindings and sources | 288 enabled bindings on 62 sources, 4.6 targets per tick | =select count(*), count(distinct source_name) from ores_marketdata_feed_bindings_tbl= | same |
+| Rows the ingest wrote | 131 to 155 per second while behind (2 rows per target) | =tmp/tickprobe/rates.sh 15= and =20= | same |
+| Demand at the ingest | about 122 rows per second (13 x 4.6 x 2) | derived from the two rows above | same |
+| Lag per source at 20:04, brave_hopper | minimum 127 s, median 235 s, maximum 2,680 s over 56 sources | =persource.sql= query over =market_observations= | same |
+| Active marketdata backends | exactly 1, waiting on WalSync, WALWrite or CPU | =pg_stat_activity= sampled every 2 s for 50 s | same |
+| Burst drain, as built (sync commit on, NOTIFY on) | about 143 rows per second, steady for 113 s | =tmp/tickprobe/capacity.sh baseline 3000 1000= | 3ffd309812 + main merge |
+| Burst drain, =synchronous_commit= off for the marketdata role | 166 rows per second over 177 s | =capacity.sh syncoff= after =alter role ... set synchronous_commit = off= | same |
+| Burst drain, sync off and the NOTIFY function empty | about 210 rows per second from t=20 s, peaks near 280 | =capacity.sh nonotify= after replacing =..._notify_fn()= with a no-op | same |
+| Wait events of the one active marketdata session, sync off, 70 samples | 29 =Lock:object=, 24 CPU, 17 =Client:ClientRead= | =pg_stat_activity= sampled every 0.25 s | same |
+| The lock that waits | =AccessExclusiveLock= on =pg_database= object 0, waiting statement =COMMIT=, blockers are marketdata sessions of two other environments | =pg_locks= joined to =pg_stat_activity= during a burst | same |
+| Step 0, observation table as built, 10,000 rows in a transaction | 8,301 rows per second, 1,199 bytes per row | =evidence/step0_write_ceiling.sql.txt=, output in =step0_write_ceiling_output.txt= | a943595339 |
+| Step 0, same table without the trigger | 32,751 rows per second, 942 bytes per row | same | same |
+| Step 0, append-only table with one index | 186,824 rows per second, 162 bytes per row | same | same |
+| Step 0, =COPY= of 300,000 rows from a client file | 41,000 rows per second without the trigger, 188,000 into the append-only table | same | same |
+| =fdatasync= on the postgres disk | 4.3 ms per call, 230 per second (one 8 kB write) | =pg_test_fsync -s 2= on the nvme disk of =/= | same |
+| Postgres setting | =synchronous_commit= on, =wal_sync_method= fdatasync, five environments share one server, about 100 connections each | =show= statements | same |
+
+* Notes
+
+** The lag reproduces in brave_hopper
+
+The environment showed no lag at 19:52 (newest observation 0.4 s old). It showed
+a lag of 160 to 200 s from 19:56, after =pg_test_fsync= loaded the disk at 19:53. That
+is a correlation, not yet a proof. The ingest stayed behind for the next ten
+minutes, because it writes only 10 to 25 percent faster than ticks arrive. The ratio
+matches the 1.16 of the report.
+
+What the evidence shows:
+- One thread does the work. Exactly one marketdata backend is active, and it waits
+  on the commit sync (=WalSync=, =WALWrite=).
+- Each target-tick makes a series =SELECT=, two =INSERT= statements, each its own
+  commit, and a =js_publish= that waits for an acknowledgement.
+- A commit costs about 4.3 ms on this disk, and five environments share the disk.
+
+What it does not show yet: which of the four steps costs most, and whether
+=synchronous_commit= off lifts the ceiling. The next experiment is a capacity test
+with a controlled burst, with and without =synchronous_commit= for the marketdata role.
+
+Capacity target from the owner: thousands of ticks, which this loop cannot reach.
+GPU offload is not a candidate for this path: the work waits on commits and
+acknowledgements and does little arithmetic.
+
+** Result of the capacity experiments
+
+The commit sync is not the main limit. Turning it off lifts the drain rate by 16
+percent. The larger cost is the row trigger that calls =pg_notify=. A transaction
+that notifies takes a database-wide lock at commit, and that lock is shared by every
+database on the server. The ingests of five environments on this server wait for
+each other. With the NOTIFY function empty, the rate rises by another 26 percent.
+The rate is still about 210 rows each second, so the per-row work also matters: the
+series read, the two checks, the trigger that closes the previous point, seven
+indexes, and the publish that waits for an acknowledgement.
+
+The experiments changed two things in this environment and restored both: the role
+setting =synchronous_commit= and the function =ores_marketdata_market_observations_notify_fn=.
+The restored function comes from the repo file, and a query confirmed it.
+
+The owner added two requirements: a stale tick is worse than a lost tick, and the
+target is tens of thousands of ticks each second. The proposal that meets them is
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]].
+
+** Result of step 0, first pass
+
+The present observation table cannot carry the target. Batching it stops at about 8,300
+rows each second for one connection, because the insert trigger and its two lookups of
+the tenant table run for every row. Without the trigger it reaches about 33,000, and an
+append-only table with one index reaches about 187,000 at 162 bytes for each row, against
+1,199 for the present table. The figures are upper bounds, from scratch tables on a shared
+server with the rows made inside the database. The note records them under "Step 0: the
+measured write ceiling". The result changes step 1: it must move ticks to an append-only
+table, and batching alone is not enough. The next pass repeats the test from the
+application, with =COPY= through libpq, one tenant in each batch, and a table with history.
+
+** Review of the pipeline design against every asset class
+
+The owner asked for a review of the design as the base for all ticking data. The
+review read the note against the way asset classes plug in today
+(=adding_a_market_data_asset_class.org=, =feed_factory_and_kind_seam.org=) and against
+Hedgr. It found these faults. Each one is fixed in the note.
+
+#+ATTR_HTML: :class hug-leading
+| Finding | Why it matters | Change in the note |
+|---------+----------------+--------------------|
+| The ingest sees a source and a URI, and never the feed kind. | A policy keyed by the feed kind cannot work in the ingest. | Policy rows are keyed by instrument type, with a default row, so a new class needs no ingest change. |
+| One rule for every tick. | A trade, a fixing or a close must not be shed. | Two durability tiers. The durable tier has its own JetStream entry and lanes. |
+| The durable tier made the shared receiver wait. | One full durable ring would stall every quote on the same thread. | The durable tier gets its own receiver thread. |
+| "Overwrite the oldest slot" was unsafe. | A writer must not touch a slot that the worker reads. | The worker detects that it was lapped by the sequence numbers and skips ahead. |
+| Thinning and lane choice used "series" and "datum" loosely. | A curve is one series with many quotes. Thinning by series would drop quotes. | Defined the words. Lanes are keyed by series, and conflation, windows and thinning by datum. |
+| A held-back value could wait forever. | The last tick of a burst never reached the consumer. | A trailing publish at the end of each conflation interval. |
+| A curve may publish half old and half new. | A consumer would see an inconsistent curve. | A =consistency= field, and an open question on a set marker. |
+| The CRM bridge is an =if= in the loop. | Derived data needs a place for every class. | Taps that read the conflated output, and derived ticks that re-enter with producer kind =DERIVED=. |
+| Imports and vendor backfill would hit the age gate. | Bulk loads carry old times on purpose. | A separate bulk entry that uses the batch writer without the gate. |
+| Clock skew between producer and service. | The age limit would drop good ticks or keep bad ones. | Three times for each tick, a skew rule, and a future-stamp rule. |
+| URI parsing per tick. | The codec costs more than the rest of the receive stage. | A table from URI string to parsed datum. |
+| The window read had no access check. | Any caller could read any party's recent ticks. | The read checks tenant and party against the bindings. |
+| The write ceiling of PostgreSQL is untested. | The whole plan rests on it. | A step 0 prototype, and a table of risks with what would change the design. |
+| No place to say what a new feed must do. | The pipeline must be the base for all ticking data. | The sections on what a feed owes the pipeline and what the pipeline owes the feed. |
+
+A second review looked at the write path and the broker, which the first one skipped.
+It found these gaps. Each one is fixed in the note.
+
+#+ATTR_HTML: :class hug-leading
+| Finding | Evidence | Change in the note |
+|---------+----------+--------------------|
+| Two JetStream streams store every tick for 7 days with no consumer. | =nats stream info= for =synthetic_ticks= and =marketdata_ticks=: file storage, 7 days, 0 consumers. | Perishable subjects use core NATS. The streams go away for them. |
+| Producers wait for an acknowledgement on each tick. | =fx_spot_feed.cpp= calls =js_publish=. | Producers publish without waiting. |
+| The row count and the volume have no plan. | About 24 billion rows each day at 30,000 ticks each second with today's fan-out. | Retention tiers, compression, bars, and one row for each source. |
+| A tick table that is bitemporal costs a trigger and an update for each row. | The insert trigger runs an =UPDATE= on the table. There are seven indexes. | A separate append-only tick table, to be proved by step 0. |
+| A batch holds one tenant only. | Row-level security checks the tenant of the connection. | A lane groups each cycle by tenant. |
+| Two rows with one key in a batch break the unique index. | =current_timestamp= is the start of the transaction. | The lane keeps the last row of each key. |
+| Lag and silence were mixed. | Hedgr and the CRM bridge have silence rules of their own. | A section on lag and silence, and a =silence_after= field. |
+| A store outage had no rule. | None. | An outage counts as infinite lag. The live path continues. |
+| Loss could not be told from a fault. | Core NATS reports a drop only through a callback. | A sequence number for each source and a counter on the callback. |
+| The batch form of =sqlgen::insert= is unknown. | The library splits at 50,000 rows. The statement form is in a compiled library. | Step 0 verifies it and uses =COPY= if needed. |
+
+The Qt client is decommissioned, so it is no longer a consumer to check. Hedgr was read
+in its code, not only in its plan: the tick stream at =tick_stream.cpp= line 151 is
+the only subscription it makes outside its tests. That review found three more points,
+each recorded in the note: Hedgr filters the whole party subtree on the client, the live
+tick has no coordinate, and its ring drops the newest bucket when full. The first one
+changed the design. The live subject now splits into tokens, so a consumer selects a
+series on the broker.
+
+** The report that opened this task
+
+Another environment measured this and has not confirmed the cause.
+
+Measured:
+- Tick time against the wall clock, the drain rate and the arrival rate are in the Measurements table.
+- The producer, =fx_spot_feed.cpp=, stamps each tick with =system_clock::now()=, and Hedgr decodes =observation_time= unchanged. The stamp is a real UTC time, not a time zone fault.
+- The broker is not the place of the backlog: no slow consumers and no pending bytes.
+
+Inferred, not confirmed:
+- The backlog sits in the ingest loop of the marketdata service of bright_faraday. The loop handles each tick one at a time, with database writes and a JetStream publish that waits for an acknowledgement. If the producers outrun the loop, the messages queue inside that process, where the broker cannot see them.
+- The loop fell behind while the machine was loaded.
+
+Unknown:
+- The service's own log goes to the terminal that started it, so no one has read it.
+
+What to decide:
+- Wait for the backlog to drain, or restart the marketdata service so that ingest starts from now. Nobody has touched bright_faraday's services.
+- Hedgr needs no fix. It judges age from the tick's own time and shows delayed data as STALE. STALE does not show how old the data is. The question is whether the chart footer should show it, for example "70 min old".
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The lag reproduces locally, its cause is found, and the pipeline that removes it is designed
+and reviewed. The first step of that pipeline is built in its own task.
+
+- *Cause.* The ingest handled each tick on one thread. For each binding it paid a commit, a
+  series read, a row trigger that called =NOTIFY=, and a wait for two JetStream
+  acknowledgements. The ingest wrote about 143 rows each second against a demand of about
+  120, so a short slowdown built a backlog that took hours to drain. The =NOTIFY= commit takes a
+  database-wide lock that every database on the server shares, so the ingests of five
+  environments on one server slowed each other.
+- *Reproduction.* The lag appeared in a second environment after a disk load, and a burst of
+  ticks from the injector in =evidence/= reproduces the drain rate on demand.
+- *Design.* =tick_ingest_pipeline.org= proposes lanes, a bounded ring, an age gate,
+  conflation, a recent window, batched writes, two durability tiers and a contract for every
+  asset class. Three reviews are recorded under Notes, and each finding is fixed in the note.
+- *Step 0.* The present observation table stops at about 8,300 rows each second for one
+  connection because of its insert trigger. An append-only table reaches about 187,000 at 162
+  bytes for each row against 1,199.
+- *Step 1.* Built and merged in the task "Remove the per-row costs of the tick ingest". A
+  burst drains about 16 times faster, and the live stream carries no tick older than 5 seconds.
+
+Open, each its own task:
+- The append-only tick table with its reader migration, which lifts the ceiling of the
+  present table.
+- Step 2: the lanes, the ring, the recent window and the live subject with tokens.
+- Step 3: the policy table, the durable tier, the taps, and scale out.
+- A decision on how an existing database drops the old notification trigger.
+- Hedgr: the live tick carries no coordinate, and its ring drops the newest bucket when full.

@@ -61,11 +61,21 @@ public:
         return *items_.back();
     }
 
-    T& back() { return *items_.back(); }
-    const T& back() const { return *items_.back(); }
-    std::size_t size() const { return items_.size(); }
-    T& operator[](std::size_t index) { return *items_[index]; }
-    const T& operator[](std::size_t index) const { return *items_[index]; }
+    T& back() {
+        return *items_.back();
+    }
+    const T& back() const {
+        return *items_.back();
+    }
+    std::size_t size() const {
+        return items_.size();
+    }
+    T& operator[](std::size_t index) {
+        return *items_[index];
+    }
+    const T& operator[](std::size_t index) const {
+        return *items_[index];
+    }
 
 private:
     std::vector<std::unique_ptr<T>> items_;

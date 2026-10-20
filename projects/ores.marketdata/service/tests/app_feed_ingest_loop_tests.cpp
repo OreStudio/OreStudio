@@ -34,8 +34,10 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -121,19 +123,8 @@ struct fixture {
         nats.disconnect();
     }
 
-    /**
-     * The subject the service republishes a stored tick on is covered by the
-     * stream the service provisions at startup, so a test that stores through
-     * the loop provisions it the same way. The consumer subject carries the
-     * tenant, the party and the key below the tick prefix, so the stream must
-     * cover the prefix's children: a stream on the bare prefix matches nothing
-     * the loop publishes, and the publish finds no responder.
-     */
     void connect() {
         nats.connect();
-        nats.make_admin().ensure_stream(
-            nats.make_stream_name("marketdata_ticks"),
-            nats.covering_subjects({ores::marketdata::messaging::market_tick::nats_subject}));
         REQUIRE(nats.is_connected());
     }
 
@@ -293,4 +284,72 @@ TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
     }
 
     REQUIRE(f.series_for(quote_uri).size() == 1);
+}
+
+TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_key", tags) {
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto first_uri = eur_usd_spot();
+    const auto second_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.refresh();
+
+    // Two ticks of one datum with one observation time make one key. The second is the
+    // one the store keeps.
+    auto repeated = tick_from(bound_source, first_uri);
+    auto latest = repeated;
+    latest.value = "1.0999";
+    const auto other = tick_from(bound_source, second_uri);
+
+    const auto outcomes = loop.handle_batch({repeated, latest, other});
+    REQUIRE(outcomes.size() == 3);
+    for (const auto& outcome : outcomes)
+        CHECK_FALSE(outcome.has_value());
+
+    market_observation_repository obs_repo;
+    const auto first_series = f.series_for(first_uri);
+    REQUIRE(first_series.size() == 1);
+    const auto first_rows = obs_repo.read_latest_for_series(f.h.context(), first_series.front().id);
+    REQUIRE(first_rows.size() == observation_dates(repeated.observation_time).size());
+    for (const auto& row : first_rows)
+        CHECK(row.value == "1.0999");
+
+    const auto second_series = f.series_for(second_uri);
+    REQUIRE(second_series.size() == 1);
+    CHECK(obs_repo.read_latest_for_series(f.h.context(), second_series.front().id).size() ==
+          observation_dates(other.observation_time).size());
+}
+
+TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    auto loop = std::make_unique<feed_ingest_loop>(f.nats, f.h.context());
+    loop->start();
+
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(bound_source);
+    std::atomic<bool> stop{false};
+    std::thread publisher([&] {
+        while (!stop.load()) {
+            f.nats.publish(
+                subject,
+                ores::nats::default_wire_codec().encode(tick_from(bound_source, quote_uri)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    // The loop goes while the publisher still sends. A callback that ran after the queue
+    // was gone would crash here.
+    loop.reset();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    stop.store(true);
+    publisher.join();
+    SUCCEED();
 }

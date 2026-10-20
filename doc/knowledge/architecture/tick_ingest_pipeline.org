@@ -11,8 +11,12 @@
 
 * Summary
 
-This note proposes an ingest pipeline for market ticks. It is a proposal. The
-code does not work this way today.
+This note proposes an ingest pipeline for market ticks. It is a proposal, and one part
+of it is built. Step 1 of the delivery steps is built: the ingest loop queues ticks, drops a tick older
+than 5 seconds, stores the rest in batches, republishes during a store outage, the observation table sends no notification, the feeds and the
+republish use core NATS, and the tick streams are gone. The lanes, the age gate, the
+recent window, the live subject with tokens, the policy table and the append-only
+table are not built.
 
 The pipeline puts freshness first. A tick that arrives late, while a newer tick
 waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
@@ -72,6 +76,7 @@ environments, a burst of 4,000 ticks) show the limit.
 | As built: synchronous commit on, one NOTIFY for each row | 143 |
 | Synchronous commit off for the marketdata role | 166 |
 | Synchronous commit off, and the NOTIFY function empty | 210 |
+| Step 1 built: batches, no notification, core NATS | about 2,260 |
 
 Three facts come from the samples.
 

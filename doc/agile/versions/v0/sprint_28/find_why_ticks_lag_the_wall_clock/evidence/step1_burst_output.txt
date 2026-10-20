@@ -1,0 +1,5 @@
+[step1] settled, probe rows before: 120576
+sent=4000 in 4.0s = 1000/s on synthetic.bloomberg.usdtry
+[step1] t=0s probe_rows=3220 of 30000
+[step1] t=10s probe_rows=15100 of 30000
+[step1] t=21s probe_rows=40000 of 30000

@@ -255,25 +255,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     try {
         auto admin = nats.make_admin();
-        // The unified tick scheme (synthetic.v1.ops.tick.<kind>.<source>) is fully covered
-        // by synthetic_ticks's filter; the retired synthetic_curve_ticks stream
-        // (curve_family subjects) is no longer ensured — a stale one on an
-        // already-running server is inert (no producers, no consumers).
-        admin.ensure_stream(
-            nats.make_stream_name("synthetic_ticks"),
-            nats.covering_subjects({ores::marketdata::domain::synthetic_tick_subject}));
-        // Sandboxed feeds (binding_mode::sandboxed, see feed_controller's
-        // producer_subject) publish under the sandbox base, not covered by
-        // synthetic_ticks's filter -- js_publish to a subject with no matching
-        // stream throws, so this needs its own stream.
-        admin.ensure_stream(
-            nats.make_stream_name("synthetic_sandbox_ticks"),
-            nats.covering_subjects({ores::marketdata::domain::synthetic_sandbox_tick_subject}));
+        // A tick is perishable and goes out on core NATS. The two streams that
+        // used to store every tick for seven days had no consumer, and each
+        // publish waited for their acknowledgement. A server that still holds them
+        // from an earlier run loses them here. The delete is idempotent.
+        admin.delete_stream(nats.make_stream_name("synthetic_ticks"));
+        admin.delete_stream(nats.make_stream_name("synthetic_sandbox_ticks"));
         // synthetic_steps is not ensured here. The service's own registrar
         // declares it, from the same table it subscribes, so the stream's
         // coverage and the consumer's filters cannot disagree.
-        BOOST_LOG_SEV(lg(), info)
-            << "JetStream streams ready: synthetic_ticks, synthetic_sandbox_ticks";
+        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: the tick streams are retired";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
         throw;

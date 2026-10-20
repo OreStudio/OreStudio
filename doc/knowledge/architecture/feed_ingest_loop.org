@@ -2,7 +2,7 @@
 :ID: 00D63182-C7FF-4AC9-8A83-9A5D984B2876
 :END:
 #+title: The ingest loop and the one pipeline
-#+description: How a tick is planned against its bindings, written once per enabled binding and republished per consumer, and where an if still stands in for a registered hook.
+#+description: How a tick is queued, planned against its bindings, written in a batch with one transaction for each tenant, and republished per consumer on core NATS, and where an if still stands in for a registered hook.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:feeds:ingest:pipeline:
@@ -43,9 +43,36 @@ that path and links here rather than restating this rule.
   =market_tick_subject=. It returns a =tick_drop= instead of a plan in three
   cases, which are =unbound_source=, =unnameable_datum= and =not_a_number=.
   The loop warns once per source or per URI and drops the tick.
-- For each target the loop persists the tick and then republishes it, so
-  the republish waits for the stored observation and the stream cannot
-  diverge from the table.
+- The subscription only decodes a tick and puts it in a bounded queue. A worker
+  thread takes every tick that has arrived and handles them as one batch. A full queue
+  drops its oldest tick, because an old tick that waits while a newer one arrives is
+  worse than a tick that is lost. A batch that grows as the worker falls behind shares
+  the cost of its write among more ticks.
+- A batch writes the rows of one tenant in one transaction, because the row-level
+  security policy checks the tenant of the connection. The loop keeps the last row of
+  each key in a batch, because two rows of one key in one transaction would break the
+  unique index of current rows. A batch that fails is split in two until the failing
+  row is alone, and the loop logs that row and goes on.
+- The worker drops a tick older than 5 seconds when it takes the tick from the queue, and
+  it counts the drop. A worker that has fallen behind reaches the newest ticks at once and
+  does not work through the old ones.
+- A batch takes about one second. The worker sizes the next batch from the speed of the
+  last one, between 50 and 20,000 ticks, so a slow store gets smaller batches and a tick
+  waits less inside a batch.
+- A tick that has aged past 5 seconds by the time its batch commits stays in the store as
+  history. The loop does not republish it, because the live stream carries no old tick.
+- After the commit the loop republishes each stored tick on core NATS, with no wait
+  for an acknowledgement. The republish follows the commit of the batch, so the stream
+  does not run ahead of the table.
+- A store that does not answer does not stop the live path. When a write fails, the loop
+  opens a fresh transaction to tell a store that is down from a row that the store
+  refuses. A store that is down is left alone for a wait that starts at one second and
+  doubles to thirty seconds, and the loop republishes the ticks that it could not store.
+  One write that succeeds ends the outage.
+- A shutdown stops the subscription first. The worker then works through the queued ticks
+  for two seconds and drops the rest, and it logs how many it dropped.
+- The loop keeps the id of each series after it reads the series once. The cache
+  clears on =refresh()= and when a row for a series fails to store.
 - Persistence creates the series on the first tick that lands in it.
   =make_feed_series= takes the identity and the classification from the
   datum and the =producer_kind= from the binding. Every later tick inserts
@@ -70,6 +97,13 @@ supply.
 - A bound consumer that never ticks still appears in the status log,
   because =refresh()= keeps a stats entry per bound consumer rather than
   creating one on the first tick.
+- The status log gives the lag of each source, which is the age of its newest stored
+  tick when its batch committed. It also gives the depth of the queue, the ticks that the
+  queue dropped, the ticks dropped for their age, the ticks republished without a store,
+  and the size and time of the last batch. A lag of 70
+  minutes shows there within the first status line.
+- The observation table sends no change notification. A tick changes many times each
+  second, and the live tick stream carries each new value.
 
 * See also
 

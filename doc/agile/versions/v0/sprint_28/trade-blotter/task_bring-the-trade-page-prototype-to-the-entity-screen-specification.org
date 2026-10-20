@@ -249,10 +249,24 @@ The prototypes drew several closed sets from memory. They now read from the seed
 Amounts show digit separators.
 
 Still open:
-- Instrument field names per table (rate, fx option, bond, composite) are not compared with the columns yet.
 - Books in the prototypes have a code and a purpose only. The table also holds parent portfolio, functional currency, status, regulatory type, ledger feed, sweepable, rates centre and sandbox.
-- Link types, long/short, option types and exercise types in the instrument forms are not compared yet.
+- Link types and the other instrument families (equity, commodity, credit, scripted) are not compared yet. They draw the generic card.
 - A change reason that requires commentary is not enforced by the screens.
+
+** Instrument fields compared with the tables, 2026-10-20
+
+The four instrument cards now follow the columns of their tables. Terms that the instrument table does not hold moved to the child table that holds them.
+
+| Instrument | Columns of the instrument table | Moved to a child table |
+|------------|---------------------------------|------------------------|
+| rate_instrument | start_date, maturity_date, description | Notional, rate, spread, index, day count, frequency: swap_leg, swap_leg_amount, swap_leg_rate |
+| fx_vanilla_option_instrument | option_type, bought and sold currency and amount, expiry_date, exercise_style, settlement, description | Strike: instrument_option_exercise_price. Premium: instrument_option_premium |
+| bond_instrument | issue_id, notional | Legs exist only for BondRepo, BondTRS and Ascot (bond_leg, with a leg role) |
+| composite_instrument | description | Leg: constituent trade and sequence. There is no weight and no aggregation |
+
+Removed from the cards: delivery date, strike on the option, long or short, payment calendar, yield convention, settlement days, coupon, face amount and the composite weight. None of them has a column. The option type, exercise style and settlement lists come from the seed files. The structure page reads the strike from the first exercise price row.
+
+Rate trades booked in the prototype take a default notional, because the notional now lives in the leg amounts.
 
 ** Trade entry folded into Book a trade and the structure page, 2026-10-20
 

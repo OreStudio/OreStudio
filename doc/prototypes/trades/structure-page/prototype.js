@@ -168,7 +168,9 @@ function legFacts(t) {
     const cards = t.table ? instrumentCards(t) : [];
     const card0 = cards.find(c => c.id === 'instrument');
     const get = key => { const fd = card0 && card0.fields && card0.fields.find(x => x.key === key); return fd ? String(fd.value) : ''; };
-    return { optionType: get('option_type'), strike: get('strike'), expiry: get('expiry_date'), type: t.type, product: t.product };
+    const px = cards.find(c => c.id === 'exercise_prices');
+    const strike = px && px.rows && px.rows[0] ? String(px.rows[0][2]) : '';
+    return { optionType: get('option_type'), strike, expiry: get('expiry_date'), type: t.type, product: t.product };
 }
 function legChecks(s, ms) {
     const out = [];

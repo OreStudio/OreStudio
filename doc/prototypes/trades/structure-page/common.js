@@ -222,8 +222,10 @@ const USED_TYPES = ['Swap', 'CrossCurrencySwap', 'Swaption', 'CapFloor', 'FxForw
     'CallableBond', 'EquityOption', 'EquityForward', 'CreditDefaultSwap', 'CompositeTrade'];
 const BOOK_FOR = { swap: 'EMEA-RATES', fx: 'EMEA-FX', credit: 'EMEA-CREDIT', bond: 'EMEA-CREDIT', equity: 'EMEA-EQ', composite: 'EMEA-RATES' };
 const CCYS = ['EUR', 'USD', 'GBP', 'CHF', 'JPY'];
-const DAY_COUNTS = ['30/360', 'ACT/360', 'ACT/365', 'ACT/ACT'];
 const CALENDARS = ['TARGET', 'GBLO', 'USNY'];
+const OPTION_TYPES = [['Call', 'The holder may buy the underlying'], ['Put', 'The holder may sell the underlying']];
+const EXERCISE_STYLES = [['European', 'Exercisable only at maturity'], ['Bermudan', 'Exercisable on a set of dates'], ['American', 'Exercisable at any time up to maturity']];
+const SETTLEMENT_TYPES = [['Physical', 'Settlement delivers the underlying'], ['Cash', 'Settlement pays the cash value']];
 const BOND_ISSUES = ['Acme 3.25 % 2031', 'Acme 2.10 % 2029'];
 
 function buildTrades() {
@@ -308,59 +310,61 @@ function instrumentCards(t) {
             return [{
                 id: 'instrument', title: 'Interest rate instrument', table: 'rate_instrument', version: t.ver,
                 fields: [
-                    f('notional', 'Notional', t.notional, { ...E, type: 'money' }), f('currency', 'Currency', t.ccy, { ...E, type: 'ccy' }),
-                    f('effective_date', 'Effective date', d, { ...E, type: 'date' }), f('maturity_date', 'Maturity date', '2031-09-14', { ...E, type: 'date' }),
-                    f('fixed_rate', 'Fixed rate', '2.8500', { ...E, type: 'decimal', unit: '%' }), f('floating_index', 'Floating index', 'EUR-EURIBOR-6M', { ...E }),
-                    f('spread', 'Spread', '0.0000', { ...E, type: 'decimal', unit: '%' }), f('day_count', 'Day count', '30/360', { ...E, options: DAY_COUNTS }),
-                    f('payment_calendar', 'Payment calendar', 'TARGET', { ...E, type: 'calendar', options: CALENDARS }), f('pay_receive', 'Fixed leg', 'Pay', { ...E, options: ['Pay', 'Receive'] }),
+                    f('start_date', 'Start date', d, { ...E, type: 'date' }), f('maturity_date', 'Maturity date', '2031-09-14', { ...E, type: 'date' }),
                     f('description', 'Internal description', 'Five year receiver, hedges the Q3 bond issue', { optional: true })
                 ]
             }, {
                 id: 'legs', title: 'Legs', table: 'swap_leg', version: t.ver, child: true,
-                ...rows(['Leg', 'Type', 'Notional', 'Rate / index', 'Frequency'], [
-                    ['1', 'Fixed', moneyRef(t.notional, t.ccy), '2.8500 %', 'Annual'],
-                    ['2', 'Floating', moneyRef(t.notional, t.ccy), 'EUR-EURIBOR-6M + 0.00 %', 'Semi-annual']]), economic: true
+                ...rows(['Leg', 'Payer', 'Leg type', 'Currency', 'Day count', 'Business day convention', 'Frequency', 'Floating index'], [
+                    ['1', 'Yes', 'Fixed', ccyRef(t.ccy), '30/360', 'ModifiedFollowing', 'Annual', ''],
+                    ['2', 'No', 'Floating', ccyRef(t.ccy), 'A360', 'ModifiedFollowing', 'Semiannual', 'EUR-EURIBOR-6M']]), economic: true
+            }, {
+                id: 'leg_amounts', title: 'Leg amounts', table: 'swap_leg_amount', version: t.ver, child: true,
+                ...rows(['Leg', 'Sequence', 'Start date', 'Amount'], [['1', '1', d, money(t.notional)], ['2', '1', d, money(t.notional)]]), economic: true
+            }, {
+                id: 'leg_rates', title: 'Leg rates', table: 'swap_leg_rate', version: t.ver, child: true,
+                ...rows(['Leg', 'Rate role', 'Sequence', 'Start date', 'Value'], [['1', 'fixed', '1', d, '0.028500'], ['2', 'spread', '1', d, '0.000000']]), economic: true
             }];
         case 'fx_vanilla_option_instrument': {
             const ol = OPTION_LEGS[t.code] || { type: 'Call', strike: '1.0842' };
             return [{
                 id: 'instrument', title: 'FX vanilla option', table: 'fx_vanilla_option_instrument', version: t.ver,
                 fields: [
-                    f('option_type', 'Option type', ol.type, { ...E, options: ['Call', 'Put'] }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
+                    f('option_type', 'Option type', ol.type, { ...E, options: OPTION_TYPES.map(x => x[0]) }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
                     f('bought_amount', 'Bought amount', t.notional, { ...E, type: 'money' }), f('sold_currency', 'Sold currency', 'USD', { ...E, type: 'ccy' }),
-                    f('sold_amount', 'Sold amount', t.notional * 1.0842, { ...E, type: 'money' }), f('strike', 'Strike', ol.strike, { ...E, type: 'decimal' }),
-                    f('expiry_date', 'Expiry date', '2027-01-15', { ...E, type: 'date' }), f('delivery_date', 'Delivery date', '2027-01-19', { ...E, type: 'date' }),
-                    f('exercise_style', 'Exercise style', 'European', { ...E, options: ['European', 'American', 'Bermudan'] }), f('description', 'Internal description', 'Client hedge', { optional: true })
+                    f('sold_amount', 'Sold amount', t.notional * 1.0842, { ...E, type: 'money' }),
+                    f('expiry_date', 'Expiry date', '2027-01-15', { ...E, type: 'date' }),
+                    f('exercise_style', 'Exercise style', 'European', { ...E, options: EXERCISE_STYLES.map(x => x[0]) }),
+                    f('settlement', 'Settlement', 'Cash', { ...E, options: SETTLEMENT_TYPES.map(x => x[0]), optional: true }),
+                    f('description', 'Internal description', 'Client hedge', { optional: true })
                 ]
             }, {
-                id: 'premium', title: 'Premium', table: 'fx_option_premium', version: 1, child: true,
-                ...rows(['Currency', 'Amount', 'Payment date'], [[ccyRef('USD'), money(112500), '2026-10-10']]), economic: true
+                id: 'premium', title: 'Premium', table: 'instrument_option_premium', version: 1, child: true,
+                ...rows(['Sequence', 'Amount', 'Currency', 'Pay date'], [['1', money(112500), ccyRef('USD'), '2026-10-10']]), economic: true
             }, {
-                id: 'exercise_prices', title: 'Exercise prices', table: 'option_exercise_price', version: 1, child: true,
-                ...rows(['Exercise date', 'Strike'], [['2027-01-15', ol.strike]]), economic: true, digestGap: !DIGEST_FIXED
+                id: 'exercise_prices', title: 'Exercise prices', table: 'instrument_option_exercise_price', version: 1, child: true,
+                ...rows(['Sequence', 'Exercise date', 'Price'], [['1', '2027-01-15', ol.strike]]), economic: true, digestGap: !DIGEST_FIXED
             }];
         }
-        case 'bond_instrument':
+        case 'bond_instrument': {
+            const role = { BondRepo: 'repo', BondTRS: 'trs_funding', Ascot: 'ascot_swap' }[t.type];
             return [{
                 id: 'instrument', title: 'Bond', table: 'bond_instrument', version: t.ver,
                 fields: [
-                    f('issue', 'Bond issue', 'Acme 3.25 % 2031', { ref: 'bond_issue', options: BOND_ISSUES }), f('face_amount', 'Face amount', t.notional, { ...E, type: 'money' }),
-                    f('currency', 'Currency', t.ccy, { ...E, type: 'ccy' }), f('coupon', 'Coupon', '3.2500', { ...E, type: 'decimal', unit: '%' }),
-                    f('maturity_date', 'Maturity date', '2031-08-02', { ...E, type: 'date' }), f('settlement_days', 'Settlement days', '2', { ...E }),
-                    f('day_count', 'Day count', 'ACT/ACT', { ...E, options: DAY_COUNTS }), f('yield_convention', 'Yield convention', 'Street', { ...E, options: ['Street', 'ISMA', 'Japanese'] }),
-                    f('description', 'Internal description', t.type === 'BondRepo' ? 'Overnight repo against the Acme 2031' : 'Held to maturity', { optional: true })
+                    f('issue', 'Bond issue', 'Acme 3.25 % 2031', { ref: 'bond_issue', options: BOND_ISSUES }), f('notional', 'Notional', t.notional, { ...E, type: 'money', optional: true })
                 ]
-            }, {
+            }].concat(role ? [{
                 id: 'legs', title: 'Legs', table: 'bond_leg', version: t.ver, child: true,
-                ...rows(['Leg', 'Type', 'Notional', 'Rate', 'Frequency'], [['1', 'Fixed', moneyRef(t.notional, t.ccy), '3.2500 %', 'Annual']]), economic: true
-            }];
+                ...rows(['Leg role', 'Leg', 'Payer', 'Leg type', 'Currency', 'Day counter'], [[role, '1', 'No', 'Fixed', ccyRef(t.ccy), 'A360']]), economic: true
+            }] : []);
+        }
         case 'composite_instrument':
             return [{
                 id: 'instrument', title: 'Composite trade', table: 'composite_instrument', version: t.ver,
-                fields: [f('aggregation', 'Notional aggregation', 'Sum'), f('description', 'Internal description', 'Receiver swap and cap as one package', { optional: true })]
+                fields: [f('description', 'Internal description', 'Receiver swap and cap as one package', { optional: true })]
             }, {
                 id: 'composite_legs', title: 'Legs', table: 'composite_leg', version: t.ver, child: true,
-                ...rows(['Leg', 'Trade', 'Weight'], [['1', tradeLink('ACME-100201', 'ACME-100201 Interest rate swap'), '1.00'], ['2', tradeLink('ACME-100210', 'ACME-100210 Cap or floor'), '1.00']]),
+                ...rows(['Leg sequence', 'Constituent trade'], [['1', tradeLink('ACME-100201', 'ACME-100201')], ['2', tradeLink('ACME-100210', 'ACME-100210')]]),
                 economic: true, digestGap: !DIGEST_FIXED
             }];
         default:

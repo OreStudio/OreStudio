@@ -26,11 +26,11 @@ Name the cost inside read_rate_instrument and the leg append, remove what is avo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | The decimal round trip is removed. The leg record is left as it is, with the reason in the Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-20                               |
 
 * Acceptance
@@ -40,6 +40,10 @@ Name the cost inside read_rate_instrument and the leg append, remove what is avo
 - The affected tests pass and the instruction counts are recorded
 
 * Plan
+
+Read the callees of =read_rate_instrument= in the callgrind tree. Remove the
+largest avoidable cost. Then size the leg record and decide whether the leg
+append is worth a change.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -57,9 +61,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Instructions of the import test before | 1,646,496,411 | =valgrind --tool=callgrind ores.ore.core.tests import_portfolio_all_ore_example_files_can_be_parsed=, run from the repository root | f4f57e27ce |
+| Instructions of the import test after | 1,558,630,477 (-5.3 percent) | same | 3e8f457d54 plus the working tree of the change |
+| =read_rate_instrument=, 2,668 calls, before | 157,286,395 | =callgrind_annotate --tree=calling --inclusive=yes= | f4f57e27ce |
+| =read_rate_instrument=, after | 76,872,989 | same | same as after |
+| =record_reader::own_text= under =append_legs=, 8,431 calls, before | 57,284,062 (6,800 per call) | same | f4f57e27ce |
+| =append_legs=, after | 44,376,073 (was 116,769,396) | same | same as after |
+| Size of =leg_data= | 8,784 bytes | =static_assert(sizeof(leg_data)==0)= compile error | 3e8f457d54 |
+| =append_to= for =leg_data=, 3,622 calls | 48,050,849 (3.1 percent of the test), of which 31,880,844 is the zero fill | =callgrind_annotate= | same as after |
 
 * Notes
+
+- Cause: a leg amount is a decimal field. =own_text()= formatted it as a string
+  with =to_string()=, and the caller parsed it back with =from_string()=. The
+  two are inverses, so the value did not change, but the format cost 6,800
+  instructions per call. The new =record_reader::own_decimal()= copies a
+  decimal field and parses a text field. Five projections had the same helper.
+  They all use =own_decimal()= now.
+- The leg record is not changed. =leg_data= is 8,784 bytes, and its zero fill is
+  2.0 percent of the test. Its large members are the leg kinds. They come from the
+  =legDataType= substitution group in the schema, not from an =xs:choice=. The
+  column rule of the generator takes only =xs:choice= children, so a column for
+  the leg kinds needs a new rule for substitution members. That is a larger
+  change than the saving justifies. A =reserve= would save about 16 million
+  instructions of the vector growth, which is 1 percent.
+- If the leg zero fill matters later, extend =column_members= in
+  =generate_xml_bindings.py= to substitution members. Leg kinds are 19.
 
 * Test Scenarios
 
@@ -85,3 +112,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The decimal round trip cost 6,800 instructions per leg amount. It is removed.
+=read_rate_instrument= falls from 157 to 77 million instructions, and the import
+test falls by 5.3 percent to 1,558,630,477. The leg record is left as it is.
+The ore core tests pass (378 cases, 475,410 assertions) and the benchmark gate
+passes.

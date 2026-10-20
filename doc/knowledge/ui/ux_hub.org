@@ -67,6 +67,12 @@ the process edited as one set with its engine and previews, saving with a
 reason and a restart, the ticks, and the quant help. It applies to every asset
 class. Where it and the record standard disagree, this page rules for a feed.
 
+** How to check a screen
+
+[[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — one line per rule of
+the pages above, to tick off when a screen is built or reviewed. It adds no rule.
+Each line names the section that states it.
+
 ** What the screens are for
 
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each

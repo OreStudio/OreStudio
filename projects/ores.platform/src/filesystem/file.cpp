@@ -23,12 +23,31 @@
 #include <boost/throw_exception.hpp>
 #include <filesystem>
 #include <fstream>
+#include <ios>
+#include <iterator>
 #include <string>
 
 namespace ores::platform::filesystem {
 
 std::string file::read_content(std::istream& s) {
     s.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+    // A seekable stream states its size, so one bulk read replaces a copy of
+    // every character through the iterator. The buffer is used directly because
+    // a failed seek on the stream would set its failbit and throw.
+    auto* buffer = s.rdbuf();
+    const auto start = buffer->pubseekoff(0, std::ios_base::cur, std::ios_base::in);
+    if (start != std::streampos(-1)) {
+        const auto end = buffer->pubseekoff(0, std::ios_base::end, std::ios_base::in);
+        buffer->pubseekpos(start, std::ios_base::in);
+        if (end != std::streampos(-1) && end >= start) {
+            std::string r(static_cast<std::size_t>(end - start), '\0');
+            const auto got = buffer->sgetn(r.data(), static_cast<std::streamsize>(r.size()));
+            r.resize(static_cast<std::size_t>(got));
+            return r;
+        }
+    }
+
     std::string r((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
     return r;
 }

@@ -63,7 +63,6 @@ set(files
     "xml_roundtrip_reference_tests.cpp"
     "xml_roundtrip_values_tests.cpp"
     "xml_scanner_tests.cpp"
-    "xml_stable_arena_tests.cpp"
     "xml_todays_market_projection_tests.cpp"
     "xml_trade_import_tests.cpp"
 )

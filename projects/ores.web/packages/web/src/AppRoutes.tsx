@@ -101,6 +101,9 @@ import { BindingsPage } from './marketdata/bindings/BindingsPage.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
+import { ReportPage } from './reporting/ReportPage.js';
+import { ReportingPage } from './reporting/ReportingPage.js';
+import { ReportsPage } from './reporting/ReportsPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -673,6 +676,50 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PartyPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            {/*
+             * Reporting, the area and its screens: the area page draws the
+             * cards of the area, the list is the reports the session's parties
+             * run, and the third route is one definition's page, named by its
+             * id because its name is shared across parties. Each screen sits
+             * under the address of its area. The list and the page are tables,
+             * so they take the width.
+             */}
+            <Route
+                path={PATHS.reporting}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.reports}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.reports}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportPage />
                     ),
                     'workspace',
                 )}

@@ -18,15 +18,9 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
-#include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
-#include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
-#include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -36,12 +30,10 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
 #include <boost/log/sources/severity_feature.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -55,95 +47,6 @@ namespace {
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[service][database]");
-
-/**
- * @brief A party of this test's own, with the session scoped to it.
- */
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& gen) {
-    using ores::refdata::repository::party_repository;
-    party_repository parties;
-    auto party = ores::refdata::generators::generate_synthetic_party(gen);
-    party.change_reason_code = "system.test";
-    for (const auto& existing : parties.read_latest(h.context())) {
-        if (existing.tenant_id == party.tenant_id) {
-            party.parent_party_id = existing.id;
-            break;
-        }
-    }
-    parties.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
-
-/**
- * @brief The id of each state of the report instance lifecycle, by name.
- *
- * The states are seed data, so the test asks the store which ones exist rather
- * than naming an id: the machine is the catalogue and the test reads it. The
- * states are the system tenant's reference data, so they are read under that
- * tenant, as the read under test reads them.
- */
-std::map<std::string, boost::uuids::uuid> lifecycle_states(const ores::database::context& ctx,
-                                                           ores::logging::logger_t& lg) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
-        ctx,
-        "SELECT s.name, s.id::text"
-        " FROM ores_dq_fsm_states_tbl s"
-        " JOIN ores_dq_fsm_machines_tbl m ON m.id = s.machine_id"
-        " WHERE m.name = 'report_instance_lifecycle'"
-        "   AND s.valid_to = ores_utility_infinity_timestamp_fn()"
-        "   AND m.valid_to = ores_utility_infinity_timestamp_fn()",
-        {},
-        lg,
-        "Reading the report instance lifecycle states");
-
-    std::map<std::string, boost::uuids::uuid> states;
-    for (const auto& row : rows) {
-        if (row.size() >= 2 && row[0] && row[1])
-            states.emplace(*row[0], boost::uuids::string_generator()(*row[1]));
-    }
-    return states;
-}
-
-/**
- * @brief Stores a run in the given state, which the lifecycle must admit as an
- * initial one, and answers its id.
- *
- * The store validates every transition, so a run that starts in a later state is
- * refused; a test that needs one walks the run to it.
- */
-boost::uuids::uuid write_run_in_state(const ores::database::context& party_ctx,
-                                      const std::string& db_user,
-                                      ores::utility::generation::generation_context& gen,
-                                      const boost::uuids::uuid& state_id) {
-    auto instance = ores::reporting::generators::generate_synthetic_report_instance(gen);
-    instance.party_id = *party_ctx.party_id();
-    instance.fsm_state_id = state_id;
-
-    ores::reporting::repository::report_instance_kind_repository kinds;
-    const auto catalogue =
-        kinds.read_latest(party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), db_user));
-    REQUIRE_FALSE(catalogue.empty());
-    instance.kind = catalogue.front().code;
-    instance.change_reason_code = "system.test";
-    instance.trigger_id = ores::reporting::tests::write_trigger_for(party_ctx, gen, instance).id;
-
-    ores::reporting::repository::report_instance_repository().write(party_ctx, instance);
-    return instance.id;
-}
-
-/**
- * @brief Moves a run to a state the lifecycle allows it to reach.
- */
-void move_to(ores::reporting::service::report_instance_service& service,
-             const boost::uuids::uuid& instance_id,
-             const boost::uuids::uuid& state_id) {
-    auto instance = service.get_instance(instance_id);
-    REQUIRE(instance.has_value());
-    instance->fsm_state_id = state_id;
-    service.save_instance(*instance);
-}
 
 std::string word_of(const ores::reporting::messaging::get_report_instance_health_response& response,
                     const boost::uuids::uuid& instance_id) {
@@ -173,8 +76,8 @@ TEST_CASE("each lifecycle state reads as the health word the screen draws", tags
 
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
-    const auto states = lifecycle_states(
+    const auto ctx = ores::reporting::tests::write_party_and_scope_context(h, gen);
+    const auto states = ores::reporting::tests::lifecycle_states(
         ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()), lg);
 
     // Every state the machine seeds is answered here, including the two with no
@@ -226,9 +129,10 @@ TEST_CASE("each lifecycle state reads as the health word the screen draws", tags
     std::map<std::string, boost::uuids::uuid> run_of;
     for (const auto& entry : expected) {
         const auto& path = paths.at(entry.key);
-        const auto id = write_run_in_state(ctx, h.db_user(), gen, states.at(path.front()));
+        const auto id = ores::reporting::tests::write_run_in_state(
+            ctx, h.db_user(), gen, states.at(path.front()));
         for (std::size_t step = 1; step < path.size(); ++step)
-            move_to(service, id, states.at(path[step]));
+            ores::reporting::tests::move_to(service, id, states.at(path[step]));
 
         instance_ids.push_back(id);
         run_of.emplace(entry.key, id);

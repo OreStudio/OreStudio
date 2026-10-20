@@ -205,6 +205,15 @@ public:
     messaging::get_report_instance_health_response
     get_report_instance_health(const messaging::get_report_instance_health_request& request);
 
+    /**
+     * @brief How many definitions sit at each health word.
+     *
+     * The definitions counted are the ones the list of definitions would read
+     * for the same party and search.
+     */
+    messaging::count_report_definitions_by_health_response count_report_definitions_by_health(
+        const messaging::count_report_definitions_by_health_request& request);
+
 private:
     context ctx_;
     repository::report_instance_repository repo_;

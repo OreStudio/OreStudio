@@ -214,6 +214,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
         case field_kind::nested:
         case field_kind::repeated_nested:
         case field_kind::indexed_nested:
+        case field_kind::column_nested:
             error = "a row describing a nested element reached the value writer";
             return false;
         case field_kind::residual:
@@ -304,6 +305,8 @@ auto binder::bind(const document_type& doc,
         /// into runs and the runs are one value, so they are joined here and
         /// stored once when the element closes.
         std::string text;
+        /// The columns struct of the record, when its type has columns.
+        std::byte* columns = nullptr;
     };
 
     std::array<frame, max_depth> stack{};
@@ -321,6 +324,11 @@ auto binder::bind(const document_type& doc,
 
     auto fail = [&input](std::string message) -> std::expected<void, bind_error> {
         return std::unexpected(bind_error{std::move(message), input.line(), input.column()});
+    };
+
+    // Where the record a member holds keeps its columns, or null.
+    auto columns_for = [](const frame& holder, const field& f) -> std::byte* {
+        return f.columns_offset == no_arena ? nullptr : holder.record + f.columns_offset;
     };
 
     for (;;) {
@@ -388,7 +396,32 @@ auto binder::bind(const document_type& doc,
                     // A nested member is a value inside its parent, so it is
                     // already constructed and is destroyed with the parent.
                     mark_present(top.record, *f);
-                    stack[depth++] = {f->type, slot, nullptr, {}};
+                    stack[depth++] = {f->type, slot, nullptr, {}, columns_for(top, *f)};
+                    continue;
+                }
+                if (f->kind == field_kind::column_nested) {
+                    // The row holds one alternative of a choice: its presence
+                    // bit says which, and its index says where the alternative
+                    // sits in the column its holder owns.
+                    if (top.columns == nullptr || f->repeated == nullptr)
+                        return fail("an alternative of '" + std::string(top.type->name) +
+                                    "' names no column");
+                    for (std::uint8_t i = 0; i < top.type->field_count; ++i) {
+                        const auto& other = top.type->fields[i];
+                        if (other.kind == field_kind::column_nested &&
+                            bit_is_set(top.record, other))
+                            return fail("element '" + std::string(ev.name) +
+                                        "' follows another alternative of '" +
+                                        std::string(top.type->name) + "', which holds one");
+                    }
+                    auto* rows = top.columns + f->arena_offset;
+                    const auto index = static_cast<std::uint32_t>(f->repeated->count(rows));
+                    void* child = nullptr;
+                    f->repeated->append(rows, &child);
+                    *reinterpret_cast<std::uint32_t*>(slot) = index;
+                    mark_present(top.record, *f);
+                    stack[depth++] = {
+                        f->type, static_cast<std::byte*>(child), nullptr, {}, nullptr};
                     continue;
                 }
                 if (f->kind == field_kind::indexed_nested) {
@@ -412,7 +445,7 @@ auto binder::bind(const document_type& doc,
                     indices->push_back(index);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record, nullptr, {}};
+                    stack[depth++] = {f->type, record, nullptr, {}, columns_for(top, *f)};
                     continue;
                 }
                 if (f->kind == field_kind::repeated_nested) {
@@ -420,7 +453,7 @@ auto binder::bind(const document_type& doc,
                     f->repeated->append(slot, &child);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record, nullptr, {}};
+                    stack[depth++] = {f->type, record, nullptr, {}, columns_for(top, *f)};
                     continue;
                 }
                 // The bit means "this element appeared", not "it carried

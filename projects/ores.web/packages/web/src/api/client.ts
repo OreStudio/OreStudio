@@ -152,6 +152,14 @@ import {
     type WorkflowProgress,
     type WireTimestamp,
     wireTimestampSchema,
+    reportDetailSchema,
+    reportHealthTallySchema,
+    reportNameChoicesSchema,
+    reportsPageSchema,
+    type ReportDetail,
+    type ReportHealthTally,
+    type ReportNameChoice,
+    type ReportsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
 
@@ -410,6 +418,33 @@ function selectionBody(selection: FeedSelection): Record<string, unknown> {
         excludedIds: selection.excludedIds ?? [],
     };
 }
+
+/** The definition fields the edit form offers, and so the only ones a save may change. */
+export interface ReportEdit {
+    readonly description: string;
+    readonly report_type: string;
+    readonly concurrency_policy: string;
+    readonly schedule_expression: string;
+    readonly is_official: boolean;
+    readonly pre_processing: string;
+    readonly prepared_input_key: string;
+    readonly post_processing: string;
+}
+
+/**
+ * What an address for a report definition opens.
+ *
+ * An address names one definition by its id, or by the name an older link
+ * saved. A name that several definitions carry does not open a record: it opens
+ * the choice between them, which is a page rather than a failure.
+ */
+export type ReportOpen =
+    | { readonly kind: 'record'; readonly detail: ReportDetail }
+    | {
+          readonly kind: 'choice';
+          readonly name: string;
+          readonly choices: readonly ReportNameChoice[];
+      };
 
 export const api = {
     /**
@@ -1182,6 +1217,135 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify(input),
         });
+    },
+
+    /**
+     * One page of the reports the parties the person works in run.
+     *
+     * The BFF composes each definition with its latest run, the health of that
+     * run, its problem counts and its next fire, so a row arrives ready to draw.
+     * A read that failed leaves its own cells empty and is named in `unread`,
+     * which is why a row can be partial and still be a row. The page goes to the
+     * server, so the count is the server's total and not the length of a page.
+     */
+    async reports(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly sort: string;
+        readonly descending: boolean;
+        /** The party the list is narrowed to, or null for every party in scope. */
+        readonly partyId: string | null;
+        /** The text the name and the description are searched for, or empty for none. */
+        readonly search: string;
+    }): Promise<ReportsPage> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            sort: page.sort,
+            descending: page.descending ? 'true' : 'false',
+        });
+        if (page.partyId !== null) {
+            query.set('party_id', page.partyId);
+        }
+        if (page.search !== '') {
+            query.set('search', page.search);
+        }
+        return reportsPageSchema.parse(
+            await request(`/api/reporting/reports?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * How many of the reports the list would show sit at each health word.
+     *
+     * The server counts, narrowed by the same party and search as the list, so
+     * the words add up to the list's own total.
+     */
+    async reportHealth(narrow: {
+        readonly partyId: string | null;
+        readonly search: string;
+    }): Promise<ReportHealthTally> {
+        const query = new URLSearchParams();
+        if (narrow.partyId !== null) {
+            query.set('party_id', narrow.partyId);
+        }
+        if (narrow.search !== '') {
+            query.set('search', narrow.search);
+        }
+        return reportHealthTallySchema.parse(
+            await request(`/api/reporting/report-health?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /** The codes a report type and a concurrency policy may take. */
+    async reportChoices(): Promise<{
+        readonly reportTypes: readonly string[];
+        readonly concurrencyPolicies: readonly string[];
+    }> {
+        return z
+            .object({
+                reportTypes: z.array(z.string()),
+                concurrencyPolicies: z.array(z.string()),
+            })
+            .parse(await request('/api/reporting/choices', { method: 'GET' }));
+    },
+
+    /**
+     * One definition's page, by whatever the address segment is.
+     *
+     * An id opens that definition. A name is what an older link saved, and the
+     * server resolves it: one definition of the parties in scope answers with
+     * the record, and several answer with the choices, because a name is only
+     * unique within a party. The shared error contract cannot state the choices,
+     * so the refusal's own body is read before any other failure is raised.
+     */
+    async report(segment: string): Promise<ReportOpen> {
+        try {
+            const detail = reportDetailSchema.parse(
+                await request(`/api/reporting/reports/${encodeURIComponent(segment)}`, {
+                    method: 'GET',
+                }),
+            );
+            return { kind: 'record', detail };
+        } catch (error) {
+            if (error instanceof ApiFailure && error.status === 409) {
+                const shared = reportNameChoicesSchema.safeParse(error.payload);
+                if (shared.success) {
+                    return { kind: 'choice', name: segment, choices: shared.data.choices };
+                }
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Writes the fields the edit form offers, and nothing else.
+     *
+     * The BFF rebuilds the record from the read it makes at write time, so a
+     * field the screen does not show keeps its stored value whatever is sent.
+     * The version is the one the form was filled from: a record somebody else
+     * changed in between is a conflict rather than a silent overwrite.
+     */
+    async saveReport(
+        id: string,
+        edit: {
+            readonly version: number;
+            readonly change: ReportEdit;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<ReportDetail> {
+        return reportDetailSchema.parse(
+            await request(`/api/reporting/reports/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    version: edit.version,
+                    change: edit.change,
+                    intent: { reason_code: edit.reasonCode, commentary: edit.commentary },
+                }),
+            }),
+        );
     },
 
     /** The synthetic resources, with what each searches and sorts and the permissions each needs. */

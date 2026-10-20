@@ -244,6 +244,44 @@ export interface GetReportInstanceHealthResponse {
     health: ReportInstanceHealth[];
 }
 
+export interface ReportHealthCount {
+    /**
+     * @brief One of =failed=, =completed with errors=, =running=, =never run=
+     * or =completed clean=, or empty for the definitions whose latest run is in
+     * a state that has no word yet.
+     */
+    health: string;
+    /** @brief How many of the counted definitions have this word. */
+    count: number;
+}
+
+/**
+ * @brief Counts the definitions at each health word.
+ *
+ * The request names the same party and search the list of definitions is
+ * narrowed by, and the definitions counted are the ones that list would read.
+ * It names no tenant: the session scopes the answer through the row-level
+ * security on the tables.
+ */
+export interface CountReportDefinitionsByHealthRequest {
+    /** @brief Counts only the definitions of this party, or every party in scope when absent. */
+    party_id: string | null;
+    /** @brief Counts only the definitions whose name or description holds this text. */
+    search: string | null;
+}
+
+export interface CountReportDefinitionsByHealthResponse {
+    result: Result;
+    /**
+     * @brief One entry per word, in the order failed, completed with errors,
+     * running, never run, completed clean, then the entry with no word. A word
+     * no definition holds is stated with a count of zero.
+     */
+    counts: ReportHealthCount[];
+    /** @brief How many definitions were counted, which is the sum of the counts. */
+    total: number;
+}
+
 export const subjects = {
     list_report_instances_request: 'reporting.v1.report_instances.list',
     get_report_instance_request: 'reporting.v1.report_instances.get',
@@ -257,6 +295,8 @@ export const subjects = {
     get_latest_report_instances_by_definition_request:
         'reporting.v1.ops.get_latest_report_instances_by_definition',
     get_report_instance_health_request: 'reporting.v1.ops.get_report_instance_health',
+    count_report_definitions_by_health_request:
+        'reporting.v1.ops.count_report_definitions_by_health',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -275,6 +315,7 @@ export const requiresSession = {
     get_report_instance_version_request: true,
     get_latest_report_instances_by_definition_request: true,
     get_report_instance_health_request: true,
+    count_report_definitions_by_health_request: true,
 } as const;
 
 /**

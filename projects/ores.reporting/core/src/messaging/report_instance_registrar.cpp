@@ -94,6 +94,10 @@ register_report_instance_handlers(ores::nats::service::client& nats,
         get_report_instance_health_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_report_instance_health(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_report_definitions_by_health_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->count_report_definitions_by_health(std::move(msg)); }));
     return subs;
 }
 

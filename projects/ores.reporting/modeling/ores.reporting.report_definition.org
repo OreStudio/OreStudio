@@ -56,6 +56,8 @@ UUID uniquely identifying this report definition.
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable:    true
+:searchable:  true
 :END:
 
 Unique name for the report definition within a party.
@@ -81,9 +83,10 @@ ctx.generate_uuid()
 
 ** description
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:searchable: true
 :END:
 
 Human-readable description of the report.
@@ -97,6 +100,7 @@ std::string(faker::lorem::sentence())
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Report type code (FK to ores_reporting_report_types_tbl).
@@ -123,6 +127,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Validated cron expression driving report recurrence.

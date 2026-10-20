@@ -98,6 +98,8 @@ export interface ListPage<Row> {
     readonly rows: readonly Row[];
     readonly total: number;
     readonly notes?: readonly ListNote[];
+    /** What the page says about all the rows its filters match, drawn above the table. */
+    readonly summary?: ReactNode;
 }
 
 /** A sentence above the table, such as how many rows a filter hides, or why the list is read only. */
@@ -549,6 +551,9 @@ export function RecordTable<Row>({
                     <Notice tone={note.tone}>{note.text}</Notice>
                 </div>
             ))}
+            {data?.summary !== undefined && (
+                <div className="border-b border-line p-3">{data.summary}</div>
+            )}
             {rows.isError && (
                 <div className="p-3">
                     <Notice tone="error">

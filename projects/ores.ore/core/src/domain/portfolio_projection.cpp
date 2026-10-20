@@ -205,8 +205,7 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
             continue;
         }
 
-        doc.trade.emplace_back();
-        xml::record_writer trade(*trade_type, &doc.trade.back());
+        auto trade = root.append("Trade");
         trade.set_spelling("TradeType", item.anchor.trade_type, "trade type");
         if (!item.ore_id.empty())
             trade.set_text("id", item.ore_id);

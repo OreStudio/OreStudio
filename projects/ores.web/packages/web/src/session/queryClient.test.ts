@@ -21,6 +21,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { current, dismissAll } from '../api/errors.js';
+import { ApiFailure } from '../api/transport.js';
 import { createQueryClient } from './SessionProvider.js';
 
 /**
@@ -46,6 +47,41 @@ describe('the query client the application builds', () => {
         ).rejects.toThrow('the roster did not load');
 
         expect(current().map((entry) => entry.message)).toEqual(['the roster did not load']);
+    });
+
+    it('tries a read the server refused once, and says so once', async () => {
+        const client = createQueryClient();
+        const refusal = new ApiFailure(404, {
+            code: 'not-found',
+            message: 'There is no such record, or you may not see it.',
+        });
+        let attempts = 0;
+
+        await expect(
+            client.fetchQuery({
+                queryKey: ['one record'],
+                queryFn: async () => {
+                    attempts += 1;
+                    throw refusal;
+                },
+            }),
+        ).rejects.toThrow('There is no such record');
+
+        // A 4xx is an answer, not a fault that may pass on a second try.
+        expect(attempts).toBe(1);
+        expect(current()).toHaveLength(1);
+    });
+
+    it('still tries a server fault again, because it may pass', async () => {
+        const retry = createQueryClient().getDefaultOptions().queries?.retry;
+        const fault = new ApiFailure(502, {
+            code: 'upstream-unavailable',
+            message: 'The server refused the request.',
+        });
+
+        expect(typeof retry).toBe('function');
+        expect(typeof retry === 'function' ? retry(0, fault) : false).toBe(true);
+        expect(typeof retry === 'function' ? retry(2, fault) : false).toBe(false);
     });
 
     it('never reads again because the window gained focus or the network came back', () => {

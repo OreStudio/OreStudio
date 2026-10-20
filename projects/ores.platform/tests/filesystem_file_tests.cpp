@@ -28,6 +28,9 @@
 #include <fstream>
 #include <list>
 #include <sstream>
+#include <streambuf>
+#include <string>
+#include <utility>
 
 using ores::platform::filesystem::file;
 using ores::platform::filesystem::file_not_found;
@@ -98,6 +101,37 @@ TEST_CASE("read_content_from_istream", tags) {
     std::string content = file::read_content(iss);
 
     CHECK(content == expected_content);
+}
+
+TEST_CASE("read_content_from_istream_starts_at_the_current_position", tags) {
+    std::istringstream iss("header\nbody");
+    std::string header;
+    std::getline(iss, header);
+
+    CHECK(file::read_content(iss) == "body");
+}
+
+TEST_CASE("read_content_from_a_stream_that_cannot_seek", tags) {
+    // A buffer that hands out one character at a time and refuses to seek.
+    struct forward_only : std::streambuf {
+        explicit forward_only(std::string text)
+            : text_(std::move(text)) {}
+        int_type underflow() override {
+            if (at_ == text_.size())
+                return traits_type::eof();
+            current_ = text_[at_++];
+            setg(&current_, &current_, &current_ + 1);
+            return traits_type::to_int_type(current_);
+        }
+        std::string text_;
+        std::size_t at_ = 0;
+        char current_ = 0;
+    };
+
+    forward_only buffer("no size is known");
+    std::istream in(&buffer);
+
+    CHECK(file::read_content(in) == "no size is known");
 }
 
 TEST_CASE("read_empty_file", tags) {

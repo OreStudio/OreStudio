@@ -1058,3 +1058,74 @@ def test_a_wildcard_carries_every_real_exactly(tmp_path):
     assert "decimal value;" in emitted
     source = (tmp_path / "out.cpp").read_text()
     assert source.count("field_kind::decimal") >= 2
+
+
+def _choice_schema(alternatives):
+    """A root that repeats an item, which holds one of `alternatives` kinds."""
+    members = "\n".join(
+        f'        <xs:element type="kind{i % 3}" name="Alt{i}"/>' for i in range(alternatives)
+    )
+    kinds = "\n".join(
+        f"""  <xs:complexType name="kind{n}">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Value{n}" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>"""
+        for n in range(3)
+    )
+    return f"""<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="item" name="Item" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="item">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Label" minOccurs="0"/>
+      <xs:choice>
+{members}
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+{kinds}
+</xs:schema>
+"""
+
+
+def test_a_wide_choice_keeps_its_alternatives_in_columns_its_holder_owns(tmp_path):
+    """A row that holds one of many alternatives is not sized for all of them."""
+    emitted, source = _emit(tmp_path, _choice_schema(70))
+    item = _record(emitted, "item")
+    assert "std::uint32_t kind_index = 0;" in item
+    assert "alt0" not in item
+    assert "item_kind_columns kind_columns;" in _record(emitted, "root_type")
+    assert source.count("field_kind::column_nested") == 70
+
+
+def test_alternatives_of_one_type_share_one_column(tmp_path):
+    """The 70 alternatives name three types, so the columns hold three vectors."""
+    emitted, _source = _emit(tmp_path, _choice_schema(70))
+    columns = _record(emitted, "item_kind_columns")
+    assert columns.count("std::vector<struct kind") == 3
+    for n in range(3):
+        assert f"std::vector<struct kind{n}> kind{n}_rows;" in columns
+
+
+def test_a_narrow_choice_keeps_its_alternatives_as_members(tmp_path):
+    """Only a choice of many alternatives is worth a column."""
+    emitted, source = _emit(tmp_path, _choice_schema(8))
+    assert "kind_index" not in emitted
+    assert "kind_columns" not in emitted
+    assert "column_nested" not in source
+
+
+def test_a_column_row_tells_the_engine_where_to_find_the_columns(tmp_path):
+    """The holder's row names its columns struct and each alternative names its vector."""
+    _emitted, source = _emit(tmp_path, _choice_schema(70))
+    item_row = _row(source, "Item")
+    assert "field_kind::repeated_nested" in item_row[2]
+    assert "offsetof(root_type, kind_columns)" in source
+    alt = _row(source, "Alt4")
+    assert "field_kind::column_nested" in alt[2]
+    assert "offsetof(item_kind_columns, kind1_rows)" in source

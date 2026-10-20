@@ -16,6 +16,7 @@
     "@ores/org": "*",
     "@ores/wire-protocol": "*",
     "@tanstack/react-query": "5.103.1",
+    "cronstrue": "3.27.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.4.0",

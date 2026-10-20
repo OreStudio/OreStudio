@@ -99,6 +99,8 @@ const HISTORY_TYPES = new Set([
     ),
     // The tenant is not a refdata record: IAM serves the tenant's own versions.
     'ores.iam.tenant',
+    // A report definition is reporting's own record, and its versions are served there.
+    'ores.reporting.report_definition',
     // Parties and counterparties are not in the record table; their screens read their versions here.
     'ores.refdata.party',
     'ores.refdata.party_identifier',

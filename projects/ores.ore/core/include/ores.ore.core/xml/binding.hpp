@@ -73,6 +73,17 @@ enum class field_kind : std::uint8_t {
      * follows the indices in order.
      */
     indexed_nested,
+    /**
+     * One alternative of a wide choice, held in a column its holder owns.
+     *
+     * A type whose content is one of many alternatives would be sized for all
+     * of them if each had a member. Its row keeps one `std::uint32_t` at
+     * `offset`: the index of its alternative in the vector at `arena_offset`
+     * inside the columns struct. The presence bit of the field says which
+     * alternative that is. The holder of the type states where its columns
+     * struct is in `field::columns_offset` of the member that holds the type.
+     */
+    column_nested,
 };
 
 struct record_type;
@@ -80,17 +91,16 @@ struct record_type;
 /**
  * @brief The operations a repeated member needs from the table.
  *
- * A repeated member is a std::vector, or a std::deque when its element is a
- * wide record that must not move. Only the generated code knows the container
- * and the element type, so growing it, measuring it and reaching into it are
- * three functions the table carries rather than switches the engine makes on a
+ * A repeated member is a std::vector. Only the generated code knows the element
+ * type, so growing the vector, measuring it and reaching into it are three
+ * functions the table carries rather than switches the engine makes on a
  * member's kind. The reader appends, the writer measures and indexes.
  */
 struct vector_ops {
-    /// Appends a default-constructed element to the container and hands back
-    /// its address.
+    /// Appends a default-constructed element to the vector and hands back its
+    /// address.
     void (*append)(void* container, void** slot);
-    /// How many elements the container holds.
+    /// How many elements the vector holds.
     auto (*count)(const void* container) -> std::size_t;
     /// The address of one element, which the caller bounds.
     auto (*at)(const void* container, std::size_t index) -> const void*;
@@ -136,11 +146,15 @@ struct field {
     /// Operations for a repeated member, null for every other kind. For
     /// indexed_nested these operate on the arena.
     const vector_ops* repeated = nullptr;
-    /// The offset of the arena an indexed_nested member indexes into.
+    /// The offset of the arena an indexed_nested member indexes into. For a
+    /// column_nested member, the offset of its vector in the columns struct.
     std::uint32_t arena_offset = no_arena;
     /// True when an indexed_nested member's element may appear once, so a
     /// second row is refused rather than appended.
     bool once = false;
+    /// For a member whose element type has columns, the offset in this record of
+    /// the columns struct that holds them. no_arena for every other member.
+    std::uint32_t columns_offset = no_arena;
 };
 
 /**

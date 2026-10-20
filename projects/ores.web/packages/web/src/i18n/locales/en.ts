@@ -80,6 +80,7 @@ export const en: SourceCatalogue = {
             accounts: 'Accounts',
             tenants: 'Tenants',
             operations: 'Operations',
+            reporting: 'Reporting',
             development: 'Development',
             parties: 'Parties',
             rescue: 'Rescue access',
@@ -3473,6 +3474,9 @@ export const en: SourceCatalogue = {
             required: 'This is required.',
             invalidValue: 'This is not a valid value.',
             unsaved: 'You have unsaved changes. Close anyway?',
+            changedSince:
+                'Somebody changed this record after you opened it. Your edit is not saved. Reload to see the new values.',
+            reload: 'Reload',
             keepEditing: 'Keep editing',
             closeAnyway: 'Close anyway',
             lastChanged: 'Last changed:',
@@ -3610,6 +3614,10 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            report_type: { risk: 'Risk report' },
+            pre_processing: { execute: 'Execute', substitute: 'Substitute' },
+            post_processing: { execute: 'Execute', ignore: 'Ignore' },
+            concurrency_policy: { skip: 'Skip', queue: 'Queue', fail: 'Fail' },
             producer_kind: { SYNTHETIC: 'Synthetic', VENDOR: 'Vendor' },
             process_type: {
                 geometric: 'Geometric',
@@ -4390,6 +4398,171 @@ export const en: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        area: {
+            title: 'Reporting',
+            lead: 'The reports a party runs, and how the latest run of each one went.',
+            screens: {
+                reports: 'Reports',
+                reportsBody:
+                    'The definitions the parties you work in run, and the health of each latest run.',
+            },
+        },
+        title: 'Reports',
+        lead: 'The report definitions the parties you work in own, with the health of each latest run.',
+        choose: {
+            lead: '{count} reports have this name. Choose the one you meant.',
+        },
+        unread: '{cell} could not be read: {message}',
+        filter: {
+            allParties: 'All parties',
+        },
+        tally: {
+            label: 'Reports by the health of their latest run',
+            unread: 'The count of reports by health could not be read: {message}',
+        },
+        columns: {
+            report: 'Report',
+            party: 'Party',
+            reportType: 'Type',
+            schedule: 'Schedule',
+            latestRun: 'Latest run started',
+            duration: 'Duration',
+            health: 'Health',
+            errors: 'Errors',
+            warnings: 'Warnings',
+        },
+        health: {
+            failed: 'Failed',
+            completedWithErrors: 'Completed with errors',
+            running: 'Running',
+            neverRun: 'Never run',
+            completedClean: 'Completed clean',
+            unknown: 'Unknown',
+            noWord: 'No word',
+        },
+        cell: {
+            partyNotStated: 'Not stated',
+            unread: 'Not read',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        fields: {
+            name: 'Name',
+            description: 'Description',
+            report_type: 'Report type',
+            schedule_expression: 'Schedule expression',
+            concurrency_policy: 'Concurrency policy',
+            prepared_input_key: 'Prepared input',
+            pre_processing: 'Pre-processing',
+            post_processing: 'Post-processing',
+            is_official: 'Official',
+        },
+        means: {
+            name: 'What the report is called. It keys the report’s history and its address, so it is set when the report is made. To use another name, make a new report.',
+            reportType: {
+                risk: 'A full risk run on the compute grid: NPV, cashflows, sensitivities, XVA, VaR and SIMM. The type decides the workflow that runs and the configurations the report can bind.',
+                other: 'The type decides the workflow that runs and the configurations the report can bind.',
+            },
+            concurrencyPolicy: {
+                skip: 'If the last run is still going when the schedule fires, this run is not started. It is recorded as skipped.',
+                queue: 'If the last run is still going when the schedule fires, this run waits and starts when that one completes.',
+                fail: 'If the last run is still going when the schedule fires, this run is recorded as failed and does not start.',
+                other: 'What happens when the schedule fires while the last run is still going.',
+            },
+            preProcessing: {
+                execute:
+                    'Each run builds the engine’s input itself: it gathers the report’s trades and market data and packages them.',
+                substitute:
+                    'Each run skips that build and reads a prepared input archive, named under Prepared input.',
+                other: 'How a run gets the engine’s input.',
+            },
+            preparedInputKey:
+                'The stored archive a run reads its input from when pre-processing is Substitute. It stays empty while runs build their own input.',
+            postProcessing: {
+                execute:
+                    'The engine’s results are read into the result store, so the run’s figures can be read afterwards.',
+                ignore: 'A run records only that the engine produced results. The results are not stored.',
+                other: 'What a run does with the engine’s results.',
+            },
+        },
+        detail: {
+            record: 'Definition',
+            party: 'Party',
+            partyHint: 'The party that owns this definition and runs it.',
+            health: 'Health of the latest run',
+            healthHint: 'Derived from the latest run, never from the definition.',
+            latestRun: 'Latest run',
+            neverRun:
+                'This definition has never run. Nothing was checked, so it does not read as clean.',
+            couldNotCheck:
+                'The latest run could not be checked: {message} Nothing was read, so this definition does not read as never run.',
+            started: 'Started',
+            completed: 'Completed',
+            noNextFire: 'The scheduler states no next run.',
+            scheduleExpressionHint:
+                'A cron expression. When the scheduler fires it is decided by the job the definition is bound to.',
+            isOfficialHint: 'The official definition of its report for this party.',
+        },
+    },
+
+    cron: {
+        open: 'Change the schedule',
+        title: 'Schedule',
+        none: 'No schedule',
+        runs: 'Runs',
+        invalid:
+            'Not a schedule the scheduler reads. A cron expression needs five parts: minute, hour, day of month, month and day of week.',
+        presets: {
+            premarket: { name: 'Pre-market run' },
+            intraday: { name: 'Intraday check' },
+            eod: { name: 'End of day batch' },
+        },
+        repeat: 'Repeat',
+        repeats: {
+            interval: 'Every few minutes or hours',
+            daily: 'Once a day, at a time',
+            monthly: 'Once a month, on a day',
+        },
+        every: 'Every',
+        between: 'between',
+        and: 'and',
+        at: 'At',
+        onDay: 'On day',
+        onDays: 'On these days',
+        steps: { minutes: '{n} minutes', hour: 'hour', hours: '{n} hours' },
+        ways: {
+            common: 'Common schedules',
+            custom: 'Custom schedule',
+            advanced: 'Advanced: the cron expression',
+        },
+        expression: 'Cron expression',
+        weekdaysOnly: 'Weekdays only',
+        dayShort: { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' },
+        problem: {
+            parts: 'Expression has {count} parts. The scheduler needs exactly 5: minute, hour, day of month, month and day of week.',
+            field: 'The {part} part "{field}" is not valid: {fault}.',
+        },
+        fault: {
+            slashes: '"{item}" has more than one "/"',
+            step: 'the step "{step}" must be a whole number of at least 1',
+            range: '"{span}" is not a range: a range has a start and an end only',
+            number: '"{token}" is not a number',
+            outside: '{value} is outside {min} to {max}',
+        },
+        part: {
+            minute: 'minute',
+            hour: 'hour',
+            day: 'day of month',
+            month: 'month',
+            weekday: 'day of week',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',
@@ -4412,6 +4585,8 @@ export const en: SourceCatalogue = {
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',
         feedsRun: 'start and stop the synthetic feeds',
+        reportDefinitionsRead: 'see the report definitions of your parties',
+        reportDefinitionsWrite: 'change report definitions',
     },
 
     unavailable: {

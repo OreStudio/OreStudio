@@ -66,6 +66,21 @@ describe('the cards', () => {
         }
     });
 
+    it('name the Reports screen word for word in every language', () => {
+        const card = cardOf('reports');
+        const titles = [
+            [enFlat, 'Reports'],
+            [frFlat, 'Rapports'],
+            [ptFlat, 'Relatórios'],
+        ] as const;
+
+        expect(card.screenTitleKey).toBe('reporting.title');
+        for (const [catalogue, expected] of titles) {
+            expect(catalogue[card.titleKey]).toBe(expected);
+            expect(catalogue[card.screenTitleKey ?? '']).toBe(expected);
+        }
+    });
+
     it('belong to one area each, except the cards of the person themselves', () => {
         const homeless = IDS.filter(
             (id) => areaOfCard(id) === undefined && cardOf(id).on === undefined,

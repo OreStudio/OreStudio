@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 2B311286-3F0C-4751-960F-71EBE6027569
+:END:
+#+title: Task: Profile the portfolio read again and measure peak memory
+#+description: After the trade columns the zero fill is 3.6 percent. Find the next cost of the portfolio read, fix what is cheap, and measure the peak memory of a large import.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
+#+owner: marco
+#+branch: feature/profile-the-portfolio-read-again
+#+pr: 3590
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Profile the portfolio read test, remove the largest avoidable cost, and state the peak memory of a large import.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now          | The file read is fixed. The profile and the peak memory are recorded. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. Two later candidates are in the Notes. |
+| Last touched | 2026-10-20                               |
+
+* Acceptance
+
+- A callgrind profile names the costs after the trade columns
+- The largest avoidable cost is removed and measured
+- Peak memory of a large import is measured and recorded
+
+* Plan
+
+Run callgrind on =import_portfolio_all_ore_example_files_can_be_parsed= from the
+repository root, because the test finds the example files by a relative path.
+Name the costs. Remove the largest cost that is avoidable. Run massif to measure
+the peak heap.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Instructions of the test before the fix | 1,864,312,400 | =valgrind --tool=callgrind ores.ore.core.tests import_portfolio_all_ore_example_files_can_be_parsed= | f4f57e27ce |
+| Instructions of the test after the fix | 1,646,496,411 (-11.7 percent) | same | 0f8d099aac |
+| Cost of =string::_M_construct<istreambuf_iterator>= before the fix | 217,513,662 (11.7 percent) | =callgrind_annotate= | f4f57e27ce |
+| Cost of =file::read_content= after the fix, 374 calls | 7,226,633 | =callgrind_annotate --tree=calling --inclusive=yes= | 0f8d099aac |
+| SCRAM login of the test database fixture | 835,584,739 (50.7 percent of the run) | =callgrind_annotate --inclusive=yes=, =PQconnectdb= | 0f8d099aac |
+| =import_portfolio_with_context=, 374 calls | 528,135,079 (32.1 percent) | same | 0f8d099aac |
+| of which =portfolio_projection::read= (the bind) | 295,443,333 | same | 0f8d099aac |
+| of which =portfolio_projection::map= | 209,879,245 | same | 0f8d099aac |
+| of which =read_rate_instrument=, 2,668 calls | 157,286,395 | same | 0f8d099aac |
+| of which =append_to<leg_data>=, 3,624 calls | 48,046,747 | same | 0f8d099aac |
+| Peak heap of a small import (=import_portfolio_from_minimal_swap=) | 25,985,459 bytes | =valgrind --tool=massif=, largest =mem_heap_B= | 0f8d099aac |
+| Peak heap of the all-examples import | 40,539,918 bytes | same | 0f8d099aac |
+| Largest portfolio file | 621,090 bytes, 314 trades (=ois_portfolio.xml=) | =grep -c "<Trade "= | 0f8d099aac |
+| Size of =trade_kind_columns= | 3,576 bytes | task "Store each trade kind in its own column" | ec1c3ca051 |
+
+* Notes
+
+- The 466 million instructions of =sha256_block_data_order_avx2= are not XML
+  work. The test fixture opens database connections, and each login runs the
+  SCRAM password exchange. The fixture costs 835 million instructions in all.
+  That is more than the import it serves.
+- The fix is in =file::read_content=, which the importer calls. A seekable
+  stream now reads in one bulk read. A stream that cannot seek keeps the
+  iterator copy. Two new tests cover a stream that starts mid-way and a stream
+  that cannot seek.
+- Each holder of a trade owns one =trade_kind_columns= of 3,576 bytes. A
+  portfolio document has one holder for all its trades, so the cost is 3.5 KB per
+  document and not per trade. A composite trade adds one holder per component
+  that holds a trade.
+- Before the columns, a trade was 346,624 bytes. The 314 trades of the largest
+  file would have needed 108.8 MB for the trade vector alone. This is
+  arithmetic, not a measurement. The measured peak for the whole import is
+  14.5 MB above the small-import baseline.
+- Candidate: =read_rate_instrument= costs about 59,000 instructions per trade.
+  It is the largest part of the map. A profile of that function by line would show
+  whether it is string work or decimal work.
+- Candidate: =append_to<leg_data>= costs about 13,000 instructions per leg. The
+  =leg_data= record is large, and each append zero-fills it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3590][#3590]] | [platform] Read a seekable stream in one bulk read |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The file read copied each file one character at a time and cost 11.7 percent of
+the portfolio read test. A seekable stream now reads in one call. The test falls
+from 1,864,312,400 to 1,646,496,411 instructions. Peak heap of the all-examples
+import is 40.5 MB, 14.5 MB above a small import. The trade columns cost 3.5 KB
+per document, not per trade. The affected test binaries pass: platform,
+marketdata core, testing, storage core and ore core.

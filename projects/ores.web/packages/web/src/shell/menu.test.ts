@@ -20,14 +20,25 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { MENU } from './areas.js';
+import { MENU, offered, type MenuItem } from './areas.js';
 import { AREA_CARDS, AREA_PAGE, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
 
 /**
  * The menu is one list, in the order the Menu structure page gives: Home,
- * Reference data, Organisation, Market data, Requests, Operations and Tenants.
- * Trades has its place between Market data and Requests when it has screens.
+ * Reference data, Organisation, Market data, Requests, Operations, Reporting,
+ * Development and Tenants. Trades has its place between Market data and
+ * Requests when it has screens.
  */
+
+/** The entry of one area, which the Menu structure page names. */
+function entryAt(to: string): MenuItem {
+    const entry = MENU.find((item) => item.to === to);
+    if (entry === undefined) {
+        throw new Error(`no menu entry for ${to}`);
+    }
+    return entry;
+}
+
 describe('the menu', () => {
     const paths = MENU.map((entry) => entry.to);
 
@@ -39,8 +50,10 @@ describe('the menu', () => {
             '/market-data',
             '/requests',
             '/operations',
+            '/reporting',
         ];
         expect(paths.filter((path) => order.includes(path))).toEqual(order);
+        expect(paths.indexOf('/development')).toBeGreaterThan(paths.indexOf('/reporting'));
         expect(paths.indexOf('/tenants')).toBeGreaterThan(paths.indexOf('/operations'));
     });
 
@@ -77,5 +90,29 @@ describe('the menu', () => {
 
     it('lists no address twice', () => {
         expect(new Set(paths).size).toBe(paths.length);
+    });
+});
+
+/**
+ * An area is drawn for a person who holds the read that one of its screens
+ * needs, and for nobody else. Reporting is one such area: its only screen needs
+ * =reporting::report_definitions:read=.
+ */
+describe('the Reporting area', () => {
+    const reportRead = 'reporting::report_definitions:read';
+    const entry = entryAt('/reporting');
+
+    it('is in the menu, guarded by the read of its screen', () => {
+        expect(entry.to).toBe('/reporting');
+        expect([entry.permission].flat()).toEqual([reportRead]);
+    });
+
+    it('is drawn for a person who holds the read', () => {
+        expect(offered(entry, (code) => code === reportRead)).toBe(true);
+    });
+
+    it('is not drawn for a person who does not hold it', () => {
+        expect(offered(entry, () => false)).toBe(false);
+        expect(offered(entry, (code) => code === 'refdata::parties:read')).toBe(false);
     });
 });

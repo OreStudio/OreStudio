@@ -27,21 +27,21 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto append_to(void* container, void** slot) -> void {
-    auto* held = static_cast<Container*>(container);
+    auto* held = static_cast<std::vector<T>*>(container);
     held->emplace_back();
     *slot = &held->back();
 }
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto count_of(const void* container) -> std::size_t {
-    return static_cast<const Container*>(container)->size();
+    return static_cast<const std::vector<T>*>(container)->size();
 }
 
-template <typename T, typename Container = std::vector<T>>
+template <typename T>
 auto at_of(const void* container, std::size_t index) -> const void* {
-    return &(*static_cast<const Container*>(container))[index];
+    return &(*static_cast<const std::vector<T>*>(container))[index];
 }
 
 const char* rounding_type_spellings[] = {"Up", "Down", "Closest", "Floor", "Ceiling", nullptr};

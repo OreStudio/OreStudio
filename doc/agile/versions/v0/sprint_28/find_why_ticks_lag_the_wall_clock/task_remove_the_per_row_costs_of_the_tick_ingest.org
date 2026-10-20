@@ -26,11 +26,11 @@ The ingest of ticks no longer pays a commit, a series read, a notification and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | The full gate, then the pull request.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1b: an append-only tick table, with its own reader migration. |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

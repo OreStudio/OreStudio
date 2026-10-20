@@ -19,7 +19,14 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { PRESETS, cronOf, cronValid, describeCron, parseSchedule } from './cron.js';
+import {
+    PRESETS,
+    cronOf,
+    cronValid,
+    describeCron,
+    parseSchedule,
+    problemWithCron,
+} from './cron.js';
 
 describe('a cron expression', () => {
     it.each([
@@ -125,5 +132,18 @@ describe('the words for an expression', () => {
         expect(describeCron('0 0 9 * * ?', 'en')).toBeUndefined();
         expect(describeCron('nonsense', 'en')).toBeUndefined();
         expect(describeCron('', 'en')).toBeUndefined();
+    });
+});
+
+describe('problemWithCron', () => {
+    it('quotes the library on what is wrong', () => {
+        expect(problemWithCron('* * *', 'en')).toBe(
+            'Expression has only 3 parts. At least 5 parts are required.',
+        );
+        expect(problemWithCron('61 * * * *', 'en')).toBe('minutes part must be >= 0 and <= 59');
+    });
+
+    it('says nothing of a valid expression', () => {
+        expect(problemWithCron('0 8 * * 1-5', 'en')).toBeUndefined();
     });
 });

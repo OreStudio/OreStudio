@@ -287,3 +287,24 @@ export function describeCron(expression: string, language: Language): string | u
         return undefined;
     }
 }
+
+/**
+ * What the cron library says is wrong with an expression, for the person who
+ * typed it. Nothing when the expression is valid, or when the library finds no
+ * fault the server would still refuse, such as a sixth field.
+ */
+export function problemWithCron(expression: string, language: Language): string | undefined {
+    const text = expression.trim();
+    if (cronValid(text)) {
+        return undefined;
+    }
+    try {
+        cronstrue.toString(text, { locale: LOCALE[language], throwExceptionOnParseError: true });
+        return undefined;
+    } catch (error) {
+        const message =
+            typeof error === 'string' ? error : error instanceof Error ? error.message : '';
+        const reason = message.replace(/^Error:\s*/, '').trim();
+        return reason === '' ? undefined : reason;
+    }
+}

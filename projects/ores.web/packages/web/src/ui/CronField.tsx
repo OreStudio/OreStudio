@@ -42,6 +42,7 @@ import {
     cronOf,
     cronValid,
     describeCron,
+    problemWithCron,
     parseSchedule,
     type Repeat,
     type Schedule,
@@ -79,6 +80,7 @@ export function CronField({
     const trimmed = value.trim();
     const invalid = trimmed !== '' && !cronValid(trimmed);
     const says = describeCron(trimmed, language);
+    const problem = problemWithCron(trimmed, language) ?? t('cron.invalid');
     return (
         <div>
             <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-muted">
@@ -109,7 +111,7 @@ export function CronField({
             {hint !== undefined && (
                 <span className="mt-1 block text-xs text-ink-faint">{hint}</span>
             )}
-            {invalid && <span className="mt-1 block text-xs text-down">{t('cron.invalid')}</span>}
+            {invalid && <span className="mt-1 block text-xs text-down">{problem}</span>}
             {error !== undefined && <span className="mt-1 block text-xs text-down">{error}</span>}
             {building &&
                 createPortal(
@@ -151,6 +153,7 @@ export function CronBuilder({
     );
     const valid = cronValid(text.trim());
     const says = describeCron(text, language);
+    const problem = problemWithCron(text, language) ?? t('cron.invalid');
     const edit = (patch: Partial<Schedule>): void =>
         setText(cronOf({ ...(schedule ?? STARTING_SCHEDULE), ...patch }));
     /*
@@ -261,7 +264,7 @@ export function CronBuilder({
                                     <span className="block text-xs text-ink-faint">{says}</span>
                                 )
                             ) : (
-                                <span className="block text-xs text-down">{t('cron.invalid')}</span>
+                                <span className="block text-xs text-down">{problem}</span>
                             ))}
                     </div>,
                 )}

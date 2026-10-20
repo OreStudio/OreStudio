@@ -190,11 +190,11 @@ checklist.
 
 - [ ] The report shows its configuration and links to it. No configuration page or BFF read exists yet.
 - [ ] A fixed field says why in one line. Name shows its meaning instead of the fixed line.
-- [ ] The page notice that lists the missing features is removed. The screen does not explain what is absent.
-- [ ] A stale save offers a reload. The dialog shows only the server's refusal.
+- [X] The page notice that lists the missing features is removed. The screen does not explain what is absent.
+- [X] A stale save offers a reload. The dialog says the record changed and offers Reload. Not tried against a real conflict.
 - [ ] The record dialog listens for a newer version and shows when the record was loaded. Only the person forms do this.
-- [ ] The schedule field and builder use verbs from the list: "Change…" and "Use this schedule" are not on it. The builder buttons also lack icons.
-- [ ] The reasons for a bad cron expression exist in French and Portuguese. They are English only.
+- [X] The schedule field and builder use verbs from the list, with their icons: Edit, Save and Cancel.
+- [X] The reasons for a bad cron expression exist in French and Portuguese. Only a fault the cron library finds and this code does not stays English.
 - [ ] The shared Select is a native select element. This holds across the app.
 - [ ] Decide which standard rules where they differ: the place of Edit, the dialog title, the lead line of the header, and whether Save stays disabled until a field changes.
 - [ ] Check that the server accepts a change of report type for a report with bound configurations.

@@ -78,8 +78,8 @@ describe('the schedule field', () => {
         expect(html).toContain('placeholder="No schedule"');
     });
 
-    it('offers Change, and turns it off when the field is read only', () => {
-        expect(field('0 * * * *')).toContain('Change…');
+    it('offers Edit, and turns it off when the field is read only', () => {
+        expect(field('0 * * * *')).toContain('Edit');
         expect(field('0 * * * *', true)).toMatch(/<button[^>]*disabled/);
     });
 });
@@ -142,6 +142,6 @@ describe('the schedule builder', () => {
         expect(html).toContain('aria-invalid="true"');
         expect(html).toContain('border-down');
         expect(html).toContain('needs exactly 5');
-        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Use this schedule/);
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*Save/);
     });
 });

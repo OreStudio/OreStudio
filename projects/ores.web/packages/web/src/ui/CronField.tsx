@@ -80,7 +80,7 @@ export function CronField({
     const trimmed = value.trim();
     const invalid = trimmed !== '' && !cronValid(trimmed);
     const says = describeCron(trimmed, language);
-    const problem = problemWithCron(trimmed, language) ?? t('cron.invalid');
+    const problem = problemWithCron(trimmed, language, t) ?? t('cron.invalid');
     return (
         <div>
             <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-muted">
@@ -101,11 +101,12 @@ export function CronField({
                 />
                 <Button
                     type="button"
+                    icon="edit"
                     disabled={disabled}
                     onClick={() => setBuilding(true)}
                     aria-label={t('cron.open')}
                 >
-                    {t('cron.change')}
+                    {t('refdata.records.edit')}
                 </Button>
             </div>
             {hint !== undefined && (
@@ -153,7 +154,7 @@ export function CronBuilder({
     );
     const valid = cronValid(text.trim());
     const says = describeCron(text, language);
-    const problem = problemWithCron(text, language) ?? t('cron.invalid');
+    const problem = problemWithCron(text, language, t) ?? t('cron.invalid');
     const edit = (patch: Partial<Schedule>): void =>
         setText(cronOf({ ...(schedule ?? STARTING_SCHEDULE), ...patch }));
     /*
@@ -192,16 +193,17 @@ export function CronBuilder({
             wide
             footer={
                 <div className="flex justify-end gap-2">
-                    <Button type="button" variant="ghost" onClick={onCancel}>
-                        {t('cron.cancel')}
+                    <Button type="button" variant="ghost" icon="cancel" onClick={onCancel}>
+                        {t('refdata.records.cancel')}
                     </Button>
                     <Button
                         type="button"
                         variant="primary"
+                        icon="save"
                         disabled={!valid}
                         onClick={() => onApply(text.trim())}
                     >
-                        {t('cron.apply')}
+                        {t('refdata.records.save')}
                     </Button>
                 </div>
             }

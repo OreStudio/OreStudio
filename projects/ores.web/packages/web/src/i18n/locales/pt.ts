@@ -3500,6 +3500,9 @@ const pt: SourceCatalogue = {
             required: 'Este campo é obrigatório.',
             invalidValue: 'Este valor não é válido.',
             unsaved: 'Tem alterações por guardar. Fechar mesmo assim?',
+            changedSince:
+                'Alguém alterou este registo depois de o abrir. A sua alteração não foi guardada. Recarregue para ver os novos valores.',
+            reload: 'Recarregar',
             keepEditing: 'Continuar a editar',
             closeAnyway: 'Fechar mesmo assim',
             lastChanged: 'Última alteração:',
@@ -4538,17 +4541,13 @@ const pt: SourceCatalogue = {
             scheduleExpressionHint:
                 'Uma expressão cron. O momento em que o agendador a dispara é decidido pela tarefa a que a definição está ligada.',
             isOfficialHint: 'A definição oficial do seu relatório para esta parte.',
-            gaps: 'Esta página não oferece Eliminar nem Adicionar: nenhuma rota elimina ainda uma definição, e uma definição é criada pelo percurso que cria um relatório. Também não desenha o separador Histórico: o servidor procura uma definição pelo nome, e várias partes de um mesmo inquilino partilham um nome.',
         },
     },
 
     cron: {
-        change: 'Alterar…',
         open: 'Alterar o calendário',
         title: 'Calendário',
         none: 'Sem calendário',
-        apply: 'Usar este calendário',
-        cancel: 'Cancelar',
         runs: 'Executa',
         invalid:
             'Não é um calendário que o agendador leia. Uma expressão cron precisa de cinco partes: minuto, hora, dia do mês, mês e dia da semana.',
@@ -4578,6 +4577,24 @@ const pt: SourceCatalogue = {
         expression: 'Expressão cron',
         weekdaysOnly: 'Só dias úteis',
         dayShort: { 0: 'dom', 1: 'seg', 2: 'ter', 3: 'qua', 4: 'qui', 5: 'sex', 6: 'sáb' },
+        problem: {
+            parts: 'A expressão tem {count} partes. O agendador precisa de exatamente 5: minuto, hora, dia do mês, mês e dia da semana.',
+            field: 'A parte {part} "{field}" não é válida: {fault}.',
+        },
+        fault: {
+            slashes: '"{item}" tem mais de uma barra',
+            step: 'o passo "{step}" deve ser um número inteiro de pelo menos 1',
+            range: '"{span}" não é um intervalo: um intervalo tem só um início e um fim',
+            number: '"{token}" não é um número',
+            outside: '{value} está fora de {min} a {max}',
+        },
+        part: {
+            minute: 'minuto',
+            hour: 'hora',
+            day: 'dia do mês',
+            month: 'mês',
+            weekday: 'dia da semana',
+        },
     },
 
     permissionWords: {

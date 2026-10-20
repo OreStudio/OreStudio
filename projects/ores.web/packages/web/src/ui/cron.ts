@@ -73,30 +73,36 @@ function inRange(range: FieldRange, value: number): boolean {
     return value >= range.min && value <= max;
 }
 
+/** What is wrong with one item of a field: a message key and the values it names. */
+interface Fault {
+    readonly key: string;
+    readonly values: Readonly<Record<string, string | number>>;
+}
+
 /** Why one comma-free item of a field is not well formed, or nothing if it is. */
-function itemFault(range: FieldRange, item: string): string | undefined {
+function itemFault(range: FieldRange, item: string): Fault | undefined {
     const [span = '', step, ...rest] = item.split('/');
     if (rest.length > 0) {
-        return `"${item}" has more than one "/"`;
+        return { key: 'cron.fault.slashes', values: { item } };
     }
     if (step !== undefined && (!/^[0-9]+$/.test(step) || Number.parseInt(step, 10) < 1)) {
-        return `the step "${step}" must be a whole number of at least 1`;
+        return { key: 'cron.fault.step', values: { step } };
     }
     if (span === '*') {
         return undefined;
     }
     const ends = span.split('-');
     if (ends.length > 2) {
-        return `"${span}" is not a range: a range has a start and an end only`;
+        return { key: 'cron.fault.range', values: { span } };
     }
     for (const end of ends) {
         const value = numberOf(range, end);
         if (value === undefined) {
-            return `"${end}" is not a number`;
+            return { key: 'cron.fault.number', values: { token: end } };
         }
         if (!inRange(range, value)) {
             const max = range.name === 'weekday' ? 7 : range.max;
-            return `${value} is outside ${range.min} to ${max}`;
+            return { key: 'cron.fault.outside', values: { value, min: range.min, max } };
         }
     }
     return undefined;
@@ -299,35 +305,38 @@ export function describeCron(expression: string, language: Language): string | u
     }
 }
 
-const LABEL = {
-    minute: 'minute',
-    hour: 'hour',
-    day: 'day of month',
-    month: 'month',
-    weekday: 'day of week',
-} as const;
+/** Words for a message key, with the values it names. */
+export type Say = (key: string, values?: Readonly<Record<string, string | number>>) => string;
 
 /**
  * What is wrong with an expression, for the person who typed it; nothing when
- * it is valid. The part count and the fault in a field are worded here, because
- * the cron library accepts a sixth field and does not check every range. What
- * only the library finds, it words.
+ * it is valid. The part count and the fault in a field are worded here, in the
+ * person's language, because the cron library accepts a sixth field and does
+ * not check every range. What only the library finds, it words, in English.
  */
-export function problemWithCron(expression: string, language: Language): string | undefined {
+export function problemWithCron(
+    expression: string,
+    language: Language,
+    say: Say,
+): string | undefined {
     const text = expression.trim();
     if (cronValid(text)) {
         return undefined;
     }
-    const count = cronParts(text).length;
-    if (count !== FIELD_RANGES.length) {
-        return `Expression has ${count} ${count === 1 ? 'part' : 'parts'}. The scheduler needs exactly ${FIELD_RANGES.length}: minute, hour, day of month, month and day of week.`;
+    const parts = cronParts(text);
+    if (parts.length !== FIELD_RANGES.length) {
+        return say('cron.problem.parts', { count: parts.length });
     }
     for (const [index, range] of FIELD_RANGES.entries()) {
-        const field = cronParts(text)[index] ?? '';
+        const field = parts[index] ?? '';
         for (const item of field.split(',')) {
             const fault = itemFault(range, item);
             if (fault !== undefined) {
-                return `The ${LABEL[range.name]} part "${field}" is not valid: ${fault}.`;
+                return say('cron.problem.field', {
+                    part: say(`cron.part.${range.name}`),
+                    field,
+                    fault: say(fault.key, fault.values),
+                });
             }
         }
     }

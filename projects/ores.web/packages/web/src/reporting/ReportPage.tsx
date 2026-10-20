@@ -318,7 +318,6 @@ function ReportBody(): ReactNode {
                     </header>
                     <LatestRun detail={open.data.detail} unread={unread} />
                 </section>
-                <Notice tone="info">{t('reporting.detail.gaps')}</Notice>
             </div>
             {editing && (
                 <RecordDialog

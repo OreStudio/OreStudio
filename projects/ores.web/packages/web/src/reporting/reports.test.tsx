@@ -519,14 +519,8 @@ describe('one report definition', () => {
         expect(page).toContain('common.non_material_update');
     });
 
-    it('draws no History tab, and says why in the page own words', () => {
-        const html = detail();
-
-        // The versions cannot be read by id yet: the server looks the row up by a
-        // name that four parties share, so the tab would answer with another
-        // party's versions. The page states the gap rather than drawing it.
-        expect(html).not.toContain('role="tab"');
-        expect(textOf(html)).toContain('It draws no History tab either');
+    it('draws no History tab, because the versions cannot be read by id yet', () => {
+        expect(detail()).not.toContain('role="tab"');
     });
 
     it('says a run it could not read was not checked, not that it never ran', () => {
@@ -564,12 +558,6 @@ describe('one report definition', () => {
 
         expect(page).not.toContain('Edit');
         expect(page).toContain('Read only');
-    });
-
-    it('says what the page cannot do, so a missing action is a stated gap', () => {
-        expect(textOf(detail())).toContain(
-            'This page offers no Delete and no Add: no route removes a definition yet',
-        );
     });
 });
 

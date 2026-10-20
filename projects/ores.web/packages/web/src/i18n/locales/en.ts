@@ -3473,6 +3473,9 @@ export const en: SourceCatalogue = {
             required: 'This is required.',
             invalidValue: 'This is not a valid value.',
             unsaved: 'You have unsaved changes. Close anyway?',
+            changedSince:
+                'Somebody changed this record after you opened it. Your edit is not saved. Reload to see the new values.',
+            reload: 'Reload',
             keepEditing: 'Keep editing',
             closeAnyway: 'Close anyway',
             lastChanged: 'Last changed:',
@@ -4503,17 +4506,13 @@ export const en: SourceCatalogue = {
             scheduleExpressionHint:
                 'A cron expression. When the scheduler fires it is decided by the job the definition is bound to.',
             isOfficialHint: 'The official definition of its report for this party.',
-            gaps: 'This page offers no Delete and no Add: no route removes a definition yet, and a definition is made by the journey that creates a report. It draws no History tab either: the server looks a definition up by its name, and several parties of one tenant share a name.',
         },
     },
 
     cron: {
-        change: 'Change…',
         open: 'Change the schedule',
         title: 'Schedule',
         none: 'No schedule',
-        apply: 'Use this schedule',
-        cancel: 'Cancel',
         runs: 'Runs',
         invalid:
             'Not a schedule the scheduler reads. A cron expression needs five parts: minute, hour, day of month, month and day of week.',
@@ -4543,6 +4542,24 @@ export const en: SourceCatalogue = {
         expression: 'Cron expression',
         weekdaysOnly: 'Weekdays only',
         dayShort: { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' },
+        problem: {
+            parts: 'Expression has {count} parts. The scheduler needs exactly 5: minute, hour, day of month, month and day of week.',
+            field: 'The {part} part "{field}" is not valid: {fault}.',
+        },
+        fault: {
+            slashes: '"{item}" has more than one "/"',
+            step: 'the step "{step}" must be a whole number of at least 1',
+            range: '"{span}" is not a range: a range has a start and an end only',
+            number: '"{token}" is not a number',
+            outside: '{value} is outside {min} to {max}',
+        },
+        part: {
+            minute: 'minute',
+            hour: 'hour',
+            day: 'day of month',
+            month: 'month',
+            weekday: 'day of week',
+        },
     },
 
     permissionWords: {

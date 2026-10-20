@@ -736,7 +736,28 @@ export function RecordDialog({
                         {rule}
                     </Notice>
                 ))}
-                {save.isError && <Notice tone="error">{save.error.message}</Notice>}
+                {save.isError && (
+                    <Notice tone="error">
+                        {editing &&
+                        save.error instanceof ApiFailure &&
+                        save.error.status === 409 ? (
+                            <span className="flex flex-wrap items-center gap-3">
+                                <span>{t('refdata.records.changedSince')}</span>
+                                <Button
+                                    icon="refresh"
+                                    onClick={() => {
+                                        void queries.invalidateQueries();
+                                        onClose();
+                                    }}
+                                >
+                                    {t('refdata.records.reload')}
+                                </Button>
+                            </span>
+                        ) : (
+                            save.error.message
+                        )}
+                    </Notice>
+                )}
             </div>
         </Dialog>
     );

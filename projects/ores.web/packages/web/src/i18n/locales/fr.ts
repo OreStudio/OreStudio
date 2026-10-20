@@ -3522,6 +3522,9 @@ const fr: SourceCatalogue = {
             required: 'Ce champ est obligatoire.',
             invalidValue: "Cette valeur n'est pas valide.",
             unsaved: 'Vous avez des modifications non enregistrées. Fermer quand même ?',
+            changedSince:
+                "Quelqu'un a modifié cet enregistrement après votre ouverture. Votre modification n'est pas enregistrée. Rechargez pour voir les nouvelles valeurs.",
+            reload: 'Recharger',
             keepEditing: 'Continuer',
             closeAnyway: 'Fermer quand même',
             lastChanged: 'Dernière modification :',
@@ -4568,17 +4571,13 @@ const fr: SourceCatalogue = {
             scheduleExpressionHint:
                 'Une expression cron. Le moment où le planificateur la déclenche est décidé par la tâche à laquelle la définition est liée.',
             isOfficialHint: 'La définition officielle de son rapport pour cette partie.',
-            gaps: 'Cette page n’offre ni Supprimer ni Ajouter : aucune route ne supprime encore une définition, et une définition est créée par le parcours qui crée un rapport. Elle ne dessine pas non plus d’onglet Historique : le serveur retrouve une définition par son nom, et plusieurs parties d’un même locataire partagent un nom.',
         },
     },
 
     cron: {
-        change: 'Modifier…',
         open: 'Modifier le calendrier',
         title: 'Calendrier',
         none: 'Aucun calendrier',
-        apply: 'Utiliser ce calendrier',
-        cancel: 'Annuler',
         runs: "S'exécute",
         invalid:
             "Ce n'est pas un calendrier que le planificateur lit. Une expression cron a cinq parties : minute, heure, jour du mois, mois et jour de la semaine.",
@@ -4608,6 +4607,24 @@ const fr: SourceCatalogue = {
         expression: 'Expression cron',
         weekdaysOnly: 'En semaine seulement',
         dayShort: { 0: 'dim', 1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam' },
+        problem: {
+            parts: "L'expression a {count} parties. Le planificateur en veut exactement 5 : minute, heure, jour du mois, mois et jour de la semaine.",
+            field: "La partie {part} « {field} » n'est pas valide : {fault}.",
+        },
+        fault: {
+            slashes: "« {item} » contient plus d'une barre oblique",
+            step: "le pas « {step} » doit être un nombre entier d'au moins 1",
+            range: "« {span} » n'est pas une plage : une plage n'a qu'un début et une fin",
+            number: "« {token} » n'est pas un nombre",
+            outside: '{value} est hors de {min} à {max}',
+        },
+        part: {
+            minute: 'minute',
+            hour: 'heure',
+            day: 'jour du mois',
+            month: 'mois',
+            weekday: 'jour de la semaine',
+        },
     },
 
     permissionWords: {

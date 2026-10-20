@@ -19,6 +19,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { enFlat } from '../i18n/locales/en.js';
+import { frFlat } from '../i18n/locales/fr.js';
+import { ptFlat } from '../i18n/locales/pt.js';
+import { interpolate } from '../i18n/translate.js';
 import {
     PRESETS,
     cronOf,
@@ -26,6 +30,7 @@ import {
     describeCron,
     parseSchedule,
     problemWithCron,
+    type Say,
 } from './cron.js';
 
 describe('a cron expression', () => {
@@ -135,26 +140,37 @@ describe('the words for an expression', () => {
     });
 });
 
+const sayIn =
+    (flat: Record<string, string>): Say =>
+    (key, values = {}) =>
+        interpolate(flat[key] ?? key, values);
+
+const say = sayIn(enFlat);
+
 describe('problemWithCron', () => {
-    it('says what is wrong', () => {
-        expect(problemWithCron('* * *', 'en')).toBe(
+    it('says how many parts there are', () => {
+        expect(problemWithCron('* * *', 'en', say)).toBe(
             'Expression has 3 parts. The scheduler needs exactly 5: minute, hour, day of month, month and day of week.',
         );
-        expect(problemWithCron('61 * * * *', 'en')).toContain('61 is outside 0 to 59');
+        expect(problemWithCron('0 0 9 * * ?', 'en', say)).toContain('has 6 parts');
     });
 
     it('names the part and the value that is out of range', () => {
-        expect(problemWithCron('0 5 * * 1-511', 'en')).toBe(
+        expect(problemWithCron('0 5 * * 1-511', 'en', say)).toBe(
             'The day of week part "1-511" is not valid: 511 is outside 0 to 7.',
         );
-        expect(problemWithCron('0 5 * * foo', 'en')).toContain('"foo" is not a number');
+        expect(problemWithCron('61 * * * *', 'en', say)).toContain('61 is outside 0 to 59');
+        expect(problemWithCron('0 5 * * foo', 'en', say)).toContain('"foo" is not a number');
     });
 
-    it('words an expression with too many parts', () => {
-        expect(problemWithCron('0 0 9 * * ?', 'en')).toContain('has 6 parts');
+    it('speaks French and Portuguese', () => {
+        expect(problemWithCron('61 * * * *', 'fr', sayIn(frFlat))).toBe(
+            "La partie minute « 61 » n'est pas valide : 61 est hors de 0 à 59.",
+        );
+        expect(problemWithCron('* * *', 'pt', sayIn(ptFlat))).toContain('3 partes');
     });
 
     it('says nothing of a valid expression', () => {
-        expect(problemWithCron('0 8 * * 1-5', 'en')).toBeUndefined();
+        expect(problemWithCron('0 8 * * 1-5', 'en', say)).toBeUndefined();
     });
 });

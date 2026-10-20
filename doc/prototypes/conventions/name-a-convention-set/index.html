@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Name a convention set journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Name a convention set, on the shared journey page: a flat step rail and one
+  step. A person groups convention documents, one for each kind, under a name,
+  a purpose and a description, so a report can choose the set. The set needs a
+  second person, so the write is a proposal.
+
+    ?step=0|1|2|3|4             the step: the sets, the description, the
+                                documents, the review, the request
+    ?name=...&purpose=...&description=...   the description already typed
+    ?tried=1                    show the field messages, as after Next
+    ?pick=swap:AED-EIBOR-6M-SWAP,deposit:AED-DEPO-1M   documents already chosen
+    ?picker=swap&q=AED          the document picker open on step 2, for one kind
+    ?actor=j.ruiz|m.okafor|k.mori   who acts. The last cannot write.
+    ?gaps=0                     hide the server gap notes
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>
+

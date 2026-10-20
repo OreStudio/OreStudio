@@ -52,9 +52,9 @@ and those two pages are the answer to the story:
   list for the report being changed, with the same choice and the same link out.
 
 Both pages draw one fixture list and say so. **The authoring prototype is not in
-this MR.** Authoring a set is deferred to its own work, and the deferral is
-recorded in the conventions journeys: the authoring journey states that its
-prototype belongs to that work and not to this one. The link out from a report to
+this story.** Authoring a set has its own journey and prototype:
+[[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]], in the story
+[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]]. The link out from a report to
 the authoring UX is drawn and marked as not in this MR.
 
 * Tasks

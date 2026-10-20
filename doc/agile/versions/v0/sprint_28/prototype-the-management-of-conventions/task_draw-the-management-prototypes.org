@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 2B7E97DF-2F4F-4356-9B6F-615FCCF606DD
+:END:
+#+title: Task: Draw the five convention management prototypes
+#+description: One static prototype for each of the four management journeys, in the conventions prototype group.
+#+type: task
+#+level: s1
+#+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-prototype-the-management-of-conventions
+#+pr: 3581
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each management journey has a clickable prototype that follows the UX conventions and marks every server gap its journey names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- Each prototype is a static page in doc/prototypes/conventions and opens with no build.
+- Each prototype follows the record screen standard, UX Language and UI design principles.
+- Each prototype has a design note and a row on the group page.
+
+* Plan
+
+1. Read the UX conventions: UX hub, UX Language, UI design principles, the record screen standard and the entity screen specification.
+2. Build one shared stylesheet and one shared script, copied into each prototype folder. The script holds the mock documents, the shell, the rail, a custom select, the table, the pager and the dialogs.
+3. Write the four prototypes, one for each journey.
+4. Write a design note for each, add the rows to the group page and the count to the top page.
+5. Keep the shared copies equal with the inventory check.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Prototypes in the conventions group | 6 | =python3 build/scripts/check_prototype_inventory.py= | this branch |
+| Swap documents and distinct term sets in the mock data | 320 and 201 | read in the browser from =Mgmt.docs('swap')= and =Mgmt.termSets('swap')= | this branch |
+
+* Notes
+
+** The entity screens come first
+
+The owner asked for the plain entity screens of the conventions, with the other four prototypes as workflows layered on top, as the Workflows menu does for other entities. The fifth prototype, See the conventions a party uses, draws the list of kinds, the list of one kind and the record page. Find, Name a set and Retire are lines in its Workflows menus. Decide stays in the Requests area and has a Requests tab on the record page.
+
+** UX rules applied
+
+- One screen with a rail of steps. A record page has Details and History tabs, and the last-changed line.
+- A list has a search, a sort, a pager that starts at 15 rows, and states for no records, no match and an error.
+- A write that a second person decides says Propose. A decline needs a comment. A pending request can be withdrawn.
+- An action a person may not take is not drawn. The access mark says Editable or Read only. No permission code appears on a screen.
+- No native select. Keys are monospace, an empty value is a muted dash, a time is relative with the exact time on hover.
+- Colour is for meaning only: green, amber and red are status, grey is inactive, violet is a classification.
+
+** Limits
+
+- The strings are in English only. The standard asks for French and Portuguese before a screen ships.
+- Three of the 26 kinds carry mock documents. The other kinds in the set picker show no terms.
+- The prototypes were checked in headless Chrome by screenshot and by a read of the console. No person has clicked through them.
+- The server gaps that each page marks are the gaps in the four journeys.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3581][#3581]] | [prototypes] Journeys and prototypes for managing conventions |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The history uses fixed strings and a fixed delete time | retire-a-convention/prototype.js | Fixed | The design note now says the history is a fixture. |
+| 2 | The request says Asked by M. Okafor for every actor | retire-a-convention/prototype.js | Fixed | The field reads the acting person. |
+| 3 | The Revert dialog does nothing | retire-a-convention/prototype.js | Fixed | The design note says it only closes. |
+| 4 | Interaction was not tested | all four | Open | The owner reviews the prototypes in a browser. |
+| 5 | The branch has no merge base in the reviewer's checkout | none | No change | A property of the reviewer's checkout. |
+
+* Result
+
+Four prototypes are in =doc/prototypes/conventions/=: find a convention by its terms, name a convention set, retire a convention and decide a convention change. Each one has a design note and a row on the group page, follows the UX conventions, and marks the server gaps its journey names. The inventory check passes.

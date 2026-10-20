@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:conventions:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-19
 
 * Summary
 
 The market terms an instrument is built on, and the reference data lists each convention picks from.
 
-One prototype answers to this group. Each one is a static page under
+Six prototypes answer to this group. The first draws how a person starts from an instrument. The second draws the plain entity screens of the conventions. The other four draw how a person manages conventions, as workflows layered on those screens: finding a document by its terms, naming a set, retiring a document and deciding a change. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -27,6 +27,11 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype              | What it argues | Open it | Review |
 |------------------------+----------------+---------+--------|
 | Instrument conventions | A person starts from the instrument they want to trade, not from the entity name: the picker walks from the instrument family to the convention that serves it, and the convention states the terms it fixes. It also draws a second person's approval for every write: the request waits, Market Risk decides, and a decline leaves the convention alone. | [[file:define-the-conventions-for-an-instrument/][prototype]] | none |
+| [[file:see-the-conventions-a-party-uses.org][See the conventions a party uses]] | That the conventions need the same plain entity screens as every record kind: the list of the 26 kinds, the list of one kind's documents and the record page of one document. The management workflows sit on top in a Workflows menu and open as their own pages. | [[file:see-the-conventions-a-party-uses/][prototype]] | none |
+| [[file:find-a-convention-by-its-terms.org][Find a convention by its terms]] | How a person finds the document of one kind that states a set of terms, or learns that none does. The server filters a convention list by key only, so the screen reads every row and compares the terms itself. The page says how many rows it read, because a search that read one page is not a search of the kind. | [[file:find-a-convention-by-its-terms/][prototype]] | none |
+| [[file:name-a-convention-set.org][Name a convention set]] | How a person makes a convention set that a report can choose. A set holds no term: it names one document for each kind it covers. The person describes the set, chooses a document for each of the 26 kinds, reads the reach and proposes the set. Nothing exists until Market Risk approves, so the control says Propose and not Save. | [[file:name-a-convention-set/][prototype]] | none |
+| [[file:retire-a-convention.org][Retire a convention]] | How a person deletes a convention document safely. The reach panel comes before the dialog, because the only thing that makes a delete safe is knowing what else reads the row. The panel says what it cannot read, and does not show an empty list as if it meant none. The delete is a proposal, so the document stays until a second person approves. | [[file:retire-a-convention/][prototype]] | none |
+| [[file:decide-a-convention-change.org][Decide a convention change]] | how the second person decides a convention write. The change panel shows the old value beside the new one, because a request that shows only the new value cannot be decided. The queue never lists a request that the person raised, and a person who cannot decide sees only their own requests. A decline needs a comment. | [[file:decide-a-convention-change/][prototype]] | none |
 
 * Adding a prototype
 

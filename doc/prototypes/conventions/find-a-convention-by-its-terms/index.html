@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find a convention by its terms journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Find a convention by its terms, on the shared journey page: a flat step rail
+  and one step. A person holds a set of terms and wants the document of one
+  kind that states them. The kind's list can be filtered by its key only, so
+  the screen reads every row and compares the terms itself. That cost is the
+  design question, and the page says how many rows it read.
+
+    ?step=0|1|2                 the step: terms, matches, a match
+    ?kind=swap|deposit|ibor_index   the kind, already chosen
+    ?<column>=<value>           a term already set, for example
+                                fixed_calendar=AED&fixed_frequency=Annual
+                                A value of "none" asks for a column the
+                                document leaves empty.
+    ?key=AED-EIBOR-6M-SWAP      the match opened on step 2
+    ?actor=m.okafor|k.mori      who reads. The first may write.
+    ?fail=1                     the server refuses the read, to show the error
+    ?gaps=0                     hide the server gap notes
+
+  Three of the 26 kinds carry mock documents. The other 23 are not drawn.
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

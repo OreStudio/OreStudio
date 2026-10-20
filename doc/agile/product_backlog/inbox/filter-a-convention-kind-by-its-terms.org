@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 5AF4BBB3-30F8-49EB-AF9F-55BAF5DB9502
+:END:
+#+title: Filter a convention list by its terms
+#+description: The generated list filter of every convention kind takes id_one_of and nothing else, so finding the document that states a set of terms means reading every page. A kind such as swap holds 320 documents that state 201 term sets. Decide whether each kind gets a generated filter on its term columns, and how the list reports the count of distinct term sets. Found while writing the journey Find a convention by its terms.
+#+type: capture
+#+level: cross
+#+filetags: :conventions:search:refdata:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give each convention kind a generated list filter on its term columns, and decide how a list reports the number of distinct term sets it holds.
+
+* Why
+
+The generated filter of every convention list takes =id_one_of= and nothing else. A person who looks for the document that states a set of terms reads every page. The swap kind holds 320 documents that state 201 term sets, so the cost is real and the check for a duplicate before authoring is a person reading rows. Three journeys already record the gap. The 26 tables have different columns, so the filter must be generated for each kind and not shared.
+
+* References
+
+- [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]]
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]]
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]]
+
+* See also
+
+-

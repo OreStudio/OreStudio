@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retire a convention journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Retire a convention, on the shared journey page: a flat step rail and one
+  step. A person deletes a document a run should stop reading, after reading
+  what depends on it. The delete needs a second person, so the write is a
+  proposal and the document stays until Market Risk approves.
+
+    ?step=0|1|2|3               the step: the document, what reads it, the
+                                request, the history
+    ?kind=swap|deposit|ibor_index   the kind of the document
+    ?key=AED-EIBOR-6M-SWAP      the document. The curated one is named by a set.
+    ?outcome=waiting|approved|declined   the state of the request on step 2
+    ?actor=m.okafor|k.mori      who acts. The second cannot write.
+    ?dialog=1                   open the delete dialog on step 1
+    ?gaps=0                     hide the server gap notes
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>
+

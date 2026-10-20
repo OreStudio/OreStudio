@@ -1,0 +1,71 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>FIND A CONVENTION BY ITS TERMS</b>  { Kind | Terms | Matches | Next }
+  --
+  {
+    {
+      <b>1. The kind</b>
+      --
+      Kind: ^swap^v      Party: ACCOUS
+      This kind holds 320 documents that state 201 distinct term sets.
+      <i>The server filters by key only. The screen reads the pages itself.</i>
+      [ Continue ]
+    } | {
+      <b>2. The terms I hold</b>
+      --
+      {#
+        Term | Wanted value
+        Fixed Calendar | ^AED^v
+        Fixed Frequency | ^Annual^v
+        Fixed Day Count Fraction | ^ACT/365^v
+        Index | (any)v
+      }
+      <i>A term left as any matches every value.</i>
+      [ Back ] | [ Find ]
+    }
+  }
+  --
+  {
+    {
+      <b>3. Matches</b>
+      --
+      3 documents state these terms. 201 term sets exist in the kind.
+      {#
+        Key | Index | Float Frequency | Used by
+        AED-EIBOR-6M-SWAP | AED-EIBOR-6M | Semi-Annual | 1 set
+        AED-EIBOR-3M-SWAP | AED-EIBOR-3M | Quarterly | none
+        AED-OIS-SWAP | AED-ON | Annual | none
+      }
+      Same terms, different key: 2 of the 3 match on every term shown.
+      [ Open one ] | [ Back ]
+    } | {
+      <b>4. No match</b>
+      --
+      <b>No document in swap states these terms.</b>
+      Rows read: 320 of 320.
+      --
+      [ Author a convention with these terms ] | [ Change the terms ]
+    }
+  }
+}
+
+@enduml

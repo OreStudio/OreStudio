@@ -41,7 +41,7 @@ the tenant administrator. A market risk reader arrives after a run produced
 numbers they did not expect, and wants the terms behind one instrument family.
 A trading desk arrives with a booking in front of them and asks what the
 convention for that family states. A tenant administrator arrives when a party
-reports a term that has moved, and reads across the tenant's parties. The three
+reports a term that has moved, and reads the conventions of that party. The three
 read the same activity over different visible sets, and the sets are the
 permissions and the row-level policy, not three screens.
 
@@ -77,7 +77,13 @@ The journey keeps no server state. No step waits on the server after its reply.
    =zero_inflation_index=. Each row states the kind's name, how many term
    columns its table carries, how many documents the party holds, and whether
    the party or the tenant owns them. The two are not the same claim, so the
-   row states which: 22 kinds belong to the party and four belong to the tenant.
+   screen keeps them apart. A tab of party conventions holds the 22 kinds that
+   belong to the party. A tab of shared conventions holds the four kinds that
+   belong to the tenant, with a warning that every party reads them and that a
+   change applies to all parties. A person always reads the conventions of one
+   party and never across parties. Inside each tab the kinds sit under the asset
+   class they serve: interest rates, FX, inflation, credit, commodity and bond.
+   A filter on the asset class narrows the list.
 3. *Read the terms of one kind in words.* The person opens the kind they
    suspect. The system shows the kind's documents, each with its terms said in
    words rather than as codes: "The AED calendar, modified following as the
@@ -157,11 +163,14 @@ that no row needs opening to be understood.
 
 * Prototype
 
-No prototype answers this journey today. The prototype that used to draw the
-26-kind table inside the reporting group has been retired: it was built on a
-conventions configuration that carries no children, and the conventions are now
-named convention sets rather than a per-kind list a person assembles. This pass
-writes no prototype.
+A clickable prototype draws this journey:
+[[file:../../../prototypes/conventions/see-the-conventions-a-party-uses/][prototype]], with its design note
+[[file:../../../prototypes/conventions/see-the-conventions-a-party-uses.org][see-the-conventions-a-party-uses]].
+It draws the plain entity screens: the list of the 26 kinds, the list of one
+kind's documents and the record page of one document. The management journeys
+are workflows layered on top of those screens, in a Workflows menu. The
+prototype that used to draw the 26-kind table inside the reporting group has been
+retired: it was built on a conventions configuration that carries no children.
 
 Conventions are named convention sets: a set carries a name, a purpose and a
 description, a system holds few of them, and a report binds one by choosing it.
@@ -304,8 +313,10 @@ with their counts and their provenance.
    216 of ACME's 10,991 rows are held once for the tenant: =currency_pair= 179,
    =overnight_index= 23, =ibor_index= 10 and =tenor= 4. A change one party makes
    to the IBOR convention changes what every party reads, and nothing on the row
-   says so. The screen marks the owning scope per kind; the server does not
-   report it.
+   says so. The screen keeps the four kinds in their own tab; the server does not
+   report the owning scope.
+   The server also holds no asset class for a kind, so the screen holds the
+   grouping.
 9. *No operation returns how many distinct term sets a kind holds.* The 201 of
    320 is a =count(distinct (…))= over seven columns that the screen performs. No
    read states it, so the person learning that a derived name collides learns it

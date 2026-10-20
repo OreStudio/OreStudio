@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 7D36D29C-426D-4E7E-9D16-F46364B9818E
+:END:
+#+title: User Journey: Decide a convention change
+#+description: A market risk approver reads a requested convention change beside the terms it replaces, and approves or declines it.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market risk approver reads a requested convention change beside the terms it replaces, and approves or declines it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Someone asked to change a term that every desk reads. I want to see what it is
+now, what they want, who it reaches and why they asked, and then say yes or no."
+
+The journey is done when the decision is recorded, the requester can read it, and
+the person knows whether the change was applied.
+
+This journey is the second half of the four journeys that write a convention: [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention
+for a kind]], [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a
+party uses for one kind]], [[id:59C8659C-D442-4AEA-94CE-5244F1AF19B3][Retire a
+convention]] and [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention
+set]]. The controls note says each write needs a second person. Today the
+first two write directly, and the other two draw the request. This journey is
+where the request waits for a decision.
+
+* Actor and trigger
+
+The actor is the approver: a person from Market Risk. The controls note gives
+Market Risk the decision on a new convention, a change of its terms, and a change
+of how tenors resolve ([[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and
+the controls on each]]). The person is never the one who asked: the approval
+record refuses a decision by the asker.
+
+The role exists. The part /Market Risk/ is seeded with the description
+"Classification, capital treatment, agreements and conventions", and the
+permission =inbox::approvals:decide_market_risk= is seeded. What does not exist is
+a request kind for a convention. The queue lists a request only if its kind
+exists, so today the approver has nothing to open. See /What is missing/.
+
+The trigger is a waiting request in the approver's queue. The journey starts on
+the queue and ends when the decision is read back. The requested change applies
+after the last required approval. It does not apply on a hold or a decline.
+
+The journey keeps server state: the request, its decisions and its state. The
+approver can leave the screen at any step.
+
+* Steps
+
+1. *Open the queue.* The system lists the requests that the person may decide:
+   those whose kind names a permission the person holds, and that the person did
+   not raise. Each row shows what is asked, who asked, the kind of change and how
+   long the request has waited.
+2. *Read the change.* The person opens one request. The system shows the target,
+   for example the swap document of the party, and each term that changes with
+   its present value beside the asked value. A new document or a new set has no
+   present value, and the screen shows the whole new row. A close shows the row
+   that would stop being read.
+3. *Read the reason.* The system shows the reason the requester gave, who asked and
+   when. It shows when the request expires.
+4. *Read the reach.* The system states who reads the target: every definition of the
+   party reads a party document, and every party of the tenant reads a tenant
+   kind. It states what it cannot say: which runs are affected, because no run
+   records the version of a document it read.
+5. *Read the rule.* The system shows how many approvals the request needs, the part
+   that decides, and the decisions so far.
+6. *Decide.* The person approves, declines or holds, and writes a comment. A
+   decline needs a comment. The system records the decision under the person's own
+   name.
+7. *Read the outcome.* After an approval, the system states whether the change is
+   applied or waits for another decider. After a decline, the record keeps its
+   version and the request ends. The system tells the requester.
+8. *Leave, or go on.* The person returns to the queue.
+
+* Screens and wireframes
+
+One screen of four panels: the queue, the change, the decision and the outcome.
+The change panel is the one the journey is about. A person who decides a term
+must read the old and the new value in one place, and a request that shows only
+the new value is not a request a person can decide.
+
+#+caption: Decide a convention change: the queue for Market Risk, one change as old term beside new term, the decision with its comment, and the outcome that states whether the change applied.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_decide_a_convention_change.png]]
+
+* Prototype
+
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/decide-a-convention-change/][prototype]], with its design note
+[[file:../../../prototypes/conventions/decide-a-convention-change.org][decide-a-convention-change]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =approval_request= | The request under decision: who asked, which kind, why, when it expires and its state | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | How many approvals, the permission a decider holds, whether a hold is allowed, whether an approval needs a comment | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | Each decision taken, with who, when and the comment | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =approval_decision_type= | The decisions on offer, and which need a comment | [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] |
+| =approval_request_state= | The state the request is in, and which states are final | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
+| The kind's convention table | The present row, which the change is read against | one of the 26; see [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the queue | List the requests this person may decide | =inbox.v1.ops.list_approval_queue= | exists |
+| Open the queue | A convention request in the queue | (no convention request kind is seeded) | missing |
+| Read the change | Read the request header | =inbox.v1.approval_requests.get= | exists |
+| Read the change | Read the present row | =refdata.v1.<kind>_conventions.get= | exists |
+| Read the change | Read the pending change | (a request holds no pending change) | missing |
+| Read the reason | Read the requests of one kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
+| Read the reach | Read the runs that read a version | (no run records the version) | missing |
+| Read the rule | Read how many approvals and who decides | =inbox.v1.approval_kinds.list= | exists |
+| Read the rule | Read the decisions so far | =inbox.v1.approval_decisions.list_by_request_id= | exists |
+| Decide | Approve, decline, hold or resume | =inbox.v1.ops.decide_approval= | exists |
+| Read the outcome | Apply the change when the last decider approves | (no apply workflow for a convention) | missing |
+| The screen itself | Decide a convention change from the browser | (no BFF route) | missing |
+
+* What is missing
+
+1. *No approval kind for a convention.* =iam.role_grant=, =refdata.book_change= and
+   =refdata.counterparty_change= are the only kinds seeded. The candidate is one
+   kind, for example =refdata.convention_change=, whose =decide_permission_code=
+   is =inbox::approvals:decide_market_risk= and whose =approvals_required= is 1.
+   The part and the permission exist. The question the product owner answers is
+   whether one kind serves all four requests or each request has its own kind.
+2. *A request holds no pending change.* A request carries a kind and a reason. It
+   does not carry the row that is asked, so the change panel has nothing to read.
+   The pending change needs a home: the request, or a staged row of the
+   convention table.
+3. *Nothing applies the change.* Counterparty and book changes have an apply
+   workflow. A convention has none, so an approval changes nothing. The apply
+   must write the row with =must_match_version=, and it must refuse if the row
+   changed after the request was raised.
+4. *A convention of a tenant kind is decided by one function for every party.* The
+   controls note names Market Risk as the decider and does not say which party's
+   Market Risk decides a tenant kind. The decision is the product owner's.
+5. *The role is not tied to a person in the tenant.* The permission exists. A
+   Market Risk account in a tenant holds it only if the tenant's roles grant it,
+   and this journey assumes they do. The first task of the implementation reads
+   the seeded roles and the tenant's grants to confirm the assumption.
+6. *No run records the version it read.* The reach panel states the scope and
+   cannot name the runs.
+7. *No BFF route serves the queue for conventions.* The inbox subjects exist and
+   the browser reaches them through the inbox, so the journey adds the panel and
+   no route.
+
+* Related journeys
+
+- [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]] — raises a request this journey decides
+- [[id:59C8659C-D442-4AEA-94CE-5244F1AF19B3][Retire a convention]] — raises a request this journey decides
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — raises a request this journey decides
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — raises a request this journey decides
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the same decision for a curve, with a delta panel
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — who decides each act
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the sections this page fills

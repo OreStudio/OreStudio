@@ -24,7 +24,7 @@ hide empty description
 [*] --> Live
 
 state Live : persist every tick
-state CatchingUp : persist the newest tick of each series for each second
+state CatchingUp : persist the newest tick of each datum for each second
 state Shedding : drop every tick older than the age limit
 
 Live --> CatchingUp : lag above the first limit

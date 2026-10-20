@@ -20,22 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story, and carry the first documents: the architecture proposal for the tick ingest pipeline and the record of the capacity experiments.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-20                               |
 
 * Acceptance
 
--
+- The story, its tasks and the sprint row exist.
+- The architecture note proposes a pipeline that meets the requirements, with diagrams and prior art.
 
 * Plan
 
@@ -83,3 +84,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint row exist. The note
+=tick_ingest_pipeline.org= proposes lanes, a bounded ring, an age gate, latest-value
+conflation, a recent window in memory and batched writes, with three diagrams. The
+investigation task holds the measurements and the lock finding.

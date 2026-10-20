@@ -40,6 +40,7 @@ ring --> lane : batch of k ticks
 
 lane -> lane : age gate: drop a tick older than the limit of its class
 lane -> lane : conflate: keep the newest tick of each datum
+lane -> lane : add the ticks to the recent window
 
 lane -> live : latest tick of each datum
 live -> cons : publish on the party subject, no ack
@@ -47,7 +48,7 @@ live -> cons : publish on the party subject, no ack
 alt the lag is below the first limit
     lane -> db : insert all kept ticks in one transaction
 else the lag is above the first limit
-    lane -> lane : keep the newest tick of each series for each second
+    lane -> lane : keep the newest tick of each datum for each second
     lane -> db : insert the kept ticks in one transaction
 end
 

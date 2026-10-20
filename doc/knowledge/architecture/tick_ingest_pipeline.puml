@@ -24,31 +24,40 @@ skinparam componentStyle rectangle
 
 rectangle "Producers\nfeeds and vendors" as prod
 queue "NATS core\nsynthetic.v1.ops.tick.<source>" as nats
-rectangle "Receive\ndecode, age gate,\nroute by datum key" as recv
+rectangle "Receive\ndecode, policy, age gate,\nroute by series key" as recv
+queue "JetStream\ndurable ticks" as js
+rectangle "Durable receive\nown thread, acks after commit" as drecv
 
 package "Lane 1 to N, one writer thread each" {
     queue "Ring buffer\nbounded, newest wins" as ring
     rectangle "Conflate\nlatest tick per datum" as conf
+    rectangle "Recent window\nlast ticks of each datum" as window
     rectangle "Batch\nevery tick taken this cycle" as batch
 }
 
 rectangle "Live fan-out\ncore NATS, no ack" as live
 database "Observation store\none transaction per batch" as db
 rectangle "Live consumers\ncharts, CRM bridge" as cons
-rectangle "Readers of the store\nreports, history" as readers
+rectangle "Readers of the store\nreports, older history" as readers
+rectangle "Chart seeding and late joiners\nlast value, recent ticks" as seed
 
 prod --> nats
+prod ..> js : durable classes
+js ..> drecv
+drecv ..> ring : durable lanes, waits when full
 nats --> recv
 recv --> ring : one slot, never waits
 ring --> conf
+ring --> window
 ring --> batch
 conf --> live : newest value first
 live --> cons
 batch --> db : multi-row insert
 db --> readers
+window --> seed : read from memory
 
 note bottom of batch
-    A datum key maps to one lane.
+    A series key maps to one lane.
     One writer owns each lane.
     A tick keeps its order within its series.
 end note

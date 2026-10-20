@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-20
 #+updated: 2026-10-20
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -123,6 +123,34 @@ The restored function comes from the repo file, and a query confirmed it.
 The owner added two requirements: a stale tick is worse than a lost tick, and the
 target is tens of thousands of ticks each second. The proposal that meets them is
 [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]].
+
+** Review of the pipeline design against every asset class
+
+The owner asked for a review of the design as the base for all ticking data. The
+review read the note against the way asset classes plug in today
+(=adding_a_market_data_asset_class.org=, =feed_factory_and_kind_seam.org=) and against
+Hedgr. It found these faults. Each one is fixed in the note.
+
+#+ATTR_HTML: :class hug-leading
+| Finding | Why it matters | Change in the note |
+|---------+----------------+--------------------|
+| The ingest sees a source and a URI, and never the feed kind. | A policy keyed by the feed kind cannot work in the ingest. | Policy rows are keyed by instrument type, with a default row, so a new class needs no ingest change. |
+| One rule for every tick. | A trade, a fixing or a close must not be shed. | Two durability tiers. The durable tier has its own JetStream entry and lanes. |
+| The durable tier made the shared receiver wait. | One full durable ring would stall every quote on the same thread. | The durable tier gets its own receiver thread. |
+| "Overwrite the oldest slot" was unsafe. | A writer must not touch a slot that the worker reads. | The worker detects that it was lapped by the sequence numbers and skips ahead. |
+| Thinning and lane choice used "series" and "datum" loosely. | A curve is one series with many quotes. Thinning by series would drop quotes. | Defined the words. Lanes are keyed by series, and conflation, windows and thinning by datum. |
+| A held-back value could wait forever. | The last tick of a burst never reached the consumer. | A trailing publish at the end of each conflation interval. |
+| A curve may publish half old and half new. | A consumer would see an inconsistent curve. | A =consistency= field, and an open question on a set marker. |
+| The CRM bridge is an =if= in the loop. | Derived data needs a place for every class. | Taps that read the conflated output, and derived ticks that re-enter with producer kind =DERIVED=. |
+| Imports and vendor backfill would hit the age gate. | Bulk loads carry old times on purpose. | A separate bulk entry that uses the batch writer without the gate. |
+| Clock skew between producer and service. | The age limit would drop good ticks or keep bad ones. | Three times for each tick, a skew rule, and a future-stamp rule. |
+| URI parsing per tick. | The codec costs more than the rest of the receive stage. | A table from URI string to parsed datum. |
+| The window read had no access check. | Any caller could read any party's recent ticks. | The read checks tenant and party against the bindings. |
+| The write ceiling of PostgreSQL is untested. | The whole plan rests on it. | A step 0 prototype, and a table of risks with what would change the design. |
+| No place to say what a new feed must do. | The pipeline must be the base for all ticking data. | The sections on what a feed owes the pipeline and what the pipeline owes the feed. |
+
+Not yet checked: whether the Qt client subscribes to the observation change event.
+The client lives in another repository.
 
 ** The report that opened this task
 

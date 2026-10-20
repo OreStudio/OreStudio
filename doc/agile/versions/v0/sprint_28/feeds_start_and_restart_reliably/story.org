@@ -21,11 +21,11 @@ Close the faults that the stop and start test of every feed group found, so that
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Capture: revoke a collection's run grant on delete. |
 | Last touched  | 2026-10-19                               |
 
 * Acceptance
@@ -40,8 +40,8 @@ Close the faults that the stop and start test of every feed group found, so that
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6CE2D817-1316-40FD-8688-765BF8237F3C][Scaffold story: Feeds start and restart the same way every time]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:1DE6CDCB-DE6E-4DC9-B238-93DA0A87478C][Implement feeds that start and restart the same way]] | BACKLOG | | | Initial task for: Feeds start and restart the same way every time |
+| [[id:6CE2D817-1316-40FD-8688-765BF8237F3C][Scaffold story: Feeds start and restart the same way every time]] | DONE | 2026-10-19 | 2026-10-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1DE6CDCB-DE6E-4DC9-B238-93DA0A87478C][Implement feeds that start and restart the same way]] | DONE | | 2026-10-20 | Initial task for: Feeds start and restart the same way every time |
 
 * Decisions
 

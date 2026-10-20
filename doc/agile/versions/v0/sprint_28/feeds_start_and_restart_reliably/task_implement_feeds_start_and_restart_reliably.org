@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-19
 #+updated: 2026-10-19
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Close the faults that the stop and start test of every feed group found, so that
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance

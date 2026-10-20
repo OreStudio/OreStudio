@@ -20,22 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story: story page, tasks, sprint wiring, and the target-state documents.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
 
--
+- The story page, its tasks and the sprint row exist.
+- The documents state the target behaviour and carry the diagrams.
 
 * Plan
 
@@ -75,6 +76,11 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 |    |       |
+
+* Result
+
+The story, its two tasks and the sprint row exist. The restore, the run states and
+the journey documents state the target behaviour, with updated diagrams.
 
 * Review
 

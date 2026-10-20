@@ -149,6 +149,23 @@ Hedgr. It found these faults. Each one is fixed in the note.
 | The write ceiling of PostgreSQL is untested. | The whole plan rests on it. | A step 0 prototype, and a table of risks with what would change the design. |
 | No place to say what a new feed must do. | The pipeline must be the base for all ticking data. | The sections on what a feed owes the pipeline and what the pipeline owes the feed. |
 
+A second review looked at the write path and the broker, which the first one skipped.
+It found these gaps. Each one is fixed in the note.
+
+#+ATTR_HTML: :class hug-leading
+| Finding | Evidence | Change in the note |
+|---------+----------+--------------------|
+| Two JetStream streams store every tick for 7 days with no consumer. | =nats stream info= for =synthetic_ticks= and =marketdata_ticks=: file storage, 7 days, 0 consumers. | Perishable subjects use core NATS. The streams go away for them. |
+| Producers wait for an acknowledgement on each tick. | =fx_spot_feed.cpp= calls =js_publish=. | Producers publish without waiting. |
+| The row count and the volume have no plan. | About 24 billion rows each day at 30,000 ticks each second with today's fan-out. | Retention tiers, compression, bars, and one row for each source. |
+| A tick table that is bitemporal costs a trigger and an update for each row. | The insert trigger runs an =UPDATE= on the table. There are seven indexes. | A separate append-only tick table, to be proved by step 0. |
+| A batch holds one tenant only. | Row-level security checks the tenant of the connection. | A lane groups each cycle by tenant. |
+| Two rows with one key in a batch break the unique index. | =current_timestamp= is the start of the transaction. | The lane keeps the last row of each key. |
+| Lag and silence were mixed. | Hedgr and the CRM bridge have silence rules of their own. | A section on lag and silence, and a =silence_after= field. |
+| A store outage had no rule. | None. | An outage counts as infinite lag. The live path continues. |
+| Loss could not be told from a fault. | Core NATS reports a drop only through a callback. | A sequence number for each source and a counter on the callback. |
+| The batch form of =sqlgen::insert= is unknown. | The library splits at 50,000 rows. The statement form is in a compiled library. | Step 0 verifies it and uses =COPY= if needed. |
+
 The Qt client is decommissioned, so it is no longer a consumer to check. Hedgr was read
 in its code, not only in its plan: the tick stream at =tick_stream.cpp= line 151 is
 the only subscription it makes outside its tests. That review found three more points,

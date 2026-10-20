@@ -23,6 +23,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { readMyParties } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
+import { subjects as typeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_type_protocol';
+import { subjects as policySubjects } from '@ores/wire-protocol/generated/reporting/protocol/concurrency_policy_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
@@ -831,6 +833,25 @@ export function registerReportingRoutes(
      * The server counts, narrowed by the same party and search as the list, so
      * the five words add up to the list's own total.
      */
+    /*
+     * The codes a definition's report type and concurrency policy may take, as
+     * the server holds them, so the edit form offers what a save will accept.
+     */
+    server.get('/api/reporting/choices', async (request) => {
+        const session = requireSession(request);
+        const codes = async (subject: string, rows: string) =>
+            (await readAll(session, subject, rows, { filter: null, as_of: null }))
+                .map((entry) => text(entry['code']))
+                .filter((code) => code !== '');
+        return {
+            reportTypes: await codes(typeSubjects.list_report_types_request, 'types'),
+            concurrencyPolicies: await codes(
+                policySubjects.list_concurrency_policies_request,
+                'policies',
+            ),
+        };
+    });
+
     server.get('/api/reporting/report-health', async (request) => {
         const session = requireSession(request);
         const query = parseInput(

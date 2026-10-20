@@ -1277,6 +1277,19 @@ export const api = {
         );
     },
 
+    /** The codes a report type and a concurrency policy may take. */
+    async reportChoices(): Promise<{
+        readonly reportTypes: readonly string[];
+        readonly concurrencyPolicies: readonly string[];
+    }> {
+        return z
+            .object({
+                reportTypes: z.array(z.string()),
+                concurrencyPolicies: z.array(z.string()),
+            })
+            .parse(await request('/api/reporting/choices', { method: 'GET' }));
+    },
+
     /**
      * One definition's page, by whatever the address segment is.
      *

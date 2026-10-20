@@ -196,6 +196,12 @@ function ReportBody(): ReactNode {
         },
         meta: { quiet: true },
     });
+    const choices = useQuery({
+        queryKey: ['report-choices'],
+        queryFn: api.reportChoices,
+        staleTime: 5 * 60_000,
+        meta: { quiet: true },
+    });
     const load = useLoadState([['records', REPORTS_RESOURCE]]);
     const news = useEntityChanges([REPORTS_EVENTS], load);
     const opened = open.data;
@@ -268,6 +274,7 @@ function ReportBody(): ReactNode {
     const reload = (): void => {
         void queries.invalidateQueries({ queryKey: reportKey(definition.id) });
     };
+    const editFields = fieldsWith(choices.data ?? { reportTypes: [], concurrencyPolicies: [] });
     return (
         <div className="space-y-4">
             <RecordHeader
@@ -317,7 +324,7 @@ function ReportBody(): ReactNode {
                 <RecordDialog
                     title={t('refdata.records.editTitle', { code: definition.name })}
                     resource={REPORTS_RESOURCE}
-                    specs={DEFINITION_FIELDS}
+                    specs={editFields}
                     row={definition}
                     keep={['id']}
                     onClose={() => setEditing(false)}
@@ -325,6 +332,23 @@ function ReportBody(): ReactNode {
             )}
         </div>
     );
+}
+
+/** The definition's fields, with the options of the two coded fields as the server holds them. */
+function fieldsWith(choices: {
+    readonly reportTypes: readonly string[];
+    readonly concurrencyPolicies: readonly string[];
+}): readonly FieldSpec[] {
+    const optionsOf: Readonly<Record<string, readonly string[]>> = {
+        report_type: choices.reportTypes,
+        concurrency_policy: choices.concurrencyPolicies,
+    };
+    return DEFINITION_FIELDS.map((spec) => {
+        const options = optionsOf[spec.field];
+        return options !== undefined && options.length > 0 && spec.kind.kind === 'choice'
+            ? { ...spec, kind: { ...spec.kind, options } }
+            : spec;
+    });
 }
 
 /** The party the definition belongs to, by name, and the page of the party it names. */

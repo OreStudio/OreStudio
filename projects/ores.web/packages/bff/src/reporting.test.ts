@@ -586,6 +586,26 @@ describe('the health tally of the reports', () => {
     });
 });
 
+describe('the codes a definition may take', () => {
+    it('lists the report types and concurrency policies the server holds', async () => {
+        const { server, sessionId } = buildTestServer({
+            'reporting.v1.report_types.list': { result: ok, types: [{ code: 'risk' }], total: 1 },
+            'reporting.v1.concurrency_policies.list': {
+                result: ok,
+                policies: [{ code: 'skip' }, { code: 'queue' }, { code: 'fail' }],
+                total: 3,
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/reporting/choices');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            reportTypes: ['risk'],
+            concurrencyPolicies: ['skip', 'queue', 'fail'],
+        });
+    });
+});
+
 describe('one report definition', () => {
     it('reads the definition the id names, and not one of the same name elsewhere', async () => {
         const { server, sessionId, calls } = buildTestServer(listReplies());

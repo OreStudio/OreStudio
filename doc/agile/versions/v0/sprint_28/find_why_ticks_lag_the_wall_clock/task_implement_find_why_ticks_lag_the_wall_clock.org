@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: A6D20F16-3F4F-426D-976B-221A201AF4DE
+:END:
+#+title: Task: Investigate the tick lag in marketdata ingest
+#+description: Initial task for: Find why market data ticks lag the wall clock
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Find where the backlog of ticks builds up between the feed and the chart, why it builds, and how long it takes to drain. Then state the fix.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-20                               |
+
+* Acceptance
+
+- The place where ticks queue is found, with a measurement.
+- The cause is stated, and it explains why the lag drains at 1.16 times real time.
+- The fix is stated, and a follow-up story or task exists for it.
+- A tick that is late shows how old it is, or the reason it does not is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Newest chart tick against the wall clock, 17:43:59 UTC | 4,255 s behind (tick stamped 16:33:04 UTC) | Read from the Hedgr log of the reporting environment | not recorded |
+| Lag three minutes later | 4,223 s, a drain of about 1.16 times real time | Same log | not recorded |
+| Tick arrival | one new point about every 2 s | Same log | not recorded |
+| NATS slow consumers and pending bytes on the bright_faraday broker | 0 and 0 on every connection | Broker connection list of the reporting environment | not recorded |
+| =ores.marketdata.service= CPU and its postgres connection | 18 % CPU; connection 41 % in "idle in transaction", sustained | Process and connection view of the reporting environment | not recorded |
+| Machine load over 15 minutes | 5.3 on 8 cores, then 2.1 | Load average of the reporting environment | not recorded |
+
+* Notes
+
+** The report that opened this task
+
+Another environment measured this and has not confirmed the cause.
+
+Measured:
+- Tick time against the wall clock, the drain rate and the arrival rate are in the Measurements table.
+- The producer, =fx_spot_feed.cpp=, stamps each tick with =system_clock::now()=, and Hedgr decodes =observation_time= unchanged. The stamp is a real UTC time, not a time zone fault.
+- The broker is not the place of the backlog: no slow consumers and no pending bytes.
+
+Inferred, not confirmed:
+- The backlog sits in the ingest loop of the marketdata service of bright_faraday. The loop handles each tick one at a time, with database writes and a JetStream publish that waits for an acknowledgement. If the producers outrun the loop, the messages queue inside that process, where the broker cannot see them.
+- The loop fell behind while the machine was loaded.
+
+Unknown:
+- The service's own log goes to the terminal that started it, so no one has read it.
+
+What to decide:
+- Wait for the backlog to drain, or restart the marketdata service so that ingest starts from now. Nobody has touched bright_faraday's services.
+- Hedgr needs no fix. It judges age from the tick's own time and shows delayed data as STALE. STALE does not show how old the data is. The question is whether the chart footer should show it, for example "70 min old".
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

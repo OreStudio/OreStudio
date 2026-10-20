@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 3575BB1B-B8A9-419F-A22E-FDFDC985F987
+:END:
+#+title: Story: Find why market data ticks lag the wall clock
+#+description: A tick on the chart was stamped 71 minutes behind the wall clock and drained its backlog at only 1.16 times real time. Find where the backlog sits and fix it.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ticks:performance:investigation:sprint_28:v0:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Find where the backlog of ticks builds up between the feed and the chart, why it builds, and how long it takes to drain. Then state the fix.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-20                               |
+
+* Acceptance
+
+- The place where ticks queue is found, with a measurement.
+- The cause is stated, and it explains why the lag drains at 1.16 times real time.
+- The fix is stated, and a follow-up story or task exists for it.
+- A tick that is late shows how old it is, or the reason it does not is recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:29EC2423-3202-48F1-B0DA-A7AE9A6850AE][Scaffold story: Find why market data ticks lag the wall clock]] | STARTED | 2026-10-20 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A6D20F16-3F4F-426D-976B-221A201AF4DE][Investigate the tick lag in marketdata ingest]] | BACKLOG | | | Initial task for: Find why market data ticks lag the wall clock |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -65,8 +65,8 @@ conventions load(const std::filesystem::path& path) {
 }
 
 ores::ore::xml::record_reader root_of(const conventions& document) {
-    return ores::ore::xml::record_reader(*ores::ore::xml::generated::conventions::conventions_document().root,
-                                         &document);
+    return ores::ore::xml::record_reader(
+        *ores::ore::xml::generated::conventions::conventions_document().root, &document);
 }
 
 std::size_t count(const conventions& document, std::string_view element) {
@@ -103,16 +103,17 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
         // Every other family packs one row per element, so the rows outside
         // the three tenor basis swap families equal all the elements.
         const std::size_t elements =
-            count(document, "AverageOIS") + count(document, "BMABasisSwap") + count(document, "BondYield") +
-            count(document, "CDS") + count(document, "CmsSpreadOption") +
-            count(document, "CommodityForward") + count(document, "CommodityFuture") +
-            count(document, "CrossCurrencyBasis") + count(document, "CrossCurrencyFixFloat") +
-            count(document, "Deposit") + count(document, "FRA") + count(document, "Future") +
-            count(document, "FxOption") + count(document, "IborIndex") + count(document, "InflationSwap") +
+            count(document, "AverageOIS") + count(document, "BMABasisSwap") +
+            count(document, "BondYield") + count(document, "CDS") +
+            count(document, "CmsSpreadOption") + count(document, "CommodityForward") +
+            count(document, "CommodityFuture") + count(document, "CrossCurrencyBasis") +
+            count(document, "CrossCurrencyFixFloat") + count(document, "Deposit") +
+            count(document, "FRA") + count(document, "Future") + count(document, "FxOption") +
+            count(document, "IborIndex") + count(document, "InflationSwap") +
             count(document, "IntradayPowerLoad") + count(document, "OIS") +
-            count(document, "OvernightIndex") + count(document, "Swap") + count(document, "SwapIndex") +
-            count(document, "TenorBasisTwoSwap") + count(document, "Zero") +
-            count(document, "ZeroInflationIndex");
+            count(document, "OvernightIndex") + count(document, "Swap") +
+            count(document, "SwapIndex") + count(document, "TenorBasisTwoSwap") +
+            count(document, "Zero") + count(document, "ZeroInflationIndex");
         const std::size_t outside_tenor_basis_swap =
             package.bundle.rows.size() - rows_of("convention") -
             rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short");

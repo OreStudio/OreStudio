@@ -115,18 +115,19 @@ struct family {
 
 template <typename Row>
 family make_family(std::string key, std::string element, int files) {
-    return {key,
-            std::move(element),
-            files,
-            [key](const conventions_package& package) {
-                std::vector<std::string> ids;
-                for (const auto& row : rows_of<Row>(package, key))
-                    ids.push_back(row.id);
-                return ids;
-            },
-            [key](const conventions_package& left, const conventions_package& right, std::size_t i) {
-                return rows_of<Row>(left, key)[i] == rows_of<Row>(right, key)[i];
-            }};
+    return {
+        key,
+        std::move(element),
+        files,
+        [key](const conventions_package& package) {
+            std::vector<std::string> ids;
+            for (const auto& row : rows_of<Row>(package, key))
+                ids.push_back(row.id);
+            return ids;
+        },
+        [key](const conventions_package& left, const conventions_package& right, std::size_t i) {
+            return rows_of<Row>(left, key)[i] == rows_of<Row>(right, key)[i];
+        }};
 }
 
 std::vector<family> families() {
@@ -324,8 +325,8 @@ TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", tags)
         // A schedule of rules, dates and derived groups is written as text
         // columns, so the mapper must not report it as skipped.
         ++files_with_a_publication_schedule;
-        CHECK(conventions_mapper::unmodelled(document).count(
-                  "InflationSwap.PublicationSchedule") == 0);
+        CHECK(conventions_mapper::unmodelled(document).count("InflationSwap.PublicationSchedule") ==
+              0);
         for (const auto& out : rows_of<ores::refdata::domain::inflation_swap_convention>(
                  split_conventions(document), "inflation_swap")) {
             if (out.publication_schedule_rules)

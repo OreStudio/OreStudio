@@ -167,8 +167,7 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     // file type catalogue rather than from the document, which is why the
     // example's names come back as the catalogue spells them.
     CHECK(parameters_of(exported_run.setup) == parameters_of(run.setup));
-    REQUIRE(xml::is_present(
-        *xml::generated::ore::ore_document().root, &exported_run, "Markets"));
+    REQUIRE(xml::is_present(*xml::generated::ore::ore_document().root, &exported_run, "Markets"));
     CHECK(parameters_of(exported_run.markets) == parameters_of(run.markets));
     REQUIRE(exported_run.analytics.analytic.size() == run.analytics.analytic.size());
     for (std::size_t i = 0; i < run.analytics.analytic.size(); ++i) {

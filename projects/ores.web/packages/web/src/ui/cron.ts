@@ -73,25 +73,33 @@ function inRange(range: FieldRange, value: number): boolean {
     return value >= range.min && value <= max;
 }
 
-/** Whether one comma-free item of a field is well formed and in range. */
-function itemValid(range: FieldRange, item: string): boolean {
+/** Why one comma-free item of a field is not well formed, or nothing if it is. */
+function itemFault(range: FieldRange, item: string): string | undefined {
     const [span = '', step, ...rest] = item.split('/');
-    if (rest.length > 0 || (step !== undefined && !/^[0-9]+$/.test(step))) {
-        return false;
+    if (rest.length > 0) {
+        return `"${item}" has more than one "/"`;
     }
-    if (step !== undefined && Number.parseInt(step, 10) < 1) {
-        return false;
+    if (step !== undefined && (!/^[0-9]+$/.test(step) || Number.parseInt(step, 10) < 1)) {
+        return `the step "${step}" must be a whole number of at least 1`;
     }
     if (span === '*') {
-        return true;
+        return undefined;
     }
     const ends = span.split('-');
     if (ends.length > 2) {
-        return false;
+        return `"${span}" is not a range: a range has a start and an end only`;
     }
-    return ends
-        .map((end) => numberOf(range, end))
-        .every((value) => value !== undefined && inRange(range, value));
+    for (const end of ends) {
+        const value = numberOf(range, end);
+        if (value === undefined) {
+            return `"${end}" is not a number`;
+        }
+        if (!inRange(range, value)) {
+            const max = range.name === 'weekday' ? 7 : range.max;
+            return `${value} is outside ${range.min} to ${max}`;
+        }
+    }
+    return undefined;
 }
 
 /** Whether an expression holds five well-formed fields. */
@@ -101,7 +109,10 @@ export function cronValid(expression: string): boolean {
         parts.length === FIELD_RANGES.length &&
         FIELD_RANGES.every((range, index) => {
             const field = parts[index] ?? '';
-            return field !== '' && field.split(',').every((item) => itemValid(range, item));
+            return (
+                field !== '' &&
+                field.split(',').every((item) => itemFault(range, item) === undefined)
+            );
         })
     );
 }
@@ -288,11 +299,19 @@ export function describeCron(expression: string, language: Language): string | u
     }
 }
 
+const LABEL = {
+    minute: 'minute',
+    hour: 'hour',
+    day: 'day of month',
+    month: 'month',
+    weekday: 'day of week',
+} as const;
+
 /**
- * What the cron library says is wrong with an expression, for the person who
- * typed it. Nothing when the expression is valid, or when the library finds no
- * fault the server would still refuse. A sixth field is such a fault, so it is
- * worded here.
+ * What is wrong with an expression, for the person who typed it; nothing when
+ * it is valid. The part count and the fault in a field are worded here, because
+ * the cron library accepts a sixth field and does not check every range. What
+ * only the library finds, it words.
  */
 export function problemWithCron(expression: string, language: Language): string | undefined {
     const text = expression.trim();
@@ -300,8 +319,17 @@ export function problemWithCron(expression: string, language: Language): string 
         return undefined;
     }
     const count = cronParts(text).length;
-    if (count > FIELD_RANGES.length) {
-        return `Expression has ${count} parts. The scheduler needs exactly ${FIELD_RANGES.length}: minute, hour, day of month, month and day of week.`;
+    if (count !== FIELD_RANGES.length) {
+        return `Expression has ${count} ${count === 1 ? 'part' : 'parts'}. The scheduler needs exactly ${FIELD_RANGES.length}: minute, hour, day of month, month and day of week.`;
+    }
+    for (const [index, range] of FIELD_RANGES.entries()) {
+        const field = cronParts(text)[index] ?? '';
+        for (const item of field.split(',')) {
+            const fault = itemFault(range, item);
+            if (fault !== undefined) {
+                return `The ${LABEL[range.name]} part "${field}" is not valid: ${fault}.`;
+            }
+        }
     }
     try {
         cronstrue.toString(text, { locale: LOCALE[language], throwExceptionOnParseError: true });

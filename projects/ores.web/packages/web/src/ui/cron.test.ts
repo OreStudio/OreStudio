@@ -136,11 +136,18 @@ describe('the words for an expression', () => {
 });
 
 describe('problemWithCron', () => {
-    it('quotes the library on what is wrong', () => {
+    it('says what is wrong', () => {
         expect(problemWithCron('* * *', 'en')).toBe(
-            'Expression has only 3 parts. At least 5 parts are required.',
+            'Expression has 3 parts. The scheduler needs exactly 5: minute, hour, day of month, month and day of week.',
         );
-        expect(problemWithCron('61 * * * *', 'en')).toBe('minutes part must be >= 0 and <= 59');
+        expect(problemWithCron('61 * * * *', 'en')).toContain('61 is outside 0 to 59');
+    });
+
+    it('names the part and the value that is out of range', () => {
+        expect(problemWithCron('0 5 * * 1-511', 'en')).toBe(
+            'The day of week part "1-511" is not valid: 511 is outside 0 to 7.',
+        );
+        expect(problemWithCron('0 5 * * foo', 'en')).toContain('"foo" is not a number');
     });
 
     it('words an expression with too many parts', () => {

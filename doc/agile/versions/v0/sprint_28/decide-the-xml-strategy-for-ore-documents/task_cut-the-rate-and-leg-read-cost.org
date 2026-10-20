@@ -62,13 +62,13 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Instructions of the import test before | 1,646,496,411 | =valgrind --tool=callgrind ores.ore.core.tests import_portfolio_all_ore_example_files_can_be_parsed=, run from the repository root | f4f57e27ce |
-| Instructions of the import test after | 1,558,630,477 (-5.3 percent) | same | 3e8f457d54 plus the working tree of the change |
+| Instructions of the import test after | 1,558,630,477 (-5.3 percent) | same | 8b168cfbb2 |
 | =read_rate_instrument=, 2,668 calls, before | 157,286,395 | =callgrind_annotate --tree=calling --inclusive=yes= | f4f57e27ce |
-| =read_rate_instrument=, after | 76,872,989 | same | same as after |
+| =read_rate_instrument=, after | 76,872,989 | same | 8b168cfbb2 |
 | =record_reader::own_text= under =append_legs=, 8,431 calls, before | 57,284,062 (6,800 per call) | same | f4f57e27ce |
-| =append_legs=, after | 44,376,073 (was 116,769,396) | same | same as after |
+| =append_legs=, after | 44,376,073 (was 116,769,396) | same | 8b168cfbb2 |
 | Size of =leg_data= | 8,784 bytes | =static_assert(sizeof(leg_data)==0)= compile error | 3e8f457d54 |
-| =append_to= for =leg_data=, 3,622 calls | 48,050,849 (3.1 percent of the test), of which 31,880,844 is the zero fill | =callgrind_annotate= | same as after |
+| =append_to= for =leg_data=, 3,622 calls | 48,050,849 (3.1 percent of the test), of which 31,880,844 is the zero fill | =callgrind_annotate= | 8b168cfbb2 |
 
 * Notes
 

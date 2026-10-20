@@ -8,7 +8,7 @@
 #+filetags: :fix-the-site-build-id-link:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-site-build-id-link
-#+pr:
+#+pr: 3598
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3598][#3598]] | [doc] Uppercase the id of the create-a-report prototype |
 
 * Review
 

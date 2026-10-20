@@ -30,10 +30,15 @@ what the screen needs.
 
 ** The three screens
 
-1. *The list of kinds.* One row for each of the 26 kinds, with the number of
-   documents, the number of distinct term sets, whether the kind is held for the
-   party or for the whole tenant, and the requests that wait. It has a search, a
-   filter on what the kind is held for, sort and a pager.
+1. *The list of kinds.* Two tabs: Party conventions for the 22 kinds the party
+   holds, and Shared conventions for the four kinds held once for the tenant.
+   The shared tab opens with a warning that every party reads them. Inside a tab
+   the kinds sit in sections, one for each asset class of the product model
+   (interest rates, FX, inflation, credit, commodity, bond). Each section states
+   its kinds and documents. A row shows the number of documents, the number of
+   distinct term sets and the requests that wait. It has a search, a filter on
+   the asset class and sort. It has no pager, because a section holds at most
+   twelve kinds. The party is never a column: a person reads one party.
 2. *One kind's documents.* The key first, then the main term columns and the
    source. It has a search on the key, a filter on the source, sort and a pager.
    Refresh, Workflows and Add stand at the right of the header. The states are
@@ -65,7 +70,7 @@ the exact time on hover. The strings are English only.
 ** States, by query string
 
 =?view=kinds|list|record=, =?kind=, =?key=, =?tab=details|requests|history=, =?q=,
-=?source=curated|authored=, =?held=party|tenant=, =?actor=m.okafor|k.mori=,
+=?source=curated|authored=, =?scope=party|shared=, =?class=, =?actor=m.okafor|k.mori=,
 =?dialog=add|edit=, =?menu=1=, =?state=loading|error=, =?empty=1=.
 
 ** What is fake

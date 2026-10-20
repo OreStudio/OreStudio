@@ -485,3 +485,9 @@ a.btn.danger { color: var(--bad); }
 .wf-menu a b { display: block; font-weight: 500; font-size: 13px; }
 .wf-menu a span { display: block; font-size: 12px; color: var(--ink-faint); }
 .access-link { font-size: 12px; }
+
+.rows.grouped tr.grp th {
+    text-align: left; font-size: 12px; font-weight: 600; color: var(--ink);
+    padding: 16px 0 6px; border-bottom: 1px solid var(--line);
+}
+.rows.grouped tr.grp th .dim { font-weight: 400; }

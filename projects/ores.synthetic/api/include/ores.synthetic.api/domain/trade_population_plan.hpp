@@ -56,6 +56,12 @@ struct trade_generation_scope final {
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
+     * @brief Every counterparty the tenant holds, from which the issuer of a
+     * security is drawn. A security belongs to the tenant and not to a config,
+     * so its issuer cannot depend on the counterparties one config scopes.
+     */
+    std::vector<boost::uuids::uuid> issuer_ids;
+    /**
      * @brief The netting set each counterparty of the scope is cleared under,
      * keyed by counterparty. Absent for a counterparty with no set, which is
      * ordinary: a booking without a set is one the database accepts.
@@ -101,9 +107,15 @@ struct trade_population_slot final {
     std::string internal_identifier;
     std::string security_id;
     boost::uuids::uuid issue_id;
+    /**
+     * @brief The counterparty that issued the security. It is a fact of the
+     * security and not of the trade, so it need not be the trade's own.
+     */
+    boost::uuids::uuid issuer_id;
     std::chrono::year_month_day trade_date;
     std::chrono::year_month_day issue_date;
     std::chrono::year_month_day maturity_date;
+    /// The security's original term in years, not the trade's remaining life.
     std::uint32_t tenor_years = 1;
     double notional = 0.0;
     std::string currency;

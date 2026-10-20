@@ -97,21 +97,24 @@ ORES_SYNTHETIC_CORE_EXPORT std::string
 internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32_t slot);
 
 /**
- * @brief The security identifier (ISIN-shaped) a slot carries.
+ * @brief The security identifier (ISIN-shaped) of the security with the given
+ * original term.
  *
- * One security per book: every trade of a book states the same security and
- * shares its issue row, because a security is a fact about the issuer and not
- * about the trade.
+ * The population draws its trades from a pool of securities, one per currency
+ * and whole year of the tenor band. A security is a fact about its issuer and
+ * its terms and never about a book or a trade, so any book that keeps its
+ * currency may hold it and every trade of it states the same maturity.
  */
 ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
-                                                       std::uint32_t slot);
+                                                       std::uint32_t tenor_years);
 
 /**
- * @brief The security identifier a named book's trades carry.
+ * @brief The counterparty that issued the security with the given original
+ * term, drawn from the tenant's counterparties in id order. The draw ignores
+ * the config, so every config of a tenant names the same issuer for a security.
  */
-ORES_SYNTHETIC_CORE_EXPORT std::string
-security_id_for_book(const domain::trade_generation_scope& scope,
-                     const boost::uuids::uuid& book_id);
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
+issuer_id_for(const domain::trade_generation_scope& scope, std::uint32_t tenor_years);
 
 /**
  * @brief The id a config carries, named by the party it books for and by its

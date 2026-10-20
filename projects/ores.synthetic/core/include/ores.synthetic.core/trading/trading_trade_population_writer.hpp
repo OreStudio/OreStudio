@@ -74,8 +74,25 @@ private:
      * with each trade: a second trade of the same ISIN would collide with the
      * first trade's rows, because a leg's parent is the issue.
      */
-    void write_issue_leg(const trade_population_write& write,
-                         const domain::trade_generation_scope& scope);
+    void write_issue_leg(const trade_population_write& write);
+
+    /**
+     * @brief Writes the trade's security unless the tenant holds it in full.
+     *
+     * It runs before the trade is booked, because a booked trade is one that a
+     * later run takes as present and does not revisit.
+     */
+    void ensure_issue(const trade_population_write& write);
+
+    /**
+     * @brief Whether the tenant holds the bond issue in full.
+     *
+     * A security belongs to the tenant and not to a config, so another config
+     * of the same tenant, or an earlier run, may have written it already. The
+     * schedule of its leg is the last row written, so an issue without one was
+     * cut short.
+     */
+    bool issue_complete(const boost::uuids::uuid& issue_id);
 
     /**
      * @brief Issues an entity write, stating the entity on a refusal.
@@ -89,9 +106,9 @@ private:
 
     ores::nats::service::nats_client& nats_;
     /*
-     * The issues whose rows this run has already written. A security's terms
-     * are one set of rows that its trades read through, so a run writes them
-     * once and every later trade of the same security only writes its own
+     * The issues this run has written or found already written. A security's
+     * terms are one set of rows that its trades read through, so a run writes
+     * them once and every later trade of the same security only writes its own
      * instrument.
      */
     std::set<boost::uuids::uuid> issues_written_;

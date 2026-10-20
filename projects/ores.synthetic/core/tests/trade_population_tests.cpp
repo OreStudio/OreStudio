@@ -24,6 +24,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <algorithm>
+#include <chrono>
 #include <map>
 #include <set>
 #include <string>
@@ -67,6 +69,7 @@ domain::trade_generation_scope bond_scope() {
     scope.seed = 7;
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
+    scope.issuer_ids = {bank, second_bank};
     scope.trader_usernames = {"trader.one"};
     scope.currency_code = "EUR";
     return scope;
@@ -171,11 +174,7 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    const auto expected_maturity = [](const domain::trade_population_slot& slot) {
-        return slot.trade_date + std::chrono::years{static_cast<int>(slot.tenor_years)};
-    };
-    REQUIRE(first.slots.front().maturity_date == expected_maturity(first.slots.front()));
-    REQUIRE(second.slots.front().maturity_date == expected_maturity(second.slots.front()));
+    REQUIRE(first.slots.front().maturity_date < second.slots.front().maturity_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
@@ -198,6 +197,10 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
     auto no_counterparty = bond_scope();
     no_counterparty.counterparty_ids.clear();
     CHECK_THROWS_AS(plan_population(no_counterparty), trade_population_error);
+
+    auto no_issuer = bond_scope();
+    no_issuer.issuer_ids.clear();
+    CHECK_THROWS_AS(plan_population(no_issuer), trade_population_error);
 
     auto no_trader = bond_scope();
     no_trader.trader_usernames.clear();
@@ -223,14 +226,67 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
     }
 }
 
-TEST_CASE("one_security_is_shared_by_every_trade_of_a_book", tags) {
+TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    std::map<std::string, domain::trade_population_slot> first_of;
+    for (const auto& slot : plan.slots) {
+        const auto [found, inserted] = first_of.emplace(slot.security_id, slot);
+        if (inserted)
+            continue;
+        REQUIRE(slot.issue_id == found->second.issue_id);
+        REQUIRE(slot.issuer_id == found->second.issuer_id);
+        REQUIRE(slot.issue_date == found->second.issue_date);
+        REQUIRE(slot.maturity_date == found->second.maturity_date);
+        REQUIRE(slot.tenor_years == found->second.tenor_years);
+    }
+}
+
+TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.maturity_date ==
+                slot.issue_date + std::chrono::years{static_cast<int>(slot.tenor_years)});
+        REQUIRE(slot.trade_date >= slot.issue_date);
+        REQUIRE(slot.trade_date < slot.maturity_date);
+    }
+}
+
+TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
     const auto plan = plan_population(bond_scope());
 
     std::set<std::string> securities;
-    for (const auto& slot : plan.slots)
+    std::set<std::uint32_t> terms;
+    for (const auto& slot : plan.slots) {
         securities.insert(slot.security_id);
+        terms.insert(slot.tenor_years);
+    }
 
-    REQUIRE(securities.size() == 2);
+    REQUIRE(securities.size() == terms.size());
+    REQUIRE(terms.size() > 1);
+}
+
+TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", tags) {
+    auto euro = bond_scope();
+    euro.currency_code = "EUR";
+    auto dollar = bond_scope();
+    dollar.currency_code = "USD";
+
+    REQUIRE(security_id_for(euro, 5) != security_id_for(dollar, 5));
+    REQUIRE(security_id_for(euro, 5) == security_id_for(euro, 5));
+}
+
+TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
+    const auto plan = plan_population(bond_scope());
+
+    std::map<std::string, std::set<boost::uuids::uuid>> books_of;
+    for (const auto& slot : plan.slots)
+        books_of[slot.security_id].insert(slot.book_id);
+
+    const auto shared = std::ranges::any_of(
+        books_of, [](const auto& entry) { return entry.second.size() > 1; });
+    REQUIRE(shared);
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
@@ -266,4 +322,21 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
                 versions_after_first.at(first.outcomes[i].trade_id));
     }
     REQUIRE(writer.versions == versions_after_first);
+}
+
+TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes", tags) {
+    const auto wide = bond_scope();
+    auto narrow = bond_scope();
+    narrow.counterparty_ids = {second_bank};
+    std::ranges::reverse(narrow.issuer_ids);
+
+    std::map<std::string, boost::uuids::uuid> issuer_of;
+    for (const auto& slot : plan_population(wide).slots)
+        issuer_of.emplace(slot.security_id, slot.issuer_id);
+
+    for (const auto& slot : plan_population(narrow).slots) {
+        const auto found = issuer_of.find(slot.security_id);
+        if (found != issuer_of.end())
+            REQUIRE(slot.issuer_id == found->second);
+    }
 }

@@ -97,6 +97,20 @@ std::uint32_t tenor_years_of(const std::string& code) {
     }
 }
 
+/*
+ * How long before the anchor every generated security was issued. It is longer
+ * than the span of trade dates, so no trade is dated before the issue of the
+ * security it holds.
+ */
+constexpr int security_age_months = 6;
+
+std::string format_date(const year_month_day& date) {
+    return std::format("{}-{:02}-{:02}",
+                       static_cast<int>(date.year()),
+                       static_cast<unsigned>(date.month()),
+                       static_cast<unsigned>(date.day()));
+}
+
 year_month_day add_years(const year_month_day& date, int years) {
     return date + std::chrono::years{years};
 }
@@ -194,18 +208,21 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
         entry.trade_type_code = std::string(bond_trade_type_code);
         entry.trade_id = trade_id_for(scope, slot);
         entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.security_id = security_id_for_book(scope, book_id);
-        entry.issue_id = issue_id_for_security(entry.security_id);
         entry.tenor_years = std::clamp(drawn, min_years, max_years);
+        entry.security_id = security_id_for(scope, entry.tenor_years);
+        entry.issue_id = issue_id_for_security(entry.security_id);
+        entry.issuer_id = issuer_id_for(scope, entry.tenor_years);
 
         /*
          * The anchor is the config's as-of and never the clock, so a
          * re-provision at the same anchor states the same dates and a later
-         * anchor moves them deliberately.
+         * anchor moves them deliberately. The security's dates come from the
+         * anchor and its original term alone, so every trade of it states the
+         * same ones; the trade date is the only date that belongs to the trade.
          */
         entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        entry.maturity_date = add_years(entry.trade_date, static_cast<int>(entry.tenor_years));
-        entry.issue_date = add_months(entry.trade_date, -12);
+        entry.issue_date = add_months(scope.as_of_date, -security_age_months);
+        entry.maturity_date = add_years(entry.issue_date, static_cast<int>(entry.tenor_years));
 
         entry.notional = notional_from(scope, draw(name, 1));
         entry.currency = scope.currency_code;
@@ -258,21 +275,15 @@ std::string internal_identifier_for(const domain::trade_generation_scope& scope,
     return std::format("POP-{}-{:06}", prefix, slot);
 }
 
-std::string security_id_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
-    const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
-    return security_id_for_book(scope, book_id);
-}
-
-std::string security_id_for_book(
-    const domain::trade_generation_scope& scope,
-    const boost::uuids::uuid&
-        book_id) { /*
-                    * One security per book, named by the party and the book. Every trade of
-                    * the book states the same terms and shares one issue row, which is what
-                    * a security is: a fact about the issuer rather than about the trade.
-                    */
+std::string security_id_for(const domain::trade_generation_scope& scope,
+                            std::uint32_t tenor_years) {
+    /*
+     * A security is named by its currency, the anchor and its original term,
+     * and by nothing about a book or a trade. Any book that keeps the currency
+     * may hold it, and two trades of it name one issue.
+     */
     const auto digest = named(std::format(
-        "bond:{}:{}", boost::uuids::to_string(scope.party_id), boost::uuids::to_string(book_id)));
+        "bond:{}:{}:{}Y", scope.currency_code, format_date(scope.as_of_date), tenor_years));
     static constexpr char alphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string body;
     body.reserve(9);
@@ -294,6 +305,15 @@ std::string security_id_for_book(
     }
     const auto check = (10 - (sum % 10)) % 10;
     return without_check + static_cast<char>('0' + check);
+}
+
+boost::uuids::uuid issuer_id_for(const domain::trade_generation_scope& scope,
+                                 std::uint32_t tenor_years) {
+    if (scope.issuer_ids.empty())
+        throw trade_population_error("An issuer needs the tenant's counterparties.");
+    auto issuers = scope.issuer_ids;
+    std::ranges::sort(issuers);
+    return issuers[tenor_years % issuers.size()];
 }
 
 }

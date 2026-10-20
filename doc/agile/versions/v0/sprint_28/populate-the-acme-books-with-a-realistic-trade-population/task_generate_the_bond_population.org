@@ -7,20 +7,24 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr: 3366
+#+branch: feature/generate-the-bond-population
+#+pr: 3592
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment: bright_faraday
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Each ACME party's bond book holds bond trades across a range of counterparties
+and tenors. The data follows the model of a real trading system: a bond is a
+security with fixed terms, held once by the tenant. A trade is a position in that
+security. It holds a reference to the security and its own size, date,
+counterparty and book.
 
 * Status
 
@@ -35,7 +39,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A provisioned ACME tenant holds one bond issue for each security of the
+  pool, and the pool spans the config's tenor band.
+- Every trade of a security reads the same issuer, issue date and maturity.
+- No security belongs to a book. A book may hold a security that another book
+  of the same currency also holds.
+- The currency of a security is the currency of every book that holds it.
+- A trade is dated on or after the issue date of its security and before its
+  maturity.
+- The face value of a security states no trade's size. The size of a trade is
+  the notional on its bond instrument.
+- A second run writes nothing and moves no trade version.
 
 * Plan
 
@@ -55,10 +69,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bond issues after provisioning | 20 (7 GBP, 7 HKD, 6 USD) | =compass sql= count of =ores_trading_bond_issues_tbl= joined to the schedules | working tree on =c4c3183288= |
+| Maturity span of the issues | 2027-04-20 to 2036-04-20 | =compass sql= on =ores_trading_bond_issue_leg_schedules_tbl.end_date= | working tree on =c4c3183288= |
+| Trades, books | 32 trades, 4 books | =compass sql= on =ores_trading_bond_instruments_tbl= | working tree on =c4c3183288= |
+| Second run | wrote 0, present 32, version 5 | =synthetic generate-trades= over the four configs | working tree on =c4c3183288= |
 
 * Notes
 
+PR #3365 wrote one issue for each book, from the first trade of that book. All
+trades of a book then shared one maturity, and the drawn tenor never reached the
+data. It also took the face value and the issuer from that first trade.
+
+The cause was the model, and not a missing field. The issue is the security
+master. A trade names it through =bond_instrument.issue_id=. The schedule
+=tenor= of =1Y= is the coupon period and is correct.
+
+Open items, not done here:
+
+- A trade that was booked without its bond instrument stays booked and is
+  taken as present by every later run. The issue is now written before the
+  trade, so a cut-short issue heals. A cut between the booking and the
+  instrument does not.
+- The repair of a cut-short issue is not tested on a database. No run cut an
+  issue short.
+- Pricing is not proven. The ORE validator found no quotes for the as-of date.
+- The writer has no database-backed test.
+- The pool is thin: 32 trades spread over 20 securities, so most securities
+  hold one trade. A realistic book holds fewer securities with more trades.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,6 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3592][#3592]] | [synthetic] Draw bond trades from a shared pool of securities |
 | [[https://github.com/OreStudio/OreStudio/pull/3366][#3366]] | [agile] Close the five generator tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/3365][#3365]] | [synthetic] Generate the ACME bond population through trading |
 
@@ -84,3 +122,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Gap found: the generator wrote one issue for each book, so a book had one
+maturity. It is fixed. The planner now builds a pool of securities, one for each
+whole year of the tenor band. A security has an issue date six months before
+the as-of date, a maturity of that date plus its term, and an issuer taken from
+the scope. Each trade draws a security from the pool. The writer gives a
+security a unit face value, takes the issuer from the security, and reuses an
+issue that the tenant already holds.
+
+Review found that the first version named a security by anchor and term only.
+The first config to write it then fixed its currency and curve, and 7 of the 9
+securities were held by books in other currencies. A security is now named by
+its currency, the anchor and its term.
+
+A second review round fixed two findings. The issuer of a security is now drawn
+from all counterparties of the tenant, in id order, so no config decides it. The
+writer now writes the issue before it books the trade. It reads the schedule of
+the leg, which is the last row written, to tell a whole issue from a cut-short
+one, and it writes a cut-short issue again.
+
+Result on a provisioned database: 20 issues with maturities from 2027 to 2036.
+Every issue has the currency of each book that holds it. They hold 32 trades in
+4 books. A second run wrote nothing.
+
+The tests changed. The case that asserted one security for each book now
+asserts the opposite. New cases check that the trades of a security agree on
+its terms, that a maturity is the issue date plus the term, that a trade date
+falls inside the life of its security, that books share securities, and that a
+security states a currency.

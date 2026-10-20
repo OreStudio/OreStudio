@@ -272,10 +272,15 @@ function linksTab(t) {
     cards.push(t.structure
         ? h('section', { class: 'card' }, h('header', null, h('h2', null, STRUCT_KIND[t.structure].kind === 'Package' ? 'Package' : 'Structure'), h('span', { class: 'sp' }), h('span', { class: 'access' }, 'Read only')), h('div', { class: 'body' }, h('a', { href: dealHref(t.structure) }, t.structure), ' — ' + STRUCT_KIND[t.structure].kind + (STRUCT_KIND[t.structure].template ? ' (' + STRUCT_KIND[t.structure].template + ')' : '') + (STRUCT_KIND[t.structure].parent ? ', inside ' + STRUCT_KIND[t.structure].parent : '') + ', ' + STRUCT_KIND[t.structure].legs + ' legs. ' + (STRUCT_KIND[t.structure].whole ? 'Confirmed and priced as one deal.' : 'Each leg confirms on its own. A package has no price of its own.')))
         : h('section', { class: 'card' }, h('header', null, h('h2', null, 'Structure or package'), h('span', { class: 'sp' }), h('span', { class: 'access' }, 'Read only')), h('div', { class: 'body' }, 'Not part of a structure or a package. ', CAN.structure ? h('a', { href: '../structure-page/?mode=group&trades=' + t.code }, 'Group with other trades') : null)));
-    const links = [];
-    if (t.rebookedTo) links.push([t.rebookKind || 'Novation', 'transferred → new trade', t.rebookedTo]);
-    if (t.rebookedFrom) links.push([(trade(t.rebookedFrom) || {}).rebookKind || 'Novation', 'new trade ← transferred', t.rebookedFrom]);
-    cards.push({ id: 'links', title: 'Linked trades', table: 'trade_link', version: 1, child: true, columns: ['Link type', 'Direction', 'Trade'], rows: links.map(l => [l[0], l[1], h('a', { href: tradeHref(l[2]) }, l[2])]) });
+    const all = HAND_LINKS.slice();
+    if (t.rebookedTo) all.push({ from: t.code, to: t.rebookedTo, type: t.rebookKind || 'Novation' });
+    if (t.rebookedFrom) all.push({ from: t.rebookedFrom, to: t.code, type: (trade(t.rebookedFrom) || {}).rebookKind || 'Novation' });
+    const mine = all.filter(l => l.from === t.code || l.to === t.code);
+    const rows = mine.map(l => {
+        const lt = linkType(l.type), out = l.from === t.code, other = out ? l.to : l.from;
+        return [ref('trade_link_type', l.type, l.type), out ? lt[2] : lt[3], out ? lt[3] : lt[2], h('a', { href: tradeHref(other) }, other), lt[4] ? 'Yes' : 'No'];
+    });
+    cards.push({ id: 'links', title: 'Linked trades', table: 'trade_link', version: 1, child: true, columns: ['Link type', 'This trade is', 'The other trade is', 'Trade', 'Economic'], rows });
     return h('div', { class: 'cards' }, cards.map(c => c.nodeType ? c : card(c, { readOnlyNote: true })));
 }
 function historyTab(t) {
@@ -407,7 +412,7 @@ function renderLifecycle(t) {
             h('div', { class: 'grid2' }, field('Reason', select(reasonsFor(a.category === 'cancellation' ? 'delete' : 'amend').filter(r => r[0] !== 'common.non_material_update'), reason, v => { reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { note = e.target.value; } }, note))));
         else if (step === 2) pane = h('div', { class: 'notice acc' }, h('b', null, 'What this will do'),
             h('div', null, 'Activity ' + a.label + ' (' + a.category.replace('_', ' ') + ').'),
-            ['novate', 'bookmove'].includes(ev[0]) ? [h('div', null, 'Cancels ' + t.code + '.'), h('div', null, 'Books a new trade with a fresh id ' + (ev[0] === 'novate' ? 'against ' + cpty(newCp).name : 'in ' + book(newBook).name) + '.'), h('div', null, 'Joins the two with a ' + (ev[0] === 'novate' ? 'Novation' : 'Book move') + ' link. One transaction.')]
+            ['novate', 'bookmove'].includes(ev[0]) ? [h('div', null, 'Cancels ' + t.code + '.'), h('div', null, 'Books a new trade with a fresh id ' + (ev[0] === 'novate' ? 'against ' + cpty(newCp).name : 'in ' + book(newBook).name) + '.'), h('div', null, 'Joins the two with a ' + (ev[0] === 'novate' ? 'Novation' : 'BookMove') + ' link: ' + linkType(ev[0] === 'novate' ? 'Novation' : 'BookMove').slice(2, 4).join(' → ') + '. One transaction.')]
                 : h('div', null, t.code + ' moves to ' + ({ execute: 'live', discard: 'cancelled', reinstate: 'live', cancel: 'cancelled', expire: 'expired' }[ev[0]] || 'live (terms reduced)') + '.'),
             a.confirmable ? h('div', null, 'A new confirmation is issued to ' + cpty(t.cp).name + '.') : null, h('div', { class: 'faint small' }, 'A version is never deleted. Undo it with the mirror event.'));
         else pane = h('div', { class: 'notice' }, 'Press Record to write the activity and the versions it causes.');
@@ -430,7 +435,7 @@ function renderLifecycle(t) {
             if (['novate', 'bookmove'].includes(ev[0])) {
                 const n = Object.assign({}, t, { id: tradeId(300 + slot), code: newCode, cp: ev[0] === 'novate' ? newCp : t.cp, book: ev[0] === 'bookmove' ? newBook : t.book,
                     state: 'live', ext: 1, ver: 1, structure: null, rebookedTo: null, rebookedFrom: t.code, updated: iso(NOW) });
-                t.rebookedTo = n.code; t.rebookKind = ev[0] === 'novate' ? 'Novation' : 'Book move'; n.rebookKind = t.rebookKind;
+                t.rebookedTo = n.code; t.rebookKind = ev[0] === 'novate' ? 'Novation' : 'BookMove'; n.rebookKind = t.rebookKind;
                 TRADES.push(n); store('booked', (store('booked') || []).concat([n]));
             }
         });

@@ -249,7 +249,7 @@ The prototypes drew several closed sets from memory. They now read from the seed
 Amounts show digit separators.
 
 Still open:
-- Link types and the other instrument families (equity, commodity, credit, scripted) are not compared yet. They draw the generic card.
+- The other instrument families (equity, commodity, credit, scripted) are not compared yet. They draw the generic card.
 - A change reason that requires commentary is not enforced by the screens.
 
 ** Instrument fields compared with the tables, 2026-10-20
@@ -275,9 +275,20 @@ A book in the prototypes now carries the columns of the book table: parent portf
 - Book a trade offers a book that is not Active as a disabled choice with its status, and shows the facts of the chosen book under the field. The book move and the ORE export offer open books only.
 - The ORE import asks for the functional currency of the books it creates. The planner sets them Active and Trading; in a sandbox the purpose is Test and the ledger feed is None.
 - Two books were added: EMEA-RATES-2025 (Closed) and EMEA-CMDTY (Frozen).
-- Open question: the database does not refuse a trade in a Frozen or Closed book. The prototype does. The rule needs a decision.
+- Decision, 2026-10-21: the screen enforces the book status. The database does not refuse a trade in a Frozen or Closed book today, so the rule lives in the screens (Book a trade, book move, ORE import and export) until the model states it.
 
 The trade list now shows structures and trades as rows of one level (=?show=trades|structures=). The real read model, trade_summaries, holds trades only. A mixed list needs either a read model that unions both, or two reads that the screen merges; a merged page then cannot be exact about paging and order. The request line shows both reads. This also needs a decision.
+
+** Link types, 2026-10-21
+
+The Links tab of the trade page now reads the 12 link types of the seed file, each with the role of its two ends and whether it has an economic effect: CloseOut, Novation, Roll, Exercise, MisbookingCorrection, Fixing, BookMove, Wash, WhatIfCopy, DealtFrom, Hedge, UserDefined.
+
+- The Linked trades card has the columns Link type, This trade is, The other trade is, Trade and Economic. The role names are the seed roles (for example hedged and hedging).
+- The book move writes a =BookMove= link and the novation a =Novation= link. The old label "Book move" is gone. The lifecycle step names the link and its roles.
+- The mock data holds a Hedge and a UserDefined link made by hand.
+- The structure page no longer names =trade_links.put_many=. A structure joins its trades through =structure_members=.
+
+Not done: a screen to add a link by hand (Hedge and UserDefined), and the links that the other lifecycle events write (Exercise, CloseOut, Roll, MisbookingCorrection). The prototype records those events without a new trade.
 
 ** Trade entry folded into Book a trade and the structure page, 2026-10-20
 

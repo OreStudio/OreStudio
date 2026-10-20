@@ -329,7 +329,7 @@ function renderGroup() {
         pane = h('div', { class: 'notice acc' }, h('b', null, 'What this will do'), h('div', null, 'Creates ' + (pk ? 'a package' : 'a ' + G.kind + (G.template ? ' (' + G.template + ')' : '') + ' structure') + ' for ' + PARTY + ' and ' + cpty([...cps][0]).name + '.'), h('div', null, 'Links ' + CHOSEN.length + ' trades as legs. No trade is rewritten.'),
             h('div', null, confirmText(G.kind) + '. ' + pricingText(G.kind) + '.'), pk ? h('div', null, 'The legs keep their own confirmations.') : h('div', null, 'The legs\' own confirmations are replaced by one for the deal.'),
             h('div', { class: 'grid2' }, field('Reason', select(REASONS, G.reason, v => { G.reason = v; })), field('Commentary', h('textarea', { rows: 2, oninput: e => { G.note = e.target.value; } }, G.note))),
-            h('div', { class: 'mono small' }, 'trading.v1.structures.put, structure_members.put_many, trade_links.put_many  change intent: reason, commentary'));
+            h('div', { class: 'mono small' }, 'trading.v1.structures.put, structure_members.put_many  change intent: reason, commentary'));
         nav = [back, h('button', { class: 'btn primary', onclick: () => {
             const id = (pk ? 'PKG-0' : 'STR-0') + (100 + Object.keys(DEALS).length); const rec = { kind: G.kind, template: G.template, cp: [...cps][0], members: CHOSEN.map(t => [t.code, G.roles[t.code]]), created: '2026-10-11T16:41:00+01:00', by: ME };
             store('structures', Object.assign(store('structures') || {}, { [id]: rec })); G.done = id; renderGroup(); } }, 'Create the ' + GN)];

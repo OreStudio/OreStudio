@@ -120,6 +120,24 @@ const BOOK_ROWS = [
     { code: 'ORE-EX-FX', name: 'ORE examples: FX', description: 'The FX examples of the ORE distribution', parent: 'ORE examples', unit: '', ccy: 'USD', gl: '', cost: '', status: 'Active', reg: 'Trading', purpose: 'Test', feed: 'None', sweepable: false, centre: 'USNY', sandbox: 'ORE-SAMPLES' }
 ];
 const BOOKS = BOOK_ROWS.map(b => Object.assign({ virtual: !!b.sandbox }, b));
+/* The reasons two trades are joined: [code, description, role of the from end, role of the to end, economic]. */
+const LINK_TYPES = [
+    ['CloseOut', 'The parties end a trade early, in full or in part', 'original', 'closing', true],
+    ['Novation', 'One party transfers its position to a third party, or assigns it', 'transferred', 'new_counterparty', true],
+    ['Roll', 'A position is rolled to a new date by closing the trade and booking a replacement', 'rolled', 'replacement', true],
+    ['Exercise', 'The holder exercises an option, in full or in part, into a new trade', 'exercised', 'resulting', true],
+    ['MisbookingCorrection', 'A trade was booked in error and is cancelled and rebooked', 'correction', 'erroneous_original', true],
+    ['Fixing', 'The rate of a non-deliverable forward fixes, so a fixing trade is booked', 'fixed', 'fixing', true],
+    ['BookMove', 'A trade closes out and is rebooked into a book with a different legal entity, branch, regulatory book or accounting classification', 'backed_out', 'destination', true],
+    ['Wash', 'Risk is routed from the client-facing trade to the book that owns it', 'client_facing', 'risk_bearing', false],
+    ['WhatIfCopy', 'A user copies a trade into a sandbox to experiment on it', 'original', 'hypothetical', false],
+    ['DealtFrom', 'A hypothetical trade is dealt, so a new actual trade is booked against it', 'hypothetical', 'actual', false],
+    ['Hedge', 'A desk records the risk relationship between a hedged trade and its hedge', 'hedged', 'hedging', false],
+    ['UserDefined', 'A user records an association between two trades that no other type names', 'either', 'either', false]
+];
+const linkType = code => LINK_TYPES.find(x => x[0] === code);
+/* Links a person recorded by hand. A cancel and rebook writes its own link. */
+const HAND_LINKS = [{ from: 'ACME-100201', to: 'ACME-100210', type: 'Hedge' }, { from: 'ACME-100215', to: 'ACME-100230', type: 'UserDefined' }];
 const bookOpen = b => !!b && b.status === 'Active';
 /* The facts a person needs to choose a book, in one line. */
 const bookFacts = b => b ? [b.parent, b.ccy, b.reg + ' book', 'purpose ' + b.purpose, 'ledger feed ' + b.feed.toLowerCase(), 'rates centre ' + b.centre, b.sweepable ? 'sweepable' : null, b.status !== 'Active' ? b.status : null].filter(Boolean).join(' · ') : '';

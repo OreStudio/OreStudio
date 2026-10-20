@@ -68,6 +68,7 @@ function problems() {
     else if (!tradeType(F.type).instrument) out.push(F.type + ' has no instrument table yet, so its terms cannot be held.');
     if (!F.cp) out.push('Choose a counterparty.');
     const b = book(F.book);
+    if (b && !bookOpen(b)) out.push('The book ' + b.name + ' is ' + b.status + '. A ' + b.status.toLowerCase() + ' book takes no trade: choose an open book.');
     if (b && b.virtual && !(F.mode === 'draft' || ['test', 'hypothetical'].includes(F.nature))) out.push('A virtual book holds only a draft, a test or a hypothetical. This trade is live and real: choose a real book.');
     const d = dealOf();
     if (F.struct.mode === 'existing' && !d) out.push('Choose the structure.');

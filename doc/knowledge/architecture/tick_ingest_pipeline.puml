@@ -46,7 +46,6 @@ conf --> live : newest value first
 live --> cons
 batch --> db : multi-row insert
 db --> readers
-db ..> cons : one event per batch
 
 note bottom of batch
     A datum key maps to one lane.

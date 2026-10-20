@@ -52,7 +52,6 @@ else the lag is above the first limit
 end
 
 db --> lane : commit
-lane -> cons : one batch event
 lane -> lane : record the lag, the batch size and the commit time
 
 @enduml

@@ -2,7 +2,7 @@
 :ID: 6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2
 :END:
 #+title: The tick ingest pipeline: freshness first
-#+description: Proposal for an ingest pipeline that keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second: lanes, latest-value conflation, batched writes and a bounded ring.
+#+description: Proposal for an ingest pipeline that keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second: lanes, latest-value conflation, batched writes and a bounded ring. It compares the design with the tickerplant, conflated feeds and time-series stores.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
@@ -39,6 +39,8 @@ instrument. The present loop writes about 150 rows each second.
    cannot pass unseen.
 5. *A fault stays in its lane.* A slow or failing write for one series does not
    stop the others.
+6. *No change signal for each row.* A time series does not announce each new row. The
+   live stream is the signal.
 
 ** Why the present path cannot meet them
 
@@ -203,11 +205,18 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 
 ** What changes in the store
 
-- *One notification for each batch.* The row trigger that calls =pg_notify= for each
-  row goes away. The lane worker publishes one batch event after the commit. A
-  statement-level trigger that uses a transition table is the alternative. Either
-  way the commit takes the notification lock once for the batch and not once for
-  each row.
+- *No notification at all.* The observation table has a row trigger that calls
+  =pg_notify=. The code generator adds it to a table by default. The pattern behind
+  it, in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][the PostgreSQL architecture note]],
+  is a signal that an entity changed, so that a client marks its copy stale and
+  reloads it. That fits a table that changes now and then. It does not fit a time
+  series. The series changes many times each second, and no client can reload at that
+  rate. The live path already carries each new value to the consumers that need it.
+  So the trigger goes away, and so does the event mapping that republishes it.
+  The model of the table sets the =ores.sql.schema.notify_trigger= knob to false.
+  Three other marketdata tables already do this. Without the trigger, a commit never
+  takes the notification lock, and the ingests of other databases on the same
+  server no longer wait for it.
 - *The second row for each tick.* The ingest stores each tick twice, once at its own
   time and once under the previous business day. At scale this doubles the writes.
   It is an open question whether a snapshot job should build that row instead.
@@ -218,6 +227,117 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *Indexes.* The table has seven indexes and a trigger that closes the previous
   current point. Each index costs a write. A measurement with a batch decides
   which of them the hot path needs.
+
+** How tick systems are built in practice
+
+Tick processing is an old problem, and the industry has settled on a small number of
+shapes. This section lists them. The sources are linked where this session read
+them. Claims that come from a vendor are marked as such.
+
+*** The tickerplant, the real-time store and the history store
+
+The shape that many trading firms use comes from kdb+. A feed handler captures the
+raw feed. A tickerplant receives each update, writes it to a log file, and publishes
+it to subscribers. A real-time database subscribes, holds the current day in memory,
+and answers intraday queries. At the end of the day it writes its data to a
+historical database that is partitioned by date. The
+[[https://code.kx.com/q/architecture/][KX architecture guide]] and the
+[[https://code.kx.com/q/kb/kdb-tick/][kdb+tick page]] describe the parts. The log is
+the recovery source: a restarted real-time database replays it.
+
+Two details matter here. First, the tickerplant can run in zero-latency mode or
+publish in batches on a timer. The KX guidance says that a subscriber that only plots
+graphs needs an update every few seconds, so a chained tickerplant serves slow
+subscribers. That is conflation by another name. Second, the split between a
+real-time tier in memory and a history tier on disk is the norm. A chart of the
+last few minutes reads memory. It does not query the history store.
+
+*** Conflated feeds
+
+Exchanges and vendors sell the same idea as a product. The CME MDP 3.0 conflated
+feed sends only the most recent update of each instrument, which cuts the bandwidth
+and the work of the consumer. See the
+[[https://b2bits.atlassian.net/wiki/spaces/B2BITS/pages/286294017/Java+TCP+Handler+for+CME+MDP+3.0+Conflated+Feed][description of a handler for it]].
+A patent that came up in the same search notes the limit: some data conflates well,
+such as the current price, and some does not, such as a trade cancellation.
+This pipeline carries observed values, so it can conflate them. A trade or an event
+needs a lane that does not conflate.
+
+Chronicle sells a ring buffer in two forms: one that delivers every message in order,
+and one that conflates to the newest value for a reader that wants only that. It
+claims under 200 nanoseconds at the 99.9th percentile for the conflating form. That
+is a vendor figure on one machine, so treat it as indicative. See the
+[[https://chronicle.software/ring-buffer][Chronicle page]].
+
+*** In-process hand-off
+
+Low-latency trading systems pass messages between threads on a ring buffer. The LMAX
+Disruptor, Aeron with its ring-buffer adaptors, and Chronicle Queue are the common
+tools. They exist for nanosecond hand-off. This pipeline needs a millisecond commit, so
+it takes the pattern and not the tools.
+
+*** Time-series databases
+
+A database that is built for ticks ingests in batches and makes the commit interval an
+explicit setting.
+
+- *QuestDB* writes through a write-ahead log and takes data over its line protocol.
+  Its out-of-order handling holds rows in memory and commits after a lag. The
+  [[https://questdb.com/docs/guides/out-of-order-commit-lag][commit lag guide]]
+  calls the setting a trade between throughput and the time until data is readable.
+  A forum answer in the same results says the cost sits mostly in the commit and not
+  in the number of rows. The lane cycle makes the same trade, and it sets the lag
+  from the measured lag of the lane.
+- *ClickHouse* wants
+  [[https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy.md][inserts of 10,000 to 100,000 rows]],
+  about one each second. When clients cannot batch, its
+  [[https://clickhouse.com/docs/concepts/features/operations/insert/asyncinserts][asynchronous inserts]]
+  batch in the server and accept a loss on a crash.
+- *TimescaleDB* groups rows by chunk and writes each chunk in one transaction. It
+  recommends =COPY= for bulk loads. See the
+  [[https://www.tigerdata.com/docs/build/data-management/write-data/insert][insert documentation]].
+
+All three say one thing: never commit once for each tick.
+
+*** Streams with a compacted topic
+
+Kafka offers log compaction, which keeps the last record of each key. A common
+design puts ticks on a Kafka topic and loads a column store from it, for example
+through the ClickHouse Kafka table engine and a materialized view. It fits a system
+that must replay. It adds a broker, and a consumer that falls behind reads old
+records first, which is the behaviour this pipeline avoids.
+
+*** The last value for a late joiner
+
+A consumer that starts late needs the current value at once. The kdb+ real-time
+database serves it from memory. A compacted topic serves it as the last record of a
+key. A JetStream stream with one message for each subject serves it here. A lane could
+serve it from its own memory instead, which removes the stream.
+
+** Where the proposal follows practice and where it departs
+
+It follows practice in these points.
+
+- It has a receive stage, a fan-out to live consumers, and a store writer, which is the
+  tickerplant, the real-time store and the history writer in the kdb+ shape.
+- A lane that conflates for its live consumers is a chained tickerplant.
+- Writes to the store are batched with an explicit commit interval, as in QuestDB,
+  ClickHouse and TimescaleDB.
+- The store has no change signal for each row, because none of these systems has one.
+
+It departs from practice in two points, and both follow from the requirements.
+
+- *No replay log.* A tickerplant logs every tick so that a restart can replay it.
+  This pipeline keeps no log, because a replayed tick is a stale tick. A restart
+  resumes at the newest tick.
+- *Age-based shedding.* A tickerplant keeps every tick and lets a slow subscriber
+  fall behind. This pipeline drops old ticks and keeps the newest.
+
+One idea from practice is not yet in the design. A real-time tier in memory would hold
+the recent ticks of each datum, for example the last few minutes, in the lane. A chart
+would seed itself from that window, and a late joiner would read the last value from
+it. The history store would then serve only older data. This is the largest open
+choice, and it is listed below.
 
 ** Prior art
 
@@ -232,22 +352,9 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *The single writer principle* (Martin Thompson, "Mechanical Sympathy"). One thread
   owns each piece of mutable state. The lane follows it: one writer owns the ring
   and the connection of its lane.
-- *The kdb+ tickerplant.* A tickerplant receives ticks, publishes them to
-  subscribers, and writes them to a log. It batches its work on a timer. This
-  pipeline differs in one way. A tick is perishable here, so it keeps no replay log
-  and chooses to drop old ticks instead.
-- *Conflation and last-value delivery.* Market data distribution commonly sends a
-  slow consumer only the latest value. Messaging systems offer last-value queues,
-  and Kafka log compaction keeps the last record of each key. Reactive libraries name
-  the same idea =onBackpressureLatest=.
-- *Batched ingest in time-series stores.* The
-  [[https://www.tigerdata.com/docs/build/data-management/write-data/insert][TimescaleDB documentation]]
-  says it groups rows by chunk and writes each chunk in one transaction, and it
-  recommends =COPY= for bulk loads. The ClickHouse documentation recommends
-  [[https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy.md][inserts of 10,000 to 100,000 rows]]
-  about once each second, and it describes
-  [[https://clickhouse.com/docs/concepts/features/operations/insert/asyncinserts][asynchronous inserts]]
-  that buffer in the server. Both say not to commit for each row.
+- *Reactive libraries.* Reactive Streams libraries name the same drop-the-old idea
+  =onBackpressureLatest=. A consumer that cannot keep up gets the newest item and not
+  the oldest.
 
 ** Options set aside
 
@@ -268,9 +375,9 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 Each step ends with a measurement. The test tool is the tick injector, which sends
 a burst of ticks at a chosen rate and times the drain.
 
-1. *Remove the per-row costs. No new structure.* One notification for each batch, a
-   series cache, a multi-row insert, and no wait for acknowledgements on the live
-   publish. Add the lag gauge. Acceptance: the burst drain rate is at least ten
+1. *Remove the per-row costs. No new structure.* Drop the notification trigger of the
+   observation table, add a series cache and a multi-row insert, and stop waiting for
+   acknowledgements on the live publish. Add the lag gauge. Acceptance: the burst drain rate is at least ten
    times the rate of today, and the lag gauge shows the lag of a loaded system.
 2. *Lanes, the ring, the age gate and the overload states.* Acceptance: a burst of
    ten times the sustained rate leaves no backlog after the burst ends. The lag of
@@ -288,6 +395,11 @@ a burst of ticks at a chosen rate and times the drain.
   and FX spot ticks fast.
 - Should the CRM bridge read from the conflated live path and not from the store path?
 - Is the second row for each tick worth its cost at scale?
+- Should each lane keep a window of recent ticks in memory, as the real-time database
+  of a kdb+ system does, so that charts and late joiners never read the store?
+- Does any client need to learn that a series changed? If so, the signal belongs on
+  the live tick stream, at most once each second for each series. A database
+  notification is not the way.
 - How many lanes does one server need, and how many connections can the database
   give them?
 

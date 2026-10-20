@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/find-why-ticks-lag-the-wall-clock
-#+pr: 3589
+#+pr: 3597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -75,6 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3597][#3597]] | [doc] Add the follow-up tasks of the tick lag story |
 | [[https://github.com/OreStudio/OreStudio/pull/3589][#3589]] | [marketdata,doc] Propose the tick ingest pipeline, record the tick lag |
 
 * Review

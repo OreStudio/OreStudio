@@ -53,9 +53,24 @@ that path and links here rather than restating this rule.
   each key in a batch, because two rows of one key in one transaction would break the
   unique index of current rows. A batch that fails is split in two until the failing
   row is alone, and the loop logs that row and goes on.
+- The worker drops a tick older than 5 seconds when it takes the tick from the queue, and
+  it counts the drop. A worker that has fallen behind reaches the newest ticks at once and
+  does not work through the old ones.
+- A batch takes about one second. The worker sizes the next batch from the speed of the
+  last one, between 50 and 20,000 ticks, so a slow store gets smaller batches and a tick
+  waits less inside a batch.
+- A tick that has aged past 5 seconds by the time its batch commits stays in the store as
+  history. The loop does not republish it, because the live stream carries no old tick.
 - After the commit the loop republishes each stored tick on core NATS, with no wait
   for an acknowledgement. The republish follows the commit of the batch, so the stream
   does not run ahead of the table.
+- A store that does not answer does not stop the live path. When a write fails, the loop
+  opens a fresh transaction to tell a store that is down from a row that the store
+  refuses. A store that is down is left alone for a wait that starts at one second and
+  doubles to thirty seconds, and the loop republishes the ticks that it could not store.
+  One write that succeeds ends the outage.
+- A shutdown stops the subscription first. The worker then works through the queued ticks
+  for two seconds and drops the rest, and it logs how many it dropped.
 - The loop keeps the id of each series after it reads the series once. The cache
   clears on =refresh()= and when a row for a series fails to store.
 - Persistence creates the series on the first tick that lands in it.
@@ -83,8 +98,9 @@ supply.
   because =refresh()= keeps a stats entry per bound consumer rather than
   creating one on the first tick.
 - The status log gives the lag of each source, which is the age of its newest stored
-  tick when its batch committed. It also gives the depth of the queue, the number of
-  ticks the queue dropped, and the size and time of the last batch. A lag of 70
+  tick when its batch committed. It also gives the depth of the queue, the ticks that the
+  queue dropped, the ticks dropped for their age, the ticks republished without a store,
+  and the size and time of the last batch. A lag of 70
   minutes shows there within the first status line.
 - The observation table sends no change notification. A tick changes many times each
   second, and the live tick stream carries each new value.

@@ -24,6 +24,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <set>
 #include <string>
 #include <tuple>
@@ -58,6 +60,25 @@ keep_last_per_key(std::vector<domain::market_observation> rows) {
     }
     std::reverse(kept.begin(), kept.end());
     return kept;
+}
+
+/**
+ * @brief The number of ticks the next batch should hold, so that it takes about @p target_ms.
+ *
+ * A batch of @p last_ticks took @p took_ms. The next batch holds as many ticks as the same
+ * speed gives in @p target_ms, between @p lowest and @p highest. A store that is slow gets
+ * smaller batches, so a tick waits less inside a batch, and a fast store gets larger ones
+ * that share the cost of a commit among more ticks.
+ */
+[[nodiscard]] inline std::size_t next_batch_ticks(std::size_t last_ticks,
+                                                  std::int64_t took_ms,
+                                                  std::int64_t target_ms,
+                                                  std::size_t lowest,
+                                                  std::size_t highest) {
+    const auto took = std::max<std::int64_t>(1, took_ms);
+    const auto sized = static_cast<std::int64_t>(last_ticks) * target_ms / took;
+    return static_cast<std::size_t>(std::clamp<std::int64_t>(
+        sized, static_cast<std::int64_t>(lowest), static_cast<std::int64_t>(highest)));
 }
 
 }

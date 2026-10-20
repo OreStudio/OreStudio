@@ -12,8 +12,8 @@
 * Summary
 
 This note proposes an ingest pipeline for market ticks. It is a proposal, and one part
-of it is built. Step 1 of the delivery steps is built: the ingest loop queues ticks and
-stores them in batches, the observation table sends no notification, the feeds and the
+of it is built. Step 1 of the delivery steps is built: the ingest loop queues ticks, drops a tick older
+than 5 seconds, stores the rest in batches, republishes during a store outage, the observation table sends no notification, the feeds and the
 republish use core NATS, and the tick streams are gone. The lanes, the age gate, the
 recent window, the live subject with tokens, the policy table and the append-only
 table are not built.

@@ -36,6 +36,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <optional>
@@ -56,6 +57,8 @@ struct feed_ingest_loop::item {
     std::string series_key;
     std::vector<domain::market_observation> rows;
     bool stored = false;
+    /// The store did not answer, so the tick is republished and not stored.
+    bool unavailable = false;
 };
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
@@ -66,6 +69,12 @@ feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
     , crm_bridge_(std::move(crm_bridge)) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
+    // The callback of the subscription queues into queue_, which is destroyed before
+    // tick_sub_. Stopping the subscription first leaves no callback to run after that.
+    tick_sub_.reset();
+    drain_deadline_rep_.store(
+        (std::chrono::steady_clock::now() + shutdown_drain).time_since_epoch().count(),
+        std::memory_order_relaxed);
     stop_flag_.store(true, std::memory_order_relaxed);
     queue_.close();
     if (worker_.joinable())
@@ -135,16 +144,68 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
 
 void feed_ingest_loop::worker_loop() {
     std::vector<messaging::market_tick> batch;
-    while (!stop_flag_.load(std::memory_order_relaxed)) {
+    auto last_stale_log = std::chrono::steady_clock::time_point::min();
+    std::size_t limit = initial_batch_ticks;
+    for (;;) {
         batch.clear();
-        if (queue_.take_all(batch, batch_limit, std::chrono::milliseconds(200)) == 0)
+        const auto taken = queue_.take_all(batch, limit, std::chrono::milliseconds(200));
+        const bool stopping = stop_flag_.load(std::memory_order_relaxed);
+        if (taken == 0) {
+            if (stopping)
+                break;
             continue;
+        }
+        if (stopping && std::chrono::steady_clock::now().time_since_epoch().count() >
+                            drain_deadline_rep_.load(std::memory_order_relaxed)) {
+            const auto lost = taken + queue_.size();
+            shutdown_dropped_.fetch_add(lost, std::memory_order_relaxed);
+            BOOST_LOG_SEV(lg(), warn)
+                << "The ingest stopped with " << lost << " queued tick(s) that it did not store";
+            break;
+        }
+
+        // A tick that has aged out is dropped and not worked through, so the worker
+        // that has fallen behind reaches the newest ticks at once.
+        const auto stale = erase_stale(batch, std::chrono::system_clock::now(), max_tick_age);
+        if (stale > 0) {
+            stale_dropped_.fetch_add(stale, std::memory_order_relaxed);
+            const auto now = std::chrono::steady_clock::now();
+            if (now - last_stale_log > std::chrono::seconds(10)) {
+                last_stale_log = now;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Dropped " << stale << " tick(s) older than " << max_tick_age.count()
+                    << " ms: the ingest is behind the feeds";
+            }
+        }
+        if (batch.empty())
+            continue;
+
         try {
+            const auto started = std::chrono::steady_clock::now();
             process(batch, nullptr);
+            // Size the next batch from the speed of this one, so that it takes about
+            // target_batch_ms. A slow store gets smaller batches and a tick waits less.
+            limit = next_batch_ticks(batch.size(),
+                                     std::chrono::duration_cast<std::chrono::milliseconds>(
+                                         std::chrono::steady_clock::now() - started)
+                                         .count(),
+                                     target_batch_ms,
+                                     min_batch_ticks,
+                                     batch_limit);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to process a batch of " << batch.size() << " tick(s): " << e.what();
         }
+    }
+}
+
+bool feed_ingest_loop::store_reachable(const ores::database::context& tenant_ctx) {
+    try {
+        ores::database::repository::unit_of_work uow(tenant_ctx);
+        uow.commit();
+        return true;
+    } catch (const std::exception&) {
+        return false;
     }
 }
 
@@ -255,15 +316,31 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
         }
     }
 
-    // One transaction for each tenant.
-    for (const auto& [tenant, indexes] : by_tenant)
-        write_items(tenant_ctxs.at(tenant), items, indexes);
+    // One transaction for each tenant. A store that failed lately is left alone for a
+    // wait, and its ticks are republished without a store.
+    bool store_open = false;
+    {
+        std::lock_guard lock(mu_);
+        store_open = store_backoff_.may_try(std::chrono::steady_clock::now());
+    }
+    for (const auto& [tenant, indexes] : by_tenant) {
+        if (store_open) {
+            write_items(tenant_ctxs.at(tenant), items, indexes);
+        } else {
+            for (const auto i : indexes)
+                items[i].unavailable = true;
+        }
+    }
+    for (const auto& it : items)
+        if (it.unavailable)
+            store_unavailable_.fetch_add(1, std::memory_order_relaxed);
 
-    // After the commit: stats, the CRM bridge, and the republish.
+    // After the commit, or without it when the store did not answer: stats, the CRM
+    // bridge, and the republish.
     const auto now = std::chrono::system_clock::now();
     std::vector<std::vector<std::byte>> payloads(ticks.size());
     for (const auto& it : items) {
-        if (!it.stored)
+        if (!it.stored && !it.unavailable)
             continue;
         const auto& tick = ticks[it.tick_index];
         const auto& b = it.target->binding;
@@ -288,6 +365,13 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
             BOOST_LOG_SEV(lg(), info)
                 << "INGEST FIRST TICK: source='" << b.source_name << "' datum='" << tick.oresmd_uri
                 << "' subject='" << it.target->subject << "' value=" << tick.value;
+
+        // The live path never carries a tick that has aged out while its batch was
+        // written. The tick stays in the store as history.
+        if (now - tick.observation_time > max_tick_age) {
+            late_unpublished_.fetch_add(1, std::memory_order_relaxed);
+            continue;
+        }
 
         // Currency driver pairs are FX-shaped, so only an FX spot rate is a
         // candidate driver update. The bridge offers it tenant-wide.
@@ -334,8 +418,27 @@ void feed_ingest_loop::write_items(const ores::database::context& tenant_ctx,
         uow.commit();
         for (const auto i : indexes)
             items[i].stored = true;
+        std::lock_guard lock(mu_);
+        if (store_backoff_.note_success())
+            BOOST_LOG_SEV(lg(), info) << "The store answers again";
         return;
     } catch (const std::exception& e) {
+        // A store that is down fails every write. Splitting the batch would try it again
+        // for each half and drop every tick, so the loop makes one probe first.
+        if (!store_reachable(tenant_ctx)) {
+            bool starts = false;
+            {
+                std::lock_guard lock(mu_);
+                starts = store_backoff_.note_failure(std::chrono::steady_clock::now());
+            }
+            if (starts)
+                BOOST_LOG_SEV(lg(), error)
+                    << "The store does not answer, so ticks are republished and not stored: "
+                    << e.what();
+            for (const auto i : indexes)
+                items[i].unavailable = true;
+            return;
+        }
         if (indexes.size() == 1) {
             // The cached series id may be the fault, such as a series that was
             // removed. Forget it, so the next tick reads the series again.
@@ -491,13 +594,14 @@ void feed_ingest_loop::status_loop() {
 void feed_ingest_loop::log_status() const {
     using namespace std::chrono;
     std::lock_guard lock(mu_);
-    BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: queue=" << queue_.size()
-                              << " dropped=" << queue_.dropped()
-                              << " batches=" << batches_.load(std::memory_order_relaxed)
-                              << " last_batch_ticks="
-                              << last_batch_ticks_.load(std::memory_order_relaxed)
-                              << " last_batch_ms="
-                              << last_batch_ms_.load(std::memory_order_relaxed);
+    BOOST_LOG_SEV(lg(), info)
+        << "INGEST STATUS: queue=" << queue_.size() << " dropped=" << queue_.dropped()
+        << " stale=" << stale_dropped_.load(std::memory_order_relaxed)
+        << " late_unpublished=" << late_unpublished_.load(std::memory_order_relaxed)
+        << " store_unavailable=" << store_unavailable_.load(std::memory_order_relaxed)
+        << " batches=" << batches_.load(std::memory_order_relaxed)
+        << " last_batch_ticks=" << last_batch_ticks_.load(std::memory_order_relaxed)
+        << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed);
     if (stats_.empty()) {
         BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";
         return;

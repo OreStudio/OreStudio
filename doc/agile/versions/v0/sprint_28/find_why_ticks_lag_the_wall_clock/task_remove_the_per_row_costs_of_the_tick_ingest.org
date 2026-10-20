@@ -78,6 +78,9 @@ task and name that file in the Command column.
 | Ticks dropped by the queue during the burst | 0 | the status log, =INGEST STATUS: queue=... dropped=...= | same |
 | One batch of the burst | 1,205 ticks stored in 5,460 ms | the status log, =last_batch_ticks= and =last_batch_ms= | same |
 | Organic lag after the restart | 0.1 s | =tmp/tickprobe/lag_watch.sh= | same |
+| Burst A on the final build: 1,000 ticks in 1 s | 10,000 rows stored in about 6 s, nothing stale, nothing dropped | =evidence/step1_burst_final_output.txt= | this branch |
+| Burst B on the final build: 4,000 ticks in 4 s, about four times what the ingest stores in 5 s | 21,550 rows stored (2,155 ticks), 1,878 ticks dropped as stale, 788 stored ticks not republished as late | same | same |
+| Burst B before the adaptive batch size | 35,690 rows stored, but one batch of about 2,000 ticks took over 6 s to write | same | same |
 
 * Notes
 
@@ -106,7 +109,23 @@ via its "Verifies task" field.
 
 * Result
 
-A burst of 4,000 ticks, which is 40,000 rows, drains in about 21 seconds. The rate in the
+The review of the first version found five problems. Four are fixed here: the destructor
+stops the subscription first; a write that fails is followed by a probe, so a store that
+is down is left alone for a growing wait and its ticks are still republished, and a row
+that the store refuses is split off; a tick older than 5 seconds is dropped when the
+worker takes it, and again before the republish; and a shutdown works through the queue for
+2 seconds. The fifth, the trigger on an existing database, needs a decision on the
+upgrade path.
+
+Burst B showed one more fault in the first fix. The age check ran only when a batch was
+taken, so one batch of about 2,000 ticks wrote for over 6 seconds and republished ticks that
+had aged out. The worker now sizes each batch to take about one second, and it checks the
+age again before the republish. A burst of four times the capacity now stores fewer ticks,
+and the live stream carries none older than 5 seconds. That is the trade that the freshness
+requirement asks for.
+
+The first measurement of this step, before the review fixes: a burst of 4,000 ticks, which is
+40,000 rows, drained in about 21 seconds. The rate in the
 steady phase is about 2,260 rows each second, against 143 before. That is about 16 times
 more, and it meets the acceptance of ten times. The queue dropped nothing. The lag of the
 live feeds stayed at 0.1 seconds.

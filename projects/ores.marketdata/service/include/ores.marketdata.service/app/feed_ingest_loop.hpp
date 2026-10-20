@@ -29,6 +29,8 @@
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
+#include "ores.marketdata.service/app/store_backoff.hpp"
+#include "ores.marketdata.service/app/tick_age.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
@@ -111,9 +113,17 @@ observation_dates(std::chrono::system_clock::time_point published_at);
  * every tick that has arrived and stores them as one batch: one transaction for
  * each tenant, one series read for each series, and no commit for each tick.
  * Republish follows the commit of the batch that stored the tick, on core NATS
- * with no wait for an acknowledgement. The queue is bounded, and a full queue
- * drops its oldest tick, because an old tick that waits while a newer one
- * arrives is worse than a tick that is lost.
+ * with no wait for an acknowledgement. A tick is perishable, because an old tick
+ * that waits while a newer one arrives is worse than a tick that is lost. So the
+ * queue is bounded and a full queue drops its oldest tick, and the worker drops a
+ * tick that has aged past max_tick_age when it takes the tick. A batch takes about one
+ * second, so a tick does not wait long inside a slow batch, and a tick that has aged past
+ * the limit by the time its batch commits is stored and not republished.
+ *
+ * A store that does not answer does not stop the live path. The loop leaves the
+ * store alone for a growing wait, and it still republishes the ticks it could not
+ * store. A shutdown stops the subscription first, then works through the queued
+ * ticks for a short time and drops the rest.
  *
  * @see The tick ingest pipeline (doc/knowledge/architecture/tick_ingest_pipeline.org)
  */
@@ -159,6 +169,10 @@ public:
 
 private:
     struct item;
+
+    /// Whether a fresh transaction opens. It tells a store that is down from a row that
+    /// the store refuses.
+    [[nodiscard]] static bool store_reachable(const ores::database::context& tenant_ctx);
 
     void on_tick(const ores::nats::message& msg);
     void worker_loop();
@@ -232,11 +246,27 @@ private:
     std::set<std::string> bad_value_warned_;
 
     static constexpr std::size_t queue_capacity = 65536;
+    /// The most ticks one batch holds. A batch takes about target_batch_ms: the worker sizes
+    /// the next batch from the speed of the last one, between min_batch_ticks and this limit.
     static constexpr std::size_t batch_limit = 20000;
+    static constexpr std::size_t initial_batch_ticks = 500;
+    static constexpr std::size_t min_batch_ticks = 50;
+    static constexpr std::int64_t target_batch_ms = 1000;
+    /// A live tick older than this is dropped when the worker takes it.
+    static constexpr std::chrono::milliseconds max_tick_age{5000};
+    /// How long a shutdown works through the queued ticks.
+    static constexpr std::chrono::milliseconds shutdown_drain{2000};
     static constexpr std::chrono::minutes status_interval_{1};
 
     /// The ticks that arrived and wait for the worker.
     drop_oldest_queue<messaging::market_tick> queue_{queue_capacity};
+    store_backoff store_backoff_;
+    std::atomic<std::uint64_t> stale_dropped_{0};
+    std::atomic<std::uint64_t> late_unpublished_{0};
+    std::atomic<std::uint64_t> store_unavailable_{0};
+    std::atomic<std::uint64_t> shutdown_dropped_{0};
+    std::atomic<std::chrono::steady_clock::rep> drain_deadline_rep_{
+        std::chrono::steady_clock::time_point::max().time_since_epoch().count()};
     std::atomic<std::uint64_t> batches_{0};
     std::atomic<std::uint64_t> last_batch_ticks_{0};
     std::atomic<std::int64_t> last_batch_ms_{0};

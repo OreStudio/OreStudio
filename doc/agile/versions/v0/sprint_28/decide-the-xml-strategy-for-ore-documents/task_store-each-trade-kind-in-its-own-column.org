@@ -94,9 +94,15 @@ emitter, =record_diff.cpp= and the projections, at =main= after #3580.
   arena in =composite_trade_components=, and also by value in
   =trs_underlying_data=. A by-value member has the 340 KB cost in the parent
   too.
-- The member list comes from =expand()= in the generator. A reference to an
-  abstract element with substitution members yields one optional field per
-  member. =CHOICE_CHILDREN= does not hold them: it covers only =xs:choice=.
+- The kinds are the children of an =xs:choice=, so =CHOICE_CHILDREN= holds
+  them. Each of the three types has 190 elements, 187 of them choice children.
+  All 187 are nested, none repeats, and they name 149 distinct types. The
+  other three are =TradeType= (=SubTradeType=), =Envelope= and =TradeActions=.
+  The three types name the same 149 kinds. (An earlier version of this page
+  said the kinds came from =expand()=. That was wrong: a read of the schema
+  and a count in the generator showed =expand()= produces the 19-member leg
+  choice and smaller groups, not the trade kinds.)
+- The widest other choice in any schema has 26 members.
 - Every projection reads a trade through =record_reader::child(name)= and
   =record_writer::child(name)=. They name the element and the table resolves
   the offset. No projection names a C++ member of =trade=.
@@ -109,10 +115,10 @@ emitter, =record_diff.cpp= and the projections, at =main= after #3580.
    sibling of its deque or arena. For =trade= that is =portfolio=. For
    =component_trade= and =component_sub_trade= it is each record that holds
    them, including =trs_underlying_data=. One column per kind type, not per
-   element name. The table gives the tag the element name and the index the
-   column. A trade is always reached from its parent, so the engine has the
-   parent frame, and the reader, writer, emitter and diff get the parent
-   record as an extra argument when they step into a child.
+   element name. The columns sit in one struct the parent owns (see answer 3).
+   A trade is always reached from its parent, so the engine, the reader, the
+   writer, the emitter and the diff take the columns pointer from the parent's
+   field row when they step into a trade.
 
    Rejected: an out-of-line payload owned by the trade. It needs one
    allocation per trade and a destructor entry in the table, and it gives no
@@ -121,47 +127,73 @@ emitter, =record_diff.cpp= and the projections, at =main= after #3580.
 2. *New field kind.* A new kind, =column_nested=, beside =indexed_nested=. An
    =indexed_nested= member keeps its index vector and its arena in the same
    record. A =column_nested= member lives in the trade-like row and names a
-   column in the parent: =arena_offset= is the column's offset in the parent
-   and =repeated= are its ops. The row stores a tag and an index in two fixed
-   fields, not a vector of indices, because at most one kind appears per
-   trade.
+   vector in the columns struct: =arena_offset= is the vector's offset in that
+   struct and =repeated= are its ops. The trade stores one =std::uint32_t=
+   index, not a vector of indices, because at most one kind appears per trade.
+   The parent's field row gains =columns_offset=, the offset of the columns
+   struct in the parent.
 
-3. *Detection.* In =expand()=, where a substitution head is turned into its
-   members. The generator marks every field made that way as a column member
-   of the type that holds it. A type with column members gets the tag and the
-   index fields, and each of its parents gets one column per distinct member
-   type. Nothing is read from =CHOICE_CHILDREN=.
+3. *Detection.* A type is columnar when it has at least 64 nested choice
+   children (=COLUMN_CHOICE_MEMBERS=). The three trade types have 187. The next
+   widest choice has 26. The generator reads =CHOICE_CHILDREN=, so the choice
+   children of a columnar type are its column members. The presence bit of the
+   chosen member is the tag, so the row needs no tag field, only the index.
+
+   The columns live in one struct per distinct set of kind types
+   (=trade_kind_columns=: one vector of rows per kind type). The three trade
+   types share one struct, because they name the same kinds. Each parent that
+   holds a columnar type owns one such struct as a member. The field row of the
+   parent's trade member carries its offset in a new =columns_offset=, and each
+   kind member of the trade carries the offset of its vector inside the struct.
+   The offset inside the struct is the same in every parent, which is why the
+   trade's own table can hold it. The engine and the readers need only a
+   pointer to the struct, not to the parent.
 
 4. *Projections.* No change. They already name the element, and
-   =child(name)= resolves a column member through the tag, the index and the
-   parent record. =has(name)= tests the tag. The reader and writer classes
-   carry the parent record, which is the only new state.
+   =child(name)= resolves a column member through the presence bit, the index
+   and the columns struct. =has(name)= tests the bit. The reader and writer
+   classes carry a pointer to the columns struct, which is the only new state.
 
 5. *The deque.* Not needed for trades afterwards. =member_counts= is
-   structural, so a =trade= with a handful of members is no longer wide and
-   becomes a vector with no change to the rule. The kind columns follow the
-   rule too: a kind row that is wide is held in a deque, so a frame open on a
-   row keeps its address while the column grows.
+   structural, so a trade with a handful of members is no longer wide and
+   becomes a vector with no change to the rule. The kind rows are narrow, so
+   their columns are vectors. A column grows only when a new trade starts, and
+   no frame is open on a row of that column then. If no record is wide
+   afterwards, the wide-record rule from #3579 has no user and goes in a
+   separate step.
+
+6. *The cut edges.* The edges from a trade to its kinds are no longer held by
+   value, so the generator leaves them out of the ordering graph. Cycles that
+   ran through a trade, and the arenas and index vectors that broke them,
+   should disappear. A kind record such as =composite_trade_data= holds a
+   components record that holds trades; the trades hold no kind. This is an
+   expectation to check against the regenerated output.
 
 ** Risks
 
-- The parent pointer touches the reader, writer, emitter and diff, so it is
+- The columns pointer touches the reader, writer, emitter and diff, so it is
   the largest part of the work. Each already passes a record pointer, so the
   change is one more argument, but it is five files.
-- A row's tag and index must stay valid when a document is copied or moved.
-  Indices survive both. A raw pointer to the column would not.
-- =sub_trade= by value in =trs_underlying_data= means that record, not a
-  vector, owns a column. It is the test case for a parent that is not a
-  container.
+- A row's index must stay valid when a document is copied or moved. An index
+  survives both. A raw pointer to the column would not.
+- Each parent that holds a trade pays for 149 empty vectors: about 3.6 KB of
+  zero fill, against 340 KB per trade before. A composite trade has one such
+  parent, so it pays once.
+- =sub_trade= in =trs_underlying_data= means that record owns a columns struct
+  and a container of trades. It is the test case for a parent that is not the
+  portfolio.
 
 ** Steps
 
 1. Answer the open questions by reading the generator, the engine and the
-   projections. Write the answers here.
-2. Add the column and the tag to the generator, behind the choice detection.
-3. Teach the engine to append to a column and the writer to follow a tag.
-4. Move the projections to the tag.
+   projections. Write the answers here. (Done.)
+2. Add the columns struct, the index member and the =column_nested= rows to the
+   generator, behind the choice detection.
+3. Teach the engine, the reader, the writer, the emitter and the diff to use
+   the columns pointer.
+4. Run the projections and the corpus tests. They should need no change.
 5. Measure with callgrind and record the benchmark.
+6. Remove the wide-record rule if nothing uses it.
 
 * Measurements
 

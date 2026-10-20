@@ -1,0 +1,300 @@
+:PROPERTIES:
+:ID: 6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2
+:END:
+#+title: The tick ingest pipeline: freshness first
+#+description: Proposal for an ingest pipeline that keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second: lanes, latest-value conflation, batched writes and a bounded ring.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
+#+created: 2026-10-20
+#+updated: 2026-10-20
+
+* Summary
+
+This note proposes an ingest pipeline for market ticks. It is a proposal. The
+code does not work this way today.
+
+The pipeline puts freshness first. A tick that arrives late, while a newer tick
+waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
+of each datum, it drops ticks that are too old, and it never lets a consumer wait
+for the store. Work is split into lanes. Each lane has one writer thread, a bounded
+ring buffer, and a batch write to the store. The design follows the LMAX Disruptor
+where that helps, and it sets the rest aside.
+
+The target is tens of thousands of ticks each second, across every asset class and
+instrument. The present loop writes about 150 rows each second.
+
+* Detail
+
+** The requirements
+
+1. *Freshness over completeness.* A stale tick is worse than a missing tick. A tick
+   that the queue loses is bad. A tick that the pipeline processes late, while
+   newer ticks wait behind it, is worse.
+2. *Volume.* The pipeline holds tens of thousands of ticks each second, once every
+   asset class and instrument ticks.
+3. *The live view does not wait for the store.* A chart reads the newest value at
+   once, whatever the database does.
+4. *Overload is visible.* A lag of seconds shows on a gauge. A lag of 70 minutes
+   cannot pass unseen.
+5. *A fault stays in its lane.* A slow or failing write for one series does not
+   stop the others.
+
+** Why the present path cannot meet them
+
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handles each tick on
+one thread, in arrival order. For each binding of the tick, it reads the series,
+inserts two observations, and publishes to JetStream. Each insert is a commit. The
+publish waits for an acknowledgement. The rule that the republish follows the stored
+row ties the live view to the speed of the database.
+
+The queue sits inside the NATS client. It has no age limit, and it serves the oldest
+tick first. When the loop falls behind, it spends its time on old ticks while newer
+ticks wait. This is the behaviour that requirement 1 forbids.
+
+Measurements on one environment (release build, one server shared by five
+environments, a burst of 4,000 ticks) show the limit.
+
+#+ATTR_HTML: :class hug-leading
+| Configuration | Rows written each second |
+|---------------+--------------------------|
+| As built: synchronous commit on, one NOTIFY for each row | 143 |
+| Synchronous commit off for the marketdata role | 166 |
+| Synchronous commit off, and the NOTIFY function empty | 210 |
+
+Three facts come from the samples.
+
+- Exactly one database session of the marketdata service is active. The work is
+  serial.
+- With the commit sync removed, 41 percent of the samples of that session wait on a
+  database-wide lock, 34 percent run on the CPU, and 24 percent wait for the
+  service. The lock is the one that a transaction takes at commit after it calls
+  =NOTIFY=. PostgreSQL takes it so that notifications enter the queue in commit
+  order. The row trigger =ores_marketdata_market_observations_notify_trg= calls
+  =pg_notify= for every row.
+- The blockers of that lock were the marketdata sessions of two other environments
+  on the same server. The lock is shared across databases, so ingests that share
+  one server slow each other.
+
+A commit sync is also slow on this disk. One =fdatasync= takes about 4.3 ms.
+
+The demand is small today. One environment receives 13 ticks each second. Each tick
+reaches 4.6 bindings on average, and each binding stores two rows. That is about 120
+rows each second against a ceiling of about 150. At 30,000 ticks each second the
+same fan-out is about 280,000 rows each second.
+
+** The proposal
+
+The pipeline has five stages. A receive stage decodes ticks and routes each one to a
+lane. A bounded ring buffer in each lane holds the ticks. A lane worker takes
+everything that has arrived and does two things with it. It publishes the newest
+value of each datum to live consumers, and it writes the batch to the store in one
+transaction.
+
+#+caption: The tick ingest pipeline: one path to live consumers that never waits for the store, and one batched path to the store.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_pipeline.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_pipeline.puml][=tick_ingest_pipeline.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_pipeline.puml=.
+
+*** Receive
+
+The NATS callback does three things and no input or output. It decodes the tick, it
+checks the age of the tick, and it writes the tick into the ring of its lane. A
+lane is chosen by a hash of the datum key. A tick of one datum always reaches the
+same lane, so the order of one series holds without a lock.
+
+*** The ring buffer
+
+Each lane owns one ring buffer of fixed size. The slots are allocated once, and the
+ring is a power of two in size. A sequence number marks each slot, in the style of
+the Disruptor. The receiver claims the next slot and publishes it. The lane worker
+reads up to the newest published slot.
+
+The ring never blocks the receiver. When the ring is full, the receiver overwrites the
+oldest slot and adds one to a counter of dropped ticks. The newest tick always
+wins. A starting size is 65,536 slots for each lane. At 10,000 ticks each second in
+one lane, the ring holds about six seconds.
+
+*** The age gate
+
+Every tick has an age: the time now minus the =observation_time= of the tick. The
+receiver drops a tick that is older than the limit of its class, and it counts the
+drop. The lane worker checks again when it takes the tick from the ring. A starting
+limit is 5 seconds for a live tick. The limit is a setting for each asset class.
+
+The gate changes the order of service in one more way. A lane that is behind takes
+the newest ticks first and drops the old ones. It does not work through the old
+ticks.
+
+*** Conflation and the live path
+
+A lane worker keeps the newest tick of each datum in the batch it took. It publishes
+those ticks to the live consumers on the party subjects. The publish uses core NATS
+and waits for no acknowledgement. The live path ends here, and it never waits for the
+store.
+
+A consumer that joins late needs the last value. A JetStream stream with a limit of
+one message for each subject holds it. The lane worker publishes to that stream
+without waiting for the acknowledgement of each message.
+
+*** Batched persistence
+
+The same cycle writes every tick that passed the age gate in one transaction, with a
+multi-row insert or a =COPY=. One commit now covers hundreds or thousands of rows.
+The cost of the commit is shared by all of them.
+
+- The series identity of each key comes from a cache in memory. A binding event
+  clears the cache. A series that does not exist yet is created on a slow path,
+  outside the batch.
+- The shape check and the manual point check run once for the batch.
+- A batch that fails is split in two and tried again. The split continues until it
+  isolates the row that the database refuses. The lane drops that row, counts it, and
+  logs it.
+- The size of a batch has a cap. A starting value is 5,000 rows.
+
+*** The overload states
+
+A lane measures its lag from the oldest tick that it processes. The lag selects
+one of three states.
+
+#+caption: The overload states of a lane. The live path stays fresh in every state. Only the history in the store gets thinner.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_overload_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_overload_states.puml][=tick_ingest_overload_states.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_overload_states.puml=.
+
+- *Live.* The lag is small. The lane writes every tick.
+- *Catching up.* The lag is above the first limit. The lane writes only the newest
+  tick of each series for each second. The shape of the history stays, and the
+  volume falls.
+- *Shedding.* The lag is above the second limit. The lane drops every tick older
+  than the age limit and counts each drop.
+
+The lane goes back one state when the lag falls below half of the limit. The gap
+stops the lane from flipping between two states. Starting values are 5 seconds for
+the first limit and 30 seconds for the second. Tuning by measurement sets the final
+values.
+
+*** The cycle of a lane
+
+#+caption: One cycle of a lane: take, gate, conflate, publish live, write the batch, report.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/tick_ingest_lane_cycle.png]]
+
+Source: [[proj:doc/knowledge/architecture/tick_ingest_lane_cycle.puml][=tick_ingest_lane_cycle.puml=]].
+Regenerate with =plantuml -tpng doc/knowledge/architecture/tick_ingest_lane_cycle.puml=.
+
+*** Observability
+
+Each lane reports these values to the status log and to telemetry.
+
+- The depth of the ring and the age of its oldest slot.
+- The lag from the tick time to the commit, and from the tick time to the live
+  publish.
+- The size of each batch and the time of each commit.
+- The ticks dropped, by reason: the ring was full, the tick was too old, the series
+  was thinned, or the database refused the row.
+
+An alert fires when the lag is above the first limit for longer than a set time.
+The lag of 70 minutes that started this work would have fired it within seconds.
+
+** What changes in the store
+
+- *One notification for each batch.* The row trigger that calls =pg_notify= for each
+  row goes away. The lane worker publishes one batch event after the commit. A
+  statement-level trigger that uses a transition table is the alternative. Either
+  way the commit takes the notification lock once for the batch and not once for
+  each row.
+- *The second row for each tick.* The ingest stores each tick twice, once at its own
+  time and once under the previous business day. At scale this doubles the writes.
+  It is an open question whether a snapshot job should build that row instead.
+- *One row for each party.* A tick is stored once for each binding. The cost grows
+  with the number of parties that consume a source. It is an open question whether
+  the store should keep one row for each source and let parties read it through a
+  view.
+- *Indexes.* The table has seven indexes and a trigger that closes the previous
+  current point. Each index costs a write. A measurement with a batch decides
+  which of them the hot path needs.
+
+** Prior art
+
+- *The LMAX Disruptor* (Thompson, Farley and others, 2011). A ring buffer with
+  slots allocated once, sequence numbers, one writer for each ring, and a consumer
+  that takes every available event as a batch. It avoids locks and queue
+  contention. This pipeline takes four ideas from it: the bounded ring, the
+  pre-allocated slots, the single writer, and batching without a timer. It does not
+  take the library, the busy-spin wait strategies or the graph of consumers. The
+  cost here is milliseconds for a commit and not nanoseconds for a hand-off, so a
+  plain mutex and a condition variable are enough for the receive side.
+- *The single writer principle* (Martin Thompson, "Mechanical Sympathy"). One thread
+  owns each piece of mutable state. The lane follows it: one writer owns the ring
+  and the connection of its lane.
+- *The kdb+ tickerplant.* A tickerplant receives ticks, publishes them to
+  subscribers, and writes them to a log. It batches its work on a timer. This
+  pipeline differs in one way. A tick is perishable here, so it keeps no replay log
+  and chooses to drop old ticks instead.
+- *Conflation and last-value delivery.* Market data distribution commonly sends a
+  slow consumer only the latest value. Messaging systems offer last-value queues,
+  and Kafka log compaction keeps the last record of each key. Reactive libraries name
+  the same idea =onBackpressureLatest=.
+- *Batched ingest in time-series stores.* The
+  [[https://www.tigerdata.com/docs/build/data-management/write-data/insert][TimescaleDB documentation]]
+  says it groups rows by chunk and writes each chunk in one transaction, and it
+  recommends =COPY= for bulk loads. The ClickHouse documentation recommends
+  [[https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy.md][inserts of 10,000 to 100,000 rows]]
+  about once each second, and it describes
+  [[https://clickhouse.com/docs/concepts/features/operations/insert/asyncinserts][asynchronous inserts]]
+  that buffer in the server. Both say not to commit for each row.
+
+** Options set aside
+
+- *A durable JetStream consumer as the buffer.* It makes the backlog visible, and it
+  loses nothing at a restart. It also replays old ticks in order, and requirement 1
+  forbids that. It fits data that must not be lost, such as trades. It does not
+  fit a perishable tick.
+- *Back-pressure that blocks the producer.* It protects every tick and makes the
+  newest tick wait for the oldest. It breaks requirement 1.
+- *A GPU.* The work waits for commits and locks and does little arithmetic. A GPU
+  has nothing to speed up on this path.
+- *A column store for the history now.* A column store takes more than a million
+  rows each second. It is a large change, and a batched write to the present store
+  may be enough. Measure first. The decision belongs to step 3 below.
+
+** Delivery in three steps
+
+Each step ends with a measurement. The test tool is the tick injector, which sends
+a burst of ticks at a chosen rate and times the drain.
+
+1. *Remove the per-row costs. No new structure.* One notification for each batch, a
+   series cache, a multi-row insert, and no wait for acknowledgements on the live
+   publish. Add the lag gauge. Acceptance: the burst drain rate is at least ten
+   times the rate of today, and the lag gauge shows the lag of a loaded system.
+2. *Lanes, the ring, the age gate and the overload states.* Acceptance: a burst of
+   ten times the sustained rate leaves no backlog after the burst ends. The lag of
+   the live path stays below the age limit at all times.
+3. *Scale out.* Several lanes, each with its own connection. Tune the indexes and
+   chunks. Decide on a column store for history. Acceptance: 30,000 ticks each second
+   for ten minutes, with the lag of the store below 1 second at the 99th percentile.
+
+** Open questions
+
+- Does a stream that can carry a tick that the store dropped cause a problem for any
+  consumer? This note accepts it. The stream is the live view, and the table is the
+  record of what the pipeline wrote.
+- What is the age limit for each asset class? Interest rate curves tick slowly,
+  and FX spot ticks fast.
+- Should the CRM bridge read from the conflated live path and not from the store path?
+- Is the second row for each tick worth its cost at scale?
+- How many lanes does one server need, and how many connections can the database
+  give them?
+
+* See also
+
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the code this note proposes to change.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the source of the fan-out.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub for this cluster.

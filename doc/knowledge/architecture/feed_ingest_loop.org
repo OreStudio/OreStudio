@@ -77,3 +77,4 @@ supply.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type the loop reads.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the loop leaves behind.
 - [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]], the extra row a derived observation carries.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]], the proposal that replaces the serial loop described here.

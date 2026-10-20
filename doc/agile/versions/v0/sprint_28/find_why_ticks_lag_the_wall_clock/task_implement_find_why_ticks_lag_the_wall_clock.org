@@ -72,6 +72,11 @@ task and name that file in the Command column.
 | Demand at the ingest | about 122 rows per second (13 x 4.6 x 2) | derived from the two rows above | same |
 | Lag per source at 20:04, brave_hopper | minimum 127 s, median 235 s, maximum 2,680 s over 56 sources | =persource.sql= query over =market_observations= | same |
 | Active marketdata backends | exactly 1, waiting on WalSync, WALWrite or CPU | =pg_stat_activity= sampled every 2 s for 50 s | same |
+| Burst drain, as built (sync commit on, NOTIFY on) | about 143 rows per second, steady for 113 s | =tmp/tickprobe/capacity.sh baseline 3000 1000= | 3ffd309812 + main merge |
+| Burst drain, =synchronous_commit= off for the marketdata role | 166 rows per second over 177 s | =capacity.sh syncoff= after =alter role ... set synchronous_commit = off= | same |
+| Burst drain, sync off and the NOTIFY function empty | about 210 rows per second from t=20 s, peaks near 280 | =capacity.sh nonotify= after replacing =..._notify_fn()= with a no-op | same |
+| Wait events of the one active marketdata session, sync off, 70 samples | 29 =Lock:object=, 24 CPU, 17 =Client:ClientRead= | =pg_stat_activity= sampled every 0.25 s | same |
+| The lock that waits | =AccessExclusiveLock= on =pg_database= object 0, waiting statement =COMMIT=, blockers are marketdata sessions of two other environments | =pg_locks= joined to =pg_stat_activity= during a burst | same |
 | =fdatasync= on the postgres disk | 4.3 ms per call, 230 per second (one 8 kB write) | =pg_test_fsync -s 2= on the nvme disk of =/= | same |
 | Postgres setting | =synchronous_commit= on, =wal_sync_method= fdatasync, five environments share one server, about 100 connections each | =show= statements | same |
 
@@ -99,6 +104,25 @@ with a controlled burst, with and without =synchronous_commit= for the marketdat
 Capacity target from the owner: thousands of ticks, which this loop cannot reach.
 GPU offload is not a candidate for this path: the work waits on commits and
 acknowledgements and does little arithmetic.
+
+** Result of the capacity experiments
+
+The commit sync is not the main limit. Turning it off lifts the drain rate by 16
+percent. The larger cost is the row trigger that calls =pg_notify=. A transaction
+that notifies takes a database-wide lock at commit, and that lock is shared by every
+database on the server. The ingests of five environments on this server wait for
+each other. With the NOTIFY function empty, the rate rises by another 26 percent.
+The rate is still about 210 rows each second, so the per-row work also matters: the
+series read, the two checks, the trigger that closes the previous point, seven
+indexes, and the publish that waits for an acknowledgement.
+
+The experiments changed two things in this environment and restored both: the role
+setting =synchronous_commit= and the function =ores_marketdata_market_observations_notify_fn=.
+The restored function comes from the repo file, and a query confirmed it.
+
+The owner added two requirements: a stale tick is worse than a lost tick, and the
+target is tens of thousands of ticks each second. The proposal that meets them is
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]].
 
 ** The report that opened this task
 

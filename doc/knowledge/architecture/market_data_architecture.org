@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:feeds:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-10-06
+#+updated: 2026-10-20
 
 * Summary
 
@@ -79,6 +79,10 @@ consumer that reads it, and to know where a new asset class plugs in.
     then [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and
     provenance]]. What the pipeline leaves behind, and the extra row a
     derived observation carries.
+12. [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]]. A
+    proposal, not yet built: lanes, a bounded ring, latest-value conflation and
+    batched writes, so the pipeline keeps the newest tick at tens of thousands of
+    ticks each second.
 
 After this section a reader is competent at tracing a tick from a producer
 subject to a stored observation and to the party stream that carries it, at

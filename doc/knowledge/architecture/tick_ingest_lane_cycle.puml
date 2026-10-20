@@ -1,0 +1,58 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A lane cycle
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+participant "Receive" as recv
+queue "Ring buffer" as ring
+participant "Lane worker" as lane
+participant "Live fan-out" as live
+database "Store" as db
+participant "Consumers" as cons
+
+recv -> ring : publish slot (sequence n)
+note right of ring
+    A full ring overwrites its oldest slot
+    and counts the loss. The receiver never waits.
+end note
+
+lane -> ring : take every slot up to the cursor
+ring --> lane : batch of k ticks
+
+lane -> lane : age gate: drop a tick older than the limit of its class
+lane -> lane : conflate: keep the newest tick of each datum
+
+lane -> live : latest tick of each datum
+live -> cons : publish on the party subject, no ack
+
+alt the lag is below the first limit
+    lane -> db : insert all kept ticks in one transaction
+else the lag is above the first limit
+    lane -> lane : keep the newest tick of each series for each second
+    lane -> db : insert the kept ticks in one transaction
+end
+
+db --> lane : commit
+lane -> cons : one batch event
+lane -> lane : record the lag, the batch size and the commit time
+
+@enduml

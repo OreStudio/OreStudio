@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 1DE6CDCB-DE6E-4DC9-B238-93DA0A87478C
+:END:
+#+title: Task: Implement feeds that start and restart the same way
+#+description: Initial task for: Feeds start and restart the same way every time
+#+type: task
+#+level: s1
+#+filetags: :feeds_start_and_restart_reliably:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the faults that the stop and start test of every feed group found, so that each group shows the documented behaviour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:74A26223-7045-4BD7-80A3-96F149C4BEC7][Feeds start and restart the same way every time]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- A restart with marketdata not yet running starts every auto-start feed once marketdata answers.
+- A provision starts the system feeds without a restart.
+- A person's Start of a feed creates the binding of the person's party.
+- Reporting creates its run grant through the shared client call.
+- Every feed group shows the documented behaviour across a stop and a start of the services.
+
+* Plan
+
+The note =feed_execution_identity.org= is the target. The code follows it.
+
+The test of every feed group, on a fresh database with ACME provisioned, found
+four faults. Each one has a cause that was read in the code or reproduced.
+
+- A restart with marketdata down fails the 13 vintage-priced Bloomberg FX feeds
+  with "no service is handling subject", and nothing tries them again.
+  Reproduced by stopping marketdata and restarting the synthetic service.
+- =market_data_client::save_feed_binding= never copies =producer_kind= into the
+  wire record, so the database refuses the binding of every Start by a person.
+  The Start succeeds and the log carries a warning.
+- The system provision creates the system collections and starts none of them,
+  so the 24 system feeds wait for the next restart.
+- Reporting keeps its own copy of the grant create call.
+
+Work, in order:
+
+1. =restore_retry.hpp=: the policy and the loop, as a template over a pass and a
+   sleep, so a test drives it without a clock.
+2. =feed_restore.hpp=: the pass moves out of =application.cpp=. A pass reports the
+   feeds that failed. The boot walk tries the failed feeds again by the policy.
+3. =restore_feeds= operation: the request, the handler, the registration, and the
+   call from the system provision step.
+4. =save_feed_binding= copies =producer_kind=. A test asserts the wire record.
+5. Reporting calls =create_run_grant=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every feed group now shows the documented behaviour across a stop and a start of
+the services. Five faults were closed. The fifth one was found while the fixes
+were proved, and it is a flaw of the earlier restore walk.
+
+- A tenant can have two root parties, its system party and its top operational
+  party. The walk opened on the first one it found, so a restart could miss the
+  Bloomberg collection, which belongs to the system party. The walk now makes one
+  pass for each root party.
+- A restore tries a failed feed again: 2 seconds, doubling to 30 seconds, for five
+  minutes. With marketdata down at boot, 65 of 78 feeds started and the 13
+  vintage-priced ones started 30 seconds after marketdata came back.
+- =synthetic.v1.ops.restore_feeds= restores the feeds of the caller's tenant. The
+  system provision step calls it, and the provision of ACME on a fresh database
+  logged "24 started, 0 failed" for the system feeds, with no restart.
+- =save_feed_binding= copies =producer_kind=. A person's Start of the 17 feeds of
+  2016 ORE Samples created 17 bindings, all =SYNTHETIC=, and logged no warning.
+- Reporting creates its run grant through =create_run_grant=.
+
+- Build: =compass build= of the five affected targets passes. Tests:
+  =ores.synthetic.service.tests= (79 cases, 533 assertions),
+  =ores.marketdata.client.tests= and =ores.reporting.core.tests= pass.
+- Test of every group, fresh =db recreate= and ACME provisioning: system 24 and
+  Bloomberg 54 run at once. A Start of 2016 ORE Samples after a Stop of Bloomberg
+  starts 17 of 17. The 13 FX feeds that 2016 and Bloomberg share are skipped while
+  Bloomberg runs, which is the rule that one series has one publisher.
+- Not covered: the revoke of a grant when its collection is deleted, and a Start
+  from the web client.

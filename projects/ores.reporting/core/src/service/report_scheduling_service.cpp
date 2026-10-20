@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.client/client/run_grant_creator.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -313,19 +314,17 @@ std::expected<boost::uuids::uuid, std::string>
 report_scheduling_service::grant_runs(const domain::report_definition& def) {
     if (!person_nats_)
         return std::unexpected("Scheduling needs a person to consent to the runs.");
-    ores::iam::messaging::create_run_grant_request req;
-    req.resource = "reporting.report_definition/" + boost::uuids::to_string(def.id);
-    req.role = std::string(run_role);
-    req.audience = std::string(run_audience);
+    const auto id = boost::uuids::to_string(def.id);
+    const auto granted = ores::iam::client::create_run_grant(
+        *person_nats_, "reporting.report_definition/" + id, run_role, run_audience);
+    if (!granted)
+        return std::unexpected("IAM could not grant the run of definition " + id + ": " +
+                               granted.error());
     try {
-        const auto granted = call(*person_nats_, req);
-        if (!granted)
-            return std::unexpected("IAM could not grant the run of definition " +
-                                   boost::uuids::to_string(def.id) + ": " +
-                                   granted.error().message);
-        return boost::uuids::string_generator()(granted->grant_id);
-    } catch (const std::exception& e) {
-        return std::unexpected(std::string("IAM run grant call failed: ") + e.what());
+        return boost::uuids::string_generator()(*granted);
+    } catch (const std::exception&) {
+        return std::unexpected("IAM answered the run grant of definition " + id +
+                               " with an unreadable id: " + *granted);
     }
 }
 

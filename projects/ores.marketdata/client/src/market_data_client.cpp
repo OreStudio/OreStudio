@@ -250,13 +250,20 @@ market_data_client::list_feed_bindings() {
     return std::move(resp->feed_bindings);
 }
 
+messaging::feed_binding_write feed_binding_write_of(const domain::feed_binding& binding) {
+    messaging::feed_binding_write write;
+    write.id = binding.id;
+    write.party_id = binding.party_id;
+    write.source_name = binding.source_name;
+    write.producer_kind = binding.producer_kind;
+    write.enabled = binding.enabled;
+    return write;
+}
+
 std::expected<bool, std::string>
 market_data_client::save_feed_binding(const domain::feed_binding& binding) {
     messaging::put_feed_binding_request req;
-    req.change.write.id = binding.id;
-    req.change.write.party_id = binding.party_id;
-    req.change.write.source_name = binding.source_name;
-    req.change.write.enabled = binding.enabled;
+    req.change.write = feed_binding_write_of(binding);
     // A save states no expectation about the row it writes, so the change
     // lands whether the row is new or already present.
     req.change.precondition.kind = ores::utility::domain::precondition_kind::any;

@@ -20,7 +20,9 @@
 #include "ores.synthetic.service/app/application.hpp"
 #include "../feed_controller.hpp"
 #include "../feed_kind_registry.hpp"
+#include "../feed_restore.hpp"
 #include "../registrar.hpp"
+#include "../restore_retry.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/party_context.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -45,9 +47,18 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <condition_variable>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <rfl/json.hpp>
+#include <set>
 #include <span>
+#include <stop_token>
+#include <thread>
 #include <vector>
 
 namespace ores::synthetic::service::app {
@@ -59,110 +70,141 @@ namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-// One boot-time walk: start every auto-startable feed of every kind the
-// registry knows. The startability gate lives on the attempt itself, and the
-// walk adds its own auto_start term, which is genuinely about blameless boot
-// behaviour rather than about a kind.
-//
-// A context sees only its own tenant's collections, plus the system ones. The
-// walk therefore runs once for each tenant (see auto_start_all_tenants).
+// The restore of the feeds: one pass for each tenant when the service starts,
+// and tries again for the feeds that a dependency kept from starting. A context
+// sees only its own tenant's collections, plus the system ones, so the walk runs
+// once for each tenant.
 auto& auto_start_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.service.app.auto_start");
     return instance;
 }
 
-int auto_start_feeds(feed_controller& ctrl,
-                     const feed_kind_registry& registry,
-                     const ores::synthetic::feed::feed_build_context& bctx,
-                     const ores::database::context& ctx) {
-    int started = 0;
-    for (const auto& target : registry.targets(ctx)) {
-        const auto& c = target.row.candidate;
-        if (!c.auto_start)
-            continue;
-        // A system feed runs once for every tenant, so only the system tenant
-        // starts it.
-        if (target.container_scope == ores::synthetic::domain::scope::system &&
-            !feed_kind_registry::is_system_caller(ctx))
-            continue;
-        try {
-            // A restore has no person, so the grant that a person gave stands in
-            // for them. A feed that starts from a fixed price needs none.
-            const auto token = ctrl.identity().run_token_for(target, ctx, {});
-            if (!token) {
-                BOOST_LOG_SEV(auto_start_lg(), warn)
-                    << "Skipping enabled feed " << c.display_name << " — " << token.error();
-                continue;
-            }
-            auto context = bctx;
-            context.run_token = *token;
-            auto attempt = registry.make_feed(target, context);
-            if (!attempt.feed) {
-                BOOST_LOG_SEV(auto_start_lg(), warn)
-                    << "Skipping enabled feed " << c.display_name << " — " << attempt.failure;
-                continue;
-            }
-            std::string conflicting_source_name;
-            if (ctrl.add(
-                    std::move(attempt.feed), target.binding_mode, {}, &conflicting_source_name)) {
-                ++started;
-            } else if (!conflicting_source_name.empty()) {
-                // A genuine seed-data misconfiguration (two auto-start
-                // configs sharing a market data key), not a per-request
-                // error -- log clearly and move on rather than failing the
-                // whole auto-start pass. An already-running same-source row
-                // (a duplicate config) stays silent, as before.
-                BOOST_LOG_SEV(auto_start_lg(), error)
-                    << "Skipping auto-start of " << c.display_name << " — feed '"
-                    << conflicting_source_name
-                    << "' is already running for the same market data key.";
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auto_start_lg(), error)
-                << "Failed to auto-start " << c.display_name << " (" << target.row.kind->kind
-                << "): " << e.what();
-        }
-    }
-    BOOST_LOG_SEV(auto_start_lg(), info)
-        << "Auto-started " << started << " enabled feed(s) for tenant "
-        << ctx.tenant_id().to_string() << ".";
-    return started;
-}
-
-// The context a tenant's walk reads through. A party's collection is visible
-// only to a context with the party in its visible set, and a tenant has
-// exactly one root party whose subtree is every party of the tenant.
-ores::database::context tenant_walk_context(const ores::database::context& db_ctx,
-                                            const std::string& tenant) {
+// A scope is what one pass reads through: the system tenant, or one root party
+// of a tenant, written "<tenant>/<party>". A party's collection is visible only
+// to a context with the party in its visible set, and the subtree of a root party
+// is the visible set. A tenant can have more than one root party, such as its
+// system party and its top operational party, so each root is a scope of its own.
+std::vector<std::string> tenant_scopes(const ores::database::context& db_ctx,
+                                       const std::string& tenant) {
     const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(db_ctx, tenant);
+    std::vector<std::string> scopes;
     for (const auto& party : ores::refdata::repository::party_repository().read_latest(tenant_ctx))
         if (!party.parent_party_id)
-            return ores::database::service::party_context::with_party(
-                tenant_ctx, tenant_ctx.tenant_id(), party.id, tenant_ctx.actor());
-    return tenant_ctx;
+            scopes.push_back(tenant + "/" + boost::uuids::to_string(party.id));
+    if (scopes.empty())
+        scopes.push_back(tenant);
+    return scopes;
 }
 
-// The service's own context belongs to the system tenant, so it cannot read a
-// tenant's collections. Walk the system tenant first, then every other tenant
-// through a context of its own. A tenant that fails does not stop the others.
-int auto_start_all_tenants(feed_controller& ctrl,
-                           const feed_kind_registry& registry,
-                           const ores::synthetic::feed::feed_build_context& bctx,
-                           const ores::database::context& db_ctx) {
-    int started = auto_start_feeds(ctrl, registry, bctx, db_ctx);
+ores::database::context scope_context(const ores::database::context& db_ctx,
+                                      const std::string& scope) {
+    const auto slash = scope.find('/');
+    const auto tenant = scope.substr(0, slash);
+    // The service's own context belongs to the system tenant, so it cannot read
+    // a tenant's collections. The system tenant is read through it.
+    if (tenant == ores::utility::uuid::tenant_id::system().to_string())
+        return db_ctx;
+    const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(db_ctx, tenant);
+    if (slash == std::string::npos)
+        return tenant_ctx;
+    return ores::database::service::party_context::with_party(
+        tenant_ctx,
+        tenant_ctx.tenant_id(),
+        boost::uuids::string_generator()(scope.substr(slash + 1)),
+        tenant_ctx.actor());
+}
+
+// The feeds that no pass has started yet, by scope and feed config id.
+using pending_feeds = std::map<std::string, std::map<std::string, restore_failure>>;
+
+// Replaces what a scope still has to start with the failures of its last pass.
+// A feed that a wait cannot cure is logged and left out.
+void note_failures(pending_feeds& pending, const std::string& scope, const restore_report& report) {
+    auto& feeds = pending[scope];
+    feeds.clear();
+    for (const auto& f : report.failures) {
+        if (f.retry)
+            feeds[f.feed_config_id] = f;
+        else
+            BOOST_LOG_SEV(auto_start_lg(), error) << "Feed " << f.display_name << " of " << scope
+                                                  << " does not start — " << f.reason << ".";
+    }
+    if (feeds.empty())
+        pending.erase(scope);
+}
+
+std::size_t pending_total(const pending_feeds& pending) {
+    std::size_t total = 0;
+    for (const auto& [_, feeds] : pending)
+        total += feeds.size();
+    return total;
+}
+
+// One pass for the system tenant and then for each root party of every other
+// active tenant. A scope that fails does not stop the others, and its feeds stay
+// pending.
+int restore_all_tenants(const feed_restorer& restorer,
+                        const ores::database::context& db_ctx,
+                        pending_feeds& pending) {
+    int started = 0;
+    const auto run = [&](const std::string& scope) {
+        try {
+            const auto report = restorer.pass(scope_context(db_ctx, scope));
+            BOOST_LOG_SEV(auto_start_lg(), info)
+                << "Auto-started " << report.started << " enabled feed(s) for " << scope << ".";
+            started += static_cast<int>(report.started);
+            note_failures(pending, scope, report);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Failed to auto-start feeds for " << scope << ": " << e.what();
+        }
+    };
     const auto system = ores::utility::uuid::tenant_id::system().to_string();
+    run(system);
     for (const auto& tenant : ores::iam::repository::tenant_repository().read_latest(db_ctx)) {
         const auto id = boost::uuids::to_string(tenant.id);
         if (id == system || tenant.status != "active")
             continue;
         try {
-            started += auto_start_feeds(ctrl, registry, bctx, tenant_walk_context(db_ctx, id));
+            for (const auto& scope : tenant_scopes(db_ctx, id))
+                run(scope);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auto_start_lg(), error)
-                << "Failed to auto-start feeds for tenant " << id << ": " << e.what();
+                << "Failed to read the parties of tenant " << id << ": " << e.what();
         }
     }
     return started;
+}
+
+// One try for each feed that is still pending. Answers how many remain.
+std::size_t retry_pending(const feed_restorer& restorer,
+                          const ores::database::context& db_ctx,
+                          pending_feeds& pending) {
+    const auto scopes = pending;
+    for (const auto& [scope, feeds] : scopes) {
+        std::set<std::string> ids;
+        for (const auto& [id, _] : feeds)
+            ids.insert(id);
+        try {
+            const auto report = restorer.pass(scope_context(db_ctx, scope), &ids);
+            if (report.started > 0)
+                BOOST_LOG_SEV(auto_start_lg(), info)
+                    << "Auto-started " << report.started << " more feed(s) for " << scope << ".";
+            note_failures(pending, scope, report);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auto_start_lg(), warn)
+                << "Feeds of " << scope << " are not read yet: " << e.what();
+        }
+    }
+    return pending_total(pending);
+}
+
+void log_unstarted(const pending_feeds& pending) {
+    for (const auto& [scope, feeds] : pending)
+        for (const auto& [_, f] : feeds)
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Feed " << f.display_name << " of " << scope
+                << " did not start before the restore gave up — " << f.reason << ".";
 }
 }
 
@@ -249,20 +291,49 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // Autonomous, config-driven generation: one boot-time walk starts every
     // auto-startable feed of every kind. Each feed resolves its own series
-    // and publishes on its synthetic producer channel.
-    auto_start_all_tenants(*ctrl, registry, bctx, db_ctx);
+    // and publishes on its synthetic producer channel. A feed that a dependency
+    // keeps from starting is tried again in the background.
+    const auto restorer = std::make_shared<feed_restorer>(*ctrl, registry, bctx);
+    auto pending = std::make_shared<pending_feeds>();
+    restore_all_tenants(*restorer, db_ctx, *pending);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
+
+    std::jthread restore_retries;
+    if (const auto left = pending_total(*pending); left > 0) {
+        BOOST_LOG_SEV(lg(), warn) << left << " feed(s) did not start; trying again for up to "
+                                  << std::chrono::duration_cast<std::chrono::minutes>(
+                                         restore_retry_policy{}.budget)
+                                         .count()
+                                  << " minutes";
+        restore_retries =
+            std::jthread([restorer, pending, retry_ctx = db_ctx](std::stop_token stop) {
+                std::mutex m;
+                std::condition_variable_any wake;
+                const auto sleep = [&](std::chrono::milliseconds span) {
+                    std::unique_lock lock(m);
+                    wake.wait_for(lock, stop, span, [] { return false; });
+                };
+                const auto left = retry_restore(
+                    restore_retry_policy{},
+                    pending_total(*pending),
+                    [&] { return retry_pending(*restorer, retry_ctx, *pending); },
+                    sleep,
+                    [&] { return stop.stop_requested(); });
+                if (left > 0 && !stop.stop_requested())
+                    log_unstarted(*pending);
+            });
+    }
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, &svc_nats, &registry](auto& n, auto c, auto v) {
+        [ctrl, restorer, &svc_nats, &registry](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, c, v, registry);
+                n, svc_nats, ctrl, restorer, c, v, registry);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
@@ -274,6 +345,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
+    if (restore_retries.joinable()) {
+        restore_retries.request_stop();
+        restore_retries.join();
+    }
     ctrl->shutdown();
     event_source.stop();
     co_return;

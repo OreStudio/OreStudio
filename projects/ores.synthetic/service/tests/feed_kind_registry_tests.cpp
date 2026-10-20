@@ -21,6 +21,7 @@
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_controller.hpp"
 #include "../src/feed_kind_registry.hpp"
+#include "../src/feed_restore.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/simulate_handler.hpp"
 #include "../src/vintage_validity_handler.hpp"
@@ -634,4 +635,65 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
     // The system tenant itself is not refused.
     CHECK(feed_kind_registry::is_system_caller(
         ores::database::service::tenant_context::with_system_tenant(f.ctx)));
+}
+
+TEST_CASE("a_restore_pass_starts_the_auto_start_feeds_and_a_second_pass_changes_nothing", tags) {
+    stub_fixture f;
+    const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats, {}};
+    const feed_restorer restorer(*f.ctrl, *f.registry, bctx);
+
+    const auto first = restorer.pass(f.ctx);
+    CHECK(first.started == 1);
+    CHECK(first.failures.empty());
+    CHECK(f.ctrl->running_count() == 1);
+
+    const auto second = restorer.pass(f.ctx);
+    CHECK(second.started == 0);
+    CHECK(second.failures.empty());
+    CHECK(f.ctrl->running_count() == 1);
+}
+
+TEST_CASE("a_feed_that_fails_to_build_is_reported_and_the_next_pass_starts_it", tags) {
+    stub_fixture f;
+    int builds = 0;
+    ores::synthetic::feed::feed_factory factory;
+    factory.register_kind(
+        stub_kind_name,
+        [&builds](const auto&, const auto&) -> std::shared_ptr<ores::marketdata::domain::IFeed> {
+            const auto n = builds++;
+            if (n == 0)
+                throw std::runtime_error("marketdata is not up");
+            return std::make_shared<stub_feed>("stub.test.source." + std::to_string(n));
+        });
+    const auto registry = make_stub_registry(factory);
+    const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats, {}};
+    const feed_restorer restorer(*f.ctrl, *registry, bctx);
+
+    const auto first = restorer.pass(f.ctx);
+    CHECK(first.started == 1);
+    REQUIRE(first.failures.size() == 1);
+    CHECK(first.failures[0].feed_config_id == stub_id);
+    CHECK(first.failures[0].reason == "marketdata is not up");
+    CHECK(first.failures[0].retry);
+
+    const std::set<std::string> only{stub_id};
+    const auto second = restorer.pass(f.ctx, &only);
+    CHECK(second.started == 1);
+    CHECK(second.failures.empty());
+    CHECK(builds == 3);
+    CHECK(f.ctrl->running_count() == 2);
+}
+
+TEST_CASE("a_disabled_feed_is_no_failure_of_a_restore", tags) {
+    stub_fixture f;
+    const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats, {}};
+    const feed_restorer restorer(*f.ctrl, *f.registry, bctx);
+    for (auto& [_, container] : stub_containers())
+        container.enabled = false;
+
+    const auto report = restorer.pass(f.ctx);
+
+    CHECK(report.started == 0);
+    CHECK(report.failures.empty());
+    CHECK(f.ctrl->running_count() == 0);
 }

@@ -23,6 +23,7 @@ hide empty description
 
 state "stopped" as stopped
 state "starting" as starting
+state "waiting" as waiting
 state "running" as running
 
 [*] --> stopped : the service starts
@@ -30,7 +31,10 @@ state "running" as running
 stopped --> starting : Start by a permitted operator\nor the restore of an enabled auto_start feed
 
 starting --> running : the run token is held, the series is free\nand the feed is built
-starting --> stopped : the grant is missing or lapsed, the vintage\nis missing, or another feed holds the series
+starting --> stopped : Start by an operator refused: the grant is missing or lapsed,\nthe vintage is missing, or another feed holds the series
+starting --> waiting : a restore finds a dependency that does not answer
+waiting --> starting : the next try, 2 s doubling to 30 s
+waiting --> stopped : five minutes pass, or another feed holds the series
 
 running --> stopped : Stop by a permitted operator\nor the service stops
 running --> running : a tick is published

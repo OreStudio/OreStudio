@@ -770,6 +770,53 @@ def vector_element_type(cpp):
     return cpp[len(prefix) : -1]
 
 
+# A record that holds this many members, counting the records it holds by value,
+# is wide: moving one costs more than the work of reading it. Repeated children
+# of a wide record sit in a std::deque, which never moves an element, instead of
+# a std::vector, which moves every element each time it grows. The widest record
+# below the line holds 454 members and the narrowest above it holds 10,837, so
+# the value does not sit on a boundary.
+WIDE_RECORD_MEMBERS = 1000
+
+
+def member_counts(schema, emitted, names, cut, exact_decimals):
+    """How many members each emitted record holds, records held by value included."""
+    own = {}
+    held = {}
+    for type_name in emitted:
+        complex_type = schema.complex_types[type_name]
+        elements, attributes = children_of(complex_type, schema)
+        count = len(attributes)
+        if content_kind(schema, complex_type) is not None:
+            count += 1
+        if is_residual(complex_type):
+            count += 1
+        by_value = []
+        for element in elements:
+            for field in expand(schema, element):
+                _member, kind, _cpp, repeated = member_declaration(schema, field, exact_decimals)
+                if kind != "nested":
+                    count += 1
+                    continue
+                target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
+                if repeated or (type_name, snake(field.get("name"))) in cut or target not in names:
+                    # A vector, or an arena and its index row, is a few words.
+                    count += 1
+                else:
+                    by_value.append(target)
+        own[type_name] = count
+        held[type_name] = by_value
+
+    totals = {}
+
+    def total(type_name):
+        if type_name not in totals:
+            totals[type_name] = own[type_name] + sum(total(t) for t in held[type_name] if t in own)
+        return totals[type_name]
+
+    return {type_name: total(type_name) for type_name in emitted}
+
+
 def member_declaration(schema, element, exact_decimals):
     name = element.get("name")
     member = snake(name)
@@ -881,6 +928,20 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
     cut = {(holder, member) for holder, member, _target in schema.cut_members}
     emitted = [name for name in ordered if name in schema.used_types]
     shadowed = shadowed_types(schema, ordered, names)
+    counts = member_counts(schema, emitted, names, cut, exact_decimals)
+    wide = {t for t, c in counts.items() if c >= WIDE_RECORD_MEMBERS}
+
+    def container(type_name, element):
+        return f"std::deque<{element}>" if type_name in wide else f"std::vector<{element}>"
+
+    def arena_container(type_name, element):
+        """An arena names a record defined later, so it cannot be a std::deque on MSVC."""
+        return f"stable_arena<{element}>" if type_name in wide else f"std::vector<{element}>"
+
+    def ops_arguments(type_name, element):
+        """The template arguments of the three functions that grow and index a member."""
+        return f"{element}, {container(type_name, element)}" if type_name in wide else element
+
     header_name = accessor.replace("_document", "")
 
     unresolved = []
@@ -916,13 +977,13 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                         # record owns, so no row of the record moves when the
                         # arena grows.
                         body.append(f"    std::vector<std::uint32_t> {member};")
-                        body.append(f"    std::vector<struct {cpp}> {member}_arena;")
+                        body.append(f"    {arena_container(target, 'struct ' + cpp)} {member}_arena;")
                         field_count += 1
                         continue
                     if (type_name, target) in shadowed:
                         cpp = f"struct {cpp}"
                     if repeated:
-                        cpp = f"std::vector<{cpp}>"
+                        cpp = container(target, cpp)
                 body.append(f"    {cpp} {member}{CPP_ZERO.get(cpp, '')};")
                 field_count += 1
         if is_residual(complex_type):
@@ -1004,7 +1065,15 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 member = snake(element.get("name"))
                 if (type_name, member) in cut:
                     ops_instance = ops_name(names[type_name], f"{member}_arena")
-                    repeated_arena.append((ops_instance, names[target_name]))
+                    repeated_arena.append(
+                        (
+                            ops_instance,
+                            f"{names[target_name]}, "
+                            f"{arena_container(target_name, names[target_name])}"
+                            if target_name in wide
+                            else names[target_name],
+                        )
+                    )
                     rows.append(
                         f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
                         f"field_kind::indexed_nested, "
@@ -1024,7 +1093,9 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
                 ops = "nullptr"
                 if repeated:
                     ops = f"&{ops_name(names[type_name], member)}"
-                    repeated_members.append((ops_name(names[type_name], member), nested))
+                    repeated_members.append(
+                        (ops_name(names[type_name], member), ops_arguments(target_name, nested))
+                    )
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
                     f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
@@ -1072,15 +1143,10 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
         )
 
     ops = []
-    for instance, element_type in repeated_arena:
+    for instance, arguments in repeated_arena + repeated_members:
         ops.append(
-            f"constexpr vector_ops {instance}{{&append_to<{element_type}>, "
-            f"&count_of<{element_type}>, &at_of<{element_type}>}};"
-        )
-    for ops_instance, element_type in repeated_members:
-        ops.append(
-            f"constexpr vector_ops {ops_instance}{{&append_to<{element_type}>, "
-            f"&count_of<{element_type}>, &at_of<{element_type}>}};"
+            f"constexpr vector_ops {instance}{{&append_to<{arguments}>, "
+            f"&count_of<{arguments}>, &at_of<{arguments}>}};"
         )
 
     spellings = []
@@ -1120,10 +1186,10 @@ def render(schema, root_element, root_type, namespace, accessor, exact_decimals,
 #define ORES_ORE_CORE_XML_GENERATED_{header_name.upper()}_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
-#include "ores.utility/decimal/decimal.hpp"
+{'#include "ores.ore.core/xml/stable_arena.hpp"' + chr(10) if wide else ''}#include "ores.utility/decimal/decimal.hpp"
 
 #include <cstdint>
-#include <string>
+{'#include <deque>' + chr(10) if wide else ''}#include <string>
 #include <vector>
 
 namespace {namespace} {{
@@ -1149,21 +1215,21 @@ namespace {{
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto append_to(void* container, void** slot) -> void {{
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+    auto* held = static_cast<Container*>(container);
+    held->emplace_back();
+    *slot = &held->back();
 }}
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto count_of(const void* container) -> std::size_t {{
-    return static_cast<const std::vector<T>*>(container)->size();
+    return static_cast<const Container*>(container)->size();
 }}
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto at_of(const void* container, std::size_t index) -> const void* {{
-    return &(*static_cast<const std::vector<T>*>(container))[index];
+    return &(*static_cast<const Container*>(container))[index];
 }}
 
 {chr(10).join(spellings)}

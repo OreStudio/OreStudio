@@ -3271,3 +3271,17 @@ TEST_CASE("a_trade_whose_product_cannot_be_read_still_imports", tags) {
     CHECK(items[0].envelope->counter_party == std::optional<std::string>("CPTY_C"));
     CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
 }
+
+// A trade holds a member for every instrument kind, so moving one costs more
+// than reading one. The document must therefore never move a trade it holds.
+TEST_CASE("portfolio_trades_keep_their_address_while_the_document_grows", tags) {
+    pf::portfolio document;
+    document.trade.emplace_back();
+    const auto* first = &document.trade.front();
+
+    for (int i = 0; i < 64; ++i)
+        document.trade.emplace_back();
+
+    CHECK(&document.trade.front() == first);
+    CHECK(document.trade.size() == 65);
+}

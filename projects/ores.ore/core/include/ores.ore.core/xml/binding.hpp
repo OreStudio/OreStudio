@@ -80,16 +80,17 @@ struct record_type;
 /**
  * @brief The operations a repeated member needs from the table.
  *
- * A repeated member is a std::vector whose element type only the generated
- * code knows, so growing it, measuring it and reaching into it are three
- * functions the table carries rather than switches the engine makes on a
+ * A repeated member is a std::vector, or a std::deque when its element is a
+ * wide record that must not move. Only the generated code knows the container
+ * and the element type, so growing it, measuring it and reaching into it are
+ * three functions the table carries rather than switches the engine makes on a
  * member's kind. The reader appends, the writer measures and indexes.
  */
 struct vector_ops {
-    /// Appends a default-constructed element to a vector and hands back its
-    /// address.
+    /// Appends a default-constructed element to the container and hands back
+    /// its address.
     void (*append)(void* container, void** slot);
-    /// How many elements the vector holds.
+    /// How many elements the container holds.
     auto (*count)(const void* container) -> std::size_t;
     /// The address of one element, which the caller bounds.
     auto (*at)(const void* container, std::size_t index) -> const void*;
@@ -203,8 +204,8 @@ struct bind_error {
  * exist rather than repeating the schema, so a renamed element is a generated
  * change and not a silent disagreement.
  */
-ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view name, bool attribute)
-    -> const field*;
+ORES_ORE_CORE_EXPORT auto
+find_field(const record_type& type, std::string_view name, bool attribute) -> const field*;
 
 /**
  * @brief The table a named child element of a type is described by, or null.
@@ -213,8 +214,8 @@ ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view n
  * table: the table is the type the caller's column points at, and asking for
  * it keeps the schema's shape in the generated code.
  */
-ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type, std::string_view name)
-    -> const record_type*;
+ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type,
+                                          std::string_view name) -> const record_type*;
 
 /**
  * @brief Marks the element's own text as present.
@@ -246,8 +247,8 @@ is_present(const record_type& type, const void* record, std::string_view name) -
  *
  * @return False when the type declares no such field.
  */
-ORES_ORE_CORE_EXPORT auto mark_present(const record_type& type, void* record, std::string_view name)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+mark_present(const record_type& type, void* record, std::string_view name) -> bool;
 
 /**
  * @brief The spelling a record states for an enumerated field.
@@ -301,8 +302,9 @@ public:
      * @return Nothing on success, or where and why the document could not be
      * bound.
      */
-    static auto bind(const document_type& doc, std::string_view text, void* root)
-        -> std::expected<void, bind_error>;
+    static auto bind(const document_type& doc,
+                     std::string_view text,
+                     void* root) -> std::expected<void, bind_error>;
 };
 
 }

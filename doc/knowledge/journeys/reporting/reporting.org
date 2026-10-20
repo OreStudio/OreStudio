@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-20
 
 A report definition belongs to one party, and the party runs it on demand or on
 a schedule. Each firing creates a report instance, one record of one run, and
@@ -20,7 +20,7 @@ journeys are a person's view of that record: the reports their party owns, the
 runs of each, what a run produced, what went wrong, and when the next one
 starts.
 
-Nine journeys cover the lifecycle. The first is the front door, the one a
+Nine journeys cover the lifecycle of a run, and five more cover the pricing engines. The first is the front door, the one a
 reader opens with a question and no identifier: *which reports does my party
 run, and how did each one last go?* From it a person runs a report, opens what a
 run produced, reads that result by counterparty as well as by book, follows an
@@ -50,6 +50,22 @@ journey's *What is missing*.
 | [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] | trading-desk, market-risk, engineer | Every run of one report newest first, with the last five fire times, the newest marked latest, and a notice when the run being read stops being the newest |
 | [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] | tenant administrator, market-risk | Define a report: name it, bind the five configurations it reads, choose the analytics and their settings, scope it to a portfolio, and save it |
 | [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] | market-risk, tenant administrator | Turn an analytic on or off, change a parameter, and see what the change reaches: the next run of every definition sharing the configuration, and the runs it makes incomparable |
+| [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] | market-risk, tenant administrator | The pricing engine configurations the party holds, which one is official for each cycle, what each prices with, which reports bind it, and which product types the reports need that it leaves unpriced |
+| [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] | market-risk, tenant administrator | Build a draft or a candidate in six steps: what it is for, the products, a model and engine for each, their parameters, a check against what the reports of a cycle need, and a review |
+| [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] | market-risk, tenant administrator | Propose a change to the model, engine or parameters of one product, read which reports it reaches once it is approved, and try it in a draft copy first |
+| [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] | market-risk, tenant administrator | Bring in an ORE pricing engines file, read what it adds, changes and removes against a configuration the party holds, and save it as a draft or as a proposal |
+| [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] | market-risk, quant, model validation | Each role model risk names approves or rejects a proposed change to an official configuration, the proposer cannot sign it off, and an approved proposal is made official |
+
+The last five journeys are the first of the report configurations. A report
+definition binds five configurations, and each configuration needs its own screens
+to be created and changed. They start with the pricing engines. The other four types
+follow, and the conventions are authored in their own work.
+
+Model risk controls the model settings, so a party holds few official pricing
+engine configurations, one for each cycle, and a change to one is signed off by
+the roles model risk names. The five journeys draw that: a status on every
+configuration, a proposal in place of an edit, and a sign-off with four eyes. The
+roles are assumed until model risk confirms them.
 
 * What a report is here
 

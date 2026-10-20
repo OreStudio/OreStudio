@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Author a pricing engine configuration prototype — Reporting prototypes</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+@media(max-width:820px){.hist{grid-template-columns:1fr}}
+.hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
+.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
+.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
+.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
+.warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
+.okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
+.badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+.journey{margin-top:6px}.stepcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:14px}
+.stepcard>h2{font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink)}.stepcard .lead{color:var(--ink-dim)}
+.railentry{cursor:pointer}.railtag{margin-left:auto;font-size:.7rem;color:var(--ink-faint)}
+.mark{background:#201a0e}.chk{width:auto;min-width:0}
+td .sel{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
+.btn.small{padding:3px 9px;font-size:.8rem}.diffrow td{font-family:var(--mono);font-size:.82rem}
+.rm{background:#2a1517;color:#ffb3ad}.ad{background:#10261a;color:#9be9a8}
+.statline{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim)}.statline b{color:var(--ink)}
+.btn{white-space:nowrap;display:inline-block;text-decoration:none}a.btn{color:var(--ink)}a.btn.primary{color:#0d1117}
+details.menu{position:relative;display:inline-block}details.menu>summary{list-style:none;cursor:pointer}details.menu>summary::-webkit-details-marker{display:none}
+details.menu .items{position:absolute;right:0;top:110%;z-index:20;min-width:16rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid;padding:4px}
+details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}details.menu .items a:hover{background:var(--panel-2)}
+.field label.plain,label.plain{text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);display:block}
+label.plain{white-space:nowrap}
+.tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
+
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  Authoring a pricing engine configuration on the standard steps UI, copied from
+  doc/prototypes/setup/first-run: the rail, its marks and the step foot. Six steps
+  (name it, choose the products, choose the model and engine, set the parameters,
+  check it, review and save), the last one final. The rail is one computed list.
+  Step 3 carries three readings of the model and engine step behind ?variant=A|B|C:
+  a table, a card for each product, and a guided walk one product at a time.
+  A pair that is not known to work is marked, never refused. No server check stands
+  behind any finding: the page says so.
+
+  What it is for: a draft to try a change, or a candidate for the official intraday or end of day
+  configuration. Only a candidate whose coverage is complete can be submitted for sign-off.
+
+  Addresses: ?step=1..6&variant=A|B|C&start=empty|copy&cycle=none|eod|intraday
+  The product, model and engine triples are counted from 110 ORE example files;
+  the notes and usual values are this page's own wording.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<div id="layer"></div>
+
+<script>
+// FIXTURE. The product, model and engine triples are counted from the 110
+// pricingengine*.xml files under the ORE Examples folder, the first 45 by count.
+// The notes, usual values and instrument codes are this prototype's own wording.
+const TRIPLES = [
+  ['Swap','DiscountedCashflows','DiscountingSwapEngine',65],['CapFlooredIborLeg','BlackOrBachelier','BlackIborCouponPricer',54],
+  ['CMS','LinearTSR','LinearTSRPricer',47],['EquityOption','BlackScholesMerton','AnalyticEuropeanEngine',45],
+  ['CommodityForward','DiscountedCashflows','DiscountingCommodityForwardEngine',44],['Bond','DiscountedCashflows','DiscountingRiskyBondEngine',38],
+  ['CrossCurrencySwap','DiscountedCashflows','DiscountingCrossCurrencySwapEngine',37],['EuropeanSwaption','BlackBachelier','BlackBachelierSwaptionEngine',37],
+  ['FxForward','DiscountedCashflows','DiscountingFxForwardEngine',36],['FxOption','GarmanKohlhagen','AnalyticEuropeanEngine',36],
+  ['CreditDefaultSwap','DiscountedCashflows','MidPointCdsEngine',36],['CapFloor','IborCapModel','IborCapEngine',35],
+  ['BermudanSwaption','LGM','Grid',34],['EquityForward','DiscountedCashflows','DiscountingEquityForwardEngine',32],
+  ['EquityOptionAmerican','BlackScholesMerton','FdBlackScholesVanillaEngine',32],['FxOptionAmerican','GarmanKohlhagen','FdBlackScholesVanillaEngine',30],
+  ['CMSSpread','BrigoMercurio','Analytic',30],['CommoditySwap','DiscountedCashflows','CommoditySwapEngine',30],
+  ['Swap','CrossAssetModel','AMC',18],['CrossCurrencySwap','CrossAssetModel','AMC',15],['FlexiSwap','LGM','Grid',15],
+  ['YYCapFloor','YYCapModel','YYCapEngine',29],['CpiCapFloor','CpiCapModel','CpiCapEngine',24],['BondOption','Black','BlackBondOptionEngine',16]
+];
+const TYPES = [
+  ['Swap','Rates','Swap','An interest rate swap, fixed against floating or floating against floating.'],
+  ['CrossCurrencySwap','Rates','CrossCurrencySwap','A swap whose two legs pay in different currencies.'],
+  ['CapFloor','Rates','CapFloor','A cap or a floor on an interest rate index.'],
+  ['CMS','Rates','Swap','A leg that pays a constant maturity swap rate.'],
+  ['CMSSpread','Rates','Swap','A leg that pays the spread between two constant maturity swap rates.'],
+  ['EuropeanSwaption','Rates','Swaption','The right to enter a swap on one date.'],
+  ['BermudanSwaption','Rates','Swaption','The right to enter a swap on any of several dates.'],
+  ['FlexiSwap','Rates','Swap','A swap whose holder may choose the notional on each date.'],
+  ['FxForward','FX','FxForward','An agreement to exchange two currencies on a future date.'],
+  ['FxOption','FX','FxOption','A European option on an exchange rate.'],
+  ['FxOptionAmerican','FX','FxOption','An American option on an exchange rate.'],
+  ['Bond','Credit','Bond','A bond that carries credit risk.'],
+  ['CreditDefaultSwap','Credit','CreditDefaultSwap','Protection against the default of one name.'],
+  ['BondOption','Credit','Bond','An option on a bond.'],
+  ['EquityOption','Equity','EquityOption','A European option on a share or an index.'],
+  ['EquityOptionAmerican','Equity','EquityOption','An American option on a share or an index.'],
+  ['EquityForward','Equity','EquityForward','An agreement to buy or sell a share on a future date.'],
+  ['CommodityForward','Commodity','CommodityForward','An agreement to buy or sell a commodity on a future date.'],
+  ['CommoditySwap','Commodity','CommoditySwap','A swap of a fixed price against a commodity price.'],
+  ['YYCapFloor','Inflation','CapFloor','A cap or a floor on year-on-year inflation.'],
+  ['CpiCapFloor','Inflation','CapFloor','A cap or a floor on a consumer price index.']
+].map(([code, cls, instrument, desc]) => ({ code, cls, instrument, desc }));
+const typeOf = c => TYPES.find(t => t.code === c);
+const MODELS = [...new Set(TRIPLES.map(t => t[1]))].sort();
+const enginesFor = m => [...new Set(TRIPLES.filter(t => t[1] === m).map(t => t[2]))].sort();
+const ALL_ENGINES = [...new Set(TRIPLES.map(t => t[2]))].sort();
+const knownPair = (m, e) => TRIPLES.some(t => t[1] === m && t[2] === e);
+const usualFor = c => { const x = TRIPLES.filter(t => t[0] === c).sort((a, b) => b[3] - a[3])[0]; return x ? { model: x[1], engine: x[2], n: x[3] } : null; };
+// The settings a pair is known to take. kind: select (options), text, number.
+const SETTINGS = {
+  'BermudanSwaption|LGM|Grid': [
+    { scope: 'model', name: 'Calibration', kind: 'select', opts: ['Bootstrap', 'BestFit', 'None'], usual: 'Bootstrap', note: 'How the model is fitted to the swaption quotes.' },
+    { scope: 'model', name: 'CalibrationStrategy', kind: 'select', opts: ['CoterminalATM', 'CoterminalDealStrike', 'UnderlyingATM', 'UnderlyingDealStrike'], usual: 'CoterminalATM', note: 'Which swaptions the fit uses.' },
+    { scope: 'model', name: 'ReversionType', kind: 'select', opts: ['HullWhite', 'Hagan'], usual: 'HullWhite', note: 'The parameterisation of mean reversion.' },
+    { scope: 'model', name: 'VolatilityType', kind: 'select', opts: ['Hagan', 'HullWhite'], usual: 'Hagan', note: 'The parameterisation of volatility.' },
+    { scope: 'model', name: 'Volatility', kind: 'number', usual: '0.01', note: 'The starting volatility the fit moves from.' },
+    { scope: 'model', name: 'ShiftHorizon', kind: 'number', usual: '0.5', note: 'The horizon, in years, of the shift of the state variable.' },
+    { scope: 'engine', name: 'sx', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the state axis.' },
+    { scope: 'engine', name: 'sy', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the value axis.' },
+    { scope: 'engine', name: 'nx', kind: 'number', usual: '10', note: 'Number of grid points on the state axis.' },
+    { scope: 'engine', name: 'ny', kind: 'number', usual: '10', note: 'Number of grid points on the value axis.' }
+  ],
+  'Bond|DiscountedCashflows|DiscountingRiskyBondEngine': [
+    { scope: 'engine', name: 'TimestepPeriod', kind: 'text', usual: '6M', note: 'The step of the default probability grid.' }
+  ],
+  'Swap|DiscountedCashflows|DiscountingSwapEngine': [
+    { scope: 'engine', name: 'SensitivityTemplate', kind: 'select', opts: ['IR_Analytical'], usual: 'IR_Analytical', note: 'The sensitivity method a swap offers.' }
+  ]
+};
+const GLOBAL_KNOWN = [{ name: 'ContinueOnCalibrationError', kind: 'select', opts: ['true', 'false'], usual: 'true', note: 'Whether a failed calibration stops the run. True prices the product with the last good fit and records the error.' }];
+const settingsFor = (t, m, e) => SETTINGS[t + '|' + m + '|' + e] || [];
+const P = (scope, name, value) => ({ scope, name, value });
+const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
+const clone = x => JSON.parse(JSON.stringify(x));
+const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
+const EOD_REPORTS = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Large Exposures', 'Cross-Entity Counterparty Concentration'];
+const INTRA_REPORTS = ['Treasury Sensitivity', 'Group DV01 by book'];
+const REPORTS_ALL = EOD_REPORTS.concat(INTRA_REPORTS);
+// FIXTURE. The product types each report's portfolio holds. No operation returns them.
+const REPORT_META = {
+  'Group Consolidated Exposure': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Board Risk Dashboard': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Large Exposures': { cycle: 'eod', portfolio: 'Group counterparties', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap', 'CreditDefaultSwap'] },
+  'Cross-Entity Counterparty Concentration': { cycle: 'eod', portfolio: 'European entities', needs: ['Swap', 'FxForward', 'Bond', 'CreditDefaultSwap', 'CapFloor', 'EuropeanSwaption'] },
+  'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
+  'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
+};
+const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
+// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
+const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
+const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
+const NOW = Date.parse('2026-10-19T10:00:00Z');
+const AMC_NOW = [
+  { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
+const setParam = (p, name, value) => { p.params.find(x => x.name === name).value = value; };
+const amcV3 = withEdit(AMC_NOW, c => setParam(c[2], 'VolatilityType', 'HullWhite'));
+const amcV2 = amcV3.filter(p => p.type !== 'CMS');
+const amcV1 = withEdit(amcV2, c => setParam(c[2], 'ShiftHorizon', '1.0'));
+const INTRA_V2 = [
+  { type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM().map(p => (p.name === 'nx' || p.name === 'ny') ? P(p.scope, p.name, '6') : p) },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '1Y')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'DiscountedCashflows', engine: 'DiscountingCrossCurrencySwapEngine', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(c[2], 'ny', '10'); });
+const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
+const CONFIGS = [
+  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
+  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
+];
+CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
+const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
+  note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
+  products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
+  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
+// A flat view of a document, so two documents can be compared as rows.
+const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
+const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
+
+const P0 = new URLSearchParams(location.search);
+const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const dash = '<span class="faint">—</span>';
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '✓', copy: '⧉' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+let KEEP = [];
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => { const a = e.target.closest('a[data-nav]'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render(); });
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const kv = (l, v, wide) => `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`;
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
+function closeDlg() { document.getElementById('layer').innerHTML = ''; }
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const reasonField = changed => { const offered = REASON_AMEND.filter(x => changed ? x.name !== 'Non-material update' : x.name === 'Non-material update');
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div><div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`; };
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
+function chrome(label, bars) {
+  document.getElementById('note').textContent = 'Prototype · ' + label + ' · mock data, nothing is written to a server';
+  const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
+  document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+}
+const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</span>${t ? '' : ' ' + tag('no code', 'warn')}`; };
+const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
+const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
+const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+const STATUS = { approved: ['Approved', 'ok'], in_review: ['In review', 'warn'], draft: ['Draft', 'info'], retired: ['Retired', 'off'] };
+const statusTag = s => tag(STATUS[s][0], STATUS[s][1]);
+const officialTag = c => c.status === 'approved' && c.cycle ? tag('Official · ' + CYCLE_NAME[c.cycle], 'cls') : dash;
+const RULE = 'A report needs a price for every product type in its portfolio. A configuration that several reports bind must cover all of their portfolios together.';
+// What a configuration must cover: the union of the portfolios of the reports that bind it. With no report, the whole traded list.
+const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
+const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
+const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const SIGNOFF = '../sign-off-a-pricing-engine-change/';
+function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
+const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
+let hideSystem = false;
+function historyTab(c) {
+  const all = c.versions.slice().reverse(), cur = all[0];
+  const rows = all.filter(x => !(hideSystem && /service/.test(x.by)));
+  const entry = x => {
+    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
+    return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
+      ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
+  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
+}
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
+  return p; };
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
+function revertDialog(c, v) {
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
+  dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => {
+    const reason = document.getElementById('f-reason').value, note = document.getElementById('f-note').value || 'Reverted to v' + v;
+    if (official) { c.proposal = newProposal(c, old.snap.products, reason, note); closeDlg(); render(); return; }
+    c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason, note, approvals: null, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+}
+function reportsTab(c) {
+  const row = r => { const m = REPORT_META[r] || { cycle: '', portfolio: '', needs: TRADED }, g = reportGaps(c, r), off = c.cycle && m.cycle && m.cycle !== c.cycle;
+    return `<tr><td><span class="link">${esc(r)}</span></td><td>${m.cycle ? tag(CYCLE_NAME[m.cycle], 'cls') : dash}${off ? ' ' + tag('cycle differs', 'warn') : ''}</td><td>${esc(m.portfolio)}</td><td class="num">${m.needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td><td class="mono">${c.status === 'approved' ? 'version ' + c.ver : '—'}</td></tr>`; };
+  const un = gaps(c);
+  return `<div class="notice">${RULE}</div>
+  ${c.status === 'approved' ? `<div class="notice">A report binds this configuration and runs with the version in force, which is version ${c.ver}. A change reaches the next run of each report below once it is approved. A run already produced keeps what it ran with, and no operation says which version that was.</div>` : `<div class="warnbox">${c.status === 'draft' ? 'This is a draft. No official report can bind it, so a change here reaches no run.' : 'This configuration is not in force.'}</div>`}
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Cycle</th><th>Portfolio</th><th>Product types it needs</th><th>Priced here</th><th>Runs with</th></tr></thead><tbody>${c.reports.map(row).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  ${c.reports.length ? `<div class="${un.length ? 'warnbox' : 'okbox'}">${un.length ? `Together the reports need ${needed(c).length} product types. Not priced here: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}.` : `Together the reports need ${needed(c).length} product types, and this configuration prices all of them.`}</div>` : ''}
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
+}
+
+const variant = (P0.get('variant') || 'A').toUpperCase(), start0 = P0.get('start') || 'empty';
+KEEP = ['variant', 'start', 'cycle'];
+const STEPS = [['name', 'Name it', 'Name the configuration and choose where to start.'], ['products', 'Choose the products', 'Tick every product type this configuration covers.'], ['pairs', 'Choose the model and engine', 'Give each product a model and an engine.'], ['params', 'Set the parameters', 'Settings of the document and of each pair.'], ['check', 'Check it', 'What the configuration leaves unpriced, and what looks unfinished.'], ['review', 'Review and submit', 'Every value, read back before it is written. Save it as a draft, or submit it for sign-off.']];
+const D = { name: '', desc: '', variant: '', cycle: ['eod', 'intraday'].includes(P0.get('cycle')) ? P0.get('cycle') : '', start: start0, from: 'c2', rows: [], globals: [], cursor: 0, saved: null };
+let step = Math.min(Math.max((Number(P0.get('step')) || 1) - 1, 0), 5), maxStep = step, typeSearch = '';
+if (start0 === 'copy') { const c = byId2(D.from); D.name = ''; D.rows = clone(c.products); D.globals = clone(c.globals); }
+const officialOf = cy => CONFIGS.find(c => c.cycle === cy && c.status === 'approved');
+const cycleReports = () => REPORTS_ALL.filter(r => REPORT_META[r].cycle === D.cycle);
+const neededNow = () => D.cycle ? TRADED.filter(t => cycleReports().some(r => REPORT_META[r].needs.includes(t))) : TRADED;
+const gapsNow = () => neededNow().filter(t => !rowOf(t));
+function byId2(id) { return CONFIGS.find(c => c.id === id); }
+const rowOf = t => D.rows.find(r => r.type === t);
+const nameTaken = () => CONFIGS.some(c => c.name.toLowerCase() === D.name.trim().toLowerCase());
+const valid = i => i === 0 ? D.name.trim() && !nameTaken() : i === 1 ? D.rows.length > 0 : true;
+function findings() {
+  const out = [];
+  D.rows.forEach(r => {
+    if (!r.model || !r.engine) out.push([r.type, 'The model or the engine is empty.']);
+    else if (!knownPair(r.model, r.engine)) out.push([r.type, `${r.model} with ${r.engine} is not a pair the system has seen run.`]);
+    settingsFor(r.type, r.model, r.engine).forEach(s => { if (!r.params.some(p => p.name === s.name && p.scope === s.scope)) out.push([r.type, `The ${s.scope} setting ${s.name} is usually set for this pair and the row has none.`]); });
+  });
+  return out;
+}
+function syncParams(r) {
+  const known = settingsFor(r.type, r.model, r.engine), keep = r.params.filter(p => p.custom || known.some(s => s.name === p.name && s.scope === p.scope));
+  r.params = known.map(s => keep.find(p => p.name === s.name && p.scope === s.scope) || P(s.scope, s.name, s.usual)).concat(keep.filter(p => p.custom));
+}
+function useUsual(r) { const u = usualFor(r.type); if (u) { r.model = u.model; r.engine = u.engine; syncParams(r); } }
+// ---- step bodies
+function s1() {
+  const taken = D.name.trim() && nameTaken();
+  return `<div class="field"><label>Name</label><input type="text" id="f-name" value="${esc(D.name)}" placeholder="For example: Europe pricing engines"><div class="help">${taken ? '<span style="color:var(--bad)">A configuration with this name exists. Choose another name.</span>' : 'The name is new in this party.'}</div></div>
+  <div class="field"><label>Description</label><textarea id="f-desc">${esc(D.desc)}</textarea><div class="help">Say what it prices and for whom.</div></div>
+  <div class="field"><label>Variant tag (optional)</label><input type="text" id="f-var" value="${esc(D.variant)}" placeholder="AMC, SABR…"></div>
+  <div class="notice">A party holds few official pricing configurations: one for each cycle, signed off by model risk. A configuration made here starts as a draft. To change an official one, <a class="link" href="../change-how-a-product-is-priced/">propose a change to it</a> instead of building a second.</div>
+  <div class="field"><label>What is it for</label><label class="plain"><input type="radio" name="purpose" value="" ${!D.cycle ? 'checked' : ''}> A draft to try a change. No official report can bind it.</label>
+  ${['eod', 'intraday'].map(cy => `<label class="plain"><input type="radio" name="purpose" value="${cy}" ${D.cycle === cy ? 'checked' : ''}> A candidate for the official ${CYCLE_NAME[cy]} configuration</label>`).join('')}
+  ${D.cycle ? `<div class="help">The official ${CYCLE_NAME[D.cycle]} configuration today is ${esc(officialOf(D.cycle).name)}, version ${officialOf(D.cycle).ver}. A candidate replaces it only after sign-off. It must price the ${neededNow().length} product types that the ${cycleReports().length} ${CYCLE_NAME[D.cycle].toLowerCase()} reports need.</div>` : ''}</div>
+  <div class="field"><label>Where to start</label><div>${[['empty', 'Start empty'], ['copy', 'Start from a copy of a configuration the party holds'], ['file', 'Start from an ORE file']].map(([k, l]) => `<div><label class="plain"><input type="radio" name="start" value="${k}" ${D.start === k ? 'checked' : ''}> ${l}</label></div>`).join('')}</div>
+  ${D.start === 'copy' ? `<select id="f-from">${CONFIGS.map(c => `<option value="${c.id}" ${D.from === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select><div class="help">A copy carries the products and settings of the source. It carries no report binding and no sign-off, and it starts as a draft.</div>` : ''}
+  ${D.start === 'file' ? `<div class="notice">This opens <a class="link" href="../bring-in-a-pricing-engines-file/">Bring in a pricing engines file</a>, which returns here with the rows read. That prototype is the owner of the file step.</div>` : ''}</div>`;
+}
+function s2() {
+  const cls = [...new Set(TYPES.map(t => t.cls))];
+  const shown = TYPES.filter(t => !typeSearch || (t.code + ' ' + t.desc).toLowerCase().includes(typeSearch.toLowerCase()));
+  return `<div class="row"><div class="field" style="flex:1"><label>Search</label><input type="text" id="f-ts" value="${esc(typeSearch)}" placeholder="Search the code and the description"></div>${btn(D.cycle ? 'Select the products the ' + CYCLE_NAME[D.cycle].toLowerCase() + ' reports need' : 'Select the products the party trades', '', '', 'id="b-trade"')}</div>
+  <div class="faint">The list of traded products is a fixture: no operation returns it.</div>
+  ${cls.map(c => { const l = shown.filter(t => t.cls === c); return l.length ? `<h2>${c}</h2><table><tbody>${l.map(t => `<tr><td style="width:2rem"><input type="checkbox" class="chk" data-type="${t.code}" ${rowOf(t.code) ? 'checked' : ''}></td><td class="mono">${t.code}</td><td>${esc(t.desc)}</td><td class="faint">instrument ${esc(t.instrument)}</td></tr>`).join('')}</tbody></table>` : ''; }).join('') || '<div class="muted">No product type matches the search.</div>'}
+  <div class="statline"><span><b>${D.rows.length}</b> chosen</span><span>A product type that is not chosen has no model in a run.${D.cycle ? ' ' + neededNow().length + ' are needed.' : ''}</span></div>`;
+}
+const pairOpts = r => ({ models: MODELS, engines: r.model ? enginesFor(r.model) : ALL_ENGINES });
+function selects(r, i) { const o = pairOpts(r); return `<select class="sel" data-m="${i}"><option value="">Model…</option>${o.models.map(m => `<option ${m === r.model ? 'selected' : ''}>${m}</option>`).join('')}</select> <select class="sel" data-e="${i}"><option value="">Engine…</option>${(o.engines.includes(r.engine) || !r.engine ? o.engines : [r.engine].concat(o.engines)).map(e => `<option ${e === r.engine ? 'selected' : ''}>${e}</option>`).join('')}</select>`; }
+const mover = i => `<button class="btn small ghost" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">▲</button><button class="btn small ghost" data-down="${i}" ${i === D.rows.length - 1 ? 'disabled' : ''} aria-label="Move down">▼</button>`;
+const meaning = r => { const u = usualFor(r.type); return r.model && r.engine ? (knownPair(r.model, r.engine) ? `The pair appears in ${TRIPLES.filter(t => t[1] === r.model && t[2] === r.engine).reduce((a, t) => a + t[3], 0)} product entries of the 110 example files.` : '') : u ? `The usual is ${u.model} with ${u.engine}, in ${u.n} product entries of the example files.` : ''; };
+function s3() {
+  const head = `<div class="row">${btn('Use the usual for every row', '', '', 'id="b-all"')}<span class="faint">The usual pair is the pair the example files use most often for the product. It is a suggestion.</span></div>`;
+  if (!D.rows.length) return '<div class="notice">No product is chosen. Go back to step 2.</div>';
+  if (variant === 'B') return head + `<div class="grid2">${D.rows.map((r, i) => `<div class="card" style="padding:12px;display:grid;gap:8px"><div class="actions"><b class="mono">${r.type}</b><span style="margin-left:auto">${mover(i)}</span></div><div class="muted">${esc(typeOf(r.type).desc)}</div>${selects(r, i)}<div>${pairTag(r.model, r.engine)} <span class="faint">${meaning(r)}</span></div>${btn('Use the usual', '', 'small', `data-use="${i}"`)}</div>`).join('')}</div>`;
+  if (variant === 'C') { const i = Math.min(D.cursor, D.rows.length - 1), r = D.rows[i]; return head + `<div class="statline"><span>Product <b>${i + 1}</b> of ${D.rows.length}</span></div><div class="card" style="padding:14px;display:grid;gap:10px"><h2 style="font-size:1.1rem;text-transform:none;color:var(--ink)" class="mono">${r.type}</h2><div class="muted">${esc(typeOf(r.type).desc)}</div>${selects(r, i)}<div>${pairTag(r.model, r.engine)} <span class="faint">${meaning(r)}</span></div><div class="actions">${btn('Use the usual', '', 'small', `data-use="${i}"`)}${btn('‹ Previous product', '', 'small', `data-cur="${i - 1}" ${i === 0 ? 'disabled' : ''}`)}${btn('Next product ›', '', 'small', `data-cur="${i + 1}" ${i === D.rows.length - 1 ? 'disabled' : ''}`)}</div></div>`; }
+  return head + `<table><thead><tr><th>Product</th><th>Model and engine</th><th></th><th>What the pair does</th><th>Order</th></tr></thead><tbody>${D.rows.map((r, i) => `<tr><td class="mono">${r.type}</td><td>${selects(r, i)}</td><td>${btn('Use the usual', '', 'small', `data-use="${i}"`)}</td><td>${pairTag(r.model, r.engine)} <span class="faint">${meaning(r)}</span></td><td>${mover(i)}</td></tr>`).join('')}</tbody></table>`;
+}
+const control = (s, val, attr) => s.kind === 'select' ? `<select class="sel" ${attr}>${s.opts.map(o => `<option ${o === val ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input type="${s.kind === 'number' ? 'text' : 'text'}" class="sel" ${attr} value="${esc(val)}" ${s.kind === 'number' ? 'inputmode="decimal"' : ''}>`;
+function s4() {
+  const g = GLOBAL_KNOWN[0], gv = (D.globals.find(x => x.name === g.name) || {}).value;
+  const blocks = D.rows.map((r, i) => { const known = settingsFor(r.type, r.model, r.engine); const rowsHtml = r.params.map((p, j) => { const s = known.find(k => k.name === p.name && k.scope === p.scope) || { kind: 'text', note: 'A setting added by name. The system does not know it.' }; return `<tr><td>${p.scope}</td><td class="mono">${esc(p.name)}</td><td>${control(s, p.value, `data-pr="${i}" data-pj="${j}"`)}</td><td class="faint">${esc(s.note)}${s.usual ? ' Usual: <span class="mono">' + esc(s.usual) + '</span>.' : ''}</td></tr>`; }).join('');
+    return `<div class="card" style="padding:12px;display:grid;gap:8px"><b class="mono">${r.type}</b> <span class="faint">${esc(r.model || 'no model')} with ${esc(r.engine || 'no engine')}</span>${rowsHtml ? `<table><thead><tr><th>Scope</th><th>Name</th><th>Value</th><th>What it does</th></tr></thead><tbody>${rowsHtml}</tbody></table>` : '<div class="muted">This pair takes no setting the system knows.</div>'}<div class="actions"><select class="sel" id="add-s-${i}"><option>model</option><option>engine</option></select><input class="sel" id="add-n-${i}" placeholder="Setting name"><input class="sel" id="add-v-${i}" placeholder="Value">${btn('Add a setting', 'add', 'small', `data-addp="${i}"`)}</div></div>`; }).join('');
+  return `<div class="card" style="padding:12px;display:grid;gap:8px"><b>Global settings</b> <span class="faint">They apply to every product.</span><div class="row"><div class="field"><label>${g.name}</label><select class="sel" id="f-glob"><option value="">Not set</option>${g.opts.map(o => `<option ${o === gv ? 'selected' : ''}>${o}</option>`).join('')}</select></div><div class="help" style="max-width:34rem">${g.note}</div></div></div>${blocks}`;
+}
+function s5() {
+  const un = gapsNow(), f = findings(), need = neededNow();
+  const repTable = D.cycle ? `<h2>Reports of the ${CYCLE_NAME[D.cycle].toLowerCase()} cycle</h2><table><thead><tr><th>Report</th><th>Portfolio</th><th>Needs</th><th>Priced here</th></tr></thead><tbody>${cycleReports().map(r => { const g = REPORT_META[r].needs.filter(t => !rowOf(t)); return `<tr><td>${esc(r)}</td><td>${esc(REPORT_META[r].portfolio)}</td><td class="num">${REPORT_META[r].needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td></tr>`; }).join('')}</tbody></table>` : '';
+  return `<div class="notice">${RULE}</div><div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage.</b> ${need.length - un.length} of the ${need.length} product types ${D.cycle ? 'the ' + CYCLE_NAME[D.cycle].toLowerCase() + ' reports need' : 'this party trades'} have a row.${un.length ? ' Not covered: ' + un.map(u => `<span class="mono">${u}</span>`).join(', ') + '. A product with no row has no model in a run.' : ''}</div>${repTable}
+  <table><thead><tr><th>${D.cycle ? 'Product type the reports need' : 'Traded product type'}</th><th>Covered</th></tr></thead><tbody>${need.map(t => `<tr><td class="mono">${t}</td><td>${rowOf(t) ? tag('Yes', 'ok') : tag('No', 'warn')}</td></tr>`).join('')}</tbody></table>
+  <h2>Rows that look unfinished</h2>${f.length ? `<table><thead><tr><th>Product</th><th>Finding</th></tr></thead><tbody>${f.map(([t, m]) => `<tr><td class="mono">${t}</td><td>${esc(m)}</td></tr>`).join('')}</tbody></table>` : '<div class="okbox">Nothing looks unfinished.</div>'}
+  <div class="notice">Nothing here stops a draft from being saved. ${D.cycle ? 'The next step does not offer Submit for sign-off while a needed product type has no row.' : 'A draft cannot be submitted for sign-off unless it is made for a cycle.'} The server checks none of these: a document with an empty model, a pair that does not run or a missing setting is accepted, and the failure arrives in the run. The screen is the only reader.</div>`;
+}
+const blocked = () => !D.cycle || gapsNow().length > 0 || D.rows.some(r => !r.model || !r.engine);
+function s6() {
+  if (D.saved) return D.saved.kind === 'submit'
+    ? `<div class="okbox"><b>Submitted.</b> ${esc(D.saved.name)} is a candidate for the official ${CYCLE_NAME[D.cycle]} configuration, with ${D.saved.products.length} products, as version 1. Its status is In review. It waits for sign-off by ${ROLES.map(r => r.name).join(', ')}. ${esc(officialOf(D.cycle).name)} stays official until then.</div>
+  <div class="actions"><a class="btn primary" href="../sign-off-a-pricing-engine-change/?screen=proposal&proposal=pending">Open the sign-off</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. A candidate that replaces the official configuration is the same flow as a new version, with a step that rebinds the reports of the cycle. That step is not drawn.</div>`
+    : `<div class="okbox"><b>Saved as a draft.</b> ${esc(D.saved.name)} was written with ${D.saved.products.length} products as version 1, with the reason <span class="mono">system.new_record</span>. No official report can bind a draft.</div>
+  <div class="actions"><a class="btn primary" href="../see-the-pricing-engines-a-party-holds/?screen=record&id=c3">Open the configuration's page</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. This prototype writes to its own memory only.</div>`;
+  const f = findings();
+  return `<div class="statline"><span>Status after you save: ${statusTag('draft')}</span><span>${D.cycle ? 'Candidate for the official ' + CYCLE_NAME[D.cycle] + ' configuration' : 'Not a candidate for any cycle'}</span></div>
+  <table><thead><tr><th>#</th><th>Product</th><th>Model</th><th>Engine</th><th>Settings</th></tr></thead><tbody>${D.rows.map((r, i) => `<tr><td>${i + 1}</td><td class="mono">${r.type}</td><td class="mono">${esc(r.model) || dash}</td><td class="mono">${esc(r.engine) || dash} ${pairTag(r.model, r.engine)}</td><td class="mono">${r.params.map(p => p.scope + ' ' + esc(p.name) + '=' + esc(p.value)).join(', ') || dash}</td></tr>`).join('')}</tbody></table>
+  <div class="dl"><div class="k">Global settings</div><div class="v mono">${D.globals.map(g => g.name + '=' + g.value).join(', ') || '—'}</div></div>
+  <div class="${f.length ? 'warnbox' : 'okbox'}">${f.length} findings from step 5. They do not stop a draft from being saved.</div>
+  ${D.cycle ? (blocked() ? '<div class="warnbox">Submit for sign-off is not offered: a product type the reports need has no row, or a row has no model or engine. Go back to step 5.</div>' : `<div class="okbox">Every product type the ${CYCLE_NAME[D.cycle].toLowerCase()} reports need has a row. The sign-off asks ${ROLES.map(r => r.name).join(', ')}, and the person who submits cannot sign off.</div>`) : '<div class="notice">To submit it for sign-off, go back to step 1 and choose a cycle.</div>'}
+  <div class="notice">Save writes one document, the configuration with its products and parameters, in one request. The service writes the three tables one after another with no unit of work, so a failure part way can leave a configuration without its parameters. After a failed write the screen reads the document back and shows what landed.</div>
+  <div class="notice">A new record is saved with the reason new record. No operation holds a status: the draft, in review and approved states are this page's own.</div>`;
+}
+const BODIES = [s1, s2, s3, s4, s5, s6];
+function render() {
+  const rail = STEPS.map((s, i) => { const st = i < step ? 'done' : i === step ? 'current' : 'ahead'; return `<li class="railentry ${st}" data-go="${i}"><span class="railmark ${st}">${i < step ? '✓' : i + 1}</span><span>${s[1]}</span>${i === 5 ? '<span class="railtag">final</span>' : ''}</li>`; }).join('');
+  const last = step === 5;
+  const foot = `<div class="stepfoot">${step > 0 && !(last && D.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (D.saved ? '' : btn('Save as draft', 'save', D.cycle ? '' : 'primary', 'id="b-save"') + (D.cycle ? ' ' + btn('Submit for sign-off', 'save', 'primary', `id="b-submit" ${blocked() ? 'disabled' : ''}`) : '')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
+  document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', '../see-the-pricing-engines-a-party-holds/'], ['Add']])}<div class="titlebar"><div><h1>Author a pricing engine configuration</h1><div class="sub">Six steps. Every value on this page is a fixture, and nothing is written to a server.</div></div></div>
+  <div class="journey"><nav class="railnav"><ol>${rail}</ol></nav><div><div class="stepcard"><h2>${step + 1}. ${STEPS[step][1]}</h2><div class="lead">${STEPS[step][2]}</div>${BODIES[step]()}</div>${foot}</div></div>`;
+  chrome('author a pricing engine configuration · step ' + (step + 1) + ' of 6 · step 3 reading ' + variant, [['variant', ['A', 'B', 'C'], variant], ['start', ['empty', 'copy'], start0], ['cycle', ['none', 'eod', 'intraday'], D.cycle || 'none']]);
+  wire();
+}
+function go(i) { step = i; maxStep = Math.max(maxStep, i); const p = new URLSearchParams(location.search); p.set('step', i + 1); history.replaceState({}, '', '?' + p.toString()); render(); }
+function wire() {
+  const $ = id => document.getElementById(id), qa = s => document.querySelectorAll('#app ' + s);
+  qa('[data-go]').forEach(x => x.onclick = () => { const i = Number(x.dataset.go); if (i <= maxStep || i < step) go(i); });
+  if ($('b-next')) $('b-next').onclick = () => { if (step === 0 && D.start === 'file') { location.href = '../bring-in-a-pricing-engines-file/'; return; } go(step + 1); };
+  if ($('b-back')) $('b-back').onclick = () => go(step - 1);
+  if ($('b-save')) $('b-save').onclick = () => { D.saved = { kind: 'draft', name: D.name, products: clone(D.rows) }; render(); };
+  if ($('b-submit')) $('b-submit').onclick = () => { D.saved = { kind: 'submit', name: D.name, products: clone(D.rows) }; render(); };
+  qa('[name=purpose]').forEach(x => x.onchange = () => { D.cycle = x.value; render(); });
+  const nm = $('f-name'); if (nm) { nm.oninput = () => { D.name = nm.value; const b = $('b-next'); if (b) b.disabled = !valid(0); const h = nm.parentNode.querySelector('.help'); h.innerHTML = nameTaken() ? '<span style="color:var(--bad)">A configuration with this name exists. Choose another name.</span>' : 'The name is new in this party.'; }; }
+  if ($('f-desc')) $('f-desc').oninput = e => { D.desc = e.target.value; }; if ($('f-var')) $('f-var').oninput = e => { D.variant = e.target.value; };
+  qa('[name=start]').forEach(x => x.onchange = () => { D.start = x.value; if (D.start === 'copy') { const c = byId2(D.from); D.rows = clone(c.products); D.globals = clone(c.globals); } render(); });
+  if ($('f-from')) $('f-from').onchange = e => { D.from = e.target.value; const c = byId2(D.from); D.rows = clone(c.products); D.globals = clone(c.globals); render(); };
+  if ($('f-ts')) $('f-ts').oninput = e => { typeSearch = e.target.value; render(); const n = $('f-ts'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  if ($('b-trade')) $('b-trade').onclick = () => { neededNow().filter(t => typeOf(t) && !rowOf(t)).forEach(t => D.rows.push({ type: t, model: '', engine: '', params: [] })); render(); };
+  qa('[data-type]').forEach(x => x.onchange = () => { if (x.checked) D.rows.push({ type: x.dataset.type, model: '', engine: '', params: [] }); else D.rows = D.rows.filter(r => r.type !== x.dataset.type); render(); });
+  if ($('b-all')) $('b-all').onclick = () => { D.rows.forEach(useUsual); render(); };
+  qa('[data-use]').forEach(x => x.onclick = () => { useUsual(D.rows[Number(x.dataset.use)]); render(); });
+  qa('[data-m]').forEach(x => x.onchange = () => { const r = D.rows[Number(x.dataset.m)]; r.model = x.value; if (!enginesFor(r.model).includes(r.engine)) r.engine = enginesFor(r.model)[0] || ''; syncParams(r); render(); });
+  qa('[data-e]').forEach(x => x.onchange = () => { const r = D.rows[Number(x.dataset.e)]; r.engine = x.value; syncParams(r); render(); });
+  qa('[data-up]').forEach(x => x.onclick = () => { const i = Number(x.dataset.up); [D.rows[i - 1], D.rows[i]] = [D.rows[i], D.rows[i - 1]]; render(); });
+  qa('[data-down]').forEach(x => x.onclick = () => { const i = Number(x.dataset.down); [D.rows[i + 1], D.rows[i]] = [D.rows[i], D.rows[i + 1]]; render(); });
+  qa('[data-cur]').forEach(x => x.onclick = () => { D.cursor = Number(x.dataset.cur); render(); });
+  qa('[data-pr]').forEach(x => x.onchange = () => { D.rows[Number(x.dataset.pr)].params[Number(x.dataset.pj)].value = x.value; });
+  if ($('f-glob')) $('f-glob').onchange = e => { D.globals = e.target.value ? [{ name: GLOBAL_KNOWN[0].name, value: e.target.value }] : []; };
+  qa('[data-addp]').forEach(x => x.onclick = () => { const i = x.dataset.addp, n = $('add-n-' + i).value.trim(); if (!n) return; D.rows[Number(i)].params.push({ scope: $('add-s-' + i).value, name: n, value: $('add-v-' + i).value, custom: true }); render(); });
+}
+render();
+
+</script>
+</body>
+</html>

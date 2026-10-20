@@ -47,8 +47,9 @@ using trading::domain::trade_envelope_field;
  * states the map its own way, so the projection checks the spelling before it
  * appends a trade rather than writing a type no reader accepts.
  */
-auto accepts_spelling(const xml::record_type& type, std::string_view name, std::string_view value)
-    -> bool {
+auto accepts_spelling(const xml::record_type& type,
+                      std::string_view name,
+                      std::string_view value) -> bool {
     const auto* f = xml::find_field(type, name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;

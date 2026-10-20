@@ -168,18 +168,17 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags
 // =============================================================================
 
 TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention", tags) {
-    const auto original = conventions_mapper::read(
-        "<Conventions>"
-        "<FX>"
-        "<Id>EUR-USD-FX-CONVENTIONS</Id>"
-        "<SpotDays>2</SpotDays>"
-        "<SourceCurrency>EUR</SourceCurrency>"
-        "<TargetCurrency>USD</TargetCurrency>"
-        "<PointsFactor>10000</PointsFactor>"
-        "<EOM>true</EOM>"
-        "<Convention>Following</Convention>"
-        "</FX>"
-        "</Conventions>");
+    const auto original = conventions_mapper::read("<Conventions>"
+                                                   "<FX>"
+                                                   "<Id>EUR-USD-FX-CONVENTIONS</Id>"
+                                                   "<SpotDays>2</SpotDays>"
+                                                   "<SourceCurrency>EUR</SourceCurrency>"
+                                                   "<TargetCurrency>USD</TargetCurrency>"
+                                                   "<PointsFactor>10000</PointsFactor>"
+                                                   "<EOM>true</EOM>"
+                                                   "<Convention>Following</Convention>"
+                                                   "</FX>"
+                                                   "</Conventions>");
 
     const auto reversed = roundtrip_single(root_of(original).children("FX").front());
     const auto roundtripped = root_of(reversed).children("FX").front();

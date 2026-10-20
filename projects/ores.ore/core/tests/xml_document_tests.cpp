@@ -161,11 +161,11 @@ TEST_CASE("a_cdata_section_survives_the_trip_as_escaped_text", tags) {
 TEST_CASE("a_number_keeps_every_digit_it_arrived_with", tags) {
     auto lg(make_logger(test_suite));
 
-    for (const std::string& value : {"1000000.00",
-                                     "0.0000000000010000",
-                                     "-12345.678901234567",
-                                     "7342.8000000000002",
-                                     "0.000054"}) {
+    for (const std::string value : {"1000000.00",
+                                    "0.0000000000010000",
+                                    "-12345.678901234567",
+                                    "7342.8000000000002",
+                                    "0.000054"}) {
         const auto written = round_trip("<a>" + value + "</a>");
         CHECK(written.contains(">" + value + "<"));
         CHECK(read_ok("<a>" + value + "</a>") == read_ok(written));

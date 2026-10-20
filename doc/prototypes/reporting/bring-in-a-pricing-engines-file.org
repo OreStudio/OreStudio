@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 8F406288-43AF-42DB-8487-C5D6AF920BDD
+:END:
+#+title: Bring in a pricing engines file prototype
+#+description: Bringing in an ORE pricing engines file as a workflow of five steps: what the file holds, what the system does not know, the target, the difference against a configuration the party holds, and the review.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-19
+#+updated: 2026-10-20
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:bring-in-a-pricing-engines-file/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype draws the import of an ORE =pricingengine.xml= as a workflow of five steps on the standard steps UI. The difference is the screen's reason to exist: a file is a replacement for a document the party may already hold, and a person who brings one in must read what it adds, what it changes and, above all, what it leaves out. A file never becomes official directly. A new file is saved as a draft. A file put into an approved configuration is a proposal for a new version, and waits for sign-off. A file put into a draft changes the draft in place.
+
+The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+
+* Detail
+
+** The question the screen answers
+
+"I have the ORE file my quants use. I want it in ORE Studio, and I want to know what it changes before it does." A file that omits a product usually leaves it out by accident, so a removed product is listed first and its default is *Keep it*.
+
+** States and switches
+
+- =?file=clean|unknown|omits=. =clean= reads without a finding. =unknown= holds a product type with no code, an element with no column and a type that appears twice. =omits= holds two products, so the target loses seven.
+- =?target=new|c2|c3=: save as a new draft, put the file into the approved End of day pricing, which four reports bind, or put it into the draft US swaptions SABR trial. Each target has its own button: *Save as draft*, *Submit for sign-off* or *Save*.
+- =?step=1..5=.
+
+** Rules the page follows
+
+- *A product type with no code is skipped by default*, with the choice to add the type first. Adding a code writes the vocabulary, which is a separate write and is stated.
+- *An element with no column is dropped, and the page says so*. It is listed in the review, so it is not lost silently.
+- *A duplicate is resolved by the person.* The page does not pick.
+- *A new version asks for a change reason and a commentary and claims the version read*, as the standard says.
+- *The reach is stated before the target is chosen*, for a target that reports bind. For an approved target it says that nothing changes until the sign-off completes.
+- *A proposal does not change the configuration.* The review says that the version in force stays in force and that the person who submits cannot sign off.
+
+** What is fake
+
+Every value, and the parse. The three files are fixtures standing in for a file the person chooses. No operation turns a person's file into a pricing engines document, and no operation returns a diff, so the screen computes the difference over two documents. The data quality publisher saves what it reads, so a parse that writes nothing is a new operation. The XML document codec prototype shows the shape it would take.
+
+** Where the code lives
+
+=doc/prototypes/reporting/bring-in-a-pricing-engines-file/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
+
+** What it argues
+
+- The difference is drawn with the removed products first, and their default is Keep it.
+- What the system cannot read is listed and dropped on the page, never silently.
+- The parse belongs on the server. The prototype marks it as a mock.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+- Whether a file that replaces a document should be refused when it removes more than it keeps.
+- Whether the elements the tables cannot hold should be kept in a model of their own.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — the journey this prototype answers.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

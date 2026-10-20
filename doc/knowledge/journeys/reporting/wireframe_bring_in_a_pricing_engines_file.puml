@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: BRING IN A PRICING ENGINES FILE</b>
+  File: pricingengine_amc.xml
+  --
+  <b>WHAT THE FILE HOLDS</b>
+  9 products | 6 models | 7 engines | 14 parameters | 1 global parameter
+  <b>WHAT THE SYSTEM DOES NOT KNOW</b>
+  Product type FlexiCap: no code. [ Skip ] | [ Add the type first ]
+  Element CalibrationBlock: no column, dropped.
+  --
+  Target: ( ) Save as a new draft configuration
+  Target: (X) Put it into ^End of day pricing (approved)^
+  Reach: the file is put forward as version 5, a proposal. Version 4 stays in force until the sign-off completes.
+  <b>THE DIFFERENCE</b>
+  {#
+    Change | Product | What differs | Decision
+    Removed | CapFloor | in the configuration, not in the file | (X) Keep it ( ) Drop it
+    Changed | BermudanSwaption | engine Grid becomes FD | -
+    Added | FxOption | not in the configuration | -
+  }
+  [ Back ] | [ Submit for sign-off ]
+}
+
+@enduml

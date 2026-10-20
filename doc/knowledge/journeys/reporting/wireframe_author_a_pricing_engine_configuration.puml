@@ -1,0 +1,60 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: AUTHOR A PRICING ENGINE CONFIGURATION</b>
+  --
+  {#
+    Step | What it carries
+    1 | name it, say what it is for, and choose where to start
+    2 | choose the products
+    3 | choose the model and the engine
+    4 | set the parameters
+    5 | check it against what the reports need
+    6 | review and submit (final)
+  }
+  --
+  <b>STEP 1 - WHAT IS IT FOR</b>
+  A party holds few official configurations. A configuration made here starts as a draft.
+  { (X) A draft to try a change. No official report can bind it. }
+  { ( ) A candidate for the official End of day configuration }
+  { ( ) A candidate for the official Intraday configuration }
+  --
+  <b>STEP 3 - THE MODEL AND THE ENGINE</b>
+  Each chosen product gets a model and an engine. The engine list narrows to the engines known to run the model.
+  {#
+    Product | Model | Engine | The usual | What the pair does
+    Swap | ^DiscountedCashflows^ | ^DiscountingSwapEngine^ | [ Use the usual ] | discounts the cashflows
+    BermudanSwaption | ^LGM^ | ^Grid^ | [ Use the usual ] | lattice on a calibrated one-factor model
+    CapFloor | ^IborCapModel^ | ^AMC^ | [ Use the usual ] | MARKED: pair not known to work
+  }
+  A marked pair is a statement, not a refusal. No server check stands behind it.
+  --
+  <b>STEP 5 - CHECK IT</b>
+  A report needs a price for every product type in its portfolio.
+  Coverage: 9 of the 11 product types the end of day reports need have a row.
+  Not covered: CreditDefaultSwap, EquityOption.
+  --
+  <b>STEP 6 - REVIEW AND SUBMIT</b>
+  [ Back ] | [ Save as draft ] | [ Submit for sign-off ]
+  Submit is not offered while a needed product type has no row.
+}
+
+@enduml

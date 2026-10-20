@@ -87,5 +87,3 @@ the journey documents state the target behaviour, with updated diagrams.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

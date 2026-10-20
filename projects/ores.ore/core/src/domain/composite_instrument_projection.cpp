@@ -55,8 +55,9 @@ auto make_instrument(std::string_view trade_type_code) -> composite_instrument {
     return r;
 }
 
-auto make_leg(std::string_view id, const std::optional<std::string>& type, int sequence)
-    -> composite_leg {
+auto make_leg(std::string_view id,
+              const std::optional<std::string>& type,
+              int sequence) -> composite_leg {
     composite_leg leg;
     leg.identity.leg_sequence = sequence;
     leg.constituent_trade_id = id.empty() ? type.value_or("") : std::string(id);
@@ -67,8 +68,9 @@ auto make_leg(std::string_view id, const std::optional<std::string>& type, int s
     return leg;
 }
 
-auto read_leg(xml::record_reader component, std::string_view type_name, int sequence)
-    -> composite_leg {
+auto read_leg(xml::record_reader component,
+              std::string_view type_name,
+              int sequence) -> composite_leg {
     return make_leg(component.text("id").value_or(""), component.spelling(type_name), sequence);
 }
 

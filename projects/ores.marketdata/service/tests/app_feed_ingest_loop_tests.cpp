@@ -121,19 +121,8 @@ struct fixture {
         nats.disconnect();
     }
 
-    /**
-     * The subject the service republishes a stored tick on is covered by the
-     * stream the service provisions at startup, so a test that stores through
-     * the loop provisions it the same way. The consumer subject carries the
-     * tenant, the party and the key below the tick prefix, so the stream must
-     * cover the prefix's children: a stream on the bare prefix matches nothing
-     * the loop publishes, and the publish finds no responder.
-     */
     void connect() {
         nats.connect();
-        nats.make_admin().ensure_stream(
-            nats.make_stream_name("marketdata_ticks"),
-            nats.covering_subjects({ores::marketdata::messaging::market_tick::nats_subject}));
         REQUIRE(nats.is_connected());
     }
 

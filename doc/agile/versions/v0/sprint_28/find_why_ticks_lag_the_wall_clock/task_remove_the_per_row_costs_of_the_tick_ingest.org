@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-20
 #+updated: 2026-10-20
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The ingest of ticks no longer pays a commit, a series read, a notification and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | The full gate, then the pull request.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-20                               |
+| Next         | Step 1b: an append-only tick table, with its own reader migration. |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
@@ -43,9 +43,22 @@ The ingest of ticks no longer pays a commit, a series read, a notification and t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Step 1 of =tick_ingest_pipeline.org=, scoped to what the existing observation table
+allows. Step 0 showed that batching that table stops at about 8,300 rows each second,
+because its insert trigger runs for every row. The append-only table that lifts this
+ceiling moves ticks out of the table that eleven readers use, so it is a task of its own.
+
+1. The observation model sets =notify_trigger= and the three event addresses to false.
+   Remove the generated trigger SQL, the event registrar and the event header.
+2. The ingest loop queues ticks in a bounded queue that drops its oldest entry. A worker
+   takes every tick that has arrived and stores them in one transaction for each tenant,
+   with the last row of each key, and splits a failing batch until the failing row is alone.
+3. A series is read once and its id is cached.
+4. The loop republishes after the commit on core NATS. The two feeds publish on core NATS.
+   Both services delete the three tick streams when they start.
+5. The status log gives the lag of each source, the depth of the queue, the drops, and the
+   size and time of the last batch.
+6. Measure the burst with the tick injector.
 
 * Measurements
 
@@ -59,7 +72,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Burst drain, steady phase, step 1 built | about 2,260 rows per second (24,900 rows in 11 s) | =evidence/step1_burst_output.txt=, from =capacity.sh step1 3000 1000= | this branch |
+| Burst drain, whole burst | 40,000 rows in about 21 s, so about 1,900 rows per second | same | same |
+| Baseline of the same burst before step 1 | about 143 rows per second | =evidence/capacity.sh.txt= on the earlier build | a943595339 |
+| Ticks dropped by the queue during the burst | 0 | the status log, =INGEST STATUS: queue=... dropped=...= | same |
+| One batch of the burst | 1,205 ticks stored in 5,460 ms | the status log, =last_batch_ticks= and =last_batch_ms= | same |
+| Organic lag after the restart | 0.1 s | =tmp/tickprobe/lag_watch.sh= | same |
 
 * Notes
 
@@ -87,3 +105,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A burst of 4,000 ticks, which is 40,000 rows, drains in about 21 seconds. The rate in the
+steady phase is about 2,260 rows each second, against 143 before. That is about 16 times
+more, and it meets the acceptance of ten times. The queue dropped nothing. The lag of the
+live feeds stayed at 0.1 seconds.
+
+What changed:
+- The observation table sends no notification, and nothing generates the event or its
+  registrar. The database-wide lock at commit is gone.
+- A batch costs one transaction for each tenant, one series read for each series, and one
+  series cache. A tick no longer costs a commit.
+- The feeds and the republish use core NATS. Both services delete the three tick streams
+  when they start.
+- The status log shows the lag of each source and the state of the queue.
+
+What did not change, and what the numbers say about it:
+- A batch of 1,205 ticks is about 12,000 rows, and it took 5.5 seconds. The step 0 table
+  gives about 8,300 rows each second for the same table inside the database, so the client
+  path costs about four times what the database costs. The row building, the string
+  conversion of =sqlgen::insert=, the shape check and the manual point check are the
+  candidates. A later pass should profile them, and =COPY= is one option.
+- The trigger of the observation table still runs for every row. The ceiling of this
+  table is about 8,300 rows each second for one connection. The append-only table of step
+  1b lifts it to about 187,000.
+- The lanes, the age gate, the recent window and the live subject with tokens are step 2.
+
+Verified: =ores.marketdata.service.tests= and =ores.synthetic.api.tests= pass, with new
+cases for the queue and for the rows of a batch. The burst was run against this environment
+after a restart of the fleet on the new binaries.

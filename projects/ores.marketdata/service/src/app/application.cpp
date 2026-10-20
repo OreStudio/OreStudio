@@ -32,7 +32,6 @@
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
-#include "ores.marketdata.service/messaging/market_observation_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
@@ -84,15 +83,15 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     try {
         auto admin = nats.make_admin();
-        admin.ensure_stream(
-            nats.make_stream_name("synthetic_ticks"),
-            nats.covering_subjects({ores::marketdata::domain::synthetic_tick_subject}));
-        admin.ensure_stream(
-            nats.make_stream_name("marketdata_ticks"),
-            nats.covering_subjects({ores::marketdata::messaging::market_tick::nats_subject}));
-        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
+        // A tick is perishable and travels on core NATS. The two streams that stored
+        // every tick for seven days had no consumer. A server that still holds them
+        // from an earlier run loses them here. The delete is idempotent.
+        admin.delete_stream(nats.make_stream_name("synthetic_ticks"));
+        admin.delete_stream(nats.make_stream_name("marketdata_ticks"));
+        BOOST_LOG_SEV(lg(), info)
+            << "JetStream tick streams retired: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to retire the JetStream tick streams: " << e.what();
         throw;
     }
 
@@ -124,8 +123,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         mdsm::register_feed_binding_event_mapping(event_source, event_bus, nats);
     auto market_series_sub =
         mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
-    auto market_observation_sub =
-        mdsm::register_market_observation_event_mapping(event_source, event_bus, nats);
     auto market_fixing_sub =
         mdsm::register_market_fixing_event_mapping(event_source, event_bus, nats);
     auto observation_lineage_sub =

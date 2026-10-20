@@ -199,7 +199,10 @@ void fx_spot_feed::start() {
             BOOST_LOG_SEV(lg(), trace)
                 << "Encoding market_tick for " << nats_subject_ << ": wire_format="
                 << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
-            nats_.js_publish(nats_subject_, codec.encode(tick));
+            // A quote is perishable, so it goes out on core NATS without a wait for an
+            // acknowledgement. A producer that waits limits its own rate to the round
+            // trip of the broker.
+            nats_.publish(nats_subject_, codec.encode(tick));
             return tick.value;
         },
         [this](std::uint64_t n, const std::string& value) {

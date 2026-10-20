@@ -2,12 +2,12 @@
 :ID: 72375ADC-BD12-4821-AE1C-C895EB084872
 :END:
 #+title: Conventions journeys
-#+description: The market terms an instrument is built on: 26 convention kinds, how the curated ones arrive by a DQ publish and the one that does not, how a person reads which document a run takes, changes one, authors one, and verifies a new party's set.
+#+description: The market terms an instrument is built on: 26 convention kinds, how the curated ones arrive by a DQ publish and the one that does not, how a person reads which document a run takes, changes one, authors one, finds one by its terms, names a set, retires one, decides a change, and verifies a new party's set.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:user_journey:refdata:
 #+created: 2026-10-07
-#+updated: 2026-10-18
+#+updated: 2026-10-19
 
 A convention is the set of market terms an instrument is built on: the day
 count, the calendars, the payment frequency, the index, and whatever else the
@@ -58,6 +58,17 @@ to be written, because no default exists.
 | [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] | market risk, trading desk, tenant administrator | What terms the next run reads, kind by kind — and the three reasons it cannot be answered: no default, no name, and a configuration that holds nothing |
 | [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] | operations, tenant administrator | Correct one document, or choose a different one, and read the reach: every definition of the party, not the ones bound to the configuration |
 | [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] | market risk, tenant administrator, operations | Terms no curated document states, written as a new row with a precondition and a change reason, and the bitemporal record it leaves |
+| [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]] | market risk, trading desk, operations, tenant administrator | Which document of a kind states these terms, or the fact that none does, after a search that read every row |
+| [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]] | market risk owner, tenant administrator | A set with a name, a purpose and a description, one document for each kind it covers, and a request that waits for Market Risk |
+| [[id:59C8659C-D442-4AEA-94CE-5244F1AF19B3][Retire a convention]] | operations, tenant administrator | Close a document a run should stop reading, after reading what depends on it |
+| [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]] | market risk approver | Read a requested change beside the terms it replaces, and approve or decline it |
+
+The four journeys after the first five are the management journeys: finding a
+document by its terms, naming a set, retiring a document and deciding a change.
+The search is a step that three of the first five journeys name as a gap. The
+request and its decision are the control that the controls note requires and
+no request kind exists for. None of the four is reachable today with what the
+server offers.
 
 The three reading journeys are cheap to build: the rows are stored, the lists
 are generated and the histories exist. The two that change something are not,

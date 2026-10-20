@@ -26,7 +26,6 @@
 \ir ./marketdata_market_fixings_drop.sql
 \ir ./marketdata_observation_lineages_notify_trigger_drop.sql
 \ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
 \ir ./marketdata_market_observations_drop.sql
 \ir ./marketdata_series_identity_views_drop.sql
 \ir ./marketdata_market_series_identity_drop.sql

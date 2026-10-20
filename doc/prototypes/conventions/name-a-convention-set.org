@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 9935D156-755B-42EA-BCA4-CE3C5A76D932
+:END:
+#+title: Name a convention set prototype
+#+description: A five step journey that groups convention documents under a name, a purpose and a description, and asks Market Risk to approve the set. It is the authoring surface that the report prototypes link out to.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:conventions:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:name-a-convention-set/][the prototype]] |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Conventions prototypes]]       |
+
+* Summary
+
+This prototype argues how a person makes a convention set that a report can choose. A set holds no term: it names one document for each kind it covers. The person describes the set, chooses a document for each of the 26 kinds, reads the reach and proposes the set. Nothing exists until Market Risk approves, so the control says Propose and not Save. It answers to
+[[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The page marks each place where the server does not provide
+what the screen needs. A toggle in the bar at the foot hides those notes.
+
+* Detail
+
+** The steps
+
+1. *The sets.* The list of sets with name, purpose, kinds covered and reports that use each. A system holds few sets, so the list is one page.
+2. *Describe it.* Name, purpose and description. The name is fixed once the set exists, and a name that another set holds is refused under the field.
+3. *The documents.* One row for each of the 26 kinds, in two tabs: Party conventions (22) and Shared conventions (4). The shared tab and the picker for a shared kind carry a warning that every party reads the documents. Inside a tab the kinds sit under their asset class. A picker opens over the kind's documents, searched by key, with a link to the find prototype for a search by terms. The review marks a shared kind.
+4. *Review.* The three fields, the documents named, the reach, and the rule that Market Risk decides.
+5. *The request.* The request waits with its state. The person can withdraw it. A link opens it as a Market Risk approver.
+
+** How it is reached
+
+It is a line in the Workflows menu of the conventions list: *Name a convention set*. It has its own trail, Home › Reference data › Name a convention set, and a link back to the conventions. A set is its own record kind with its own list, and the prototype draws that list as its first step.
+
+** The UX rules it follows
+
+The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] and
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. It is one
+screen with a rail of steps. A list has a search, a sort, a pager that starts at
+15 rows and states for loading, no records, no match and an error. A write that
+a second person must approve says Propose and not Save, and the dialog says that
+nothing changes until the other person approves. An action a person may not take
+is not drawn. The access mark says Editable or Read only, and no permission code
+appears on a screen. A reason is a choice from a list. A time is relative, with
+the exact time on hover. A key is monospace, and an empty value is a muted dash.
+Colour carries meaning only: green, amber and red are status, grey is inactive,
+and violet marks a classification. No native select is used. Every string is in
+English only; the product needs French and Portuguese before a screen ships.
+
+** States, by query string
+
+=?step=0..4=, =?name=, =?purpose=, =?description=, =?pick=swap:AED-EIBOR-6M-SWAP,deposit:AED-DEPO-1M=, =?picker=swap&q=AED= opens the picker, =?tried=1= shows the field messages, =?actor=j.ruiz|k.mori=.
+
+** What is fake
+
+The three existing sets are fixtures. No set exists in the server: a conventions configuration holds a name, a type and an owning component. The reports that could move to the set are a fixture count.
+
+** Where the code lives
+
+=doc/prototypes/conventions/name-a-convention-set/=. The page is =index.html= with its own
+=prototype.js=. =management.css= and =management.js= are shared by copy with the
+other three management prototypes, and the inventory check keeps the copies
+identical. The icons are the Fluent paths of the application's own icon set.
+
+** Verdict
+
+Open. The question for review is whether a set that covers 2 of 26 kinds is a set, or whether a set must cover every kind a report reads. The journey leaves the answer to the product owner.
+
+* See also
+
+- [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]] — the journey this prototype answers.
+- [[file:index.org][Conventions prototypes]] — the group page.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the method and the rules.

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>See the conventions a party uses prototype — ORE Studio</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  See the conventions a party uses: the plain entity screens of the conventions,
+  drawn as the record screen standard draws every record kind. The workflows
+  that manage conventions are layered on top of these screens, in the Workflows
+  menu, and each opens as its own page.
+
+    ?view=kinds|list|record     the screen: the 26 kinds, one kind's documents,
+                                one document
+    ?kind=swap|deposit|ibor_index|...   the kind
+    ?key=AED-EIBOR-6M-SWAP      the document on the record page
+    ?tab=details|requests|history   the tab of the record page
+    ?q=AED                      the search, as typed
+    ?source=curated|authored    the source filter on a kind's list
+    ?held=party|tenant          the filter on the list of kinds
+    ?actor=m.okafor|k.mori      who reads. The second cannot write.
+    ?dialog=add|edit            open the Add or the Edit dialog
+    ?menu=1                     open the Workflows menu
+    ?state=loading|error        the list as it reads, or after a failed read
+    ?gaps=0                     hide the server gap notes
+
+  Three of the 26 kinds carry mock documents. The other kinds list three
+  documents with no terms drawn.
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -118,9 +118,7 @@ that the work has expired or been superseded.
 * In ORE Studio
 
 `ores.iam.service` ensures `iam_steps`; `ores.workflow.service` ensures
-`workflow`; `ores.marketdata.service` and `ores.synthetic.service` share
-`synthetic_ticks` deliberately, because the ingest loop must read ticks whether
-or not the synthetic service has run. A step-command stream is a queue of work,
+`workflow`. A step-command stream is a queue of work,
 so it keeps a message for one day under `interest` retention; that day is the
 backstop for a command no consumer can take. The consumer on it gives up after
 ten unanswered deliveries at thirty seconds each, which is about five minutes of

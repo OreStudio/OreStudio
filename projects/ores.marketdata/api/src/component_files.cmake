@@ -120,7 +120,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/tick_subjects.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/feed_binding_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/market_fixing_event.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/market_observation_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/market_series_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/observation_lineage_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/series_classification_rule_event.hpp"

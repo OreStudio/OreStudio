@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 309485D7-EE4C-4E50-B382-B8323AD060EA
+:END:
+#+title: Task: Profile and tidy the batch writer
+#+description: Find why a batch costs about four times in the client what it costs in the database, and clear the minor review items of step 1.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch: feature/profile-and-tidy-the-batch-writer
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A batch of 1,205 ticks, about 12,000 rows, took 5.5 seconds, where step 0 gives about 8,300 rows per second inside the database. Find where the time goes: the row building, the string conversion of sqlgen insert, the shape check, the manual point check, or keep_last_per_key. Fix the largest cost.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A profile that names where the time of a batch goes.
+- The client path costs less than twice the database for the same rows.
+- The process function is split into plan, build rows, store and after-commit, and the series URI is computed once.
+- The log of a failing source shows the first failure and counts the rest.
+- Tests cover a batch of several ticks and tenants, the split of a failing batch, the cache clear on a failed row, and a queue overflow.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

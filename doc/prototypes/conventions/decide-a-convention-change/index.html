@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decide a convention change journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Decide a convention change, on the shared journey page: a flat step rail and
+  one step. A person from Market Risk opens a request that another person
+  raised, reads the old term beside the new one, and approves, declines or holds
+  it. The screen is the Requests area, because Requests is the one place for
+  every kind of request.
+
+    ?step=0|1|2|3               the step: the queue, the change, the decision,
+                                the outcome
+    ?actor=j.ruiz|t.brandt|m.okafor|k.mori   who decides. The first two are
+                                Market Risk. The others see only their own
+                                requests.
+    ?request=r1|r2|r3|r4        the request opened on step 1
+    ?decision=approve|decline|hold   the decision already chosen on step 2
+    ?comment=...                the comment already typed
+    ?gaps=0                     hide the server gap notes
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>
+

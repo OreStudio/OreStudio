@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 142CA5E4-8242-4195-85CB-11FEC436063B
+:END:
+#+title: Find a convention by its terms prototype
+#+description: A three step journey over one kind: the terms a person holds, the documents that state them, and one document read as a record page. It draws the cost of a search the server cannot filter.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:conventions:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:find-a-convention-by-its-terms/][the prototype]] |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Conventions prototypes]]       |
+
+* Summary
+
+This prototype argues how a person finds the document of one kind that states a set of terms, or learns that none does. The server filters a convention list by key only, so the screen reads every row and compares the terms itself. The page says how many rows it read, because a search that read one page is not a search of the kind. It answers to
+[[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The page marks each place where the server does not provide
+what the screen needs. A toggle in the bar at the foot hides those notes.
+
+* Detail
+
+** The steps
+
+1. *The terms.* A kind select and one control for each term column of the kind. A term left as Any matches every value. A term left as Not stated matches only a document that states nothing for it. The page states the asset class of the kind, how many documents it holds and how many distinct term sets they state. A shared kind such as the IBOR index carries a warning that every party reads its documents.
+2. *The matches.* The documents that state the terms, with the term columns the person left open beside the key. A notice says how many rows the screen read. A kind with no match says so and offers to add a document. Several keys that state the same terms are noted.
+3. *A match.* The document as a record page: details, the same-terms tab, and the last-changed line. Edit and Delete are drawn for a person who may write, and both lead to the prototype that owns the act.
+
+** How it is reached
+
+It is a line in the Workflows menu of the conventions screens: *Find a convention by its terms*. The trail is Home › Reference data › Find a convention by its terms, and a link returns to the list of the kind. The owner may decide that a filter on the list serves this act better than a workflow. The prototype draws the workflow so the question can be argued.
+
+** The UX rules it follows
+
+The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] and
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. It is one
+screen with a rail of steps. A list has a search, a sort, a pager that starts at
+15 rows and states for loading, no records, no match and an error. A write that
+a second person must approve says Propose and not Save, and the dialog says that
+nothing changes until the other person approves. An action a person may not take
+is not drawn. The access mark says Editable or Read only, and no permission code
+appears on a screen. A reason is a choice from a list. A time is relative, with
+the exact time on hover. A key is monospace, and an empty value is a muted dash.
+Colour carries meaning only: green, amber and red are status, grey is inactive,
+and violet marks a classification. No native select is used. Every string is in
+English only; the product needs French and Portuguese before a screen ships.
+
+** States, by query string
+
+=?step=0|1|2=, =?kind=swap|deposit|ibor_index=, a term by its column name such as =?fixed_calendar=AED=, =?key==, =?actor=m.okafor|k.mori=, =?fail=1=.
+
+** What is fake
+
+Three of the 26 kinds carry documents: swap with 320 documents that state 201 term sets, deposit and the IBOR index. The Used by column is a fixture: only the curated AED swap is named by a set, and no set exists in the server.
+
+** Where the code lives
+
+=doc/prototypes/conventions/find-a-convention-by-its-terms/=. The page is =index.html= with its own
+=prototype.js=. =management.css= and =management.js= are shared by copy with the
+other three management prototypes, and the inventory check keeps the copies
+identical. The icons are the Fluent paths of the application's own icon set.
+
+** Verdict
+
+Open. The question for review is whether the terms panel should draw one control for each column or accept a typed phrase such as =AED annual ACT/365=. The server filter, not the screen, decides how much of this is possible.
+
+* See also
+
+- [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]] — the journey this prototype answers.
+- [[file:index.org][Conventions prototypes]] — the group page.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the method and the rules.

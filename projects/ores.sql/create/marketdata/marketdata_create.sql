@@ -34,7 +34,6 @@
 \ir ./marketdata_series_axis_values_create.sql
 \ir ./marketdata_series_identity_views_create.sql
 \ir ./marketdata_market_observations_create.sql
-\ir ./marketdata_market_observations_notify_trigger_create.sql
 \ir ./marketdata_observation_lineages_create.sql
 \ir ./marketdata_observation_lineages_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql

@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: 59C8659C-D442-4AEA-94CE-5244F1AF19B3
+:END:
+#+title: User Journey: Retire a convention
+#+description: An operations owner closes a convention document that a run should stop reading, after reading what depends on it.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations owner closes a convention document that a run should stop reading, after reading what depends on it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"This swap document is wrong, or nobody uses it. I want runs to stop reading it,
+and I want to know what else reads it before I close it."
+
+The journey is done when the document is closed, the person can read that it is
+closed, who closed it and why, and the screen has stated what the close did not
+do. The history of the document stays readable.
+
+This is a different job from
+[[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses
+for one kind]]. That journey corrects a document or picks another one, and it
+sends no delete. This journey sends the delete and nothing else.
+
+* Actor and trigger
+
+The actor is the person who maintains the tenant's reference data for the desks:
+an account holding =Operations=, or a tenant administrator. The delete
+permission exists for every kind, for example =refdata::swap_conventions:delete=.
+Which role holds it is not checked here. A change that touches a convention
+needs a second person from Market Risk
+([[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on
+each]]), so this person asks and a different person decides.
+
+The trigger is a document a run reads that should not be read: a duplicate, an
+obsolete term set, or a wrong document that was authored by mistake. The person
+arrives from a kind's list, from
+[[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]], or
+from the history of a document that was replaced.
+
+The journey starts on one document and ends when the close is read back, or when
+the request is read back as waiting. This journey closes one row of one kind. It
+does not write a replacement, and it does not choose one.
+
+The journey keeps server state while the request waits for a decision. No other
+step waits on the server after its reply.
+
+* Steps
+
+1. *Open the document.* The person opens one document from its kind's list. The
+   system shows its key, its version, its terms in words and the party that owns
+   it. A document of a tenant kind has no party, and the screen says that it
+   belongs to every party.
+2. *Read the reach.* The system shows what reads the document: the party's
+   conventions file, which names every document the party holds; the convention
+   sets that name it; and the report definitions that bind those sets. It also
+   says what it cannot find. No trade points at a convention, because a trade
+   carries its terms inline, and no run records which version it read.
+3. *Read the twin.* The system shows other documents of the kind that state the
+   same terms. A retired duplicate is the common case, and the person needs the
+   twin to be sure that a run keeps a document with those terms.
+4. *Say why.* The person chooses a reason code and writes a commentary. The
+   screen states the consequence in one sentence: the next run of the party does
+   not read this row, and a run that read it before keeps the version it read.
+5. *Ask for approval.* The person raises one request that names the close. The
+   request names Market Risk as the decider. The person cannot decide their own
+   request.
+6. *Read the result.* When the last decider approves, the system closes the row.
+   The screen reports the version that holds the close, who closed it, when and
+   why. It states what the close did not do: it did not choose a replacement,
+   because no default marker exists, and it did not change a set that names the
+   document, so the set now names a closed row.
+7. *Read the record.* The person opens the history. The closed row stays
+   readable with its =valid_to=, and the earlier versions stay beside it.
+8. *Leave, or go on.* The person returns to the kind's list, or goes to
+   [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]]
+   when another person asked for the close.
+
+* Screens and wireframes
+
+One screen of four panels: the document, the reach, the reason and the result.
+The reach panel is the one the journey is about. A close is a small act, and the
+only thing that makes it safe is knowing what else reads the row.
+
+#+caption: Retire a convention: the document, what reads it, the reason and the request for approval, and the retired document with what the close did not do.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_retire_a_convention.png]]
+
+* Prototype
+
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/retire-a-convention/][prototype]], with its design note
+[[file:../../../prototypes/conventions/retire-a-convention.org][retire-a-convention]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The kind's convention table | The row that is closed: its terms, =version=, =valid_from=, =valid_to=, =modified_by= and =change_reason_code= | one of the 26; see [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] |
+| =swap_convention= | The worked example | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =configuration= | The conventions configurations that a report binds | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The report definitions that bind a configuration | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =change_reason= | The reason code the person supplies | |
+| =approval_request= | The request that waits for Market Risk | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the document | Read one document | =refdata.v1.<kind>_conventions.get= | exists |
+| Read the reach | Read the conventions configurations | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| Read the reach | Read the definitions that bind a configuration | =reporting.v1.report_configurations.list= | exists |
+| Read the reach | Read the sets that name a document | (a configuration has no children) | missing |
+| Read the reach | Read the runs that read a version | (no run records the version) | missing |
+| Read the twin | Find documents that state the same terms | (the filter is =id_one_of= and nothing else) | missing |
+| Say why | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Ask for approval | Raise the request | =inbox.v1.ops.raise_approval= | exists |
+| Ask for approval | A request kind for a convention | (no kind is seeded) | missing |
+| Read the result | Close the document | =refdata.v1.<kind>_conventions.delete= | exists |
+| Read the result | Announce the close | =refdata.v1.<kind>_conventions_events.deleted= | exists |
+| Read the record | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
+| Read the record | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = =ores.refdata.<kind>_convention=) | exists |
+| The screen itself | Retire a convention from the browser | (no BFF route) | missing |
+
+The per-kind delete is generated and takes =ids=. This journey needs a reason on
+the close. Whether the delete request carries a change intent is not checked
+here, and the first task of the implementation reads the request shape.
+
+* What is missing
+
+1. *Nothing checks that a document is unreferenced before it is closed.* The
+   delete closes the row. A set that names the row, and a run that expects it,
+   find it closed. The screen shows the reach it can read, and the server does
+   not refuse the close.
+2. *The reach cannot be read in full.* A configuration has no children, so no set
+   names a document, and no run records the version of a document it read. The
+   reach panel states both as unknown and does not show an empty list as if it
+   meant none.
+3. *No default marker.* A person who closes the document a run took has no way to
+   say which document the run takes next. The party's conventions file then
+   carries the other documents of the kind and nothing chooses between them. See
+   [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]].
+4. *No approval kind for a convention.* Only =iam.role_grant=,
+   =refdata.book_change= and =refdata.counterparty_change= are seeded. Market Risk
+   has a deciding part and the permission =inbox::approvals:decide_market_risk=.
+   No kind names them for a convention, no request holds a pending close, and
+   nothing applies the close when the last decider approves.
+5. *A close of a tenant kind reaches every party.* =currency_pair=, =ibor_index=,
+   =overnight_index= and =tenor= carry no =party_id=. The screen states the
+   scope. Nothing in the server refuses the close on that ground.
+6. *The wider write cannot retire.* =refdata.v1.conventions_documents.put= leaves
+   rows it is not given alone, so it can neither delete nor retire. The per-kind
+   delete is the only way to retire a document.
+7. *A close does not travel.* A re-publish from the curated dataset inserts the
+   row again where it is absent, for 25 of the 26 kinds. A document retired in a
+   tenant can come back with the next publish.
+8. *No BFF route serves conventions.* The journey adds one, for example
+   =DELETE /api/refdata/parties/<party-id>/conventions/<kind>/<key>=.
+
+* Related journeys
+
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — the neighbouring job, when a document is wrong and a correction is enough
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — read what a run takes after the close
+- [[id:D0ACFA17-B993-478B-958C-606C3349B079][Find a convention by its terms]] — find the twin that stays
+- [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]] — the second person's half of step 5
+- [[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]] — a set that names the closed document needs a new choice
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — the publish that can bring a retired document back
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — who decides a convention change
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, change reasons and the bitemporal record
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the sections this page fills

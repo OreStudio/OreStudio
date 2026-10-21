@@ -101,6 +101,7 @@ import { BindingsPage } from './marketdata/bindings/BindingsPage.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
+import { ConfigurationPage } from './reporting/ConfigurationPage.js';
 import { ReportPage } from './reporting/ReportPage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
@@ -720,6 +721,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ReportPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.configurations}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ConfigurationPage />
                     ),
                     'workspace',
                 )}

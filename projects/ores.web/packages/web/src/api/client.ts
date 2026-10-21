@@ -152,10 +152,14 @@ import {
     type WorkflowProgress,
     type WireTimestamp,
     wireTimestampSchema,
+    configurationDetailSchema,
+    reportConfigurationBindingsSchema,
     reportDetailSchema,
     reportHealthTallySchema,
     reportNameChoicesSchema,
     reportsPageSchema,
+    type ConfigurationDetail,
+    type ReportConfigurationBinding,
     type ReportDetail,
     type ReportHealthTally,
     type ReportNameChoice,
@@ -1288,6 +1292,24 @@ export const api = {
                 concurrencyPolicies: z.array(z.string()),
             })
             .parse(await request('/api/reporting/choices', { method: 'GET' }));
+    },
+
+    /** The configurations one definition binds, each with its kind and name. */
+    async reportConfigurations(id: string): Promise<readonly ReportConfigurationBinding[]> {
+        return reportConfigurationBindingsSchema.parse(
+            await request(`/api/reporting/reports/${encodeURIComponent(id)}/configurations`, {
+                method: 'GET',
+            }),
+        ).bindings;
+    },
+
+    /** One configuration, the analytics it holds and the reports that bind it. */
+    async configuration(id: string): Promise<ConfigurationDetail> {
+        return configurationDetailSchema.parse(
+            await request(`/api/reporting/configurations/${encodeURIComponent(id)}`, {
+                method: 'GET',
+            }),
+        );
     },
 
     /**

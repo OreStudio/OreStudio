@@ -25,6 +25,11 @@ import { readMyParties } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as typeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_type_protocol';
 import { subjects as policySubjects } from '@ores/wire-protocol/generated/reporting/protocol/concurrency_policy_protocol';
+import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
+import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
+import { subjects as configurationTypeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_type_protocol';
+import { subjects as analyticSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_analytic_protocol';
+import { subjects as analyticTypeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/analytic_type_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
@@ -154,6 +159,12 @@ const healthQuerySchema = z.object({
 });
 
 const idSchema = z.uuid();
+
+/**
+ * An identifier of any version. Configurations are seeded with identifiers that
+ * the strict check refuses, so a route for one cannot ask for a version nibble.
+ */
+const guidSchema = z.guid();
 
 /** The name an address may carry instead of an id, as long as the definition's own field. */
 const nameSchema = z.string().trim().min(1).max(200);
@@ -727,6 +738,188 @@ function definitionRowOf(
     };
 }
 
+/**
+ * The generated binding filter, with every member stated, for the bindings of
+ * one definition or of one configuration.
+ */
+function bindingFilter(members: {
+    readonly definitionId?: string;
+    readonly configurationId?: string;
+}): Readonly<Record<string, unknown>> {
+    return {
+        report_definition_id: members.definitionId ?? null,
+        configuration_type_code: null,
+        configuration_id: members.configurationId ?? null,
+        id_one_of: null,
+        report_definition_id_one_of: null,
+        configuration_type_code_one_of: null,
+        configuration_id_one_of: null,
+    };
+}
+
+/**
+ * The name of each configuration kind, by its code.
+ *
+ * A person who may read bindings but not kinds still sees the binding, under
+ * the code, so a refused kinds read narrows the words and never the page.
+ */
+async function typeNames(session: LiveSession): Promise<ReadonlyMap<string, string>> {
+    try {
+        const types = await readAll(
+            session,
+            configurationTypeSubjects.list_configuration_types_request,
+            'types',
+            { filter: null, as_of: null },
+        );
+        return new Map(types.map((type) => [text(type['code']), text(type['name'])]));
+    } catch (failure) {
+        if (failure instanceof HttpFailure && failure.status === 403) {
+            return new Map();
+        }
+        throw failure;
+    }
+}
+
+/** The configurations the ids name, by id. */
+async function configurationsById(
+    session: LiveSession,
+    ids: readonly string[],
+): Promise<ReadonlyMap<string, Record<string, unknown>>> {
+    if (ids.length === 0) {
+        return new Map();
+    }
+    const configurations = await readAll(
+        session,
+        configurationSubjects.list_configurations_request,
+        'configurations',
+        {
+            filter: {
+                configuration_type_code: null,
+                id_one_of: ids,
+                configuration_type_code_one_of: null,
+            },
+            as_of: null,
+        },
+    );
+    return new Map(configurations.map((entry) => [text(entry['id']), entry]));
+}
+
+/** The configurations one definition binds, in the order of their kinds. */
+async function readBindings(
+    session: LiveSession,
+    definitionId: string,
+): Promise<readonly Record<string, unknown>[]> {
+    const bindings = await readAll(
+        session,
+        bindingSubjects.list_report_configurations_request,
+        'report_configurations',
+        { filter: bindingFilter({ definitionId }), as_of: null },
+    );
+    const names = await typeNames(session);
+    const order = [...names.keys()];
+    return [...bindings].sort(
+        (left, right) =>
+            order.indexOf(text(left['configuration_type_code'])) -
+            order.indexOf(text(right['configuration_type_code'])),
+    );
+}
+
+/** One configuration with its analytics and the reports that bind it. */
+async function configurationDetailOf(
+    session: LiveSession,
+    id: string,
+): Promise<Readonly<Record<string, unknown>>> {
+    const found = (await configurationsById(session, [id])).get(id);
+    if (found === undefined) {
+        throw notFound(ABSENT);
+    }
+    const [names, parties, analytics, analyticNames, bindings] = await Promise.all([
+        typeNames(session),
+        readPartyNames(session),
+        readAll(session, analyticSubjects.list_configuration_analytics_request, 'analytics', {
+            filter: {
+                configuration_id: id,
+                analytic_type_code: null,
+                id_one_of: null,
+                configuration_id_one_of: null,
+                analytic_type_code_one_of: null,
+            },
+            as_of: null,
+        }),
+        readAll(session, analyticTypeSubjects.list_analytic_types_request, 'types', {
+            filter: null,
+            as_of: null,
+        }).catch((failure: unknown) => {
+            if (failure instanceof HttpFailure && failure.status === 403) {
+                return [];
+            }
+            throw failure;
+        }),
+        readAll(
+            session,
+            bindingSubjects.list_report_configurations_request,
+            'report_configurations',
+            {
+                filter: bindingFilter({ configurationId: id }),
+                as_of: null,
+            },
+        ),
+    ]);
+    const analyticName = new Map(
+        analyticNames.map((type) => [text(type['code']), text(type['name'])]),
+    );
+    const definitionIds = [
+        ...new Set(bindings.map((binding) => text(binding['report_definition_id']))),
+    ];
+    const definitions =
+        definitionIds.length === 0
+            ? []
+            : await readAll(
+                  session,
+                  definitionSubjects.list_report_definitions_request,
+                  'definitions',
+                  {
+                      filter: definitionFilter({ idOneOf: definitionIds }),
+                      as_of: null,
+                  },
+              );
+    const typeCode = text(found['configuration_type_code']);
+    const partyId = text(found['party_id']);
+    return {
+        configuration: {
+            id,
+            name: text(found['name']),
+            typeCode,
+            typeName: names.get(typeCode) ?? typeCode,
+            owningComponent: text(found['owning_component']),
+            partyId,
+            partyName: parties.get(partyId)?.name ?? '',
+            version: countOf(found['version']),
+            modified_by: text(found['modified_by']),
+            performed_by: text(found['performed_by']),
+            change_reason_code: text(found['change_reason_code']),
+            change_commentary: text(found['change_commentary']),
+            recorded_at: text(found['recorded_at']),
+        },
+        analytics: [...analytics]
+            .sort((left, right) => countOf(left['display_order']) - countOf(right['display_order']))
+            .map((analytic) => ({
+                code: text(analytic['analytic_type_code']),
+                name:
+                    analyticName.get(text(analytic['analytic_type_code'])) ??
+                    text(analytic['analytic_type_code']),
+                active: text(analytic['active']) === 'Y',
+            })),
+        reports: definitions
+            .map((definition) => ({
+                id: text(definition['id']),
+                name: text(definition['name']),
+                partyName: parties.get(text(definition['party_id']))?.name ?? '',
+            }))
+            .sort((left, right) => left.name.localeCompare(right.name)),
+    };
+}
+
 /** The fields the edit form offers, and the only ones a save may change. */
 const editSchema = z.object({
     description: z.string().max(2000),
@@ -850,6 +1043,46 @@ export function registerReportingRoutes(
                 'policies',
             ),
         };
+    });
+
+    /*
+     * The configurations a definition binds, each with its kind and name, so the
+     * page can list them and link to each one.
+     */
+    server.get('/api/reporting/reports/:id/configurations', async (request) => {
+        const session = requireSession(request);
+        const id = idParam(request);
+        const [bindings, names] = await Promise.all([
+            readBindings(session, id),
+            typeNames(session),
+        ]);
+        const configurations = await configurationsById(
+            session,
+            bindings.map((binding) => text(binding['configuration_id'])),
+        );
+        return {
+            bindings: bindings.map((binding) => {
+                const configurationId = text(binding['configuration_id']);
+                const typeCode = text(binding['configuration_type_code']);
+                return {
+                    id: text(binding['id']),
+                    typeCode,
+                    typeName: names.get(typeCode) ?? typeCode,
+                    configurationId,
+                    name: text(configurations.get(configurationId)?.['name']),
+                };
+            }),
+        };
+    });
+
+    server.get('/api/reporting/configurations/:id', async (request) => {
+        const session = requireSession(request);
+        const id = parseInput(
+            guidSchema,
+            (request.params as { id: string }).id,
+            'A configuration is named by its id.',
+        );
+        return configurationDetailOf(session, id);
     });
 
     server.get('/api/reporting/report-health', async (request) => {

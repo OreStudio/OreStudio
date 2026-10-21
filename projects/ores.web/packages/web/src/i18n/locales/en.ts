@@ -4489,6 +4489,23 @@ export const en: SourceCatalogue = {
                 other: 'What a run does with the engine’s results.',
             },
         },
+        configurations: {
+            title: 'Configurations',
+            lead: 'A configuration is shared by the reports that bind it.',
+            record: 'Configuration',
+            fields: {
+                name: 'Name',
+                type: 'Kind',
+                owningComponent: 'Owned by',
+            },
+            analytics: 'Analytics',
+            noAnalytics: 'This configuration holds no analytic.',
+            off: 'Off',
+            usedBy: 'Reports that use it',
+            noReports: 'No report that you may see uses this configuration.',
+            none: 'This report binds no configuration.',
+            refused: 'You may not see the configurations of this report.',
+        },
         detail: {
             record: 'Definition',
             party: 'Party',

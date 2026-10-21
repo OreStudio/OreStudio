@@ -4554,6 +4554,23 @@ const fr: SourceCatalogue = {
                 other: 'Ce qu’une exécution fait des résultats du moteur.',
             },
         },
+        configurations: {
+            title: 'Configurations',
+            lead: 'Une configuration est partagée par les rapports qui la lient.',
+            record: 'Configuration',
+            fields: {
+                name: 'Nom',
+                type: 'Type',
+                owningComponent: 'Détenue par',
+            },
+            analytics: 'Analyses',
+            noAnalytics: 'Cette configuration ne contient aucune analyse.',
+            off: 'Désactivée',
+            usedBy: 'Rapports qui l’utilisent',
+            noReports: 'Aucun rapport que vous pouvez voir n’utilise cette configuration.',
+            none: 'Ce rapport ne lie aucune configuration.',
+            refused: 'Vous ne pouvez pas voir les configurations de ce rapport.',
+        },
         detail: {
             record: 'Définition',
             party: 'Partie',

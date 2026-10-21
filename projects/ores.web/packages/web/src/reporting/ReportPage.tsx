@@ -60,6 +60,7 @@ import { Detail, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { CronValue } from '../ui/CronField.js';
 import { REPORTS_EVENTS, REPORTS_RESOURCE, reportingStore } from './store.js';
+import { ReportConfigurations } from './ConfigurationPage.js';
 import { Absent, HealthTag, formatDuration, runDuration } from './shared.js';
 
 /** Where one definition's record is cached. */
@@ -318,6 +319,7 @@ function ReportBody(): ReactNode {
                     </header>
                     <LatestRun detail={open.data.detail} unread={unread} />
                 </section>
+                <ReportConfigurations definitionId={definition.id} />
             </div>
             {editing && (
                 <RecordDialog

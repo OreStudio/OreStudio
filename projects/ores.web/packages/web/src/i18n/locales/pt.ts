@@ -4524,6 +4524,23 @@ const pt: SourceCatalogue = {
                 other: 'O que uma execução faz com os resultados do motor.',
             },
         },
+        configurations: {
+            title: 'Configurações',
+            lead: 'Uma configuração é partilhada pelos relatórios que a associam.',
+            record: 'Configuração',
+            fields: {
+                name: 'Nome',
+                type: 'Tipo',
+                owningComponent: 'Pertence a',
+            },
+            analytics: 'Análises',
+            noAnalytics: 'Esta configuração não contém nenhuma análise.',
+            off: 'Desativada',
+            usedBy: 'Relatórios que a usam',
+            noReports: 'Nenhum relatório que possa ver usa esta configuração.',
+            none: 'Este relatório não associa nenhuma configuração.',
+            refused: 'Não pode ver as configurações deste relatório.',
+        },
         detail: {
             record: 'Definição',
             party: 'Parte',

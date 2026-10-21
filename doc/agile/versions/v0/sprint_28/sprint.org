@@ -174,6 +174,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:6F517239-8845-4F2F-B553-DE9E333FC641][Fix the marketdata suite timeout]] | DONE | | 2026-10-20 | The marketdata core suite outgrew the 600 s ctest default and lost its serial setting in a regeneration. |
 | [[id:A8668F2D-1E73-4598-B06D-10DDD75C5E45][Fix the site build id link]] | DONE | | 2026-10-21 | The site build fails on an uppercase id link to a page that defines its id in lowercase. |
 | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] | BACKLOG | | | Design how a person manages conventions, as user journeys first and clickable prototypes second. |
+| [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] | BACKLOG | | | A report states the regulatory book type of the books it may read, from the same vocabulary a book uses, so a trading book report never prices the banking book. |
 
 * Achievements
 

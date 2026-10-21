@@ -62,6 +62,12 @@ booking of a trade id answers a conflict with the code =already_exists= and
 writes nothing. A caller that sends a request again after a stop therefore
 reaches the same end state.
 
+The service stores a hash of the request content with the trade. A second
+booking of a trade id answers =already_exists= when the hash is equal. It
+answers =content_differs= when the hash is not equal, and the caller treats
+that as an error. An id collision or a drifted plan is therefore never taken
+for a retry.
+
 The trade type routes the instrument to one table, through the
 [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][trade type catalogue]]. The request is refused before it writes anything when the
 batch holds a row for another table, or when the trade type has no instrument
@@ -86,8 +92,10 @@ of our systems wrote the record. The ORE import, the REST gateway and the
 generator all enter through =stp=, and only the origin tells them apart.
 
 The caller states the origin in the booking request. The service checks it
-against the lookup and stores it. The service never changes its behaviour for
-a given origin. The origin is how a report, a clean-up or an audit separates
+against the lookup. It also checks that the authenticated client may state that
+origin, because each client is registered for the origins it may use. A client
+registered for =synthetic= cannot state =ux=. The service stores the origin.
+The service never changes its behaviour for a given origin. The origin is how a report, a clean-up or an audit separates
 real trades from generated ones. The reason code and the commentary are not
 used for this.
 
@@ -101,8 +109,8 @@ service, never to both.
    caller reads them, and creates the missing ones through refdata's own
    operations first.
 2. *Resolve the security.* A trade type that names a security needs it in place.
-   The caller reads the security by its identifier. When it does not exist, the
-   caller creates it with the security operation. See the section on bonds.
+   The caller sends the security to the security operation. The operation
+   creates it, or answers that it exists. See the section on bonds.
 3. *Build the request.* The caller builds the booking request from its source.
 4. *Book.* The caller sends one request. The service checks the permission and
    the session, opens one unit of work, writes every part and commits.
@@ -211,20 +219,20 @@ maturity, currency, coupon and schedule.
   names an issue.
 - *Security operation.* One operation creates the issue with its children in one
   unit of work. The issue is create-only. A second creation of an issue id
-  answers a conflict, and the stored issue stays as it was. An issue is
+  answers =already_exists= when the terms are equal and =content_differs= when
+  they are not. The stored issue stays as it was. An issue is
   therefore whole or absent, and its existence proves its completeness.
 - *Order.* A caller creates the issue before it books a trade that names it.
   The database refuses a bond instrument whose issue does not exist.
 - *Sharing.* A security belongs to the tenant. It does not belong to a book or
   a party. A currency belongs to the security, so every book that holds the
   security has that currency.
-- *Resolution.* A caller names a security by its security identifier. It reads
-  the issue first. It creates the issue only when none exists. When the issue
-  exists, the caller checks that the terms it holds agree with the stored
-  terms, and refuses the trade when they differ.
+- *Resolution.* A caller names a security by its security identifier and sends
+  the issue. The service compares the terms. No caller holds comparison code.
+  A caller refuses its trade when the answer is =content_differs=.
 - *Concurrency.* Two callers may create the same issue at the same time. One
-  creation succeeds and the other answers a conflict. The second caller
-  treats the conflict as present and books its trade.
+  creation succeeds and the other answers =already_exists=. The second caller
+  books its trade.
 
 ** The callers
 
@@ -235,7 +243,7 @@ differences are only data.
 |--------+--------+---------------+----------------------+---------------+----------------|
 | UX | A form with the tabs Trade, Instrument, Identifiers and Review | =manual= | =ux=, the session | Choose an issue, or create one in the issue editor | Pick lists read from refdata |
 | Web API | A JSON body from an outside system | =stp= | =api=, the API client | Create the issue, then book | The caller sends ids it holds |
-| ORE import | An ORE portfolio document | =stp= | =ore_import=, the import id | Resolve by security id, create when absent, compare terms | Create portfolios, books and netting sets in an earlier step |
+| ORE import | An ORE portfolio document | =stp= | =ore_import=, the import id | Send the issue and read the answer | Create portfolios, books and netting sets in an earlier step |
 | Synthetic | A plan drawn from a generation config | =stp= | =synthetic=, the config id | Create the issues of the plan, then book | Read from the config's scope |
 
 *** UX trade booking
@@ -291,6 +299,35 @@ version. The entry channel is =stp=. The origin is =synthetic= and the origin
 reference is the config id. A report that must exclude generated trades filters
 on the origin. The service treats the origin like any other data.
 
+*** Extending synthetic generation
+
+Synthetic generation covers every asset class. A generation config names one
+asset class, and the asset class decides the trade types and the instrument
+terms that the plan draws. The generator is extensible: a new asset class
+adds a planner and changes nothing else.
+
+- *One planner for each asset class.* The planner reads the config and draws
+  the plan. The plan holds the securities, if the asset class has any, and the
+  trades. A planner is a pure function of the config and of a snapshot of the
+  references in the config's scope. A shared step reads the snapshot. The
+  planner does not call the network and does not write.
+- *One output.* Every planner produces the same booking requests and the same
+  security requests that the other callers send. A planner has no private
+  request and no private writer.
+- *One writer.* A single writer takes a plan and sends it through the shared
+  client. It holds no knowledge of any asset class. The booking service
+  already accepts every instrument kind through the typed batch.
+- *Deterministic.* Each planner derives every id from the config. A second
+  run books nothing.
+- *No change to booking.* A new asset class touches no service code, no
+  booking operation and no other planner. The conformance rules apply to
+  every planner without exception.
+
+The shared parts are the writer, the plan type and the id derivation. The
+parts that differ are the draw from the config and the mapping from a drawn
+trade to a typed instrument batch. A model can generate the mapping when the
+instrument writer for every kind is generated.
+
 ** Structure booking
 
 A structure is one deal made of several trades. See
@@ -304,7 +341,8 @@ A structure can be arbitrarily large. One transaction that writes every leg in
 full, with its instrument rows, would grow without limit. The request would
 grow too. The design therefore does not book a structure in one transaction.
 It makes each leg atomic, keeps the legs out of risk until the structure is
-whole, and then makes the whole structure live in one small transaction.
+whole, and then makes the whole structure live in one transaction that holds
+no instrument rows.
 
 *** The three steps
 
@@ -323,8 +361,9 @@ whole, and then makes the whole structure live in one small transaction.
    leg it writes the next state with the activity =execution=. All of this commits
    once. Either every leg is live and the structure exists, or no leg has changed.
 
-The unit of work in step 3 is bounded by the number of legs and writes small
-rows. The instrument rows were written in step 1.
+The unit of work in step 3 writes small rows, and the instrument rows were
+written in step 1. Its size still grows with the leg count. The size limit of a
+message and of a transaction is an open decision.
 
 *** How this follows the lifecycle
 
@@ -339,9 +378,10 @@ The step uses the [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] a
   state the leg starts from, so a leg that is not a draft cannot be activated.
 - The legs arrive =live= and unauthorised, as every live trade does. The
   authorisation and the confirmation then follow the normal queues.
-- The activity =execution= is confirmable and economic. The external version
-  of the structure therefore starts at activation, and a structure is confirmed
-  as a whole, as [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][trade structures]] requires.
+- The activity =execution= is confirmable and economic. A leg that goes live
+  through it would take an external version of its own. A structure is
+  confirmed as a whole and holds the external version, as
+  [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][trade structures]] requires. How the two fit is an open decision.
 - A caller that gives up discards each draft leg. The machine allows
   =draft= to =cancelled= through Discard. That is a deliberate act and not a
   repair.
@@ -368,9 +408,10 @@ with their age and their reason.
   names who must unblock it. The models have no such field. Structure booking
   needs a reason such as =structure_incomplete=, so that a report separates
   these drafts from a trade that waits for an agreement.
-- *A hold on the legs.* A leg needs a way to say which structure it waits for,
-  so that the completion can check it. The origin reference could carry the
-  structure id, or the draft reason could carry it. This is open.
+- *A hold on the legs.* A draft has a reason code and an optional reason
+  subject. For =structure_incomplete= the subject is the structure id. The
+  completion refuses a leg whose reason is not =structure_incomplete= for that
+  structure, so it can never execute a draft that a trader holds on purpose.
 - *The completion operation.* It owns step 3. It is the only operation that
   writes members and links for a new structure.
 
@@ -380,31 +421,56 @@ with their age and their reason.
   deal. A package binds nothing economic, so its legs could go live one by one
   and be grouped later. The rule for choosing is not set.
 - *The external version.* The structure table has no column for the external
-  version. Activation creates it, so the column must exist.
+  version. The activation must either leave the external version of each leg
+  unmoved and create the structure's version, or use an activity that is not
+  confirmable. The choice is open.
 - *The composite trade.* A composite trade holds its own legs. A package links
   separate trades. The two overlap, and a decision must say whether a composite
   trade becomes a package.
 - *The reply.* The structure's internal version is read from its legs and is not
   stored. The completion must return it.
-- *The hold.* Where the legs state the structure they wait for.
+
+** Open decisions
+
+These decisions are not made. Each one blocks a part of the target. The
+structure decisions are in the section on structure booking.
+
+- *Size of a structure.* A completion request holds leg ids, so it grows with
+  the leg count. A message has a size limit, and a transaction has a practical
+  one. The page does not set a maximum number of legs, and it does not say how
+  a larger structure is split.
+- *Four-eyes on booking.* If a trade needs approval before it exists, a pending
+  request must live somewhere until a second person approves it. That
+  conflicts with a booking that is whole or absent. The
+  [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][four-eyes framework]] owns the answer.
+- *The word origin.* The booking journey lists an origin among the things the
+  trade entity contributes. No field of that name exists. The journey may mean
+  the entry channel, the booking nature or a new field. The journey and this
+  page must agree on one meaning.
+- *Reads across owners.* Trading checks a book in a trigger, and refdata owns
+  books. The page does not say how trading may read data that another service
+  owns, or what happens when a book is removed between the reference step and
+  the booking.
 
 ** Conformance rules
 
 These rules describe the target. A check can enforce each one, and each one
 can become a task.
 
-1. One operation creates the parts of a new trade, and one operation creates a
-   security. No other operation creates them.
-2. The entity operations for a trade's parts edit an existing trade. They
-   refuse to create a part for a trade that is not booked.
+1. One operation creates a trade with its parts, and one operation creates a
+   security. No other operation creates a trade or a security.
+2. The entity operations for a trade's parts act on a booked trade. They add,
+   change or remove a part of a trade that exists, and they refuse a trade
+   that is not booked. They never create a trade.
 3. The booking request carries the identifiers, the classification and the
    instrument, so that the caller makes one call for each trade.
 4. The service stamps the activity id. A request that states one is refused.
 5. The trading service holds no code and no field that names a caller.
 6. A caller holds no code that checks a trade for missing parts, repairs a
    trade or orders the writes of its parts.
-7. The security operation is create-only, and its conflict answer is the
-   caller's proof that the security is present.
+7. The security operation is create-only. Its answer =already_exists= is the
+   caller's proof that the same security is present, and =content_differs=
+   stops the trade.
 8. A database-backed test proves, for each operation, that a refused part
    leaves no row.
 9. Every trade states an origin from the lookup. The origin is immutable and
@@ -413,3 +479,5 @@ can become a task.
     operation makes it live, and it does so for all legs in one unit of work.
 11. A database-backed test proves that a refused completion leaves every leg a
     draft and writes no member.
+12. The service refuses a second booking whose content differs from the first,
+    and it refuses an origin that the authenticated client may not state.

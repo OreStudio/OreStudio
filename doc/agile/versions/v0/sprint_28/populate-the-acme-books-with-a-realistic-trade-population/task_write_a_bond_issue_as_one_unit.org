@@ -36,7 +36,7 @@ A bond issue is written by one operation in one transaction. The synthetic write
 * Acceptance
 
 - One operation writes an issue with its leg, amounts, rate and schedule, or none of them.
-- The issue is create-only. A second write of the same issue answers a conflict and leaves the first whole.
+- The issue is create-only. A second write of the same issue answers =already_exists= when the terms are equal and =content_differs= when they are not. Either answer leaves the first whole.
 - A refused child write leaves no issue row.
 - The synthetic writer calls the operation. issue_complete and ensure_issue are deleted.
 - A database-backed test proves the rollback.

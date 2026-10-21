@@ -38,6 +38,7 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 - A lookup holds ux, api, ore_import and synthetic.
 - The anchor refuses an origin that is not in the lookup.
 - Synthetic and the ORE import state their origin. The reason code no longer marks generated data.
+- The service refuses an origin that the authenticated client may not state.
 - A database-backed test proves the refusal.
 
 * Plan

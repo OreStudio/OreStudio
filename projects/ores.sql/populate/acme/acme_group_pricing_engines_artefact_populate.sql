@@ -53,7 +53,8 @@ begin
         dataset_id, tenant_id, id, version, party_id, name, description, config_variant, configuration_id
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1a57ead2-29c3-5220-8423-72aff0672f9b', 0, '00000000-0000-0000-0000-000000000000', 'Group pricing engines', 'The model and engine that price each product ACME Corporation Group trades.', '', '3b4103d0-dead-5caa-b756-e8772782d831');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9138636d-654a-5c60-8165-4a17e3128788', 0, '00000000-0000-0000-0000-000000000000', 'EOD Official', 'The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.', '', '7784ec69-9b83-5956-a0d0-f4794981bc5e'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 0, '00000000-0000-0000-0000-000000000000', 'XVA Overnight', 'The overnight run that simulates exposure. Swaps and cross currency swaps use the American Monte Carlo engine on a fixed seed, and the rest keep the usual pair.', '', '0cdbba27-77fd-5f99-9a53-ed3620a82e3f');
 
     delete from ores_dq_pricing_model_products_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -62,9 +63,12 @@ begin
         dataset_id, tenant_id, id, version, party_id, pricing_model_config_id, pricing_engine_type_code, model, engine, position
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd72df645-377b-5822-95e8-016161fb990f', 0, '00000000-0000-0000-0000-000000000000', '1a57ead2-29c3-5220-8423-72aff0672f9b', 'Swap', 'DiscountedCashflows', 'DiscountingSwapEngine', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '20fd45ca-114f-5b7f-a888-a67b2b68de54', 0, '00000000-0000-0000-0000-000000000000', '1a57ead2-29c3-5220-8423-72aff0672f9b', 'FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine', 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd325f531-784e-54ce-9827-4cab70632931', 0, '00000000-0000-0000-0000-000000000000', '1a57ead2-29c3-5220-8423-72aff0672f9b', 'Bond', 'DiscountedCashflows', 'DiscountingRiskyBondEngine', 2);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'faa838e8-b34c-5b62-9009-882644823b6a', 0, '00000000-0000-0000-0000-000000000000', '9138636d-654a-5c60-8165-4a17e3128788', 'Swap', 'DiscountedCashflows', 'DiscountingSwapEngine', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7f7fefd0-3e62-5989-9a02-4314f5a1c7b5', 0, '00000000-0000-0000-0000-000000000000', '9138636d-654a-5c60-8165-4a17e3128788', 'FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c7479371-4abe-5afd-9f46-64c0f09a50c3', 0, '00000000-0000-0000-0000-000000000000', '9138636d-654a-5c60-8165-4a17e3128788', 'Bond', 'DiscountedCashflows', 'DiscountingRiskyBondEngine', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'Swap', 'CrossAssetModel', 'AMC', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3dd30c64-e7ed-5141-908c-ecba169c80e0', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '885835de-3172-594f-ade5-82e93d619ab0', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'Bond', 'DiscountedCashflows', 'DiscountingRiskyBondEngine', 2);
 
     delete from ores_dq_pricing_model_product_parameters_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -73,6 +77,16 @@ begin
         dataset_id, tenant_id, id, version, party_id, pricing_model_config_id, pricing_model_product_id, parameter_scope, parameter_name, parameter_value, position
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '971768fb-562d-5102-9e55-fb1d630e5e59', 0, '00000000-0000-0000-0000-000000000000', '1a57ead2-29c3-5220-8423-72aff0672f9b', 'd325f531-784e-54ce-9827-4cab70632931', 'engine', 'TimestepPeriod', '6M', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '82fba54c-962c-5164-986b-1e174bb52de5', 0, '00000000-0000-0000-0000-000000000000', '1a57ead2-29c3-5220-8423-72aff0672f9b', null, 'global', 'ContinueOnCalibrationError', 'true', 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'aea321e5-d580-513b-a472-5d99f88840eb', 0, '00000000-0000-0000-0000-000000000000', '9138636d-654a-5c60-8165-4a17e3128788', 'c7479371-4abe-5afd-9f46-64c0f09a50c3', 'engine', 'TimestepPeriod', '6M', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e33d6b1a-e83c-5aef-9fa1-f411e325ddf6', 0, '00000000-0000-0000-0000-000000000000', '9138636d-654a-5c60-8165-4a17e3128788', null, 'global', 'ContinueOnCalibrationError', 'false', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f9b46a09-8a8b-5fdb-9b90-d106440af667', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Training.Sequence', 'MersenneTwisterAntithetic', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3d028542-3b4e-547a-b989-82aa4c56a518', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Training.Seed', '42', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cb6416a7-36fa-5a05-b3ef-54e2e4db195d', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Training.Samples', '50000', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a6a91497-7e17-55f8-a4d2-ddaed03f4a00', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Pricing.Sequence', 'SobolBrownianBridge', 3),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e5951be4-e188-5331-899b-9d0b1cf25a7e', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Pricing.Seed', '17', 4),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4ab6d95d-1a7d-5b64-90ac-4ba9bdc460f6', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Pricing.Samples', '0', 5),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '235c413c-d881-59cf-a858-278b886cbd21', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Training.BasisFunction', 'Monomial', 6),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b4c8a00f-dbd8-5575-a5c1-47f17bd41253', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', 'a202fccc-d227-56c8-acc8-ef6e46eaa909', 'engine', 'Training.BasisFunctionOrder', '6', 7),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db6c2dc9-63ae-588e-a872-c5a4591e4c3d', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', '885835de-3172-594f-ade5-82e93d619ab0', 'engine', 'TimestepPeriod', '3M', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bac683c3-8730-5afd-9ec9-62f992ea9e36', 0, '00000000-0000-0000-0000-000000000000', '0c2031e5-e5cd-5829-996c-35d3fb1cc3ea', null, 'global', 'ContinueOnCalibrationError', 'true', 0);
 end $$;

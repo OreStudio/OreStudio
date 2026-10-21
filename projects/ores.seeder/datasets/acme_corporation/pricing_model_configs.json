@@ -1,42 +1,232 @@
 [
   {
     "company_code": "acme_group",
-    "id": "1a57ead2-29c3-5220-8423-72aff0672f9b",
+    "id": "9138636d-654a-5c60-8165-4a17e3128788",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "Group pricing engines",
-    "description": "The model and engine that price each product ACME Corporation Group trades.",
+    "name": "EOD Official",
+    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
-    "configuration_id": "3b4103d0-dead-5caa-b756-e8772782d831"
+    "configuration_id": "7784ec69-9b83-5956-a0d0-f4794981bc5e"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "XVA Overnight",
+    "description": "The overnight run that simulates exposure. Swaps and cross currency swaps use the American Monte Carlo engine on a fixed seed, and the rest keep the usual pair.",
+    "config_variant": "",
+    "configuration_id": "0cdbba27-77fd-5f99-9a53-ed3620a82e3f"
   },
   {
     "company_code": "acme_uk",
-    "id": "d6a5703f-354e-5d75-9009-0e9fdf01131b",
+    "id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "UK pricing engines",
-    "description": "The model and engine that price each product ACME Corporation UK trades.",
+    "name": "EOD Official",
+    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
-    "configuration_id": "48af1c3d-0e82-56d8-b1fd-ec489370a036"
+    "configuration_id": "43b4a4b1-d4ff-537a-93bb-b08ebca273d3"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "561c1184-a396-55dc-9770-40ee754ea520",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Intraday Indicative",
+    "description": "A fast view of the book during the day. The usual pair for each product with a coarse bond grid. A failed calibration does not stop the run. The numbers are not official.",
+    "config_variant": "",
+    "configuration_id": "86358f0b-7641-5b46-b1b7-750763a708b1"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Pre-Trade Quick Price",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "config_variant": "",
+    "configuration_id": "1596efba-c872-5111-8ff5-c5dc4ea861db"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Risk Sensitivities",
+    "description": "The prices that the delta, gamma and DV01 reports bump. A swap offers its analytic sensitivities, and a failed calibration stops the run so a bump never mixes two fits.",
+    "config_variant": "",
+    "configuration_id": "ac7110d5-3759-58eb-b7db-2b30ebe72d45"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "XVA Overnight",
+    "description": "The overnight run that simulates exposure. Swaps and cross currency swaps use the American Monte Carlo engine on a fixed seed, and the rest keep the usual pair.",
+    "config_variant": "",
+    "configuration_id": "5839a3b5-6c6d-5ee1-ba29-c7d7adfc423d"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Regulatory FRTB",
+    "description": "The prices behind the capital charge of the fundamental review. The sensitivities are analytic, the bond grid is fine and a failed calibration stops the run.",
+    "config_variant": "",
+    "configuration_id": "66a1b4a6-3f20-5460-8b1b-cb917df92605"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ed5bb931-8c68-51a7-badf-f21787132684",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Regulatory SIMM",
+    "description": "The prices behind the initial margin of uncleared derivatives. Bonds are not margined, so they are left out.",
+    "config_variant": "",
+    "configuration_id": "7b627ce7-ef52-5b63-a4a4-1039aa4b9333"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ef348959-5b53-5688-a877-c03df9a94a6a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Stress Test Shocked",
+    "description": "The prices under large shocks. The usual pair for each product, a fine bond grid, and a failed calibration does not stop the run because a shock can break a fit.",
+    "config_variant": "",
+    "configuration_id": "75f35aa2-46fe-5cb2-a918-43187561b87a"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "952507fb-5972-5c02-ae24-ebde30baa5af",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Quant Sandbox",
+    "description": "Where the quants try a model before it goes live. Swaps use a small American Monte Carlo run. Nothing booked or filed uses it.",
+    "config_variant": "",
+    "configuration_id": "69c2752b-ede3-5464-814a-11106fe50cfb"
   },
   {
     "company_code": "acme_us",
-    "id": "eeebeb2f-221a-5fb4-a081-359075ab3fbd",
+    "id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "US pricing engines",
-    "description": "The model and engine that price each product ACME Corporation US trades.",
+    "name": "EOD Official",
+    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
-    "configuration_id": "874d6102-068c-5ed2-8f08-9331ae1c0669"
+    "configuration_id": "87bf0157-6c27-5d25-887f-bd4f2bc9a902"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "5136a290-076b-51c5-81c9-2484a54914ac",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Intraday Indicative",
+    "description": "A fast view of the book during the day. The usual pair for each product with a coarse bond grid. A failed calibration does not stop the run. The numbers are not official.",
+    "config_variant": "",
+    "configuration_id": "bebf76c3-05f8-59f9-b09d-d4e2cefe24ac"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Pre-Trade Quick Price",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "config_variant": "",
+    "configuration_id": "07d57059-7d84-5b1f-adb9-a198a4bdace0"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "f50def04-9a3c-5468-a097-85b836f21034",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "XVA Overnight",
+    "description": "The overnight run that simulates exposure. Swaps and cross currency swaps use the American Monte Carlo engine on a fixed seed, and the rest keep the usual pair.",
+    "config_variant": "",
+    "configuration_id": "f4b39931-95fa-5fc0-94aa-26e5bef261fe"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Regulatory FRTB",
+    "description": "The prices behind the capital charge of the fundamental review. The sensitivities are analytic, the bond grid is fine and a failed calibration stops the run.",
+    "config_variant": "",
+    "configuration_id": "cc3a5202-d540-5b56-b196-148b4e7cb783"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9678e19e-e222-50ef-ae31-7a0989b40939",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Stress Test Shocked",
+    "description": "The prices under large shocks. The usual pair for each product, a fine bond grid, and a failed calibration does not stop the run because a shock can break a fit.",
+    "config_variant": "",
+    "configuration_id": "3b62528c-4cb6-526f-9cc1-318621ad32b1"
   },
   {
     "company_code": "acme_hk",
-    "id": "1894e94f-df28-5627-87d8-6683a4543d49",
+    "id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "HK pricing engines",
-    "description": "The model and engine that price each product ACME Corporation HK trades.",
+    "name": "EOD Official",
+    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
-    "configuration_id": "43f95400-fd09-5b4c-a1e8-544a4fedf04d"
+    "configuration_id": "d9e2f3fe-73f7-528d-adf5-9a42959ba18e"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Intraday Indicative",
+    "description": "A fast view of the book during the day. The usual pair for each product with a coarse bond grid. A failed calibration does not stop the run. The numbers are not official.",
+    "config_variant": "",
+    "configuration_id": "caf8841e-ca46-5ffd-aa83-e0a10c58c40d"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Pre-Trade Quick Price",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "config_variant": "",
+    "configuration_id": "d7f5ab5e-75cb-5cb0-bb80-fa9a0132c690"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "XVA Overnight",
+    "description": "The overnight run that simulates exposure. Swaps and cross currency swaps use the American Monte Carlo engine on a fixed seed, and the rest keep the usual pair.",
+    "config_variant": "",
+    "configuration_id": "6f63db87-3fab-5b46-8bbc-61aa9a561a38"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Regulatory FRTB",
+    "description": "The prices behind the capital charge of the fundamental review. The sensitivities are analytic, the bond grid is fine and a failed calibration stops the run.",
+    "config_variant": "",
+    "configuration_id": "6f38b346-a4df-58f2-bfed-209838d065cc"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Stress Test Shocked",
+    "description": "The prices under large shocks. The usual pair for each product, a fine bond grid, and a failed calibration does not stop the run because a shock can break a fit.",
+    "config_variant": "",
+    "configuration_id": "b3d3b73a-1286-5e1c-86b2-b768c7e124f8"
   }
 ]

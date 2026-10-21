@@ -9,7 +9,8 @@ data. Which engine prices a product is a choice of the group, and the choice her
 follows the desks an entity runs (rule D15 of the sprint 27 investigation "Which
 reports each ACME party runs").
 
-Each document is a header, its products and their parameters, staged in three
+Each entity holds several documents, one for each job its reports do, and a report
+binds exactly one of them. Each document is a header, its products and their parameters, staged in three
 files that match the DQ artefact tables of the pricing engines document:
 pricing_model_configs.json, pricing_model_products.json and
 pricing_model_product_parameters.json. The staged ids are fixed by hashing, so a
@@ -65,8 +66,155 @@ ENTITY_PRODUCTS = {
     "acme_hk": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond"],
 }
 
-# The global parameters of every document, as the ORE example sets them.
-GLOBAL_PARAMETERS = {"ContinueOnCalibrationError": "true"}
+# The engine settings of the American Monte Carlo engine, as the ORE example
+# AmericanMonteCarlo/Input/pricingengine_amc.xml sets them for a swap and for a
+# cross currency swap: a training run on a fixed seed, then pricing on the
+# Sobol sequence.
+def amc(samples, order):
+    return {
+        "Training.Sequence": "MersenneTwisterAntithetic",
+        "Training.Seed": "42",
+        "Training.Samples": str(samples),
+        "Pricing.Sequence": "SobolBrownianBridge",
+        "Pricing.Seed": "17",
+        "Pricing.Samples": "0",
+        "Training.BasisFunction": "Monomial",
+        "Training.BasisFunctionOrder": str(order),
+    }
+
+
+def on_amc(samples, order):
+    return ("CrossAssetModel", {}, "AMC", amc(samples, order))
+
+
+# The sensitivity method ORE offers a swap, and its key.
+SENSITIVITIES = {"SensitivityTemplate": "IR_Analytical"}
+
+# The pricing engine configurations a party holds. A report binds exactly one, so
+# each is named for the job its reports do and not for the products it prices.
+# The cycle (end of day or intraday), the risk question and the rule a regulator
+# sets all change the model, the engine or its settings.
+#
+# - skip: product types the configuration does not price.
+# - bond_step: the step of the default probability grid of a bond. A finer step
+#   costs more and is for the numbers that are booked or filed.
+# - calibration_stops: whether a failed calibration stops the run. An official
+#   number must not be built on a model that did not fit, and an intraday or
+#   stress run must go on with the last fit it has.
+# - replace: the (model, engine, engine settings) used in place of the usual
+#   ones for a product type.
+CONFIGURATIONS = {
+    "EOD Official": {
+        "description": "The numbers that are booked. The usual pair for each product, a fine "
+                       "grid for bonds and a stop on any calibration that fails.",
+        "bond_step": "6M",
+        "calibration_stops": True,
+    },
+    "Intraday Indicative": {
+        "description": "A fast view of the book during the day. The usual pair for each "
+                       "product with a coarse bond grid. A failed calibration does not stop "
+                       "the run. The numbers are not official.",
+        "bond_step": "1Y",
+        "calibration_stops": False,
+    },
+    "Pre-Trade Quick Price": {
+        "description": "The price a trader sees while a trade is built. It answers at once, so "
+                       "it uses a coarse bond grid and leaves out credit default swaps.",
+        "skip": ["CreditDefaultSwap"],
+        "bond_step": "1Y",
+        "calibration_stops": False,
+    },
+    "Risk Sensitivities": {
+        "description": "The prices that the delta, gamma and DV01 reports bump. A swap offers its "
+                       "analytic sensitivities, and a failed calibration stops the run so a "
+                       "bump never mixes two fits.",
+        "bond_step": "6M",
+        "calibration_stops": True,
+        "settings": {"Swap": SENSITIVITIES},
+    },
+    "XVA Overnight": {
+        "description": "The overnight run that simulates exposure. Swaps and cross currency swaps "
+                       "use the American Monte Carlo engine on a fixed seed, and the rest keep "
+                       "the usual pair.",
+        "bond_step": "3M",
+        "calibration_stops": False,
+        "replace": {"Swap": on_amc(50000, 6), "CrossCurrencySwap": on_amc(10000, 2)},
+    },
+    "Regulatory FRTB": {
+        "description": "The prices behind the capital charge of the fundamental review. The "
+                       "sensitivities are analytic, the bond grid is fine and a failed "
+                       "calibration stops the run.",
+        "bond_step": "3M",
+        "calibration_stops": True,
+        "settings": {"Swap": SENSITIVITIES},
+    },
+    "Regulatory SIMM": {
+        "description": "The prices behind the initial margin of uncleared derivatives. Bonds are "
+                       "not margined, so they are left out.",
+        "skip": ["Bond"],
+        "calibration_stops": True,
+        "settings": {"Swap": SENSITIVITIES},
+    },
+    "Stress Test Shocked": {
+        "description": "The prices under large shocks. The usual pair for each product, a fine "
+                       "bond grid, and a failed calibration does not stop the run because a "
+                       "shock can break a fit.",
+        "bond_step": "3M",
+        "calibration_stops": False,
+    },
+    "Quant Sandbox": {
+        "description": "Where the quants try a model before it goes live. Swaps use a small "
+                       "American Monte Carlo run. Nothing booked or filed uses it.",
+        "bond_step": "6M",
+        "calibration_stops": False,
+        "replace": {"Swap": on_amc(5000, 2)},
+    },
+}
+
+# Which configurations each entity holds. The holding company has no desk, so it
+# holds the official numbers and the overnight exposure run. A trading entity
+# holds what its desks and its regulator need. London alone holds the
+# sensitivities, the margin prices and the sandbox: it has the option books and
+# the quants (design rule D8), and the other entities take their sensitivities
+# from the official numbers.
+ENTITY_CONFIGURATIONS = {
+    "acme_group": ["EOD Official", "XVA Overnight"],
+    "acme_uk": list(CONFIGURATIONS),
+    "acme_us": ["EOD Official", "Intraday Indicative", "Pre-Trade Quick Price",
+                "XVA Overnight", "Regulatory FRTB", "Stress Test Shocked"],
+    "acme_hk": ["EOD Official", "Intraday Indicative", "Pre-Trade Quick Price",
+                "XVA Overnight", "Regulatory FRTB", "Stress Test Shocked"],
+}
+
+# The configuration a report prefers. A report not named here runs on the official
+# numbers. An entity that does not hold the preferred configuration falls back to
+# the official one.
+DEFAULT_PRICING = "EOD Official"
+REPORT_PRICING = {
+    "Intraday Risk Monitor": "Intraday Indicative",
+    "Headline Position": "Intraday Indicative",
+    "Exposure": "XVA Overnight",
+    "CVA/DVA/FVA": "XVA Overnight",
+    "Model Calibration": "XVA Overnight",
+    "Group Consolidated Exposure": "XVA Overnight",
+    "Cross-Entity Counterparty Concentration": "XVA Overnight",
+    "Intercompany Exposure Matrix": "XVA Overnight",
+    "Delta and Gamma": "Risk Sensitivities",
+    "Bucketed DV01": "Risk Sensitivities",
+    "Vega": "Risk Sensitivities",
+    "Stressed VaR": "Stress Test Shocked",
+    "FRTB SA Capital": "Regulatory FRTB",
+}
+
+
+def pricing_for_report(company, report_name):
+    """The name of the one pricing engine configuration the report binds."""
+    wanted = REPORT_PRICING.get(report_name, DEFAULT_PRICING)
+    return wanted if wanted in ENTITY_CONFIGURATIONS[company] else DEFAULT_PRICING
+
+
+# The global parameter that says whether a failed calibration stops the run.
+CALIBRATION_PARAMETER = "ContinueOnCalibrationError"
 
 
 # The configuration types a risk report binds a document of, and the name of an
@@ -77,7 +225,6 @@ GLOBAL_PARAMETERS = {"ContinueOnCalibrationError": "true"}
 # generate_risk_config_data.py.
 DOCUMENT_NAMES = {
     "conventions": "{label} conventions",
-    "pricing_engines": "{label} pricing engines",
     "todays_market": "{label} today's market",
     "curve_configuration": "{label} curve configuration",
 }
@@ -160,59 +307,66 @@ def write(name, records):
 
 def pricing_engines():
     headers, products, parameters = [], [], []
-    for company, wanted in ENTITY_PRODUCTS.items():
-        header_id = new_uuid(f"pricing_engines:{company}")
-        headers.append({
-            "company_code": company,
-            "id": header_id,
-            "version": 0,
-            "party_id": NO_PARTY,
-            "name": document_name(company, "pricing_engines"),
-            "description": f"The model and engine that price each product ACME Corporation "
-                           f"{LABEL[company]} trades.",
-            "config_variant": "",
-            "configuration_id": new_uuid(f"configuration:pricing_engines:{company}"),
-        })
-        for position, product_type in enumerate(wanted):
-            model, model_parameters, engine, engine_parameters = PRODUCTS[product_type]
-            product_id = new_uuid(f"pricing_engines:{company}:{product_type}")
-            products.append({
+    for company, names in ENTITY_CONFIGURATIONS.items():
+        for name in names:
+            spec = CONFIGURATIONS[name]
+            key = f"pricing_engines:{company}:{name}"
+            header_id = new_uuid(key)
+            headers.append({
                 "company_code": company,
-                "id": product_id,
+                "id": header_id,
                 "version": 0,
                 "party_id": NO_PARTY,
-                "pricing_model_config_id": header_id,
-                "pricing_engine_type_code": product_type,
-                "model": model,
-                "engine": engine,
-                "position": position,
+                "name": name,
+                "description": spec["description"],
+                "config_variant": "",
+                "configuration_id": new_uuid(f"configuration:{key}"),
             })
-            for scope, values in (("model", model_parameters), ("engine", engine_parameters)):
-                for index, (name, value) in enumerate(values.items()):
-                    parameters.append({
-                        "company_code": company,
-                        "id": new_uuid(f"pricing_engines:{company}:{product_type}:{scope}:{name}"),
-                        "version": 0,
-                        "party_id": NO_PARTY,
-                        "pricing_model_config_id": header_id,
-                        "pricing_model_product_id": product_id,
-                        "parameter_scope": scope,
-                        "parameter_name": name,
-                        "parameter_value": value,
-                        "position": index,
-                    })
-        for index, (name, value) in enumerate(GLOBAL_PARAMETERS.items()):
+            wanted = [t for t in ENTITY_PRODUCTS[company] if t not in spec.get("skip", [])]
+            for position, product_type in enumerate(wanted):
+                model, model_parameters, engine, engine_parameters = spec.get(
+                    "replace", {}).get(product_type, PRODUCTS[product_type])
+                engine_parameters = dict(engine_parameters)
+                if "TimestepPeriod" in engine_parameters:
+                    engine_parameters["TimestepPeriod"] = spec["bond_step"]
+                engine_parameters.update(spec.get("settings", {}).get(product_type, {}))
+                product_id = new_uuid(f"{key}:{product_type}")
+                products.append({
+                    "company_code": company,
+                    "id": product_id,
+                    "version": 0,
+                    "party_id": NO_PARTY,
+                    "pricing_model_config_id": header_id,
+                    "pricing_engine_type_code": product_type,
+                    "model": model,
+                    "engine": engine,
+                    "position": position,
+                })
+                for scope, values in (("model", model_parameters), ("engine", engine_parameters)):
+                    for index, (setting, value) in enumerate(values.items()):
+                        parameters.append({
+                            "company_code": company,
+                            "id": new_uuid(f"{key}:{product_type}:{scope}:{setting}"),
+                            "version": 0,
+                            "party_id": NO_PARTY,
+                            "pricing_model_config_id": header_id,
+                            "pricing_model_product_id": product_id,
+                            "parameter_scope": scope,
+                            "parameter_name": setting,
+                            "parameter_value": value,
+                            "position": index,
+                        })
             parameters.append({
                 "company_code": company,
-                "id": new_uuid(f"pricing_engines:{company}:global:{name}"),
+                "id": new_uuid(f"{key}:global:{CALIBRATION_PARAMETER}"),
                 "version": 0,
                 "party_id": NO_PARTY,
                 "pricing_model_config_id": header_id,
                 "pricing_model_product_id": None,
                 "parameter_scope": "global",
-                "parameter_name": name,
-                "parameter_value": value,
-                "position": index,
+                "parameter_name": CALIBRATION_PARAMETER,
+                "parameter_value": "false" if spec["calibration_stops"] else "true",
+                "position": 0,
             })
     return headers, products, parameters
 

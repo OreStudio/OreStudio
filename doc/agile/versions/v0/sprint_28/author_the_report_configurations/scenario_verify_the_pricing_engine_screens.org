@@ -17,7 +17,7 @@ This page documents a test scenario verifying [[id:986E1372-9BA6-4CA5-BFC1-FBDA1
 
 * Before you start
 
-The environment is ready. The database is recreated from this commit, the 24 services run and the Acme Corporation tenant is provisioned with no failed step. The tenant holds four pricing engine configurations: Group (3 products), US (5), UK (8) and HK (5).
+The environment is ready. The database is recreated from this commit, the 24 services run and the Acme Corporation tenant is provisioned with no failed step. The tenant holds 23 pricing engine configurations. London holds nine: EOD Official, Intraday Indicative, Pre-Trade Quick Price, Risk Sensitivities, XVA Overnight, Regulatory FRTB, Regulatory SIMM, Stress Test Shocked and Quant Sandbox. New York and Hong Kong hold six each, and the Group holds EOD Official and XVA Overnight. The screens show the configurations of the party you work in.
 
 Open the web as the tenant administrator with =./compass.sh open-as tenant_admin=. Browser dev tools are useful for the last step.
 
@@ -29,7 +29,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 | Parent story  | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]]                |
 | Target screen | Reporting, Pricing engines (=/reporting/pricing-engines=)         |
 | Clients       |                                                                   |
-| State         | PENDING                                                           |
+| State         | PENDING |
 
 * Steps
 
@@ -41,26 +41,41 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Open the pricing engines list
 
 - Go to Reporting and choose Pricing engines.
 - Pass: the list shows the columns Configuration, Variant, Products, Settings, Changed by and Changed.
-- Pass: the rows include Group, US, UK and HK pricing engines, with 3, 5, 8 and 5 products.
-- Type =US= in the search box. Pass: only US pricing engines stays. Clear the box.
+- Pass: for London, the rows are the nine configurations above. EOD Official has 8 products, Pre-Trade Quick Price 7 and Regulatory SIMM 7.
+- Type =XVA= in the search box. Pass: only XVA Overnight stays. Clear the box.
 - Click the Configuration header. Pass: the order reverses.
 - Note: if the list is empty, the party you work in may hold none. Say which party is active in Notes.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read a configuration record
 
-- Click UK pricing engines.
+- Click XVA Overnight.
 - Pass: the Details card shows name, description, variant, who changed it and when.
-- Pass: the page lists 8 products. Each shows its model and engine and its settings.
+- Pass: the page lists 8 products. Swap and CrossCurrencySwap show the CrossAssetModel and AMC pair with their Training and Pricing settings. The other products show the usual pair.
 - Pass: a notice says the reports that use the configuration cannot be listed yet.
 - Pass: the Change, Add product, Remove and Delete configuration actions show.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Change the details with a reason
 
@@ -73,15 +88,26 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | when I try to save i get: "Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID"; ; ; [[file:scenario_verify_the_pricing_engine_screens_step4_20261021_134226.png]] |
+
+
 ** Change how a product is priced
 
-- On UK pricing engines, click Change on a product row.
+- On EOD Official, click Change on a product row.
 - Choose another model or engine. Pass: the dialog lists the settings the new pair does not take (tick to drop) and the settings it usually needs (tick to add).
 - Choose a pair that is not in the vocabulary, if the lists allow it. Pass: a notice says the pair is not known to price the product, and you may keep it.
 - Choose a known pair, tick one setting to drop and one to add, and edit one value. Pass: What changes lists each change.
 - Give a reason and press Save. Pass: the record page shows the new pair and settings.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 
 ** Add a product and remove a product
 
@@ -92,9 +118,14 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 ** Check that a stale save is refused
 
-- Open UK pricing engines in two browser tabs, A and B.
+- Open EOD Official in two browser tabs, A and B.
 - In tab A, change the description and save.
 - In tab B, without reloading, open Change, edit the description and press Save.
 - Pass: tab B shows a notice that somebody changed the configuration, and a Read again button. The save does not overwrite tab A.
@@ -102,19 +133,29 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 ** Author a new configuration from a copy
 
 - On the list page, choose the workflow card Define a pricing engine configuration.
-- Step 1, Name it: choose Start from a copy of Group pricing engines. Pass: the name is =Copy of Group pricing engines=. Change it to =Test pricing engines=. Type the name of an existing configuration. Pass: a notice says the name is in use. Restore =Test pricing engines=.
-- Step 2, Choose the products: Pass: the products of Group are ticked. Tick one more.
+- Step 1, Name it: choose Start from a copy of EOD Official. Pass: the name is =Copy of EOD Official=. Change it to =EOD Official Test=. Type the name of an existing configuration. Pass: a notice says the name is in use. Restore =EOD Official Test=.
+- Step 2, Choose the products: Pass: the products of EOD Official are ticked. Tick one more.
 - Step 3, Choose model and engine: Pass: each product has a pair. Use Use the usual pair on one product.
 - Step 4, Set the parameters: Pass: the usual settings of each pair show. Add one setting with Add setting.
 - Step 5, Check it: Pass: findings list any warning. An error stops you from going on.
 - Step 6, Review and save: Pass: the summary names the configuration and counts its products and settings. Press Save configuration.
-- Pass: the record page of =Test pricing engines= opens with the products and settings you set.
-- Pass: =Test pricing engines= shows on the list.
+- Pass: the record page of =EOD Official Test= opens with the products and settings you set.
+- Pass: =EOD Official Test= shows on the list.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 
 ** Author an empty configuration and see the checks
 
@@ -124,14 +165,24 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 ** Delete the test configuration
 
-- Open =Test pricing engines= and press Delete configuration.
+- Open =EOD Official Test= and press Delete configuration.
 - Pass: the dialog says how many products and settings it removes, and that a report that binds it can no longer run.
 - Give a reason and confirm. Pass: you return to the list and the row is gone.
 - Check the other four configurations are unchanged except for your earlier edits.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 
 ** Check a user without write permission
 
@@ -141,6 +192,11 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 - Pass: if the user may not read it, the menu does not show Pricing engines, and the address shows a not-permitted screen.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 
 * Results=.
 
@@ -231,8 +287,8 @@ a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PENDING |
+| Completed at  |  |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

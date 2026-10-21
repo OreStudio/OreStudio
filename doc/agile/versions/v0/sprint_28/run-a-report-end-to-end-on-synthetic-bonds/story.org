@@ -38,7 +38,7 @@ One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B418C38D-D16B-4256-9B13-01EEA59A2A28][Record the issues of an end to end run]] | BACKLOG | | | The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix. |
+| [[id:B418C38D-D16B-4256-9B13-01EEA59A2A28][Record the issues of an end to end run]] | DONE | | 2026-10-21 | The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix. |
 | [[id:9A64C459-EF1D-47B4-B526-73AA6753FEEB][Show a report run in the grid]] | BACKLOG | | | The grid views must show the jobs a report run sends to the grid, to every account that may watch it. |
 
 * Decisions

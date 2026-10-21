@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Keep one table of the issues met on the way, so a reader sees what stopped the r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -157,3 +157,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The NPV report of ACME Corporation HK Ltd runs from the on-demand trigger to a completed instance on the compute grid, from a clean seed. Pull request #3607 holds the fixes. The table above lists thirteen issues.
+
+- Fixed: 3 (the failure message), 4 and 5 (the run's reads and the registrars), 7 (the scope), 9 (the counterparty codes), 10 (the package ids), 11 (the import of a UUID, not proved live), and 12 for the system tenant (the grid totals).
+- Not defects: 1 and 2.
+- Open: 6 (a tenant keeps the role set it was given), 8 (a run with no trades completes with no warning), and 13 (the regulatory reports read the banking book), which has its own story.
+- The task Show a report run in the grid keeps what remains of issue 12.
+

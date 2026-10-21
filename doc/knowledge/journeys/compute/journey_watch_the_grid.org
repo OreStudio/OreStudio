@@ -252,9 +252,7 @@ a compute screen yet.
 6. *The installation's own ledger is not built.* The work counts come from the
    stored grid sample, whose totals =ores_compute_grid_stats_fn= computes for
    one tenant, so the stored summary is that tenant's slice rather than the
-   installation's own accounting. Until the ledger exists, the fleet row of
-   the system tenant counts the work of every tenant, so the system tenant's
-   load panels read the whole grid. The ledger the ownership study decides on
+   installation's own accounting. The ledger the ownership study decides on
    records the operation as an installation fact and is the missing piece
    ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
    information flow]]).

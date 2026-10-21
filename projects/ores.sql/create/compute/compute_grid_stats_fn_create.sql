@@ -24,11 +24,7 @@
 -- Returns a single-row summary of compute grid state for one tenant and one
 -- party of it. A party of NULL counts the work that has no party. The hosts
 -- belong to the installation and are counted only when p_fleet is true, so the
--- row of a tenant's party carries job counters and no host counts. The fleet
--- row is the installation's own: it counts the work of every tenant, because
--- every tenant's work runs on the same hosts, so a session of the system tenant
--- reads the load of the whole grid. The function runs as its owner for that
--- reason, and each other row stays confined to the tenant and party it names.
+-- row of a tenant's party carries job counters and no host counts.
 -- Counts only current (non-historical) rows by filtering valid_to = infinity.
 -- =============================================================================
 
@@ -55,8 +51,6 @@ returns table (
 )
 language sql
 stable
-security definer
-set search_path = public, pg_temp
 as $$
     with
       host_stats as (
@@ -97,22 +91,22 @@ as $$
             and received_at > now() - interval '24 hours'
             and outcome = 4) as outcomes_no_reply
         from ores_compute_results_tbl
-        where (p_fleet
-               or (tenant_id = p_tenant_id and party_id is not distinct from p_party_id))
+        where tenant_id = p_tenant_id
+          and party_id is not distinct from p_party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       workunit_count as (
         select count(*) as total_workunits
         from ores_compute_workunits_tbl
-        where (p_fleet
-               or (tenant_id = p_tenant_id and party_id is not distinct from p_party_id))
+        where tenant_id = p_tenant_id
+          and party_id is not distinct from p_party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       batch_stats as (
         select count(*) as total_batches
         from ores_compute_batches_tbl
-        where (p_fleet
-               or (tenant_id = p_tenant_id and party_id is not distinct from p_party_id))
+        where tenant_id = p_tenant_id
+          and party_id is not distinct from p_party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
       ),
       active_batches as (
@@ -120,12 +114,11 @@ as $$
         from ores_compute_results_tbl r
         join ores_compute_workunits_tbl wu
           on r.workunit_id = wu.id
-         and wu.tenant_id = r.tenant_id
-         and (p_fleet
-              or (wu.tenant_id = p_tenant_id and wu.party_id is not distinct from p_party_id))
+         and wu.tenant_id = p_tenant_id
+         and wu.party_id is not distinct from p_party_id
          and wu.valid_to = ores_utility_infinity_timestamp_fn()
-        where (p_fleet
-               or (r.tenant_id = p_tenant_id and r.party_id is not distinct from p_party_id))
+        where r.tenant_id = p_tenant_id
+          and r.party_id is not distinct from p_party_id
           and r.valid_to = ores_utility_infinity_timestamp_fn()
           and r.server_state = 4
       )

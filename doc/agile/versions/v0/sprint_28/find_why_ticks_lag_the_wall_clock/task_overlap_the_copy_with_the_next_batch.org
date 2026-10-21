@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 4782C6AA-E569-4333-8E24-7E22B6D4FB04
+:END:
+#+title: Task: Overlap the copy with the next batch
+#+description: The worker prepares a batch and then waits for its COPY, so the drain through NATS reaches about 98,000 rows per second against a target of more than 100,000.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The drain of a burst through NATS passes 100,000 rows per second with margin on one connection, because the COPY of one batch runs while the worker prepares the next.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A second thread owns the tick writer connection and copies a batch while the worker plans and numbers the next, and one connection is still the only one the copy uses.
+- A tick is republished after the copy of its batch, in the order of the batches, and a failed copy still republishes without a store, with the same backoff as today.
+- The burst tests give a median above 110,000 rows per second through NATS over ten runs, and the raw output is in the evidence folder.
+- A test shows that no tick is lost or stored twice when a copy fails while the next batch waits.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -30,7 +30,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
 | Now          | Steps 1 to 5 done. The store path passes 100,000 rows each second, and the drain through NATS reaches about 98,000. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 6: a separate task for the session functions of the policies. A task to overlap the copy with the next batch. |
+| Next         | Review and merge of this task. The tasks "Overlap the copy with the next batch" and "Remove the session functions from the policies" follow. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -157,7 +157,8 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
      rest, one after the other in one worker. Overlapping the =COPY= of one batch with the
      preparation of the next is the one large step left, and it needs its own task.
 6. Open a separate task for the session functions of the policies, which cost seven times on an
-   indexed read.
+   indexed read. Done: "Remove the session functions from the policies". The step 5 result also
+   has a task, "Overlap the copy with the next batch".
 
 * Measurements
 

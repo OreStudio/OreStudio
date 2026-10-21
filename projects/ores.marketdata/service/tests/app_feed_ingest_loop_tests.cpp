@@ -27,6 +27,7 @@
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -40,6 +41,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdlib>
+#include <functional>
+#include <iomanip>
+#include <iostream>
 #include <libpq-fe.h>
 #include <memory>
 #include <string>
@@ -511,4 +515,279 @@ TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinat
                       party,
                       "select count(*) from ores_marketdata_tick_coords_tbl where series_id = '" +
                           series_text + "'") == "2");
+}
+
+// The burst measurements below are hidden: they write about a million rows to the database of
+// the environment, and they delete them again. Run them by their tag:
+//   ores.marketdata.service.tests "[burst]"
+// Each prints RESULT lines. A burst of 60,000 ticks fits the 65,536 places of the queue, so no
+// tick is dropped for lack of room, and the one tick of each datum that follows a warm-up
+// finds its series, its coordinate number and its binding in the caches.
+
+namespace {
+
+constexpr std::size_t burst_datums = 200;
+
+/// A setting of the environment, or @p fallback when it is not set. A profiler run stays short
+/// with fewer ticks and one repetition.
+std::size_t burst_setting(const char* name, std::size_t fallback) {
+    const auto* v = std::getenv(name);
+    return v != nullptr ? static_cast<std::size_t>(std::stoull(v)) : fallback;
+}
+
+const std::size_t burst_ticks = burst_setting("ORES_BURST_TICKS", 60000);
+const int burst_repetitions = static_cast<int>(burst_setting("ORES_BURST_REPETITIONS", 5));
+
+using burst_clock = std::chrono::steady_clock;
+
+std::vector<std::string> burst_uris() {
+    const std::string hex = "0123456789abcdef";
+    const auto code = [&](std::size_t i) {
+        return std::string{"AAAAA"} + hex[i] + "A";
+    };
+    std::vector<std::string> uris;
+    for (std::size_t unit = 0; unit < 16 && uris.size() < burst_datums; ++unit)
+        for (std::size_t ccy = 0; ccy < 16 && uris.size() < burst_datums; ++ccy)
+            if (unit != ccy)
+                uris.push_back("oresmd://fx/" + code(unit) +
+                               "?type=quote&instrument=fx_spot&quote=rate&ccy=" + code(ccy));
+    return uris;
+}
+
+/// A connection of the marketdata service role, which the policies apply to, with the tenant
+/// and the party of the test set. It answers the one question the measurements ask.
+class burst_reader {
+public:
+    burst_reader(const std::string& tenant, const std::string& party)
+        : conn_(PQconnectdb(connection_info().c_str()), &PQfinish) {
+        REQUIRE(PQstatus(conn_.get()) == CONNECTION_OK);
+        run("set app.current_tenant_id = '" + tenant + "'");
+        run("set app.visible_party_ids = '{" + party + "}'");
+    }
+
+    /// Whether the tick of @p series at @p ts is in the table. One index probe.
+    bool has(const std::string& series, std::chrono::system_clock::time_point ts) {
+        return run("select 1 from ores_marketdata_ticks_tbl where series_id = '" + series +
+                   "' and ts = '" + ores::platform::time::datetime::to_iso8601_utc(ts) + "'") ==
+               "1";
+    }
+
+    std::size_t count_since(std::chrono::system_clock::time_point ts) {
+        return std::stoull(run("select count(*) from ores_marketdata_ticks_tbl where ts >= '" +
+                               ores::platform::time::datetime::to_iso8601_utc(ts) + "'"));
+    }
+
+private:
+    static std::string env(const char* name) {
+        const auto* v = std::getenv(name);
+        return v != nullptr ? std::string(v) : std::string();
+    }
+    static std::string connection_info() {
+        return "host=" + env("ORES_TEST_DB_HOST") + " dbname=" + env("ORES_TEST_DB_DATABASE") +
+               " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
+               " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
+    }
+    std::string run(const std::string& sql) {
+        std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn_.get(), sql.c_str()), &PQclear);
+        REQUIRE((PQresultStatus(r.get()) == PGRES_COMMAND_OK ||
+                 PQresultStatus(r.get()) == PGRES_TUPLES_OK));
+        return PQntuples(r.get()) > 0 ? std::string(PQgetvalue(r.get(), 0, 0)) : std::string();
+    }
+
+    std::unique_ptr<PGconn, decltype(&PQfinish)> conn_;
+};
+
+/// Deletes the rows a measurement wrote for its tenant, as the DDL user, who owns the tables
+/// and is not subject to the policies.
+struct burst_cleanup {
+    std::string tenant;
+    ~burst_cleanup() {
+        const auto* user = std::getenv("ORES_DB_DDL_USER");
+        const auto* password = std::getenv("ORES_DB_DDL_PASSWORD");
+        if (user == nullptr || password == nullptr) {
+            std::cout << "RESULT cleanup skipped: no DDL user, rows of tenant " << tenant
+                      << " remain" << std::endl;
+            return;
+        }
+        const std::string info = std::string("host=") + std::getenv("ORES_TEST_DB_HOST") +
+                                 " dbname=" + std::getenv("ORES_TEST_DB_DATABASE") +
+                                 " user=" + user + " password=" + password;
+        std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
+        if (PQstatus(conn.get()) != CONNECTION_OK)
+            return;
+        for (const auto* table : {"ores_marketdata_ticks_tbl",
+                                  "ores_marketdata_tick_coords_tbl",
+                                  "ores_marketdata_feed_binding_activity_tbl"}) {
+            std::unique_ptr<PGresult, decltype(&PQclear)> r(
+                PQexec(conn.get(),
+                       (std::string("delete from ") + table + " where tenant_id = '" + tenant + "'")
+                           .c_str()),
+                &PQclear);
+        }
+    }
+};
+
+/// One datum of the burst, with the series id the loop gave it.
+struct burst_set {
+    std::vector<std::string> uris;
+    std::vector<std::string> series;
+};
+
+/// Sends one tick for each datum and waits until every series exists and holds its tick, so that
+/// the caches of the loop are warm. The ticks of the burst follow later.
+burst_set warm_up(fixture& f,
+                  const std::string& source,
+                  burst_reader& reader,
+                  const std::function<void(const std::vector<market_tick>&)>& send) {
+    burst_set set;
+    set.uris = burst_uris();
+    std::vector<market_tick> warm;
+    for (const auto& uri : set.uris)
+        warm.push_back(tick_from(source, uri));
+    send(warm);
+
+    const auto deadline = burst_clock::now() + std::chrono::seconds(120);
+    for (std::size_t i = 0; i < set.uris.size(); ++i) {
+        for (;;) {
+            const auto found = f.series_for(set.uris[i]);
+            if (!found.empty() &&
+                reader.has(boost::uuids::to_string(found.front().id), warm[i].observation_time)) {
+                set.series.push_back(boost::uuids::to_string(found.front().id));
+                break;
+            }
+            REQUIRE(burst_clock::now() < deadline);
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    }
+    return set;
+}
+
+void report(const std::string& what, int rep, std::size_t rows, double seconds) {
+    std::cout << "RESULT " << what << " run " << rep << ": " << rows << " rows in " << std::fixed
+              << std::setprecision(3) << seconds << " s = " << std::setprecision(0)
+              << static_cast<double>(rows) / seconds << " rows per second" << std::endl;
+}
+
+}
+
+TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
+    burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
+
+    const auto series = boost::uuids::to_string(boost::uuids::random_generator{}());
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+    for (int rep = 1; rep <= burst_repetitions; ++rep) {
+        const auto base = std::chrono::system_clock::now();
+        std::vector<ores::marketdata::service::app::tick_row> rows(burst_ticks);
+        for (std::size_t i = 0; i < burst_ticks; ++i) {
+            rows[i].tenant_id = tenant;
+            rows[i].party_id = party;
+            rows[i].series_id = series;
+            rows[i].ts = base + std::chrono::microseconds(i);
+            rows[i].coord = 1;
+            rows[i].value = 999.0;
+        }
+        const auto start = burst_clock::now();
+        writer->write(rows);
+        const auto seconds = std::chrono::duration<double>(burst_clock::now() - start).count();
+        CHECK(reader.count_since(base) == burst_ticks);
+        report("copy of the tick writer", rep, burst_ticks, seconds);
+    }
+}
+
+TEST_CASE("burst_the_store_path_of_the_loop_without_nats", "[.][burst]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
+    const auto source = bound_prefix + run_tag();
+    f.bind(source, "SYNTHETIC");
+    f.connect();
+    burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+    const auto set = warm_up(f, source, reader, [&](const std::vector<market_tick>& ticks) {
+        loop.handle_batch(ticks);
+    });
+
+    // The loop takes at most 20,000 ticks in a batch, so the burst goes in chunks of that size.
+    constexpr std::size_t chunk = 20000;
+    for (int rep = 1; rep <= burst_repetitions; ++rep) {
+        const auto base = std::chrono::system_clock::now();
+        std::vector<market_tick> ticks;
+        ticks.reserve(burst_ticks);
+        for (std::size_t i = 0; i < burst_ticks; ++i) {
+            auto tick = tick_from(source, set.uris[i % set.uris.size()]);
+            tick.observation_time = base + std::chrono::microseconds(i);
+            ticks.push_back(std::move(tick));
+        }
+        const auto start = burst_clock::now();
+        for (std::size_t from = 0; from < burst_ticks; from += chunk)
+            loop.handle_batch(std::vector<market_tick>(
+                ticks.begin() + from, ticks.begin() + std::min(from + chunk, burst_ticks)));
+        const auto seconds = std::chrono::duration<double>(burst_clock::now() - start).count();
+        CHECK(reader.count_since(base) == burst_ticks);
+        report("store path of the loop", rep, burst_ticks, seconds);
+    }
+}
+
+TEST_CASE("burst_through_nats_and_the_worker_of_the_loop", "[.][burst]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
+    const auto source = bound_prefix + run_tag();
+    f.bind(source, "SYNTHETIC");
+    f.connect();
+    burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
+
+    // Started, the loop subscribes as the service does, and its worker thread takes the batches.
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.start();
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
+    const auto publish = [&](const market_tick& tick) {
+        f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
+    };
+    const auto set = warm_up(f, source, reader, [&](const std::vector<market_tick>& ticks) {
+        for (const auto& tick : ticks)
+            publish(tick);
+    });
+
+    for (int rep = 1; rep <= burst_repetitions; ++rep) {
+        const auto base = std::chrono::system_clock::now();
+        const auto start = burst_clock::now();
+        std::chrono::system_clock::time_point last_ts;
+        std::size_t last_datum = 0;
+        for (std::size_t i = 0; i < burst_ticks; ++i) {
+            auto tick = tick_from(source, set.uris[i % set.uris.size()]);
+            publish(tick);
+            last_ts = tick.observation_time;
+            last_datum = i % set.uris.size();
+        }
+        const auto published = std::chrono::duration<double>(burst_clock::now() - start).count();
+
+        // One worker stores the batches in order, so the last tick is the last row to appear.
+        const auto deadline = start + std::chrono::seconds(60);
+        bool done = false;
+        while (burst_clock::now() < deadline &&
+               !(done = reader.has(set.series[last_datum], last_ts)))
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        const auto seconds = std::chrono::duration<double>(burst_clock::now() - start).count();
+        std::cout << "RESULT hand-over to the nats client run " << rep << ": " << burst_ticks
+                  << " ticks in " << std::fixed << std::setprecision(3) << published << " s"
+                  << std::endl;
+        REQUIRE(done);
+        const auto stored = reader.count_since(base);
+        CHECK(stored == burst_ticks);
+        report("drain through nats and the worker", rep, stored, seconds);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }

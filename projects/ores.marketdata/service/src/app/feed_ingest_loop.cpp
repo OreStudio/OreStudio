@@ -33,6 +33,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/functional/hash.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -97,14 +98,30 @@ void feed_ingest_loop::start() {
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
 
+std::shared_ptr<const std::vector<tick_target>>
+feed_ingest_loop::bindings_snapshot::targets_for(const std::string& source,
+                                                 const named_datum& named) const {
+    std::lock_guard lock(mu_);
+    auto& by_uri = targets_[source];
+    const auto found = by_uri.find(named.uri);
+    if (found != by_uri.end())
+        return found->second;
+    auto targets = make_targets(by_source.at(source), named);
+    if (built_ < named_cache_limit) {
+        by_uri.emplace(named.uri, targets);
+        ++built_;
+    }
+    return targets;
+}
+
 void feed_ingest_loop::refresh() {
     repository::feed_binding_repository repo;
     const auto bindings = repo.read_latest_all_tenants(ctx_);
 
-    auto wanted = std::make_shared<bindings_map>();
+    auto wanted = std::make_shared<bindings_snapshot>();
     for (const auto& b : bindings) {
         if (b.enabled)
-            (*wanted)[b.source_name].push_back(b);
+            wanted->by_source[b.source_name].push_back(b);
     }
 
     std::lock_guard lock(mu_);
@@ -118,7 +135,7 @@ void feed_ingest_loop::refresh() {
     // A stats entry per bound consumer, so a binding that never ticks still
     // shows in INGEST STATUS.
     std::map<binding_key, std::shared_ptr<feed_stats>> kept;
-    for (const auto& [source_name, source_bindings] : *bindings_by_source_) {
+    for (const auto& [source_name, source_bindings] : bindings_by_source_->by_source) {
         for (const auto& b : source_bindings) {
             const binding_key key{
                 b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
@@ -128,7 +145,7 @@ void feed_ingest_loop::refresh() {
     }
     stats_ = std::move(kept);
 
-    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << bindings_by_source_->size()
+    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << bindings_by_source_->by_source.size()
                               << " bound source(s)";
 }
 
@@ -236,7 +253,7 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                                std::vector<std::optional<tick_drop>>* outcomes) {
     const auto started = std::chrono::steady_clock::now();
 
-    std::shared_ptr<const bindings_map> bindings;
+    std::shared_ptr<const bindings_snapshot> bindings;
     {
         std::lock_guard lock(mu_);
         bindings = bindings_by_source_;
@@ -246,8 +263,25 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     // Plan every tick against one snapshot of the bindings.
     std::vector<std::optional<tick_plan>> plans(ticks.size());
     for (std::size_t i = 0; i < ticks.size(); ++i) {
-        const auto found = bindings->find(ticks[i].source);
-        auto plan = plan_tick(ticks[i], found != bindings->end() ? found->second : no_bindings);
+        const auto found = bindings->by_source.find(ticks[i].source);
+        const auto& source_bindings =
+            found != bindings->by_source.end() ? found->second : no_bindings;
+        // The URI is read only for a bound source, as plan_tick does, and once for each
+        // distinct URI.
+        std::shared_ptr<const named_datum> named;
+        std::shared_ptr<const std::vector<tick_target>> targets;
+        if (!source_bindings.empty()) {
+            auto read = name_of(ticks[i].oresmd_uri);
+            if (!read) {
+                warn_dropped(ticks[i], read.error());
+                if (outcomes)
+                    (*outcomes)[i] = read.error();
+                continue;
+            }
+            named = std::move(*read);
+            targets = bindings->targets_for(ticks[i].source, *named);
+        }
+        auto plan = plan_tick(ticks[i], source_bindings, std::move(named), std::move(targets));
         if (!plan) {
             warn_dropped(ticks[i], plan.error());
             if (outcomes)
@@ -265,21 +299,20 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     for (std::size_t i = 0; i < ticks.size(); ++i) {
         if (!plans[i])
             continue;
-        for (const auto& target : plans[i]->targets) {
+        for (const auto& target : *plans[i]->targets) {
             const auto& b = target.binding;
-            const auto tenant = b.tenant_id.to_string();
-            auto ctx_it = tenant_ctxs.find(tenant);
+            auto ctx_it = tenant_ctxs.find(target.tenant_text);
             if (ctx_it == tenant_ctxs.end())
-                ctx_it =
-                    tenant_ctxs
-                        .emplace(tenant, ctx_.with_tenant(b.tenant_id, "ores.marketdata.service"))
-                        .first;
+                ctx_it = tenant_ctxs
+                             .emplace(target.tenant_text,
+                                      ctx_.with_tenant(b.tenant_id, "ores.marketdata.service"))
+                             .first;
             item it;
             it.tick_index = i;
             it.plan = &*plans[i];
             it.target = &target;
             try {
-                it.series_id = series_id_for(ctx_it->second, b, plans[i]->datum, uuid_gen);
+                it.series_id = series_id_for(ctx_it->second, b, *plans[i]->named, uuid_gen);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to prepare the tick for " << ticks[i].oresmd_uri << " from source '"
@@ -301,6 +334,23 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
     const auto now = std::chrono::system_clock::now();
+
+    // The counters of each consumer, found once for each target and not for each tick.
+    std::unordered_map<const tick_target*, std::shared_ptr<feed_stats>> stats_of;
+    {
+        std::lock_guard lock(mu_);
+        for (const auto& it : items) {
+            if ((!it.stored && !it.unavailable) || stats_of.contains(it.target))
+                continue;
+            const auto& b = it.target->binding;
+            auto& st =
+                stats_[binding_key{b.source_name, it.target->tenant_text, it.target->party_text}];
+            if (!st)
+                st = std::make_shared<feed_stats>();
+            stats_of.emplace(it.target, st);
+        }
+    }
+
     std::vector<std::vector<std::byte>> payloads(ticks.size());
     for (const auto& it : items) {
         if (!it.stored && !it.unavailable)
@@ -308,21 +358,13 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
         const auto& tick = ticks[it.tick_index];
         const auto& b = it.target->binding;
 
-        const binding_key key{
-            b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
-        std::uint64_t prev_count = 0;
-        {
-            std::lock_guard lock(mu_);
-            auto& st = stats_[key];
-            if (!st)
-                st = std::make_shared<feed_stats>();
-            prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
-            st->last_tick_rep.store(now.time_since_epoch().count(), std::memory_order_relaxed);
-            st->last_lag_ms.store(
-                std::chrono::duration_cast<std::chrono::milliseconds>(now - tick.observation_time)
-                    .count(),
-                std::memory_order_relaxed);
-        }
+        auto& st = stats_of.at(it.target);
+        const auto prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
+        st->last_tick_rep.store(now.time_since_epoch().count(), std::memory_order_relaxed);
+        st->last_lag_ms.store(
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - tick.observation_time)
+                .count(),
+            std::memory_order_relaxed);
 
         if (prev_count == 0)
             BOOST_LOG_SEV(lg(), info)
@@ -338,10 +380,10 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
 
         // Currency driver pairs are FX-shaped, so only an FX spot rate is a
         // candidate driver update. The bridge offers it tenant-wide.
-        if (crm_bridge_ && it.plan->datum.type() == datum::instrument_type::fx_spot)
-            crm_bridge_->update(b.tenant_id.to_string(),
-                                *it.plan->datum.get<datum::field::unit_ccy>(),
-                                *it.plan->datum.get<datum::field::ccy>(),
+        if (crm_bridge_ && it.plan->named->datum.type() == datum::instrument_type::fx_spot)
+            crm_bridge_->update(it.target->tenant_text,
+                                *it.plan->named->datum.get<datum::field::unit_ccy>(),
+                                *it.plan->named->datum.get<datum::field::ccy>(),
                                 it.plan->value,
                                 tick.observation_time);
 
@@ -362,6 +404,27 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                              std::chrono::steady_clock::now() - started)
                              .count(),
                          std::memory_order_relaxed);
+}
+
+namespace {
+
+/// The key of a row of the tick table: two ticks of one datum and time are one row.
+struct row_key {
+    boost::uuids::uuid series;
+    std::int16_t coord;
+    std::int64_t ts;
+    bool operator==(const row_key&) const = default;
+};
+
+struct row_key_hash {
+    std::size_t operator()(const row_key& k) const {
+        std::size_t h = boost::hash<boost::uuids::uuid>{}(k.series);
+        boost::hash_combine(h, k.coord);
+        boost::hash_combine(h, k.ts);
+        return h;
+    }
+};
+
 }
 
 void feed_ingest_loop::store_items(
@@ -387,22 +450,32 @@ void feed_ingest_loop::store_items(
     // few statements for each tenant, so a start with many new datums does not open a
     // connection for each. A number that cannot be assigned means the database does not
     // answer, so the whole batch is left unstored.
-    std::vector<std::string> keys(items.size());
+    std::vector<std::int16_t> coord_of(items.size(), 0);
+    std::vector<bool> numbered(items.size(), false);
     std::map<std::string, std::vector<repository::tick_datum>> unknown;
-    std::map<std::string, std::vector<std::string>> unknown_keys;
+    const auto cached_number = [&](const boost::uuids::uuid& series,
+                                   const std::string& uri) -> std::optional<std::int16_t> {
+        const auto found = coords_.find(uri);
+        if (found == coords_.end())
+            return std::nullopt;
+        for (const auto& [id, number] : found->second)
+            if (id == series)
+                return number;
+        return std::nullopt;
+    };
     {
         std::lock_guard lock(mu_);
-        std::set<std::string> queued;
+        std::set<std::pair<boost::uuids::uuid, std::string>> queued;
         for (std::size_t i = 0; i < items.size(); ++i) {
             const auto& it = items[i];
-            const auto& b = it.target->binding;
             const auto& uri = ticks[it.tick_index].oresmd_uri;
-            keys[i] = boost::uuids::to_string(it.series_id) + '|' + uri;
-            if (coords_.contains(keys[i]) || !queued.insert(keys[i]).second)
-                continue;
-            const auto tenant = b.tenant_id.to_string();
-            unknown[tenant].push_back({b.party_id, it.series_id, uri});
-            unknown_keys[tenant].push_back(keys[i]);
+            if (const auto number = cached_number(it.series_id, uri)) {
+                coord_of[i] = *number;
+                numbered[i] = true;
+            } else if (queued.insert({it.series_id, uri}).second) {
+                unknown[it.target->tenant_text].push_back(
+                    {it.target->binding.party_id, it.series_id, uri});
+            }
         }
     }
     std::string failure;
@@ -412,7 +485,7 @@ void feed_ingest_loop::store_items(
                 tenant_ctxs.at(tenant), wanted);
             std::lock_guard lock(mu_);
             for (std::size_t j = 0; j < numbers.size(); ++j)
-                coords_[unknown_keys[tenant][j]] = numbers[j];
+                coords_[wanted[j].oresmd_uri].emplace_back(wanted[j].series_id, numbers[j]);
         } catch (const std::exception& e) {
             failure = e.what();
             break;
@@ -420,36 +493,41 @@ void feed_ingest_loop::store_items(
     }
 
     // A tick of the same datum and time as an earlier one in the batch replaces it, so a
-    // reader finds one row for each.
+    // reader finds one row for each. The rows view the text of the targets, and of the series
+    // ids written here once for each series.
     std::vector<tick_row> rows;
+    std::unordered_map<boost::uuids::uuid, std::string, boost::hash<boost::uuids::uuid>>
+        series_text;
     if (failure.empty()) {
-        std::vector<std::int16_t> coord_of(items.size(), 0);
         {
             std::lock_guard lock(mu_);
             for (std::size_t i = 0; i < items.size(); ++i)
-                coord_of[i] = coords_.at(keys[i]);
+                if (!numbered[i])
+                    coord_of[i] =
+                        *cached_number(items[i].series_id, ticks[items[i].tick_index].oresmd_uri);
         }
         rows.reserve(items.size());
-        std::unordered_map<std::string, std::size_t> row_at;
+        std::unordered_map<row_key, std::size_t, row_key_hash> row_at;
+        row_at.reserve(items.size());
         for (std::size_t i = 0; i < items.size(); ++i) {
             const auto& it = items[i];
-            const auto& b = it.target->binding;
             const auto& tick = ticks[it.tick_index];
+            auto& text = series_text[it.series_id];
+            if (text.empty())
+                text = boost::uuids::to_string(it.series_id);
             tick_row row;
-            row.tenant_id = b.tenant_id.to_string();
-            row.party_id = boost::uuids::to_string(b.party_id);
-            row.series_id = boost::uuids::to_string(it.series_id);
+            row.tenant_id = it.target->tenant_text;
+            row.party_id = it.target->party_text;
+            row.series_id = text;
             row.ts = tick.observation_time;
             row.coord = coord_of[i];
             row.value = it.plan->value;
-            const auto at =
-                row_at.try_emplace(row.series_id + '|' + std::to_string(row.coord) + '|' +
-                                       std::to_string(row.ts.time_since_epoch().count()),
-                                   rows.size());
+            const auto at = row_at.try_emplace(
+                row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()}, rows.size());
             if (at.second)
-                rows.push_back(std::move(row));
+                rows.push_back(row);
             else
-                rows[at.first->second] = std::move(row);
+                rows[at.first->second] = row;
         }
     }
 
@@ -482,21 +560,21 @@ void feed_ingest_loop::record_activity(
     const std::vector<messaging::market_tick>& ticks,
     const std::vector<item>& items,
     const std::map<std::string, ores::database::context>& tenant_ctxs) {
+    // The newest stored tick of each target of the batch.
     struct newest {
-        repository::feed_binding_activity_entry entry;
-        std::string tenant_id;
+        const item* it;
+        std::chrono::system_clock::time_point at;
     };
-    std::map<binding_key, newest> latest;
+    std::unordered_map<const tick_target*, newest> latest;
     for (const auto& it : items) {
         if (!it.stored)
             continue;
-        const auto& b = it.target->binding;
         const auto at = ticks[it.tick_index].observation_time;
-        const binding_key key{
-            b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
-        const auto found = latest.find(key);
-        if (found == latest.end() || found->second.entry.last_tick_at < at)
-            latest[key] = newest{{b.party_id, b.source_name, it.series_id, at}, key.tenant_id};
+        const auto found = latest.find(it.target);
+        if (found == latest.end())
+            latest.emplace(it.target, newest{&it, at});
+        else if (found->second.at < at)
+            found->second = newest{&it, at};
     }
 
     // The bindings whose row is due, in one statement for each tenant.
@@ -504,12 +582,14 @@ void feed_ingest_loop::record_activity(
     {
         const auto now = std::chrono::steady_clock::now();
         std::lock_guard lock(mu_);
-        for (const auto& [key, n] : latest) {
-            auto& last = activity_recorded_[key];
+        for (const auto& [target, n] : latest) {
+            const auto& b = target->binding;
+            auto& last = activity_recorded_[binding_key{
+                b.source_name, target->tenant_text, target->party_text}];
             if (now - last < activity_interval)
                 continue;
             last = now;
-            due[n.tenant_id].push_back(n.entry);
+            due[target->tenant_text].push_back({b.party_id, b.source_name, n.it->series_id, n.at});
         }
     }
     for (const auto& [tenant, entries] : due) {
@@ -556,24 +636,49 @@ domain::market_series make_feed_series(const domain::feed_binding& binding,
     return series;
 }
 
-boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context& tenant_ctx,
-                                                   const domain::feed_binding& binding,
-                                                   const datum::market_datum& tick_datum,
-                                                   boost::uuids::random_generator& uuid_gen) {
-    const auto party = boost::uuids::to_string(binding.party_id);
-    const auto series_uri = datum::oresmd_uri_codec::write(datum::series_of(tick_datum)).value();
-    const auto cache_key = binding.tenant_id.to_string() + '|' + party + '|' + series_uri;
+std::expected<std::shared_ptr<const named_datum>, tick_drop>
+feed_ingest_loop::name_of(const std::string& uri) {
     {
         std::lock_guard lock(mu_);
-        const auto cached = series_ids_.find(cache_key);
-        if (cached != series_ids_.end())
-            return cached->second;
+        const auto found = named_.find(uri);
+        if (found != named_.end())
+            return found->second;
     }
+    auto read = name_datum(uri);
+    if (!read)
+        return read;
+    std::lock_guard lock(mu_);
+    if (named_.size() < named_cache_limit)
+        named_.emplace(uri, *read);
+    return read;
+}
+
+boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context& tenant_ctx,
+                                                   const domain::feed_binding& binding,
+                                                   const named_datum& named,
+                                                   boost::uuids::random_generator& uuid_gen) {
+    const auto& series_uri = named.series_uri;
+    const auto find_cached = [&]() -> std::optional<boost::uuids::uuid> {
+        const auto found = series_ids_.find(series_uri);
+        if (found == series_ids_.end())
+            return std::nullopt;
+        for (const auto& entry : found->second)
+            if (entry.tenant_id == binding.tenant_id.to_uuid() &&
+                entry.party_id == binding.party_id)
+                return entry.id;
+        return std::nullopt;
+    };
+    {
+        std::lock_guard lock(mu_);
+        if (const auto cached = find_cached())
+            return *cached;
+    }
+    const auto party = boost::uuids::to_string(binding.party_id);
 
     repository::market_series_repository series_repo;
     auto existing = series_repo.read_latest_by_uri(tenant_ctx, series_uri, party);
     if (existing.empty()) {
-        const auto ck = core::classification_key_of(tick_datum);
+        const auto ck = core::classification_key_of(named.datum);
         const auto cl =
             classifier_for(tenant_ctx)->classify(ck.series_type, ck.metric, ck.qualifier);
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
@@ -601,7 +706,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
 
     const auto id = existing.front().id;
     std::lock_guard lock(mu_);
-    series_ids_[cache_key] = id;
+    series_ids_[series_uri].push_back({binding.tenant_id.to_uuid(), binding.party_id, id});
     return id;
 }
 

@@ -41,6 +41,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <expected>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -49,6 +50,8 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace ores::marketdata::service::app {
@@ -176,8 +179,13 @@ private:
     /// each series and then cached until refresh().
     boost::uuids::uuid series_id_for(const ores::database::context& tenant_ctx,
                                      const domain::feed_binding& binding,
-                                     const datum::market_datum& tick_datum,
+                                     const named_datum& named,
                                      boost::uuids::random_generator& uuid_gen);
+
+    /// What the URI of a tick names, read once for each distinct URI. A URI that names no
+    /// datum is not kept, and a feed that sends endless distinct URIs cannot grow the cache
+    /// past named_cache_limit.
+    std::expected<std::shared_ptr<const named_datum>, tick_drop> name_of(const std::string& uri);
 
     void warn_dropped(const messaging::market_tick& tick, tick_drop reason);
 
@@ -217,10 +225,38 @@ private:
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
     using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
+
+    /// The enabled bindings by source, and the targets built from them for each source and
+    /// datum. The targets are a function of the bindings and the datum, so they live and die
+    /// with the snapshot, and a refresh() leaves none that is stale.
+    struct bindings_snapshot {
+        bindings_map by_source;
+
+        /// The targets of a tick of @p named from @p source, which must be a bound source.
+        [[nodiscard]] std::shared_ptr<const std::vector<tick_target>>
+        targets_for(const std::string& source, const named_datum& named) const;
+
+    private:
+        mutable std::mutex mu_;
+        mutable std::size_t built_ = 0;
+        mutable std::unordered_map<
+            std::string,
+            std::unordered_map<std::string, std::shared_ptr<const std::vector<tick_target>>>>
+            targets_;
+    };
+
     /// Enabled bindings by source, rebuilt by refresh(). A batch reads one snapshot.
-    std::shared_ptr<const bindings_map> bindings_by_source_ = std::make_shared<bindings_map>();
-    /// Series ids by tenant, party and series URI, cleared by refresh().
-    std::map<std::string, boost::uuids::uuid> series_ids_;
+    std::shared_ptr<const bindings_snapshot> bindings_by_source_ =
+        std::make_shared<bindings_snapshot>();
+
+    /// One series of a tenant and a party.
+    struct series_entry {
+        boost::uuids::uuid tenant_id;
+        boost::uuids::uuid party_id;
+        boost::uuids::uuid id;
+    };
+    /// Series ids by series URI, then by tenant and party, cleared by refresh().
+    std::unordered_map<std::string, std::vector<series_entry>> series_ids_;
     std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
     /// When the activity of each binding was last recorded.
     std::map<binding_key, std::chrono::steady_clock::time_point> activity_recorded_;
@@ -231,11 +267,16 @@ private:
     std::set<std::string> unbound_warned_;
     std::set<std::string> unnameable_warned_;
     std::set<std::string> bad_value_warned_;
-    /// Coordinate numbers by series id and datum URI. A number never changes while its
-    /// series exists, so refresh() keeps them.
-    std::map<std::string, std::int16_t> coords_;
+    /// The datums that the URIs of ticks name. A URI names the same datum for as long as the
+    /// loop runs, so refresh() keeps them.
+    std::unordered_map<std::string, std::shared_ptr<const named_datum>> named_;
+    /// Coordinate numbers by datum URI, then by series. A number never changes while its series
+    /// exists, so refresh() keeps them.
+    std::unordered_map<std::string, std::vector<std::pair<boost::uuids::uuid, std::int16_t>>>
+        coords_;
 
     static constexpr std::size_t queue_capacity = 65536;
+    static constexpr std::size_t named_cache_limit = 200000;
     /// The most ticks one batch holds. A batch takes about target_batch_ms: the worker sizes
     /// the next batch from the speed of the last one, between min_batch_ticks and this limit.
     static constexpr std::size_t batch_limit = 20000;

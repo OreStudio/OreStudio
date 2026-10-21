@@ -24,6 +24,7 @@
 #include <chrono>
 #include <span>
 #include <string>
+#include <string_view>
 
 struct pg_conn;
 
@@ -32,11 +33,14 @@ namespace ores::marketdata::service::app {
 /**
  * @brief One row of the tick table: a value of a series at a time, with the owner of the
  * series.
+ *
+ * The ids are views, because a batch repeats the same few of them for every row. The text they
+ * view must outlive the row.
  */
 struct tick_row final {
-    std::string tenant_id;
-    std::string party_id;
-    std::string series_id;
+    std::string_view tenant_id;
+    std::string_view party_id;
+    std::string_view series_id;
     std::chrono::system_clock::time_point ts;
     short coord = 0;
     double value = 0;

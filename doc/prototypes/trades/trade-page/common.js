@@ -103,11 +103,7 @@ const plain = x => x && x.nodeType ? (x.dataset.text || x.textContent) : x;
 /* ---------- reference data ---------- */
 const TENANT = 'Acme Corporation';
 const PARTY = 'Acme London';
-/* The closed sets of the book table, as [code, description]. A book in a sandbox is a virtual book: it has a sandbox_id, no ledger account and is not sweepable. */
-const BOOK_PURPOSES = [['Trading', 'Positions the desk takes risk in'], ['Reserve', 'Reserves held against risk'], ['Funding', 'Funding positions'], ['Wash', 'Clearing book that nets to nothing'], ['WriteOff', 'Positions written off'], ['Test', 'Test positions'], ['Sales', 'Sales positions'], ['SweepTarget', 'Receives swept balances'], ['RemittanceTarget', 'Receives remitted balances']];
-const BOOK_STATUSES = [['Active', 'The book takes trades'], ['Frozen', 'The book takes no trade until it is thawed'], ['Closed', 'The book is closed for good']];
-const REGULATORY_BOOK_TYPES = [['Trading', 'Trading book'], ['Banking', 'Banking book']];
-const LEDGER_FEEDS = [['None', 'No ledger feed'], ['Automatic', 'Posted to the ledger by the system'], ['Manual', 'Posted to the ledger by hand']];
+/* The code sets of the book table are in the seed files refdata_book_purpose_types, book_statuses, regulatory_book_types and ledger_feed_types. A book in a sandbox is a virtual book: it has a sandbox_id, no ledger account and is not sweepable. */
 const BOOK_ROWS = [
     { code: 'EMEA-RATES', name: 'EMEA Rates', description: 'Interest rate and inflation risk of the London desk', parent: 'Rates and credit', unit: 'EMEA Rates desk', ccy: 'EUR', gl: '1210-RATES', cost: 'CC-4100', status: 'Active', reg: 'Trading', purpose: 'Trading', feed: 'Automatic', sweepable: false, centre: 'GBLO' },
     { code: 'EMEA-FX', name: 'EMEA FX', description: 'Spot, forward and option flow', parent: 'FX flow', unit: 'EMEA FX desk', ccy: 'EUR', gl: '1210-FX', cost: 'CC-4200', status: 'Active', reg: 'Trading', purpose: 'Trading', feed: 'Automatic', sweepable: true, centre: 'GBLO' },

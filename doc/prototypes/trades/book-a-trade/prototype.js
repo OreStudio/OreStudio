@@ -19,7 +19,6 @@ const main = shell({
 });
 
 /* ---------- the form ---------- */
-const bookable = TRADE_TYPES.filter(t => t.instrument);
 /* The pricing screen hands over a type and its terms in the address. */
 const START_TYPE = TRADE_TYPES.some(t => t.code === P.get('type') && t.instrument) ? P.get('type') : '';
 const START_TERMS = Object.fromEntries((P.get('terms') || '').split(',').filter(Boolean).map(x => [x.slice(0, x.indexOf(':')), x.slice(x.indexOf(':') + 1)]));

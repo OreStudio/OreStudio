@@ -2,12 +2,12 @@
 :ID: 189E3D42-2702-40B4-A08D-47E37B920ED6
 :END:
 #+title: Story: Trade Blotter
-#+description: Build the Trade Blotter: the primary front-office screen for viewing, booking, amending, and routing trades through their lifecycle. Depends on the workspace story -- production trade import needs a temporary holding location (Pending Book) for trades before they are promoted into the Live workspace. Requires additional design work; first task is to recover and re-validate the prior analysis before scoping implementation.
+#+description: Build the Trade Blotter: the primary front-office screen for viewing, booking, amending, and routing trades through their lifecycle. The design is done: the sandbox, the draft state and the operational authorisation queue replace the Pending Book, and the workspace dependency is gone.
 #+type: story
 #+level: s2
-#+filetags: :trading:blotter:workspace:sprint_28:v0:
+#+filetags: :trading:blotter:sprint_28:v0:
 #+created: 2026-08-04
-#+updated: 2026-10-19
+#+updated: 2026-10-21
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -29,7 +29,45 @@ and that a production import needs a holding location, the *Pending
 Book*. The design task found that the sandbox model replaced both. The
 workspace story is abandoned and the Pending Book is retired. A real
 deal books into a real book at once and waits in the operational
-authorisation queue (see =* Decisions
+authorisation queue (see =* Decisions=).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Design written. Implementation tasks are scoped. |
+| Waiting on    | Nothing. |
+| Next          | Seed the operational authorisation kind, then read the trade list rows. |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- The design is written and checked against the code. It is in
+  [[id:04CE05B4-CA42-4C40-A119-61C36C69A953][Investigation: the blotter and import design]].
+- The implementation tasks below are scoped and ordered.
+- The trade list and the trade page ship in the web client.
+- A real import books into a real book and raises an authorisation
+  request for each new live trade.
+- Operations can work the authorisation queue.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9B6C15D0-C393-43FC-AA5C-D33BB0BF0974][Design: recover and re-validate the prior blotter/import analysis]] | DONE | 2026-10-21 | 2026-10-21 | Check the May import plan against the code and the sandbox model, record the design, and scope the implementation tasks. |
+| [[id:D474C495-9628-4E8C-B8F6-5432ABD1F504][Check the trade prototypes against the entity screen specification]] | DONE | 2026-10-19 | 2026-10-20 | Check each trade prototype against the entity screen specification and fix the differences, starting with the trade page, then book a trade, the structure page, the ORE portfolio and trade entry. |
+| [[id:21E7C1F3-8657-4869-8C7C-EDA18F343DC5][Bring the trade page prototype to the entity screen specification]] | DONE | 2026-10-19 | 2026-10-20 | Fix the differences the review of the trade page prototype recorded, and carry the shared fixes to the four prototypes that share common.js. |
+| [[id:EBB3A7E7-21C5-444B-9139-3383B357C172][Seed the operational authorisation kind]] | BACKLOG | | | Add the trading.operational_authorisation approval kind and raise a request when an actual trade goes live. |
+| [[id:1B5F994B-274F-48BB-A41B-6B52917CC6B2][Read the trade list rows]] | BACKLOG | | | Build one service query that returns trades and structures as rows of one level, paged, sorted and filtered. |
+| [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] | BACKLOG | | | Build the trade list and the trade page in the web client from the two prototypes. |
+| [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | BACKLOG | | | Build the booking screen from its prototype, with the structure card for a leg. |
+| [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] | BACKLOG | | | Build the structure page from its prototype: members, leg checks, a Price tab and history. |
+| [[id:0FDD4D67-C1EF-4D8A-9A1D-8F652362893A][Import real deals through the authorisation queue]] | BACKLOG | | | Make the ORE import raise authorisation requests, report the rows it cannot book, and prove a second run is safe. |
+| [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] | BACKLOG | | | Build the Operations screen that works the operational authorisation queue. |
+
+* Decisions
 
 The design is in [[id:04CE05B4-CA42-4C40-A119-61C36C69A953][Investigation: the blotter and import design]]. These
 decisions come from it.

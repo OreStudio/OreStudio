@@ -105,7 +105,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The commit removed the Status, Acceptance, Tasks and Decisions sections of the story. A bad edit broke the Goal paragraph. | story.org | Accept | Restored all sections with the new task rows. |
+| 2 | The workspace plan gave the supersede date as 2026-10-05. | doc/plans/2026-05-17-workspace-design.org | Accept | Changed to 2026-10-21. |
 
 * Result
 

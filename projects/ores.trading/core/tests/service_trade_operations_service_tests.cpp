@@ -27,8 +27,12 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/generators/bond_issue_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_amount_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
@@ -43,6 +47,7 @@ namespace {
 const std::string tags("[service]");
 
 using ores::trading::messaging::book_trade_request;
+using ores::trading::messaging::put_bond_issue_composite_request;
 using ores::trading::service::trade_operations_service;
 using ores::utility::domain::outcome;
 
@@ -85,6 +90,25 @@ struct fixture final {
         book.change_reason_code = "system.test";
         repo::book_repository().write(ctx, book);
         book_id = book.id;
+    }
+
+    put_bond_issue_composite_request issue_request() {
+        namespace gen_tr = ores::trading::generators;
+        put_bond_issue_composite_request r;
+        r.issue = gen_tr::generate_synthetic_bond_issue(gen);
+        r.issue.change_reason_code = "system.test";
+        auto leg = gen_tr::generate_synthetic_bond_issue_leg(gen);
+        leg.issue_id = r.issue.issue_id;
+        leg.leg_number = 1;
+        leg.change_reason_code = "system.test";
+        r.legs.push_back(leg);
+        auto amount = gen_tr::generate_synthetic_bond_issue_leg_amount(gen);
+        amount.issue_id = r.issue.issue_id;
+        amount.leg_number = 1;
+        amount.sequence_number = 1;
+        amount.change_reason_code = "system.test";
+        r.amounts.push_back(amount);
+        return r;
     }
 
     book_trade_request request() {
@@ -149,5 +173,58 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
 
     CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
+    fixture f;
+    const auto req = f.issue_request();
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    CHECK(ores::trading::repository::bond_issue_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
+              .size() == 1);
+}
+
+TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
+    fixture f;
+    const auto req = f.issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "already_exists");
+}
+
+TEST_CASE("a_second_write_with_other_terms_is_content_differs", tags) {
+    fixture f;
+    auto req = f.issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+    req.issue.issuer = req.issue.issuer + "-other";
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
+    const auto stored = ores::trading::repository::bond_issue_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.issue.issue_id));
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front().issuer != req.issue.issuer);
+}
+
+TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
+    fixture f;
+    auto req = f.issue_request();
+    req.amounts.front().sequence_number = 0;
+
+    CHECK_THROWS(trade_operations_service(f.ctx).put_bond_issue_composite(req));
+
+    CHECK(ores::trading::repository::bond_issue_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
               .empty());
 }

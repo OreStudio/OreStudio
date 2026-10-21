@@ -355,6 +355,7 @@ def cmd_setup(project_root, env, args):
         "-v", f"compute_wrapper_user={env.get('ORES_DB_COMPUTE_WRAPPER_USER', '')}",
         "-v", f"test_ddl_user={env.get('ORES_TEST_DB_DDL_USER', '')}",
         "-v", f"test_dml_user={env.get('ORES_TEST_DB_USER', '')}",
+        "-v", f"marketdata_writer_user={env.get('ORES_MARKETDATA_WRITER_DB_USER', '')}",
     ] + _svc_psql_args(env, names, with_passwords=False) + [
         "-f", "setup_schema.sql",
     ]

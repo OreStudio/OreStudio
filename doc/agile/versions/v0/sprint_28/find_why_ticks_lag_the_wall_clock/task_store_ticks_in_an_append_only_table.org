@@ -28,9 +28,9 @@ The observation table stops at about 8,300 rows per second for one connection be
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Step 1 done: the writer role.          |
+| Now          | Steps 1 and 2 done: the writer role and the table. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 2: the table, its index, its policies and its grant. |
+| Next         | Step 3: COPY ingest with a second pool. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -63,8 +63,13 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
    table comes with the table in step 2, and the role never gets =SELECT=. The =.env= carries
    =ORES_MARKETDATA_WRITER_DB_USER= and =ORES_MARKETDATA_WRITER_DB_PASSWORD=, from =.env=
    format version 33.
-2. Write the table, its index, its two policies and its retention class, in the model of the
-   marketdata component, with the notification trigger off.
+2. Write the table, its index, its two policies and its retention class, with the notification
+   trigger off. Done in =create/marketdata/marketdata_ticks_create.sql=, as =ores_marketdata_ticks_tbl=,
+   with one-day chunks, a seven-day retention policy where the licence allows it, and =INSERT= for
+   the writer role. The script is hand-written, because the entity template makes a trigger and a
+   =valid_to=. A scratch database ran it twice, and the checks of isolation passed: a session with no
+   settings read 0 rows, one tenant read its own 2 rows, one party read 1 row, a tenant with another
+   tenant's party read 0, and the writer was refused =SELECT=.
 3. Move the ingest to =COPY= with the owner copied from the cached series, and give the service
    a second pool for the writer role.
 4. Point the readers at the table, one at a time, with a test for each. A reader of a party or a

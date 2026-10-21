@@ -30,6 +30,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.api/messaging/sandbox_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -119,7 +120,9 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <rfl/json.hpp>
@@ -218,6 +221,43 @@ ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book&
             .is_sweepable = b.is_sweepable,
             .rates_centre_code = b.rates_centre_code,
             .sandbox_id = b.sandbox_id};
+}
+
+/**
+ * @brief The UUID a document names an entity by, when its text is one.
+ *
+ * A package the system writes names every entity by its UUID, so the import
+ * reads that form before it reads a name of the document's own.
+ */
+std::optional<boost::uuids::uuid> uuid_named(const std::string& text) {
+    if (text.size() != 36)
+        return std::nullopt;
+    try {
+        return boost::uuids::string_generator()(text);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
+
+/**
+ * @brief Whether the tenant holds an entity with this id.
+ *
+ * @return Whether it is held, or nullopt on a failed read, with out_error set.
+ */
+template <typename Request, typename Filter, typename Nats, typename Count>
+std::optional<bool>
+id_is_held(Nats& nats, const boost::uuids::uuid& id, Count count, std::string& out_error) {
+    Request req;
+    req.limit = 1;
+    req.filter = Filter{.id_one_of = std::vector<boost::uuids::uuid>{id}};
+    auto resp = nats_call(nats, req, out_error);
+    if (!resp)
+        return std::nullopt;
+    if (resp->result.outcome != ores::utility::domain::outcome::ok) {
+        out_error = resp->result.message;
+        return std::nullopt;
+    }
+    return count(*resp) != 0;
 }
 
 /**
@@ -324,8 +364,9 @@ find_sample_sandbox(Nats& nats, const boost::uuids::uuid& party_id, std::string&
 /**
  * @brief The counterparty an ORE envelope's CounterParty names.
  *
- * An ORE document names a counterparty by a string of its own, so the name is
- * resolved as an ORE identifier of a counterparty first, then as a short code.
+ * A UUID names a counterparty by its id. Any other text is a string of the
+ * document's own, which is resolved as an ORE identifier of a counterparty
+ * first, then as a short code.
  *
  * @return The counterparty, or nullopt when the name matches none; on a
  * failed read, nullopt with out_error set.
@@ -336,6 +377,18 @@ resolve_counterparty(Nats& nats, const std::string& name, std::string& out_error
     using ores::utility::domain::outcome;
 
     std::string error;
+    if (const auto id = uuid_named(name)) {
+        const auto held = id_is_held<ores::refdata::messaging::list_counterparties_request,
+                                     ores::refdata::messaging::counterparties_filter>(
+            nats, *id, [](const auto& r) { return r.counterparties.size(); }, error);
+        if (!held) {
+            out_error = error;
+            return std::nullopt;
+        }
+        if (*held)
+            return resolved_name{.entity_id = *id};
+        error.clear();
+    }
     ores::refdata::messaging::get_counterparty_identifier_request alias_req;
     alias_req.key.id_value = name;
     auto alias = nats_call(nats, alias_req, error);
@@ -373,8 +426,9 @@ resolve_counterparty(Nats& nats, const std::string& name, std::string& out_error
 /**
  * @brief The netting set an ORE envelope's NettingSetId names.
  *
- * An ORE document names a netting set by a string of its own, which a netting
- * set answers to as an ORE identifier, as a counterparty does.
+ * A UUID names a netting set by its id. Any other text is a string of the
+ * document's own, which a netting set answers to as an ORE identifier, as a
+ * counterparty does.
  *
  * @return The netting set, or nullopt when the id matches none; on a failed
  * read, nullopt with out_error set.
@@ -385,6 +439,18 @@ resolve_netting_set(Nats& nats, const std::string& netting_set_id, std::string& 
     using ores::utility::domain::outcome;
 
     std::string error;
+    if (const auto id = uuid_named(netting_set_id)) {
+        const auto held = id_is_held<ores::refdata::messaging::list_netting_sets_request,
+                                     ores::refdata::messaging::netting_sets_filter>(
+            nats, *id, [](const auto& r) { return r.netting_sets.size(); }, error);
+        if (!held) {
+            out_error = error;
+            return std::nullopt;
+        }
+        if (*held)
+            return resolved_name{.entity_id = *id};
+        error.clear();
+    }
     ores::refdata::messaging::get_netting_set_identifier_request alias_req;
     alias_req.key.id_value = netting_set_id;
     auto alias = nats_call(nats, alias_req, error);
@@ -416,6 +482,18 @@ resolve_portfolio(Nats& nats, const std::string& name, std::string& out_error) {
     using ores::utility::domain::outcome;
 
     std::string error;
+    if (const auto id = uuid_named(name)) {
+        const auto held = id_is_held<ores::refdata::messaging::list_portfolios_request,
+                                     ores::refdata::messaging::portfolios_filter>(
+            nats, *id, [](const auto& r) { return r.portfolios.size(); }, error);
+        if (!held) {
+            out_error = error;
+            return std::nullopt;
+        }
+        if (*held)
+            return *id;
+        error.clear();
+    }
     ores::refdata::messaging::get_portfolio_request req;
     req.key.name = name;
     auto resp = nats_call(nats, req, error);
@@ -1606,6 +1684,18 @@ std::string save_bond_instrument(
     std::string error;
     auto instrument = data.instrument;
     auto issue = data.issue;
+
+    // A package the system writes names a security by its issue's id. The
+    // issue the tenant holds under that id keeps its own security id.
+    if (const auto id = uuid_named(issue.security_id)) {
+        for (const auto& [code, candidates] : security_terms) {
+            if (std::ranges::any_of(candidates,
+                                    [&](const auto& c) { return c.issue.issue_id == *id; })) {
+                issue.security_id = code;
+                break;
+            }
+        }
+    }
 
     const auto found = security_terms.find(issue.security_id);
     bond_security_terms* adopted = nullptr;

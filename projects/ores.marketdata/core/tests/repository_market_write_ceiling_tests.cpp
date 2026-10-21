@@ -48,14 +48,26 @@
  *   ores.marketdata.core.tests "[.write_ceiling_copy]"
  *
  * The COPY case creates scratch tables in the schema write_ceiling with the DDL user of the
- * test database. It drops them at the end, unless WRITE_CEILING_KEEP is set, which lets a
- * script fill them with history first.
+ * test database. It drops the schema at the end, also after a failure, unless
+ * WRITE_CEILING_KEEP is set, which lets a script fill the tables with history first.
+ * Three settings change the run:
+ *
+ *   WRITE_CEILING_KEEP         keep the scratch schema.
+ *   WRITE_CEILING_ONLY_CREATE  create the scratch tables and stop.
+ *   WRITE_CEILING_SHAPES       run only the shapes whose name contains this text, for example
+ *                              append_only.
+ *
+ * The shape observation_with_trigger is a scratch copy of the observation table with a copy of
+ * its insert trigger. COPY cannot write the real table, because PostgreSQL refuses COPY FROM
+ * on a table with row-level security. The repository case writes the real table and leaves
+ * its rows there, because the delete trigger only closes rows. Run it against a test
+ * database that the gate rebuilds.
  *
  * @see The tick ingest pipeline (doc/knowledge/architecture/tick_ingest_pipeline.org)
  */
 namespace {
 
-using clock = std::chrono::steady_clock;
+using stopwatch = std::chrono::steady_clock;
 
 const std::string repository_tags("[.write_ceiling_repository]");
 const std::string copy_tags("[.write_ceiling_copy]");
@@ -77,12 +89,13 @@ struct connection_closer {
 using connection = std::unique_ptr<PGconn, connection_closer>;
 
 connection connect_as_ddl_user() {
-    const auto info = std::format("host={} dbname={} user={} password={}",
-                                  setting("ORES_TEST_DB_HOST"),
-                                  setting("ORES_TEST_DB_DATABASE"),
-                                  setting("ORES_TEST_DB_DDL_USER"),
-                                  setting("ORES_TEST_DB_DDL_PASSWORD"));
-    connection c(PQconnectdb(info.c_str()));
+    const auto host = setting("ORES_TEST_DB_HOST");
+    const auto database = setting("ORES_TEST_DB_DATABASE");
+    const auto user = setting("ORES_TEST_DB_DDL_USER");
+    const auto password = setting("ORES_TEST_DB_DDL_PASSWORD");
+    const char* keys[] = {"host", "dbname", "user", "password", nullptr};
+    const char* values[] = {host.c_str(), database.c_str(), user.c_str(), password.c_str(), nullptr};
+    connection c(PQconnectdbParams(keys, values, 0));
     if (PQstatus(c.get()) != CONNECTION_OK)
         throw std::runtime_error(std::string("Cannot connect: ") + PQerrorMessage(c.get()));
     return c;
@@ -95,6 +108,35 @@ void run(PGconn* c, const std::string& sql) {
         throw std::runtime_error(std::string("Statement failed: ") + PQerrorMessage(c) + " in " +
                                  sql);
 }
+
+std::string scalar(PGconn* c, const std::string& sql) {
+    std::unique_ptr<PGresult, void (*)(PGresult*)> r(PQexec(c, sql.c_str()), PQclear);
+    if (PQresultStatus(r.get()) != PGRES_TUPLES_OK)
+        throw std::runtime_error(std::string("Query failed: ") + PQerrorMessage(c) + " in " + sql);
+    if (PQntuples(r.get()) == 0 || PQgetisnull(r.get(), 0, 0))
+        return {};
+    return PQgetvalue(r.get(), 0, 0);
+}
+
+/// Drops the scratch schema when the case ends, whether it passes or fails.
+class scratch_schema_guard {
+public:
+    scratch_schema_guard(PGconn* c, bool keep) : conn_(c), keep_(keep) {}
+    scratch_schema_guard(const scratch_schema_guard&) = delete;
+    scratch_schema_guard& operator=(const scratch_schema_guard&) = delete;
+    ~scratch_schema_guard() {
+        if (keep_)
+            return;
+        try {
+            run(conn_, "drop schema if exists write_ceiling cascade");
+        } catch (...) {
+        }
+    }
+
+private:
+    PGconn* conn_;
+    bool keep_;
+};
 
 void copy_text(PGconn* c, const std::string& copy_sql, const std::string& text) {
     std::unique_ptr<PGresult, void (*)(PGresult*)> start(PQexec(c, copy_sql.c_str()), PQclear);
@@ -116,8 +158,8 @@ std::chrono::sys_time<std::chrono::microseconds> start_of_run() {
     return start;
 }
 
-double seconds_since(clock::time_point start) {
-    return std::chrono::duration<double>(clock::now() - start).count();
+double seconds_since(stopwatch::time_point start) {
+    return std::chrono::duration<double>(stopwatch::now() - start).count();
 }
 
 void report(const std::string& shape,
@@ -200,7 +242,7 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
 
     for (const std::size_t batch : {100, 1000, 5000, 20000}) {
         const std::size_t batches = std::max<std::size_t>(3, 40000 / batch);
-        const auto started = clock::now();
+        const auto started = stopwatch::now();
         for (std::size_t b = 0; b < batches; ++b) {
             std::vector<ores::marketdata::domain::market_observation> rows;
             rows.reserve(batch);
@@ -223,6 +265,7 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
 TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     const bool keep = std::getenv("WRITE_CEILING_KEEP") != nullptr;
     auto conn = connect_as_ddl_user();
+    scratch_schema_guard guard(conn.get(), keep);
 
     run(conn.get(), "create schema if not exists write_ceiling");
     run(conn.get(),
@@ -231,6 +274,27 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     run(conn.get(),
         "select create_hypertable('write_ceiling.obs_a1', 'observation_datetime', "
         "chunk_time_interval => interval '30 days', if_not_exists => true)");
+    run(conn.get(),
+        "create table if not exists write_ceiling.obs_trg (like "
+        "public.ores_marketdata_market_observations_tbl including all)");
+    run(conn.get(),
+        "select create_hypertable('write_ceiling.obs_trg', 'observation_datetime', "
+        "chunk_time_interval => interval '30 days', if_not_exists => true)");
+    // The body of ores_marketdata_market_observations_insert_fn, aimed at the scratch table.
+    run(conn.get(),
+        "create or replace function write_ceiling.obs_trg_insert_fn() returns trigger as $$ "
+        "begin "
+        "new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id); "
+        "update write_ceiling.obs_trg set valid_to = current_timestamp "
+        "where tenant_id = new.tenant_id and series_id = new.series_id "
+        "and observation_datetime = new.observation_datetime and oresmd_uri = new.oresmd_uri "
+        "and valid_to = ores_utility_infinity_timestamp_fn() and valid_from < current_timestamp; "
+        "new.valid_from := current_timestamp; "
+        "new.valid_to := ores_utility_infinity_timestamp_fn(); "
+        "return new; end; $$ language plpgsql set search_path = public, pg_temp");
+    run(conn.get(),
+        "create or replace trigger obs_trg_insert_trg before insert on write_ceiling.obs_trg "
+        "for each row execute function write_ceiling.obs_trg_insert_fn()");
     run(conn.get(),
         "create table if not exists write_ceiling.tick_append (series_id uuid not null, "
         "ts timestamptz not null, coord smallint not null default 0, value double precision not "
@@ -253,23 +317,31 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     std::vector<std::string> series;
     for (int i = 0; i < 2000; ++i)
         series.push_back(boost::uuids::to_string(gen()));
-    const std::string tenant = "540caae1-5ccc-43c9-82a8-5a49c5136d58";
+    // The trigger shape needs a tenant that exists, so it takes the first one of the database.
+    std::string tenant = scalar(conn.get(),
+                                "select id from public.ores_iam_tenants_tbl "
+                                "where status in ('active', 'bootstrapping') and valid_to > now() "
+                                "and id <> 'ffffffff-ffff-ffff-ffff-ffffffffffff' "
+                                "order by valid_from limit 1");
+    if (tenant.empty())
+        tenant = "540caae1-5ccc-43c9-82a8-5a49c5136d58";
     const std::string party = "e93025eb-c4bf-4df0-ba80-11574a8f3d67";
 
     // The rows of one batch are split across this many transactions, one for each tenant.
     std::size_t next = 0;
-    for (const std::string shape : {"observation_no_trigger", "append_only"}) {
+    for (const std::string shape :
+         {"observation_with_trigger", "observation_no_trigger", "append_only"}) {
         for (const std::size_t batch : {100, 1000, 10000, 50000}) {
             for (const std::size_t groups : {1, 10, 100}) {
                 // A transaction of fewer than 100 rows is commit-bound, which the first run
                 // showed, and it takes many minutes for no new information.
                 if (batch / groups < 100)
                     continue;
-                if (!only_shape.empty() && only_shape.find(shape) == std::string::npos)
+                if (!only_shape.empty() && shape.find(only_shape) == std::string::npos)
                     continue;
                 const std::size_t total = shape == "append_only" ? 300000 : 100000;
                 const std::size_t batches = std::max<std::size_t>(2, total / batch);
-                const auto started = clock::now();
+                const auto started = stopwatch::now();
                 for (std::size_t b = 0; b < batches; ++b) {
                     const std::size_t per_group = batch / groups;
                     for (std::size_t g = 0; g < groups; ++g, next += per_group) {
@@ -278,6 +350,13 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
                                       "copy write_ceiling.tick_append (series_id, ts, coord, "
                                       "value) from stdin",
                                       tick_text(per_group, next, series));
+                        else if (shape == "observation_with_trigger")
+                            copy_text(
+                                conn.get(),
+                                "copy write_ceiling.obs_trg (id, tenant_id, party_id, "
+                                "series_id, observation_datetime, oresmd_uri, value, "
+                                "source, valid_from, valid_to) from stdin",
+                                observation_text(per_group, next, series, tenant, party, gen));
                         else
                             copy_text(
                                 conn.get(),
@@ -297,7 +376,5 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
         }
     }
 
-    if (!keep)
-        run(conn.get(), "drop schema write_ceiling cascade");
     SUCCEED();
 }

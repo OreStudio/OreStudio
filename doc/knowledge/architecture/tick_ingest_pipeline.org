@@ -366,12 +366,12 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *Compression needs the Community edition of TimescaleDB.* The server of the test
   environment runs the Debian package =postgresql-18-timescaledb 2.30.1+dfsg=, which has
   the Apache license only. =compress_chunk= is refused there with "functionality not
-  supported under the current apache license", and the jobs that add a retention or
-  compression policy are refused too. The SQL of the repository already skips a policy
-  when =timescaledb.license= is not =timescale=. So the plan has two paths. On the
+  supported under the current apache license". The test did not try the policy jobs or
+  =drop_chunks= on that build. The SQL of the repository already skips a policy when
+  =timescaledb.license= is not =timescale=. So the plan has two paths. On the
   Community edition, a policy compresses and drops chunks. On the Apache build, a job
-  that the service schedules drops old chunks with =drop_chunks=, which the Apache build
-  allows, and the bars carry the long history. No compression ratio was measured, because
+  that the service schedules drops old chunks with =drop_chunks=, and the bars carry the
+  long history. The Apache path needs a test of =drop_chunks= first. No compression ratio was measured, because
   the test server cannot compress. The ratio that Timescale quotes for tick data is not a
   figure of this project.
 - *One row for each source.* The largest factor that the design controls is the
@@ -815,6 +815,9 @@ the task. All figures are rows each second for one connection.
 | same | same | 1,000 | 1,776 |
 | same | same | 5,000 | 2,195 |
 | same | same | 20,000 | 2,326 |
+| =COPY= through =libpq= | observation shape, with a copy of its insert trigger, no row-level security | 1,000 | 10,237 |
+| same | same | 10,000 | 10,568 |
+| same | same | 50,000 | 11,086 |
 | =COPY= through =libpq= | observation shape, no trigger | 1,000 | 34,619 |
 | same | same | 10,000 | 46,424 |
 | same | append-only | 1,000 | 92,839 |
@@ -831,12 +834,13 @@ tenants makes one transaction for each tenant.
 | 10 | 5,000 | 114,276 | 33,975 |
 | 100 | 500 | 63,078 | 15,758 |
 
-A transaction of 100 rows gives 12,000 to 18,000 rows each second, a transaction of 10 rows
+A transaction of 100 rows gives 12,000 to 19,000 rows each second on the tables without a trigger, a transaction of 10 rows
 about 2,000, and a transaction of one row about 220, which is the commit rate of the disk.
 So a transaction should hold at least 1,000 rows. With 100 tenants that means a batch of
 100,000 rows, which is a long wait at a low tick rate.
 
-The history changes little. A table that holds 100 million rows in 62 chunks of one day
+The history costs 6 to 25 percent, from single runs on a shared server. A table that holds
+100 million rows in 61 chunks of one day
 takes 141,154 rows each second at 10,000 rows in a transaction, against 150,545 when it is
 empty, and 137,992 at 50,000 rows, against 185,259. The observation shape with 5 million
 rows still takes about 48,000 to 50,000. The server filled the 100 million rows at about
@@ -846,15 +850,22 @@ takes 986 bytes.
 
 Four conclusions follow.
 
-- *The writer matters more than the table.* The repository insert gives 2,326 rows each
-  second. =COPY= into the same shape gives 46,424, which is 20 times more. =COPY= into the
-  append-only table gives 185,259, which is 80 times more. The batch writer should use
-  =COPY=.
+- *The writer, the trigger and the table each cost a factor of about five.* The repository
+  insert gives 2,326 rows each second. =COPY= into a copy of the same table with its insert
+  trigger gives 10,568 at 10,000 rows, which is 4.5 times more, so the writer is a factor
+  of about five. The same =COPY= without the trigger gives 46,424 and 53,794 in two runs,
+  so the trigger is another factor of about five. The append-only table, which has no
+  trigger and one index, gives 185,259, which is 80 times the repository insert. The
+  batch writer should use =COPY=. The trigger must go as well, or its work must move into
+  the batch. The scratch copy has no row-level security, so the cost of the policy sits
+  inside the repository figure and is not separated. PostgreSQL refuses =COPY FROM= on a
+  table with row-level security, so =COPY= cannot write the table as built.
 - *A row for each tenant makes small transactions.* At 100 tenants the append-only table
   falls from 185,000 to 63,000 rows each second, and the observation shape to 16,000. A
   row for each source, with the tenants reading it through the bindings, keeps one large
   transaction. This turns that open question into a requirement.
-- *The append-only table meets the target on one connection.* With today's fan-out the
+- *The append-only table meets the target on two connections, or on one with one row for
+  each source.* With today's fan-out the
   target is 276,000 rows each second, which needs two connections at 141,000. With a row for
   each source it is about 30,000 rows each second, which one connection holds with room.
 - *Compression is not part of the plan on this server.* See the volume item above.

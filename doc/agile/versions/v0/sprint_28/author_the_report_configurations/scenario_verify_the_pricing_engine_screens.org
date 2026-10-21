@@ -50,7 +50,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 - Go to Reporting and choose Pricing engines.
 - Pass: the list shows the columns Configuration, Variant, Products, Settings, Changed by and Changed.
-- Pass: for London, the rows are the nine configurations above. EOD Official has 8 products, Pre-Trade Quick Price 7 and Regulatory SIMM 7.
+- Pass: for London, the rows are the nine configurations above. EOD Official has 101 products, one for each product type that ORE documents an engine for. Pre-Trade Quick Price has 7 and Regulatory SIMM 7.
 - Type =XVA= in the search box. Pass: only XVA Overnight stays. Clear the box.
 - Click the Configuration header. Pass: the order reverses.
 - Note: if the list is empty, the party you work in may hold none. Say which party is active in Notes.
@@ -97,9 +97,13 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 ** Change how a product is priced
 
 - On EOD Official, click Change on a product row.
-- Choose another model or engine. Pass: the dialog lists the settings the new pair does not take (tick to drop) and the settings it usually needs (tick to add).
+- Pass: the dialog shows the model and the engine side by side. Under each choice, a panel states what the model or the engine is and where the words come from: the ORE guide, the ORE code, or "Written for ORE Studio, to review".
+- Pass: under the two panels, a line states how ORE builds the engine of the pair for this product type.
+- Choose another model or engine. Pass: both panels change, and the dialog lists the settings the new pair does not take (tick to drop) and the settings it usually needs (tick to add).
 - Choose a pair that is not in the vocabulary, if the lists allow it. Pass: a notice says the pair is not known to price the product, and you may keep it.
 - Choose a known pair, tick one setting to drop and one to add, and edit one value. Pass: What changes lists each change.
+- Open Change on the Bond product. Pass: TimestepPeriod is a list of tenors, such as 3M and 6M, and not a text field. Pass: each setting has a one-line meaning under its field, and the settings ORE needs carry the word "required".
+- Open Change on a product that has SensitivityTemplate, such as a Swap of Risk Sensitivities. Pass: the setting is a list of sensitivity templates, and the asset class, the method and the meaning of the chosen template show under it.
 - Give a reason and press Save. Pass: the record page shows the new pair and settings.
 
 *** Result

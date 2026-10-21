@@ -44,6 +44,8 @@ Give the user guided screens to create and edit a report configuration and every
 | [[id:B6747B04-A6C6-466F-B2A4-9EE2AC31F80F][Four-eyes sign-off for pricing engine changes]] | BACKLOG | | | Task for: Author the report configurations on guided screens |
 | [[id:C388461A-A77D-4F78-B390-6E2E522D7D62][Govern the pricing engine configurations]] | STARTED | 2026-10-20 | | Task for: Author the report configurations on guided screens |
 | [[id:986E1372-9BA6-4CA5-BFC1-FBDA134F221A][Build the pricing engine configuration screens]] | STARTED | 2026-10-21 | | Task for: Author the report configurations on guided screens |
+| [[id:1EA6D820-F6E4-4B60-AEC7-867D5CD5E867][Research the lifecycle of a configuration]] | BACKLOG | | | Decide how a configuration moves from an edit to a version in force. |
+| [[id:DE2B9B71-1CD1-4D53-8D24-36C06F0D02AD][Show the effect of a configuration change]] | BACKLOG | | | Run one report with two configurations and explain the difference. |
 
 * Decisions
 

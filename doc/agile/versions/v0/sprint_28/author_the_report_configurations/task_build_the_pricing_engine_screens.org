@@ -39,7 +39,8 @@ Build the screens that the pricing engine journeys and prototypes draw. This fir
 - A record page shows one configuration with its products and settings, and offers Change, Add product, Remove and Delete to a person with the write permission only.
 - A change states the difference, runs the checks, asks for a reason and saves the whole document against the version it read. A stale version is a conflict, and the dialog offers to read again.
 - Authoring is a journey of six steps: name, products, model and engine, settings, check, review and save. It starts empty or from a copy.
-- The models, engines, pairs and settings come from two new lookup tables, pricing_model_engine_pair and pricing_pair_setting, seeded from the ORE pricing engine files.
+- The models, engines, pairs and settings come from lookup tables, seeded from the ORE user guide chapter on the pricing engine configuration: pricing_model_engine_pair and pricing_pair_setting for the pairs and their settings, pricing_model and pricing_method for the description of each model and engine, and sensitivity_template for the sensitivity template keys.
+- A product dialog shows the model and the engine side by side, each with its description and the source of the words. A setting shows its meaning under its field. A tenor setting offers the tenor list, and a sensitivity template setting offers the templates.
 - Saving a document removes the products and parameters that the new version omits.
 - The BFF routes, the web client and the screens have unit tests.
 
@@ -49,7 +50,7 @@ Build the screens that the pricing engine journeys and prototypes draw. This fir
 
 | Layer | What |
 |-------+------|
-| SQL and analytics | The tables pricing_model_engine_pair and pricing_pair_setting, generated from codegen models, with seeds of 24 pairs and 12 settings. The document save removes omitted rows. |
+| SQL and analytics | The tables pricing_model_engine_pair, pricing_pair_setting, pricing_model, pricing_method and sensitivity_template, generated from codegen models. The seeds are written by =projects/ores.seeder/datasets/ore_pricing_engines/generate_vocabulary_sql.py= from the ORE user guide: 108 product types, 194 pairs, 834 settings, 25 models, 74 engines and 19 sensitivity templates. The document save removes omitted rows. |
 | BFF | The routes under =/api/reporting/pricing-engines=: list, vocabulary, read, create, save and delete. A create writes the reporting configuration header first and removes it again when the document does not save. |
 | Web | The list, the record page with its dialogs, the authoring journey, the card and workflow, the paths, the permissions and the strings in three languages. |
 
@@ -67,12 +68,15 @@ and the commit it was measured at.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Web tests after this task | 153 files, 1803 tests, all pass | =npx vitest run= in =projects/ores.web/packages/web= | the working tree of this branch |
-| BFF tests after this task | 69 files, 843 tests, all pass | =npx vitest run= in =projects/ores.web/packages/bff= | the working tree of this branch |
+| Web tests after this task | 153 files, 1819 tests, all pass | =npx vitest run= in =projects/ores.web/packages/web= | the working tree of this branch |
+| BFF tests after this task | 69 files, 848 tests, all pass | =npx vitest run= in =projects/ores.web/packages/bff= | the working tree of this branch |
 
 * Notes
 
 - *Document save.* The service stamps the tenant and the party itself, and it keeps the change reason that a row names. The BFF therefore puts the reason on every row of the document.
+- *Vocabulary source.* The ORE user guide chapter lists the pairs and the settings. Where the guide and the ORE code spell a name differently, the generator takes the code's spelling, and it drops any name that the code does not know. The descriptions of the models and engines come from the guide where it has them. Where it has none, the description is written for ORE Studio and carries the source =authored=, so a person can find it and review it. The allowed values of a setting come from the ORE parsers where a parser fixes them.
+- *Required settings.* The guide marks a setting optional when ORE has a default. A setting that is not marked is required. A new product starts with the required settings only.
+- *Sensitivity template.* A template is a key. The pricing engine configuration puts it on a product, and the sensitivity configuration sets shift sizes for the products that carry it. The screens offer the templates and state what each one is. A link to the shifts of a template needs the sensitivity configuration screens, which are not built.
 - *Timestamps.* A row the browser creates carries the epoch in the wire format, and the service stamps the real time.
 
 * Test Scenarios

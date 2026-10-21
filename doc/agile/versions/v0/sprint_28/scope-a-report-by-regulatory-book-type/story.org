@@ -21,7 +21,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Raised from the review of the end to end run. |
 | Waiting on    | Nothing.                               |
@@ -32,7 +32,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 
 - A report definition states a regulatory book type, or none for a report that reads any book, and the value comes from the regulatory book type table that books use.
 - The scope of a configuration is checked against the report: a book whose regulatory book type differs from the report's is refused, with a message that names the book and the report.
-- The seed states the type of the regulatory reports (FRTB SA Capital, Stressed VaR, Headline Position and the other trading book measures) and leaves the valuation and data reports with none.
+- The seed states the type of the regulatory trading book measures (FRTB SA Capital, Stressed VaR and P&L Attribution) and leaves the other reports with none.
 - The configuration page shows the type and the refusal.
 - A test proves that a trading book report scoped to the whole entity reads trading books only, or is refused, as the rule decides.
 
@@ -40,7 +40,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:760C022D-FAB5-4223-B8F3-60075C6FE45E][Define the report book scope rule]] | BACKLOG | | | Initial task for: Scope a report by regulatory book type |
+| [[id:760C022D-FAB5-4223-B8F3-60075C6FE45E][Define the report book scope rule]] | STARTED | 2026-10-21 | | Initial task for: Scope a report by regulatory book type |
 
 * Decisions
 
@@ -81,7 +81,7 @@ The empty value covers them, so the table of codes needs no entry for "both".
 
 ** What follows in the code
 
-- The report catalogue and the report definition gain =regulatory_book_type=. The seed states =Trading= for the regulatory trading book measures (FRTB SA Capital, Stressed VaR, Headline Position and the others the catalogue names) and leaves the valuation, data and liquidity reports empty.
+- The report catalogue and the report definition gain =regulatory_book_type=. The seed states =Trading= for three reports, FRTB SA Capital, Stressed VaR and P&L Attribution. The catalogue text names each as a trading book regulatory measure (FRTB, Basel 2.5 and the P&L attribution test). The intraday monitor and the headline position are trader views and not regulatory measures, and the sensitivity reports feed capital but are not capital, so they stay empty with the valuation, data and liquidity reports.
 - =gather_trades= reads the books of the scope and keeps the books of the report's type.
 - The configuration page shows the type of a report, and the refusal with the names of the book and the report.
 - Rule D10 of the generator =generate_risk_config_data.py= is replaced by this rule.

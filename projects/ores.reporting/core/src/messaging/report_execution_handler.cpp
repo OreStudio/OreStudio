@@ -240,13 +240,24 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         const auto config_id = boost::uuids::to_string(config->id);
 
         // ── Resolve book scope via SQL function ──────────────────────
-        const auto book_ids = config_repo.resolve_book_ids(tenant_ctx, config_id);
+        const auto book_ids =
+            config_repo.resolve_book_ids(tenant_ctx, config_id, req.definition_id);
 
         if (book_ids.empty()) {
-            const std::string err = "Report has no trades: the risk report configuration "
-                                    "has no books or portfolios in scope. Please add at least "
-                                    "one portfolio or book to the report definition before "
-                                    "running.";
+            // A typed report reads the books of its type only, so a scope can hold books
+            // and still leave none to read. The message says which of the two it is.
+            const auto book_type =
+                config_repo.regulatory_book_type_of(tenant_ctx, req.definition_id);
+            const std::string err =
+                book_type ?
+                    "Report has no books to read: it reads " + *book_type +
+                        " books only, and the risk report configuration has no such book "
+                        "or portfolio in scope. Add a portfolio or book of that type to "
+                        "the scope before running." :
+                    "Report has no trades: the risk report configuration "
+                    "has no books or portfolios in scope. Please add at least "
+                    "one portfolio or book to the report definition before "
+                    "running.";
             mark_instance_failed(req.tenant_id, req.report_instance_id, err);
             wf->fail(err);
             ack.accept();

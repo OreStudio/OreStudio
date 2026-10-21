@@ -213,7 +213,21 @@ public:
     std::optional<domain::risk_report_config>
     find_by_definition_id(context ctx, const std::string& definition_id);
 
-    std::vector<std::string> resolve_book_ids(context ctx, const std::string& config_id);
+    /**
+     * @brief The books a run of a definition reads under a risk report config.
+     *
+     * A typed definition reads only the books of its regulatory book type.
+     */
+    std::vector<std::string> resolve_book_ids(context ctx,
+                                              const std::string& config_id,
+                                              const std::string& definition_id);
+
+    /**
+     * @brief The regulatory book type a definition is limited to, or nothing
+     * when it reads any book.
+     */
+    std::optional<std::string> regulatory_book_type_of(context ctx,
+                                                       const std::string& definition_id);
 
     std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
 

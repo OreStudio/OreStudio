@@ -150,6 +150,17 @@ struct report_definition final {
     bool is_official = true;
 
     /**
+     * @brief The regulatory book type of the books the report may read: a code of the regulatory
+     * book type table that a book also uses (Trading or Banking). Empty means the report reads any
+     * book.
+     *
+     * A typed report reads only the books of its type. A scope that names a book of another type is
+     * refused, and a scope that leaves no book of the type to read fails the run. See the story
+     * Scope a report by regulatory book type.
+     */
+    std::optional<std::string> regulatory_book_type;
+
+    /**
      * @brief Username of the person who last modified this report definition.
      */
     std::string modified_by;

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :scope-a-report-by-regulatory-book-type:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/scope-a-report-by-regulatory-book-type
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -62,6 +62,20 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Done (stage one: the data and the rule)
+
+- =regulatory_book_type= on the report definition and on the catalogue artefact, as a nullable column checked against the regulatory book type table (model =ores.reporting.report_definition=, generated with =compass codegen entity generate=). The publish step copies it.
+- The seed types FRTB SA Capital, Stressed VaR and P&L Attribution as =Trading=. The ACME populate scripts and the platform dataset are regenerated.
+- The rule follows the precedent of the official report rule. The helper functions are in =reporting_resolve_book_ids_fn_create.sql=. The resolver takes the definition and returns only the books of its type. A typed definition refuses an explicit book of another type at three points: the definition itself, the binding of a configuration to it, and the books of a scope.
+- =gather_trades= passes the definition to the resolver and says, when no book is left, that the report reads books of its type only.
+- The pgTAP suite =reporting_regulatory_book_type_test.sql= has 12 tests and passes. The official report suites and the publish suite still pass. The reporting C++ suites pass.
+
+** Not done (stage two: the screens)
+
+- The report page does not show or edit the type, and the BFF and the wire schema do not carry it yet.
+- The configuration page does not show the refusal.
+- A run in which every trade fails to build still completes. That is issue 8 of the end to end run, and it hid the cause in this check: the engine could not build the HKD curve, built no trade and wrote no =npv.csv=, and the run said it completed.
 
 * Test Scenarios
 

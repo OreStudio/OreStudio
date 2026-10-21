@@ -73,6 +73,13 @@ begin
             using errcode = '23514';
     end if;
 
+    -- A typed report reads the books of its type only.
+    if ores_reporting_config_refuses_book_fn(new.tenant_id, new.risk_report_config_id, new.book_id) then
+        raise exception 'Invalid book_id: %. A typed report cannot include a book of another regulatory book type.',
+            new.book_id
+            using errcode = '23514';
+    end if;
+
     -- Close any existing active association for this config + book pair
     update "ores_reporting_risk_report_config_books_tbl"
     set valid_to = current_timestamp

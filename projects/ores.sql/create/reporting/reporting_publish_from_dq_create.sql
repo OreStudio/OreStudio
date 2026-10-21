@@ -88,7 +88,7 @@ begin
         tenant_id, id, version, party_id, name,
         description, report_type, schedule_expression, concurrency_policy,
         fsm_state_id, scheduler_job_id,
-        pre_processing, prepared_input_key, post_processing,
+        pre_processing, prepared_input_key, post_processing, regulatory_book_type,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
@@ -96,7 +96,7 @@ begin
         gen_random_uuid(), 0, v_root_party_id, a.name,
         coalesce(a.description, ''), a.report_type, a.schedule_expression, a.concurrency_policy,
         null, null,
-        'execute', null, 'execute',
+        'execute', null, 'execute', a.regulatory_book_type,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a

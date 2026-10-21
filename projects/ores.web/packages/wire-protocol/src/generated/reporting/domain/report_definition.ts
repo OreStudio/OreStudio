@@ -47,6 +47,7 @@ export interface ReportDefinition {
     prepared_input_key: string;
     post_processing: string;
     is_official: boolean;
+    regulatory_book_type: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -48,7 +48,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/drop_oldest_queue.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/feed_ingest_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/host.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/observation_batch.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/batch_size.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/store_backoff.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/tick_age.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/tick_plan.hpp"

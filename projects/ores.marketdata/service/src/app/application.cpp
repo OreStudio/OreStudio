@@ -114,11 +114,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                 .host = cfg.database.host,
                                 .database = cfg.database.database,
                                 .port = cfg.database.port});
-        BOOST_LOG_SEV(lg(), info) << "Ticks are copied to the tick table as '"
+        BOOST_LOG_SEV(lg(), info) << "Ticks are stored in the tick table as '"
                                   << cfg.tick_writer_user << "'";
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "No tick writer role is set, so ticks are not copied to "
-                                     "the tick table";
+        BOOST_LOG_SEV(lg(), warn) << "No tick writer role is set, so ticks are republished and "
+                                     "not stored";
     }
     auto ingest =
         std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge, ticks);

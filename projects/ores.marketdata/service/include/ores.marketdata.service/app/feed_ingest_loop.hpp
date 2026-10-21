@@ -40,12 +40,12 @@
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <set>
-#include <span>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -70,37 +70,14 @@ make_feed_series(const domain::feed_binding& binding,
                  const std::string& service_account);
 
 /**
- * @brief The dates one tick is recorded under: the day it was published, and the close
- * of the last completed business day.
- *
- * A report that values at the previous business day's close asks ORE for a market data
- * date, and ORE reads a time series by the date each observation carries. A live
- * producer holds only the value it has now, so a deployment whose feeds started today
- * would have no close for yesterday and every end-of-day report would fail on a
- * valuation date with no quotes. Recording each observation under the close as well
- * gives the series a valuation date's worth of history from the producer's first tick,
- * so a fresh environment can value a report at the close it values at without anyone
- * backfilling dates by hand.
- *
- * One business day is as far back as this reaches: one is what an end-of-day report
- * asks for, and a longer lookback would be history the producer has no state for. The
- * time of day is kept, so one date's rows stay in the order they arrived and a reader
- * that takes the last one takes the newest close. A producer that publishes at the
- * weekend records no second date, because the close already carries the last business
- * day's ticks.
- */
-ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::chrono::system_clock::time_point>
-observation_dates(std::chrono::system_clock::time_point published_at);
-
-/**
  * @brief The ingest loop: one subscription over every producer's ticks, and one
  * path for every tick, whatever its asset class.
  *
  * A producer publishes a market_tick on "synthetic.v1.ops.tick.<source>". The tick
  * names its datum by its oresmd quote URI and its producer by its source; it
  * carries no owner. refresh() caches the enabled feed bindings by source, and
- * each binding of the tick's source is one consumer: the tick is stored as a
- * market_observation under that binding's tenant and party, and republished
+ * each binding of the tick's source is one consumer: the tick is stored as a row of
+ * the tick table under that binding's tenant and party, and republished
  * on market_tick_subject() for that consumer and the datum's canonical oresmd
  * URI. A tick from a source with no enabled binding is dropped, with one
  * warning per source, and so is a tick whose URI names no datum or whose
@@ -111,9 +88,9 @@ observation_dates(std::chrono::system_clock::time_point published_at);
  * offered to the CRM bridge.
  *
  * The subscription only decodes a tick and queues it. A worker thread takes
- * every tick that has arrived and stores them as one batch: one transaction for
- * each tenant, one series read for each series, and no commit for each tick.
- * Republish follows the commit of the batch that stored the tick, on core NATS
+ * every tick that has arrived and stores them as one batch: one copy, one series read
+ * for each series, and no commit for each tick.
+ * Republish follows the copy of the batch that stored the tick, on core NATS
  * with no wait for an acknowledgement. A tick is perishable, because an old tick
  * that waits while a newer one arrives is worse than a tick that is lost. So the
  * queue is bounded and a full queue drops its oldest tick, and the worker drops a
@@ -139,8 +116,8 @@ private:
 public:
     /// @param crm_bridge Optional; when set, every stored FX spot tick is offered
     /// to it as a candidate driver update.
-    /// @param tick_writer Optional; when set, every stored tick is also copied to the tick
-    /// table. The loop is its only caller.
+    /// @param tick_writer The writer of the tick table, which is the store. The loop is its
+    /// only caller. Without one, no tick is stored, and each is republished.
     feed_ingest_loop(ores::nats::service::client& nats,
                      ores::database::context ctx,
                      std::shared_ptr<crm_ingest_bridge> crm_bridge = nullptr,
@@ -174,10 +151,6 @@ public:
 private:
     struct item;
 
-    /// Whether a fresh transaction opens. It tells a store that is down from a row that
-    /// the store refuses.
-    [[nodiscard]] static bool store_reachable(const ores::database::context& tenant_ctx);
-
     void on_tick(const ores::nats::message& msg);
     void worker_loop();
 
@@ -185,18 +158,18 @@ private:
     void process(const std::vector<messaging::market_tick>& ticks,
                  std::vector<std::optional<tick_drop>>* outcomes);
 
-    /// Writes the rows of the items at @p indexes in one transaction of @p tenant_ctx.
-    /// A batch that fails is split in two until the failing item is alone.
-    void write_items(const ores::database::context& tenant_ctx,
+    /// Stores the ticks of @p items in the tick table with one copy, and marks each item
+    /// stored, or unavailable when the store does not answer or is left alone for a wait. The
+    /// context of a tenant in @p tenant_ctxs assigns the coordinate numbers of its series.
+    void store_items(const std::vector<messaging::market_tick>& ticks,
                      std::vector<item>& items,
-                     std::span<const std::size_t> indexes);
-
-    /// Copies the ticks of the stored @p items to the tick table. A failure is logged and
-    /// counted, and it does not change what the loop does with the tick. The context of a
-    /// tenant in @p tenant_ctxs assigns the coordinate numbers of its series.
-    void write_ticks(const std::vector<messaging::market_tick>& ticks,
-                     const std::vector<item>& items,
                      const std::map<std::string, ores::database::context>& tenant_ctxs);
+
+    /// Records the newest stored tick of each binding of @p items, at most once in
+    /// activity_interval for each binding. A failure is logged and changes nothing else.
+    void record_activity(const std::vector<messaging::market_tick>& ticks,
+                         const std::vector<item>& items,
+                         const std::map<std::string, ores::database::context>& tenant_ctxs);
 
     /// The id of the series that @p tick_datum belongs to for @p binding's party,
     /// created and classified on the first tick that lands in it. Read once for
@@ -241,8 +214,6 @@ private:
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     std::shared_ptr<tick_writer> tick_writer_;
-    /// Whether the last copy to the tick table failed.
-    std::atomic<bool> tick_write_failing_{false};
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
     using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
@@ -251,6 +222,8 @@ private:
     /// Series ids by tenant, party and series URI, cleared by refresh().
     std::map<std::string, boost::uuids::uuid> series_ids_;
     std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
+    /// When the activity of each binding was last recorded.
+    std::map<binding_key, std::chrono::steady_clock::time_point> activity_recorded_;
     /// Classifiers by tenant id, cleared by refresh().
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
     /// Sources and URIs already reported as dropped, so each is reported once
@@ -274,6 +247,8 @@ private:
     /// How long a shutdown works through the queued ticks.
     static constexpr std::chrono::milliseconds shutdown_drain{2000};
     static constexpr std::chrono::minutes status_interval_{1};
+    /// How long the activity row of a binding waits between two writes.
+    static constexpr std::chrono::seconds activity_interval{5};
 
     /// The ticks that arrived and wait for the worker.
     drop_oldest_queue<messaging::market_tick> queue_{queue_capacity};
@@ -282,8 +257,7 @@ private:
     std::atomic<std::uint64_t> late_unpublished_{0};
     std::atomic<std::uint64_t> store_unavailable_{0};
     std::atomic<std::uint64_t> shutdown_dropped_{0};
-    std::atomic<std::uint64_t> ticks_copied_{0};
-    std::atomic<std::uint64_t> tick_copy_failures_{0};
+    std::atomic<std::uint64_t> ticks_stored_{0};
     std::atomic<std::chrono::steady_clock::rep> drain_deadline_rep_{
         std::chrono::steady_clock::time_point::max().time_since_epoch().count()};
     std::atomic<std::uint64_t> batches_{0};

@@ -335,9 +335,15 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   Three other marketdata tables already do this. Without the trigger, a commit never
   takes the notification lock, and the ingests of other databases on the same
   server no longer wait for it.
-- *The second row for each tick.* The ingest stores each tick twice, once at its own
-  time and once under the previous business day. At scale this doubles the writes.
-  It is an open question whether a snapshot job should build that row instead.
+- *The second row for each tick.* The ingest stored each tick twice, once at its own
+  time and once under the previous business day, so that a fresh environment could value
+  a report at the previous close. The second row was the newest value under another date,
+  and it doubled the writes. Decision of the owner, 2026-10-21: the ingest stores only the
+  real tick. A close is a question for the reader, which asks for the latest tick at or
+  before the end of the day. The export of ORE market data takes a valuation date and asks
+  that question. A series with no tick at or before the date has no line in the file. A
+  development environment that needs quotes for a past date gets them from a seed or a
+  backfill, not from the ingest.
 - *One row for each party.* A tick is stored once for each binding. The cost grows
   with the number of parties that consume a source. It is an open question whether
   the store should keep one row for each source and let parties read it through a
@@ -1093,8 +1099,9 @@ a burst of ticks at a chosen rate and times the drain.
   no field for it today, so a curve may need a set marker on the tick.
 - Does any series need a lane key below the series? A very large surface in one series
   may overload one lane. The busy share of each lane answers it.
-- Does the reader of the store need the bitemporal observation table for ticks? A
-  view over an append-only tick table and the observation table is the proposal.
+- Does the reader of the store need the bitemporal observation table for ticks? No. The
+  readers of snapshots, evolution, slices and the ORE export read the tick table and the
+  observation table side by side, and take the latest value of each datum. They need no view.
 - How long does the store keep raw ticks, and which classes keep bars only? The
   answer is a policy row for each class.
 - Who provisions the writer role with =BYPASSRLS=, and does the project accept a role that

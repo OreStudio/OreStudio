@@ -80,7 +80,7 @@ public:
  *      binding_mode (synthetic.v1.ops.tick.<source>, or the sandbox prefix).
  *
  * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which stores one
- * market_observation per tick for each consumer the source's feed bindings name. The synthetic
+ * row of the tick table per tick for each consumer the source's feed bindings name. The synthetic
  * service has no marketdata writes.
  */
 class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::IFeed {

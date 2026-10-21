@@ -36,6 +36,7 @@
 \ir ./marketdata_market_observations_create.sql
 \ir ./marketdata_ticks_create.sql
 \ir ./marketdata_tick_coords_create.sql
+\ir ./marketdata_feed_binding_activity_create.sql
 \ir ./marketdata_observation_lineages_create.sql
 \ir ./marketdata_observation_lineages_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql

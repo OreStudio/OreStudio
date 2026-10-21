@@ -18,19 +18,17 @@
  *
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
-#include "ores.database/repository/unit_of_work.hpp"
-#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
-#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
-#include "ores.marketdata.service/app/observation_batch.hpp"
+#include "ores.marketdata.service/app/batch_size.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -41,22 +39,21 @@
 #include <chrono>
 #include <format>
 #include <optional>
-#include <span>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::marketdata::service::app {
 
 using namespace ores::logging;
 
-/// One consumer of one accepted tick: the binding it is stored under, and the rows
-/// that go with it. A tick that has several bindings makes several items.
+/// One consumer of one accepted tick: the binding it is stored under and the series it lands
+/// in. A tick that has several bindings makes several items.
 struct feed_ingest_loop::item {
     std::size_t tick_index = 0;
     const tick_plan* plan = nullptr;
     const tick_target* target = nullptr;
-    std::string series_key;
-    std::vector<domain::market_observation> rows;
+    boost::uuids::uuid series_id{};
     bool stored = false;
     /// The store did not answer, so the tick is republished and not stored.
     bool unavailable = false;
@@ -202,16 +199,6 @@ void feed_ingest_loop::worker_loop() {
     }
 }
 
-bool feed_ingest_loop::store_reachable(const ores::database::context& tenant_ctx) {
-    try {
-        ores::database::repository::unit_of_work uow(tenant_ctx);
-        uow.commit();
-        return true;
-    } catch (const std::exception&) {
-        return false;
-    }
-}
-
 std::optional<tick_drop> feed_ingest_loop::handle_tick(const messaging::market_tick& tick) {
     return handle_batch({tick}).front();
 }
@@ -269,11 +256,10 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
         plans[i] = std::move(*plan);
     }
 
-    // Build the rows. The tenant context is made once for each tenant, and the
-    // series is read once for each series, so a batch pays neither for each tick.
+    // Resolve the series of every consumer. The tenant context is made once for each tenant,
+    // and the series is read once for each series, so a batch pays neither for each tick.
     boost::uuids::random_generator uuid_gen;
     std::map<std::string, ores::database::context> tenant_ctxs;
-    std::map<std::string, std::vector<std::size_t>> by_tenant;
     std::vector<item> items;
     for (std::size_t i = 0; i < ticks.size(); ++i) {
         if (!plans[i])
@@ -292,52 +278,24 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
             it.plan = &*plans[i];
             it.target = &target;
             try {
-                const auto series_id = series_id_for(ctx_it->second, b, plans[i]->datum, uuid_gen);
-                it.series_key =
-                    tenant + '|' + boost::uuids::to_string(b.party_id) + '|' +
-                    datum::oresmd_uri_codec::write(datum::series_of(plans[i]->datum)).value();
-                for (const auto& recorded_at : observation_dates(ticks[i].observation_time)) {
-                    domain::market_observation obs;
-                    obs.id = uuid_gen();
-                    obs.tenant_id = b.tenant_id;
-                    obs.party_id = b.party_id;
-                    obs.series_id = series_id;
-                    obs.observation_datetime = recorded_at;
-                    obs.value = ticks[i].value;
-                    obs.source = ticks[i].source;
-                    obs.oresmd_uri = ticks[i].oresmd_uri;
-                    it.rows.push_back(std::move(obs));
-                }
+                it.series_id = series_id_for(ctx_it->second, b, plans[i]->datum, uuid_gen);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to prepare the tick for " << ticks[i].oresmd_uri << " from source '"
                     << ticks[i].source << "': " << e.what();
                 continue;
             }
-            by_tenant[tenant].push_back(items.size());
             items.push_back(std::move(it));
         }
     }
 
-    // One transaction for each tenant. A store that failed lately is left alone for a
-    // wait, and its ticks are republished without a store.
-    bool store_open = false;
-    {
-        std::lock_guard lock(mu_);
-        store_open = store_backoff_.may_try(std::chrono::steady_clock::now());
-    }
-    for (const auto& [tenant, indexes] : by_tenant) {
-        if (store_open) {
-            write_items(tenant_ctxs.at(tenant), items, indexes);
-        } else {
-            for (const auto i : indexes)
-                items[i].unavailable = true;
-        }
-    }
+    // A store that failed lately is left alone for a wait, and its ticks are republished
+    // without a store.
+    store_items(ticks, items, tenant_ctxs);
     for (const auto& it : items)
         if (it.unavailable)
             store_unavailable_.fetch_add(1, std::memory_order_relaxed);
-    write_ticks(ticks, items, tenant_ctxs);
+    record_activity(ticks, items, tenant_ctxs);
 
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
@@ -405,27 +363,36 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                          std::memory_order_relaxed);
 }
 
-void feed_ingest_loop::write_ticks(
+void feed_ingest_loop::store_items(
     const std::vector<messaging::market_tick>& ticks,
-    const std::vector<item>& items,
+    std::vector<item>& items,
     const std::map<std::string, ores::database::context>& tenant_ctxs) {
-    if (!tick_writer_)
+    if (items.empty())
         return;
 
+    bool store_open = false;
+    {
+        std::lock_guard lock(mu_);
+        store_open = tick_writer_ && store_backoff_.may_try(std::chrono::steady_clock::now());
+    }
+    if (!store_open) {
+        for (auto& it : items)
+            it.unavailable = true;
+        return;
+    }
+
+    // The datum of a tick has a number within its series, which the table stores in place of
+    // the URI. A number that cannot be assigned means the database does not answer, so the
+    // whole batch is left unstored. A tick of the same datum and time as an earlier one in the
+    // batch replaces it, so a reader finds one row for each.
     std::vector<tick_row> rows;
     rows.reserve(items.size());
-    std::size_t unnumbered = 0;
-    std::string unnumbered_reason;
+    std::unordered_map<std::string, std::size_t> row_at;
+    std::string failure;
     for (const auto& it : items) {
-        if (!it.stored)
-            continue;
         const auto& b = it.target->binding;
-        const auto& series_id = it.rows.front().series_id;
-
-        // The number of the datum within its series. The series holds one for each URI the
-        // feed sent, so a series without coordinates holds one.
-        const auto& uri = ticks[it.tick_index].oresmd_uri;
-        const auto key = boost::uuids::to_string(series_id) + '|' + uri;
+        const auto& tick = ticks[it.tick_index];
+        const auto key = boost::uuids::to_string(it.series_id) + '|' + tick.oresmd_uri;
         std::int16_t coord = 0;
         bool known = false;
         {
@@ -439,11 +406,13 @@ void feed_ingest_loop::write_ticks(
         if (!known) {
             try {
                 coord = repository::tick_coordinate_repository{}.resolve(
-                    tenant_ctxs.at(b.tenant_id.to_string()), b.party_id, series_id, uri);
+                    tenant_ctxs.at(b.tenant_id.to_string()),
+                    b.party_id,
+                    it.series_id,
+                    tick.oresmd_uri);
             } catch (const std::exception& e) {
-                ++unnumbered;
-                unnumbered_reason = e.what();
-                continue;
+                failure = e.what();
+                break;
             }
             std::lock_guard lock(mu_);
             coords_[key] = coord;
@@ -452,94 +421,86 @@ void feed_ingest_loop::write_ticks(
         tick_row row;
         row.tenant_id = b.tenant_id.to_string();
         row.party_id = boost::uuids::to_string(b.party_id);
-        row.series_id = boost::uuids::to_string(series_id);
-        row.ts = ticks[it.tick_index].observation_time;
+        row.series_id = boost::uuids::to_string(it.series_id);
+        row.ts = tick.observation_time;
         row.coord = coord;
         row.value = it.plan->value;
-        rows.push_back(std::move(row));
+        const auto at = row_at.try_emplace(row.series_id + '|' + std::to_string(coord) + '|' +
+                                               std::to_string(row.ts.time_since_epoch().count()),
+                                           rows.size());
+        if (at.second)
+            rows.push_back(std::move(row));
+        else
+            rows[at.first->second] = std::move(row);
     }
-    if (unnumbered > 0) {
-        tick_copy_failures_.fetch_add(unnumbered, std::memory_order_relaxed);
-        if (!tick_write_failing_.exchange(true))
-            BOOST_LOG_SEV(lg(), error)
-                << "The tick table cannot take " << unnumbered << " tick(s): " << unnumbered_reason;
-    }
-    if (rows.empty())
-        return;
 
-    try {
-        tick_writer_->write(rows);
-        ticks_copied_.fetch_add(rows.size(), std::memory_order_relaxed);
-        if (unnumbered == 0 && tick_write_failing_) {
-            tick_write_failing_ = false;
-            BOOST_LOG_SEV(lg(), info) << "The tick table accepts copies again";
-        }
-    } catch (const std::exception& e) {
-        tick_copy_failures_.fetch_add(rows.size(), std::memory_order_relaxed);
-        if (!tick_write_failing_) {
-            tick_write_failing_ = true;
-            BOOST_LOG_SEV(lg(), error) << e.what();
+    if (failure.empty()) {
+        try {
+            tick_writer_->write(rows);
+        } catch (const std::exception& e) {
+            failure = e.what();
         }
     }
-}
 
-void feed_ingest_loop::write_items(const ores::database::context& tenant_ctx,
-                                   std::vector<item>& items,
-                                   std::span<const std::size_t> indexes) {
-    if (indexes.empty())
-        return;
-
-    std::vector<domain::market_observation> rows;
-    for (const auto i : indexes)
-        rows.insert(rows.end(), items[i].rows.begin(), items[i].rows.end());
-    rows = keep_last_per_key(std::move(rows));
-
-    try {
-        ores::database::repository::unit_of_work uow(tenant_ctx);
-        repository::market_observation_repository{}.insert(uow.ctx(), rows);
-        uow.commit();
-        for (const auto i : indexes)
-            items[i].stored = true;
-        std::lock_guard lock(mu_);
+    std::lock_guard lock(mu_);
+    if (failure.empty()) {
+        for (auto& it : items)
+            it.stored = true;
+        ticks_stored_.fetch_add(rows.size(), std::memory_order_relaxed);
         if (store_backoff_.note_success())
             BOOST_LOG_SEV(lg(), info) << "The store answers again";
         return;
-    } catch (const std::exception& e) {
-        // A store that is down fails every write. Splitting the batch would try it again
-        // for each half and drop every tick, so the loop makes one probe first.
-        if (!store_reachable(tenant_ctx)) {
-            bool starts = false;
-            {
-                std::lock_guard lock(mu_);
-                starts = store_backoff_.note_failure(std::chrono::steady_clock::now());
-            }
-            if (starts)
-                BOOST_LOG_SEV(lg(), error)
-                    << "The store does not answer, so ticks are republished and not stored: "
-                    << e.what();
-            for (const auto i : indexes)
-                items[i].unavailable = true;
-            return;
-        }
-        if (indexes.size() == 1) {
-            // The cached series id may be the fault, such as a series that was
-            // removed. Forget it, so the next tick reads the series again.
-            {
-                std::lock_guard lock(mu_);
-                series_ids_.erase(items[indexes.front()].series_key);
-            }
-            const auto& tick_uri = items[indexes.front()].rows.front().oresmd_uri;
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to store the tick for " << tick_uri << ": " << e.what();
-            return;
-        }
-        BOOST_LOG_SEV(lg(), warn) << "A batch of " << indexes.size()
-                                  << " tick(s) failed, so it is split in two: " << e.what();
+    }
+    for (auto& it : items)
+        it.unavailable = true;
+    if (store_backoff_.note_failure(std::chrono::steady_clock::now()))
+        BOOST_LOG_SEV(lg(), error) << "The store does not answer, so ticks are republished and "
+                                      "not stored: "
+                                   << failure;
+}
+
+void feed_ingest_loop::record_activity(
+    const std::vector<messaging::market_tick>& ticks,
+    const std::vector<item>& items,
+    const std::map<std::string, ores::database::context>& tenant_ctxs) {
+    struct newest {
+        const domain::feed_binding* binding;
+        boost::uuids::uuid series_id;
+        std::chrono::system_clock::time_point at;
+    };
+    std::map<binding_key, newest> latest;
+    for (const auto& it : items) {
+        if (!it.stored)
+            continue;
+        const auto& b = it.target->binding;
+        const auto at = ticks[it.tick_index].observation_time;
+        const binding_key key{
+            b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
+        const auto found = latest.find(key);
+        if (found == latest.end() || found->second.at < at)
+            latest[key] = newest{&b, it.series_id, at};
     }
 
-    const auto middle = indexes.size() / 2;
-    write_items(tenant_ctx, items, indexes.first(middle));
-    write_items(tenant_ctx, items, indexes.subspan(middle));
+    const auto now = std::chrono::steady_clock::now();
+    for (const auto& [key, n] : latest) {
+        {
+            std::lock_guard lock(mu_);
+            auto& last = activity_recorded_[key];
+            if (now - last < activity_interval)
+                continue;
+            last = now;
+        }
+        try {
+            repository::feed_binding_activity_repository{}.record(tenant_ctxs.at(key.tenant_id),
+                                                                  n.binding->party_id,
+                                                                  key.source_name,
+                                                                  n.series_id,
+                                                                  n.at);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to record the activity of source '"
+                                      << key.source_name << "': " << e.what();
+        }
+    }
 }
 
 std::shared_ptr<const core::series_classifier>
@@ -576,41 +537,6 @@ domain::market_series make_feed_series(const domain::feed_binding& binding,
     return series;
 }
 
-/**
- * @brief The dates one tick is recorded under: the day it was published, and the close
- * of the last completed business day.
- *
- * ORE reads a market time series by the date it carries -- a market.txt line's first
- * field, which the export takes from the observation's own datetime -- and a report
- * that values at the previous business day's close asks for that date. A live producer
- * can only publish a value it holds now, so a deployment whose feeds started today has
- * no close for yesterday and every end-of-day report fails on a valuation date with no
- * quotes. Recording each observation under the close as well gives the series a
- * valuation date's worth of history from the producer's first tick, so a fresh
- * environment can value a report at the close it values at, with nothing run by hand
- * and no backfill of dates the producer never saw.
- *
- * One business day is as far back as this reaches, because one is what an end-of-day
- * report asks for; a longer lookback would be history the producer has no state for.
- * The time of day is kept, so the rows of one date stay in the order they arrived and
- * a reader that takes the last one takes the newest close.
- */
-std::vector<std::chrono::system_clock::time_point>
-observation_dates(std::chrono::system_clock::time_point published_at) {
-    using namespace std::chrono;
-    std::vector<system_clock::time_point> dates{published_at};
-
-    const auto published_day = floor<days>(published_at);
-    auto close_day = published_day - days{1};
-    while (weekday{close_day} == Saturday || weekday{close_day} == Sunday)
-        close_day -= days{1};
-
-    // A producer that publishes on a weekend records no second date: the close a report
-    // asks for is already the one the last business day of ticks recorded.
-    if (weekday{published_day} != Saturday && weekday{published_day} != Sunday)
-        dates.push_back(close_day + (published_at - published_day));
-    return dates;
-}
 boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context& tenant_ctx,
                                                    const domain::feed_binding& binding,
                                                    const datum::market_datum& tick_datum,
@@ -681,8 +607,7 @@ void feed_ingest_loop::log_status() const {
         << " stale=" << stale_dropped_.load(std::memory_order_relaxed)
         << " late_unpublished=" << late_unpublished_.load(std::memory_order_relaxed)
         << " store_unavailable=" << store_unavailable_.load(std::memory_order_relaxed)
-        << " ticks_copied=" << ticks_copied_.load(std::memory_order_relaxed)
-        << " tick_copy_failures=" << tick_copy_failures_.load(std::memory_order_relaxed)
+        << " ticks_stored=" << ticks_stored_.load(std::memory_order_relaxed)
         << " batches=" << batches_.load(std::memory_order_relaxed)
         << " last_batch_ticks=" << last_batch_ticks_.load(std::memory_order_relaxed)
         << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed);

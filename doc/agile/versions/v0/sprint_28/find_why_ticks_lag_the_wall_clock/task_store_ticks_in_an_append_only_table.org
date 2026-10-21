@@ -28,9 +28,9 @@ The observation table stops at about 8,300 rows per second for one connection be
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Steps 1 to 3 done. Step 4 started: the dictionary and the as-of snapshot reader. |
+| Now          | Steps 1 to 4 done. The ingest stores ticks in the tick table only. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 4: point the readers at the table, one at a time. |
+| Next         | Step 5: measure a burst with the tick injector. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -92,14 +92,32 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
      because the ingest context names no party.
    - Reader 1, the as-of snapshot (=read_as_of_records=, which =read_as_of= calls). It serves the
      snapshot, the curve pillars and the curve republish. It reads the latest tick of each
-     coordinate with one index probe, and it reads the observation table as before. On a tie
-     the observation row wins. Four tests: a series without coordinates, two coordinates and
-     an instant, a party that does not own the series, and the tie.
-   Still to do: the buckets (evolution), the instants (slices), the latest rows of a series (ORE
-   export), and the newest row of a source (feed binding activity). Two questions block the end
-   of the step. The ingest writes a second row for each tick under the close of the previous
-   business day, and the tick table does not hold it. The tick table also has no source, so the
-   activity of a binding has nothing to read.
+     datum with one index probe, and it reads the observation table as before. On a tie the
+     observation row wins.
+   - Readers 2 and 3, the evolution buckets and the slice instants, in the same way.
+   - Every datum has a row in the dictionary, including the datum of a series without
+     coordinates. The row holds the URI that the feed sent, which is the URI of the
+     observation rows. The first version used the URI of the series for that datum, and the
+     export could not read it.
+   - Reader 4, the ORE export. Decision of the owner, 2026-10-21: the ingest no longer writes
+     the second row under the previous close. The export takes an optional valuation date,
+     and then writes one line for each datum with the value at the close of that day, from
+     both tables. The report run passes the date of its run document, and the shell takes
+     =--date=. Without a date, the export is the observation table as before, and the ticks
+     of a live feed are not in it.
+   - Reader 5, the activity of a feed binding. Decision of the owner, 2026-10-21: the tick has
+     no source column. The ingest writes one row for each binding in
+     =ores_marketdata_feed_binding_activity_tbl=, with the series and the time of its newest
+     tick, at most every five seconds. The reader reads that row. The row can trail the newest
+     tick by five seconds.
+   - The ingest stores a tick only in the tick table, with one =COPY= for each batch. The
+     observation write, the close row, the split-and-retry of a failed batch and
+     =keep_last_per_key= are gone. A store that does not answer leaves the batch unstored and
+     republished, with the backoff of before. Two ticks of one datum and time in a batch make
+     one row, and the later tick wins. Without a writer role, nothing is stored.
+   Not covered by this step: the list and count of observations of a series, which the shell
+   and the screens use, read the observation table only, so a live tick is not in them. The
+   plan did not list that reader.
 5. Measure a burst with the tick injector.
 6. Open a separate task for the session functions of the policies, which cost seven times on an
    indexed read.

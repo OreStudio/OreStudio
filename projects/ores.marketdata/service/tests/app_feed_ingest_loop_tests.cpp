@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -51,11 +52,11 @@ const std::string tags("[app][feed_ingest_loop]");
 
 using ores::marketdata::domain::feed_binding;
 using ores::marketdata::messaging::market_tick;
+using ores::marketdata::repository::feed_binding_activity_repository;
 using ores::marketdata::repository::feed_binding_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::service::app::feed_ingest_loop;
-using ores::marketdata::service::app::observation_dates;
 using ores::marketdata::service::app::tick_drop;
 using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
@@ -161,42 +162,62 @@ market_tick tick_from(const std::string& source, const std::string& oresmd_uri) 
     return t;
 }
 
+/// The number of rows of @p series in the tick table, read as the marketdata service, which
+/// has no BYPASSRLS, under the tenant and party of the test. This read proves what the
+/// policies let a reader see.
+std::string
+tick_scalar(const std::string& tenant, const std::string& party, const std::string& sql_text) {
+    const auto env = [](const char* name) {
+        const auto* v = std::getenv(name);
+        return v != nullptr ? std::string(v) : std::string();
+    };
+    const auto info = "host=" + env("ORES_TEST_DB_HOST") +
+                      " dbname=" + env("ORES_TEST_DB_DATABASE") +
+                      " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
+                      " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
+    std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
+    REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
+    const auto run = [&](const std::string& sql) {
+        std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn.get(), sql.c_str()), &PQclear);
+        REQUIRE((PQresultStatus(r.get()) == PGRES_COMMAND_OK ||
+                 PQresultStatus(r.get()) == PGRES_TUPLES_OK));
+        return PQntuples(r.get()) > 0 ? std::string(PQgetvalue(r.get(), 0, 0)) : std::string();
+    };
+    run("set app.current_tenant_id = '" + tenant + "'");
+    run("set app.visible_party_ids = '{" + party + "}'");
+    return run(sql_text);
 }
 
-TEST_CASE("a_tick_is_recorded_under_its_own_day_and_the_last_business_day_that_closed",
-          "[app][feed_ingest_loop][observation_dates]") {
-    using namespace std::chrono;
-
-    // Wednesday 2026-10-14 16:30 and Monday 2026-10-19 09:00, both business days, so the
-    // close is the day before the first and the Friday before the second.
-    const auto wednesday = sys_days{year{2026} / 10 / 14} + hours{16} + minutes{30};
-    const auto monday = sys_days{year{2026} / 10 / 19} + hours{9};
-
-    const auto midweek = observation_dates(system_clock::time_point{wednesday});
-    REQUIRE(midweek.size() == 2);
-    CHECK(midweek.front() == system_clock::time_point{wednesday});
-    CHECK(midweek.back() ==
-          system_clock::time_point{sys_days{year{2026} / 10 / 13} + hours{16} + minutes{30}});
-
-    const auto after_the_weekend = observation_dates(system_clock::time_point{monday});
-    REQUIRE(after_the_weekend.size() == 2);
-    CHECK(after_the_weekend.back() ==
-          system_clock::time_point{sys_days{year{2026} / 10 / 16} + hours{9}});
+std::string
+tick_rows_of(const std::string& tenant, const std::string& party, const std::string& series) {
+    return tick_scalar(tenant,
+                       party,
+                       "select count(*) from ores_marketdata_ticks_tbl where series_id = '" +
+                           series + "'");
 }
 
-TEST_CASE("a_weekend_tick_records_only_its_own_day", "[app][feed_ingest_loop][observation_dates]") {
-    using namespace std::chrono;
-
-    // Saturday 2026-10-17: the last business day closed on the Friday, whose ticks already
-    // recorded it, so a weekend observation adds no close of its own.
-    const auto saturday = sys_days{year{2026} / 10 / 17} + hours{11};
-    const auto dates = observation_dates(system_clock::time_point{saturday});
-
-    REQUIRE(dates.size() == 1);
-    CHECK(dates.front() == system_clock::time_point{saturday});
+/// The writer of the tick table as the environment configures it, or nothing when the role is
+/// not set. The loop stores nothing without it.
+std::shared_ptr<ores::marketdata::service::app::tick_writer> make_writer() {
+    const auto* user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
+    const auto* password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
+    if (user == nullptr || password == nullptr ||
+        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+        return nullptr;
+    return std::make_shared<ores::marketdata::service::app::tick_writer>(
+        ores::marketdata::service::app::tick_writer_options{
+            .user = user,
+            .password = password,
+            .host = std::getenv("ORES_TEST_DB_HOST"),
+            .database = std::getenv("ORES_TEST_DB_DATABASE")});
 }
 
-TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) {
+}
+
+TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_tick", tags) {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
@@ -206,7 +227,7 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     // The loop is built but never started: no subscription is opened, so
     // handle_tick is the store path under test rather than the wire. refresh()
     // builds the bindings cache from the row above, exactly as start() does.
-    feed_ingest_loop loop(f.nats, f.h.context());
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.refresh();
 
     const auto tick = tick_from(bound_source, quote_uri);
@@ -221,30 +242,63 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     CHECK(series.front().tenant_id.to_string() == f.h.tenant_id().to_string());
     CHECK(boost::uuids::to_string(series.front().party_id) == boost::uuids::to_string(f.party_id));
 
-    market_observation_repository obs_repo;
-    const auto observations = obs_repo.read_latest_for_series(f.h.context(), series.front().id);
-    auto recorded_at = observation_dates(tick.observation_time);
-    REQUIRE(observations.size() == recorded_at.size());
+    // One row, not one for each date: the close of the last business day is a question for
+    // the reader, and no row answers it.
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+    const auto series_text = boost::uuids::to_string(series.front().id);
+    CHECK(tick_rows_of(tenant, party, series_text) == "1");
 
-    // The store returns the rows oldest first, which is the order the design
-    // asks for: a reader that takes the last row takes the newest close. The
-    // dates the loop records come newest first, so the two are compared in one
-    // order rather than by position.
-    auto expected = recorded_at;
-    std::sort(expected.begin(), expected.end());
-    for (std::size_t i = 0; i < observations.size(); ++i) {
-        // to_iso8601_utc writes six digits of microseconds, which is the
-        // precision the column keeps, so the round trip loses nothing a
-        // time_point held below the microsecond.
-        const auto delta = observations[i].observation_datetime - expected[i];
-        CHECK(std::chrono::abs(delta) < std::chrono::milliseconds(1));
-        CHECK(observations[i].series_id == series.front().id);
-        CHECK(observations[i].oresmd_uri == quote_uri);
-        CHECK(observations[i].source == bound_source);
-        CHECK(observations[i].value == tick_value);
-        CHECK(boost::uuids::to_string(observations[i].party_id) ==
-              boost::uuids::to_string(f.party_id));
-    }
+    // The reader finds the tick under the datum URI the feed sent.
+    const auto owner =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, f.h.db_user());
+    const auto points = market_observation_repository{}.read_as_of(
+        owner, series.front().id, tick.observation_time + std::chrono::minutes(1));
+    REQUIRE(points.size() == 1);
+    CHECK(points.front().oresmd_uri == quote_uri);
+    CHECK(points.front().value == tick_value);
+    CHECK(std::chrono::abs(points.front().observation_datetime - tick.observation_time) <
+          std::chrono::milliseconds(1));
+    CHECK(boost::uuids::to_string(points.front().party_id) == party);
+
+    // The binding says what it last delivered, since the tick has no source of its own.
+    const auto recorded = feed_binding_activity_repository{}.read(owner, f.party_id, bound_source);
+    REQUIRE(recorded.has_value());
+    CHECK(recorded->series_id == series.front().id);
+    CHECK(std::chrono::abs(recorded->last_tick_at - tick.observation_time) <
+          std::chrono::milliseconds(1));
+}
+
+TEST_CASE("the_activity_of_a_binding_is_recorded_once_in_the_interval", tags) {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+
+    const auto first = tick_from(bound_source, quote_uri);
+    auto second = first;
+    second.observation_time += std::chrono::seconds(2);
+    REQUIRE_FALSE(loop.handle_tick(first).has_value());
+    REQUIRE_FALSE(loop.handle_tick(second).has_value());
+
+    const auto owner =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, f.h.db_user());
+    const auto recorded = feed_binding_activity_repository{}.read(owner, f.party_id, bound_source);
+    REQUIRE(recorded.has_value());
+    CHECK(std::chrono::abs(recorded->last_tick_at - first.observation_time) <
+          std::chrono::milliseconds(1));
+
+    // A source that delivered nothing has no row.
+    CHECK_FALSE(feed_binding_activity_repository{}
+                    .read(owner, f.party_id, bound_source + ".none")
+                    .has_value());
 }
 
 TEST_CASE("a_tick_from_a_source_with_no_enabled_binding_is_dropped_and_writes_nothing", tags) {
@@ -290,6 +344,9 @@ TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
 }
 
 TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_key", tags) {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto first_uri = eur_usd_spot();
@@ -297,11 +354,11 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
     f.bind(bound_source, "SYNTHETIC");
     f.connect();
 
-    feed_ingest_loop loop(f.nats, f.h.context());
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.refresh();
 
-    // Two ticks of one datum with one observation time make one key. The second is the
-    // one the store keeps.
+    // Two ticks of one datum with one observation time make one row. The second is the one
+    // the store keeps.
     auto repeated = tick_from(bound_source, first_uri);
     auto latest = repeated;
     latest.value = "1.0999";
@@ -312,18 +369,47 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
     for (const auto& outcome : outcomes)
         CHECK_FALSE(outcome.has_value());
 
-    market_observation_repository obs_repo;
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+    const auto owner =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, f.h.db_user());
     const auto first_series = f.series_for(first_uri);
     REQUIRE(first_series.size() == 1);
-    const auto first_rows = obs_repo.read_latest_for_series(f.h.context(), first_series.front().id);
-    REQUIRE(first_rows.size() == observation_dates(repeated.observation_time).size());
-    for (const auto& row : first_rows)
-        CHECK(row.value == "1.0999");
+    CHECK(tick_rows_of(tenant, party, boost::uuids::to_string(first_series.front().id)) == "1");
+    const auto first_points = market_observation_repository{}.read_as_of(
+        owner, first_series.front().id, repeated.observation_time + std::chrono::minutes(1));
+    REQUIRE(first_points.size() == 1);
+    CHECK(first_points.front().value == "1.0999");
 
     const auto second_series = f.series_for(second_uri);
     REQUIRE(second_series.size() == 1);
-    CHECK(obs_repo.read_latest_for_series(f.h.context(), second_series.front().id).size() ==
-          observation_dates(other.observation_time).size());
+    CHECK(tick_rows_of(tenant, party, boost::uuids::to_string(second_series.front().id)) == "1");
+}
+
+TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer", tags) {
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    auto unreachable = std::make_shared<ores::marketdata::service::app::tick_writer>(
+        ores::marketdata::service::app::tick_writer_options{.user = "nobody",
+                                                            .password = "none",
+                                                            .host = "127.0.0.1",
+                                                            .database = "none",
+                                                            .port = 1});
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, unreachable);
+    loop.refresh();
+
+    CHECK_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+    CHECK_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+
+    const auto series = f.series_for(quote_uri);
+    REQUIRE(series.size() == 1);
+    CHECK(tick_rows_of(f.h.tenant_id().to_string(),
+                       boost::uuids::to_string(f.party_id),
+                       boost::uuids::to_string(series.front().id)) == "0");
 }
 
 TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
@@ -357,49 +443,9 @@ TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
     SUCCEED();
 }
 
-namespace {
-
-/// The number of rows of @p series in the tick table, read as the marketdata service, which
-/// has no BYPASSRLS, under the tenant and party of the test. This read proves what the
-/// policies let a reader see.
-std::string
-tick_scalar(const std::string& tenant, const std::string& party, const std::string& sql_text) {
-    const auto env = [](const char* name) {
-        const auto* v = std::getenv(name);
-        return v != nullptr ? std::string(v) : std::string();
-    };
-    const auto info = "host=" + env("ORES_TEST_DB_HOST") +
-                      " dbname=" + env("ORES_TEST_DB_DATABASE") +
-                      " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
-                      " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
-    std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
-    REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
-    const auto run = [&](const std::string& sql) {
-        std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn.get(), sql.c_str()), &PQclear);
-        REQUIRE((PQresultStatus(r.get()) == PGRES_COMMAND_OK ||
-                 PQresultStatus(r.get()) == PGRES_TUPLES_OK));
-        return PQntuples(r.get()) > 0 ? std::string(PQgetvalue(r.get(), 0, 0)) : std::string();
-    };
-    run("set app.current_tenant_id = '" + tenant + "'");
-    run("set app.visible_party_ids = '{" + party + "}'");
-    return run(sql_text);
-}
-
-std::string
-tick_rows_of(const std::string& tenant, const std::string& party, const std::string& series) {
-    return tick_scalar(tenant,
-                       party,
-                       "select count(*) from ores_marketdata_ticks_tbl where series_id = '" +
-                           series + "'");
-}
-
-}
-
 TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_series", tags) {
-    const auto* writer_user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
-    const auto* writer_password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
-    if (writer_user == nullptr || writer_password == nullptr ||
-        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+    auto writer = make_writer();
+    if (!writer)
         SKIP("The tick writer role is not configured");
 
     fixture f;
@@ -408,12 +454,6 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
     f.bind(bound_source, "SYNTHETIC");
     f.connect();
 
-    auto writer = std::make_shared<ores::marketdata::service::app::tick_writer>(
-        ores::marketdata::service::app::tick_writer_options{
-            .user = writer_user,
-            .password = writer_password,
-            .host = std::getenv("ORES_TEST_DB_HOST"),
-            .database = std::getenv("ORES_TEST_DB_DATABASE")});
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.refresh();
 
@@ -432,10 +472,8 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
 }
 
 TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinate_number", tags) {
-    const auto* writer_user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
-    const auto* writer_password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
-    if (writer_user == nullptr || writer_password == nullptr ||
-        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+    auto writer = make_writer();
+    if (!writer)
         SKIP("The tick writer role is not configured");
 
     fixture f;
@@ -450,12 +488,6 @@ TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinat
     f.bind(bound_source, "SYNTHETIC");
     f.connect();
 
-    auto writer = std::make_shared<ores::marketdata::service::app::tick_writer>(
-        ores::marketdata::service::app::tick_writer_options{
-            .user = writer_user,
-            .password = writer_password,
-            .host = std::getenv("ORES_TEST_DB_HOST"),
-            .database = std::getenv("ORES_TEST_DB_DATABASE")});
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.refresh();
 

@@ -1,27 +1,32 @@
 /* A report and everything it runs. Self-contained: plain JavaScript, mock data,
  * no framework, no build step, and nothing that outlives the page.
  *
- * One page for one report definition. It answers three questions, and each is a
- * section of the page: what the report is (the definition), what it runs with
- * (the configuration) and which market terms it reads (the conventions). Three
- * layouts arrange the same sections:
+ * One page for one report definition, on six tabs. Each tab has one owner and
+ * says what a change on it reaches:
  *
- *   A  three tabs: Definition, Configuration, Conventions. The proposal.
- *   B  four tabs: the configuration split into run settings and market and pricing.
- *   C  one page, an index at the top, no tabs.
+ *   Definition          what the report is, with its report currency
+ *   Scope               the portfolios and books it reads, and the book type rule
+ *   Analytics           what it computes, and how the engine runs it
+ *   Market and pricing  the market it prices against, and the three configurations
+ *                       every report of the party shares
+ *   Conventions         the market terms it reads, and the proposed set choice
+ *   History             the standard history of the definition, and the versions
+ *                       of what it runs with
  *
- * The sections are the same in every layout. Only the arrangement differs, so a
- * reader compares how much has to be held in the head at once and not what is
- * drawn.
+ * The owner chose the four-tab layout, then asked for the run settings to be
+ * split: a run settings configuration is not one thing. It holds a currency, a
+ * market data choice, a few engine settings, and two children, the scope and the
+ * analytics. So the scope and the analytics are tabs of their own, the currency
+ * is the report's, and the rest sits with the market and the engine.
  *
  * What is the system as it is, and what is proposed, is marked on the page with
- * the words "today" and "proposed". The measured figures are the rows of the 26
+ * the words "today" and "proposed". The convention counts are the rows of the 26
  * convention tables of the bright_faraday development database on 2026-10-21;
  * every other name, set and purpose is a fixture.
  *
- *   ?variant=A|B|C  ?tab=definition|configuration|runsettings|shared|conventions
+ *   ?tab=definition|scope|analytics|market|conventions|history
  *   ?conv=today|sets  ?type=none|Trading|Banking  ?hand=no|yes  ?shared=no|yes
- *   ?role=admin|reader
+ *   ?role=admin|reader  ?version=1|2|3  ?changes=only|all
  */
 
 (function () {
@@ -34,22 +39,22 @@
     var DEFINITION = {
         id: 'daf18b08',
         name: 'NPV',
-        description: 'Net present value of every trade in the entity, in the entity currency.',
+        description: 'Net present value of every trade in the entity, in the report currency.',
         reportType: 'risk',
         schedule: 'At 18:30, Monday through Friday',
         cron: '30 18 * * 1-5',
-        concurrency: 'skip',
+        concurrency: 'Skip',
         official: true,
-        preProcessing: 'execute',
-        postProcessing: 'execute',
         version: 3,
         health: 'Completed',
         latest: { id: 'a2e6c04d', at: '2026-10-21 17:05', took: '9 s', trades: 8, state: 'Completed' }
     };
 
+    var CURRENCY = { code: 'HKD', name: 'Hong Kong dollar', flag: '🇭🇰' };
+
     var RUN_SETTINGS = {
         name: 'Valuation - Global Portfolio',
-        currency: 'HKD',
+        sharedWith: ['Cashflows', 'Intraday Risk Monitor'],
         analytics: [
             { code: 'npv', what: 'Net present value of every trade', on: true, order: 1 },
             { code: 'cashflow', what: 'The cash flows of every trade', on: false, order: 2 },
@@ -58,9 +63,21 @@
             { code: 'pfe', what: 'Potential future exposure, reads the cube', on: false, order: 5 },
             { code: 'xva', what: 'CVA, DVA and FVA', on: false, order: 6 }
         ],
-        sharedWith: ['Cashflows', 'Intraday Risk Monitor'],
         scopeLines: [{ name: 'Global Portfolio', kind: 'portfolio', books: 8, trading: 6, banking: 2 }],
-        handBook: { name: 'Rates Desk 1', kind: 'book', type: 'Trading' }
+        handBook: { name: 'Rates Desk 1', kind: 'book', type: 'Trading' },
+        engine: [
+            ['Threads', 'Engine default'],
+            ['Observation model', 'Engine default'],
+            ['Continue on error', 'No'],
+            ['Imply today’s fixings', 'No'],
+            ['Log mask', '31'],
+            ['Input, output and log', 'Input, Output, log.txt']
+        ],
+        market: [
+            ['Market data', 'End of day'],
+            ['Market data date', 'The latest date held'],
+            ['Pricing market', 'default']
+        ]
     };
 
     var SHARED = [
@@ -73,8 +90,8 @@
             href: '../see-the-pricing-engines-a-party-holds/'
         },
         {
-            type: "Today's market",
-            name: "HK today's market",
+            type: 'Today’s market',
+            name: 'HK today’s market',
             what: 'Which curves and quotes make the market of the day',
             used: 22,
             screen: 'none'
@@ -100,46 +117,50 @@
     ];
 
     var SETS = [
-        {
-            id: 'none',
-            name: 'Every document (today)',
-            purpose: 'No set. A run reads all the documents the party holds.',
-            kinds: 26,
-            documents: 0,
-            used: 22,
-            current: true
-        },
-        {
-            id: 'set-1',
-            name: 'ACME HK desk default',
-            purpose: 'The terms the Hong Kong desks book and are marked on.',
-            kinds: 26,
-            documents: 26,
-            used: 18,
-            current: false
-        },
-        {
-            id: 'set-2',
-            name: 'Dubai swaps desk',
-            purpose: 'AED swaps on ACT/360 with the desk fixing calendar.',
-            kinds: 9,
-            documents: 9,
-            used: 0,
-            current: false
-        },
-        {
-            id: 'set-3',
-            name: 'LIBOR fallback review',
-            purpose: 'Fallback terms for the IBOR indices, for the review of old trades.',
-            kinds: 4,
-            documents: 4,
-            used: 1,
-            current: false
-        }
+        { id: 'none', name: 'Every document (today)', purpose: 'No set. A run reads all the documents the party holds.', kinds: 26, documents: 0, used: 22, current: true },
+        { id: 'set-1', name: 'ACME HK desk default', purpose: 'The terms the Hong Kong desks book and are marked on.', kinds: 26, documents: 26, used: 18, current: false },
+        { id: 'set-2', name: 'Dubai swaps desk', purpose: 'AED swaps on ACT/360 with the desk fixing calendar.', kinds: 9, documents: 9, used: 0, current: false },
+        { id: 'set-3', name: 'LIBOR fallback review', purpose: 'Fallback terms for the IBOR indices, for the review of old trades.', kinds: 4, documents: 4, used: 1, current: false }
     ];
 
     var TOTAL_DOCUMENTS = KINDS.reduce(function (n, k) { return n + k[1]; }, 0);
     SETS[0].documents = TOTAL_DOCUMENTS;
+
+    // The standard history of the definition: the version snapshots, as the
+    // server's history mapper names the fields.
+    var FIELDS = ['Description', 'Schedule expression', 'Concurrency policy', 'Official', 'Prepared input key'];
+    var VERSIONS = [
+        {
+            v: 3, at: '2026-10-21 14:40', by: 'tenant_admin', reason: 'common.non_material_update',
+            commentary: 'The description now says the report currency.',
+            snap: {
+                'Description': 'Net present value of every trade in the entity, in the report currency.',
+                'Schedule expression': '30 18 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
+            }
+        },
+        {
+            v: 2, at: '2026-10-21 11:02', by: 'tenant_admin', reason: 'common.non_material_update',
+            commentary: 'Moved after the Hong Kong close.',
+            snap: {
+                'Description': 'Net present value of every trade in the entity, in the entity currency.',
+                'Schedule expression': '30 18 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
+            }
+        },
+        {
+            v: 1, at: '2026-10-21 10:23', by: 'system', reason: 'system.external_data_import',
+            commentary: 'Published from DQ dataset',
+            snap: {
+                'Description': 'Net present value of every trade in the entity, in the entity currency.',
+                'Schedule expression': '0 6 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
+            }
+        }
+    ];
+
+    var CONFIG_VERSIONS = [
+        { at: '2026-10-21 14:12', what: 'Run settings Valuation - Global Portfolio, version 2', note: 'The scope was set to Global Portfolio.' },
+        { at: '2026-10-21 10:23', what: 'HK pricing engines, version 1', note: 'Published from DQ dataset. Read by all 22 reports.' },
+        { at: '2026-10-21 10:23', what: 'HK today’s market, version 1', note: 'Published from DQ dataset. Read by all 22 reports.' }
+    ];
 
     // --------------------------------------------------------------- state
 
@@ -148,16 +169,23 @@
         return m ? decodeURIComponent(m[1]) : fallback;
     }
 
+    var TABS = [
+        ['definition', 'Definition'], ['scope', 'Scope'], ['analytics', 'Analytics'],
+        ['market', 'Market and pricing'], ['conventions', 'Conventions'], ['history', 'History']
+    ];
+
     var S = {
-        variant: query('variant', 'A'),
         tab: query('tab', 'definition'),
         conv: query('conv', 'today'),
         type: query('type', 'none'),
         hand: query('hand', 'no'),
         shared: query('shared', 'no'),
         role: query('role', 'admin'),
+        version: Number(query('version', '3')),
+        changes: query('changes', 'only'),
         chosen: 'none',
         requested: false,
+        reverted: false,
         dialog: false,
         dialogType: null,
         dialogError: null,
@@ -167,7 +195,7 @@
 
     function sync() {
         var p = [];
-        ['variant', 'tab', 'conv', 'type', 'hand', 'shared', 'role'].forEach(function (k) {
+        ['tab', 'conv', 'type', 'hand', 'shared', 'role', 'version', 'changes'].forEach(function (k) {
             p.push(k + '=' + encodeURIComponent(S[k]));
         });
         window.history.replaceState(null, '', '?' + p.join('&'));
@@ -205,6 +233,30 @@
         return S.role === 'admin';
     }
 
+    function field(label, value) {
+        return '<div><span class="lbl">' + label + '</span><span class="val">' + value + '</span></div>';
+    }
+
+    // The currency, drawn with its flag as the application draws a currency.
+    function currencyCell() {
+        return '<span class="flag" title="' + esc(CURRENCY.name) + '">' + CURRENCY.flag + '</span> ' +
+            '<span class="mono">' + CURRENCY.code + '</span> <span class="faint">' + esc(CURRENCY.name) + '</span>';
+    }
+
+    // What a change to the run settings configuration reaches. The scope, the
+    // analytics, the currency and the engine settings are one configuration.
+    function reachNote(what) {
+        if (S.shared === 'yes') {
+            return '<div class="notice warn"><b>Shared by ' + (RUN_SETTINGS.sharedWith.length + 1) + ' reports.</b> ' +
+                esc(what) + ' belongs to the run settings <span class="mono">' + esc(RUN_SETTINGS.name) +
+                '</span>, so a change here reaches NPV, ' + esc(RUN_SETTINGS.sharedWith.join(', ')) +
+                '. Past runs keep the configuration they ran with.</div>';
+        }
+        return '<div class="notice">' + esc(what) + ' belongs to the run settings <span class="mono">' +
+            esc(RUN_SETTINGS.name) + '</span>, used by this report alone. A change here reaches no other report, ' +
+            'and past runs keep the configuration they ran with.</div>';
+    }
+
     // The books the report reads under its scope and its type.
     function reach() {
         var line = RUN_SETTINGS.scopeLines[0];
@@ -230,22 +282,23 @@
             ? '<button class="btn small" data-act="edit">Edit</button>'
             : '<span class="tag muted">Read only</span>';
         return '' +
-            '<section class="card" id="sec-definition">' +
+            '<section class="card">' +
             '<div class="sectionhead"><h2>Definition</h2><div class="meta">' + edit + '</div></div>' +
             '<div class="statgrid">' +
             field('Name', esc(d.name) + ' <span class="faint mono">' + d.id + '</span>') +
             field('Party', esc(PARTY)) +
             field('Report type', 'Risk report') +
             field('Schedule', esc(d.schedule) + ' <span class="faint mono">' + esc(d.cron) + '</span>') +
-            field('Concurrency', 'Skip') +
+            field('Concurrency', esc(d.concurrency)) +
             field('Official', d.official ? 'Yes' : 'No') +
-            field('Book type', '<span class="tag ' + (S.type === 'none' ? 'muted' : 'accent') + '">' +
-                esc(typeWord(S.type)) + '</span>') +
-            field('Processing', 'Execute, then execute') +
+            field('Report currency', currencyCell()) +
+            field('Book type', '<span class="tag ' + (S.type === 'none' ? 'muted' : 'accent') + '">' + esc(typeWord(S.type)) + '</span>') +
             '</div>' +
             '<p class="hint" style="margin-top:10px">' + esc(typeMeaning()) + '</p>' +
             '<p class="hint" style="margin-top:6px">' + esc(d.description) + '</p>' +
-            '<p class="rowfoot">A change on this section reaches this report only. Version ' + d.version + '.</p>' +
+            '<p class="rowfoot">The report currency is held by the run settings, so changing it reaches every report that shares them: ' +
+            (S.shared === 'yes' ? 'three reports here. ' : 'none here. ') +
+            'Every other field reaches this report only. Version ' + d.version + '.</p>' +
             '</section>' +
             '<section class="card">' +
             '<div class="sectionhead"><h2>Latest run</h2><div class="meta"><a class="btn small linklike" href="../read-what-a-run-produced/">Open the run</a></div></div>' +
@@ -256,30 +309,19 @@
             '</section>';
     }
 
-    function field(label, value) {
-        return '<div><span class="lbl">' + label + '</span><span class="val">' + value + '</span></div>';
-    }
-
-    function runSettingsSection() {
+    function scopeSection() {
         var rs = RUN_SETTINGS;
         var r = reach();
-        var shared = S.shared === 'yes';
-        var rows = rs.analytics.map(function (a) {
-            return '<tr class="' + (a.on ? '' : 'unreachable') + '"><td class="code">' + a.code + '</td>' +
-                '<td class="wrap">' + esc(a.what) + '</td><td>' +
-                (a.on ? '<span class="tag ok">On</span>' : '<span class="tag muted">Off</span>') +
-                '</td><td class="num">' + a.order + '</td></tr>';
-        }).join('');
         var named = S.hand === 'yes';
-        var scope = rs.scopeLines.map(function (l) {
+        var rows = rs.scopeLines.map(function (l) {
             return '<tr class="' + (named ? 'unreachable' : '') + '"><td>' + esc(l.name) + '</td><td>' + l.kind + ' with its subtree</td>' +
                 '<td class="num">' + (named ? 'not read' : l.books + ' books') + '</td>' +
                 '<td class="faint">' + (named
                     ? 'a book named by hand replaces the portfolio lines'
                     : l.trading + ' trading, ' + l.banking + ' banking') + '</td></tr>';
         }).join('');
-        if (S.hand === 'yes') {
-            scope += '<tr><td>' + esc(rs.handBook.name) + '</td><td>book, named by hand</td>' +
+        if (named) {
+            rows += '<tr><td>' + esc(rs.handBook.name) + '</td><td>book, named by hand</td>' +
                 '<td class="num">1 book</td><td class="faint">' + rs.handBook.type + '</td></tr>';
         }
         var reads = named
@@ -288,47 +330,71 @@
                 ? 'This report reads all ' + r.all + ' books.'
                 : 'This report reads ' + r.read + ' of the ' + r.all + ' books: the ' +
                   (S.type === 'Trading' ? 'trading' : 'banking') + ' books only.';
-        var reachNote = shared
-            ? '<div class="notice warn"><b>Shared by ' + (rs.sharedWith.length + 1) + ' reports.</b> A change here reaches ' +
-              'NPV, ' + esc(rs.sharedWith.join(', ')) + '. Past runs keep the configuration they ran with.</div>'
-            : '<div class="notice">Used by this report alone. A change here reaches no other report, and past runs keep the configuration they ran with.</div>';
         return '' +
-            '<section class="card" id="sec-runsettings">' +
-            '<div class="sectionhead"><h2>Run settings</h2><div class="meta">' +
-            '<span class="mono">' + esc(rs.name) + '</span>' +
-            (shared ? '<span class="tag warn">Shared</span>' : '<span class="tag muted">This report only</span>') +
-            '</div></div>' +
-            reachNote +
-            '<div class="statgrid" style="margin-top:10px">' +
-            field('Base currency', rs.currency) +
-            field('Analytics on', '1 of ' + rs.analytics.length) +
-            '</div>' +
-            '<div class="sectionhead" style="margin-top:14px"><h3>Analytics</h3><div class="meta">' +
-            '<a class="btn small linklike" href="../manage-the-analytics/">Manage the analytics</a></div></div>' +
-            '<div class="table-wrap"><table><thead><tr><th>Analytic</th><th>Produces</th><th>State</th><th>Order</th></tr></thead><tbody>' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h2>Scope</h2><div class="meta">' +
+            '<span class="tag accent">Editor proposed</span>' +
+            (canWrite() ? '<button class="btn small" data-act="scope">Edit scope</button>' : '') + '</div></div>' +
+            reachNote('The scope') +
+            '<div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Scope line</th><th>Kind</th><th>Resolves to</th><th>Of which</th></tr></thead><tbody>' +
             rows + '</tbody></table></div>' +
-            '<div class="sectionhead" style="margin-top:14px"><h3>Scope</h3><div class="meta">' +
-            '<span class="tag accent">Proposed</span>' +
-            (canWrite() ? '<button class="btn small" data-act="scope">Edit scope</button>' : '') +
-            '</div></div>' +
-            '<div class="table-wrap"><table><thead><tr><th>Scope line</th><th>Kind</th><th>Resolves to</th><th>Of which</th></tr></thead><tbody>' +
-            scope + '</tbody></table></div>' +
             '<div class="notice ' + (S.type === 'none' ? '' : 'ok') + '" style="margin-top:10px">' + esc(reads) + '</div>' +
-            '<p class="rowfoot">Editing the scope is a screen that does not exist today: the scope is set by the seed and the shell.</p>' +
+            '<div class="statgrid" style="margin-top:12px">' +
+            field('Book type of the report', '<span class="tag ' + (S.type === 'none' ? 'muted' : 'accent') + '">' + esc(typeWord(S.type)) + '</span>') +
+            '</div>' +
+            '<p class="hint" style="margin-top:8px">' + esc(typeMeaning()) + ' The type is set on the Definition tab.</p>' +
+            '<p class="rowfoot">Editing the scope is a screen that does not exist today: the seed and the shell write it.</p>' +
             '</section>';
     }
 
-    function sharedSection() {
+    function settingsTable(rows) {
+        return '<div class="table-wrap"><table><tbody>' + rows.map(function (r) {
+            return '<tr><td class="faint" style="width:14rem">' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    function analyticsSection() {
+        var rs = RUN_SETTINGS;
+        var rows = rs.analytics.map(function (a) {
+            return '<tr class="' + (a.on ? '' : 'unreachable') + '"><td class="code">' + a.code + '</td>' +
+                '<td class="wrap">' + esc(a.what) + '</td><td>' +
+                (a.on ? '<span class="tag ok">On</span>' : '<span class="tag muted">Off</span>') +
+                '</td><td class="num">' + a.order + '</td></tr>';
+        }).join('');
+        return '' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h2>Analytics</h2><div class="meta">' +
+            '<a class="btn small linklike" href="../manage-the-analytics/">Manage the analytics</a></div></div>' +
+            reachNote('The analytics') +
+            '<div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Analytic</th><th>Produces</th><th>State</th><th>Order</th></tr></thead><tbody>' +
+            rows + '</tbody></table></div>' +
+            '<p class="rowfoot">1 of ' + rs.analytics.length + ' is on. An analytic is turned off by setting it inactive, never by deleting it.</p>' +
+            '</section>' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h3>Engine settings</h3><div class="meta"><span class="tag muted">Only what the seed sets is drawn</span></div></div>' +
+            settingsTable(rs.engine) +
+            '<p class="rowfoot">These are the engine’s setup parameters. They belong to the same run settings, so they reach the same reports. ' +
+            'About twenty more are held and unset, and the engine uses its own defaults for them.</p>' +
+            '</section>';
+    }
+
+    function marketSection() {
+        var rs = RUN_SETTINGS;
         var rows = SHARED.map(function (c) {
             var open = c.screen === 'prototype'
                 ? '<a class="btn small linklike" href="' + c.href + '">Open (prototype)</a>'
                 : '<span class="tag muted">No screen yet</span>';
             return '<tr><td class="typename">' + esc(c.type) + '</td><td class="code">' + esc(c.name) + '</td>' +
-                '<td class="wrap">' + esc(c.what) + '</td><td class="num">' + c.used + ' reports</td><td>' + open + '</td></tr>';
+                '<td class="wrap">' + esc(c.what) + '</td><td class="num">' + plural(c.used, 'report') + '</td><td>' + open + '</td></tr>';
         }).join('');
         return '' +
-            '<section class="card" id="sec-shared">' +
-            '<div class="sectionhead"><h2>Market and pricing</h2><div class="meta"><span class="tag muted">Shared by every report of the party</span></div></div>' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h2>Market the run reads</h2><div class="meta"><span class="tag muted">Part of the run settings</span></div></div>' +
+            reachNote('The market choice') +
+            '<div style="margin-top:10px">' + settingsTable(rs.market) + '</div>' +
+            '</section>' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h2>Configurations of the party</h2><div class="meta"><span class="tag muted">Shared by every report of the party</span></div></div>' +
             '<div class="notice warn">These three belong to the party. A change to one reaches all 22 reports of ' + esc(PARTY) + '.</div>' +
             '<div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Kind</th><th>Name</th><th>Supplies</th><th>Read by</th><th></th></tr></thead><tbody>' +
             rows + '</tbody></table></div>' +
@@ -340,7 +406,7 @@
         var shown = S.showKinds ? KINDS : KINDS.slice(0, limit);
         var rows = shown.map(function (k) {
             return '<tr><td>' + esc(kindName(k[0])) + '</td><td class="num">' + number(k[1]) + '</td>' +
-                '<td class="faint">' + (S.conv === 'today' ? 'All of them are read' : 'One, from the set') + '</td></tr>';
+                '<td class="faint">All of them are read</td></tr>';
         }).join('');
         return '<div class="table-wrap"><table><thead><tr><th>Kind</th><th>Documents held</th><th>Which one counts</th></tr></thead><tbody>' +
             rows + '</tbody></table></div>' +
@@ -353,7 +419,7 @@
             '<span class="mono">HK conventions</span><span class="tag muted">Read by ' + plural(22, 'report') + '</span></div></div>';
         if (S.conv === 'today') {
             return '' +
-                '<section class="card" id="sec-conventions">' + head +
+                '<section class="card">' + head +
                 '<div class="notice warn"><b>Today the binding chooses nothing.</b> The report binds a configuration called ' +
                 '<span class="mono">HK conventions</span>, which is a name and holds no document. A run reads every convention ' +
                 'document the party can see: <b>' + number(TOTAL_DOCUMENTS) + ' documents in ' + KINDS.length + ' kinds</b>. ' +
@@ -403,7 +469,7 @@
               '<button class="btn primary" data-act="request"' + (picked && picked.id !== 'none' && canWrite() ? '' : ' disabled') + '>Ask for approval</button>' +
               (canWrite() ? '' : '<span class="hint">You may read this page and may not change the conventions.</span>') + '</div>';
         return '' +
-            '<section class="card" id="sec-conventions">' + head +
+            '<section class="card">' + head +
             '<div class="notice"><b>Proposed.</b> A convention set groups one document of each kind under a name and a purpose. ' +
             'The report chooses a set, and a run reads the documents of that set and no others. ' +
             'The binding then means something.</div>' +
@@ -415,39 +481,74 @@
             '</section>';
     }
 
-    // ------------------------------------------------------------- layouts
-
-    function tabsFor() {
-        if (S.variant === 'B') {
-            return [['definition', 'Definition'], ['runsettings', 'Run settings'],
-                ['shared', 'Market and pricing'], ['conventions', 'Conventions']];
+    // The standard history of the record: every version, newest first, and the
+    // field difference of the version chosen from the one before it.
+    function historySection() {
+        var sel = VERSIONS.filter(function (v) { return v.v === S.version; })[0] || VERSIONS[0];
+        var before = VERSIONS.filter(function (v) { return v.v === sel.v - 1; })[0];
+        var rows = FIELDS.map(function (f) {
+            var a = before ? before.snap[f] : '';
+            var b = sel.snap[f];
+            var diff = before ? a !== b : true;
+            if (S.changes === 'only' && !diff) { return ''; }
+            return '<tr class="' + (diff ? 'changed' : 'same') + '"><td>' + esc(f) + '</td>' +
+                '<td>' + (diff && before ? '<span class="dfrom">' + esc(a === '' ? '(empty)' : a) + '</span>' : esc(a)) + '</td>' +
+                '<td>' + (diff ? '<span class="dto">' + esc(b === '' ? '(empty)' : b) + '</span>' : esc(b)) + '</td></tr>';
+        }).join('');
+        if (rows === '') {
+            rows = '<tr class="same"><td colspan="3" class="faint">No field changes between these versions.</td></tr>';
         }
-        return [['definition', 'Definition'], ['configuration', 'Configuration'], ['conventions', 'Conventions']];
+        var timeline = VERSIONS.map(function (v) {
+            return '<button class="vbtn' + (v.v === sel.v ? ' on' : '') + '" data-act="version" data-version="' + v.v + '">' +
+                '<span class="vno">v' + v.v + '</span>' +
+                '<span class="vwho">' + esc(v.by) + '</span>' +
+                '<span class="vat">' + esc(v.at) + '</span>' +
+                (v.v === DEFINITION.version ? '<span class="tag accent">current</span>' : '') + '</button>';
+        }).join('');
+        var revert = canWrite() && sel.v !== DEFINITION.version
+            ? '<button class="btn small" data-act="revert">Revert to v' + sel.v + '</button>'
+            : '';
+        return '' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h2>History</h2><div class="meta"><span class="tag muted">Standard record history</span></div></div>' +
+            '<p class="hint">Every version of this definition, newest first. It is the same history every record page has.</p>' +
+            '<div class="histgrid"><div class="timeline" role="list" aria-label="Timeline">' + timeline + '</div>' +
+            '<div><div class="sectionhead"><h3>' + (before ? 'Comparing v' + before.v + ' with v' + sel.v : 'Initial version') + '</h3><div class="meta">' +
+            '<button class="btn small ghost" data-act="changes">' + (S.changes === 'only' ? 'All fields' : 'Only changes') + '</button>' + revert + '</div></div>' +
+            '<p class="hint mono">Modified by ' + esc(sel.by) + ' · ' + esc(sel.reason) + ' · ' + esc(sel.at) + '</p>' +
+            '<p style="font-size:13px;margin:4px 0 10px">' + esc(sel.commentary) + '</p>' +
+            '<table class="difftable"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            (S.reverted ? '<div class="notice ok" style="margin-top:10px">Revert prepared: the values of v' + sel.v +
+                ' will be written as v' + (DEFINITION.version + 1) + ', with a reason. History is never rewritten.</div>' : '') +
+            '</div></div></section>' +
+            '<section class="card">' +
+            '<div class="sectionhead"><h3>Versions of what it runs with</h3><div class="meta"><span class="tag accent">Proposed addition</span></div></div>' +
+            '<p class="hint">A figure that looks wrong may have changed because a configuration changed, and the definition’s own history does not show that. ' +
+            'This list merges the versions of the configurations the report binds. Each opens that record’s own history.</p>' +
+            '<div class="versions">' + CONFIG_VERSIONS.map(function (c) {
+                return '<div class="vrow"><span class="vat">' + esc(c.at) + '</span><span class="vno">' + esc(c.what) + '</span><span class="vnote">' + esc(c.note) + '</span></div>';
+            }).join('') + '</div>' +
+            '<p class="rowfoot">The version of a configuration that a run used is not recorded on the run, so the page cannot say which runs a change reached.</p>' +
+            '</section>';
     }
+
+    // ------------------------------------------------------------- layout
 
     function bodyFor(tab) {
         switch (tab) {
             case 'definition': return definitionSection();
-            case 'configuration': return runSettingsSection() + sharedSection();
-            case 'runsettings': return runSettingsSection();
-            case 'shared': return sharedSection();
+            case 'scope': return scopeSection();
+            case 'analytics': return analyticsSection();
+            case 'market': return marketSection();
             case 'conventions': return conventionsSection();
+            case 'history': return historySection();
         }
         return definitionSection();
     }
 
     function layout() {
-        if (S.variant === 'C') {
-            var idx = ['definition', 'runsettings', 'shared', 'conventions'];
-            var names = { definition: 'Definition', runsettings: 'Run settings', shared: 'Market and pricing', conventions: 'Conventions' };
-            return '<nav class="tabs index">' + idx.map(function (t) {
-                return '<a href="#sec-' + t + '">' + names[t] + '</a>';
-            }).join('') + '</nav>' + idx.map(bodyFor).join('');
-        }
-        var tabs = tabsFor();
-        var valid = tabs.some(function (t) { return t[0] === S.tab; });
-        if (!valid) { S.tab = 'definition'; }
-        return '<nav class="tabs" role="tablist">' + tabs.map(function (t) {
+        if (!TABS.some(function (t) { return t[0] === S.tab; })) { S.tab = 'definition'; }
+        return '<nav class="tabs" role="tablist">' + TABS.map(function (t) {
             return '<a href="#" role="tab" data-act="tab" data-tab="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
         }).join('') + '</nav>' + bodyFor(S.tab);
     }
@@ -474,9 +575,19 @@
 
     // ----------------------------------------------------------------- page
 
+    function gaps() {
+        return '<section class="card gaps"><div class="sectionhead"><h2>What this prototype cannot show</h2></div><dl>' +
+            '<dt>Convention sets do not exist yet</dt><dd>The conventions of a party are 26 tables of documents. A set, with a name and a purpose and one document for each kind, is not stored anywhere. The sets drawn here are fixtures.</dd>' +
+            '<dt>A run ignores the conventions binding</dt><dd>The packaging reads every convention row of the party. Choosing a set therefore needs the packaging to read the set, and that is a change to the run, not only a screen.</dd>' +
+            '<dt>The currency is held by the run settings</dt><dd>The column is called base_currency and belongs to the run settings configuration, which several reports can share. The page calls it the report currency, because a report has one.</dd>' +
+            '<dt>Three configurations have no screen</dt><dd>Pricing engines have a prototype and no page in the application. Today’s market and the curve configuration have neither.</dd>' +
+            '<dt>The scope has no editor</dt><dd>The scope of a run settings configuration is written by the seed and the shell. The button here is the proposal.</dd>' +
+            '</dl></section>';
+    }
+
     function render() {
         document.getElementById('proto-note').textContent =
-            'Prototype · mock data · layout ' + S.variant + ' · conventions ' + S.conv;
+            'Prototype · mock data · ' + S.tab + ' · conventions ' + S.conv;
         var d = DEFINITION;
         document.getElementById('app').innerHTML = '' +
             '<div class="shell"><header class="appheader"><div class="appheader-inner">' +
@@ -493,15 +604,6 @@
         bind();
     }
 
-    function gaps() {
-        return '<section class="card gaps"><div class="sectionhead"><h2>What this prototype cannot show</h2></div><dl>' +
-            '<dt>Convention sets do not exist yet</dt><dd>The conventions of a party are 26 tables of documents. A set, with a name and a purpose and one document for each kind, is not stored anywhere. The sets drawn here are fixtures.</dd>' +
-            '<dt>A run ignores the conventions binding</dt><dd>The packaging reads every convention row of the party. Choosing a set therefore needs the packaging to read the set, and that is a change to the run, not only a screen.</dd>' +
-            '<dt>Three configurations have no screen</dt><dd>Pricing engines have a prototype and no page in the application. Today\'s market and the curve configuration have neither.</dd>' +
-            '<dt>The scope has no editor</dt><dd>The scope of a run settings configuration is written by the seed and the shell. The button here is the proposal.</dd>' +
-            '</dl></section>';
-    }
-
     function renderBar() {
         function group(label, key, opts) {
             return '<span class="label"><b>' + label + '</b></span>' + opts.map(function (o) {
@@ -510,20 +612,18 @@
         }
         document.getElementById('proto-bar').innerHTML = '' +
             '<div class="bar-line"><span class="tag-prototype">Prototype</span>' +
-            group('Layout', 'variant', [['A', 'A · three tabs'], ['B', 'B · four tabs'], ['C', 'C · one page']]) +
-            '<span class="sep">|</span>' +
             group('Conventions', 'conv', [['today', 'Today'], ['sets', 'With sets']]) +
             '<span class="sep">|</span>' +
-            group('Book type', 'type', [['none', 'None'], ['Trading', 'Trading'], ['Banking', 'Banking']]) + '</div>' +
-            '<div class="bar-line">' +
-            group('Scope', 'hand', [['no', 'Portfolio only'], ['yes', 'Names a trading book']]) +
+            group('Book type', 'type', [['none', 'None'], ['Trading', 'Trading'], ['Banking', 'Banking']]) +
             '<span class="sep">|</span>' +
+            group('Scope', 'hand', [['no', 'Portfolio only'], ['yes', 'Names a trading book']]) + '</div>' +
+            '<div class="bar-line">' +
             group('Run settings', 'shared', [['no', 'This report only'], ['yes', 'Shared']]) +
             '<span class="sep">|</span>' +
             group('Role', 'role', [['admin', 'Administrator'], ['reader', 'Reader']]) +
             '<span class="sep">|</span><button data-act="state" class="' + (S.showState ? 'on' : '') + '">State</button></div>' +
             (S.showState ? '<div class="state-panel"><div class="state-grid">' +
-                ['variant', 'tab', 'conv', 'type', 'hand', 'shared', 'role'].map(function (k) {
+                ['tab', 'conv', 'type', 'hand', 'shared', 'role', 'version', 'changes'].map(function (k) {
                     return '<div>' + k + ' <b>' + esc(S[k]) + '</b></div>';
                 }).join('') +
                 '</div><div class="state-note">The convention counts are measured on 2026-10-21 (' + number(TOTAL_DOCUMENTS) +
@@ -545,6 +645,9 @@
             else if (act === 'kinds') { S.showKinds = !S.showKinds; render(); }
             else if (act === 'request') { S.requested = true; render(); }
             else if (act === 'scope') { window.alert('A new screen: not built. Proposed.'); }
+            else if (act === 'version') { S.version = Number(t.getAttribute('data-version')); S.reverted = false; sync(); render(); }
+            else if (act === 'changes') { S.changes = S.changes === 'only' ? 'all' : 'only'; sync(); render(); }
+            else if (act === 'revert') { S.reverted = true; render(); }
         };
         app.onchange = function (e) {
             var t = e.target;

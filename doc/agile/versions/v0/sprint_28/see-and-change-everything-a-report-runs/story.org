@@ -77,19 +77,21 @@ A convention document can be changed on its own screen, =/refdata/conventions=, 
 
 ** What the prototype argues
 
-[[file:../../../../prototypes/reporting/see-a-report-and-everything-it-runs.org][See a report and everything it runs]] draws the page in three layouts of the same sections:
+[[file:../../../../prototypes/reporting/see-a-report-and-everything-it-runs.org][See a report and everything it runs]] draws the page on tabs. The owner reviewed the first version on 2026-10-21 and decided the layout and four changes.
 
-| Layout | Arrangement | Verdict |
-|--------+-------------+---------|
-| A | Definition, Configuration and Conventions tabs | Recommended. It matches the three questions the owner asked, and each tab has one owner and one reach. |
-| B | Definition, Run settings, Market and pricing, Conventions | Splits what the report owns from what the party shares. Worth it if the Configuration tab grows. |
-| C | One page with an index | Hides nothing, but the page grows to five screens and the conventions sit below the fold. |
+| Decision | Content |
+|----------+---------|
+| Layout | Several tabs, not three and not one page. |
+| Run settings | Not a tab. The configuration is a bag: a currency, a market data choice, engine settings, and two children, the scope and the analytics. The scope and the analytics are tabs. The currency is the report's. The market choice goes with the market. The engine settings go with the analytics. |
+| Report currency | A report has a report currency, not a base currency. The column keeps the name =base_currency=. Only the screen changes the word. |
+| Currency flag | The currency is drawn with its flag, as the application draws a currency. |
+| History | The page has the standard record history. A proposed list adds the versions of the configurations the report binds, because a changed figure may come from a configuration. |
 
-Each tab states what a change on it reaches. The Configuration tab states whether the run settings are the report's own or shared, and names the other reports. The Market and pricing section states that a change reaches all 22 reports. The Conventions tab shows the system as it is today and the proposal side by side, switched in the bar.
+The tabs are Definition, Scope, Analytics, Market and pricing, Conventions and History. Each states what a change on it reaches.
 
 ** What needs the owner's decision
 
-1. *The layout.* A, B or C.
+1. *The layout.* Decided on 2026-10-21: tabs, with the scope and the analytics apart. See the table above.
 2. *The conventions model.* Named sets chosen by the report, as the journeys say. The alternative is a per-kind override on the report, which the journeys retired. The prototype assumes sets.
 3. *A kind a set does not cover.* The run could fail with a message that names the kind, or fall back to every document of that kind. The prototype shows failure, which is the stricter choice.
 4. *Who changes a shared configuration.* A change to a configuration read by 22 reports is a change to a party. The choices are: allow it with the reach stated, require the approval a convention change already needs from Market Risk, or fork the configuration for the report on edit.
@@ -99,12 +101,22 @@ Each tab states what a change on it reaches. The Configuration tab states whethe
 
 | Step | Content | Needs |
 |------+---------+-------|
-| 1 | The tabs on the report page, read-only, with the reach statements. | The layout decision only. Web and BFF. |
-| 2 | Scope and run settings edit on the Configuration tab. | A BFF write for the scope tables, and decision 4. |
-| 3 | Pricing engines, today's market and the curve configuration open from the tab. | The prototypes for the pricing engines exist. The other two need screens. |
-| 4 | Convention sets: the table of sets, the packaging that reads a set, and the choice on the tab. | Decisions 2 and 3. This is the largest step and a story of its own. |
+| 1 | The tabs Definition, Scope, Analytics, Market and pricing and Conventions, read-only, each with its reach statement, and the report currency with its flag. | Web and BFF only. The scope and the analytics are read through the configuration page's own reads. |
+| 2 | The History tab: the standard history of the definition. | A server change first, see below. |
+| 3 | Scope and analytics edit on their tabs. | A BFF write for the scope tables and for the analytics, and the decision on who changes a shared configuration. |
+| 4 | Pricing engines, today's market and the curve configuration open from the Market and pricing tab. | The prototypes for the pricing engines exist. The other two need screens. |
+| 5 | Convention sets: the table of sets, the packaging that reads a set, and the choice on the tab. | Decisions 2 and 3. This is the largest step and a story of its own. |
 
-Step 1 can start at once and delivers the page the owner described. Step 4 is what makes "change the conventions" real.
+*Why the History tab needs the server first.* The report page has no history tab today, and its test says the versions cannot be read by id. That is true, for two reasons found in the code on 2026-10-21:
+
+1. The service has a history provider for report definitions, =register_report_definition_history_provider=, and nothing calls it. The reporting service does not answer the generic history read for a definition.
+2. The provider reads by the definition's name (=get_definition_history= sets =key.name=). A name is unique within a party only, so two parties that run a report of one name would read each other's history. The generic request names the entity by its own id, and the definition's id is what the page holds.
+
+So the step is: register the provider, key it by the definition's id, and test that two definitions of one name in two parties read their own versions. Then the BFF route and the shared history panel follow the pattern the other records use.
+
+*The word report currency.* The screen calls =base_currency= the report currency. The column keeps its name for now. Renaming it touches the model, the generated code, the seed and the shell, and is a separate change if the owner wants it.
+
+Step 1 can start at once and delivers the page the owner described, without the history. Step 5 is what makes "change the conventions" real.
 
 * Decisions
 

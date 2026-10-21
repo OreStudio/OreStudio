@@ -592,3 +592,59 @@ tr.unreachable td { color: var(--ink-faint); }
     .setrow { grid-template-columns: 1.5rem minmax(0, 1fr); }
     .setrow .setpurpose, .setrow .setmeta { grid-column: 2; }
 }
+
+/* ------------------------------------------------------------- currency */
+
+.flag { font-size: 16px; line-height: 1; vertical-align: -1px; }
+
+/* -------------------------------------------------------------- history */
+
+.histgrid { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 20px; align-items: start; }
+.timeline { display: grid; gap: 6px; }
+.vbtn {
+    display: grid;
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+    grid-template-areas: "no who" "no at" "tag tag";
+    gap: 0 8px;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--ink-dim);
+    cursor: pointer;
+    font: inherit;
+}
+.vbtn:hover { border-color: var(--line-strong); }
+.vbtn.on { border-color: rgba(88, 166, 255, 0.6); background: rgba(88, 166, 255, 0.07); color: var(--ink); }
+.vbtn .vno { grid-area: no; font-family: var(--mono); color: var(--accent-bright); }
+.vbtn .vwho { grid-area: who; font-size: 13px; }
+.vbtn .vat { grid-area: at; font-size: 11px; color: var(--ink-faint); font-family: var(--mono); }
+.vbtn .tag { grid-area: tag; margin-top: 4px; justify-self: start; }
+
+.difftable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.difftable th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+}
+.difftable td { padding: 9px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; overflow-wrap: anywhere; }
+.difftable tr.same td { color: var(--ink-faint); }
+.difftable tr.changed td { background: #12161f; }
+.difftable tr.changed td:first-child { border-left: 2px solid var(--accent); }
+.difftable .dfrom { color: var(--bad); text-decoration: line-through; }
+.difftable .dto { color: var(--ok); }
+
+.versions .vrow { grid-template-columns: 10rem minmax(0, 20rem) minmax(0, 1fr); }
+.versions .vrow .vat { font-family: var(--mono); color: var(--ink-dim); }
+.versions .vrow .vno { color: var(--ink); font-family: var(--sans); font-size: 12px; }
+.versions .vrow .vnote { color: var(--ink-faint); }
+
+@media (max-width: 860px) {
+    .histgrid { grid-template-columns: minmax(0, 1fr); }
+}

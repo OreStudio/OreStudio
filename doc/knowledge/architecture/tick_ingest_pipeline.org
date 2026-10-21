@@ -363,6 +363,17 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   as a week. Older chunks are compressed, with the series as the segment key and the
   time as the order. Bars of one second and one minute are kept for good. The class
   policy states the retention of each part.
+- *Compression needs the Community edition of TimescaleDB.* The server of the test
+  environment runs the Debian package =postgresql-18-timescaledb 2.30.1+dfsg=, which has
+  the Apache license only. =compress_chunk= is refused there with "functionality not
+  supported under the current apache license". The test did not try the policy jobs or
+  =drop_chunks= on that build. The SQL of the repository already skips a policy when
+  =timescaledb.license= is not =timescale=. So the plan has two paths. On the
+  Community edition, a policy compresses and drops chunks. On the Apache build, a job
+  that the service schedules drops old chunks with =drop_chunks=, and the bars carry the
+  long history. The Apache path needs a test of =drop_chunks= first. No compression ratio was measured, because
+  the test server cannot compress. The ratio that Timescale quotes for tick data is not a
+  figure of this project.
 - *One row for each source.* The largest factor that the design controls is the
   fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
   each source, with parties reading it through the bindings, removes both factors.
@@ -786,12 +797,82 @@ connections of the append-only table, and a disk that writes 45 megabytes each s
 one row for each source it needs less than one connection.
 
 These figures have limits. The scratch tables were empty at the start, so the indexes
-were small and warm. A real table with years of data has colder indexes, and the
-random series order costs more. The server was shared with four other environments.
-Row-level security and the tenant-aware connection were not in the test. The rows
-of one batch had one tenant. Compression was not measured. A later pass of step 0
-repeats the test from the application, with =COPY= through libpq, with batches that
-hold one tenant, and with a table that has more history.
+were small and warm. The server was shared with four other environments. Row-level
+security and the tenant-aware connection were not in the test. The second pass below
+removes the first and the third limit and states what stays.
+
+*** The second pass, from the application
+
+The second pass measures from C++ code with =libpq=, in a hidden test of the marketdata
+core tests, so it includes the client: the text of each row, the unique identifier of each
+row, and the round trips. The script and the raw output are in the =evidence= folder of
+the task. All figures are rows each second for one connection.
+
+#+ATTR_HTML: :class hug-leading
+| Writer | Table | Rows in a transaction | Rows each second |
+|--------+-------+-----------------------+------------------|
+| =market_observation_repository::insert= (the ingest today) | observation, as built, one tenant | 100 | 919 |
+| same | same | 1,000 | 1,776 |
+| same | same | 5,000 | 2,195 |
+| same | same | 20,000 | 2,326 |
+| =COPY= through =libpq= | observation shape, with a copy of its insert trigger, no row-level security | 1,000 | 10,237 |
+| same | same | 10,000 | 10,568 |
+| same | same | 50,000 | 11,086 |
+| =COPY= through =libpq= | observation shape, no trigger | 1,000 | 34,619 |
+| same | same | 10,000 | 46,424 |
+| same | append-only | 1,000 | 92,839 |
+| same | append-only | 10,000 | 150,545 |
+| same | append-only | 50,000 | 185,259 |
+
+The batch of one tenant matters. A batch of 50,000 rows that the lane splits across
+tenants makes one transaction for each tenant.
+
+#+ATTR_HTML: :class hug-leading
+| Tenants in a batch of 50,000 | Rows in a transaction | Append-only table | Observation shape |
+|------------------------------+-----------------------+-------------------+-------------------|
+| 1 | 50,000 | 185,259 | 37,214 |
+| 10 | 5,000 | 114,276 | 33,975 |
+| 100 | 500 | 63,078 | 15,758 |
+
+A transaction of 100 rows gives 12,000 to 19,000 rows each second on the tables without a trigger, a transaction of 10 rows
+about 2,000, and a transaction of one row about 220, which is the commit rate of the disk.
+So a transaction should hold at least 1,000 rows. With 100 tenants that means a batch of
+100,000 rows, which is a long wait at a low tick rate.
+
+The history costs 6 to 25 percent, from single runs on a shared server. A table that holds
+100 million rows in 61 chunks of one day
+takes 141,154 rows each second at 10,000 rows in a transaction, against 150,545 when it is
+empty, and 137,992 at 50,000 rows, against 185,259. The observation shape with 5 million
+rows still takes about 48,000 to 50,000. The server filled the 100 million rows at about
+240,000 rows each second, and the rate did not fall as the table grew. A row of the
+100 million row table takes 178 bytes with its index, and a row of the observation shape
+takes 986 bytes.
+
+Four conclusions follow.
+
+- *The writer, the trigger and the table each cost a factor of about five.* The repository
+  insert gives 2,326 rows each second. =COPY= into a copy of the same table with its insert
+  trigger gives 10,568 at 10,000 rows, which is 4.5 times more, so the writer is a factor
+  of about five. The same =COPY= without the trigger gives 46,424 and 53,794 in two runs,
+  so the trigger is another factor of about five. The append-only table, which has no
+  trigger and one index, gives 185,259, which is 80 times the repository insert. The
+  batch writer should use =COPY=. The trigger must go as well, or its work must move into
+  the batch. The scratch copy has no row-level security, so the cost of the policy sits
+  inside the repository figure and is not separated. PostgreSQL refuses =COPY FROM= on a
+  table with row-level security, so =COPY= cannot write the table as built.
+- *A row for each tenant makes small transactions.* At 100 tenants the append-only table
+  falls from 185,000 to 63,000 rows each second, and the observation shape to 16,000. A
+  row for each source, with the tenants reading it through the bindings, keeps one large
+  transaction. This turns that open question into a requirement.
+- *The append-only table meets the target on two connections, or on one with one row for
+  each source.* With today's fan-out the
+  target is 276,000 rows each second, which needs two connections at 141,000. With a row for
+  each source it is about 30,000 rows each second, which one connection holds with room.
+- *Compression is not part of the plan on this server.* See the volume item above.
+
+What stays untested: the row-level security policy and the tenant-aware connection on the
+append-only table, a real mix of series and times, and the disk of a machine that is not
+shared.
 
 ** The risks, and what would change the design
 
@@ -875,6 +956,9 @@ a burst of ticks at a chosen rate and times the drain.
   view over an append-only tick table and the observation table is the proposal.
 - How long does the store keep raw ticks, and which classes keep bars only? The
   answer is a policy row for each class.
+- Which edition of TimescaleDB does the deployment run? The Community edition compresses and
+  schedules policies. The Apache build of the Debian package does neither. The retention plan
+  has a path for each, and the owner picks the edition.
 - How many lanes does one server need, and how many connections can the database
   give them?
 

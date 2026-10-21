@@ -8,12 +8,12 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/measure-the-write-ceiling-from-the-application
-#+pr:
+#+pr: 3604
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 0 timed batched inserts inside the database. Repeat it from a C++ client, w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -58,7 +58,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Repository insert, observation table, 20,000 rows in a transaction | 2,326 rows per second | =evidence/write_ceiling_repository_and_first_copy_output.txt= | this branch |
+| =COPY=, observation shape with a copy of its insert trigger, 10,000 rows in a transaction | 10,568 rows per second | =evidence/write_ceiling_copy_with_trigger_output.txt= | same |
+| =COPY=, observation shape without trigger, 10,000 rows in a transaction | 46,424 rows per second (53,794 in the run beside the trigger run) | =evidence/write_ceiling_copy_empty_tables_output.txt= | same |
+| =COPY=, append-only, 50,000 rows in a transaction | 185,259 rows per second | same | same |
+| =COPY=, append-only, 50,000 rows split over 100 tenants | 63,078 rows per second | same | same |
+| =COPY=, append-only, 100 million rows of history, 10,000 rows in a transaction | 141,154 rows per second | =evidence/write_ceiling_copy_with_history_output.txt= | same |
+| Bytes for each row, append-only, 100 million rows | 178 bytes, 17 GB in 61 chunks | =evidence/write_ceiling_history_fill_output.txt= | same |
+| Bytes for each row, observation shape, 5 million rows | 986 bytes, 4.7 GB | same | same |
+| Compression of the 100 million rows | refused: functionality not supported under the current apache license | =evidence/write_ceiling_compression_output.txt= | same |
 
 * Notes
 
@@ -77,12 +85,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3604][#3604]] | [marketdata,doc] Measure the write ceiling from the application |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The 20 and 80 times claims mix the trigger and the writer | tick_ingest_pipeline.org | Fixed | Added a COPY shape with a copy of the insert trigger: writer about 5 times, trigger about 5 times. |
+| 2 | Heading said one connection, text said two | tick_ingest_pipeline.org | Fixed | Heading now states both cases. |
+| 3 | History cost overstated | tick_ingest_pipeline.org, task | Fixed | 6 to 25 percent, from single runs. |
+| 4 | Apache statements untested | tick_ingest_pipeline.org, task | Fixed | Marked as not tested. |
+| 5 | Chunk count 62 | tick_ingest_pipeline.org, task | Fixed | 61. |
+| 6 | 100-row range | tick_ingest_pipeline.org | Fixed | 12,000 to 19,000. |
+| 7 | Benchmark hygiene | repository_market_write_ceiling_tests.cpp | Fixed | PQconnectdbParams, schema guard, settings documented, clock alias renamed, pollution noted. The shape filter also matched the wrong way round, and now works. |
 
 * Result
+
+The ingest can reach the target with a different writer and a different table. It cannot
+with the writer and the table of today.
+
+- The writer of today, =market_observation_repository::insert=, gives about 2,300 rows each
+  second at any batch size above 5,000. =COPY= through =libpq= into a scratch copy of the same
+  table with its insert trigger gives about 10,500, so the writer is a factor of about five.
+  The same =COPY= without the trigger gives 46,000 to 54,000, so the trigger is another factor
+  of about five. The append-only table gives about 185,000. The batch writer should use =COPY=
+  and the trigger must go. PostgreSQL refuses =COPY FROM= on a table with row-level security,
+  so =COPY= cannot write the table as built.
+- A transaction of fewer than 1,000 rows loses most of that. A batch split across 100
+  tenants gives transactions of 500 rows, and the rate falls to 63,000 on the append-only
+  table and 16,000 on the observation shape. A row for each source keeps one large transaction.
+- A table with 100 million rows in 61 chunks costs 6 to 25 percent of the rate of an empty
+  table, from single runs. A row takes 178 bytes with its index, against 986 for the observation shape.
+- Compression cannot be measured here. The server runs the Apache build of TimescaleDB that
+  Debian packages, which refuses =compress_chunk=. The test did not try the policy jobs or
+  =drop_chunks=. The retention plan needs two paths: policies on the Community edition, and a
+  scheduled =drop_chunks= with bars on the Apache build. The deployment edition is a decision
+  for the owner.
+
+The benchmark is a hidden test, =repository_market_write_ceiling_tests.cpp= in the marketdata
+core tests. It runs only when its tag is named, and it drops its scratch schema at the end.
+
+Open: the row-level security policy on the append-only table, a real mix of series, and a disk
+that is not shared.

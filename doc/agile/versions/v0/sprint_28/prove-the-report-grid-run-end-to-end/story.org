@@ -21,12 +21,12 @@ The ACME report definition runs to completion against the compute grid from an i
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13                               |
+| Now           | Every code task is in place or done by other work. The run has not been proved.                       |
+| Waiting on    | A live run on a database built from nothing.                               |
+| Next          | Run one report end to end and record it.            |
+| Last touched  | 2026-10-21                               |
 
 * Acceptance
 
@@ -39,16 +39,23 @@ The ACME report definition runs to completion against the compute grid from an i
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | BACKLOG | | | Every report ACME is seeded with needs a risk report configuration, built from the external/ore examples, and scoped to a root portfolio. A report names a root portfolio, and a method resolves that root to every book under it, which is the scope the run executes over. |
-| [[id:5CF75315-C9BF-4114-8BF1-A6AB68FF573B][Export the trades as the ORE portfolio the engine reads]] | STARTED | 2026-10-08 | | The run document names a portfolio file, but the packaging step wrote the gathered trades blob at a hardcoded trades.msgpack, so the engine loaded its market data and then stopped at 'Pricing: Build Portfolio'. The exporter already existed as ores.ore.xml::exporter::export_portfolio; the run path never called it. PR 2857 decodes the stored export response, exports it, and writes the portfolio where the run document names it. The engine-level acceptance awaits the hourly validation and a run. |
+| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | STARTED | | | Every report ACME is seeded with needs a risk report configuration, built from the external/ore examples, and scoped to a root portfolio. A report names a root portfolio, and a method resolves that root to every book under it, which is the scope the run executes over. |
+| [[id:5CF75315-C9BF-4114-8BF1-A6AB68FF573B][Export the trades as the ORE portfolio the engine reads]] | DONE | 2026-10-08 | 2026-10-21 | The run document names a portfolio file, but the packaging step wrote the gathered trades blob at a hardcoded trades.msgpack, so the engine loaded its market data and then stopped at 'Pricing: Build Portfolio'. The exporter already existed as ores.ore.xml::exporter::export_portfolio; the run path never called it. PR 2857 decodes the stored export response, exports it, and writes the portfolio where the run document names it. The engine-level acceptance awaits the hourly validation and a run. |
 | [[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
-| [[id:31A43FBC-8E30-49B4-ACCE-D135FC4CA40A][Do not replay a compute assignment whose result is gone]] | BACKLOG | | | The JetStream assignments stream outlives a database recreate. On the recreated environment the wrapper replayed assignments from the previous one and answered 'results.submit failed: Result not found' for each, because the result rows were gone. Either the recreate purges the stream, or the result-submit handler treats an unknown result as an expired assignment and acknowledges it instead of erroring, so a wrapper stops retrying work that cannot exist. |
-| [[id:9F93A090-D547-4599-A4B3-8F4911998F54][Retrieve the compute results]] | STARTED | 2026-10-08 | | Task for: Run an example bundle through the compute grid from a report definition |
-| [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
-| [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]] | BACKLOG | | | The acme_demo profile seeds 155 report definitions but no risk report configurations. The report execution chain resolves a risk_report_config by definition id before it does anything else, and fails the instance with 'risk_report_config not found' when there is none, so every seeded definition is unrunnable. Seed at least one configuration and its book or portfolio scope for the definitions the stories exercise, and decide whether the rest stay unconfigured. |
-| [[id:8E55B78D-0928-45D9-B61F-7A5D3619A381][Treat an engine error as a failed result]] | STARTED | 2026-10-08 | | The wrapper judged a job by the engine's exit code alone. ORE printed 'Error: Error in ORE analytics: error opening file Input/market_20160205_flat.txt' and exited 0, so the wrapper packed an Output/ holding only the log, uploaded it, and reported outcome 1 (Success). PR 2890 moves the verdict to ores.ore as a pure function over the engine's output and its own log, read through the repository's existing ORE log parser, and makes the wrapper fail when no analytics were written. Awaits a live failing run. |
+| [[id:31A43FBC-8E30-49B4-ACCE-D135FC4CA40A][Do not replay a compute assignment whose result is gone]] | ABANDONED | | | The JetStream assignments stream outlives a database recreate. On the recreated environment the wrapper replayed assignments from the previous one and answered 'results.submit failed: Result not found' for each, because the result rows were gone. Either the recreate purges the stream, or the result-submit handler treats an unknown result as an expired assignment and acknowledges it instead of erroring, so a wrapper stops retrying work that cannot exist. |
+| [[id:9F93A090-D547-4599-A4B3-8F4911998F54][Retrieve the compute results]] | DONE | 2026-10-08 | 2026-10-21 | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | STARTED | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]] | DONE | | | The acme_demo profile seeds 155 report definitions but no risk report configurations. The report execution chain resolves a risk_report_config by definition id before it does anything else, and fails the instance with 'risk_report_config not found' when there is none, so every seeded definition is unrunnable. Seed at least one configuration and its book or portfolio scope for the definitions the stories exercise, and decide whether the rest stay unconfigured. |
+| [[id:8E55B78D-0928-45D9-B61F-7A5D3619A381][Treat an engine error as a failed result]] | DONE | 2026-10-08 | 2026-10-21 | The wrapper judged a job by the engine's exit code alone. ORE printed 'Error: Error in ORE analytics: error opening file Input/market_20160205_flat.txt' and exited 0, so the wrapper packed an Output/ holding only the log, uploaded it, and reported outcome 1 (Success). PR 2890 moves the verdict to ores.ore as a pure function over the engine's output and its own log, read through the repository's existing ORE log parser, and makes the wrapper fail when no analytics were written. Awaits a live failing run. |
 
 * Decisions
+
+- 2026-10-21: The task about stale assignments is abandoned. The assignments
+  stream was retired (74b9989f14) and the wrapper claims its work from the work
+  ledger (40880bca00), so no assignment outlives a database recreate.
+- 2026-10-21: The three tasks that carry a merged PR or an implemented step are
+  closed on what the code does. The live observations they list are not lost:
+  they are the acceptance of Prove the run end to end and keep it repeatable.
 
 * Out of scope
 

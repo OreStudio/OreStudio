@@ -26,12 +26,12 @@ A read serves the ledger over a time range under a permission, and the load and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Story: Account for the grid's usage]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Now          | The work counts per party are served (the Usage tab, =get_grid_usage=). The operator's view enters each tenant (9ff9426cab). A time window of cores, duration and outcome per tenant is not served.                       |
+| Waiting on   | The run statistics on the result.                               |
+| Next         | Serve usage over a window once the statistics exist.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

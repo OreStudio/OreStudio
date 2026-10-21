@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] |
-| Now          | Not yet started.                       |
+| Now          | The heatmap is built (the Heatmap tab of the grid screen, =GridNodeLoad=). The state ribbon is not: no ribbon code exists under =operations=.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-11                               |
+| Next         | Draw the node state ribbon.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

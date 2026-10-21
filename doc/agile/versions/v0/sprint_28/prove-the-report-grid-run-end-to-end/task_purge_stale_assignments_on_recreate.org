@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-21 because the cause is gone. The task assumed a JetStream
+assignments stream that outlives a database recreate. Commit 74b9989f14 ("Retire
+the assignments stream and the push consumer") removed the stream, and the
+wrapper now claims its work from the work ledger (40880bca00). No stale
+assignment can survive a recreate, because none is stored outside the database.

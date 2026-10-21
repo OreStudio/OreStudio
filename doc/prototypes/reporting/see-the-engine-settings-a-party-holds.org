@@ -45,8 +45,8 @@ clash with the Used by tab, which lists the reports that bind the configuration.
 
 Every setting has a long description of what it does, a table of its values with what each value does, and the default
 the engine uses when the setting is unset. The row of the current value is marked. The wording is drawn from the ORE 1.8.17
-source and user guide, not invented. A setting that ORE does not read from the Setup block carries a tag, "Not read by ORE
-1.8.17", and its description says so. The comment character carries "Not a flag".
+source and user guide, not invented. A setting that ORE does not read from the Setup block carries a Legacy tag and a
+warning, and its description says so. The comment character carries "Not a flag".
 
 Edit opens that group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
 numbers, and asks for a change reason like every record dialog.
@@ -56,7 +56,7 @@ numbers, and asks for a change reason like every record dialog.
 The switch is the one the feed screens use, and the choice is remembered for every screen that offers it. Simple shows each
 setting with its label, its ORE XML argument name, its long description and its table of values. Advanced adds the
 documentation entry of the setting: the ORE XML location, the release that first reads it, the release that stopped reading
-it, the default, the format, whether it changes the numbers, and the source of the fact. The legacy settings that ORE does
+it, the default and the format. A setting that changes the numbers a run computes carries a label for it in both modes. The legacy settings that ORE does
 not read stay in place in both modes, in the order of their group, with their descriptions. Each carries a Legacy tag and a
 warning that names the engine build.
 

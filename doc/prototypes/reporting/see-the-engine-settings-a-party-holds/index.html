@@ -260,31 +260,30 @@ const STATUS_TAG = { ignored: ['Legacy', 'bad'], 'flag-misnamed': ['Not a flag',
 
 // The documentation entry of each setting, apart from the setting itself. since is the first release tag whose source reads
 // the setting, until is the first release tag that no longer reads it. A setting that no tagged release reads has neither.
-const APP_SRC = 'OREAnalytics/orea/app/inputparameters.cpp';
 const FLAG_FMT = 'A flag. ORE accepts Y, YES, TRUE, true and 1, and N, NO, FALSE, false and 0.';
 const NEVER = { since: null, until: null, never: true };
 const META = {
-  accrualDate: { ...NEVER, format: 'Text. The shipped examples use the word ASOF.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
-  fixingCutoff: { since: '1.8.13.0', until: null, format: 'An ISO date, such as 2026-10-20.', source: 'OREAnalytics/orea/app/oreapp.cpp', affects: true },
-  dateCalendar: { ...NEVER, format: 'Text. The shipped examples use TARGET.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
-  dateConvention: { ...NEVER, format: 'Text. The shipped examples use P.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
-  ignoreFixingLag: { since: '1.8.13.0', until: null, format: 'A whole number of days, zero or more.', source: APP_SRC, affects: true },
-  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, until: null, format: FLAG_FMT, source: APP_SRC + ', OREData/ored/marketdata/csvloader.cpp', affects: true },
-  includeTodaysCashFlows: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
-  includeReferenceDateEvents: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
-  enrichIndexFixings: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
-  observationModel: { since: '1.8.0.7', sinceBound: true, until: null, format: 'One of None, Disable, Defer, Unregister.', source: APP_SRC, affects: false },
-  lazyMarketBuilding: { since: '1.8.6.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: false },
-  buildFailedTrades: { since: '1.8.7.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
-  continueOnError: { since: '1.8.4.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
-  defaultMappingToIdentity: { ...NEVER, format: FLAG_FMT, source: 'Not read. Set only in shipped legacy examples.', affects: false },
-  nThreads: { since: '1.8.9.0', until: null, format: 'A whole number, at least 1.', source: APP_SRC, affects: false },
-  logMask: { since: '1.8.2.0', until: null, format: 'A whole number. A bit set of the message kinds.', source: 'OREAnalytics/orea/app/oreapp.cpp', affects: false },
-  useAnalytics: { since: '1.8.9.0', until: '1.8.9.1', format: FLAG_FMT, source: 'Read in 1.8.9.0 only. Set in two shipped examples.', affects: false },
-  csvCommentReportHeader: { since: '1.8.13.0', until: null, format: 'Exactly one character.', source: APP_SRC, affects: false },
-  additionalResults: { ...NEVER, format: FLAG_FMT, source: 'Not read from Setup. The analytic of that name reads its own active parameter.', affects: false }
+  accrualDate: { ...NEVER, format: 'Text. The shipped examples use the word ASOF.', affects: false },
+  fixingCutoff: { since: '1.8.13.0', until: null, format: 'An ISO date, such as 2026-10-20.', affects: true },
+  dateCalendar: { ...NEVER, format: 'Text. The shipped examples use TARGET.', affects: false },
+  dateConvention: { ...NEVER, format: 'Text. The shipped examples use P.', affects: false },
+  ignoreFixingLag: { since: '1.8.13.0', until: null, format: 'A whole number of days, zero or more.', affects: true },
+  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, until: null, format: FLAG_FMT, affects: true },
+  includeTodaysCashFlows: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
+  includeReferenceDateEvents: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
+  enrichIndexFixings: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
+  observationModel: { since: '1.8.0.7', sinceBound: true, until: null, format: 'One of None, Disable, Defer, Unregister.', affects: false },
+  lazyMarketBuilding: { since: '1.8.6.0', until: null, format: FLAG_FMT, affects: false },
+  buildFailedTrades: { since: '1.8.7.0', until: null, format: FLAG_FMT, affects: true },
+  continueOnError: { since: '1.8.4.0', until: null, format: FLAG_FMT, affects: true },
+  defaultMappingToIdentity: { ...NEVER, format: FLAG_FMT, affects: false },
+  nThreads: { since: '1.8.9.0', until: null, format: 'A whole number, at least 1.', affects: false },
+  logMask: { since: '1.8.2.0', until: null, format: 'A whole number. A bit set of the message kinds.', affects: false },
+  useAnalytics: { since: '1.8.9.0', until: '1.8.9.1', format: FLAG_FMT, affects: false },
+  csvCommentReportHeader: { since: '1.8.13.0', until: null, format: 'Exactly one character.', affects: false },
+  additionalResults: { ...NEVER, format: FLAG_FMT, affects: false }
 };
-GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › Parameter name="' + f.ore + '"'; f.legacy = f.status === 'ignored'; }));
+GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › ' + f.ore; f.legacy = f.status === 'ignored'; }));
 // The two ORE builds the application supports. The documentation covers the settings of these two only.
 const ENGINES = ['1.8.17.0', '1.8.16.0'];
 const readBy = (f, build) => !!f.meta && !f.meta.never && vcmp(f.meta.since, build) <= 0 && (!f.meta.until || vcmp(f.meta.until, build) > 0);
@@ -477,7 +476,7 @@ function detailsTab(c) {
 const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
 function advancedStrip(f) {
   const m = f.meta, since = m.never ? 'No tagged release reads it' : (m.sinceBound ? m.since + ' or earlier' : m.since), until = m.never ? '—' : (m.until || 'Still read');
-  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Read by ORE 1.8.17.0', readBy(f, '1.8.17.0') ? 'Yes' : 'No')}${metaLine('Read by ORE 1.8.16.0', readBy(f, '1.8.16.0') ? 'Yes' : 'No')}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}${metaLine('Changes the numbers', m.affects ? 'Yes' : 'No')}${metaLine('Source', `<span class="mono">${esc(m.source)}</span>`)}</div>`;
+  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Read by ORE 1.8.17.0', readBy(f, '1.8.17.0') ? 'Yes' : 'No')}${metaLine('Read by ORE 1.8.16.0', readBy(f, '1.8.16.0') ? 'Yes' : 'No')}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}</div>`;
 }
 function settingBlock(f, v) {
   const cur = v == null || v === '' ? '' : v;
@@ -485,7 +484,7 @@ function settingBlock(f, v) {
   const known = f.values.some(x => x[0] !== '' && x[0] === cur);
   const rows = f.values.map(x => `<tr class="${x[0] !== '' && x[0] === cur ? 'curv' : ''}"><td class="mono" style="width:11rem">${esc(x[1])}</td><td>${esc(x[2])}</td></tr>`).join('')
     + `<tr class="${cur === '' ? 'curv' : ''}"><td style="width:11rem"><span class="faint">Not set</span></td><td>${esc(f.dflt)}</td></tr>`;
-  return `<div class="setting"><div class="shead"><div><b>${esc(f.label)}</b> <span class="mono faint">${esc(f.ore)}</span> ${st ? tag(st[0], st[1]) : ''}</div><div class="sval">${cell(f, v)}</div></div>
+  return `<div class="setting"><div class="shead"><div><b>${esc(f.label)}</b> <span class="mono faint">${esc(f.ore)}</span> ${st ? tag(st[0], st[1]) : ''}${f.meta && f.meta.affects ? tag('Changes the numbers', 'warn') : ''}</div><div class="sval">${cell(f, v)}</div></div>
     ${warn ? `<div class="warnbox">${esc(warn)}</div>` : ''}
     <p class="sdesc">${esc(f.desc)}</p>
     <table class="vals"><thead><tr><th>Value</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>${cur !== '' && !known && f.values.some(x => x[0] === '') ? `<div class="faint">The current value is ${esc(valText(f, cur))}.</div>` : ''}
@@ -532,7 +531,7 @@ function recordScreen(c) {
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports · checked against ORE ${engine}</div></div>
     <div class="actions">${groupOf(r.tab) ? modeToggle() : ''}<span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
-  <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the releases that read it, its default, its format and its source. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
+  <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the releases that read it, its default and its format. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
 }
 
 function control(f, v) {

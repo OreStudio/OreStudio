@@ -17,6 +17,10 @@
 
 * Summary
 
+#+begin_quote
+The first panel of this wizard is replaced by [[file:see-a-report-and-everything-it-runs.org][See a report and everything it runs]], which draws the definition, the configuration and the conventions on tabs. The second and third panels still stand.
+#+end_quote
+
 This prototype argues how a person reads what a report runs, and it answers to
 [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change
 what a report runs]]. The screen is a wizard of three panels titled =What this

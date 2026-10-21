@@ -177,6 +177,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] | BACKLOG | | | A report states the regulatory book type of the books it may read, from the same vocabulary a book uses, so a trading book report never prices the banking book. |
 | [[id:6488895B-199E-4A35-90CD-967B0BA0430C][Preview a convention's term structure on a calendar]] | STARTED | 2026-10-21 | | A person picks a tenor convention and a calendar in ores.web and sees every tenor of the convention resolved to its date at once. |
 | [[id:9D5C596D-788C-47B1-9752-7EAAFAC8F6D2][Fix the macOS real parse]] | DONE | | 2026-10-21 | libc++ deletes the floating-point from_chars, so the ORE XML binding and record readers fail to compile on macOS. |
+| [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] | BACKLOG | | | A report page shows its definition, its configurations and its conventions on tabs, and a person can choose the conventions a report reads. |
 
 * Achievements
 

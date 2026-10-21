@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: a report and everything it runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  A report and everything it runs. One page for a report definition, on six tabs:
+
+    Definition          what the report is: its fields, its party, its schedule, its
+                        report currency with the currency's flag, the regulatory book
+                        type it may read, and its latest run;
+    Scope               the portfolios and books it reads, what each resolves to, and
+                        the book type rule;
+    Analytics           what it computes, and the engine settings that run it;
+    Market and pricing  the market data choice of the run, and the three configurations
+                        every report of the party shares;
+    Conventions         which market terms a run reads, and, in the proposal, the named
+                        convention set the report chooses;
+    History             the standard history of the definition, with the field
+                        difference of any version, and a proposed list of the versions
+                        of the configurations it binds.
+
+  The owner chose four tabs, then asked for the run settings to be split into a scope
+  tab and an analytics tab, for the report currency to carry its flag, and for the
+  standard history. The run settings configuration is not one thing: it holds a
+  currency, a market data choice, a few engine settings, and two children, the scope
+  and the analytics.
+
+  ?tab=definition|scope|analytics|market|conventions|history
+  ?conv=today|sets   the conventions tab as the system works now, or as proposed
+  ?type=none|Trading|Banking   the regulatory book type the report holds
+  ?hand=no|yes   whether the scope names a trading book
+  ?shared=no|yes   whether the run settings are shared with other reports
+  ?role=admin|reader   ?version=1|2|3   ?changes=only|all
+
+  Nothing here reads a server and nothing is written. The convention counts are measured:
+  they are the rows of the 26 convention tables of the bright_faraday development database
+  on 2026-10-21. Every name, set and purpose is a fixture. The page says which statements
+  are the system as it is and which are proposed.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

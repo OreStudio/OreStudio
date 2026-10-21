@@ -41,6 +41,7 @@ The grid's global view answers which tenant is using what, from what the install
 |------+-------+-------+-----+-------------|
 | [[id:2E997D24-8C39-41EA-AF25-B2703E850B48][Record a usage row as the service works]] | BACKLOG | | | The compute service already enters each tenant to dispatch its work and to take its result back. Record what it did there as installation data. |
 | [[id:35F715F8-27D1-4C3F-B8B8-06E9976F10F0][Serve the usage ledger to the super administrator]] | BACKLOG | | | The ledger answers the global question, but nothing reads it yet. Serve it whole to the operator, and draw per-tenant usage on the grid's load and capacity screens. |
+| [[id:98C94FC5-BEA5-4558-9FBA-689929B77A45][Reconcile the grid stories with the code]] | BACKLOG | | | Compare the grid stories and backlog captures with what the code does, and correct the paperwork. |
 
 * Decisions
 

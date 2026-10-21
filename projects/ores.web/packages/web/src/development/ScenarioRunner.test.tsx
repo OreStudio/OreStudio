@@ -123,10 +123,11 @@ describe('a scenario being run', () => {
         expect(html.match(/Refresh the manual/g)?.length).toBe(1);
     });
 
-    it('shows the note of a failed step, and stays on that step', () => {
+    it('shows the note of a failed step when the tester goes back to it', () => {
         const runner = run(
             fresh(),
             { type: 'mark', mark: 'FAIL' },
+            { type: 'previous' },
             { type: 'note', notes: 'The tab stayed blank.' },
         );
         const html = screen(runner);

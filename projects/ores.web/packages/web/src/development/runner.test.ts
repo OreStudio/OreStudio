@@ -82,11 +82,12 @@ describe('marking steps', () => {
         expect(next.index).toBe(1);
     });
 
-    it('stays on the step after a Fail, so the tester can write a note', () => {
+    it('moves to the next step after a Fail, and a note goes to the step on show', () => {
         const failed = reduce(fresh(), { type: 'mark', mark: 'FAIL' });
         expect(failed.steps[0]?.status).toBe('FAIL');
-        expect(failed.index).toBe(0);
-        const noted = reduce(failed, { type: 'note', notes: 'The dialog stayed blank.' });
+        expect(failed.index).toBe(1);
+        const back = reduce(failed, { type: 'previous' });
+        const noted = reduce(back, { type: 'note', notes: 'The dialog stayed blank.' });
         expect(noted.steps[0]).toMatchObject({ status: 'FAIL', notes: 'The dialog stayed blank.' });
         expect(noted.index).toBe(0);
     });
@@ -102,6 +103,7 @@ describe('marking steps', () => {
 
     it('clears a mark and stays on the step', () => {
         let runner = reduce(fresh(), { type: 'mark', mark: 'FAIL' });
+        runner = reduce(runner, { type: 'previous' });
         runner = reduce(runner, { type: 'mark', mark: 'PENDING' });
         expect(runner.steps[0]?.status).toBe('PENDING');
         expect(runner.index).toBe(0);
@@ -174,6 +176,7 @@ describe('saving', () => {
     it('sends every step the tester can mark, with its status and note', () => {
         let runner = fresh(2);
         runner = reduce(runner, { type: 'mark', mark: 'FAIL' });
+        runner = reduce(runner, { type: 'previous' });
         runner = reduce(runner, { type: 'note', notes: 'broke' });
         expect(saveRequest(runner).steps).toEqual([
             { client: null, title: 'Step 1', status: 'FAIL', notes: 'broke' },
@@ -300,6 +303,7 @@ describe('what has not been saved', () => {
 
     it('is nothing again once a mark is cleared or a note is taken back', () => {
         let runner = reduce(openRunner(saved), { type: 'mark', mark: 'FAIL' });
+        runner = reduce(runner, { type: 'previous' });
         runner = reduce(runner, { type: 'mark', mark: 'PENDING' });
         expect(isDirty(runner, saved)).toBe(false);
         const noted = reduce(openRunner(saved), { type: 'note', notes: 'x' });

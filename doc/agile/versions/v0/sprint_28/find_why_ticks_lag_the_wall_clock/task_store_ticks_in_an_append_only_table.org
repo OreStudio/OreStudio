@@ -156,6 +156,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3606][#3606]] | [marketdata,doc] Design and measure the isolation of the tick table |
+| [[https://github.com/OreStudio/OreStudio/pull/3615][#3615]] | [marketdata,sql,reporting,shell] Store ticks in the append-only table |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3607
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -147,7 +147,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3607][#3607]] | [reporting] Run a report end to end on a synthetic bond population |
 
 * Review
 

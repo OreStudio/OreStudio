@@ -28,7 +28,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis and prototype are written and wait for the owner's sign-off. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-21                               |

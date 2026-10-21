@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story: the story documents, the sprint wiring, the analysis of the report page and its prototype.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story documents, the sprint wiring, the analysis of the report page and the six-tab prototype are in PR #3614. The owner decisions 2 to 5 stay open in the story.

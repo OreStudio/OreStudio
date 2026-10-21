@@ -24,13 +24,13 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Analysis and prototype are written, and wait for the owner's sign-off. |
-| Waiting on    | Nothing.                               |
+| Waiting on    | Owner sign-off on decisions 2 to 5 under Analysis. |
 | Next          | Owner decides the five points under Analysis. |
 | Last touched  | 2026-10-21                               |
 
 * Acceptance
 
-- The report page has tabs for the definition, the configuration and the conventions, and each tab says what a change on it reaches.
+- The report page has six tabs, Definition, Scope, Analytics, Market and pricing, Conventions and History, and each tab says what a change on it reaches.
 - A person can choose the convention set a report reads, and a run reads the documents of that set and no others.
 - The prototype is signed off by the owner before the screens are built.
 
@@ -38,7 +38,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | STARTED | 2026-10-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
 
 * Analysis
@@ -82,10 +82,12 @@ A convention document can be changed on its own screen, =/refdata/conventions=, 
 | Decision | Content |
 |----------+---------|
 | Layout | Several tabs, not three and not one page. |
-| Run settings | Not a tab. The configuration is a bag: a currency, a market data choice, engine settings, and two children, the scope and the analytics. The scope and the analytics are tabs. The currency is the report's. The market choice goes with the market. The engine settings go with the analytics. |
+| Run settings | Not a tab. The configuration is a bag: a currency, a market data kind, engine settings, and two children, the scope and the analytics. The scope and the analytics are tabs. The currency is the report's. The market choice goes with the market. The engine settings go with the analytics. |
 | Report currency | A report has a report currency, not a base currency. The column keeps the name =base_currency=. Only the screen changes the word. |
 | Currency flag | The currency is drawn with its flag, as the application draws a currency. |
-| History | The page has the standard record history. A proposed list adds the versions of the configurations the report binds, because a changed figure may come from a configuration. |
+| History | The page has the shared timeline, as every record page has. Its rail also merges the versions of the configurations the report binds, because a changed figure may come from a configuration. |
+| Market data | The definition states end of day or intraday and never a date. Each run reads the market data of its own time point. The configuration draws no date. |
+| Engine settings | The Analytics tab lists every engine setting of the run settings in five groups, each with its engine parameter name. |
 
 The tabs are Definition, Scope, Analytics, Market and pricing, Conventions and History. Each states what a change on it reaches.
 
@@ -95,7 +97,7 @@ The tabs are Definition, Scope, Analytics, Market and pricing, Conventions and H
 2. *The conventions model.* Named sets chosen by the report, as the journeys say. The alternative is a per-kind override on the report, which the journeys retired. The prototype assumes sets.
 3. *A kind a set does not cover.* The run could fail with a message that names the kind, or fall back to every document of that kind. The prototype shows failure, which is the stricter choice.
 4. *Who changes a shared configuration.* A change to a configuration read by 22 reports is a change to a party. The choices are: allow it with the reach stated, require the approval a convention change already needs from Market Risk, or fork the configuration for the report on edit.
-5. *Where the scope is edited.* On the Configuration tab, or on the configuration's own page. The prototype draws it on the tab, marked as proposed, because that is where the book type rule is read.
+5. *Where the scope is edited.* On the Scope tab, or on the configuration's own page. The prototype draws it on the tab, marked as proposed, because that is where the book type rule is read.
 
 ** The work, once signed off
 
@@ -120,6 +122,13 @@ Step 1 can start at once and delivers the page the owner described, without the 
 
 * Decisions
 
+- The page has six tabs and no Run settings tab. Decided by the owner on 2026-10-21.
+- A report has a report currency, drawn with its flag. The column keeps the name =base_currency=.
+- The definition states end of day or intraday and never a date. The run carries its own time point.
+- The History tab is the shared timeline, not the compare panel.
+- Open: who may change the engine settings, and the reach of a change. To be settled after this PR merges.
+
 * Out of scope
 
--
+- Building the screens, which waits for the owner's sign-off.
+- Renaming the column =base_currency=.

@@ -248,7 +248,7 @@ struct fixture {
                     };
                     s.build_compensation =
                         [](const std::string&, const std::string&, const std::string& failure) {
-                            return failure;
+                            return R"({"failure":")" + failure + R"("})";
                         };
                     steps.push_back(std::move(s));
                 }
@@ -1092,7 +1092,7 @@ TEST_CASE("a definition that declares compensate still rolls its work back", tag
     for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100))
         if (s.step_index < 0)
             compensation_command = s.command_json;
-    CHECK(compensation_command == "two broke");
+    CHECK(compensation_command == R"({"failure":"two broke"})");
     BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 

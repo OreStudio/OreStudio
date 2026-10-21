@@ -217,14 +217,15 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
 
     // The job counters are the session's own tenant's. The poller writes one row for
     // each party at one instant, so the rows of an instant are summed, and the session
-    // reads only the parties it acts for. The newest instant of each bucket then gives
-    // the bucket's figures. The host counts are the installation's and sit on the system
-    // tenant's row, which every session reads, so they come from the rows that carry
-    // them. The newest sample is taken with array_agg so the read runs on a plain
+    // reads only the parties it acts for. A session of the system tenant reads the work
+    // totals of the installation instead, which sum every tenant's work and which no other
+    // session reads. The newest instant of each bucket then gives the bucket's
+    // figures. The host counts are the installation's and sit on the system tenant's
+    // row, which every session reads, so they come from the rows that carry them. The newest sample is taken with array_agg so the read runs on a plain
     // PostgreSQL and needs no TimescaleDB function. Column 0 is the bucket's index on
     // the axis and column 1 the number of instants with job counters in it.
     static const std::string sql = R"(
-        WITH jobs AS (
+        WITH own_jobs AS (
             SELECT sampled_at,
                 sum(results_inactive) AS results_inactive,
                 sum(results_unsent) AS results_unsent,
@@ -238,8 +239,22 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
                 sum(outcomes_no_reply) AS outcomes_no_reply
             FROM ores_compute_grid_samples_tbl
             WHERE tenant_id = ores_iam_current_tenant_id_fn()
+              AND tenant_id <> ores_utility_system_tenant_id_fn()
               AND sampled_at >= to_timestamp($1::bigint) AND sampled_at < to_timestamp($2::bigint)
             GROUP BY sampled_at
+        ), total_jobs AS (
+            SELECT sampled_at,
+                results_inactive::bigint, results_unsent::bigint, results_in_progress::bigint,
+                results_done::bigint, total_workunits::bigint, total_batches::bigint,
+                active_batches::bigint, outcomes_success::bigint,
+                outcomes_client_error::bigint, outcomes_no_reply::bigint
+            FROM ores_compute_work_totals_tbl
+            WHERE ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+              AND sampled_at >= to_timestamp($1::bigint) AND sampled_at < to_timestamp($2::bigint)
+        ), jobs AS (
+            SELECT * FROM own_jobs
+            UNION ALL
+            SELECT * FROM total_jobs
         ), job_buckets AS (
             SELECT floor((extract(epoch FROM sampled_at) - $1::bigint) / $3::int)::int AS b,
                 count(*) AS instants,

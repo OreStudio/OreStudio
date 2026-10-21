@@ -122,10 +122,20 @@ ore_export_service::write_all(const std::optional<std::string>& valuation_date) 
                 fixings.push_back(to_fixing(index_name, f));
             continue;
         }
-        const auto observations = date ? obs_repo.read_as_of(ctx_, s.id, close) :
-                                         obs_repo.read_latest_for_series(ctx_, s.id);
+        auto observations = obs_repo.read_latest_for_series(ctx_, s.id);
+        if (date) {
+            // The history stays, because an analytic may read several dates. The lines of the
+            // valuation date are replaced by the value each datum had at its close, which is
+            // the latest of the observation table and the tick table.
+            std::erase_if(observations, [&](const domain::market_observation& o) {
+                return std::chrono::year_month_day{
+                           std::chrono::floor<std::chrono::days>(o.observation_datetime)} == *date;
+            });
+            for (const auto& o : obs_repo.read_as_of(ctx_, s.id, close))
+                data.push_back(to_datum(o, date));
+        }
         for (const auto& o : observations)
-            data.push_back(to_datum(o, date));
+            data.push_back(to_datum(o, std::nullopt));
     }
 
     ore_export_result result;

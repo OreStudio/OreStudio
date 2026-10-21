@@ -53,6 +53,10 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:F3766975-F8CE-4CF3-BBED-AD32EEFD72E5][Scale out the tick ingest]] | BACKLOG | | | Step 3 of the tick ingest pipeline: tens of thousands of ticks each second across every asset class. |
 | [[id:1C91DFA6-CC96-4FD9-B0EC-978D4B3055BA][Move Hedgr to the tick pipeline]] | BACKLOG | | | The Hedgr client reads the live tick stream. Three of its choices need to follow the pipeline. The work is in the Hedgr repository. |
 | [[id:AC0375AA-E296-41DF-BA1D-025ABD8D1B6E][Stop the generator emitting event types for a table without events]] | BACKLOG | | | The generated protocol and the web TypeScript still define market_observation_event, although nothing publishes it. |
+| [[id:D0E0EDC3-3583-456C-BB67-EFFDB027F065][List live ticks with the observations of a series]] | BACKLOG | | | The list and the count of observations of a series read the observation table only, so a live tick is not in them. |
+| [[id:C0DB57DB-D087-4608-802C-E333D095410C][Keep the tick tables immutable and pruned]] | BACKLOG | | | The service role can change and delete tick rows, and the dictionary and activity rows stay when a series or a binding goes. |
+| [[id:A174746A-6725-45A9-864F-749D0A24A6B3][One valuation date for a report run]] | BACKLOG | | | The run document and the market data export each compute the valuation date from the clock, and a configuration of type date with no date exports the whole history. |
+| [[id:95D8CC5B-6C6F-409C-BDC1-1A75EECDF547][Tidy the tick readers: record time, docs and tests]] | BACKLOG | | | The record time of a tick, the knowledge page of the readers, and the new tests need small corrections. |
 
 * Decisions
 

@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
@@ -32,6 +33,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <set>
 #include <string>
 
 namespace {
@@ -39,9 +41,12 @@ namespace {
 const std::string tags("[repository][ticks]");
 
 using namespace ores::marketdata::generators;
+using ores::marketdata::repository::feed_binding_activity_entry;
+using ores::marketdata::repository::feed_binding_activity_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::tick_coordinate_repository;
+using ores::marketdata::repository::tick_datum;
 using ores::testing::database_helper;
 
 using ores::marketdata::tests::insert_tick;
@@ -210,4 +215,69 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", tags) {
                                            10);
     REQUIRE(stated.size() == 1);
     CHECK(stated.front().points.front().value == "2");
+}
+
+TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto first = generate_synthetic_market_series(ctx);
+    auto second = generate_synthetic_market_series(ctx);
+    market_series_repository{}.write(h.context(), first);
+    market_series_repository{}.write(h.context(), second);
+    const auto owner = party_context(h, first.party_id);
+
+    // A URI may hold a comma, a quote and a backslash, which an array literal must carry.
+    const std::string awkward = R"(oresmd://test/a,"b"\c)";
+    tick_coordinate_repository numbers;
+    const auto assigned = numbers.resolve_all(owner,
+                                              {{first.party_id, first.id, "oresmd://test/b"},
+                                               {first.party_id, first.id, "oresmd://test/a"},
+                                               {second.party_id, second.id, "oresmd://test/b"},
+                                               {first.party_id, first.id, awkward},
+                                               {first.party_id, first.id, "oresmd://test/a"}});
+    REQUIRE(assigned.size() == 5);
+
+    // The numbers of a series are distinct and start at 1. Which URI gets which is the order of
+    // the database, so the test does not state it.
+    CHECK(assigned[4] == assigned[1]);
+    CHECK(assigned[2] == 1);
+    std::set<int> of_first{assigned[0], assigned[1], assigned[3]};
+    CHECK(of_first == std::set<int>{1, 2, 3});
+
+    // A second call finds the same numbers, and a new datum takes the next one.
+    const auto again = numbers.resolve_all(owner,
+                                           {{first.party_id, first.id, "oresmd://test/b"},
+                                            {first.party_id, first.id, "oresmd://test/new"}});
+    CHECK(again[0] == assigned[0]);
+    CHECK(again[1] == 4);
+    CHECK(numbers.resolve_all(owner, {}).empty());
+}
+
+TEST_CASE("the_activity_of_many_bindings_is_recorded_together_and_a_newer_tick_wins", tags) {
+    database_helper h;
+    const auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
+    const auto party = boost::uuids::random_generator{}();
+    const auto series_a = boost::uuids::random_generator{}();
+    const auto series_b = boost::uuids::random_generator{}();
+    const auto source_a = "synthetic.review." + tag + ".a,\"x\"";
+    const auto source_b = "synthetic.review." + tag + ".b";
+    const auto t0 = now_second();
+
+    feed_binding_activity_repository repo;
+    repo.record(h.context(), {{party, source_a, series_a, t0}, {party, source_b, series_b, t0}});
+    const auto first = repo.read(h.context(), party, source_a);
+    REQUIRE(first.has_value());
+    CHECK(first->series_id == series_a);
+    CHECK(first->last_tick_at == t0);
+    REQUIRE(repo.read(h.context(), party, source_b).has_value());
+
+    // An older tick changes nothing, and a newer one replaces the row.
+    repo.record(h.context(), {{party, source_a, series_a, t0 - std::chrono::seconds(5)}});
+    CHECK(repo.read(h.context(), party, source_a)->last_tick_at == t0);
+    repo.record(h.context(), {{party, source_a, series_b, t0 + std::chrono::seconds(5)}});
+    const auto later = repo.read(h.context(), party, source_a);
+    CHECK(later->series_id == series_b);
+    CHECK(later->last_tick_at == t0 + std::chrono::seconds(5));
+    CHECK_FALSE(repo.read(h.context(), party, source_b + ".none").has_value());
+    repo.record(h.context(), {});
 }

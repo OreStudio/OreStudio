@@ -27,6 +27,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -34,6 +35,16 @@ namespace ores::marketdata::repository {
  * @brief What a feed binding last delivered.
  */
 struct feed_binding_activity_record final {
+    boost::uuids::uuid series_id;
+    std::chrono::system_clock::time_point last_tick_at;
+};
+
+/**
+ * @brief The newest tick of one binding, to record.
+ */
+struct feed_binding_activity_entry final {
+    boost::uuids::uuid party_id;
+    std::string source_name;
     boost::uuids::uuid series_id;
     std::chrono::system_clock::time_point last_tick_at;
 };
@@ -59,15 +70,12 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Records a tick of the binding, unless the row already holds a newer one.
+     * @brief Records the newest tick of each binding of @p entries with one statement, unless a
+     * row already holds a newer one.
      *
-     * The tenant is the tenant of @p ctx.
+     * The tenant is the tenant of @p ctx. Each binding appears once.
      */
-    void record(context ctx,
-                const boost::uuids::uuid& party_id,
-                const std::string& source_name,
-                const boost::uuids::uuid& series_id,
-                std::chrono::system_clock::time_point last_tick_at);
+    void record(context ctx, const std::vector<feed_binding_activity_entry>& entries);
 
     /**
      * @brief The activity of one binding, or nothing when its source has delivered nothing.

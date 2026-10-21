@@ -300,13 +300,14 @@ TEST_CASE("export_refuses_an_observation_whose_uri_names_no_datum", tags) {
     CHECK_THROWS(exporter.write_all());
 }
 
-TEST_CASE("export_with_a_date_writes_the_value_each_point_had_at_the_close_of_that_day", tags) {
+TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_close_of_that_day",
+          tags) {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
-    req.market_data_content = "20160205 FX/RATE/EUR/USD 1.10\n";
+    req.market_data_content = "20160204 FX/RATE/EUR/USD 1.05\n20160205 FX/RATE/EUR/USD 1.10\n";
     req.source = "test.ore_export";
     REQUIRE(importer.import(req).success);
 
@@ -316,10 +317,10 @@ TEST_CASE("export_with_a_date_writes_the_value_each_point_had_at_the_close_of_th
     const auto stored =
         ores::marketdata::repository::market_observation_repository{}.read_latest_for_series(t.ctx,
                                                                                              s.id);
-    REQUIRE(stored.size() == 1);
+    REQUIRE(stored.size() == 2);
 
-    // The tick of a live feed, later on the day of the imported point, under the datum URI the
-    // observation row carries.
+    // The tick of a live feed, later on the day of the second imported point, under the datum
+    // URI the observation rows carry.
     const auto owner =
         t.ctx.with_party(t.ctx.tenant_id(), s.party_id, {s.party_id}, t.base.db_user());
     const auto number = ores::marketdata::repository::tick_coordinate_repository{}.resolve(
@@ -328,31 +329,42 @@ TEST_CASE("export_with_a_date_writes_the_value_each_point_had_at_the_close_of_th
     ores::marketdata::tests::insert_tick(
         owner, s.party_id, s.id, number, sys_days{2016y / February / 5} + 12h, 1.2);
 
-    const ore_export_service exporter(owner);
-    const auto values_of = [](const std::string& body) {
-        std::vector<std::string> values;
+    // Each line as "date value", sorted.
+    const auto lines_of = [](const std::string& body) {
+        std::vector<std::string> lines;
         std::istringstream in(body);
         for (std::string line; std::getline(in, line);) {
+            const auto first = line.find('\t');
             const auto last = line.rfind('\t');
-            if (last != std::string::npos)
-                values.push_back(line.substr(last + 1));
+            if (first != std::string::npos && last != first)
+                lines.push_back(line.substr(0, first) + " " + line.substr(last + 1));
         }
-        return values;
+        std::ranges::sort(lines);
+        return lines;
     };
+    using lines = std::vector<std::string>;
 
+    const ore_export_service exporter(owner);
+
+    // The tick is the close of its day, and the earlier date stays.
     const auto close_of_the_day = exporter.write_all(std::string("2016-02-05"));
-    CHECK(values_of(close_of_the_day.market_data) == std::vector<std::string>{"1.2"});
-    CHECK(close_of_the_day.observation_count == 1);
+    CHECK(lines_of(close_of_the_day.market_data) == lines{"20160204 1.05", "20160205 1.2"});
+    CHECK(close_of_the_day.observation_count == 2);
 
-    const auto before_the_point = exporter.write_all(std::string("2016-02-04"));
-    CHECK(values_of(before_the_point.market_data).empty());
+    // The tick is after this close, so the point of the day before is its value.
+    CHECK(lines_of(exporter.write_all(std::string("2016-02-04")).market_data) ==
+          lines{"20160204 1.05", "20160205 1.10"});
 
-    const auto next_day = exporter.write_all(std::string("2016-02-06"));
-    CHECK(values_of(next_day.market_data) == std::vector<std::string>{"1.2"});
-    CHECK(next_day.market_data != close_of_the_day.market_data);
+    // Before the first point the date has no line of its own, and the history stays.
+    CHECK(lines_of(exporter.write_all(std::string("2016-02-03")).market_data) ==
+          lines{"20160204 1.05", "20160205 1.10"});
+
+    // A date after the tick carries its value forward as a line of its own.
+    CHECK(lines_of(exporter.write_all(std::string("2016-02-06")).market_data) ==
+          lines{"20160204 1.05", "20160205 1.10", "20160206 1.2"});
 
     CHECK_THROWS_AS(exporter.write_all(std::string("5 February")), std::invalid_argument);
 
     // Without a date, the export is the rows of the observation table, as before.
-    CHECK(values_of(exporter.write_all().market_data) == std::vector<std::string>{"1.10"});
+    CHECK(lines_of(exporter.write_all().market_data) == lines{"20160204 1.05", "20160205 1.10"});
 }

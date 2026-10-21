@@ -100,11 +100,18 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
      observation rows. The first version used the URI of the series for that datum, and the
      export could not read it.
    - Reader 4, the ORE export. Decision of the owner, 2026-10-21: the ingest no longer writes
-     the second row under the previous close. The export takes an optional valuation date,
-     and then writes one line for each datum with the value at the close of that day, from
-     both tables. The report run passes the date of its run document, and the shell takes
+     the second row under the previous close. The export takes an optional valuation date.
+     It then keeps the history of the observation table, and replaces the lines of that date
+     by one line for each datum with the value at the close of that day, from both tables. The
+     history stays because analytics such as historical simulation and P&L explain read more
+     than one date. The report run passes the date of its run document, and the shell takes
      =--date=. Without a date, the export is the observation table as before, and the ticks
      of a live feed are not in it.
+   - Review of PR 3615 found two faults, both fixed on this branch. The first export with a
+     date dropped the history. The assignment of coordinate numbers and the write of the
+     activity row opened one database connection for each datum and each binding. Each now
+     takes a few statements for a batch. Six smaller findings are in four backlog tasks of the
+     story.
    - Reader 5, the activity of a feed binding. Decision of the owner, 2026-10-21: the tick has
      no source column. The ingest writes one row for each binding in
      =ores_marketdata_feed_binding_activity_tbl=, with the series and the time of its newest

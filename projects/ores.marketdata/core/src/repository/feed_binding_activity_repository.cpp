@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.marketdata.core/repository/pg_array.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -29,33 +30,45 @@ namespace ores::marketdata::repository {
 using namespace ores::logging;
 using ores::database::repository::execute_parameterized_multi_column_query;
 
-void feed_binding_activity_repository::record(context ctx,
-                                              const boost::uuids::uuid& party_id,
-                                              const std::string& source_name,
-                                              const boost::uuids::uuid& series_id,
-                                              std::chrono::system_clock::time_point last_tick_at) {
+void feed_binding_activity_repository::record(
+    context ctx, const std::vector<feed_binding_activity_entry>& entries) {
+    if (entries.empty())
+        return;
+
     // RETURNING makes the statement a query, which the helper requires. A row that already
     // holds a newer tick returns nothing.
     static const std::string sql = R"(
         INSERT INTO ores_marketdata_feed_binding_activity_tbl AS a
             (tenant_id, party_id, source_name, series_id, last_tick_at)
-        VALUES ($1::uuid, $2::uuid, $3, $4::uuid, $5::timestamptz)
+        SELECT $1::uuid, w.party_id, w.source_name, w.series_id, w.last_tick_at
+        FROM unnest($2::uuid[], $3::text[], $4::uuid[], $5::timestamptz[])
+            AS w(party_id, source_name, series_id, last_tick_at)
         ON CONFLICT (tenant_id, party_id, source_name) DO UPDATE
             SET series_id = EXCLUDED.series_id, last_tick_at = EXCLUDED.last_tick_at
             WHERE a.last_tick_at < EXCLUDED.last_tick_at
         RETURNING 1
     )";
 
-    execute_parameterized_multi_column_query(
-        ctx,
-        sql,
-        {ctx.tenant_id().to_string(),
-         boost::uuids::to_string(party_id),
-         source_name,
-         boost::uuids::to_string(series_id),
-         ores::platform::time::datetime::to_iso8601_utc(last_tick_at)},
-        lg(),
-        "recording the activity of a feed binding");
+    std::vector<std::string> parties;
+    std::vector<std::string> sources;
+    std::vector<std::string> series;
+    std::vector<std::string> times;
+    for (const auto& e : entries) {
+        parties.push_back(boost::uuids::to_string(e.party_id));
+        sources.push_back(e.source_name);
+        series.push_back(boost::uuids::to_string(e.series_id));
+        times.push_back(ores::platform::time::datetime::to_iso8601_utc(e.last_tick_at));
+    }
+
+    execute_parameterized_multi_column_query(ctx,
+                                             sql,
+                                             {ctx.tenant_id().to_string(),
+                                              pg_array(parties),
+                                              pg_array(sources),
+                                              pg_array(series),
+                                              pg_array(times)},
+                                             lg(),
+                                             "recording the activity of feed bindings");
 }
 
 std::optional<feed_binding_activity_record> feed_binding_activity_repository::read(

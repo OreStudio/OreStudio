@@ -26,8 +26,18 @@
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::repository {
+
+/**
+ * @brief A datum of a series that needs a number in the dictionary.
+ */
+struct tick_datum final {
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid series_id;
+    std::string oresmd_uri;
+};
 
 /**
  * @brief The dictionary that turns a datum URI into the small number that a tick row stores.
@@ -51,12 +61,18 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief The number of a datum within its series, assigned when the datum has none.
+     * @brief The numbers of @p wanted, each assigned if it has none, in the order of @p wanted.
      *
-     * Two writers may race for the same number, so a lost race reads again. The tenant is the
-     * tenant of @p ctx.
+     * One read finds the numbers that exist, and one statement assigns all the others, so a
+     * batch of datums costs a few statements however many it holds. Two writers may race for
+     * the same number, so a lost race reads again. The tenant is the tenant of @p ctx.
      *
-     * @throws std::runtime_error if no number can be assigned or read.
+     * @throws std::runtime_error if a number can be neither assigned nor read.
+     */
+    std::vector<std::int16_t> resolve_all(context ctx, const std::vector<tick_datum>& wanted);
+
+    /**
+     * @brief The number of one datum within its series, assigned when the datum has none.
      */
     std::int16_t resolve(context ctx,
                          const boost::uuids::uuid& party_id,

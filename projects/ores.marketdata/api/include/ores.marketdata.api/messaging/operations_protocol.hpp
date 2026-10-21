@@ -1032,9 +1032,9 @@ struct export_market_data_to_storage_request {
     /**
      * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
      *
-     * A date asks for one line for each point, dated at it, with the value the point had at the
-     * close of that day. The ticks of a live feed are in that answer. They are not in the
-     * whole history.
+     * A date adds one line for each datum, dated at it, with the value the datum had at the
+     * close of that day, and the history of the other dates stays. The ticks of a live feed are
+     * in that line. They are not in the history.
      */
     std::optional<std::string> valuation_date;
 };
@@ -1182,9 +1182,9 @@ struct export_market_data_request {
     /**
      * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
      *
-     * A date asks for one line for each point, dated at it, with the value the point had at the
-     * close of that day. The ticks of a live feed are in that answer. They are not in the
-     * whole history.
+     * A date adds one line for each datum, dated at it, with the value the datum had at the
+     * close of that day, and the history of the other dates stays. The ticks of a live feed are
+     * in that line. They are not in the history.
      */
     std::optional<std::string> valuation_date;
 };

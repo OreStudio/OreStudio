@@ -187,6 +187,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/observation_lineage_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/observation_lineage_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/observation_lineage_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/pg_array.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/series_axis_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/series_axis_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/series_axis_repository.hpp"

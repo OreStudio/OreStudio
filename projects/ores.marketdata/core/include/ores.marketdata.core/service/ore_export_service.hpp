@@ -90,13 +90,14 @@ public:
     /**
      * @brief Writes the market data and the fixings.
      *
-     * Without a date, every stored observation is one line, dated at its own time. That is the
-     * history of the tables that keep one row for each observation. The ticks of a live feed are
-     * not in it, because they have no such row.
+     * Every stored observation of the observation table is one line, dated at its own time. The
+     * ticks of a live feed are not among them, because they have no such row.
      *
-     * With a date, each point is one line dated at @p valuation_date, with the value the point
-     * had at the close of that day, whichever table holds it. The close is the end of the day
-     * in UTC. A point with no value at or before the close is not in the file.
+     * With a date, each datum also has one line dated at @p valuation_date, with the value it
+     * had at the close of that day, from the observation table or the tick table, whichever
+     * holds the later value. That line replaces any observation line of the same date. The close
+     * is the end of the day in UTC. The history of other dates stays, because an analytic can
+     * read more than one date. A datum with no value at or before the close has no such line.
      *
      * @throws std::invalid_argument if the date is not an ISO 8601 date.
      */

@@ -39,6 +39,7 @@
 #include <chrono>
 #include <format>
 #include <optional>
+#include <set>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -382,56 +383,74 @@ void feed_ingest_loop::store_items(
     }
 
     // The datum of a tick has a number within its series, which the table stores in place of
-    // the URI. A number that cannot be assigned means the database does not answer, so the
-    // whole batch is left unstored. A tick of the same datum and time as an earlier one in the
-    // batch replaces it, so a reader finds one row for each.
-    std::vector<tick_row> rows;
-    rows.reserve(items.size());
-    std::unordered_map<std::string, std::size_t> row_at;
+    // the URI. The loop assigns the numbers it does not know yet for the whole batch, with a
+    // few statements for each tenant, so a start with many new datums does not open a
+    // connection for each. A number that cannot be assigned means the database does not
+    // answer, so the whole batch is left unstored.
+    std::vector<std::string> keys(items.size());
+    std::map<std::string, std::vector<repository::tick_datum>> unknown;
+    std::map<std::string, std::vector<std::string>> unknown_keys;
+    {
+        std::lock_guard lock(mu_);
+        std::set<std::string> queued;
+        for (std::size_t i = 0; i < items.size(); ++i) {
+            const auto& it = items[i];
+            const auto& b = it.target->binding;
+            const auto& uri = ticks[it.tick_index].oresmd_uri;
+            keys[i] = boost::uuids::to_string(it.series_id) + '|' + uri;
+            if (coords_.contains(keys[i]) || !queued.insert(keys[i]).second)
+                continue;
+            const auto tenant = b.tenant_id.to_string();
+            unknown[tenant].push_back({b.party_id, it.series_id, uri});
+            unknown_keys[tenant].push_back(keys[i]);
+        }
+    }
     std::string failure;
-    for (const auto& it : items) {
-        const auto& b = it.target->binding;
-        const auto& tick = ticks[it.tick_index];
-        const auto key = boost::uuids::to_string(it.series_id) + '|' + tick.oresmd_uri;
-        std::int16_t coord = 0;
-        bool known = false;
+    for (const auto& [tenant, wanted] : unknown) {
+        try {
+            const auto numbers = repository::tick_coordinate_repository{}.resolve_all(
+                tenant_ctxs.at(tenant), wanted);
+            std::lock_guard lock(mu_);
+            for (std::size_t j = 0; j < numbers.size(); ++j)
+                coords_[unknown_keys[tenant][j]] = numbers[j];
+        } catch (const std::exception& e) {
+            failure = e.what();
+            break;
+        }
+    }
+
+    // A tick of the same datum and time as an earlier one in the batch replaces it, so a
+    // reader finds one row for each.
+    std::vector<tick_row> rows;
+    if (failure.empty()) {
+        std::vector<std::int16_t> coord_of(items.size(), 0);
         {
             std::lock_guard lock(mu_);
-            const auto found = coords_.find(key);
-            if (found != coords_.end()) {
-                coord = found->second;
-                known = true;
-            }
+            for (std::size_t i = 0; i < items.size(); ++i)
+                coord_of[i] = coords_.at(keys[i]);
         }
-        if (!known) {
-            try {
-                coord = repository::tick_coordinate_repository{}.resolve(
-                    tenant_ctxs.at(b.tenant_id.to_string()),
-                    b.party_id,
-                    it.series_id,
-                    tick.oresmd_uri);
-            } catch (const std::exception& e) {
-                failure = e.what();
-                break;
-            }
-            std::lock_guard lock(mu_);
-            coords_[key] = coord;
+        rows.reserve(items.size());
+        std::unordered_map<std::string, std::size_t> row_at;
+        for (std::size_t i = 0; i < items.size(); ++i) {
+            const auto& it = items[i];
+            const auto& b = it.target->binding;
+            const auto& tick = ticks[it.tick_index];
+            tick_row row;
+            row.tenant_id = b.tenant_id.to_string();
+            row.party_id = boost::uuids::to_string(b.party_id);
+            row.series_id = boost::uuids::to_string(it.series_id);
+            row.ts = tick.observation_time;
+            row.coord = coord_of[i];
+            row.value = it.plan->value;
+            const auto at =
+                row_at.try_emplace(row.series_id + '|' + std::to_string(row.coord) + '|' +
+                                       std::to_string(row.ts.time_since_epoch().count()),
+                                   rows.size());
+            if (at.second)
+                rows.push_back(std::move(row));
+            else
+                rows[at.first->second] = std::move(row);
         }
-
-        tick_row row;
-        row.tenant_id = b.tenant_id.to_string();
-        row.party_id = boost::uuids::to_string(b.party_id);
-        row.series_id = boost::uuids::to_string(it.series_id);
-        row.ts = tick.observation_time;
-        row.coord = coord;
-        row.value = it.plan->value;
-        const auto at = row_at.try_emplace(row.series_id + '|' + std::to_string(coord) + '|' +
-                                               std::to_string(row.ts.time_since_epoch().count()),
-                                           rows.size());
-        if (at.second)
-            rows.push_back(std::move(row));
-        else
-            rows[at.first->second] = std::move(row);
     }
 
     if (failure.empty()) {
@@ -464,9 +483,8 @@ void feed_ingest_loop::record_activity(
     const std::vector<item>& items,
     const std::map<std::string, ores::database::context>& tenant_ctxs) {
     struct newest {
-        const domain::feed_binding* binding;
-        boost::uuids::uuid series_id;
-        std::chrono::system_clock::time_point at;
+        repository::feed_binding_activity_entry entry;
+        std::string tenant_id;
     };
     std::map<binding_key, newest> latest;
     for (const auto& it : items) {
@@ -477,28 +495,29 @@ void feed_ingest_loop::record_activity(
         const binding_key key{
             b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
         const auto found = latest.find(key);
-        if (found == latest.end() || found->second.at < at)
-            latest[key] = newest{&b, it.series_id, at};
+        if (found == latest.end() || found->second.entry.last_tick_at < at)
+            latest[key] = newest{{b.party_id, b.source_name, it.series_id, at}, key.tenant_id};
     }
 
-    const auto now = std::chrono::steady_clock::now();
-    for (const auto& [key, n] : latest) {
-        {
-            std::lock_guard lock(mu_);
+    // The bindings whose row is due, in one statement for each tenant.
+    std::map<std::string, std::vector<repository::feed_binding_activity_entry>> due;
+    {
+        const auto now = std::chrono::steady_clock::now();
+        std::lock_guard lock(mu_);
+        for (const auto& [key, n] : latest) {
             auto& last = activity_recorded_[key];
             if (now - last < activity_interval)
                 continue;
             last = now;
+            due[n.tenant_id].push_back(n.entry);
         }
+    }
+    for (const auto& [tenant, entries] : due) {
         try {
-            repository::feed_binding_activity_repository{}.record(tenant_ctxs.at(key.tenant_id),
-                                                                  n.binding->party_id,
-                                                                  key.source_name,
-                                                                  n.series_id,
-                                                                  n.at);
+            repository::feed_binding_activity_repository{}.record(tenant_ctxs.at(tenant), entries);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to record the activity of source '"
-                                      << key.source_name << "': " << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Failed to record the activity of " << entries.size()
+                                      << " feed binding(s): " << e.what();
         }
     }
 }

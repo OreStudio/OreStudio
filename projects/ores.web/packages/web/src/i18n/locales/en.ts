@@ -4398,11 +4398,159 @@ export const en: SourceCatalogue = {
         },
     },
 
+    // pricingEngines:begin
+    pricingEngines: {
+        author: {
+            next: 'Next',
+            steps: {
+                name: 'Name it',
+                products: 'Choose the products',
+                engines: 'Choose model and engine',
+                settings: 'Set the parameters',
+                check: 'Check it',
+                save: 'Review and save',
+            },
+            name: {
+                lead: 'Name the configuration, say what it is for and choose where to start.',
+                start: 'Start from',
+                startEmpty: 'An empty configuration',
+                startCopy: 'A copy of {name}',
+                copyOf: 'Copy of {name}',
+                inUse: 'A configuration with this name already exists.',
+            },
+            products: {
+                lead: 'Tick each product type this configuration prices. Each starts on the pair that ORE’s examples use most.',
+                search: 'Find a product type',
+                selected: '{count} selected',
+            },
+            engines: {
+                lead: 'Choose the model and the engine that price each product.',
+                unknown: 'Not known to work',
+                usual: 'Use the usual pair, {pair}',
+            },
+            settings: {
+                lead: 'Each setting belongs to one product. The usual settings of the pair are already there. Add your own when the engine takes another.',
+                none: 'No settings. The engine uses its own defaults.',
+                remove: 'Remove {name}',
+                addUsual: 'Add the usual settings: {names}',
+                scope: 'Scope',
+                name: 'Setting',
+                value: 'Value',
+                add: 'Add setting',
+            },
+            check: {
+                lead: 'An error stops the save. A warning and a note do not.',
+                next: 'Review',
+            },
+            save: {
+                lead: 'The save writes one configuration. Nothing is written before it.',
+                summary: '{name}: {products} products and {parameters} settings.',
+                next: 'Save configuration',
+            },
+        },
+        workflows: {
+            author: 'Define a pricing engine configuration',
+            authorBody:
+                'Choose the products, the model and engine for each, and the settings, then save one configuration.',
+        },
+        title: 'Pricing engines',
+        lead: 'The pricing engine configurations the party you work in holds, with the products and settings of each.',
+        columns: {
+            name: 'Configuration',
+            variant: 'Variant',
+            products: 'Products',
+            parameters: 'Settings',
+            modifiedBy: 'Changed by',
+            changed: 'Changed',
+        },
+        cell: {
+            noVariant: 'No variant',
+            noDescription: 'No description',
+        },
+        actions: {
+            addProduct: 'Add product',
+            change: 'Change',
+            remove: 'Remove',
+            delete: 'Delete configuration',
+        },
+        fields: {
+            name: 'Name',
+            description: 'Description',
+            variant: 'Variant',
+            modifiedBy: 'Changed by',
+            changed: 'Changed',
+            model: 'Model',
+            engine: 'Engine',
+            type: 'Product type',
+        },
+        record: {
+            details: 'Details',
+            products: 'Products ({count})',
+            noProducts: 'This configuration prices no product.',
+            noSettings: 'No settings. The engine uses its own defaults.',
+            reachUnknown:
+                'The reports that use this configuration cannot be listed yet. A change reaches the next run of every report that binds it.',
+            vocabularyUnread:
+                'The models and engines could not be read, so products cannot be changed: {message}',
+        },
+        change: {
+            detailsTitle: 'Change {name}',
+            productTitle: 'Change how {type} is priced',
+            addTitle: 'Add a product to {name}',
+            removeTitle: 'Remove {type}',
+            deleteTitle: 'Delete {name}',
+            unknownPair:
+                'This model and engine are not known to price this product. You may keep them, but the run may fail.',
+            dropHeading: 'Settings the new pair does not take',
+            dropHint: 'Tick a setting to drop it. A setting you leave is kept.',
+            addHeading: 'Settings the new pair usually needs',
+            addHint: 'Tick a setting to add it with its usual value.',
+            valuesHeading: 'Settings',
+            everyTypeHeld: 'This configuration already prices every product type.',
+            removeHint:
+                'The product and its settings are removed. The change reaches the next run of every report that binds this configuration.',
+            deleteHint:
+                'This removes the configuration, its {products} products and its {parameters} settings. A report that binds it can no longer run.',
+        },
+        diff: {
+            heading: 'What changes',
+            none: 'Nothing has changed yet.',
+            added: 'Added',
+            removed: 'Removed',
+            changed: 'Changed',
+            configuration: 'configuration',
+            product: 'product',
+            parameter: 'setting',
+        },
+        findings: {
+            heading: 'Checks',
+            clean: 'Every check passed.',
+            nameMissing: 'The configuration needs a name.',
+            noProducts: 'The configuration needs at least one product.',
+            modelMissing: '{type} needs a model.',
+            engineMissing: '{type} needs an engine.',
+            pairUnknown: '{detail} is not known to price {type}.',
+            typeRepeated: '{type} appears {detail} times. Only the first is normally used.',
+            parameterRepeated: 'The setting {detail} of {type} appears more than once.',
+            parameterMissingValue: 'The setting {detail} of {type} has no value.',
+            settingUsual: '{type} usually sets {detail}. It is not set here.',
+        },
+        save: {
+            save: 'Save',
+            conflict:
+                'Somebody changed this configuration after you opened it. Read it again before you save.',
+            reload: 'Read again',
+        },
+    },
+    // pricingEngines:end
     reporting: {
         area: {
             title: 'Reporting',
             lead: 'The reports a party runs, and how the latest run of each one went.',
             screens: {
+                pricingEngines: 'Pricing engines',
+                pricingEnginesBody:
+                    'Which model and engine price each product, for the party you work in.',
                 reports: 'Reports',
                 reportsBody:
                     'The definitions the parties you work in run, and the health of each latest run.',
@@ -4604,6 +4752,9 @@ export const en: SourceCatalogue = {
         feedsRun: 'start and stop the synthetic feeds',
         reportDefinitionsRead: 'see the report definitions of your parties',
         reportDefinitionsWrite: 'change report definitions',
+        pricingEnginesRead: 'see pricing engine configurations',
+        pricingEnginesWrite: 'change pricing engine configurations',
+        pricingEnginesDelete: 'remove pricing engine configurations',
     },
 
     unavailable: {

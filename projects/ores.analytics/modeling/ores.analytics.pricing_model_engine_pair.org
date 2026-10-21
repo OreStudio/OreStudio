@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 682C901A-4330-4F18-BC73-6B31E39DE914
+:END:
+#+title: ores.analytics.pricing_model_engine_pair
+#+description: Codegen entity model for the analytics =pricing_model_engine_pair= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A model and engine pair known to price one pricing engine type.
+#+entity_singular: pricing_model_engine_pair
+#+entity_plural: pricing_model_engine_pairs
+#+entity_title: Pricing Model Engine Pair
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+The vocabulary the pricing engine screens read. Each row says that a model and an engine price one pricing engine type, and marks the pair that ORE's examples use. The set of models and the set of engines are the distinct values of the model and engine columns.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+Unique code of the pair row: the product type, model and engine joined with a colon.
+
+Examples: 'BermudanSwaption:LGM:Grid'.
+
+** model
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Pricing model name.
+
+Examples: 'LGM', 'BlackBachelier', 'DiscountedCashflows'.
+
+#+begin_src cpp :name generator
+std::string("LGM")
+#+end_src
+
+** engine
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Numerical engine name.
+
+Examples: 'Grid', 'AMC', 'DiscountingSwapEngine'.
+
+#+begin_src cpp :name generator
+std::string("Grid")
+#+end_src
+
+** pricing_engine_type_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The pricing engine type this pair prices.
+
+Soft FK to ores_analytics_pricing_engine_types_tbl.
+
+#+begin_src cpp :name generator
+std::string("BermudanSwaption")
+#+end_src
+
+** is_usual
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether this pair is the one ORE's examples use for the product type.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** note
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+A note on when to choose this pair.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_model_engine_pairs_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: pair
+:entity_plural_short:   pairs
+:entity_singular_words: pricing model engine pair
+:entity_plural_words:   pricing model engine pairs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pmep
+:END:
+
+** Table display
+
+| column                   | header       |
+|--------------------------+--------------|
+| code                     | Code         |
+| model                    | Model        |
+| engine                   | Engine       |
+| pricing_engine_type_code | Product type |
+| is_usual                 | Usual        |
+| modified_by              | Modified By  |
+| version                  | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  pairs
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field                    | label        | widget     | type      | is_key | is_required | placeholder                                          |
+|--------------------------+--------------+------------+-----------+--------+-------------+------------------------------------------------------|
+| code                     | Code         | codeEdit   | line_edit | true   | true        | Enter the pair code (e.g. BermudanSwaption:LGM:Grid) |
+| model                    | Model        | modelEdit  | line_edit |        | true        | Enter the model                                      |
+| engine                   | Engine       | engineEdit | line_edit |        | true        | Enter the engine                                     |
+| pricing_engine_type_code | Product type | typeEdit   | line_edit |        | true        | Enter the pricing engine type                        |
+| note                     | Note         | noteEdit   | text_edit |        |             | Enter a note                                         |
+
+*** Columns
+
+| enum_name             | field                    | header       | type      | width |
+|-----------------------+--------------------------+--------------+-----------+-------|
+| Code                  | code                     | Code         | string    | 260   |
+| Model                 | model                    | Model        | string    | 140   |
+| Engine                | engine                   | Engine       | string    | 180   |
+| PricingEngineTypeCode | pricing_engine_type_code | Product type | string    | 160   |
+| IsUsual               | is_usual                 | Usual        | bool      | 70    |
+| Version               | version                  | Version      | int       | 70    |
+| ModifiedBy            | modified_by              | Modified By  | string    | 120   |
+| RecordedAt            | recorded_at              | Recorded At  | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

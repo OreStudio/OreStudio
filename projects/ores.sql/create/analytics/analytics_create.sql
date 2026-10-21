@@ -32,6 +32,12 @@
 \ir ./analytics_pricing_engine_types_create.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_create.sql
 
+-- Pricing engine vocabulary (pairs of model and engine, and their settings)
+\ir ./analytics_pricing_model_engine_pairs_create.sql
+\ir ./analytics_pricing_model_engine_pairs_notify_trigger_create.sql
+\ir ./analytics_pricing_pair_settings_create.sql
+\ir ./analytics_pricing_pair_settings_notify_trigger_create.sql
+
 -- Stress and sensitivity vocabulary (shift families and shift types)
 \ir ./analytics_stress_shift_families_create.sql
 \ir ./analytics_stress_shift_families_notify_trigger_create.sql

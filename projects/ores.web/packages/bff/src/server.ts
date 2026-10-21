@@ -34,6 +34,7 @@ import { registerReportingRoutes } from './reporting.js';
 import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
 import { registerConventionRoutes } from './conventions.js';
+import { registerPricingEngineRoutes } from './pricing-engines.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
@@ -2660,6 +2661,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerBookRoutes(server, requireSession);
     registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
+    registerPricingEngineRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);

@@ -19,6 +19,8 @@
  */
 #include "ores.shell/app/commands/analytics/analytics_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_engine_type_commands.hpp"
+#include "ores.shell/app/commands/analytics/pricing_model_engine_pair_commands.hpp"
+#include "ores.shell/app/commands/analytics/pricing_pair_setting_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_config_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_parameter_commands.hpp"
@@ -35,6 +37,8 @@ void analytics_commands::register_commands(cli::Menu& root_menu, nats_client& se
     BOOST_LOG_SEV(lg(), debug) << "Registering analytics command surface.";
 
     pricing_engine_type_commands::register_commands(root_menu, session);
+    pricing_model_engine_pair_commands::register_commands(root_menu, session);
+    pricing_pair_setting_commands::register_commands(root_menu, session);
     pricing_model_config_commands::register_commands(root_menu, session);
     pricing_model_product_commands::register_commands(root_menu, session);
     pricing_model_product_parameter_commands::register_commands(root_menu, session);

@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: 0EA76DD3-D39A-43D8-81AA-E58B0F17420F
+:END:
+#+title: ores.analytics.pricing_pair_setting
+#+description: Codegen entity model for the analytics =pricing_pair_setting= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A setting a model and engine pair takes, with its kind and usual value.
+#+entity_singular: pricing_pair_setting
+#+entity_plural: pricing_pair_settings
+#+entity_title: Pricing Pair Setting
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+The settings a pair of model and engine takes. The pricing engine screens draw a select where this table knows the options and a text field where it does not know the setting.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+Unique code of the setting row: the product type, model, engine, scope and setting name joined with a colon.
+
+Examples: 'BermudanSwaption:LGM:Grid:model:Calibration'.
+
+** model
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Pricing model name the setting belongs to.
+
+#+begin_src cpp :name generator
+std::string("LGM")
+#+end_src
+
+** engine
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Numerical engine name the setting belongs to.
+
+#+begin_src cpp :name generator
+std::string("Grid")
+#+end_src
+
+** pricing_engine_type_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The pricing engine type of the pair the setting belongs to.
+
+Soft FK to ores_analytics_pricing_engine_types_tbl.
+
+#+begin_src cpp :name generator
+std::string("BermudanSwaption")
+#+end_src
+
+** scope
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Where ORE writes the setting: model or engine.
+
+#+begin_src cpp :name generator
+std::string("model")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The setting name as ORE writes it.
+
+Examples: 'Calibration', 'BootstrapTolerance'.
+
+#+begin_src cpp :name generator
+std::string("Calibration")
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+How the screen draws the setting: select, number or text.
+
+#+begin_src cpp :name generator
+std::string("text")
+#+end_src
+
+** usual_value
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The value ORE's examples use.
+
+** options
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The allowed values of a select setting, separated by commas.
+
+** note
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+A note on what the setting does.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_pair_settings_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: setting
+:entity_plural_short:   settings
+:entity_singular_words: pricing pair setting
+:entity_plural_words:   pricing pair settings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pps
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| model       | Model       |
+| engine      | Engine      |
+| pricing_engine_type_code | Product type |
+| scope       | Scope       |
+| name        | Name        |
+| kind        | Kind        |
+| usual_value | Usual value |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  settings
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget         | type      | is_key | is_required | placeholder                                        |
+|-------------+-------------+----------------+-----------+--------+-------------+----------------------------------------------------|
+| code        | Code        | codeEdit       | line_edit | true   | true        | Enter the setting code (e.g. BermudanSwaption:LGM:Grid:model:Calibration) |
+| model       | Model       | modelEdit      | line_edit |        | true        | Enter the model                                    |
+| engine      | Engine      | engineEdit     | line_edit |        | true        | Enter the engine                                   |
+| pricing_engine_type_code | Product type | typeEdit | line_edit | | true | Enter the pricing engine type |
+| scope | Scope | scopeEdit | line_edit | | true | model or engine |
+| name        | Name        | nameEdit       | line_edit |        | true        | Enter the setting name                             |
+| kind        | Kind        | kindEdit       | line_edit |        | true        | select, number or text                             |
+| usual_value | Usual value | usualValueEdit | line_edit |        |             | Enter the usual value                              |
+| options     | Options     | optionsEdit    | line_edit |        |             | Enter the options, separated by commas             |
+| note        | Note        | noteEdit       | text_edit |        |             | Enter a note                                       |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Code       | code        | Code        | string    | 260   |
+| Model      | model       | Model       | string    | 140   |
+| Engine     | engine      | Engine      | string    | 180   |
+| PricingEngineTypeCode | pricing_engine_type_code | Product type | string | 160 |
+| Scope | scope | Scope | string | 70 |
+| Name       | name        | Name        | string    | 200   |
+| Kind       | kind        | Kind        | string    | 80    |
+| UsualValue | usual_value | Usual value | string    | 140   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

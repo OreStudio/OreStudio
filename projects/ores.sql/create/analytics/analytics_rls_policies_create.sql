@@ -44,6 +44,42 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Pricing Model Engine Pairs (global registry — system tenant records visible to all)
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_pricing_model_engine_pairs_tbl enable row level security;
+
+drop policy if exists pricing_model_engine_pairs_tenant_isolation_policy
+    on ores_analytics_pricing_model_engine_pairs_tbl;
+
+create policy pricing_model_engine_pairs_tenant_isolation_policy
+on ores_analytics_pricing_model_engine_pairs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Pricing Pair Settings (global registry — system tenant records visible to all)
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_pricing_pair_settings_tbl enable row level security;
+
+drop policy if exists pricing_pair_settings_tenant_isolation_policy
+    on ores_analytics_pricing_pair_settings_tbl;
+
+create policy pricing_pair_settings_tenant_isolation_policy
+on ores_analytics_pricing_pair_settings_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Stress Shift Families
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_stress_shift_families_tbl enable row level security;

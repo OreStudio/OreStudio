@@ -41,6 +41,10 @@
 \ir ./analytics_stress_shift_families_drop.sql
 \ir ./analytics_todays_market_collection_kinds_notify_trigger_drop.sql
 \ir ./analytics_todays_market_collection_kinds_drop.sql
+\ir ./analytics_pricing_model_engine_pairs_notify_trigger_drop.sql
+\ir ./analytics_pricing_model_engine_pairs_drop.sql
+\ir ./analytics_pricing_pair_settings_notify_trigger_drop.sql
+\ir ./analytics_pricing_pair_settings_drop.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_drop.sql
 \ir ./analytics_pricing_engine_types_drop.sql
 

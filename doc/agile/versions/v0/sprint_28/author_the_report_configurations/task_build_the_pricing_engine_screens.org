@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 986E1372-9BA6-4CA5-BFC1-FBDA134F221A
+:END:
+#+title: Task: Build the pricing engine configuration screens
+#+description: Task for: Author the report configurations on guided screens
+#+type: task
+#+level: s1
+#+filetags: :author_the_report_configurations:sprint_28:v0:
+#+owner: marco
+#+branch: feature/pricing-engine-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the screens that the pricing engine journeys and prototypes draw. This first slice reads and writes configurations in place. It has no status, no sign-off and no proposal. Those stay in the task Four-eyes sign-off for pricing engine changes. A configuration here is a draft that a person with the write permission changes at once, with a reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
+| Now          | See, Author and Change are built. Import and History are not.                       |
+| Waiting on   | Nothing.                               |
+| Next         | A server operation that parses an ORE file, then the Import screen.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A list shows the configurations of the party, with the variant, the product count and the setting count, and it searches and sorts.
+- A record page shows one configuration with its products and settings, and offers Change, Add product, Remove and Delete to a person with the write permission only.
+- A change states the difference, runs the checks, asks for a reason and saves the whole document against the version it read. A stale version is a conflict, and the dialog offers to read again.
+- Authoring is a journey of six steps: name, products, model and engine, settings, check, review and save. It starts empty or from a copy.
+- The models, engines, pairs and settings come from two new lookup tables, pricing_model_engine_pair and pricing_pair_setting, seeded from the ORE pricing engine files.
+- Saving a document removes the products and parameters that the new version omits.
+- The BFF routes, the web client and the screens have unit tests.
+
+* Plan
+
+** What was built
+
+| Layer | What |
+|-------+------|
+| SQL and analytics | The tables pricing_model_engine_pair and pricing_pair_setting, generated from codegen models, with seeds of 24 pairs and 12 settings. The document save removes omitted rows. |
+| BFF | The routes under =/api/reporting/pricing-engines=: list, vocabulary, read, create, save and delete. A create writes the reporting configuration header first and removes it again when the document does not save. |
+| Web | The list, the record page with its dialogs, the authoring journey, the card and workflow, the paths, the permissions and the strings in three languages. |
+
+** What is left
+
+- Import. The journey says the parse belongs on the server, so a browser parser cannot drift from it. The work is a server operation that turns a file into a document without saving, then the screen.
+- History. The history provider exists on the server. The screen draws the shared timeline when the BFF serves it for this entity.
+- The reach of a change. No operation lists the reports that bind a configuration, so the screens say so.
+- Deleting a configuration leaves its reporting configuration header. A later change removes both.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web tests after this task | 153 files, 1803 tests, all pass | =npx vitest run= in =projects/ores.web/packages/web= | the working tree of this branch |
+| BFF tests after this task | 69 files, 843 tests, all pass | =npx vitest run= in =projects/ores.web/packages/bff= | the working tree of this branch |
+
+* Notes
+
+- *Document save.* The service stamps the tenant and the party itself, and it keeps the change reason that a row names. The BFF therefore puts the reason on every row of the document.
+- *Timestamps.* A row the browser creates carries the epoch in the wire format, and the service stamps the real time.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

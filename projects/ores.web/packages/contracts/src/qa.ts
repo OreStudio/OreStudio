@@ -85,6 +85,8 @@ export const scenarioSummarySchema = z.object({
     sprint: z.string().nullable(),
     /** The date from the doc's `#+created:` line, such as `2026-10-11`, or empty. */
     created: z.string(),
+    /** The environment from the doc's `#+environment:` line, or empty. */
+    environment: z.string(),
     state: scenarioStateSchema,
     /**
      * A scenario waits for a tester until it is PASSED or FAILED, or until a

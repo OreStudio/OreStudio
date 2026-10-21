@@ -24,6 +24,7 @@ import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { ScenarioSummary } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
+import { useSite } from '../session/SiteProvider.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { QA_SCENARIOS_KEY, qaQueries } from './queries.js';
 import {
@@ -50,7 +51,7 @@ const TONES = {
  * The width of each column, so the tables of the buckets line up under one
  * another. A date and a time stay on one line.
  */
-const WIDTHS = ['w-[30%]', 'w-[25%]', 'w-[12%]', 'w-[9%]', 'w-[9%]', 'w-[15%]'] as const;
+const WIDTHS = ['w-[26%]', 'w-[20%]', 'w-[14%]', 'w-[11%]', 'w-[8%]', 'w-[9%]', 'w-[12%]'] as const;
 
 /**
  * The scenarios, grouped by sprint, newest sprint first. In a sprint the live
@@ -186,6 +187,9 @@ function Table({
                     <tr className="border-b border-line text-xs text-ink-muted">
                         <th className="px-4 py-2 font-medium">{t('development.tests.scenario')}</th>
                         <th className="px-4 py-2 font-medium">{t('development.tests.target')}</th>
+                        <th className="px-4 py-2 font-medium">
+                            {t('development.tests.environment')}
+                        </th>
                         <th className="px-4 py-2 font-medium">{t('development.tests.progress')}</th>
                         <th className="px-4 py-2 font-medium">{t('development.tests.state')}</th>
                         <th className="px-4 py-2 font-medium">{t('development.tests.created')}</th>
@@ -215,6 +219,8 @@ function Row({
     const navigate = useNavigate();
     const state = stateOf(scenario);
     const open = `/development/tests/${scenario.id}`;
+    const { environment } = useSite();
+    const here = scenario.environment !== '' && scenario.environment === environment?.id;
     const context = [scenario.story?.title, scenario.task?.title].filter(Boolean).join(' · ');
     return (
         <tr
@@ -236,6 +242,18 @@ function Row({
                         </Tag>
                     </span>
                 ))}
+            </td>
+            <td className="px-4 py-2.5">
+                {scenario.environment !== '' && (
+                    <span className="font-mono text-xs">{scenario.environment}</span>
+                )}
+                {here && (
+                    <span className="ml-1.5">
+                        <Tag small tone="accent">
+                            {t('development.tests.thisEnvironment')}
+                        </Tag>
+                    </span>
+                )}
             </td>
             <td className="px-4 py-2.5">
                 <div

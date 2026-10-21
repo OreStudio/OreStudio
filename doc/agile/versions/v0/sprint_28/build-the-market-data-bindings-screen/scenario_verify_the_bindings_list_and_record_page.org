@@ -38,7 +38,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 | Parent story  | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]   |
 | Target screen | Market data > Bindings, in ores.web |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | FAILED |
 
 * Steps
 
@@ -55,7 +55,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Check the words in French and Portuguese
 
@@ -67,7 +67,8 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | FAIL |
+| Notes  | I do not see a language control. |
 
 ** Check the list columns and its rows
 
@@ -83,7 +84,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Search the list by source name
 
@@ -96,7 +97,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Filter the list by kind
 
@@ -109,7 +110,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Page through the long list
 
@@ -122,7 +123,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Open a binding record page
 
@@ -140,7 +141,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Follow the series link, inspect it and copy it
 
@@ -156,7 +157,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Use the observation window on the series page
 
@@ -171,8 +172,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Check the oresmd URI column of the feed lists
 
@@ -184,7 +184,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 ** Confirm a vendor binding is read only
 
@@ -198,8 +198,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Edit a binding
 
@@ -216,8 +215,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Read the history timeline of a binding
 
@@ -233,8 +231,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Check the status of the feed behind a binding
 
@@ -247,8 +244,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Add a binding and delete it
 
@@ -265,8 +261,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Return to the list and leave
 
@@ -278,14 +273,14 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | FAILED |
+| Completed at  | 2026-10-21T21:25:19Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

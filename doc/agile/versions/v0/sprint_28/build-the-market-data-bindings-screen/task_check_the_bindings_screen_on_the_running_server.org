@@ -88,3 +88,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The user ran the 15-step scenario on 2026-10-21 against the running server. Fourteen steps passed: the menu card, the list columns and rows, search, the kind filter, paging, the record page, the series link, the observation window, the oresmd URI column, the vendor step, edit, history with Revert, feed status, and add and delete.
+
+Step 2 failed. The site has no language control, so nobody can change the language to French or Portuguese. The translation catalogues exist, and the language provider has a setter, but no screen calls it. This is a gap of the site, not of the bindings screen.

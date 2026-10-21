@@ -383,7 +383,7 @@ make_step(const provision_tenant_workflow_request& run,
                                    const ores::workflow::service::workflow_step_results&) {
         return rfl::json::write(command);
     };
-    step.build_compensation = [](const std::string&, const std::string&) {
+    step.build_compensation = [](const std::string&, const std::string&, const std::string&) {
         return "{}";
     };
     return step;

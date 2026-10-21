@@ -69,7 +69,8 @@ register_run_configuration_import_workflow(ores::workflow::service::workflow_reg
             return request_json;
         };
         s.build_compensation = [](const std::string& cmd_json,
-                                  const std::string& result_json) -> std::string {
+                                  const std::string& result_json,
+                                  const std::string&) -> std::string {
             const auto cmd = rfl::json::read<run_configuration_import_execute_request>(cmd_json);
             const auto res = rfl::json::read<run_configuration_import_execute_result>(result_json);
             run_configuration_import_rollback_request rollback;

@@ -139,6 +139,9 @@ require_run_request(const std::string& request_json, std::string_view consumer) 
 
 /**
  * @brief The compensation every step of this workflow shares: fail the report.
+ *
+ * The report reads the error of the step that failed, not of the step being
+ * rolled back, because the first compensation to run sets the report's message.
  */
 template <typename Command>
 [[nodiscard]] inline std::string fail_report_from(const std::string& cmd_json,
@@ -171,9 +174,10 @@ template <typename Command>
                                                       .correlation_id = req.correlation_id});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<gather_trades_request>(
-            cmd_json, "Report execution failed during trade gathering");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<gather_trades_request>(cmd_json, failure);
     };
 
     return s;
@@ -198,9 +202,10 @@ template <typename Command>
                                        .correlation_id = req.correlation_id});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<gather_market_data_request>(
-            cmd_json, "Report execution failed during market data gathering");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<gather_market_data_request>(cmd_json, failure);
     };
 
     return s;
@@ -236,9 +241,10 @@ template <typename Command>
                                     .series_count = market_data.series_count});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<assemble_bundle_request>(
-            cmd_json, "Report execution failed during bundle assembly");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<assemble_bundle_request>(cmd_json, failure);
     };
 
     return s;
@@ -263,9 +269,10 @@ template <typename Command>
                                            .prepared_input_key = req.prepared_input_key});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<resolve_prepared_input_request>(
-            cmd_json, "Report execution failed during input resolution");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<resolve_prepared_input_request>(cmd_json, failure);
     };
 
     return s;
@@ -305,9 +312,10 @@ template <typename Command>
                                         .fixings_storage_key = market_data.fixings_storage_key});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<prepare_ore_package_request>(
-            cmd_json, "Report execution failed during ORE package preparation");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<prepare_ore_package_request>(cmd_json, failure);
     };
 
     return s;
@@ -341,9 +349,10 @@ template <typename Command>
                                                        .tarball_uris = input.tarball_uris});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<submit_compute_request>(
-            cmd_json, "Report execution failed during compute submission");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<submit_compute_request>(cmd_json, failure);
     };
 
     return s;
@@ -372,9 +381,10 @@ template <typename Command>
                                             .batch_id = submitted.batch_id});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<collect_compute_results_request>(
-            cmd_json, "Report execution failed during result collection");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<collect_compute_results_request>(cmd_json, failure);
     };
 
     return s;
@@ -406,9 +416,10 @@ template <typename Command>
                                            .batch_id = submitted.batch_id});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<ignore_compute_results_request>(
-            cmd_json, "Report execution failed during result ingestion");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<ignore_compute_results_request>(cmd_json, failure);
     };
 
     return s;
@@ -441,9 +452,10 @@ template <typename Command>
                                     .correlation_id = req.correlation_id});
     };
 
-    s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {
-        return fail_report_from<finalise_report_request>(cmd_json,
-                                                         "Workflow compensation triggered");
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<finalise_report_request>(cmd_json, failure);
     };
 
     return s;

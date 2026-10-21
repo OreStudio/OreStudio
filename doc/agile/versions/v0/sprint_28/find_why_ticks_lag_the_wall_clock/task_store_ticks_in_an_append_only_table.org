@@ -38,7 +38,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 - A hypertable for ticks with no trigger, no valid_to and one index on the series and the time, with a retention policy for each class and no compression.
 - The ingest writes ticks to it, and a batch needs no dedupe against a trigger.
 - A view joins it with the observation table, and the readers keep their results: snapshots, evolution, slices, ORE export, curve pillars, lineage and the feed binding activity.
-- The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector. Met for the store path of the loop (median 117,000). Not met with margin for the whole path through NATS (median 97,600 on a loaded machine).
+- The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector. Met for the store path of the loop (median 117,000). Not met with margin for the whole path through NATS in this task (median 97,600 on a loaded machine). Met by the task "Overlap the copy with the next batch" (median 128,100).
 
 * Plan
 
@@ -151,7 +151,9 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
    - After that, the store path gives about 117,000 rows each second and the drain through NATS
      about 98,000, on a machine at 11 to 16 load on 8 CPUs, which other environments loaded.
      The drain through NATS does not reliably pass 100,000 rows each second. The acceptance
-     criterion is met for the store path and not met with margin for the whole path.
+     criterion is met for the store path and not met with margin for the whole path. The task
+     "Overlap the copy with the next batch" followed, and it raises the drain through NATS to a
+     median of 128,100 rows each second over ten runs.
    - What is left is spread thin: allocation, the CSV time stamp, the TLS of the republish, and
      locks. A bare =COPY= takes about 0.26 s of the 0.55 s for 60,000 rows, and the loop takes the
      rest, one after the other in one worker. Overlapping the =COPY= of one batch with the

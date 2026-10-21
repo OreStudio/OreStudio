@@ -34,12 +34,12 @@ std::string convert_to_table(const std::vector<pricing_pair_setting>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Code" << "Model" << "Engine" << "Product type" << "Scope" << "Name"
-          << "Kind" << "Usual value" << "Modified By" << "Version" << fort::endr;
+          << "Kind" << "Usual value" << "Required" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pps : v) {
         table << pps.code << pps.model << pps.engine << pps.pricing_engine_type_code << pps.scope
-              << pps.name << pps.kind << pps.usual_value << pps.modified_by << pps.version
-              << fort::endr;
+              << pps.name << pps.kind << pps.usual_value << (pps.is_required ? "true" : "false")
+              << pps.modified_by << pps.version << fort::endr;
     }
     return table.to_string();
 }

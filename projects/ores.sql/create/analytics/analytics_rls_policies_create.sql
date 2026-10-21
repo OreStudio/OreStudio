@@ -80,6 +80,60 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Pricing Models (global registry — system tenant records visible to all)
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_pricing_models_tbl enable row level security;
+
+drop policy if exists pricing_models_tenant_isolation_policy
+    on ores_analytics_pricing_models_tbl;
+
+create policy pricing_models_tenant_isolation_policy
+on ores_analytics_pricing_models_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Pricing Methods (global registry — system tenant records visible to all)
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_pricing_methods_tbl enable row level security;
+
+drop policy if exists pricing_methods_tenant_isolation_policy
+    on ores_analytics_pricing_methods_tbl;
+
+create policy pricing_methods_tenant_isolation_policy
+on ores_analytics_pricing_methods_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Sensitivity Templates (global registry — system tenant records visible to all)
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_sensitivity_templates_tbl enable row level security;
+
+drop policy if exists sensitivity_templates_tenant_isolation_policy
+    on ores_analytics_sensitivity_templates_tbl;
+
+create policy sensitivity_templates_tenant_isolation_policy
+on ores_analytics_sensitivity_templates_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Stress Shift Families
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_stress_shift_families_tbl enable row level security;

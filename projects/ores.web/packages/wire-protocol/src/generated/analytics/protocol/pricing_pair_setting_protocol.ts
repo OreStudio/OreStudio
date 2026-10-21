@@ -42,6 +42,7 @@ export interface PricingPairSettingWrite {
     kind: string;
     usual_value: string;
     options: string;
+    is_required: boolean;
     note: string;
 }
 

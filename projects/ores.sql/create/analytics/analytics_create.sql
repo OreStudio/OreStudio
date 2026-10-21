@@ -36,7 +36,13 @@
 \ir ./analytics_pricing_model_engine_pairs_create.sql
 \ir ./analytics_pricing_model_engine_pairs_notify_trigger_create.sql
 \ir ./analytics_pricing_pair_settings_create.sql
+\ir ./analytics_pricing_models_create.sql
+\ir ./analytics_pricing_methods_create.sql
+\ir ./analytics_sensitivity_templates_create.sql
 \ir ./analytics_pricing_pair_settings_notify_trigger_create.sql
+\ir ./analytics_pricing_models_notify_trigger_create.sql
+\ir ./analytics_pricing_methods_notify_trigger_create.sql
+\ir ./analytics_sensitivity_templates_notify_trigger_create.sql
 
 -- Stress and sensitivity vocabulary (shift families and shift types)
 \ir ./analytics_stress_shift_families_create.sql

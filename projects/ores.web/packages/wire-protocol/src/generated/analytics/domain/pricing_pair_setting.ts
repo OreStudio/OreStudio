@@ -42,6 +42,7 @@ export interface PricingPairSetting {
     kind: string;
     usual_value: string;
     options: string;
+    is_required: boolean;
     note: string;
     modified_by: string;
     performed_by: string;

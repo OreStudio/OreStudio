@@ -21,6 +21,9 @@
 #include "ores.shell/app/commands/analytics/pricing_engine_type_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_engine_pair_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_pair_setting_commands.hpp"
+#include "ores.shell/app/commands/analytics/pricing_model_commands.hpp"
+#include "ores.shell/app/commands/analytics/pricing_method_commands.hpp"
+#include "ores.shell/app/commands/analytics/sensitivity_template_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_config_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_parameter_commands.hpp"
@@ -39,6 +42,9 @@ void analytics_commands::register_commands(cli::Menu& root_menu, nats_client& se
     pricing_engine_type_commands::register_commands(root_menu, session);
     pricing_model_engine_pair_commands::register_commands(root_menu, session);
     pricing_pair_setting_commands::register_commands(root_menu, session);
+    pricing_model_commands::register_commands(root_menu, session);
+    pricing_method_commands::register_commands(root_menu, session);
+    sensitivity_template_commands::register_commands(root_menu, session);
     pricing_model_config_commands::register_commands(root_menu, session);
     pricing_model_product_commands::register_commands(root_menu, session);
     pricing_model_product_parameter_commands::register_commands(root_menu, session);

@@ -113,7 +113,7 @@ std::string("Calibration")
 :nullable:     false
 :END:
 
-How the screen draws the setting: select, number or text.
+How the screen draws the setting: select, number, tenor, reference or text.
 
 #+begin_src cpp :name generator
 std::string("text")
@@ -136,6 +136,15 @@ The value ORE's examples use.
 :END:
 
 The allowed values of a select setting, separated by commas.
+
+** is_required
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether ORE needs the setting. The guide marks a setting optional when ORE has a default for it. A setting that is not optional is required, and the screens start a new product with it.
 
 ** note
 :PROPERTIES:
@@ -199,6 +208,7 @@ A note on what the setting does.
 | name        | Name        |
 | kind        | Kind        |
 | usual_value | Usual value |
+| is_required | Required    |
 | modified_by | Modified By |
 | version     | Version     |
 
@@ -218,7 +228,7 @@ A note on what the setting does.
 | pricing_engine_type_code | Product type | typeEdit | line_edit | | true | Enter the pricing engine type |
 | scope | Scope | scopeEdit | line_edit | | true | model or engine |
 | name        | Name        | nameEdit       | line_edit |        | true        | Enter the setting name                             |
-| kind        | Kind        | kindEdit       | line_edit |        | true        | select, number or text                             |
+| kind        | Kind        | kindEdit       | line_edit |        | true        | select, number, tenor, reference or text                             |
 | usual_value | Usual value | usualValueEdit | line_edit |        |             | Enter the usual value                              |
 | options     | Options     | optionsEdit    | line_edit |        |             | Enter the options, separated by commas             |
 | note        | Note        | noteEdit       | text_edit |        |             | Enter a note                                       |
@@ -235,6 +245,7 @@ A note on what the setting does.
 | Name       | name        | Name        | string    | 200   |
 | Kind       | kind        | Kind        | string    | 80    |
 | UsualValue | usual_value | Usual value | string    | 140   |
+| IsRequired | is_required | Required    | bool      | 70    |
 | Version    | version     | Version     | int       | 70    |
 | ModifiedBy | modified_by | Modified By | string    | 120   |
 | RecordedAt | recorded_at | Recorded At | timestamp | 150   |

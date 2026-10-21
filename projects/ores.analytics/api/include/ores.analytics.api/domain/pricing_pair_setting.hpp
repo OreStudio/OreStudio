@@ -87,7 +87,7 @@ struct pricing_pair_setting final {
     std::string name;
 
     /**
-     * @brief How the screen draws the setting: select, number or text.
+     * @brief How the screen draws the setting: select, number, tenor, reference or text.
      */
     std::string kind;
 
@@ -100,6 +100,13 @@ struct pricing_pair_setting final {
      * @brief The allowed values of a select setting, separated by commas.
      */
     std::string options;
+
+    /**
+     * @brief Whether ORE needs the setting. The guide marks a setting optional when ORE has a
+     * default for it. A setting that is not optional is required, and the screens start a new
+     * product with it.
+     */
+    bool is_required = false;
 
     /**
      * @brief A note on what the setting does.

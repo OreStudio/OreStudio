@@ -53,6 +53,7 @@ pricing_pair_setting_mapper::map(const pricing_pair_setting_entity& v) {
     r.kind = v.kind;
     r.usual_value = v.usual_value.value_or("");
     r.options = v.options.value_or("");
+    r.is_required = v.is_required;
     r.note = v.note.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -80,6 +81,7 @@ pricing_pair_setting_mapper::map(const domain::pricing_pair_setting& v) {
     r.kind = v.kind;
     r.usual_value = v.usual_value.empty() ? std::nullopt : std::optional(v.usual_value);
     r.options = v.options.empty() ? std::nullopt : std::optional(v.options);
+    r.is_required = v.is_required;
     r.note = v.note.empty() ? std::nullopt : std::optional(v.note);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

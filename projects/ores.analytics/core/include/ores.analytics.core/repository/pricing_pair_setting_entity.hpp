@@ -53,6 +53,7 @@ struct pricing_pair_setting_entity {
     std::string kind;
     std::optional<std::string> usual_value;
     std::optional<std::string> options;
+    bool is_required = false;
     std::optional<std::string> note;
     std::string modified_by;
     std::string performed_by;

@@ -106,6 +106,7 @@ domain::pricing_pair_setting to_domain(const messaging::pricing_pair_setting_wri
     v.kind = write.kind;
     v.usual_value = write.usual_value;
     v.options = write.options;
+    v.is_required = write.is_required;
     v.note = write.note;
     return v;
 }

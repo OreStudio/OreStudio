@@ -39,6 +39,7 @@ create table if not exists "ores_analytics_pricing_pair_settings_tbl" (
     "kind" text not null,
     "usual_value" text null,
     "options" text null,
+    "is_required" boolean not null,
     "note" text null,
     "modified_by" text not null,
     "performed_by" text not null,

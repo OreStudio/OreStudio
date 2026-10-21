@@ -23,9 +23,9 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Analysis and prototype are written, and wait for the owner's sign-off. |
-| Waiting on    | Owner sign-off on decisions 2 to 5 under Analysis. |
-| Next          | Owner decides the five points under Analysis. |
+| Now           | The report page analysis is merged. The engine settings design and prototype are in PR 3619 and wait for the owner's sign-off. |
+| Waiting on    | Owner sign-off on the three groups, the 15 engine settings and the open questions under Design. |
+| Next          | Owner signs off the engine settings prototype, then the data model starts. |
 | Last touched  | 2026-10-21                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |------+-------+-------+-----+-------------|
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
-| [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | STARTED | 2026-10-21 | | Task for: See and change everything a report runs |
+| [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
 
 * Analysis
 
@@ -194,22 +194,21 @@ states end of day or intraday and no date, so the =date= kind and the stored dat
 ** The design
 
 The engine settings become a named configuration of type =engine_settings=. A report definition binds one in its own
-slot, as it binds the pricing engines. The configuration is an entity made of a central row and five parts. The owner
-confirmed the five groups on 2026-10-21.
+slot, as it binds the pricing engines. The configuration is an entity made of a central row and three parts, and it holds
+every engine setting that the official ORE documentation describes, 15 in all. The owner first confirmed five groups on
+2026-10-21. The documented-only rule, described below, leaves three.
 
-| Table | Role | Columns beyond key, party and audit |
-|-------+------+-------------------------------------|
+| Table | Role | Settings |
+|-------+------+----------|
 | =engine_settings= | central row, the named configuration reports bind | name, description, =configuration_id= |
-| =engine_settings_dates= | part, changes the numbers | =accrual_date=, =fixing_cutoff=, =date_calendar=, =date_convention=, =ignore_fixing_lag= |
-| =engine_settings_fixings= | part, changes the numbers | =imply_todays_fixings=, =include_todays_cash_flows=, =include_reference_date_events=, =enrich_index_fixings= |
-| =engine_settings_building= | part, changes the numbers | =observation_model=, =lazy_market_building=, =build_failed_trades=, =continue_on_error=, =default_mapping_to_identity= |
-| =engine_settings_execution= | part, operational | =n_threads=, =log_mask=, =use_analytics= |
-| =engine_settings_reports= | part, operational | =csv_comment_report_header=, =additional_results= |
+| =engine_settings_fixings= | part, changes the numbers | =implyTodaysFixings=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =ignoreFixingLag=, =ignoreFixingLead= |
+| =engine_settings_building= | part, changes the numbers | =observationModel=, =lazyMarketBuilding=, =buildFailedTrades=, =continueOnError=, =useAtParCouponsCurves=, =useAtParCouponsTrades= |
+| =engine_settings_execution= | part, operational | =nThreads=, =logMask=, =gzipCompressionLevel= |
 
-*Why five parts.* The standard says a field set earns a part when it has its own multiplicity, change reason or reader.
-The three groups that change the numbers have a change reason that differs from the two operational groups. A person edits
-one group at a time, and the run reads all five. A group can be absent, and an absent part means the engine default for
-the whole group. The convention families already use this shape, for example =tenor_basis_swap_pay_receive=.
+*Why parts.* The standard says a field set earns a part when it has its own multiplicity, change reason or reader. The two
+groups that change the numbers have a change reason that differs from the operational group. A person edits one group at a
+time, and the run reads all three. A group can be absent, and an absent part means the engine default for the whole group.
+The convention families already use this shape, for example =tenor_basis_swap_pay_receive=.
 
 *The composition rule.* A write to any part bumps the central row's version in the same transaction. The History tab shows
 one entry for each part changed.
@@ -222,10 +221,10 @@ one entry for each part changed.
   configuration stores them.
 - The run settings configuration keeps the scope, the analytics and the market roles. These are the Scope and Analytics tabs.
 
-*Migration.* The 46 rows become 7 engine settings configurations, each with at most five part rows. Each name starts with
-its party's name.
+*Migration.* The 46 rows become 7 engine settings configurations, each with at most three part rows. Each name starts with
+its party's name. Only the five values that the rows set today migrate.
 
-** Effect of the documented-only rule
+** The documented-only rule
 
 Decided by the owner on 2026-10-21: the screens describe only the parameters that the official ORE documentation mentions, and
 the model holds all of them. Where the guide and the source disagree, the source wins.
@@ -233,18 +232,10 @@ the model holds all of them. Where the guide and the source disagree, the source
 Checked against =Docs/UserGuide= of ORE 1.8.17.0. Eleven of the 19 stored settings are in the guide. Eight are not and leave
 the model: =accrualDate=, =fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=,
 =csvCommentReportHeader= and =additionalResults= as a Setup parameter. Four documented settings were not stored and are
-added: =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=. That makes 15
-engine settings in three groups, and the table of the design above is superseded:
+added: =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=.
 
-| Table | Role | Settings |
-|-------+------+----------|
-| =engine_settings= | central row, the named configuration reports bind | name, description, =configuration_id= |
-| =engine_settings_fixings= | part, changes the numbers | =implyTodaysFixings=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =ignoreFixingLag=, =ignoreFixingLead= |
-| =engine_settings_building= | part, changes the numbers | =observationModel=, =lazyMarketBuilding=, =buildFailedTrades=, =continueOnError=, =useAtParCouponsCurves=, =useAtParCouponsTrades= |
-| =engine_settings_execution= | part, operational | =nThreads=, =logMask=, =gzipCompressionLevel= |
-
-The groups Dates and Report output hold no documented setting. =ignoreFixingLag= moved to the fixings part, because it limits
-the fallback that Enrich index fixings fills.
+=ignoreFixingLag= moved to the fixings part, because it limits the fallback that Enrich index fixings fills. The groups Dates
+and Report output of the first design hold no documented setting.
 
 The documented Setup parameters that are not engine settings stay where they are: =asofDate= is the run's own time point,
 =baseCurrency= is the report currency, =inputPath=, =outputPath= and =logFile= are package layout, and the file parameters are
@@ -252,6 +243,12 @@ documents. =includePastCashflows= is a parameter of the cashflow analytic in the
 
 The defaults on the screen follow the source. The source defaults =continueOnError= and =buildFailedTrades= to Yes where the
 guide says No. The guide says =includeTodaysCashFlows= and =includeReferenceDateEvents= default to false.
+
+*Consequence for the importer.* A run document that sets a parameter the model does not hold is no longer refused. The
+importer drops the parameter and reports a warning that names it. This covers the eight settings that left the model and
+every other Setup parameter that the guide does not describe. =fixingCutoff= and =csvCommentReportHeader= are read by ORE, and
+=fixingCutoff= changes the numbers, so the warning says that the run will not read the parameter and that its numbers may
+differ from the original run. Decided by the owner on 2026-10-21.
 
 ** Two more findings
 
@@ -267,7 +264,7 @@ guide says No. The guide says =includeTodaysCashFlows= and =includeReferenceDate
 | Prototype the engine settings screen | Done on this branch: =see-the-engine-settings-a-party-holds=. |
 | Model the engine settings | The central row and its parts, the configuration type, the binding slot, and the migration from the run settings. |
 | Move the currency and the market kind to the definition | A column each on the report definition, and the run records its as-of time. |
-| Project the engine settings into the Setup block | The projection reads the parts instead of one row, and the package layout stops being stored. |
+| Project the engine settings into the Setup block | The projection reads the parts instead of one row, the package layout stops being stored, and the importer drops a parameter the model does not hold and warns. |
 | Build the engine settings screens | The list and the page of the prototype. |
 | Record what a run used | The instance records its as-of time and the version of each configuration it read. |
 
@@ -278,7 +275,7 @@ Decided by the owner on 2026-10-21, after the review of the ORE source.
 1. The documentation is data of its own, apart from the data model. The existing =parameter_definition= table is generalised
    into a documentation system for every ORE parameter and every ORE document element. It serves the UI with text, versions
    and formats. It does not validate values: validation stays with the data model.
-2. A documentation entry relates to the ORE file it belongs to. The dialogs are hard coded to look an entry up by the name
+2. A documentation entry relates to the ORE file it belongs to. The screens are hard coded to look an entry up by the name
    of the setting.
 3. The system covers the conventions, the configurations, the pricing engines, today's market, the curve configuration and
    the analytics, not only the Setup block. The 365 analytic parameters and the 35 analytic types get the same columns.
@@ -302,13 +299,14 @@ in any tag. For those, the entry shows the first and the last release whose ship
 
 1. Who may change a group. The prototype lets an analyst edit all three. The two groups that change the numbers may need
    an approval like a pricing engine change.
-2. Settled for ORE: every flag parses with =parseBool=, so the model can store booleans. The remaining choice is whether the
-   projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
-5. Settled on 2026-10-21: the model holds every documented engine setting, 15 in three groups, and the source wins when
-   it disagrees with the guide.
-6. Where the target ORE build lives, and how the run records the build it used. See finding 13.
+2. The spelling of the flags. Every flag parses with =parseBool=, so the model can store booleans. The remaining choice is
+   whether the projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
 3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
 4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.
+5. Where the target ORE build lives, and how the run records the build it used. See finding 13.
+
+Settled on 2026-10-21: the model holds every documented engine setting, 15 in three groups. The source wins when it
+disagrees with the guide. The importer warns about parameters it drops.
 
 * Decisions
 
@@ -320,6 +318,7 @@ in any tag. For those, the entry shows the first and the last release whose ship
 - The configuration is a central row with parts. The owner confirmed five groups on 2026-10-21. The documented-only rule leaves three: fixings and cash flows, market and trade building, and execution. The owner confirms the three.
 - Only parameters that the official ORE documentation mentions appear on the screens. Decided by the owner on 2026-10-21.
 - The documentation holds no table of values. A value that refers to an entity is bound to that entity.
+- The importer drops a Setup parameter that the model does not hold and warns, instead of refusing the document. Decided by the owner on 2026-10-21.
 - Open: who may change a group, the spelling of the flags, and when the currency and the market kind move. See the design.
 
 * Out of scope

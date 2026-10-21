@@ -319,7 +319,6 @@ e3.versions = [{ v: 1, at: '2026-10-20T10:15:00Z', by: 'market risk owner', reas
 CONFIGS.forEach(c => { const l = c.versions[c.versions.length - 1]; c.ver = l.v; c.changed = l.at; });
 
 const valText = (f, v) => v == null || v === '' ? null : f.kind === 'bool' ? (v === 'yes' ? 'Yes' : 'No') : String(v);
-const fieldOf = (g, key) => g.fields.find(f => f.key === key);
 // The rows of one part as a document of flat fields, so two states can be compared.
 const diffParts = parts => { const out = []; parts.forEach(p => { const g = groupOf(p.group); g.fields.forEach(f => { const a = valText(f, (p.before || {})[f.key]), b = valText(f, (p.after || {})[f.key]); if (a !== b) out.push({ k: g.title + ' › ' + f.label, from: a, to: b }); }); }); return out; };
 
@@ -447,7 +446,7 @@ function listScreen() {
 function detailsTab(c) {
   const l = c.versions[c.versions.length - 1];
   const set = GROUPS.filter(g => c.groups[g.id]).map(g => g.title);
-  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups set', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
+  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
   <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
 }
 
@@ -498,7 +497,6 @@ function reportsTab(c) {
   ${protoNote('The read that lists the reports bound to one configuration does not exist, so the names are fixtures. They are the real names of ACME Corporation HK Ltd. A run does not record which version it used, so the Runs with column shows the version in force.')}`;
 }
 
-const KINDS = { Created: 'ok', Changed: 'info', Reverted: 'warn' };
 function historyTab(c) {
   const cur = c.versions[c.versions.length - 1];
   const ent = c.versions.map(x => {
@@ -556,6 +554,7 @@ function saveEdit(c) {
   editing = null; render();
 }
 function apply(c, parts, reason, note, reverted) {
+  if (editing && editing.cid === c.id) editing = null;
   parts.forEach(p => { c.groups[p.group] = { v: p.gver, vals: clone(p.after) }; });
   c.ver++; const at = new Date(NOW + c.ver * 60000).toISOString();
   c.versions.push({ v: c.ver, at, by: actorName, reason, note, parts: clone(parts), reverted });
@@ -615,6 +614,8 @@ function wire() {
 }
 function render() {
   const r = route();
+  // A draft belongs to the group tab it was opened on, so leaving that tab or record ends the edit.
+  if (editing && (r.screen !== 'record' || r.id !== editing.cid || r.tab !== editing.gid)) editing = null;
   document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
   chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();

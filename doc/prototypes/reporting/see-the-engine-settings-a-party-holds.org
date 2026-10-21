@@ -122,6 +122,12 @@ The report names are the real names of ACME Corporation HK Ltd, and the five val
 the seed writes today. The third configuration, every history entry and every count in the list are fixtures. No operation
 lists the reports bound to one configuration, and no operation returns a group count for a list row.
 
+** What the prototype does not draw
+
+- The import warning. The importer drops a Setup parameter that the model does not hold, such as =fixingCutoff=, and warns,
+  naming it, that the numbers may differ from the original run.
+- The Add, Revert and Delete dialogs keep the standard form, and the engine settings page is the only place that edits in place.
+
 ** What it does not settle
 
 - The wording of the documentation is drawn from the ORE user guide, with the release numbers measured from the ORE source.

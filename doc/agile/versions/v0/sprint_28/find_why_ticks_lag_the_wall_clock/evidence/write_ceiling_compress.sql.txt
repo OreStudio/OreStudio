@@ -1,0 +1,26 @@
+\set ON_ERROR_STOP on
+select extversion as timescaledb_version from pg_extension where extname = 'timescaledb';
+
+select 'before compression' as step,
+       pg_size_pretty(hypertable_size('write_ceiling.tick_append')) as size,
+       hypertable_size('write_ceiling.tick_append') as bytes,
+       (select count(*) from show_chunks('write_ceiling.tick_append')) as chunks;
+
+alter table write_ceiling.tick_append set (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'series_id',
+    timescaledb.compress_orderby = 'ts desc');
+
+\timing on
+select count(compress_chunk(c, if_not_compressed => true)) as chunks_compressed
+from show_chunks('write_ceiling.tick_append', older_than => interval '2 days') c;
+\timing off
+
+select 'after compression' as step,
+       pg_size_pretty(hypertable_size('write_ceiling.tick_append')) as size,
+       hypertable_size('write_ceiling.tick_append') as bytes;
+
+select pg_size_pretty(before_compression_total_bytes) as before_bytes,
+       pg_size_pretty(after_compression_total_bytes) as after_bytes,
+       round(before_compression_total_bytes::numeric / nullif(after_compression_total_bytes, 0), 1) as ratio
+from hypertable_compression_stats('write_ceiling.tick_append');

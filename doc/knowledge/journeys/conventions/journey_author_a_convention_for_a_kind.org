@@ -199,17 +199,19 @@ convention tables are the only record of who wrote a term and why.
 | See the result | Announce the write | =refdata.v1.<kind>_conventions_events.created= | exists |
 | Establish that it is not there | Search the kind by a term | (the filter is =id_one_of= and nothing else) | missing |
 | Attach the document to a report | Record which document a run takes | (no default column, no default row) | missing |
-| The screen itself | Author a convention from the browser | (no BFF route) | missing |
+| The screen itself | Author a convention from the browser | =PUT /api/conventions/<family>=, open for the deposit and swap families only | partial |
 
 The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.put=,
 =refdata.v1.tenor_conventions.put=, =refdata.v1.currency_pair_conventions.put=
 and their equals. =swap_conventions_versions.list= and =.get= read the versions
 of one document; =refdata.v1.history.get= reads them with a diff.
 
-No BFF route serves conventions. This journey adds one, for example
-=POST /api/refdata/parties/<party-id>/conventions/<kind>=, which validates the
-person's terms against the term lists, sends the =put= with =must_not_exist=,
-and returns the new key and version.
+=PUT /api/conventions/<family>= exists. It takes a version and a change intent,
+sends the =put= with =must_not_exist= when the version is null, and returns the
+written document. The BFF opens it for the deposit and swap families only, and
+refuses the other families with "not drawn yet". This journey opens the other
+kinds and validates the person's terms against the term lists before the write.
+The route carries no party id in its path.
 
 * What is missing
 

@@ -88,7 +88,7 @@
             '<p class="listnote">' + total + ' documents across ' + inScope.length + ' kinds.</p>' +
             (rows.length === 0 ? '<div class="tblstate">No kinds match the search. ' + M.btn('clear', 'Clear', { cls: 'small' }) + '</div>'
                 : grouped.html) +
-            M.gap('The server holds no count of documents or of distinct term sets for a kind, so the screen reads each list to count. Document counts for the kinds without mock terms are fixtures. A kind carries no asset class in the model today, so the screen holds the grouping.');
+            M.gap('The families route returns a count of documents for each kind, but no count of distinct term sets, so the screen reads each list to count the term sets. Document counts for the kinds without mock terms are fixtures. A kind carries no asset class in the model today, so the screen holds the grouping.');
     }
 
     function toolbar(placeholder, filters) {

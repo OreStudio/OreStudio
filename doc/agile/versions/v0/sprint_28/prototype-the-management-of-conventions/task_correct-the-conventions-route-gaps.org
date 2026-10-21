@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: EDDD9B0E-0CE7-4378-B5E7-42109F98EE7E
+:END:
+#+title: Task: Correct the gap statements about the conventions routes
+#+description: Task for: Prototype the management of conventions
+#+type: task
+#+level: s1
+#+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
+#+owner: marco
+#+branch: feature/correct-the-conventions-route-gaps
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The journeys and prototype notes say that no BFF route serves conventions. Routes exist: the family list with counts, the pick lists, a page of one family's documents, and a put for the deposit and swap families. Correct each statement so it names only what is missing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
+| Now          | The gap statements are corrected.      |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- No journey or prototype note says that no route serves conventions.
+- Each gap names the route or operation that is missing and the one that exists.
+- The local checks pass.
+
+* Plan
+
+1. Read =projects/ores.web/packages/bff/src/conventions.ts= and list the routes it registers.
+2. Find every statement that says no route serves conventions.
+3. Keep a statement that is still true (a set, the queue of requests, the verify screen and data quality have no route). Correct the rest so it names the route that exists and the one that is missing.
+4. Correct the document-count gap in the list prototype and its note.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes the conventions module registers | 4: =GET /api/conventions/families=, =GET /api/conventions/pick-lists=, =GET /api/conventions/:family=, =PUT /api/conventions/:family= | =grep -n "server\.\(get\|put\)" projects/ores.web/packages/bff/src/conventions.ts= | 8f7612bcac |
+| Families open to the write | 2 (deposit, swap) | =grep -n WRITABLE_FAMILIES projects/ores.web/packages/bff/src/conventions.ts= | 8f7612bcac |
+| Journey statements corrected | 5 journeys, each a table row and a gap | =grep -rn "no BFF route" doc/knowledge/journeys/conventions= | 8f7612bcac |
+
+* Notes
+
+The page route sends an empty filter and no order, so a search and a sort by a
+column are still missing. The delete, a read of one document by its key and the
+party in the path are missing too. The journeys keep these as gaps.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Five journeys no longer say that no route serves conventions: Author, Change,
+See the conventions a party uses, Find and Retire. Each names the route that
+exists and the one that is missing. The statements about a set, the queue of
+requests, the verify screen and data quality stay, because they are true.

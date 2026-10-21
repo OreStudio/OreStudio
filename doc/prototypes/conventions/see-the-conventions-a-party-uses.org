@@ -76,8 +76,8 @@ the exact time on hover. The strings are English only.
 ** What is fake
 
 Three of the 26 kinds carry mock documents: swap, deposit and the IBOR index. The
-other 23 list three documents with no terms. The server holds no count of the
-documents or of the term sets of a kind, so the screen reads each list to count.
+other 23 list three documents with no terms. The families route returns a
+count of documents for each kind and no count of term sets, so the screen reads each list to count them.
 The requests that wait are fixtures.
 
 ** Where the code lives

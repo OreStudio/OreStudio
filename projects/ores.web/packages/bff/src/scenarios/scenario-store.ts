@@ -58,6 +58,8 @@ export interface ScenarioSummary {
     readonly sprint: string | null;
     /** The date of the doc's `#+created:` line, or empty. */
     readonly created: string;
+    /** The environment from the doc's `#+environment:` line, or empty. */
+    readonly environment: string;
     readonly state: ScenarioState;
     /** A scenario waits for a tester until it is PASSED, FAILED or abandoned. */
     readonly phase: 'waiting' | 'done' | 'abandoned';

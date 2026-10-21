@@ -25,6 +25,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { ScenarioSummary } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { SiteProvider, SITE_QUERY_KEY } from '../session/SiteProvider.js';
 import { MENU } from '../shell/areas.js';
 import { DevelopmentArea } from './DevelopmentArea.js';
 import { summary } from './testSummary.js';
@@ -36,6 +37,17 @@ function screen(options: {
 }): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
+    });
+    client.setQueryData(SITE_QUERY_KEY, {
+        appName: 'ORE Studio',
+        environment: {
+            id: 'eager_maxwell',
+            displayName: 'Eager Maxwell',
+            description: '',
+            nonProduction: true,
+        },
+        developerTools: true,
+        developerAccounts: [],
     });
     if (options.failure !== undefined) {
         const query = client.getQueryCache().build(client, { queryKey: QA_SCENARIOS_KEY });
@@ -51,15 +63,17 @@ function screen(options: {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter
-                    initialEntries={[
-                        options.tab === undefined || options.tab === 'tests'
-                            ? '/'
-                            : `/?tab=${options.tab}`,
-                    ]}
-                >
-                    <DevelopmentArea />
-                </MemoryRouter>
+                <SiteProvider>
+                    <MemoryRouter
+                        initialEntries={[
+                            options.tab === undefined || options.tab === 'tests'
+                                ? '/'
+                                : `/?tab=${options.tab}`,
+                        ]}
+                    >
+                        <DevelopmentArea />
+                    </MemoryRouter>
+                </SiteProvider>
             </TranslationProvider>
         </QueryClientProvider>,
     );
@@ -251,6 +265,36 @@ describe('the Tests tab', () => {
         expect(html).toContain('2 of 4 steps');
         expect(html).toContain('aria-valuenow="50"');
         expect(html).toContain('In progress');
+    });
+
+    it('shows the environment of a row and labels the one of this environment', () => {
+        const html = screen({
+            scenarios: [
+                summary({ id: 'A', title: 'Here', environment: 'eager_maxwell' }),
+                summary({ id: 'B', title: 'There', environment: 'brave_hopper' }),
+                summary({ id: 'C', title: 'Nowhere', environment: '' }),
+            ],
+        });
+        expect(html).toContain('>Environment</th>');
+        expect(html).toContain('>eager_maxwell<');
+        expect(html).toContain('>brave_hopper<');
+        expect(html.match(/This environment/g)).toHaveLength(1);
+    });
+
+    it('draws a red part in the bar for the failed steps of a row', () => {
+        const html = screen({
+            scenarios: [
+                summary({
+                    id: 'D',
+                    title: 'Half done',
+                    steps: { total: 4, pending: 1, pass: 2, fail: 1, dropped: 0 },
+                }),
+            ],
+        });
+        expect(html).toMatch(/data-status="pass" class="[^"]*bg-up"/);
+        expect(html).toMatch(/data-status="fail" class="[^"]*bg-down"/);
+        expect(html).toMatch(/data-status="pending" class="[^"]*bg-line-subtle"/);
+        expect(html).not.toContain('data-status="dropped"');
     });
 
     it('shows the state of a done and an abandoned scenario', () => {

@@ -66,7 +66,7 @@ last step is final.
    says what it prices and for whom, and an optional =config_variant= tag. The
    name must be new in the party; a name in use is refused where it is typed.
 2. *Say what it is for.* Three choices. *A draft to try a change* is the default. It
-   cannot be bound by an official report. *A candidate for the official End of day
+   cannot be bound by an official report. *A candidate for the official EOD
    configuration* and *a candidate for the official Intraday configuration* name the
    cycle. The step names the official configuration of that cycle today and its
    version, and states how many product types the reports of that cycle need.

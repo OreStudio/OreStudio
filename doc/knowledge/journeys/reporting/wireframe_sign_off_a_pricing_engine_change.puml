@@ -26,23 +26,23 @@ salt
   "Search the configuration and the change" | ^Show: open^
   {#
     Configuration | Cycle | Change | Proposed by | Sign-off | State | For you
-    End of day pricing | End of day | v4 to v5 | market risk owner | Quant 1 of 3 | Awaiting sign-off | Needs your sign-off
+    EOD pricing | EOD | v4 to v5 | market risk owner | Quant 1 of 3 | Awaiting sign-off | Needs your sign-off
     Intraday pricing | Intraday | v2 to v3 | market risk owner | 0 of 3 | Awaiting sign-off | -
   }
   --
-  <b>ONE PROPOSAL: END OF DAY PRICING, VERSION 5</b>
-  Awaiting sign-off - End of day - version 4 is in force until this is approved
+  <b>ONE PROPOSAL: EOD PRICING, VERSION 5</b>
+  Awaiting sign-off - EOD - version 4 is in force until this is approved
   [ Sign-off ] | [ Changes ] | [ Reach ] | [ History ]
-  Four eyes: the person who proposes a change cannot sign it off.
+  Four eyes: the person who raised the request cannot decide it.
   {#
-    Role | Decision | Person | When | Comment
-    Quant team | Approved | quant lead | 2 days ago | -
-    Market risk | Waiting | - | - | [ Approve ] | [ Reject ]
-    Model validation | Waiting | - | - | -
+    Approval part | Decision | Person | When | Comment
+    Quant | Approved | quant lead | 2 days ago | -
+    Market Risk | Waiting | - | - | [ Approve ] | [ Reject ]
+    Model Validation | Waiting | - | - | -
   }
-  When all roles approve:
+  When all approval parts approve:
   [ Make version 5 official ]
-  The proposer sees: You proposed this change. Another person in Market risk must sign it off.
+  The proposer sees: You proposed this change. Another person who holds the Market Risk part must sign it off.
 }
 
 @enduml

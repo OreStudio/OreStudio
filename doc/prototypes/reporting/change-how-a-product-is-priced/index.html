@@ -66,12 +66,7 @@ th.sort{cursor:pointer}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
 .chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
 .axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
-.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
-.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
-.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
-.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
 .avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
-.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
 .dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
 .dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
 .dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
@@ -133,6 +128,22 @@ details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}detail
 label.plain{white-space:nowrap}
 .tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
 
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px;border-bottom:1px solid var(--line-soft)}
+.tl .item{display:grid;grid-template-columns:96px 14px 1fr;gap:0 8px;scroll-margin-top:16px}.tl .item.mark{background:#1d2530}
+.tl .gut{display:flex;justify-content:flex-end;gap:6px;padding-top:9px;font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)}
+.tl .rail{position:relative;display:flex;justify-content:center}.tl .rail:before{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.tl .dot{position:relative;margin-top:13px;width:9px;height:9px;border-radius:50%;border:1px solid var(--ink-faint);background:var(--bg)}
+.tl .dot.ok{border-color:var(--ok)}.tl .dot.info{border-color:var(--accent)}.tl .dot.warn{border-color:var(--warn)}.tl .dot.bad{border-color:var(--bad)}
+.tl .body{display:grid;gap:5px;padding:8px 0 12px;min-width:0}
+.tl .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl .who{font-weight:600}.tl .did{color:var(--ink-dim)}
+.tl .note{color:var(--ink-dim);font-style:italic;font-size:.85rem}
+.tl details summary{cursor:pointer;color:var(--ink-faint);font-size:.8rem;width:fit-content}.tl details>div{margin-top:6px}
+.evchart{border:1px solid var(--line-soft);border-radius:var(--radius);padding:8px 12px;display:grid;gap:6px;margin:8px 0}
+.evchart .bars{display:flex;align-items:flex-end;gap:2px;height:96px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.evchart .bar{flex:none;width:14px;height:100%;display:flex;flex-direction:column-reverse;padding:0;border:0;background:none;cursor:pointer}.evchart .bar:hover{background:var(--panel-2)}
+.evchart .span{display:flex;justify-content:space-between;font-size:.7rem;color:var(--ink-faint)}
+.evchart .leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.75rem;color:var(--ink-dim)}.evchart .leg i,.evchart .bar i{display:block;border-radius:2px}.evchart .leg i{display:inline-block;width:10px;height:10px;margin-right:6px}
+.k-ok{background:var(--ok)}.k-info{background:var(--accent)}.k-warn{background:var(--warn)}.k-bad{background:var(--bad)}.k-off{background:var(--ink-faint)}
 </style>
 </head>
 <body>
@@ -244,11 +255,12 @@ const REPORT_META = {
   'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
   'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
 };
-const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
-// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
-const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
-const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
-const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
+const CYCLE_NAME = { eod: 'EOD', intraday: 'Intraday' };
+// The approval parts of ores.inbox. Market Risk is seeded today. Quant and Model Validation are new, and their names and answer order are ASSUMED until model risk confirms them.
+const PARTS = [{ id: 'quant', name: 'Quant', code: 'quant', order: 1, isNew: true }, { id: 'mr', name: 'Market Risk', code: 'market_risk', order: 2, isNew: false }, { id: 'mv', name: 'Model Validation', code: 'model_validation', order: 2, isNew: true }];
+const KIND = 'analytics.pricing_engines_change';
+const PART_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => PARTS.map(r => ({ role: r.id, by: PART_PEOPLE[r.id], at, state: 'approved' }));
 const NOW = Date.parse('2026-10-19T10:00:00Z');
 const AMC_NOW = [
   { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
@@ -288,7 +300,7 @@ const CONFIGS = [
   { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
     versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
-  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+  { id: 'c2', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
     versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
       { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
@@ -302,7 +314,7 @@ CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = 
 const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
   note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
   products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
-  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
+  approvals: PARTS.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
 // A flat view of a document, so two documents can be compared as rows.
 const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
 const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
@@ -358,33 +370,60 @@ const RULE = 'A report needs a price for every product type in its portfolio. A 
 const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
 const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
 const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
-const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
-const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => PARTS.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint">Signed off by ${v.approvals.map(a => esc(PARTS.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint">Provisioned by the seed. No sign-off is recorded.</div>' : '');
 const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
-function historyTab(c) {
-  const all = c.versions.slice().reverse(), cur = all[0];
-  const rows = all.filter(x => !(hideSystem && /service/.test(x.by)));
-  const entry = x => {
-    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
-    return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
-      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
-      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
-      ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
-  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
-  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
-  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
+const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Refused: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
+const pad2 = n => String(n).padStart(2, '0');
+const clock = ms => { const d = new Date(ms); return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':' + pad2(d.getUTCSeconds()); };
+const dayName = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const isSvc = who => /service/.test(who);
+function timeline(entries) {
+  const rows = entries.filter(x => !(hideSystem && isSvc(x.who))).map(x => Object.assign({ ms: Date.parse(x.at) }, x)).sort((a, b) => b.ms - a.ms);
+  const toggle = `<div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>`;
+  if (!rows.length) return toggle + '<div class="muted">No entries.</div>';
+  const first = rows[rows.length - 1].ms, last = rows[0].ms, daily = last - first > 2 * 86400000, step = daily ? 86400000 : 3600000;
+  const startOf = ms => Math.floor(ms / step) * step, from = startOf(first), n = Math.floor((startOf(last) - from) / step) + 1;
+  const buckets = Array.from({ length: n }, () => ({})), kinds = {};
+  rows.forEach(x => { const b = buckets[Math.floor((startOf(x.ms) - from) / step)]; b[x.kind] = (b[x.kind] || 0) + 1; kinds[x.kind] = (kinds[x.kind] || 0) + 1; });
+  const tallest = Math.max(1, ...buckets.map(b => Object.values(b).reduce((a, v) => a + v, 0)));
+  const when = ms => daily ? dayName(ms).replace(/^\w+, /, '') : clock(ms).slice(0, 5);
+  const chart = `<div class="evchart"><div class="bars">${buckets.map((b, i) => { const t = from + i * step, tot = Object.values(b).reduce((a, v) => a + v, 0);
+    return `<button class="bar" data-bar="${t}" data-step="${step}" title="${daily ? dayName(t) : dayName(t) + ' ' + clock(t).slice(0, 5)}: ${tot}">${Object.keys(kinds).filter(k => b[k]).map(k => `<i class="k-${KIND_TONE[k] || 'off'}" style="height:${b[k] / tallest * 100}%" title="${k}: ${b[k]}"></i>`).join('')}</button>`; }).join('')}</div>
+    <div class="span"><span>${esc(daily ? dayName(first) : dayName(first) + ' ' + clock(first).slice(0, 5))}</span><span>${esc(daily ? dayName(last) : dayName(last) + ' ' + clock(last).slice(0, 5))}</span></div>
+    <div class="leg">${Object.keys(kinds).map(k => `<span><i class="k-${KIND_TONE[k] || 'off'}"></i>${k} ${kinds[k]}</span>`).join('')}</div></div>`;
+  let day = '';
+  const rail = rows.map(x => { const dn = dayName(x.ms), div = dn !== day ? `<div class="daydiv">${dn}</div>` : ''; day = dn; const tone = KIND_TONE[x.kind] || 'off';
+    return div + `<div class="item" data-ms="${x.ms}"><div class="gut"><span title="${exact(x.at)}">${clock(x.ms)}</span>${x.current ? '<span class="emblem" title="Current version">✓</span>' : ''}</div><div class="rail"><span class="dot ${tone}"></span></div>
+      <div class="body"><div class="head">${tag(x.kind, tone)}<span class="mono faint">${esc(x.rec)}${x.ver ? ' v' + x.ver : ''}</span>${x.reason ? `<span class="tag warn mono">${esc(x.reason)}</span>` : ''}<span class="who">${esc(x.who)}</span><span class="did">${x.did || ''}</span>${x.actions || ''}<span class="faint" style="margin-left:auto">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}${x.extra || ''}
+      ${x.detail === undefined ? '' : x.detail === null ? '<div class="faint">No changes</div>' : `<details><summary>Details</summary><div>${x.detail}</div></details>`}</div></div>`; }).join('');
+  return toggle + chart + `<div class="tl">${rail}</div>`;
 }
-const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+document.addEventListener('click', e => { const b = e.target.closest('[data-bar]'); if (!b) return; const t = +b.dataset.bar, items = [...document.querySelectorAll('.tl .item')]; if (!items.length) return;
+  const hit = items.map(i => [Math.abs(+i.dataset.ms - (t + (+b.dataset.step) / 2)), i]).sort((a, c) => a[0] - c[0])[0][1]; hit.scrollIntoView({ block: 'center', behavior: 'smooth' }); hit.classList.add('mark'); setTimeout(() => hit.classList.remove('mark'), 1200); });
+function historyTab(c) {
+  const cur = c.versions[c.versions.length - 1];
+  const ent = c.versions.map(x => {
+    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : undefined;
+    return { at: x.at, kind: x.v === 1 ? 'Created' : 'Changed', rec: 'pricing_model_config', ver: x.v, reason: x.reason, who: x.by, did: x.v === 1 ? 'created the configuration' : 'changed the configuration', note: x.note, current: x.v === cur.v,
+      extra: (c.status === 'approved' && x.approvals ? '<div>' + tag('Approved', 'ok') + '</div>' : '') + approvalsLine(x),
+      detail: d === undefined ? (x.v === 1 ? '<div class="muted">The fixture keeps the first version as a whole record only for the version in force.</div>' : '<div class="muted">The fixture keeps no values for this version.</div>') : d.length ? diffTable(d) : null,
+      actions: x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : '' }; });
+  if (c.proposal) ent.push({ at: c.proposal.at, kind: 'Proposed', rec: 'pricing_model_config', ver: c.proposal.ver, reason: c.proposal.reason, who: c.proposal.by, did: 'proposed a new version', note: c.proposal.note, extra: '<div class="faint">Waiting for sign-off. It is not a version in force.</div>', actions: `<a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a>` });
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>${timeline(ent)}`;
+}
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: PARTS.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
 const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
-  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
-  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
-  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, PART_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, PART_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, PART_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: PART_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
   if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
   return p; };
-const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${PARTS.length} approval parts have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
 function revertDialog(c, v) {
   const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
   dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
@@ -453,7 +492,7 @@ function editDialog() {
   <h2>The difference</h2>${diffTable(diff)}
   ${official ? `<div class="field"><label>What to do with the change</label><label class="plain"><input type="radio" name="scope" value="propose" ${d.scope === 'propose' ? 'checked' : ''}> Propose a new version of ${esc(current.name)}</label>
   <label class="plain"><input type="radio" name="scope" value="copy" ${d.scope === 'copy' ? 'checked' : ''}> Try it in a draft copy</label>
-  ${d.scope === 'propose' ? `<div class="help">Version ${current.ver + 1} waits for sign-off by ${ROLES.map(r => r.name).join(', ')}. The person who proposes it cannot sign it off. Version ${current.ver} stays in force until then.</div>` : `<input class="sel" id="f-copy" value="${esc(d.copyName)}"><div class="help">The whole configuration is copied with this change, as a draft. No report is rebound, and no official report can bind a draft. Use it to test. No operation makes a copy.</div>`}</div>` : ''}
+  ${d.scope === 'propose' ? `<div class="help">Version ${current.ver + 1} waits for sign-off by ${PARTS.map(r => r.name).join(', ')}. The person who proposes it cannot sign it off. Version ${current.ver} stays in force until then.</div>` : `<input class="sel" id="f-copy" value="${esc(d.copyName)}"><div class="help">The whole configuration is copied with this change, as a draft. No report is rebound, and no official report can bind a draft. Use it to test. No operation makes a copy.</div>`}</div>` : ''}
   ${stale ? `<div class="badbox">This configuration changed since it was read (version ${current.ver + 1}). The ${d.scope === 'propose' ? 'proposal' : 'save'} was refused. <button class="btn" id="b-reload">Reload</button></div>` : ''}
   ${reasonField(diff.length > 0)}`;
   dialog((official ? 'Propose a change to ' : 'Edit ') + d.type, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" ${changed ? '' : 'data-block="1" disabled'}>${d.scope === 'propose' ? 'Submit for sign-off' : d.scope === 'copy' ? 'Save the draft copy' : 'Save'}</button>`, () => diff.length === 0 || confirm('You have unsaved changes. Close anyway?'));

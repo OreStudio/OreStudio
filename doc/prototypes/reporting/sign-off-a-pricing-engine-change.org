@@ -2,7 +2,7 @@
 :ID: 42662E5D-39C0-4543-B1EB-C77DE924B8E2
 :END:
 #+title: Sign off a pricing engine change prototype
-#+description: The queue of proposals to change an official pricing engine configuration, and one proposal's page with the sign-off by role, the changes, the reach and the history. The proposer cannot sign off.
+#+description: The queue of proposals to change an official pricing engine configuration, and one proposal's page with the sign-off by approval part, the changes, the reach and the history. The proposer cannot sign off.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -17,9 +17,9 @@
 
 * Summary
 
-This prototype draws the control around the pricing engines: how a change to an official configuration is signed off. A party holds few official configurations, one for each cycle, and model risk controls their settings. A change to one is therefore a proposal, and the version in force stays in force until every role that model risk names has approved it.
+This prototype draws the control around the pricing engines: how a change to an official configuration is signed off. A party holds few official configurations, one for each cycle, and model risk controls their settings. A change to one is therefore a proposal, and the version in force stays in force until every approval part that model risk names has approved it. The approval is the one that [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]] already runs for other changes: a proposal is an approval request, and each part answers it.
 
-The page is a record list and a record page, as the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws them. The queue lists the proposals. A proposal's page has four tabs: Sign-off, Changes, Reach and History. The Sign-off tab lists each role with its decision, the person, the time and the comment, and states the four-eyes rule: the person who proposed a change cannot sign it off, even when they hold one of the roles.
+The page is a record list and a record page, as the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws them. The queue lists the proposals. A proposal's page has four tabs: Sign-off, Changes, Reach and History. The Sign-off tab lists each approval part with its decision, the person, the time and the comment, and states the four-eyes rule: the person who raised the request cannot decide it, even when they hold one of the parts.
 
 The page answers to the journey [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
 
@@ -27,26 +27,27 @@ The page answers to the journey [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign 
 
 ** The question the screen answers
 
-"I must decide if this change to the way we price is safe, and I must leave a record that I decided." Each role reads the same change, the same reach and the same evidence, and decides for its own role.
+"I must decide if this change to the way we price is safe, and I must leave a record that I decided." Each approval part reads the same change, the same reach and the same evidence, and decides for its own part.
 
 ** States and switches
 
-- =?screen=queue= and =?screen=proposal&id=pr1|pr2|pr3&tab=signoff|changes|reach|history=. =pr1= is a proposal for version 5 of End of day pricing. =pr2= is a proposal for Intraday pricing. =pr3= is an earlier proposal that was made official.
+- =?screen=queue= and =?screen=proposal&id=pr1|pr2|pr3&tab=signoff|changes|reach|history=. =pr1= is a proposal for version 5 of EOD pricing. =pr2= is a proposal for Intraday pricing. =pr3= is an earlier proposal that was made official.
 - =?proposal=pending|partly|ready|rejected|superseded= sets the state of =pr1=: no approval, one of three, all three, rejected by market risk, or out of date because another version was approved first.
-- =?actor=proposer|quant|risk|validator|viewer= sets the person. The proposer holds a market-risk role, so the refusal is reachable: the row shows no button and says another person in the role must sign it off. A viewer sees no button.
+- =?actor=proposer|quant|risk|validator|viewer= sets the person. The proposer holds the Market Risk part, so the refusal is reachable: the row shows no button and says another person who holds the part must sign it off. A viewer sees no button. When no part has approved, only Quant can answer, and the other two rows say *Waits for Quant*.
 - =?state=all|empty|error= for the queue.
 - Approve asks the signer to confirm that they read the changes and the reach. Reject needs a reason. Making a proposal official names the reports it reaches. A rebase moves an out-of-date proposal onto the version in force and clears the approvals. A withdrawal closes an open proposal.
 
 ** Rules the page follows
 
-- *Four eyes.* The proposer cannot sign off. The screen shows the refusal and states that the server must also enforce it, because no operation does.
+- *Four eyes.* The proposer cannot sign off, and one person approves a request once. The inbox already enforces both: a trigger refuses the requester's decision, and a unique index refuses a second approval from one person. The screen draws the refusals.
 - *The version in force stays in force.* Every state of a proposal says so, and the Reach tab says that a run made after the change is not comparable with an earlier run for the changed products.
-- *The roles are assumed.* The quant team, market risk and model validation are a fixture. Model risk confirms the roles, their order and the number of people each needs.
-- *A rejection needs a reason and deletes nothing.* The proposal stays in the history.
+- *The parts come from the inbox.* Market Risk is a seeded approval part (=market_risk=). Quant and Model Validation are new parts, and their names are assumed. Quant answers first (answer order 1), and the other two answer together (order 2). A refusal from a part that can answer ends the request. Each part is decided by a permission such as =inbox::approvals:decide_quant=, and a tenant grants it to whichever role does that work.
+- *The proposal is an approval request.* Its kind would be =analytics.pricing_engines_change=. That kind, the two new parts and a policy row for a put of =pricing_model_config= do not exist yet.
+- *A refusal needs a reason and deletes nothing.* The proposal stays in the history.
 
 ** What is fake
 
-Every value. No operation holds a proposal, a decision, a status, a role or a policy. The evidence files are names. The reports, their portfolios and their product types are fixtures. The roles are the page's assumption.
+Every value. The inbox holds requests, decisions, parts and the four-eyes rules, but no pricing engines kind, no Quant or Model Validation part and no policy row exist, and no pricing engines operation holds a proposed version or a status. The evidence files are names. The reports, their portfolios and their product types are fixtures. The names of the two new parts and the answer order are the page's assumption.
 
 ** Where the code lives
 
@@ -54,9 +55,10 @@ Every value. No operation holds a proposal, a decision, a status, a role or a po
 
 ** What it argues
 
+- The History tab draws the shared timeline as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws it: an event chart split by kind, a rail grouped by day with the time in the left gutter, one header line for each entry, the note on its own line, a collapsed detail, the current-version emblem and the *Hide system activity* toggle. The prototype does not draw batches of entries that are one act, and the toggle is always on, because the fixture has no reader without the account permission.
 - A change to an official configuration is a proposal, and the sign-off is its own screen, because the control is the screen's job.
 - The person who proposes cannot sign off, and the page draws the refusal as a state that a reader can reach.
-- A proposal that every role approved is not yet in force. Someone makes it official, and the page names what that reaches.
+- A proposal that every approval part approved is not yet in force. Someone makes it official, and the page names what that reaches.
 - A proposal that sits on an old version must be rebased, and the approvals do not carry over.
 
 ** The verdict
@@ -65,10 +67,11 @@ None yet. This page is on the branch that proposes it and waits for review.
 
 ** What it does not settle
 
-- The roles, their order and the number of people each needs. Model risk decides.
-- Whether making a proposal official needs a role of its own, or an effective date other than the next run.
+- The approval parts, their names and their answer order. Model risk decides.
+- Whether an approved proposal applies at once through an apply workflow, as the book change does inside its apply window, or waits for a person to make it official, as the page draws it.
+- How the page draws a hold, a resume, an expiry and a reversal. The inbox has all four decisions. The page draws approve, refuse and withdraw.
+- Whether making a proposal official needs a permission of its own, or an effective date other than the next run.
 - Whether a candidate that replaces the official configuration is the same flow. It also rebinds the reports of a cycle, and the page does not draw that step.
-- Whether a rejection by one role ends the proposal, or the other roles may still decide.
 
 * See also
 

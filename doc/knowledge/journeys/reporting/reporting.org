@@ -54,7 +54,7 @@ journey's *What is missing*.
 | [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] | market-risk, tenant administrator | Build a draft or a candidate in six steps: what it is for, the products, a model and engine for each, their parameters, a check against what the reports of a cycle need, and a review |
 | [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] | market-risk, tenant administrator | Propose a change to the model, engine or parameters of one product, read which reports it reaches once it is approved, and try it in a draft copy first |
 | [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] | market-risk, tenant administrator | Bring in an ORE pricing engines file, read what it adds, changes and removes against a configuration the party holds, and save it as a draft or as a proposal |
-| [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] | market-risk, quant, model validation | Each role model risk names approves or rejects a proposed change to an official configuration, the proposer cannot sign it off, and an approved proposal is made official |
+| [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] | market-risk, quant, model validation | Each inbox approval part model risk names approves or refuses a proposed change to an official configuration, the proposer cannot sign it off, and an approved proposal is made official |
 
 The last five journeys are the first of the report configurations. A report
 definition binds five configurations, and each configuration needs its own screens
@@ -63,9 +63,11 @@ follow, and the conventions are authored in their own work.
 
 Model risk controls the model settings, so a party holds few official pricing
 engine configurations, one for each cycle, and a change to one is signed off by
-the roles model risk names. The five journeys draw that: a status on every
+the approval parts model risk names. The five journeys draw that: a status on every
 configuration, a proposal in place of an edit, and a sign-off with four eyes. The
-roles are assumed until model risk confirms them.
+approval is the one that =ores.inbox= already runs. Market Risk is a seeded part. Quant
+and Model Validation are new parts, and their names and order are assumed until model
+risk confirms them.
 
 * What a report is here
 

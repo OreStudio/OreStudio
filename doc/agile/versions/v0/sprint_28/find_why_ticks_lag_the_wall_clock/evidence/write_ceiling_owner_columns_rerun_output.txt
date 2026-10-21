@@ -1,0 +1,10 @@
+# Rerun after the policy string change: ores.marketdata.core.tests "[.write_ceiling_copy]", .env sourced, branch feature/store-ticks-in-an-append-only-table at 087f21ed0c. Lines are filtered to RESULT.
+RESULT shape=append_only writer=copy batch=1000 transactions_per_batch=1 rows=300000 secs=4.34 rows_per_s=69172
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=1 rows=300000 secs=2.01 rows_per_s=149553
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=1 rows=300000 secs=1.58 rows_per_s=189743
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=100 rows=300000 secs=5.15 rows_per_s=58269
+RESULT shape=tick_owner writer=copy batch=1000 transactions_per_batch=1 rows=300000 secs=3.13 rows_per_s=95726
+RESULT shape=tick_owner writer=copy batch=10000 transactions_per_batch=1 rows=300000 secs=1.63 rows_per_s=184186
+RESULT shape=tick_owner writer=copy batch=50000 transactions_per_batch=1 rows=300000 secs=1.57 rows_per_s=191575
+RESULT shape=tick_owner writer=copy batch=50000 transactions_per_batch=100 rows=300000 secs=3.77 rows_per_s=79563
+# The run passed: All tests passed (1 assertion in 1 test case)

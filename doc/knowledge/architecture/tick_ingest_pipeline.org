@@ -943,6 +943,9 @@ The owner columns show no cost that this test can resolve. The ratio of the owne
 the append-only shape ranged from 0.86 to 1.27 across the cells, and the two shapes ran as
 different roles in separate processes. These are single runs, so the table does not show
 that the cost is zero. It shows that the cost is smaller than the noise.
+A rerun with the final policy form, in one process, gave 1.38, 1.23 and 1.01 times the
+append-only rate at 1,000, 10,000 and 50,000 rows, and 1.37 times at 50,000 rows split over
+100 tenants. The owner shape was never slower in that run.
 
 The read test held 5 million rows in 30 chunks of one day, with 100 tenants, 1,000 parties
 and 2,000 series. The reader was subject to both policies. The times are milliseconds.

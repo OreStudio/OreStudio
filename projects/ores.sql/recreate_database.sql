@@ -36,6 +36,7 @@
  *   :synthetic_service_user, :scheduler_service_user,
  *   :reporting_service_user, :telemetry_service_user,
  *   :trading_service_user, :compute_service_user
+ *   :marketdata_writer_user
  *   (one *_password variable per user)
  *   :db_name
  */
@@ -128,6 +129,17 @@ alter  role :shell_user set search_path to public;
 -- To add a service: update projects/modeling/service_registry.org
 -- and regenerate with: codegen.sh generate --model projects/modeling/service_registry.org --address ores.shell.service
 \i create/iam/service_users_create.sql
+
+-- The marketdata tick writer. It skips row-level security so that COPY can write the tick
+-- table, which PostgreSQL refuses for a role that the policies apply to. It is not a member
+-- of the service role and holds no grant here. The grant of INSERT on the tick table is in
+-- the table's own script, and the role never gets SELECT.
+select set_config('ores.cur_user', :'marketdata_writer_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :marketdata_writer_user with password :'marketdata_writer_password' bypassrls;
+alter  role :marketdata_writer_user set search_path to public;
 
 -- HTTP user
 select set_config('ores.cur_user', :'http_user', false);

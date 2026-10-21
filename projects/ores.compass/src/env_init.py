@@ -711,6 +711,7 @@ def run(argv, project_root: Path) -> int:
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
+    tick_writer_pw = _get_or_gen(existing, "ORES_MARKETDATA_WRITER_DB_PASSWORD")
     print("All credentials resolved.")
 
     # PEM as a single line with literal \n separators (awk '{printf "%s\\n",$0}').
@@ -915,6 +916,13 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
         for opt, val in service_extra_opts.get(c, []):
             out.append(f"ORES_{up}_SERVICE_{opt}={val}\n")
+    out.append(
+        "\n# ---------------------------------------------------------------------------\n"
+        "# Marketdata tick writer DB credentials. The role has BYPASSRLS and INSERT only,\n"
+        "# and the marketdata service uses it for COPY into the tick table.\n"
+        "# ---------------------------------------------------------------------------\n"
+        f"ORES_MARKETDATA_WRITER_DB_USER=ores_{label_lower}_marketdata_writer\n"
+        f"ORES_MARKETDATA_WRITER_DB_PASSWORD={tick_writer_pw}\n")
     # Front-end client apps that read their config from the environment via the
     # C++ make_mapper("<APP>") convention. `uses_db` marks whether the app opens
     # a direct database connection. NATS-only clients (the shell, like the

@@ -858,8 +858,9 @@ Four conclusions follow.
   trigger and one index, gives 185,259, which is 80 times the repository insert. The
   batch writer should use =COPY=. The trigger must go as well, or its work must move into
   the batch. The scratch copy has no row-level security, so the cost of the policy sits
-  inside the repository figure and is not separated. PostgreSQL refuses =COPY FROM= on a
-  table with row-level security, so =COPY= cannot write the table as built.
+  inside the repository figure and is not separated. PostgreSQL refuses =COPY FROM= for a role
+  that the policy applies to. A role with =BYPASSRLS= can copy, as the section on tenant and
+  party isolation shows.
 - *A row for each tenant makes small transactions.* At 100 tenants the append-only table
   falls from 185,000 to 63,000 rows each second, and the observation shape to 16,000. A
   row for each source, with the tenants reading it through the bindings, keeps one large
@@ -874,60 +875,138 @@ What stays untested: the row-level security policy and the tenant-aware connecti
 append-only table, a real mix of series and times, and the disk of a machine that is not
 shared.
 
-** Tenant isolation of the tick table
+** Tenant and party isolation of the tick table
 
-The second pass of step 0 tried to write the observation table with =COPY=. The attempt
-failed. The server answered "COPY FROM not supported with row-level security", with the
-hint "Use INSERT statements instead". The DDL user of the test database sent the
-statement. The observation table has the policy =tenant_id = ores_iam_current_tenant_id_fn()=.
-So the fast writer and the present isolation model exclude each other. The benchmark
-measured =COPY= into a scratch copy that has the trigger and no policy. It did not measure
-=COPY= into a table with a policy, because the server refuses it.
+A series is not a shared source. It is one observation of an instrument, and the
+observation includes its provenance. The synthetic generator makes one ground truth for
+each tenant. A party binds EURUSD to one vendor, and another party binds it to a different
+vendor. The rate blending service will make a blended EURUSD for one party from several
+inputs. These are different series with different values and different owners. The
+series table agrees: each series has a =tenant_id= and a =party_id=, and its key is the
+tenant, the party and the URI. So a tick has an owner, and the unit of isolation is the
+series.
 
-The tick table needs an isolation model that =COPY= can write. This note lists the options.
-The test did not measure any of them. The marks say what each option still needs.
+*** What the second pass found
 
-- *No policy on the tick table, and the filter in a view.* The tick table holds the series,
-  the time, the coordinate and the value. A series belongs to one tenant, so the tick
-  has no tenant column. A view with the =security_barrier= option joins the series table
-  and keeps the rows of the current tenant. The readers use the view, and they get the
-  same isolation. The writer uses =COPY=. Needs: a check that the planner pushes the
-  series filter below the join, so that a read of one series does not scan the chunks of
-  every tenant. The table must grant =SELECT= to no role that reads without the view.
-- *A writer role that bypasses the policy.* A role with =BYPASSRLS= can =COPY= into a
-  table that has a policy. The role gets =INSERT= on the tick table and nothing else.
-  Reads keep the policy. Needs: a test that =COPY= works for such a role, and a decision
-  on whether the project accepts a role that bypasses the policy. The tenant of each
-  row then comes from the series, and the writer must check it.
-- *A table for each party, or for each tenant.* The tenant is in the table name, and a
-  grant on the table isolates it. No policy is needed, so =COPY= works. A batch of one
-  tenant becomes one =COPY= into one table, which is the shape that the measurement
-  prefers. The cost is the catalog. A hypertable with one-day chunks has a chunk for
-  each table each day, so 100 tenants and 61 days make 6,100 chunks, and each chunk
-  has its own index. Each table needs its own retention and compression policy, a
-  new party needs a new table, and a reader that spans parties needs a view over all of
-  them. Needs: a measurement of the planner and the catalog at 100 tables, and a
-  procedure for a new party. A schema for each tenant has the same costs.
-- *A hypertable with the tenant as a space dimension.* One table, partitioned by
-  tenant and by time. The policy still applies to the parent, so =COPY= is still
-  refused. This option does not solve the problem alone. It helps the chunk layout when
-  it combines with one of the options above.
-- *A staging table, then an insert from it.* =COPY= writes an unprotected staging table,
-  and one =INSERT ... SELECT= moves the rows into the table with the policy. The policy
-  stays. Every row is written twice. Needs: a measurement of the second write.
-- *=INSERT= with the policy.* Keep the policy, give up =COPY=. A multi-row =INSERT= may be
-  faster than the repository insert, because it can skip the trigger. The test did not
-  measure it. This is the fallback if no other option is acceptable.
-- *One row for each source.* A tick of a source is market data, not the data of a tenant.
-  If the store keeps one row for each source, the tick table has no tenant at all, and
-  the bindings carry the isolation. The question of =COPY= then does not arise for the
-  tick table, because it needs no policy. This option depends on the decision about one
-  row for each source, which is open.
+The second pass tried to write the observation table with =COPY= as a role that the policy
+applies to. The server answered "COPY FROM not supported with row-level security". That
+role was =ores_brave_hopper_test_ddl_user=, which has no =BYPASSRLS=. A later test showed
+that =COPY= works for a role that has =BYPASSRLS=, also when that role does not own the
+table. So the fast writer and the policy do not exclude each other. The rule is by role.
 
-The first and the second option keep one table and the measured shape. The third option
-trades the catalog for the simplest isolation. The first test to run is the second
-option, because it takes one role and one =COPY=. The second test is the view of the first
-option, with the planner checked at 100 tenants.
+*** The design
+
+- *One append-only hypertable for each retention class.* The columns are =tenant_id=,
+  =party_id=, =series_id=, =ts=, =coord= and =value=. It has no trigger, no =valid_to= and
+  one index on the series and the time. Retention drops whole chunks by time, so a class
+  with a different retention needs its own table. The number of tables follows the policy
+  table and does not grow with the tenants.
+- *The two policies of the other tables.* A tenant policy keeps the rows of the tenant of
+  the session. A restrictive party policy keeps the rows of the visible parties. =FORCE ROW
+  LEVEL SECURITY= makes the policy apply to the owner too.
+- *A writer role with =BYPASSRLS= and =INSERT= only.* It does not own the table. It writes
+  with =COPY=. It has no =SELECT=. The ingest copies the tenant and the party from the
+  series that it resolved, never from the message. The ingest keeps a cache of series
+  already, so this costs no new lookup.
+- *Readers use the tenant-aware pool and no =BYPASSRLS=.* The marketdata service holds two
+  pools, one for the writer role and one for the readers. The writer pool never serves
+  a request that carries a tenant.
+- *Hot reads skip the table.* A chart and the latest value come from the recent window
+  and the live subject. The subject has the tenant and the party. The policy guards the
+  reads of history only.
+- *A derived series enters through the same door.* The blending service reads its inputs
+  on the live path, in the context of the party. It emits ticks for the derived series of
+  the party into the same lane and the same writer.
+
+*** What was measured
+
+All figures are from single runs on a server shared with other environments. The raw
+output is in the =evidence= folder of the task that measured them.
+
+#+ATTR_HTML: :class hug-leading
+| Shape | Rows in a transaction | Rows each second |
+|-------+-----------------------+------------------|
+| append-only, no owner columns | 1,000 | 92,040 |
+| same | 10,000 | 181,129 |
+| same | 50,000 | 180,185 |
+| with =tenant_id= and =party_id=, =FORCE= policies, written by a =BYPASSRLS= role that does not own it | 1,000 | 116,845 |
+| same | 10,000 | 155,531 |
+| same | 50,000 | 194,094 |
+| same, 50,000 rows split over 100 tenants | 500 | 76,952 |
+| append-only, 50,000 rows split over 100 tenants | 500 | 76,481 |
+
+The owner columns cost nothing that this test can see. The differences between the two
+shapes are inside the difference between two runs of the same shape.
+
+The read test held 5 million rows in 30 chunks of one day, with 100 tenants, 1,000 parties
+and 2,000 series. The reader was subject to both policies. The times are milliseconds.
+
+#+ATTR_HTML: :class hug-leading
+| Policy | One series, 2,500 rows, by the index | One party, 5,000 rows, a scan | One tenant, 50,000 rows, a scan |
+|--------+--------------------------------------+-------------------------------+---------------------------------|
+| none | 3.4 | 212 | 203 |
+| the session functions, as the other tables define them | 23 to 26 | 449 to 586 | 726 |
+| inline =current_setting= | 16 | 258 to 307 | 446 |
+| a scalar subquery for each setting | 4.5 | 509 | 506 |
+
+Five findings follow.
+
+- *The session functions are the cost.* =ores_iam_current_tenant_id_fn= and
+  =ores_iam_visible_party_ids_fn= are plpgsql functions with an =EXCEPTION= block. The
+  planner calls them for every row that it filters, and each call starts a subtransaction.
+  A read of one series by the index is seven times slower, at about 8 to 10 microseconds
+  for each row. A subquery around the setting makes the planner evaluate it once for each
+  query, and the same read takes 4.5 ms against 3.4 ms without a policy. Every table that
+  uses these functions in a policy has this cost. That is a separate task.
+- *The party policy needs a different form.* =party_id = ANY((select ...))= does not
+  compile, because PostgreSQL reads it as a comparison with a subquery. The form that
+  works is =party_id in (select unnest(nullif(current_setting('app.visible_party_ids',
+  true), '')::uuid[]))=. The first attempt failed to create the policy, and the check that
+  followed read 5,000 rows of a party that was not visible. The test of isolation must
+  run after the policy exists, and it must include a party outside the visible list.
+- *A scan pays for the policy on every row.* A read of a party or a tenant without an
+  index scans the chunks, and the policy adds 0.3 seconds over 5 million rows. The tick
+  table has an index on the series and the time only. A reader that wants a party or a
+  tenant must list its series first and read by series.
+- *The isolation held.* A session of another tenant read 0 rows of the series of the
+  first tenant. A session with no settings read 0 rows. A session of the right tenant
+  with only one party visible read 0 rows of another party and 5,000 rows of its own.
+  The writer role was refused =SELECT=.
+- *The cost of the owner columns on disk is not measured.* They add 32 bytes to a row of
+  about 178 before compression. A compression =segmentby= of the series makes them
+  constant inside a segment, but only the Community edition compresses.
+
+*** The options that were set aside
+
+- *A table for each party.* The data fits it, because nothing is shared. It costs a
+  chunk for each table each day, so 100 tenants and 61 days make 6,100 chunks. Each
+  table needs its own policies, a new party needs a new table, and a reader that spans
+  parties needs a view over all of them. The policy gives the same isolation for no
+  catalog cost. This option stays as the fallback if one party must be erased on demand
+  or kept apart on disk.
+- *Isolation in the service layer only.* One forgotten code path would be the only guard,
+  and every other table of the project has a database policy.
+- *A view with the tenant filter over a table without a policy.* It works, but it is not
+  the pattern of the other tables.
+- *A staging table, then an insert from it.* It writes every row twice, and the bypass role
+  makes it unnecessary.
+- *A multi-row =INSERT= with the policy.* It gives up =COPY=. It was not measured.
+- *One row for each source.* A tick belongs to a series, and the series belongs to a
+  party. A blended or vendor series exists only for its party, and a valuation must
+  reproduce the tick that the party observed. A binding that only passes a series
+  through inside one tenant could read the source series through the binding. That is an
+  optimisation to evaluate later, and it is not part of the base design.
+
+*** What stays untested
+
+- The provisioning of the writer role. The project creates its service roles with a
+  script, and none of them has =BYPASSRLS= except the DDL users. A new role needs a change
+  to that script in every environment.
+- Compression with the owner columns, and the behaviour of the policy on a compressed
+  chunk.
+- A read of one party or one tenant by its series list, at the size of a real deployment.
+- The cost of the policy in the repository code that reads through the tenant-aware pool,
+  which adds the client path to these figures.
 
 ** The risks, and what would change the design
 
@@ -1011,9 +1090,11 @@ a burst of ticks at a chosen rate and times the drain.
   view over an append-only tick table and the observation table is the proposal.
 - How long does the store keep raw ticks, and which classes keep bars only? The
   answer is a policy row for each class.
-- How does the tick table isolate tenants? =COPY= cannot write a table with a policy. The
-  options are in the section on tenant isolation, and the owner has asked for a table for
-  each party to be considered.
+- Who provisions the writer role with =BYPASSRLS=, and does the project accept a role that
+  skips the policy for writes? The section on tenant and party isolation gives the design
+  and the measurements.
+- Should the session functions of the policies change for every table? The section on tenant
+  and party isolation shows a seven-fold cost on an indexed read.
 - Which edition of TimescaleDB does the deployment run? The Community edition compresses and
   schedules policies. The Apache build of the Debian package does neither. The retention plan
   has a path for each, and the owner picks the edition.

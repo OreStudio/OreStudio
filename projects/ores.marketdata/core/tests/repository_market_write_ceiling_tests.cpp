@@ -88,11 +88,11 @@ struct connection_closer {
 };
 using connection = std::unique_ptr<PGconn, connection_closer>;
 
-connection connect_as_ddl_user() {
+connection connect_as(const char* user_setting, const char* password_setting) {
     const auto host = setting("ORES_TEST_DB_HOST");
     const auto database = setting("ORES_TEST_DB_DATABASE");
-    const auto user = setting("ORES_TEST_DB_DDL_USER");
-    const auto password = setting("ORES_TEST_DB_DDL_PASSWORD");
+    const auto user = setting(user_setting);
+    const auto password = setting(password_setting);
     const char* keys[] = {"host", "dbname", "user", "password", nullptr};
     const char* values[] = {host.c_str(), database.c_str(), user.c_str(), password.c_str(), nullptr};
     connection c(PQconnectdbParams(keys, values, 0));
@@ -203,6 +203,26 @@ std::string observation_text(std::size_t count,
     return out;
 }
 
+/// The text of @p count rows of the owner shape, for COPY. Every row belongs to the tenant and
+/// the party of @p group, and uses one of the 20 series of that group.
+std::string owner_text(std::size_t count,
+                       std::size_t first,
+                       std::size_t group,
+                       const std::vector<std::string>& series,
+                       const std::vector<std::string>& tenants,
+                       const std::vector<std::string>& parties) {
+    using namespace std::chrono;
+    const auto base = start_of_run();
+    std::string out;
+    out.reserve(count * 140);
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto at = base + microseconds{static_cast<std::int64_t>((first + i) * 10)};
+        out += tenants[group] + '\t' + parties[group] + '\t' + series[group * 20 + (i % 20)] + '\t' +
+               std::format("{:%Y-%m-%d %H:%M:%S}+00", at) + "\t0\t43.98966624067043\n";
+    }
+    return out;
+}
+
 /// The text of @p count rows of the append-only shape, for COPY.
 std::string
 tick_text(std::size_t count, std::size_t first, const std::vector<std::string>& series) {
@@ -264,7 +284,7 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
 
 TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     const bool keep = std::getenv("WRITE_CEILING_KEEP") != nullptr;
-    auto conn = connect_as_ddl_user();
+    auto conn = connect_as("ORES_TEST_DB_DDL_USER", "ORES_TEST_DB_DDL_PASSWORD");
     scratch_schema_guard guard(conn.get(), keep);
 
     run(conn.get(), "create schema if not exists write_ceiling");
@@ -306,6 +326,39 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
         "select create_hypertable('write_ceiling.tick_append', 'ts', chunk_time_interval => "
         "interval '1 day', if_not_exists => true)");
 
+    // The owner shape is the append-only shape with the tenant and the party on each row, and
+    // the two policies of the other tables. FORCE makes the owner subject to them, so that this
+    // connection can play the reader. The writer is a second role with BYPASSRLS that does not
+    // own the table.
+    const std::string writer_role =
+        std::getenv("ORES_DB_DDL_USER") != nullptr ? std::getenv("ORES_DB_DDL_USER") : "";
+    run(conn.get(),
+        "create table if not exists write_ceiling.tick_owner (tenant_id uuid not null, party_id "
+        "uuid not null, series_id uuid not null, ts timestamptz not null, coord smallint not null "
+        "default 0, value double precision not null)");
+    run(conn.get(),
+        "create index if not exists tick_owner_series_ts_idx on write_ceiling.tick_owner "
+        "(series_id, ts desc)");
+    run(conn.get(),
+        "select create_hypertable('write_ceiling.tick_owner', 'ts', chunk_time_interval => "
+        "interval '1 day', if_not_exists => true)");
+    run(conn.get(), "alter table write_ceiling.tick_owner enable row level security");
+    run(conn.get(), "alter table write_ceiling.tick_owner force row level security");
+    run(conn.get(),
+        "drop policy if exists tenant_policy on write_ceiling.tick_owner");
+    run(conn.get(),
+        "create policy tenant_policy on write_ceiling.tick_owner for all using (tenant_id = "
+        "ores_iam_current_tenant_id_fn()) with check (tenant_id = ores_iam_current_tenant_id_fn())");
+    run(conn.get(), "drop policy if exists party_policy on write_ceiling.tick_owner");
+    run(conn.get(),
+        "create policy party_policy on write_ceiling.tick_owner as restrictive for select using "
+        "(party_id = ANY(ores_iam_visible_party_ids_fn()))");
+    if (!writer_role.empty()) {
+        run(conn.get(), "grant usage on schema write_ceiling to \"" + writer_role + "\"");
+        run(conn.get(),
+            "grant insert on write_ceiling.tick_owner to \"" + writer_role + "\"");
+    }
+
     if (std::getenv("WRITE_CEILING_ONLY_CREATE") != nullptr) {
         SUCCEED();
         return;
@@ -326,11 +379,21 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     if (tenant.empty())
         tenant = "540caae1-5ccc-43c9-82a8-5a49c5136d58";
     const std::string party = "e93025eb-c4bf-4df0-ba80-11574a8f3d67";
+    std::vector<std::string> tenants;
+    std::vector<std::string> parties;
+    for (int i = 0; i < 100; ++i) {
+        tenants.push_back(boost::uuids::to_string(gen()));
+        parties.push_back(boost::uuids::to_string(gen()));
+    }
+    connection writer;
+    if (!writer_role.empty() &&
+        (only_shape.empty() || std::string("tick_owner").find(only_shape) != std::string::npos))
+        writer = connect_as("ORES_DB_DDL_USER", "ORES_DB_DDL_PASSWORD");
 
     // The rows of one batch are split across this many transactions, one for each tenant.
     std::size_t next = 0;
     for (const std::string shape :
-         {"observation_with_trigger", "observation_no_trigger", "append_only"}) {
+         {"observation_with_trigger", "observation_no_trigger", "append_only", "tick_owner"}) {
         for (const std::size_t batch : {100, 1000, 10000, 50000}) {
             for (const std::size_t groups : {1, 10, 100}) {
                 // A transaction of fewer than 100 rows is commit-bound, which the first run
@@ -339,13 +402,21 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
                     continue;
                 if (!only_shape.empty() && shape.find(only_shape) == std::string::npos)
                     continue;
-                const std::size_t total = shape == "append_only" ? 300000 : 100000;
+                if (shape == "tick_owner" && !writer)
+                    continue;
+                const std::size_t total =
+                    shape == "append_only" || shape == "tick_owner" ? 300000 : 100000;
                 const std::size_t batches = std::max<std::size_t>(2, total / batch);
                 const auto started = stopwatch::now();
                 for (std::size_t b = 0; b < batches; ++b) {
                     const std::size_t per_group = batch / groups;
                     for (std::size_t g = 0; g < groups; ++g, next += per_group) {
-                        if (shape == "append_only")
+                        if (shape == "tick_owner")
+                            copy_text(writer.get(),
+                                      "copy write_ceiling.tick_owner (tenant_id, party_id, "
+                                      "series_id, ts, coord, value) from stdin",
+                                      owner_text(per_group, next, g, series, tenants, parties));
+                        else if (shape == "append_only")
                             copy_text(conn.get(),
                                       "copy write_ceiling.tick_append (series_id, ts, coord, "
                                       "value) from stdin",

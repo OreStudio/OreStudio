@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 3D27C8F8-317E-41BC-8F1B-6FBD12836820
+:END:
+#+title: Story: See and change everything a report runs
+#+description: A report page shows its definition, its configurations and its conventions on tabs, and a person can choose the conventions a report reads.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who opens a report sees, on one page, what the report is, what it runs with, and which conventions it reads, and can change each of them in the place that owns it. Today the page shows the definition and a list of bindings, and nothing can be changed except the definition's own fields: the configurations are read-only and the conventions binding is a header with no effect, because a run reads every convention document of the party.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Analysis and prototype are written, and wait for the owner's sign-off. |
+| Waiting on    | Nothing.                               |
+| Next          | Owner decides the five points under Analysis. |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- The report page has tabs for the definition, the configuration and the conventions, and each tab says what a change on it reaches.
+- A person can choose the convention set a report reads, and a run reads the documents of that set and no others.
+- The prototype is signed off by the owner before the screens are built.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | STARTED | 2026-10-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
+
+* Analysis
+
+Measured on the bright_faraday development database on 2026-10-21, and read from the code of the same date.
+
+** What the page shows today
+
+The report page is one scroll. A record card holds the definition's fields and offers Edit. A Latest run card follows. A Configurations card lists the bindings, each by kind and name, and each name opens a configuration page that is read-only. There are no tabs.
+
+The only thing a person can change on it is the nine fields of the definition itself.
+
+** What a report binds
+
+Each of the 22 definitions of ACME Corporation HK Ltd binds five configurations:
+
+| Kind | Name | Bound by |
+|------+------+----------|
+| Conventions | HK conventions | all 22 |
+| Pricing engines | HK pricing engines | all 22 |
+| Today's market | HK today's market | all 22 |
+| Curve configuration | HK curve configuration | all 22 |
+| Risk report configuration (the run settings) | one of 14 | 1 to 3 each; 8 of the 14 are shared |
+
+So four of the five belong to the party, and a change to one reaches every report of it. Only the run settings are close to the report, and even they are shared by two or three reports in eight cases. A page that offers a change must say who the change reaches.
+
+** Why the conventions cannot be changed
+
+Three facts, and each blocks the change on its own.
+
+1. *A convention set does not exist.* The conventions configuration a report binds is a name. It holds no document. The 26 convention kinds are 26 tables, and no table stores a set, a set's name or its purpose.
+2. *A run ignores the binding.* The packaging reads every convention row of the party's 26 kinds (=read_family= in =run_configuration_operations.cpp=). Binding another configuration would change nothing a run reads.
+3. *No document is marked as the one that counts.* The party holds 11,027 convention documents in 26 kinds. The largest kind, commodity futures, holds 3,950. A run reads all of them. The journey "See the conventions a party uses" states the same gap.
+
+A convention document can be changed on its own screen, =/refdata/conventions=, and that change reaches the whole party. What cannot be done is to choose, for one report, which documents it reads. The journeys already name the answer: named convention sets, one document of each kind, chosen by the report. The set, and a run that reads it, are the work. The tab is the small part.
+
+** What the prototype argues
+
+[[file:../../../../prototypes/reporting/see-a-report-and-everything-it-runs.org][See a report and everything it runs]] draws the page in three layouts of the same sections:
+
+| Layout | Arrangement | Verdict |
+|--------+-------------+---------|
+| A | Definition, Configuration and Conventions tabs | Recommended. It matches the three questions the owner asked, and each tab has one owner and one reach. |
+| B | Definition, Run settings, Market and pricing, Conventions | Splits what the report owns from what the party shares. Worth it if the Configuration tab grows. |
+| C | One page with an index | Hides nothing, but the page grows to five screens and the conventions sit below the fold. |
+
+Each tab states what a change on it reaches. The Configuration tab states whether the run settings are the report's own or shared, and names the other reports. The Market and pricing section states that a change reaches all 22 reports. The Conventions tab shows the system as it is today and the proposal side by side, switched in the bar.
+
+** What needs the owner's decision
+
+1. *The layout.* A, B or C.
+2. *The conventions model.* Named sets chosen by the report, as the journeys say. The alternative is a per-kind override on the report, which the journeys retired. The prototype assumes sets.
+3. *A kind a set does not cover.* The run could fail with a message that names the kind, or fall back to every document of that kind. The prototype shows failure, which is the stricter choice.
+4. *Who changes a shared configuration.* A change to a configuration read by 22 reports is a change to a party. The choices are: allow it with the reach stated, require the approval a convention change already needs from Market Risk, or fork the configuration for the report on edit.
+5. *Where the scope is edited.* On the Configuration tab, or on the configuration's own page. The prototype draws it on the tab, marked as proposed, because that is where the book type rule is read.
+
+** The work, once signed off
+
+| Step | Content | Needs |
+|------+---------+-------|
+| 1 | The tabs on the report page, read-only, with the reach statements. | The layout decision only. Web and BFF. |
+| 2 | Scope and run settings edit on the Configuration tab. | A BFF write for the scope tables, and decision 4. |
+| 3 | Pricing engines, today's market and the curve configuration open from the tab. | The prototypes for the pricing engines exist. The other two need screens. |
+| 4 | Convention sets: the table of sets, the packaging that reads a set, and the choice on the tab. | Decisions 2 and 3. This is the largest step and a story of its own. |
+
+Step 1 can start at once and delivers the page the owner described. Step 4 is what makes "change the conventions" real.
+
+* Decisions
+
+* Out of scope
+
+-

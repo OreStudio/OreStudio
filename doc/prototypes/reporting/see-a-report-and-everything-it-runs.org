@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 3F9B6C21-5D7A-4E0B-9A14-8C2E7D1B6F43
+:END:
+#+title: See a report and everything it runs prototype
+#+description: One page for a report definition that shows its definition, its configuration and its conventions, in three layouts, with the regulatory book type and the choice of a convention set.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+| Item          | Where                                                         |
+|---------------+---------------------------------------------------------------|
+| Prototype     | [[file:see-a-report-and-everything-it-runs/][the prototype]] |
+| Gemini review | none                                                          |
+| Group         | [[file:index.org][Reporting prototypes]]                        |
+
+* Summary
+
+This prototype argues how one page shows everything a report runs with. It answers to
+[[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]]
+and to
+[[file:../../knowledge/journeys/conventions/journey_see_the_conventions_a_party_uses.org][See the conventions a party uses]].
+
+[[file:change-what-a-report-runs.org][Change what a report runs]] reads the same material as a wizard of three panels.
+The owner asked for tabs instead, with the conventions on a tab of their own, and for the
+conventions to be changeable. This page draws that, and it replaces the wizard's first panel.
+
+It is throwaway. It reads no service. The convention counts are measured and every other
+name is a fixture, and the page says which is which.
+
+* Detail
+
+** The three layouts
+
+The sections are the same in each layout. Only the arrangement differs.
+
+| Layout | Arrangement | What it is for |
+|--------+-------------+----------------|
+| A | Three tabs: Definition, Configuration, Conventions. | The proposal. It matches the three questions the owner asked. |
+| B | Four tabs: the configuration split into Run settings and Market and pricing. | Tests whether one tab holds too much. The run settings are the report's own and the market and pricing are shared by every report of the party. |
+| C | One page with an index. | Tests whether a tab hides anything a reader needs at the same time as the definition. |
+
+** The definition
+
+The fields of the definition, with the regulatory book type (empty, Trading or Banking) and the
+words that say what the report reads. The latest run sits under it. A change here reaches this
+report only, and the section says so.
+
+** The configuration
+
+*Run settings.* The configuration the report owns: the base currency, the analytics with their
+state and order, and the scope. The section says whether the configuration is used by this report
+alone or shared, and names the reports a change would reach. The scope shows what each line
+resolves to, split by book type, and states how many books the report reads under its type. A book
+named by hand replaces the portfolio lines, as the resolver does today. Editing the scope is a
+proposed screen: today the seed and the shell write it.
+
+*Market and pricing.* The pricing engines, today's market and the curve configuration. They belong
+to the party, so every report of it reads them, and the section says a change reaches all 22
+reports. Today the application opens none of them. Pricing engines have a prototype and the other two
+have none.
+
+** The conventions
+
+Two states, switched in the bar.
+
+*Today.* The binding chooses nothing. A run reads every convention document of the party: 11,027
+documents in 26 kinds, measured on 2026-10-21. The largest kind holds 3,950 documents and none of
+them is marked as the one that counts. Nothing on the page can change the terms.
+
+*With sets (proposed).* The report chooses one named set, and a run reads the documents of that
+set and no others. The page shows the choice, what the choice does (documents read, the one report
+it reaches, past runs unchanged) and what needs a decision (a kind the set does not cover, and the
+approval by Market Risk). Writing a set is its own screen and is not drawn.
+
+** The rule on the book type
+
+Set the book type to Banking and the scope to name a trading book, then press Edit and Save. The
+refusal names the book and the report. Today the database names only the definition, so this is the
+wording the screen should give.
+
+** What the prototype cannot show
+
+- Convention sets are not stored anywhere. The sets are fixtures.
+- A run reads every convention row, whatever the binding says, so choosing a set changes the run as well as the screen.
+- Today's market and the curve configuration have no screen and no prototype.
+- The scope has no editor.
+
+* See also
+
+- [[file:change-what-a-report-runs.org][Change what a report runs]] — the wizard this page replaces.
+- [[file:manage-the-analytics.org][Manage the analytics]] — owns the analytic interaction that the run settings link to.
+- [[file:../conventions/index.org][Conventions prototypes]] — the screens for the terms themselves.

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: a report and everything it runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  A report and everything it runs. One page for a report definition that shows
+  the three things a person has to read to know what the report does:
+
+    the definition      what the report is: its fields, its party, its schedule,
+                        the regulatory book type it may read, and its latest run;
+    the configuration   what it runs with: the run settings (currency, analytics,
+                        scope) that this report alone may own, and the shared
+                        configurations (pricing engines, today's market, curves)
+                        that every report of the party reads;
+    the conventions     which market terms a run reads, and, in the proposal, the
+                        named convention set the report chooses.
+
+  Three layouts are offered, and they disagree about structure, not colour:
+
+    A  three tabs: Definition, Configuration, Conventions. The proposal.
+    B  four tabs: the configuration split into run settings and market and pricing.
+    C  one page with an index: nothing is hidden behind a tab.
+
+  ?variant=A|B|C   ?tab=definition|configuration|conventions (A)
+  ?conv=today|sets   the conventions tab as the system works now, or as proposed
+  ?type=none|Trading|Banking   the regulatory book type the report holds
+  ?hand=no|yes   whether the scope names a trading book by hand
+  ?shared=no|yes   whether the run settings are shared with other reports
+  ?role=admin|reader
+
+  Nothing here reads a server and nothing is written. The convention counts are
+  measured: they are the rows of the 26 convention tables of the bright_faraday
+  development database on 2026-10-21. Every name, set and purpose is a fixture.
+  The page says which statements are the system as it is and which are proposed.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

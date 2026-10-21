@@ -8,7 +8,7 @@
 #+filetags: :preview_a_term_structure_on_a_calendar:sprint_28:v0:
 #+owner: marco
 #+branch: feature/preview-a-term-structure-on-a-calendar
-#+pr:
+#+pr: 3608
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3608][#3608]] | [agile] Scaffold the term structure preview story |
 
 * Review
 

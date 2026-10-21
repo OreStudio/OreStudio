@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 4180C0D7-969A-4E78-94A0-C95BDEF2C0C0
+:END:
+#+title: Story: Hotfix: fix the Linux sccache save
+#+description: The debug saves fail on a tar race and the old cache is deleted before the save, so the next build starts cold.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B5A85936-DA63-460C-A331-C27D53679C58][Scaffold story: Hotfix: fix the Linux sccache save]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1B07684F-37DB-4B92-AD7A-BCC858F9FE6B][Implement Hotfix: fix the Linux sccache save]] | DONE | 2026-10-21 | 2026-10-21 | Initial task for: Hotfix: fix the Linux sccache save |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The Linux workflows now wait for sccache to stop writing before they save the
+cache, and they retry the save once if the service does not hold the key. Only
+a CI run proves it. The near-zero hit rate is a separate cause and stays open.

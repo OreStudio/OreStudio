@@ -410,6 +410,32 @@ describe('pricing engine routes', () => {
         });
     });
 
+    it('saves a document whose ids carry no version or variant bits', async () => {
+        const stored = 'e137272c-f3b7-7647-67d9-2103be4b4596';
+        const storedParameter = '3a0fd1e0-c83d-2185-2e05-7c883ca22139';
+        const { server, sessionId } = buildTestServer({
+            ...reads,
+            'analytics.v1.pricing_engines_documents.put': {
+                success: true,
+                message: '',
+                id: CONFIG_ID,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/reporting/pricing-engines/${stored}`,
+            {
+                ...body,
+                version: 1,
+                products: [{ ...body.products[0], id: stored }],
+                parameters: [{ ...body.parameters[0], id: storedParameter, productId: stored }],
+            },
+        );
+        expect(response.statusCode).toBe(200);
+    });
+
     it('refuses a write without a reason', async () => {
         const { server, sessionId } = buildTestServer(reads);
         const response = await send(

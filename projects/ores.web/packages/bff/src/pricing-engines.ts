@@ -30,15 +30,7 @@ import { subjects as settingSubjects } from '@ores/wire-protocol/generated/analy
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
-import {
-    idSchema,
-    input,
-    intentSchema,
-    readAll,
-    refusal,
-    resultSchema,
-    text,
-} from './refdata-calls.js';
+import { input, intentSchema, readAll, refusal, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -65,6 +57,10 @@ const OWNING_COMPONENT = 'ores.analytics';
 /** The value a row carries for an id or a time the service stamps itself. */
 const NIL = '00000000-0000-0000-0000-000000000000';
 const EPOCH = '1970-01-01 00:00:00.000000Z';
+
+// The seed and the publish from the DQ staging give rows ids that carry no version
+// and variant bits, so a strict UUID would refuse a row the service itself holds.
+const idSchema = z.guid();
 
 const MAX_PRODUCTS = 500;
 const MAX_PARAMETERS = 5000;

@@ -156,6 +156,25 @@ different analytic sets. The rows differ in scope and analytics. The engine sett
 
 The regime 2 score is 3 of 5, and the debt is Medium.
 
+** What the ORE source says about the 19 settings
+
+Checked on 2026-10-21 against the ORE 1.8.17 source (=OREAnalytics/orea/app/inputparameters.cpp=, =oreapp.cpp=,
+=OREData/ored/marketdata/csvloader.cpp=) and the user guide (=Docs/UserGuide/parameterisation/ore.tex=). The version is the one
+the repository records in =external/ore/catalogue/ore_version.txt=.
+
+| # | Finding | Consequence |
+|---+---------+-------------|
+| 7 | Six stored settings are not read from the Setup block at all: =accrualDate=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics= and =additionalResults=. A seventh, =portfolioRecurseIntoSubDirectories=, is not read either. Shipped legacy examples set them, and they change nothing. | A person who edits one of them believes they changed a run. |
+| 8 | =csvCommentReportHeader= is the one character that marks a comment line in a CSV report, with the default =#=. It is not a Y or N flag. A value of =N= makes the letter N the comment character. | The model, the column comment and the two shipped examples that set =N= treat it as a flag. |
+| 9 | The model lists the observation model values as Disable, None, Move and Defer. ORE has None, Disable, Defer and Unregister. =Move= does not exist. | The model comment is wrong, and the prototype uses the real four. |
+| 10 | ORE accepts every spelling of a flag (=Y=, =YES=, =TRUE=, =true=, =1= and the negatives). The two spellings in the data do not matter to ORE. | Typed booleans are safe. The spelling question in the open list is settled for ORE. |
+| 11 | The ORE source defaults =continueOnError= and =buildFailedTrades= to true. The user guide says false for both. | An unset value is not safe. The platform must write both explicitly. |
+| 12 | ORE reads at least twelve Setup parameters that the model does not store, among them =allowModelBuilderFallbacks=, =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead=, =useMarketDataFixings=, =eomInflationFixings=, =entireMarket=, =allFixings=, =csvSeparator=, =reportBufferSize=, =gzipCompressionLevel= and =dryRun=. | The projection refuses a Setup parameter that is neither a choice nor a file, so a document that sets one is refused. |
+
+Finding 12 needs a decision before the model task starts: keep the 13 live settings, drop the 7 that ORE ignores, and add
+the live ones the owner wants to manage. Every setting now has a long description and a table of its values in the
+prototype, written from the source.
+
 ** Where the run date comes from
 
 =as_of= in =run_document_generator.cpp= resolves the date for each run. =eod= gives the weekday before the run date, =live=
@@ -221,8 +240,10 @@ its party's name.
 
 1. Who may change a group. The prototype lets an analyst edit all five. The three groups that change the numbers may need
    an approval like a pricing engine change.
-2. Whether the flags keep ORE's spelling per parameter or become booleans that the projection writes in the right spelling.
-   The prototype draws Yes and No.
+2. Settled for ORE: every flag parses with =parseBool=, so the model can store booleans. The remaining choice is whether the
+   projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
+5. What to do with the seven settings ORE ignores, the comment character that is not a flag, and the twelve live settings
+   the model does not store. See findings 7, 8 and 12.
 3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
 4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.
 

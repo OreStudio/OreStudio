@@ -22,7 +22,7 @@ This prototype draws the list of engine settings configurations and the page of 
 that reports bind, as they bind the pricing engines.
 
 The list and the page are the ones the pricing engines use, so a person who knows one knows the other. The list has the
-standard bar and the four states. The page has the tabs Details, Settings, Reports and History.
+standard bar and the four states. The page has eight tabs: Details, one tab for each of the five groups, Used by and History.
 
 It is throwaway. It reads no service and writes nothing to one.
 
@@ -31,16 +31,24 @@ It is throwaway. It reads no service and writes nothing to one.
 ** The question the screen answers
 
 "Which settings does the engine run my reports with, and which reports share them?" The list finds the configuration. The
-page shows the five groups, and the Reports tab shows who is reached by a change.
+page shows one group on each tab, and the Used by tab shows who is reached by a change.
 
-** The Settings tab
+** The five group tabs
 
-Five cards, one for each group: Dates, Fixings and cash flows, Market and trade building, Execution, and Reports. Each card
-says whether the group changes the numbers a run computes or is operational, and shows its own version. Each setting shows
-its label, the engine parameter name and the value. A setting the group leaves unset shows Engine default. A group with no
-row shows "not set", and the engine uses its default for every setting in it.
+Dates, Fixings and cash flows, Market and trade building, Execution, and Report output. Each tab holds one group, as one
+card. The card says whether the group changes the numbers a run computes or is operational, and shows its own version. Each
+setting shows its label, the engine parameter name and the value. A setting the group leaves unset shows Engine default. A
+group with no row shows "not set", and the engine uses its default for every setting in it.
 
-Edit opens one group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
+The group of report output keeps the part table =engine_settings_reports=. The tab says Report output so that it does not
+clash with the Used by tab, which lists the reports that bind the configuration.
+
+Every setting has a long description of what it does, a table of its values with what each value does, and the default
+the engine uses when the setting is unset. The row of the current value is marked. The wording is drawn from the ORE 1.8.17
+source and user guide, not invented. A setting that ORE does not read from the Setup block carries a tag, "Not read by ORE
+1.8.17", and its description says so. The comment character carries "Not a flag".
+
+Edit opens that group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
 numbers, and asks for a change reason like every record dialog.
 
 ** History
@@ -51,7 +59,7 @@ row. Revert is offered on every entry that is not current and writes the values 
 
 ** States and switches
 
-- =?screen=list= and =?screen=record&id=e1|e2|e3&tab=details|settings|reports|history=. =e1= is the standard settings
+- =?screen=list= and =?screen=record&id=e1|e2|e3&tab=details|dates|fixings|building|execution|output|reports|history=. =e1= is the standard settings
   that twenty HK reports share. =e2= has four threads and serves two reports. =e3= is a trial that no report binds.
 - =?state=all|empty|error|loading= for the four list states.
 - =?actor=viewer|analyst|admin=. A viewer reads, an analyst adds and edits, and only the administrator deletes.
@@ -65,9 +73,12 @@ lists the reports bound to one configuration, and no operation returns a group c
 
 ** What it does not settle
 
+- What to do with the seven settings ORE ignores, and the twelve live settings the model does not store. The prototype draws
+  the 19 the model stores today, and tags the ones ORE ignores.
 - Who may change a group. The prototype lets an analyst edit all five. A change to a group that changes the numbers may
   need an approval like a pricing engine change. That is decision 4 in the story.
-- The flags are drawn as Yes and No. Whether the model stores ORE's spelling or a boolean is a design question in the story.
+- The flags are drawn as Yes and No. ORE accepts every spelling, so the model can store booleans. Whether the projection
+  writes =true= or =Y= is still open in the story.
 - Whether the list should show the groups that are set, or only the count.
 - How a report picks its engine settings. The prototype shows the binding from the other side, on the Reports tab.
 

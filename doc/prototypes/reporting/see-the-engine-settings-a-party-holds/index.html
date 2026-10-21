@@ -147,6 +147,10 @@ label.plain{white-space:nowrap}
 .gh{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line-soft)}
 .pn{border:1px dashed #4a3a17;border-radius:var(--radius);padding:8px 12px;color:var(--warn);background:#161208;font-size:.8rem}
 .card table td:first-child,.card table th:first-child{padding-left:16px}
+.setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
+.shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
+.sdesc{color:var(--ink-dim);max-width:78ch;line-height:1.55}
+table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}table.vals td,table.vals th{padding:5px 10px}table.vals tr.curv td{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
 
 </style>
 </head>
@@ -177,6 +181,80 @@ label.plain{white-space:nowrap}
 <div id="layer"></div>
 
 <script>
+// The wording of every setting is drawn from the ORE 1.8.17 source and user guide: OREAnalytics/orea/app/inputparameters.{hpp,cpp},
+// oreapp.cpp, OREData/ored/marketdata/csvloader.cpp and Docs/UserGuide/parameterisation/ore.tex.
+// status: live (ORE reads it), ignored (ORE 1.8.17 does not read it in Setup), flag-misnamed (read, but not a flag).
+const YES = (y, n) => [['yes', 'Yes', y], ['no', 'No', n]];
+const IGNORED = (name, shipped) => `ORE 1.8.17 does not read ${name} from the Setup block. ${shipped} A document that sets it runs exactly as one that leaves it out, so setting it here changes nothing.`;
+const GROUPS = [
+  { id: 'dates', title: 'Dates', table: 'engine_settings_dates', changes: true, what: 'How the run reads dates.', fields: [
+    { key: 'accrual_date', ore: 'accrualDate', label: 'Accrual date', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
+      desc: IGNORED('accrualDate', 'Three shipped legacy examples set it to ASOF.'), dflt: 'Not applicable. The setting has no effect.',
+      values: [['ASOF', 'ASOF', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+    { key: 'fixing_cutoff', ore: 'fixingCutoff', label: 'Fixing cutoff', kind: 'text', status: 'live', help: 'A date, such as 2026-10-20.',
+      desc: 'Names a date up to which historical fixings are loaded from the fixing data file, even when they fall on or after the valuation date. Without it the loader keeps only fixings dated before the valuation date, and the fixing of the valuation date itself when today’s fixings are not implied. Set it when the run values as of an earlier date but the fixing file holds later fixings that the run must still see. The value is a date in the form 2026-10-20.',
+      dflt: 'No cutoff. Only fixings before the valuation date load, and today’s fixing loads when it is not implied.',
+      values: [['', 'A date', 'Every fixing dated on or before that date loads, in addition to the fixings that load without a cutoff. The eight shipped examples that set it use 2023-02-14.']] },
+    { key: 'date_calendar', ore: 'dateCalendar', label: 'Date calendar', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
+      desc: IGNORED('dateCalendar', 'Three shipped legacy examples set it to TARGET.'), dflt: 'Not applicable. The setting has no effect.',
+      values: [['TARGET', 'TARGET', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+    { key: 'date_convention', ore: 'dateConvention', label: 'Date convention', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
+      desc: IGNORED('dateConvention', 'Three shipped legacy examples set it to P.'), dflt: 'Not applicable. The setting has no effect.',
+      values: [['P', 'P', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+    { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', status: 'live', help: 'A number of days. Zero turns the check off.',
+      desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the previous fixing, this setting limits how old that previous fixing may be. If the previous fixing is more days older than the gap than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any age can fill the gap.',
+      dflt: '0. The check is off.',
+      values: [['0', '0', 'No limit. A previous fixing of any age can fill a gap.'], ['', 'A number of days, such as 3', 'A previous fixing fills a gap only when it is at most that many days older than the gap.']] }] },
+  { id: 'fixings', title: 'Fixings and cash flows', table: 'engine_settings_fixings', changes: true, what: 'Which fixings and cash flows count.', fields: [
+    { key: 'imply_todays_fixings', ore: 'implyTodaysFixings', label: 'Imply today’s fixings', kind: 'bool', status: 'live', help: 'Whether today’s fixings are implied.',
+      desc: 'Decides what the run does about the fixing of the valuation date. When it is No, the fixing for the valuation date is loaded from the fixing file like any earlier fixing. When it is Yes, that fixing is not loaded and the engine implies it from the curves. Use Yes when the run prices off hypothetical market data, as in scenario analysis and stress testing, because a fixing from the real market would not match the hypothetical curves.',
+      dflt: 'No. Today’s fixing is loaded.', values: YES('Today’s fixing is not loaded. The engine implies it from the curves.', 'Today’s fixing is loaded from the fixing file.') },
+    { key: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', label: 'Include today’s cash flows', kind: 'bool', status: 'live', help: 'Whether cash flows that pay today count.',
+      desc: 'Sets the global QuantLib flag that decides whether a cash flow that pays on the valuation date is part of the NPV or is treated as already matured and excluded. The choice applies to every analytic of the run. The simulation analytic has a parameter of the same name for exposure runs. Change it only when the NPV must agree with a system that treats payments on the valuation date the other way.',
+      dflt: 'Not set. The engine keeps the QuantLib default.', values: YES('A cash flow that pays on the valuation date counts in the NPV.', 'A cash flow that pays on the valuation date is treated as matured and does not count.') },
+    { key: 'include_reference_date_events', ore: 'includeReferenceDateEvents', label: 'Include reference date events', kind: 'bool', status: 'live', help: 'Whether events on the reference date count.',
+      desc: 'Sets the global QuantLib flag that decides whether an event that falls on the valuation date is still counted in the NPV or is treated as already past. It is the companion of Include today’s cash flows, and the two together decide how a trade on the day of its payment or event is valued. The choice applies to every analytic of the run.',
+      dflt: 'Not set. The engine keeps the QuantLib default.', values: YES('An event on the valuation date counts in the NPV.', 'An event on the valuation date is treated as past and does not count.') },
+    { key: 'enrich_index_fixings', ore: 'enrichIndexFixings', label: 'Enrich index fixings', kind: 'bool', status: 'live', help: 'Whether gaps in index fixings are filled.',
+      desc: 'Fills gaps in the history of an index. When it is Yes, a missing fixing is replaced by a fallback: the previous fixing first, and the next fixing when there is no previous one. Ignore fixing lag limits how old the previous fixing may be. Use it when the fixing file has gaps. It changes the numbers, because a trade that reads an invented fixing is valued with it.',
+      dflt: 'No. A gap stays a gap.', values: YES('A missing fixing is filled with the previous fixing, or the next one when there is none.', 'A missing fixing stays missing.') }] },
+  { id: 'building', title: 'Market and trade building', table: 'engine_settings_building', changes: true, what: 'What the run does with missing data and failed trades.', fields: [
+    { key: 'observation_model', ore: 'observationModel', label: 'Observation model', kind: 'select', opts: ['None', 'Disable', 'Defer', 'Unregister'], status: 'live', help: 'How the engine handles QuantLib notifications.',
+      desc: 'Controls how many QuantLib observer notifications the engine uses when market data and fixings are updated and when the evaluation date moves. Notifications keep every dependent object up to date, and they cost time in a simulation. The three other choices cut that cost in different ways and give a similar speed up over None. The ORE user guide describes the setting as a control of performance during simulation.',
+      dflt: 'None.', values: [['None', 'None', 'The normal QuantLib behaviour. Every update notifies every dependent object.'], ['Disable', 'Disable', 'Switches all notifications off during market and fixing updates and when the evaluation date moves along a path. Updates are not deferred. The engine triggers the needed recalculations itself.'], ['Defer', 'Defer', 'Switches notifications off during market and fixing updates, then runs the updates when notifications are on again.'], ['Unregister', 'Unregister', 'Keeps notifications on but unregisters floating rate coupons from their indices, which removes most of them.']] },
+    { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', status: 'live', help: 'Whether the market is built on demand.',
+      desc: 'Decides when the engine builds the curves listed in today’s market. When it is Yes, a curve is built only when a trade or analytic asks for it, which saves time when the configuration lists curves that the portfolio never uses. When it is No, every curve in today’s market is built at the start.',
+      dflt: 'Yes. Curves are built on demand.', values: YES('A curve is built only when something asks for it.', 'Every curve in today’s market is built at the start.') },
+    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', status: 'live', help: 'Whether a failed trade is replaced by a dummy.',
+      desc: 'Decides what happens to a trade that cannot be loaded or built. When it is Yes, the engine builds a dummy trade of type Failed, with zero notional and zero NPV, so the trade still appears in the portfolio and in the reports instead of vanishing. When it is No, the failed trade is left out. Yes keeps the trade count honest, but a reader must know that a Failed trade has no value.',
+      dflt: 'The ORE source defaults to Yes and the user guide says No. Set it explicitly.', values: YES('A failed trade becomes a dummy trade of type Failed with zero notional and zero NPV.', 'A failed trade is left out of the portfolio.') },
+    { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', status: 'live', help: 'Whether the run goes on after an error.',
+      desc: 'Decides whether the engine stops at the first error or goes on. When it is Yes, the engine logs the error and tries to finish the rest of the processing, so one bad curve or trade does not lose the whole run, and the reports may be incomplete. When it is No, the run exits at the error.',
+      dflt: 'The ORE source defaults to Yes and the user guide says No. Set it explicitly.', values: YES('The run logs the error and goes on. The result may be incomplete.', 'The run exits at the first error.') },
+    { key: 'default_mapping_to_identity', ore: 'defaultMappingToIdentity', label: 'Default mapping to identity', kind: 'bool', status: 'ignored', help: 'Not read by ORE 1.8.17.',
+      desc: IGNORED('defaultMappingToIdentity', 'Three shipped legacy examples set it to true.'), dflt: 'Not applicable. The setting has no effect.',
+      values: YES('The value the three shipped legacy examples use. It has no effect on a run.', 'It has no effect on a run.') }] },
+  { id: 'execution', title: 'Execution', table: 'engine_settings_execution', changes: false, what: 'How the engine runs and logs.', fields: [
+    { key: 'n_threads', ore: 'nThreads', label: 'Threads', kind: 'number', status: 'live', help: 'A whole number of at least 1.',
+      desc: 'The number of threads the engine may use. More than one thread speeds up the analytics that spread their work over scenarios or paths: the sensitivity analytic, the classic exposure simulation and the AMC exposure simulation. These are the three analytics that the ORE user guide names.',
+      dflt: '1.', values: [['1', '1', 'One thread. The engine runs the work in sequence.'], ['', '2 or more', 'The sensitivity and exposure analytics share their work between that many threads.']] },
+    { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', status: 'live', help: 'A bit set, such as 31.',
+      desc: 'Decides which messages the engine writes to its log file. Each kind of message has a bit: 1 alert, 2 critical, 4 error, 8 warning, 16 notice, 32 debug and 64 data. Add the bits of the kinds you want. The table lists the common totals. A higher total writes more and makes a larger log. The value 255 gives the most detail.',
+      dflt: '15. Alert, critical, error and warning.', values: [['15', '15', 'Alert, critical, error and warning.'], ['31', '31', 'The same and notice.'], ['63', '63', 'The same and debug.'], ['127', '127', 'The same and data.'], ['255', '255', 'Every kind. The most detail.']] },
+    { key: 'use_analytics', ore: 'useAnalytics', label: 'Use analytics', kind: 'bool', status: 'ignored', help: 'Not read by ORE 1.8.17.',
+      desc: IGNORED('useAnalytics', 'Two shipped examples set it to true.'), dflt: 'Not applicable. The setting has no effect.',
+      values: YES('The value the two shipped examples use. It has no effect on a run.', 'It has no effect on a run.') }] },
+  { id: 'output', title: 'Report output', table: 'engine_settings_reports', changes: false, what: 'What the run writes into its reports.', fields: [
+    { key: 'csv_comment_report_header', ore: 'csvCommentReportHeader', label: 'CSV comment character', kind: 'text', maxlen: 1, status: 'flag-misnamed', help: 'Exactly one character, such as #.',
+      desc: 'The character that marks a comment line in the CSV reports. ORE reads exactly one character from this setting, and uses it for the comment character of the reports it writes and reads. It is not a flag. A value of Y or N is accepted as a character, so N would make the letter N the comment character. The model stores it as a flag today, and the two shipped examples that set it to N set the letter, not a flag.',
+      dflt: '# (hash).', values: [['#', '#', 'The default comment character.'], ['', 'Another single character', 'That character marks comment lines. Any text longer than one character makes the run fail at the start.']] },
+    { key: 'additional_results', ore: 'additionalResults', label: 'Additional results', kind: 'bool', status: 'ignored', help: 'Not read from Setup by ORE 1.8.17.',
+      desc: 'ORE 1.8.17 does not read additionalResults from the Setup block. Additional results are an analytic of their own: an Analytic element of type additionalResults with an active parameter, or, for backward compatibility, an additionalResults parameter inside the npv analytic. Three shipped examples set it to Y in Setup, and it has no effect there. Turning on additional results belongs in the analytics of the run, not in these settings.',
+      dflt: 'Not applicable. The setting has no effect in Setup.', values: YES('The value the three shipped examples use in Setup. It has no effect there.', 'It has no effect there.') }] }
+];
+const groupOf = id => GROUPS.find(g => g.id === id);
+const STATUS_TAG = { ignored: ['Not read by ORE 1.8.17', 'bad'], 'flag-misnamed': ['Not a flag', 'warn'] };
+
 // FIXTURE. The reports and their run settings are the real names of ACME Corporation HK Ltd.
 // The engine setting values are the five the seed sets today. The third configuration, its
 // values and every history entry are this prototype's own.
@@ -192,34 +270,6 @@ const HK_STANDARD = [
 const HK_SIMULATION = [['CVA/DVA/FVA', 'Valuation adjustments'], ['Exposure', 'Exposure simulation']]
   .map(([name, rs]) => ({ name, runSettings: rs + ' - Global Portfolio' }));
 
-// The five groups. Each is one part table. kind: bool, select, number, text.
-const GROUPS = [
-  { id: 'dates', title: 'Dates', table: 'engine_settings_dates', changes: true, what: 'How the run reads dates.', fields: [
-    { key: 'accrual_date', ore: 'accrualDate', label: 'Accrual date', kind: 'text', help: 'A date, or the word ASOF.' },
-    { key: 'fixing_cutoff', ore: 'fixingCutoff', label: 'Fixing cutoff', kind: 'text', help: 'Fixings before this date are not read.' },
-    { key: 'date_calendar', ore: 'dateCalendar', label: 'Date calendar', kind: 'text', help: 'The calendar of the dates of the run.' },
-    { key: 'date_convention', ore: 'dateConvention', label: 'Date convention', kind: 'text', help: 'The convention of the dates of the run.' },
-    { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', help: 'Days of fixing lag to ignore.' }] },
-  { id: 'fixings', title: 'Fixings and cash flows', table: 'engine_settings_fixings', changes: true, what: 'Which fixings and cash flows count.', fields: [
-    { key: 'imply_todays_fixings', ore: 'implyTodaysFixings', label: 'Imply today’s fixings', kind: 'bool', help: 'Whether today’s fixings are implied.' },
-    { key: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', label: 'Include today’s cash flows', kind: 'bool', help: 'Whether cash flows that fall today count.' },
-    { key: 'include_reference_date_events', ore: 'includeReferenceDateEvents', label: 'Include reference date events', kind: 'bool', help: 'Whether events on the reference date count.' },
-    { key: 'enrich_index_fixings', ore: 'enrichIndexFixings', label: 'Enrich index fixings', kind: 'bool', help: 'Whether index fixings are enriched.' }] },
-  { id: 'building', title: 'Market and trade building', table: 'engine_settings_building', changes: true, what: 'What the run does with missing data and failed trades.', fields: [
-    { key: 'observation_model', ore: 'observationModel', label: 'Observation model', kind: 'select', opts: ['Disable', 'None', 'Move', 'Defer'], help: 'How the engine handles absent market data.' },
-    { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', help: 'Whether the market is built on demand.' },
-    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', help: 'Whether the run builds trades that failed.' },
-    { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', help: 'Whether the run goes on after an error.' },
-    { key: 'default_mapping_to_identity', ore: 'defaultMappingToIdentity', label: 'Default mapping to identity', kind: 'bool', help: 'Whether a missing mapping maps to itself.' }] },
-  { id: 'execution', title: 'Execution', table: 'engine_settings_execution', changes: false, what: 'How the engine runs and logs.', fields: [
-    { key: 'n_threads', ore: 'nThreads', label: 'Threads', kind: 'number', help: 'Worker threads the engine may use.' },
-    { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', help: 'A bit set of the message kinds to write.' },
-    { key: 'use_analytics', ore: 'useAnalytics', label: 'Use analytics', kind: 'bool', help: 'Whether the run uses the analytics framework.' }] },
-  { id: 'reports', title: 'Reports', table: 'engine_settings_reports', changes: false, what: 'What extra output the run writes.', fields: [
-    { key: 'csv_comment_report_header', ore: 'csvCommentReportHeader', label: 'CSV header as comment', kind: 'bool', help: 'Whether report headers are written as comments.' },
-    { key: 'additional_results', ore: 'additionalResults', label: 'Additional results', kind: 'bool', help: 'Whether the run writes additional results.' }] }
-];
-const groupOf = id => GROUPS.find(g => g.id === id);
 const NOW = Date.parse('2026-10-21T19:00:00Z');
 const SEEDER = 'tenant provisioning service';
 const clone = x => JSON.parse(JSON.stringify(x));
@@ -376,16 +426,23 @@ function detailsTab(c) {
   <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
 }
 
+function settingBlock(f, v) {
+  const cur = v == null || v === '' ? '' : v;
+  const st = STATUS_TAG[f.status];
+  const known = f.values.some(x => x[0] !== '' && x[0] === cur);
+  const rows = f.values.map(x => `<tr class="${x[0] !== '' && x[0] === cur ? 'curv' : ''}"><td class="mono" style="width:11rem">${esc(x[1])}</td><td>${esc(x[2])}</td></tr>`).join('')
+    + `<tr class="${cur === '' ? 'curv' : ''}"><td style="width:11rem"><span class="faint">Not set</span></td><td>${esc(f.dflt)}</td></tr>`;
+  return `<div class="setting"><div class="shead"><div><b>${esc(f.label)}</b> <span class="mono faint">${esc(f.ore)}</span> ${st ? tag(st[0], st[1]) : ''}</div><div class="sval">${cell(f, v)}</div></div>
+    <p class="sdesc">${esc(f.desc)}</p>
+    <table class="vals"><thead><tr><th>Value</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>${cur !== '' && !known && f.values.some(x => x[0] === '') ? `<div class="faint">The current value is ${esc(valText(f, cur))}.</div>` : ''}</div>`;
+}
 function groupCard(c, g) {
   const part = c.groups[g.id];
-  const rows = g.fields.map(f => `<tr><td style="width:15rem">${esc(f.label)}</td><td class="mono faint" style="width:15rem">${esc(f.ore)}</td><td>${cell(f, part ? part.vals[f.key] : null)}</td></tr>`).join('');
   return `<div class="card"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
     <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}${may('edit') ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}</div></div>
-    <table><tbody>${rows}</tbody></table>
+    ${g.fields.map(f => settingBlock(f, part ? part.vals[f.key] : null)).join('')}
     <div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its own default for every setting here.`}</div></div>`;
 }
-const settingsTab = c => `<div class="muted">The five groups of settings. Each group is its own part with its own version. A change to any group makes a new version of the whole.</div>${GROUPS.map(g => groupCard(c, g)).join('')}`;
-
 function reportsTab(c) {
   const rows = c.reports.map(r => `<tr><td><span class="link">${esc(r.name)}</span></td><td>${esc(r.runSettings)}</td><td class="mono">version ${c.ver}</td></tr>`).join('');
   return `<div class="notice">A change reaches the next run of each report below. A run already produced keeps what it ran with.</div>
@@ -411,8 +468,8 @@ function recordScreen(c) {
   const r = route();
   if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], ['Not found']]) + '<div class="notice">These engine settings do not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
-  const tabs = [['details', 'Details'], ['settings', 'Settings'], ['reports', 'Reports'], ['history', 'History']];
-  const body = { details: detailsTab, settings: settingsTab, reports: reportsTab, history: historyTab }[r.tab](c);
+  const tabs = [['details', 'Details']].concat(GROUPS.map(g => [g.id, g.title]), [['reports', 'Used by'], ['history', 'History']]);
+  const body = groupOf(r.tab) ? groupCard(c, groupOf(r.tab)) : { details: detailsTab, reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports</div></div>
     <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
@@ -437,6 +494,8 @@ function editDialog(c, gid) {
     g.fields.forEach(f => { const x = document.getElementById('f-' + f.key).value.trim(); if (x !== '') after[f.key] = x; });
     const bad = g.fields.find(f => f.kind === 'number' && after[f.key] !== undefined && !/^\d+$/.test(after[f.key]));
     if (bad) { document.getElementById('d-err').innerHTML = `<div class="badbox">${esc(bad.label)} must be a whole number.</div>`; return; }
+    const long = g.fields.find(f => f.maxlen && after[f.key] !== undefined && after[f.key].length > f.maxlen);
+    if (long) { document.getElementById('d-err').innerHTML = `<div class="badbox">${esc(long.label)} must be exactly ${long.maxlen} character.</div>`; return; }
     if (after.n_threads !== undefined && Number(after.n_threads) < 1) { document.getElementById('d-err').innerHTML = '<div class="badbox">Threads must be at least 1.</div>'; return; }
     const before = clone(vals), p = [{ group: gid, gver: (part ? part.v : 0) + 1, before: part ? before : null, after }];
     if (!diffParts(p).length) { document.getElementById('d-err').innerHTML = '<div class="notice">Nothing changed.</div>'; return; }
@@ -464,7 +523,7 @@ function addDialog() {
     if (CONFIGS.some(c => c.name.toLowerCase() === name.toLowerCase())) { document.getElementById('d-err').innerHTML = '<div class="badbox">Engine settings with this name exist.</div>'; return; }
     const at = new Date(NOW).toISOString();
     const c = { id: 'e' + (CONFIGS.length + 1), name, desc: document.getElementById('f-desc').value.trim(), cfgRow: 'configuration new', groups: {}, reports: [], ver: 1, changed: at, versions: [{ v: 1, at, by: actorName, reason: 'New record', note: '', parts: [] }] };
-    CONFIGS.push(c); closeDlg(); nav({ screen: 'record', id: c.id, tab: 'settings' });
+    CONFIGS.push(c); closeDlg(); nav({ screen: 'record', id: c.id, tab: 'details' });
   };
 }
 function deleteDialog(c) {

@@ -26,11 +26,11 @@ Step 0 timed batched inserts inside the database. Repeat it from a C++ client, w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | The pull request.                      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Store ticks in an append-only table.   |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

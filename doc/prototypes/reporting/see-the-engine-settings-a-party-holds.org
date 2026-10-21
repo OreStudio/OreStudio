@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E2353FE1-B66F-4A04-90D5-51978D618C02
+:END:
+#+title: See the engine settings a party holds prototype
+#+description: The engine settings list and one configuration page, drawn beside the pricing engines. A configuration holds five groups of settings, each its own part, and reports bind it by name.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:see-the-engine-settings-a-party-holds/][the prototype]] |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Reporting prototypes]]                       |
+
+* Summary
+
+This prototype draws the list of engine settings configurations and the page of one. It answers to the design in the story
+[[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]]: the engine settings leave the run settings and become a named configuration
+that reports bind, as they bind the pricing engines.
+
+The list and the page are the ones the pricing engines use, so a person who knows one knows the other. The list has the
+standard bar and the four states. The page has the tabs Details, Settings, Reports and History.
+
+It is throwaway. It reads no service and writes nothing to one.
+
+* Detail
+
+** The question the screen answers
+
+"Which settings does the engine run my reports with, and which reports share them?" The list finds the configuration. The
+page shows the five groups, and the Reports tab shows who is reached by a change.
+
+** The Settings tab
+
+Five cards, one for each group: Dates, Fixings and cash flows, Market and trade building, Execution, and Reports. Each card
+says whether the group changes the numbers a run computes or is operational, and shows its own version. Each setting shows
+its label, the engine parameter name and the value. A setting the group leaves unset shows Engine default. A group with no
+row shows "not set", and the engine uses its default for every setting in it.
+
+Edit opens one group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
+numbers, and asks for a change reason like every record dialog.
+
+** History
+
+The History tab is the shared timeline. A change to a group is one entry that names the group and its part version. The
+entry also moves the version of the whole configuration, because a write to any part makes the next version of the central
+row. Revert is offered on every entry that is not current and writes the values the group had before as a new version.
+
+** States and switches
+
+- =?screen=list= and =?screen=record&id=e1|e2|e3&tab=details|settings|reports|history=. =e1= is the standard settings
+  that twenty HK reports share. =e2= has four threads and serves two reports. =e3= is a trial that no report binds.
+- =?state=all|empty|error|loading= for the four list states.
+- =?actor=viewer|analyst|admin=. A viewer reads, an analyst adds and edits, and only the administrator deletes.
+- Delete is refused while a report binds the configuration.
+
+** What is fake
+
+The report names are the real names of ACME Corporation HK Ltd, and the five values the standard settings set are the ones
+the seed writes today. The third configuration, every history entry and every count in the list are fixtures. No operation
+lists the reports bound to one configuration, and no operation returns a group count for a list row.
+
+** What it does not settle
+
+- Who may change a group. The prototype lets an analyst edit all five. A change to a group that changes the numbers may
+  need an approval like a pricing engine change. That is decision 4 in the story.
+- The flags are drawn as Yes and No. Whether the model stores ORE's spelling or a boolean is a design question in the story.
+- Whether the list should show the groups that are set, or only the count.
+- How a report picks its engine settings. The prototype shows the binding from the other side, on the Reports tab.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group.
+- [[file:see-the-pricing-engines-a-party-holds.org][See the pricing engines a party holds]] — the named configuration this page sits beside.
+- [[file:see-a-report-and-everything-it-runs.org][See a report and everything it runs]] — the page whose Analytics tab shows these settings today.

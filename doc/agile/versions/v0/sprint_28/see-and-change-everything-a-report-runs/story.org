@@ -40,6 +40,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |------+-------+-------+-----+-------------|
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
+| [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | STARTED | 2026-10-21 | | Task for: See and change everything a report runs |
 
 * Analysis
 
@@ -120,13 +121,120 @@ So the step is: register the provider, key it by the definition's id, and test t
 
 Step 1 can start at once and delivers the page the owner described, without the history. Step 5 is what makes "change the conventions" real.
 
+* Design: the engine settings as a named configuration
+
+Measured on the bright_faraday development database on 2026-10-21, and read from the code of the same date. The review
+applies [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+
+** What the run settings table holds today
+
+=ores_reporting_risk_report_configs_tbl= has 28 value columns in four groups, and four families of child rows.
+
+| Group | Columns | In the 46 rows |
+|-------+---------+----------------|
+| Report currency | =base_currency= | 3 distinct values |
+| Market time | =market_data_type=, =market_data_date= | always =eod=, never a date |
+| Package layout | =input_path=, =output_path=, =log_file=, =input_path_market=, =input_path_portfolio= | the three defaults everywhere, the other two never set |
+| Engine settings | 20 columns | 5 are set, and 15 are null in every row |
+| Child rows | scope, analytics (73 rows), analytic parameters (175 rows), market roles | where the rows differ |
+
+The 46 rows hold 7 distinct engine setting tuples. Three parties have 12 rows with one tuple and 2 rows that differ
+only in =n_threads= (4 instead of 1). The fourth party has 4 rows with one tuple. Each party's 14 rows hold 14
+different analytic sets. The rows differ in scope and analytics. The engine settings barely differ.
+
+** Findings
+
+| # | Finding | Severity | Criterion |
+|---+---------+----------+-----------|
+| 1 | One row mixes four field sets with different readers and change reasons. | Important | Access patterns drive layout. The rule for a part. |
+| 2 | The run document generator copies the stored row and overwrites its market fields with the resolved date (=run_document_generator.cpp=, =generate_run_document=). The instance table has no as-of column and no reference to the settings it used. | Important | Access patterns. Identity by key. |
+| 3 | Eleven flags are text with two spellings in the data (=false= and =N=). The table has no check on them. | Minor | Type discipline. |
+| 4 | The five package path columns describe the package layout, not a choice. | Minor | Access patterns. |
+| 5 | The name and description sit in the registry and in the header. They match in 46 of 46 run settings rows and 4 of 4 pricing engine rows. | Minor | Single source. |
+| 6 | The generic =parameter_definition= and =configuration_parameter= tables hold no Setup definition and no value. | Opportunity | No evidence of cost. |
+
+The regime 2 score is 3 of 5, and the debt is Medium.
+
+** Where the run date comes from
+
+=as_of= in =run_document_generator.cpp= resolves the date for each run. =eod= gives the weekday before the run date, =live=
+gives the run date, and =date= gives the stored date. The =eod= rule does not consult holiday calendars. The definition
+states end of day or intraday and no date, so the =date= kind and the stored date belong to the run.
+
+** How the named configurations compare
+
+| Kind | Header | Content | Header holds content columns |
+|------+--------+---------+------------------------------|
+| Pricing engines | =pricing_model_config=: id, party, name, description, =configuration_id= | product rows and parameter rows | No |
+| Today's market | =todays_market_config= | collection, entry, configuration and binding rows | No |
+| Curve configuration | =curve_configuration= | section rows and curve definition rows | No |
+| Conventions | none | 26 tables read as a whole | not applicable |
+| Run settings | =risk_report_config= | 28 value columns and four child families | Yes, the only one |
+
+** The design
+
+The engine settings become a named configuration of type =engine_settings=. A report definition binds one in its own
+slot, as it binds the pricing engines. The configuration is an entity made of a central row and five parts. The owner
+confirmed the five groups on 2026-10-21.
+
+| Table | Role | Columns beyond key, party and audit |
+|-------+------+-------------------------------------|
+| =engine_settings= | central row, the named configuration reports bind | name, description, =configuration_id= |
+| =engine_settings_dates= | part, changes the numbers | =accrual_date=, =fixing_cutoff=, =date_calendar=, =date_convention=, =ignore_fixing_lag= |
+| =engine_settings_fixings= | part, changes the numbers | =imply_todays_fixings=, =include_todays_cash_flows=, =include_reference_date_events=, =enrich_index_fixings= |
+| =engine_settings_building= | part, changes the numbers | =observation_model=, =lazy_market_building=, =build_failed_trades=, =continue_on_error=, =default_mapping_to_identity= |
+| =engine_settings_execution= | part, operational | =n_threads=, =log_mask=, =use_analytics= |
+| =engine_settings_reports= | part, operational | =csv_comment_report_header=, =additional_results= |
+
+*Why five parts.* The standard says a field set earns a part when it has its own multiplicity, change reason or reader.
+The three groups that change the numbers have a change reason that differs from the two operational groups. A person edits
+one group at a time, and the run reads all five. A group can be absent, and an absent part means the engine default for
+the whole group. The convention families already use this shape, for example =tenor_basis_swap_pay_receive=.
+
+*The composition rule.* A write to any part bumps the central row's version in the same transaction. The History tab shows
+one entry for each part changed.
+
+*What leaves the run settings.*
+
+- The report currency moves to the report definition.
+- The market data kind moves to the report definition, as end of day or intraday. The run carries its own time point.
+- The five package paths and =portfolio_recurse_into_sub_directories= are package layout. The platform sets them and no
+  configuration stores them.
+- The run settings configuration keeps the scope, the analytics and the market roles. These are the Scope and Analytics tabs.
+
+*Migration.* The 46 rows become 7 engine settings configurations, each with at most five part rows. Each name starts with
+its party's name.
+
+** The tasks this design implies
+
+| Task | Content |
+|------+---------|
+| Prototype the engine settings screen | Done on this branch: =see-the-engine-settings-a-party-holds=. |
+| Model the engine settings | The central row and five parts, the configuration type, the binding slot, and the migration from the run settings. |
+| Move the currency and the market kind to the definition | A column each on the report definition, and the run records its as-of time. |
+| Project the engine settings into the Setup block | The projection reads five parts instead of one row, and the package layout stops being stored. |
+| Build the engine settings screens | The list and the page of the prototype. |
+| Record what a run used | The instance records its as-of time and the version of each configuration it read. |
+
+** Open questions for the owner
+
+1. Who may change a group. The prototype lets an analyst edit all five. The three groups that change the numbers may need
+   an approval like a pricing engine change.
+2. Whether the flags keep ORE's spelling per parameter or become booleans that the projection writes in the right spelling.
+   The prototype draws Yes and No.
+3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
+4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.
+
 * Decisions
 
 - The page has six tabs and no Run settings tab. Decided by the owner on 2026-10-21.
 - A report has a report currency, drawn with its flag. The column keeps the name =base_currency=.
 - The definition states end of day or intraday and never a date. The run carries its own time point.
 - The History tab is the shared timeline, not the compare panel.
-- Open: who may change the engine settings, and the reach of a change. To be settled after this PR merges.
+- The engine settings become a named configuration of type =engine_settings=, bound by the report definition in its own slot. Decided by the owner on 2026-10-21.
+- The configuration is a central row with five parts: dates, fixings and cash flows, market and trade building, execution, and reports. Confirmed by the owner on 2026-10-21.
+- Open: who may change a group, the spelling of the flags, and when the currency and the market kind move. See the design.
 
 * Out of scope
 

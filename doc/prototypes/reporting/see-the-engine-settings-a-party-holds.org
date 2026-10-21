@@ -37,7 +37,7 @@ page shows one group on each tab, and the Used by tab shows who is reached by a 
 
 Dates, Fixings and cash flows, Market and trade building, Execution, and Report output. Each tab holds one group, as one
 card. The card says whether the group changes the numbers a run computes or is operational, and shows its own version. Each
-setting shows its label, the engine parameter name and the value. A setting the group leaves unset shows Engine default. A
+setting shows its label, the engine parameter name and the value, and the table of every value it accepts. A setting the group leaves unset shows Engine default. A
 group with no row shows "not set", and the engine uses its default for every setting in it.
 
 The group of report output keeps the part table =engine_settings_reports=. The tab says Report output so that it does not
@@ -78,7 +78,7 @@ A configuration is checked against the ORE build that the reports run on. A sett
 warning, not a refusal: the setting is newer than the build, or ORE stopped reading it. The warning shows on the group, on
 the setting and in the Edit dialog. The bar switches the build between 1.8.17.0 and 1.8.16.0,
 which are the only two builds the application supports. The documentation covers the settings of these two builds, so
-the earlier releases appear only in the since and until columns. A legacy setting warns on both builds. A live setting warns
+the earlier releases appear only in the since and last version entries. A legacy setting warns on both builds. A live setting warns
 only when it is set and the build does not read it. No stored setting differs between the two builds today. The only Setup
 parameter that the two builds read differently is =gzipCompressionLevel=, which 1.8.17.0 reads and 1.8.16.0 does not, and the
 model does not store it.

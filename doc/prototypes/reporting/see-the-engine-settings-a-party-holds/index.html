@@ -193,17 +193,17 @@ const GROUPS = [
   { id: 'dates', title: 'Dates', table: 'engine_settings_dates', changes: true, what: 'How the run reads dates.', fields: [
     { key: 'accrual_date', ore: 'accrualDate', label: 'Accrual date', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
       desc: IGNORED('accrualDate', 'Three shipped legacy examples set it to ASOF.'), dflt: 'Not applicable. The setting has no effect.',
-      values: [['ASOF', 'ASOF', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+      values: [['ASOF', 'ASOF', 'The only value the three shipped legacy examples use. Nothing in the ORE source defines ASOF or any other value for this setting, and it has no effect on a run.']] },
     { key: 'fixing_cutoff', ore: 'fixingCutoff', label: 'Fixing cutoff', kind: 'text', status: 'live', help: 'A date, such as 2026-10-20.',
       desc: 'Names a date up to which historical fixings are loaded from the fixing data file, even when they fall on or after the valuation date. Without it the loader keeps only fixings dated before the valuation date, and the fixing of the valuation date itself when today’s fixings are not implied. Set it when the run values as of an earlier date but the fixing file holds later fixings that the run must still see. The value is a date in the form 2026-10-20.',
       dflt: 'No cutoff. Only fixings before the valuation date load, and today’s fixing loads when it is not implied.',
       values: [['', 'A date', 'Every fixing dated on or before that date loads, in addition to the fixings that load without a cutoff. The eight shipped examples that set it use 2023-02-14.']] },
     { key: 'date_calendar', ore: 'dateCalendar', label: 'Date calendar', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
       desc: IGNORED('dateCalendar', 'Three shipped legacy examples set it to TARGET.'), dflt: 'Not applicable. The setting has no effect.',
-      values: [['TARGET', 'TARGET', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+      values: [['TARGET', 'TARGET', 'The TARGET calendar of the euro payment system. TGT is its short code. The only value the three shipped legacy examples use.'], ['US-FED', 'US-FED', 'The holidays of the US Federal Reserve. US-GOV, US-NERC, US-NYSE, US-SET and US-SOFR name the other US calendars.'], ['CN-IB', 'CN-IB', 'The China interbank market calendar.'], ['', 'A country name, such as Japan or Canada', 'The default settlement calendar of that country.']] },
     { key: 'date_convention', ore: 'dateConvention', label: 'Date convention', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
       desc: IGNORED('dateConvention', 'Three shipped legacy examples set it to P.'), dflt: 'Not applicable. The setting has no effect.',
-      values: [['P', 'P', 'The value the three shipped legacy examples use. It has no effect on a run.']] },
+      values: [['F', 'F', 'Following. Move a date that falls on a holiday to the next business day.'], ['MF', 'MF', 'Modified following. Move to the next business day, unless that falls in the next month, and then move to the previous business day.'], ['P', 'P', 'Preceding. Move to the previous business day. The only value the three shipped legacy examples use.'], ['MP', 'MP', 'Modified preceding. Move to the previous business day, unless that falls in the previous month, and then move to the next business day.'], ['U', 'U', 'Unadjusted. Leave the date as it is. INDIFF, NONE and NotApplicable mean the same.'], ['HMMF', 'HMMF', 'Half month modified following. Move to the next business day, unless that falls in the other half of the month, and then move to the previous business day. The halves are the 1st to the 15th and the 16th to the month end.'], ['NEAREST', 'NEAREST', 'Move to the nearest business day. When the previous and the next business day are equally near, take the next.']] },
     { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', status: 'live', help: 'A number of days. Zero turns the check off.',
       desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the previous fixing, this setting limits how old that previous fixing may be. If the previous fixing is more days older than the gap than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any age can fill the gap.',
       dflt: '0. The check is off.',
@@ -243,7 +243,7 @@ const GROUPS = [
       dflt: '1.', values: [['1', '1', 'One thread. The engine runs the work in sequence.'], ['', '2 or more', 'The sensitivity and exposure analytics share their work between that many threads.']] },
     { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', status: 'live', help: 'A bit set, such as 31.',
       desc: 'Decides which messages the engine writes to its log file. Each kind of message has a bit: 1 alert, 2 critical, 4 error, 8 warning, 16 notice, 32 debug and 64 data. Add the bits of the kinds you want. The table lists the common totals. A higher total writes more and makes a larger log. The value 255 gives the most detail.',
-      dflt: '15. Alert, critical, error and warning.', values: [['15', '15', 'Alert, critical, error and warning.'], ['31', '31', 'The same and notice.'], ['63', '63', 'The same and debug.'], ['127', '127', 'The same and data.'], ['255', '255', 'Every kind. The most detail.']] },
+      dflt: '15. Alert, critical, error and warning.', values: [['1', '1', 'The bit for alert messages.'], ['2', '2', 'The bit for critical messages.'], ['4', '4', 'The bit for error messages.'], ['8', '8', 'The bit for warning messages.'], ['16', '16', 'The bit for notice messages.'], ['32', '32', 'The bit for debug messages.'], ['64', '64', 'The bit for data messages.'], ['15', '15', 'Alert, critical, error and warning.'], ['31', '31', 'The same and notice.'], ['63', '63', 'The same and debug.'], ['127', '127', 'The same and data.'], ['255', '255', 'Every kind. The most detail. Add the bits of the kinds you want to get a value that is not in this table.']] },
     { key: 'use_analytics', ore: 'useAnalytics', label: 'Use analytics', kind: 'bool', status: 'ignored', help: 'Not read by ORE 1.8.17.',
       desc: IGNORED('useAnalytics', 'Two shipped examples set it to true. ORE read it in 1.8.9.0 only.'), dflt: 'Not applicable. The setting has no effect.',
       values: YES('The value the two shipped examples use. It has no effect on a run.', 'It has no effect on a run.') }] },
@@ -258,35 +258,36 @@ const GROUPS = [
 const groupOf = id => GROUPS.find(g => g.id === id);
 const STATUS_TAG = { ignored: ['Legacy', 'bad'], 'flag-misnamed': ['Not a flag', 'warn'] };
 
-// The documentation entry of each setting, apart from the setting itself. since is the first release tag whose source reads
-// the setting, until is the first release tag that no longer reads it. A setting that no tagged release reads has neither.
+// The documentation entry of each setting, apart from the setting itself.
 const FLAG_FMT = 'A flag. ORE accepts Y, YES, TRUE, true and 1, and N, NO, FALSE, false and 0.';
-const NEVER = { since: null, until: null, never: true };
+// since and last are the first and the last release tag whose source reads the setting. For a legacy setting no release reads
+// it, so they are the first and the last release whose shipped examples carry it (exampleOnly).
+const LEGACY = (since, last) => ({ since, last, never: true, exampleOnly: true });
 const META = {
-  accrualDate: { ...NEVER, format: 'Text. The shipped examples use the word ASOF.', affects: false },
-  fixingCutoff: { since: '1.8.13.0', until: null, format: 'An ISO date, such as 2026-10-20.', affects: true },
-  dateCalendar: { ...NEVER, format: 'Text. The shipped examples use TARGET.', affects: false },
-  dateConvention: { ...NEVER, format: 'Text. The shipped examples use P.', affects: false },
-  ignoreFixingLag: { since: '1.8.13.0', until: null, format: 'A whole number of days, zero or more.', affects: true },
-  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, until: null, format: FLAG_FMT, affects: true },
-  includeTodaysCashFlows: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
-  includeReferenceDateEvents: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
-  enrichIndexFixings: { since: '1.8.13.0', until: null, format: FLAG_FMT, affects: true },
-  observationModel: { since: '1.8.0.7', sinceBound: true, until: null, format: 'One of None, Disable, Defer, Unregister.', affects: false },
-  lazyMarketBuilding: { since: '1.8.6.0', until: null, format: FLAG_FMT, affects: false },
-  buildFailedTrades: { since: '1.8.7.0', until: null, format: FLAG_FMT, affects: true },
-  continueOnError: { since: '1.8.4.0', until: null, format: FLAG_FMT, affects: true },
-  defaultMappingToIdentity: { ...NEVER, format: FLAG_FMT, affects: false },
-  nThreads: { since: '1.8.9.0', until: null, format: 'A whole number, at least 1.', affects: false },
-  logMask: { since: '1.8.2.0', until: null, format: 'A whole number. A bit set of the message kinds.', affects: false },
-  useAnalytics: { since: '1.8.9.0', until: '1.8.9.1', format: FLAG_FMT, affects: false },
-  csvCommentReportHeader: { since: '1.8.13.0', until: null, format: 'Exactly one character.', affects: false },
-  additionalResults: { ...NEVER, format: FLAG_FMT, affects: false }
+  accrualDate: { ...LEGACY('1.8.10.0', '1.8.17.0'), format: 'Free text. No ORE source defines a value for it.', affects: false },
+  fixingCutoff: { since: '1.8.13.0', last: '1.8.17.0', format: 'An ISO date, such as 2026-10-20.', affects: true },
+  dateCalendar: { ...LEGACY('1.8.10.0', '1.8.17.0'), format: 'A calendar name. ORE recognises 276, among them TARGET, US-FED and Japan.', affects: false },
+  dateConvention: { ...LEGACY('1.8.10.0', '1.8.17.0'), format: 'A business day convention code: F, MF, P, MP, U, HMMF or NEAREST.', affects: false },
+  ignoreFixingLag: { since: '1.8.13.0', last: '1.8.17.0', format: 'A whole number of days, zero or more.', affects: true },
+  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  includeTodaysCashFlows: { since: '1.8.13.0', last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  includeReferenceDateEvents: { since: '1.8.13.0', last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  enrichIndexFixings: { since: '1.8.13.0', last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  observationModel: { since: '1.8.0.7', sinceBound: true, last: '1.8.17.0', format: 'One of None, Disable, Defer, Unregister.', affects: false },
+  lazyMarketBuilding: { since: '1.8.6.0', last: '1.8.17.0', format: FLAG_FMT, affects: false },
+  buildFailedTrades: { since: '1.8.7.0', last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  continueOnError: { since: '1.8.4.0', last: '1.8.17.0', format: FLAG_FMT, affects: true },
+  defaultMappingToIdentity: { ...LEGACY('1.8.10.0', '1.8.17.0'), format: FLAG_FMT, affects: false },
+  nThreads: { since: '1.8.9.0', last: '1.8.17.0', format: 'A whole number, at least 1.', affects: false },
+  logMask: { since: '1.8.2.0', last: '1.8.17.0', format: 'A whole number. A bit set of the message kinds.', affects: false },
+  useAnalytics: { since: '1.8.9.0', last: '1.8.9.0', format: FLAG_FMT, affects: false },
+  csvCommentReportHeader: { since: '1.8.13.0', last: '1.8.17.0', format: 'Exactly one character.', affects: false },
+  additionalResults: { ...LEGACY('1.8.9.0', '1.8.17.0'), format: FLAG_FMT, affects: false }
 };
 GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › ' + f.ore; f.legacy = f.status === 'ignored'; }));
 // The two ORE builds the application supports. The documentation covers the settings of these two only.
 const ENGINES = ['1.8.17.0', '1.8.16.0'];
-const readBy = (f, build) => !!f.meta && !f.meta.never && vcmp(f.meta.since, build) <= 0 && (!f.meta.until || vcmp(f.meta.until, build) > 0);
+const readBy = (f, build) => !!f.meta && !f.meta.never && vcmp(f.meta.since, build) <= 0 && (!f.meta.last || vcmp(f.meta.last, build) >= 0);
 const vnum = v => v.split('.').map(Number);
 const vcmp = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
 // A warning when the engine build does not read a setting, because it is newer than the build or was dropped before it.
@@ -294,7 +295,7 @@ const versionWarning = (f, build) => {
   const m = f.meta; if (!m) return null;
   if (m.never) return `ORE ${build} does not read this setting, and no ORE release has read it.`;
   if (m.since && vcmp(m.since, build) > 0) return `ORE ${build} does not read this setting. It needs ORE ${m.since} or later, so the build ignores it.`;
-  if (m.until && vcmp(m.until, build) <= 0) return `ORE ${build} does not read this setting. ORE stopped reading it in ${m.until}.`;
+  if (m.last && vcmp(m.last, build) < 0) return `ORE ${build} does not read this setting. ORE stopped reading it after ${m.last}.`;
   return null;
 };
 
@@ -475,8 +476,9 @@ function detailsTab(c) {
 
 const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
 function advancedStrip(f) {
-  const m = f.meta, since = m.never ? 'No tagged release reads it' : (m.sinceBound ? m.since + ' or earlier' : m.since), until = m.never ? '—' : (m.until || 'Still read');
-  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Read by ORE 1.8.17.0', readBy(f, '1.8.17.0') ? 'Yes' : 'No')}${metaLine('Read by ORE 1.8.16.0', readBy(f, '1.8.16.0') ? 'Yes' : 'No')}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}</div>`;
+  const m = f.meta, note = m.exampleOnly ? ', in the shipped examples' : '';
+  const since = m.since + (m.sinceBound ? ' or earlier' : '') + note, last = m.last + (m.exampleOnly ? note : (m.last === '1.8.17.0' ? ', still read' : ''));
+  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Read by ORE 1.8.17.0', readBy(f, '1.8.17.0') ? 'Yes' : 'No')}${metaLine('Read by ORE 1.8.16.0', readBy(f, '1.8.16.0') ? 'Yes' : 'No')}${metaLine('Since', esc(since))}${metaLine('Last version', esc(last))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}</div>`;
 }
 function settingBlock(f, v) {
   const cur = v == null || v === '' ? '' : v;

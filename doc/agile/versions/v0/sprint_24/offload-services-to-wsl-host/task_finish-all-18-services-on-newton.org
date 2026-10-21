@@ -129,7 +129,7 @@ corruption bug once the following were fixed:
 
 ** Deliberately not fixed here -- filed as captures instead
 
-- [[id:288DAA6A-D0E0-4118-A10A-D2805DAFAA85][Compute repositories should query the system tenant, not the caller's]]:
+- Compute repositories should query the system tenant, not the caller's:
   even with the dispatch fix above, ~host_repository.cpp~ (and likely
   ~batch_repository.cpp~/~workunit_repository.cpp~) filter reads/writes
   by the caller's own session tenant rather than the system tenant the

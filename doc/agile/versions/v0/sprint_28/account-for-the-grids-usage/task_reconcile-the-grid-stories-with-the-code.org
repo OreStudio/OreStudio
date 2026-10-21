@@ -26,11 +26,11 @@ Each grid story, task and capture states what the code does today, with evidence
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -60,6 +60,34 @@ task and name that file in the Command column.
 
 * Notes
 
+Method: each task and capture was compared with the tree at 3425f340d7 by
+searching the code for the type, column, screen or commit that the page names.
+Nothing was built or run. Where only a run can decide, the page says so.
+
+Outcome by page:
+
+- Prove the report grid run end to end: four tasks closed on merged work, one
+  abandoned because its cause is gone, two moved to STARTED, one left open for
+  the live run.
+- Draw the node heatmap and carry the engine run statistics: the heatmap and the
+  tenant and party views exist. The run statistics, the state ribbon and the
+  cost do not.
+- Account for the grid's usage: the counts per tenant and party exist. The usage
+  over time does not.
+- Captures deleted as addressed: The wrapper consumes one tenant's work, The grid
+  has no usage history, The compute wrapper download opens its destination before
+  the status, and Compute repositories should query the system tenant. The last
+  one is closed because the design it assumed changed: work is tenant-owned and a
+  claim enters the owning tenant, so no repository queries as the system tenant.
+- Captures confirmed open: Paginate the compute list requests, The engine
+  package cache key, the trends by day, week and month, the compute catalogue
+  screen, a tenant registers a compute node, and the batch workflow bridge test.
+- Capture rewritten: the tenant job listing is now Nobody can list the batches,
+  workunits and results. Its prerequisite, the journeys, is met.
+
+What this record does not cover: the other gap items listed in the five compute
+journeys and the polling cost of the compute service. Both need a measurement.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -84,3 +112,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three grid stories and the grid captures state what the code does at
+3425f340d7. The screens for batches, workunits and results are not built, which
+is why none can be seen. The next piece of work is a story for them, with the
+run statistics as its first dependency.

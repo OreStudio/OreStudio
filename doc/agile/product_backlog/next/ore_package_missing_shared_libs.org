@@ -52,4 +52,3 @@ execution before now.
 * See also
 
 - [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]] -- the task this was found under.
-- [[id:288DAA6A-D0E0-4118-A10A-D2805DAFAA85][Compute repositories should query the system tenant, not the caller's]] -- sibling finding from the same verification session.

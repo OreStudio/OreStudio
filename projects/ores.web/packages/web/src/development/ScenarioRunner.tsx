@@ -219,10 +219,17 @@ function Actions(props: ScenarioRunnerProps & { readonly abandoned: boolean }): 
     );
 }
 
+/** The colour of a step's part of the progress bar: a failed step shows red and the bar goes on. */
+const SEGMENT: Record<string, string> = {
+    PENDING: 'bg-line-subtle',
+    PASS: 'bg-up',
+    FAIL: 'bg-down',
+    DROPPED: 'bg-ink-faint',
+};
+
 function Progress(props: ScenarioRunnerProps & { readonly abandoned: boolean }): ReactNode {
     const { runner, dispatch } = props;
     const { t } = useTranslation();
-    const failed = stateNow(runner) === 'FAILED';
     return (
         <section className="card space-y-3 p-4">
             <div
@@ -230,12 +237,15 @@ function Progress(props: ScenarioRunnerProps & { readonly abandoned: boolean }):
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={percentMarked(runner)}
-                className="h-1.5 overflow-hidden rounded-full bg-line-subtle"
+                className="flex h-1.5 gap-px overflow-hidden rounded-full"
             >
-                <div
-                    className={failed ? 'h-full bg-down' : 'h-full bg-up'}
-                    style={{ width: `${percentMarked(runner)}%` }}
-                />
+                {runner.steps.map((step, index) => (
+                    <div
+                        key={index}
+                        data-status={step.status}
+                        className={`h-full flex-1 ${SEGMENT[step.status]}`}
+                    />
+                ))}
             </div>
             <div className="flex items-center justify-between">
                 <Button

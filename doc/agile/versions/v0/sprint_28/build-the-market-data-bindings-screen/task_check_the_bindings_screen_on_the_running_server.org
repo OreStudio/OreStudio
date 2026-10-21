@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/check-the-bindings-screen-on-the-running-server
-#+pr:
+#+pr: 3601
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3601][#3601]] | [web] Read a binding's history by its source name |
 
 * Review
 

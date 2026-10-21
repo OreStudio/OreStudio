@@ -123,10 +123,11 @@ describe('a scenario being run', () => {
         expect(html.match(/Refresh the manual/g)?.length).toBe(1);
     });
 
-    it('shows the note of a failed step, and stays on that step', () => {
+    it('shows the note of a failed step when the tester goes back to it', () => {
         const runner = run(
             fresh(),
             { type: 'mark', mark: 'FAIL' },
+            { type: 'previous' },
             { type: 'note', notes: 'The tab stayed blank.' },
         );
         const html = screen(runner);
@@ -134,6 +135,21 @@ describe('a scenario being run', () => {
         expect(html).toContain('aria-pressed="true"');
         expect(html).toContain('The tab stayed blank.');
         expect(html).toContain('Failed');
+    });
+
+    it('shows each step in its own colour, so a failed step is red and the others go on', () => {
+        const html = screen(
+            run(
+                fresh(),
+                { type: 'mark', mark: 'PASS' },
+                { type: 'mark', mark: 'FAIL' },
+                { type: 'next' },
+            ),
+        );
+        expect(html.match(/data-status="PASS"/g)).toHaveLength(1);
+        expect(html).toMatch(/data-status="FAIL" class="[^"]*bg-down/);
+        expect(html).toMatch(/data-status="PENDING" class="[^"]*bg-line-subtle/);
+        expect(html).toContain('Step 3 of 3');
     });
 
     it('moves to the next step after a Pass', () => {

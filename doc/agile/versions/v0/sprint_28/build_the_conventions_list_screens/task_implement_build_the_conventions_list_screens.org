@@ -8,7 +8,7 @@
 #+filetags: :build_the_conventions_list_screens:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-build-the-conventions-list-screens
-#+pr:
+#+pr: 3620
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3620][#3620]] | [web] Add the conventions list screens and move the journey into Workflows |
 
 * Review
 

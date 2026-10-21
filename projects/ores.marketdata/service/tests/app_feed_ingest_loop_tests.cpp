@@ -23,6 +23,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -37,6 +38,8 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <cstdlib>
+#include <libpq-fe.h>
 #include <memory>
 #include <string>
 #include <thread>
@@ -352,4 +355,70 @@ TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
     stop.store(true);
     publisher.join();
     SUCCEED();
+}
+
+namespace {
+
+/// The number of rows of @p series in the tick table, read as the marketdata service, which
+/// has no BYPASSRLS, under the tenant and party of the test. This read proves what the
+/// policies let a reader see.
+std::string
+tick_rows_of(const std::string& tenant, const std::string& party, const std::string& series) {
+    const auto env = [](const char* name) {
+        const auto* v = std::getenv(name);
+        return v != nullptr ? std::string(v) : std::string();
+    };
+    const auto info = "host=" + env("ORES_TEST_DB_HOST") +
+                      " dbname=" + env("ORES_TEST_DB_DATABASE") +
+                      " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
+                      " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
+    std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
+    REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
+    const auto run = [&](const std::string& sql) {
+        std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn.get(), sql.c_str()), &PQclear);
+        REQUIRE((PQresultStatus(r.get()) == PGRES_COMMAND_OK ||
+                 PQresultStatus(r.get()) == PGRES_TUPLES_OK));
+        return PQntuples(r.get()) > 0 ? std::string(PQgetvalue(r.get(), 0, 0)) : std::string();
+    };
+    run("set app.current_tenant_id = '" + tenant + "'");
+    run("set app.visible_party_ids = '{" + party + "}'");
+    return run("select count(*) from ores_marketdata_ticks_tbl where series_id = '" + series + "'");
+}
+
+}
+
+TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_series", tags) {
+    const auto* writer_user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
+    const auto* writer_password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
+    if (writer_user == nullptr || writer_password == nullptr ||
+        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+        SKIP("The tick writer role is not configured");
+
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    auto writer = std::make_shared<ores::marketdata::service::app::tick_writer>(
+        ores::marketdata::service::app::tick_writer_options{
+            .user = writer_user,
+            .password = writer_password,
+            .host = std::getenv("ORES_TEST_DB_HOST"),
+            .database = std::getenv("ORES_TEST_DB_DATABASE")});
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+
+    const auto series = f.series_for(quote_uri);
+    REQUIRE(series.size() == 1);
+    const auto series_text = boost::uuids::to_string(series.front().id);
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+
+    CHECK(tick_rows_of(tenant, party, series_text) == "1");
+    CHECK(tick_rows_of(tenant,
+                       boost::uuids::to_string(boost::uuids::random_generator{}()),
+                       series_text) == "0");
 }

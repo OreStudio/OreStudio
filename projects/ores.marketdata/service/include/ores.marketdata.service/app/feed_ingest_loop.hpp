@@ -32,6 +32,7 @@
 #include "ores.marketdata.service/app/store_backoff.hpp"
 #include "ores.marketdata.service/app/tick_age.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
+#include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -138,9 +139,12 @@ private:
 public:
     /// @param crm_bridge Optional; when set, every stored FX spot tick is offered
     /// to it as a candidate driver update.
+    /// @param tick_writer Optional; when set, every stored tick is also copied to the tick
+    /// table. The loop is its only caller.
     feed_ingest_loop(ores::nats::service::client& nats,
                      ores::database::context ctx,
-                     std::shared_ptr<crm_ingest_bridge> crm_bridge = nullptr);
+                     std::shared_ptr<crm_ingest_bridge> crm_bridge = nullptr,
+                     std::shared_ptr<tick_writer> tick_writer = nullptr);
     ~feed_ingest_loop();
 
     void start();
@@ -187,6 +191,11 @@ private:
                      std::vector<item>& items,
                      std::span<const std::size_t> indexes);
 
+    /// Copies the ticks of the stored @p items to the tick table. A failure is logged and
+    /// counted, and it does not change what the loop does with the tick.
+    void write_ticks(const std::vector<messaging::market_tick>& ticks,
+                     const std::vector<item>& items);
+
     /// The id of the series that @p tick_datum belongs to for @p binding's party,
     /// created and classified on the first tick that lands in it. Read once for
     /// each series and then cached until refresh().
@@ -229,6 +238,9 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
+    std::shared_ptr<tick_writer> tick_writer_;
+    /// Whether the last copy to the tick table failed.
+    std::atomic<bool> tick_write_failing_{false};
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
     using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
@@ -244,6 +256,9 @@ private:
     std::set<std::string> unbound_warned_;
     std::set<std::string> unnameable_warned_;
     std::set<std::string> bad_value_warned_;
+    /// Series URIs with coordinates that the tick table does not store yet, reported once
+    /// per refresh().
+    std::set<std::string> coordinate_warned_;
 
     static constexpr std::size_t queue_capacity = 65536;
     /// The most ticks one batch holds. A batch takes about target_batch_ms: the worker sizes
@@ -265,6 +280,8 @@ private:
     std::atomic<std::uint64_t> late_unpublished_{0};
     std::atomic<std::uint64_t> store_unavailable_{0};
     std::atomic<std::uint64_t> shutdown_dropped_{0};
+    std::atomic<std::uint64_t> ticks_copied_{0};
+    std::atomic<std::uint64_t> tick_copy_failures_{0};
     std::atomic<std::chrono::steady_clock::rep> drain_deadline_rep_{
         std::chrono::steady_clock::time_point::max().time_since_epoch().count()};
     std::atomic<std::uint64_t> batches_{0};

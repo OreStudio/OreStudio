@@ -28,9 +28,9 @@ The observation table stops at about 8,300 rows per second for one connection be
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Steps 1 and 2 done: the writer role and the table. |
+| Now          | Steps 1 to 3 done: the role, the table and the copy. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 3: COPY ingest with a second pool. |
+| Next         | Step 4: point the readers at the table, one at a time. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -61,7 +61,7 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
 1. Provision the writer role in the role script. Done: =ores_<env>_marketdata_writer= has
    =BYPASSRLS=, is not in the service role and holds no grant. The =INSERT= grant on the tick
    table comes with the table in step 2, and the role never gets =SELECT=. The =.env= carries
-   =ORES_MARKETDATA_WRITER_DB_USER= and =ORES_MARKETDATA_WRITER_DB_PASSWORD=, from =.env=
+   =ORES_MARKETDATA_SERVICE_WRITER_DB_USER= and =ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD=, from =.env=
    format version 33.
 2. Write the table, its index, its two policies and its retention class, with the notification
    trigger off. Done in =create/marketdata/marketdata_ticks_create.sql=, as =ores_marketdata_ticks_tbl=,
@@ -71,7 +71,18 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
    settings read 0 rows, one tenant read its own 2 rows, one party read 1 row, a tenant with another
    tenant's party read 0, and the writer was refused =SELECT=.
 3. Move the ingest to =COPY= with the owner copied from the cached series, and give the service
-   a second pool for the writer role.
+   a second pool for the writer role. Done as a copy next to the observation write, so the
+   readers of the observation table keep working until step 4 moves them. =tick_writer= holds
+   one libpq connection, not a pool, because the ingest worker is its only caller, and it writes
+   each batch with one =COPY=. The loop copies the tick of every stored item with the owner of
+   its binding, which is the owner of its series. A failed copy is logged once, counted, and does
+   not change the store or the republish. A datum with a coordinate is not copied, because the
+   table has no coordinate dictionary yet, and the loop warns once for each such series. The role
+   comes from =ORES_MARKETDATA_SERVICE_WRITER_DB_USER= and =..._PASSWORD=, and an empty user turns
+   the copy off. The observation write goes when step 4 ends. Tests: the row format, the write to
+   a database that is not there, the parser, and a loop test that copies a tick as the writer and
+   reads it back as the marketdata service, which has no =BYPASSRLS=: 1 row for the party of the
+   series and 0 for another party.
 4. Point the readers at the table, one at a time, with a test for each. A reader of a party or a
    tenant lists its series first.
 5. Measure a burst with the tick injector.

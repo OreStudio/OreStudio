@@ -63,10 +63,12 @@ struct feed_ingest_loop::item {
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
                                    ores::database::context ctx,
-                                   std::shared_ptr<crm_ingest_bridge> crm_bridge)
+                                   std::shared_ptr<crm_ingest_bridge> crm_bridge,
+                                   std::shared_ptr<tick_writer> tick_writer)
     : nats_(nats)
     , ctx_(std::move(ctx))
-    , crm_bridge_(std::move(crm_bridge)) {}
+    , crm_bridge_(std::move(crm_bridge))
+    , tick_writer_(std::move(tick_writer)) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
     // The callback of the subscription queues into queue_, which is destroyed before
@@ -112,6 +114,7 @@ void feed_ingest_loop::refresh() {
     unbound_warned_.clear();
     unnameable_warned_.clear();
     bad_value_warned_.clear();
+    coordinate_warned_.clear();
     classifiers_.clear();
 
     // A stats entry per bound consumer, so a binding that never ticks still
@@ -334,6 +337,7 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     for (const auto& it : items)
         if (it.unavailable)
             store_unavailable_.fetch_add(1, std::memory_order_relaxed);
+    write_ticks(ticks, items);
 
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
@@ -399,6 +403,54 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                              std::chrono::steady_clock::now() - started)
                              .count(),
                          std::memory_order_relaxed);
+}
+
+void feed_ingest_loop::write_ticks(const std::vector<messaging::market_tick>& ticks,
+                                   const std::vector<item>& items) {
+    if (!tick_writer_)
+        return;
+
+    std::vector<tick_row> rows;
+    rows.reserve(items.size());
+    for (const auto& it : items) {
+        if (!it.stored)
+            continue;
+        // The tick table has no column for a coordinate yet, so a datum with one would
+        // share its series with every other point of the series.
+        if (it.plan->datum.fields().size() != datum::series_of(it.plan->datum).fields().size()) {
+            std::lock_guard lock(mu_);
+            if (coordinate_warned_.insert(it.series_key).second)
+                BOOST_LOG_SEV(lg(), warn) << "The tick table does not store datums with a "
+                                             "coordinate yet, so the ticks of series '"
+                                          << it.series_key << "' are not copied to it";
+            continue;
+        }
+        const auto& b = it.target->binding;
+        tick_row row;
+        row.tenant_id = b.tenant_id.to_string();
+        row.party_id = boost::uuids::to_string(b.party_id);
+        row.series_id = boost::uuids::to_string(it.rows.front().series_id);
+        row.ts = ticks[it.tick_index].observation_time;
+        row.value = it.plan->value;
+        rows.push_back(std::move(row));
+    }
+    if (rows.empty())
+        return;
+
+    try {
+        tick_writer_->write(rows);
+        ticks_copied_.fetch_add(rows.size(), std::memory_order_relaxed);
+        if (tick_write_failing_) {
+            tick_write_failing_ = false;
+            BOOST_LOG_SEV(lg(), info) << "The tick table accepts copies again";
+        }
+    } catch (const std::exception& e) {
+        tick_copy_failures_.fetch_add(rows.size(), std::memory_order_relaxed);
+        if (!tick_write_failing_) {
+            tick_write_failing_ = true;
+            BOOST_LOG_SEV(lg(), error) << e.what();
+        }
+    }
 }
 
 void feed_ingest_loop::write_items(const ores::database::context& tenant_ctx,
@@ -599,6 +651,8 @@ void feed_ingest_loop::log_status() const {
         << " stale=" << stale_dropped_.load(std::memory_order_relaxed)
         << " late_unpublished=" << late_unpublished_.load(std::memory_order_relaxed)
         << " store_unavailable=" << store_unavailable_.load(std::memory_order_relaxed)
+        << " ticks_copied=" << ticks_copied_.load(std::memory_order_relaxed)
+        << " tick_copy_failures=" << tick_copy_failures_.load(std::memory_order_relaxed)
         << " batches=" << batches_.load(std::memory_order_relaxed)
         << " last_batch_ticks=" << last_batch_ticks_.load(std::memory_order_relaxed)
         << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed);

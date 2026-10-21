@@ -76,6 +76,18 @@ struct run_document_inputs {
 };
 
 /**
+ * @brief The date a run values the portfolio at, as an ISO 8601 date.
+ *
+ * A live configuration values it on @p run_date, an end of day one on the weekday before it, and
+ * a configuration that names its own date uses that date. Holiday calendars are not consulted.
+ *
+ * @throws std::invalid_argument if the run date is not an ISO 8601 date.
+ */
+ORES_REPORTING_CORE_EXPORT std::string
+valuation_date_of(const ores::reporting::domain::risk_report_config& risk,
+                  const std::string& run_date);
+
+/**
  * @brief Builds the run document for a definition.
  *
  * The document carries the choices, the analytics and the market bindings of the

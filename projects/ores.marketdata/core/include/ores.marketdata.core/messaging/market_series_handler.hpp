@@ -572,7 +572,7 @@ public:
             }
 
             service::ore_export_service svc(ctx);
-            const auto written = svc.write_all();
+            const auto written = svc.write_all(req->valuation_date);
 
             ores::storage::net::storage_transfer transfer(http_base_url,
                                                           ores::nats::service::extract_bearer(msg));

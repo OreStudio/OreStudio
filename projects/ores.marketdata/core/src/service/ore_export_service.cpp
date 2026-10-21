@@ -25,8 +25,10 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -45,7 +47,8 @@ namespace {
  * spelling; a row whose URI does not read is a data-integrity error and names
  * itself.
  */
-ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
+ores::ore::market::market_datum to_datum(const domain::market_observation& o,
+                                         const std::optional<std::chrono::year_month_day>& date) {
     const auto fail = [&](const std::string& why) {
         return std::runtime_error("market data export: observation " +
                                   boost::uuids::to_string(o.id) + " has no ORE key: " + why);
@@ -57,8 +60,9 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
     if (!key)
         throw fail(key.error());
     ores::ore::market::market_datum d;
-    d.date =
-        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(o.observation_datetime)};
+    d.date = date ? *date :
+                    std::chrono::year_month_day{
+                        std::chrono::floor<std::chrono::days>(o.observation_datetime)};
     d.value = o.value;
     d.key = *key;
     return d;
@@ -81,7 +85,20 @@ ores::ore::market::fixing to_fixing(const std::string& index_name, const domain:
 ore_export_service::ore_export_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-ore_export_result ore_export_service::write_all() const {
+ore_export_result
+ore_export_service::write_all(const std::optional<std::string>& valuation_date) const {
+    std::optional<std::chrono::year_month_day> date;
+    std::chrono::system_clock::time_point close;
+    if (valuation_date && !valuation_date->empty()) {
+        try {
+            date = ores::platform::time::datetime::from_iso8601_date(*valuation_date);
+        } catch (const std::invalid_argument&) {
+            throw std::invalid_argument("market data export: the valuation date '" +
+                                        *valuation_date + "' is not an ISO 8601 date");
+        }
+        close = std::chrono::sys_days{*date} + std::chrono::days{1} - std::chrono::microseconds{1};
+    }
+
     repository::market_series_repository series_repo;
     repository::market_observation_repository obs_repo;
     repository::market_fixing_repository fixings_repo;
@@ -105,8 +122,10 @@ ore_export_result ore_export_service::write_all() const {
                 fixings.push_back(to_fixing(index_name, f));
             continue;
         }
-        for (const auto& o : obs_repo.read_latest_for_series(ctx_, s.id))
-            data.push_back(to_datum(o));
+        const auto observations = date ? obs_repo.read_as_of(ctx_, s.id, close) :
+                                         obs_repo.read_latest_for_series(ctx_, s.id);
+        for (const auto& o : observations)
+            data.push_back(to_datum(o, date));
     }
 
     ore_export_result result;

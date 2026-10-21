@@ -182,7 +182,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
             process_export(std::ref(out), std::ref(session), args);
         },
         "Write the tenant's market data back out as ORE market.txt/fixings.txt files",
-        {"[--market-data <path>] [--fixings <path>]"});
+        {"[--market-data <path>] [--fixings <path>] [--date <YYYY-MM-DD>]"});
 
     marketdata_menu->Insert(
         "backfill-identity",
@@ -297,7 +297,8 @@ void marketdata_commands::process_export(std::ostream& out,
     auto parsed =
         parse_args(args,
                    {{.name = "market-data", .requires_value = true, .default_value = "market.txt"},
-                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"}});
+                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"},
+                    {.name = "date", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -316,6 +317,8 @@ void marketdata_commands::process_export(std::ostream& out,
     out << "Exporting market data..." << std::endl;
 
     marketdata::messaging::export_market_data_request req;
+    if (!parsed->flag("date").empty())
+        req.valuation_date = parsed->flag("date");
     auto result = do_auth_request<marketdata::messaging::export_market_data_response>(
         out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
     if (!result)

@@ -422,31 +422,31 @@ void feed_ingest_loop::write_ticks(
         const auto& b = it.target->binding;
         const auto& series_id = it.rows.front().series_id;
 
+        // The number of the datum within its series. The series holds one for each URI the
+        // feed sent, so a series without coordinates holds one.
+        const auto& uri = ticks[it.tick_index].oresmd_uri;
+        const auto key = boost::uuids::to_string(series_id) + '|' + uri;
         std::int16_t coord = 0;
-        if (it.plan->datum.fields().size() != datum::series_of(it.plan->datum).fields().size()) {
-            const auto& uri = ticks[it.tick_index].oresmd_uri;
-            const auto key = boost::uuids::to_string(series_id) + '|' + uri;
-            bool known = false;
-            {
-                std::lock_guard lock(mu_);
-                const auto found = coords_.find(key);
-                if (found != coords_.end()) {
-                    coord = found->second;
-                    known = true;
-                }
+        bool known = false;
+        {
+            std::lock_guard lock(mu_);
+            const auto found = coords_.find(key);
+            if (found != coords_.end()) {
+                coord = found->second;
+                known = true;
             }
-            if (!known) {
-                try {
-                    coord = repository::tick_coordinate_repository{}.resolve(
-                        tenant_ctxs.at(b.tenant_id.to_string()), b.party_id, series_id, uri);
-                } catch (const std::exception& e) {
-                    ++unnumbered;
-                    unnumbered_reason = e.what();
-                    continue;
-                }
-                std::lock_guard lock(mu_);
-                coords_[key] = coord;
+        }
+        if (!known) {
+            try {
+                coord = repository::tick_coordinate_repository{}.resolve(
+                    tenant_ctxs.at(b.tenant_id.to_string()), b.party_id, series_id, uri);
+            } catch (const std::exception& e) {
+                ++unnumbered;
+                unnumbered_reason = e.what();
+                continue;
             }
+            std::lock_guard lock(mu_);
+            coords_[key] = coord;
         }
 
         tick_row row;
@@ -462,8 +462,7 @@ void feed_ingest_loop::write_ticks(
         tick_copy_failures_.fetch_add(unnumbered, std::memory_order_relaxed);
         if (!tick_write_failing_.exchange(true))
             BOOST_LOG_SEV(lg(), error)
-                << "The tick table cannot take " << unnumbered
-                << " tick(s) of datums with a coordinate: " << unnumbered_reason;
+                << "The tick table cannot take " << unnumbered << " tick(s): " << unnumbered_reason;
     }
     if (rows.empty())
         return;

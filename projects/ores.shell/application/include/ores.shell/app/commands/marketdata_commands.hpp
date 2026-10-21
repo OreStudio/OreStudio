@@ -129,7 +129,9 @@ public:
      *
      * Sends an export_market_data_request over NATS and writes the two bodies
      * it returns to the paths named by --market-data and --fixings, both of
-     * which default to the names ORE itself reads.
+     * which default to the names ORE itself reads. The optional --date states a valuation
+     * date, and the file then holds one line for each point with its value at the close of
+     * that day, ticks of a live feed included.
      */
     static void process_export(std::ostream& out,
                                ores::nats::service::nats_client& session,

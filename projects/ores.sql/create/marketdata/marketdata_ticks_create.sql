@@ -50,7 +50,7 @@ create table if not exists "ores_marketdata_ticks_tbl" (
     "party_id" uuid not null,
     "series_id" uuid not null,
     "ts" timestamp with time zone not null,
-    "coord" smallint not null default 0,
+    "coord" smallint not null,
     "value" double precision not null
 );
 

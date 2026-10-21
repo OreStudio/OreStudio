@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
@@ -28,6 +27,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -36,7 +36,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.marketdata.core.tests");
 const std::string tags("[repository][ticks]");
 
 using namespace ores::marketdata::generators;
@@ -45,34 +44,13 @@ using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::tick_coordinate_repository;
 using ores::testing::database_helper;
 
-/// The session of the series' party, which the party policy of the tick table needs.
-ores::database::context party_context(database_helper& h, const boost::uuids::uuid& party_id) {
-    return h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
-}
+using ores::marketdata::tests::insert_tick;
+using ores::marketdata::tests::party_context;
 
-/// Appends one tick as the owner of the series. A statement that returns no row is refused
-/// by the read helper, so the insert states one.
-void insert_tick(ores::database::context ctx,
-                 const boost::uuids::uuid& party_id,
-                 const boost::uuids::uuid& series_id,
-                 int coord,
-                 std::chrono::system_clock::time_point ts,
-                 double value) {
-    using ores::platform::time::datetime;
-    auto lg(ores::logging::make_logger(test_suite));
-    ores::database::repository::execute_parameterized_multi_column_query(
-        ctx,
-        "INSERT INTO ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value) "
-        "VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz, $5::smallint, $6::float8) "
-        "RETURNING 1",
-        {ctx.tenant_id().to_string(),
-         boost::uuids::to_string(party_id),
-         boost::uuids::to_string(series_id),
-         datetime::to_iso8601_utc(ts),
-         std::to_string(coord),
-         std::format("{}", value)},
-        lg,
-        "inserting a tick");
+/// The number of the series' own datum in the tick dictionary, assigned if it has none.
+int number_of(const ores::database::context& owner,
+              const ores::marketdata::domain::market_series& s) {
+    return tick_coordinate_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
 }
 
 /// A whole second, so that the instants of a test survive the round trip through text.
@@ -90,7 +68,8 @@ TEST_CASE("a_tick_is_the_point_of_a_series_without_coordinates", tags) {
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0845);
+    const auto number = number_of(owner, s);
+    insert_tick(owner, s.party_id, s.id, number, t0, 1.0845);
 
     const auto points =
         market_observation_repository{}.read_as_of(owner, s.id, t0 + std::chrono::minutes(1));
@@ -143,7 +122,8 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_snapshot", tags) {
     market_series_repository{}.write(h.context(), s);
 
     const auto t0 = now_second();
-    insert_tick(party_context(h, s.party_id), s.party_id, s.id, 0, t0, 1.5);
+    const auto owner = party_context(h, s.party_id);
+    insert_tick(owner, s.party_id, s.id, number_of(owner, s), t0, 1.5);
 
     const auto stranger = boost::uuids::random_generator{}();
     const auto points = market_observation_repository{}.read_as_of(
@@ -168,7 +148,8 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", tags)
     market_observation_repository{}.insert(h.context(), observed);
 
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0);
+    const auto number = number_of(owner, s);
+    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
 
     const auto points =
         market_observation_repository{}.read_as_of(owner, s.id, t0 + std::chrono::minutes(1));
@@ -185,8 +166,9 @@ TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary", 
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0);
-    insert_tick(owner, s.party_id, s.id, 0, t0 + std::chrono::minutes(10), 2.0);
+    const auto number = number_of(owner, s);
+    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
+    insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::minutes(10), 2.0);
 
     const auto buckets = market_observation_repository{}.read_as_of_buckets(
         owner, s.id, t0 + std::chrono::minutes(20), std::chrono::minutes(10), 3);
@@ -206,8 +188,9 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", tags) {
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0);
-    insert_tick(owner, s.party_id, s.id, 0, t0 + std::chrono::seconds(5), 2.0);
+    const auto number = number_of(owner, s);
+    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
+    insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::seconds(5), 2.0);
 
     market_observation_repository repo;
     const auto all = repo.read_instants(

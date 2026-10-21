@@ -485,21 +485,15 @@ market_observation_repository::read_newest_for_source(context ctx, const std::st
 namespace {
 
 /*
- * The coordinates of one series, as the tick table numbers them: 0 for the datum of the series
- * itself, and the numbers of the dictionary for the rest. $1 is the tenant, $2 the series, and
- * @p max the parameter that holds the open end of validity.
+ * The datums of one series, as the tick table numbers them: the dictionary rows of the series,
+ * one for each distinct datum URI the feed sent. $2 is the series.
  */
-std::string tick_coords_cte(std::string_view max) {
-    return std::format(R"(coords AS (
-            SELECT 0::smallint AS coord, s.oresmd_uri
-            FROM ores_marketdata_market_series_tbl s
-            WHERE s.tenant_id = $1 AND s.id = $2 AND s.valid_to = {0}
-            UNION ALL
+std::string tick_coords_cte() {
+    return R"(coords AS (
             SELECT coord, oresmd_uri
             FROM ores_marketdata_tick_coords_tbl
             WHERE series_id = $2::uuid
-        ))",
-                       max);
+        ))";
 }
 
 /*
@@ -582,7 +576,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     // coordinate dictionary. The tick branch takes the latest tick of each coordinate with one
     // index probe, so it reads a few rows however long the series is. On a tie the observation
     // row wins, because it carries the source and its own id.
-    static const std::string sql = "WITH " + tick_coords_cte("$4") + R"(,
+    static const std::string sql = "WITH " + tick_coords_cte() + R"(,
         points AS (
             SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
                    source, valid_from, valid_to, 0 AS src_rank
@@ -674,7 +668,7 @@ market_observation_repository::read_as_of_buckets(
                 $4::int * interval '1 second'
             ) WITH ORDINALITY AS t(boundary, ordinality)
         ),
-        )" + tick_coords_cte("$6") +
+        )" + tick_coords_cte() +
                                    R"(
         SELECT b.bucket_ordinal, o.id, o.tenant_id, o.party_id, o.series_id,
                o.observation_datetime, o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
@@ -779,7 +773,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
         WITH stated AS (
             SELECT unnest(string_to_array($7, ',')::timestamptz[]) AS instant
         ),
-        )" + tick_coords_cte("$6") +
+        )" + tick_coords_cte() +
                                    R"(,
         instants AS (
             SELECT instant FROM (

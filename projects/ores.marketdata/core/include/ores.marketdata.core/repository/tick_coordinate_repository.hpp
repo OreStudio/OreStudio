@@ -30,12 +30,11 @@
 namespace ores::marketdata::repository {
 
 /**
- * @brief The dictionary that turns the coordinate of a datum into the small number that a tick
- * row stores.
+ * @brief The dictionary that turns a datum URI into the small number that a tick row stores.
  *
- * Coordinate 0 is the datum of a series without coordinates and has no row. A datum with
- * coordinates gets the next number of its series the first time the ingest sees it, and keeps
- * that number, because every tick row of the series refers to it.
+ * A datum gets the next number of its series the first time the ingest sees it, and keeps that
+ * number, because every tick row of the series refers to it. A series without coordinates has
+ * one datum and so one number.
  */
 class ORES_MARKETDATA_CORE_EXPORT tick_coordinate_repository {
 private:

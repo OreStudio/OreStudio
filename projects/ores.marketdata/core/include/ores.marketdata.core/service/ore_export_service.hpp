@@ -23,6 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <chrono>
+#include <optional>
 #include <string>
 
 namespace ores::marketdata::service {
@@ -85,7 +87,21 @@ public:
 
     explicit ore_export_service(context ctx);
 
-    [[nodiscard]] ore_export_result write_all() const;
+    /**
+     * @brief Writes the market data and the fixings.
+     *
+     * Without a date, every stored observation is one line, dated at its own time. That is the
+     * history of the tables that keep one row for each observation. The ticks of a live feed are
+     * not in it, because they have no such row.
+     *
+     * With a date, each point is one line dated at @p valuation_date, with the value the point
+     * had at the close of that day, whichever table holds it. The close is the end of the day
+     * in UTC. A point with no value at or before the close is not in the file.
+     *
+     * @throws std::invalid_argument if the date is not an ISO 8601 date.
+     */
+    [[nodiscard]] ore_export_result
+    write_all(const std::optional<std::string>& valuation_date = std::nullopt) const;
 
 private:
     context ctx_;

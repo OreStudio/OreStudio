@@ -33,6 +33,7 @@
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.reporting.core/service/run_document_generator.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
@@ -345,6 +346,22 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         // Ask marketdata service to export all series to storage.
         const auto key = service::market_data_storage_key(req.report_instance_id);
         ores::marketdata::messaging::export_market_data_to_storage_request md_req;
+        // The run values the portfolio at its own date. The export gives each point the value
+        // it had at the close of that day.
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
+        const auto config = repository::risk_report_config_repository{}.find_by_definition_id(
+            tenant_ctx, req.definition_id);
+        if (!config) {
+            const auto err = "risk_report_config not found for definition " + req.definition_id;
+            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
+            wf->fail(err);
+            ack.accept();
+            return;
+        }
+        md_req.valuation_date = service::valuation_date_of(
+            *config,
+            std::format("{:%F}",
+                        std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())));
         md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
         md_req.fixings_storage_key = service::fixings_storage_key(req.report_instance_id);

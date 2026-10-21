@@ -1029,6 +1029,14 @@ struct export_market_data_to_storage_request {
      * document names the file must find it.
      */
     std::string fixings_storage_key;
+    /**
+     * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
+     *
+     * A date asks for one line for each point, dated at it, with the value the point had at the
+     * close of that day. The ticks of a live feed are in that answer. They are not in the
+     * whole history.
+     */
+    std::optional<std::string> valuation_date;
 };
 
 struct export_market_data_to_storage_response {
@@ -1156,10 +1164,10 @@ struct clear_manual_point_response {
 /**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
- * Takes no arguments: the export is the whole tenant's, because that is the
- * scope the files have. An ORE market.txt is a snapshot of everything a run
- * needs, not a slice of one series, and an export that could name a subset
- * would produce a file that does not reproduce anything.
+ * The export is the whole tenant's, because that is the scope the files have.
+ * An ORE market.txt is a snapshot of everything a run needs, not a slice of
+ * one series, and an export that could name a subset would produce a file that
+ * does not reproduce anything. The one thing a caller states is the date.
  */
 struct export_market_data_request {
     using response_type = struct export_market_data_response;
@@ -1171,6 +1179,14 @@ struct export_market_data_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+    /**
+     * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
+     *
+     * A date asks for one line for each point, dated at it, with the value the point had at the
+     * close of that day. The ticks of a live feed are in that answer. They are not in the
+     * whole history.
+     */
+    std::optional<std::string> valuation_date;
 };
 
 /**

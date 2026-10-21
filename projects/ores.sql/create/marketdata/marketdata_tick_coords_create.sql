@@ -21,10 +21,11 @@
 /**
  * Tick Coordinate Dictionary
  *
- * A tick row stores the coordinate of its datum as a small number, not as the URI text. This
- * table says which datum each number means within one series. Coordinate 0 is the datum of a
- * series without coordinates, and it has no row here. The numbers of a series start at 1 and
- * stay for as long as the series exists, because a tick row refers to them.
+ * A tick row stores its datum as a small number, not as the URI text. This table says which
+ * datum each number means within one series. A series without coordinates has one datum, and
+ * so one row. The numbers of a series start at 1 and stay for as long as the series exists,
+ * because a tick row refers to them. The URI is the one the feed sent, which is the URI of the
+ * observation rows too.
  *
  * The ingest assigns a number the first time it sees a datum, so the table is small and cold:
  * one row for each distinct datum of a series. The ingest context names no party, so the

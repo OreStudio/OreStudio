@@ -82,7 +82,7 @@ public:
         }
         try {
             const service::ore_export_service svc(ctx);
-            const auto written = svc.write_all();
+            const auto written = svc.write_all(req->valuation_date);
             export_market_data_response resp;
             resp.success = true;
             resp.market_data_content = written.market_data;

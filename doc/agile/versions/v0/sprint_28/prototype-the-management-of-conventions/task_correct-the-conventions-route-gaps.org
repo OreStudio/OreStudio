@@ -8,7 +8,7 @@
 #+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
 #+owner: marco
 #+branch: feature/correct-the-conventions-route-gaps
-#+pr:
+#+pr: 3621
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3621][#3621]] | [agile,prototypes] Correct the convention route gaps and meet the checklist |
 
 * Review
 

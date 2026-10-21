@@ -4457,6 +4457,7 @@ export const en: SourceCatalogue = {
         lead: 'The pricing engine configurations the party you work in holds, with the products and settings of each.',
         columns: {
             name: 'Configuration',
+            party: 'Party',
             variant: 'Variant',
             products: 'Products',
             parameters: 'Settings',
@@ -4475,6 +4476,7 @@ export const en: SourceCatalogue = {
         },
         fields: {
             name: 'Name',
+            party: 'Party',
             description: 'Description',
             variant: 'Variant',
             modifiedBy: 'Changed by',

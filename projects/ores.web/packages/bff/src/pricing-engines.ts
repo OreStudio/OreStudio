@@ -21,6 +21,7 @@
 import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { readMyParties } from '@ores/wire-protocol';
 import { subjects as configSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_config_protocol';
 import { subjects as productSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_product_protocol';
 import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_product_parameter_protocol';
@@ -106,6 +107,44 @@ interface Stored {
     readonly parameters: readonly Readonly<Record<string, unknown>>[];
 }
 
+/** A party as its own account names it. */
+interface PartyName {
+    readonly name: string;
+    readonly shortCode: string;
+}
+
+type PartyNames = ReadonlyMap<string, PartyName>;
+
+/**
+ * The parties the session works in, by id. A session of one party holds only
+ * its own configurations, but a tenant administrator holds those of every
+ * party, and the same name can repeat across them, so a row names its party.
+ * A read that fails leaves the names empty and the screen shows the id.
+ */
+async function readPartyNames(session: LiveSession): Promise<PartyNames> {
+    try {
+        const mine = await readMyParties(session.client);
+        return new Map(
+            mine.parties.map((party) => [
+                party.partyId,
+                { name: party.name, shortCode: party.shortCode },
+            ]),
+        );
+    } catch {
+        return new Map();
+    }
+}
+
+/** The party fields of a row. */
+function partyOf(
+    config: Readonly<Record<string, unknown>>,
+    parties: PartyNames,
+): Readonly<Record<string, string>> {
+    const partyId = text(config['party_id']);
+    const party = parties.get(partyId);
+    return { partyId, partyName: party?.name ?? '', partyCode: party?.shortCode ?? '' };
+}
+
 function num(value: unknown): number {
     return typeof value === 'number' ? value : 0;
 }
@@ -148,10 +187,11 @@ async function readStored(session: LiveSession, id: string): Promise<Stored> {
 }
 
 /** What a screen reads of one configuration. */
-function documentOf(stored: Stored): Readonly<Record<string, unknown>> {
+function documentOf(stored: Stored, parties: PartyNames): Readonly<Record<string, unknown>> {
     const { config } = stored;
     return {
         id: text(config['id']),
+        ...partyOf(config, parties),
         version: num(config['version']),
         name: text(config['name']),
         description: text(config['description']),
@@ -193,9 +233,11 @@ function summaryOf(
     config: Readonly<Record<string, unknown>>,
     products: number,
     parameters: number,
+    parties: PartyNames,
 ): Readonly<Record<string, unknown>> {
     return {
         id: text(config['id']),
+        ...partyOf(config, parties),
         version: num(config['version']),
         name: text(config['name']),
         description: text(config['description']),
@@ -379,7 +421,8 @@ export function registerPricingEngineRoutes(
 ): void {
     server.get('/api/reporting/pricing-engines', async (request) => {
         const session = requireSession(request);
-        const [configs, products, parameters] = await Promise.all([
+        const [parties, configs, products, parameters] = await Promise.all([
+            readPartyNames(session),
             readAll(session, configSubjects.list_pricing_model_configs_request, 'configs', {
                 filter: null,
                 as_of: null,
@@ -414,6 +457,7 @@ export function registerPricingEngineRoutes(
                     config,
                     productCount.get(text(config['id'])) ?? 0,
                     parameterCount.get(text(config['id'])) ?? 0,
+                    parties,
                 ),
             ),
         };
@@ -426,7 +470,7 @@ export function registerPricingEngineRoutes(
     server.get('/api/reporting/pricing-engines/:id', async (request) => {
         const session = requireSession(request);
         const id = input(idSchema, (request.params as { id: string }).id);
-        return documentOf(await readStored(session, id));
+        return documentOf(await readStored(session, id), await readPartyNames(session));
     });
 
     server.post('/api/reporting/pricing-engines', async (request, reply) => {
@@ -441,7 +485,7 @@ export function registerPricingEngineRoutes(
             throw failure;
         }
         void reply.code(201);
-        return documentOf(await readStored(session, id));
+        return documentOf(await readStored(session, id), await readPartyNames(session));
     });
 
     server.put('/api/reporting/pricing-engines/:id', async (request) => {
@@ -453,7 +497,7 @@ export function registerPricingEngineRoutes(
             session,
             rowsOf(body, id, body.version, text(stored.config['configuration_id'])),
         );
-        return documentOf(await readStored(session, id));
+        return documentOf(await readStored(session, id), await readPartyNames(session));
     });
 
     server.delete('/api/reporting/pricing-engines/:id', async (request, reply) => {

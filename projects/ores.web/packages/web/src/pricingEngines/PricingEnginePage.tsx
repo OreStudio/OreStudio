@@ -182,8 +182,12 @@ export function PricingEnginePage(): ReactNode {
             />
             <section className="card space-y-4 p-4">
                 <h2 className="text-sm font-medium">{t('pricingEngines.record.details')}</h2>
-                <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
+                <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-5">
                     <Detail label={t('pricingEngines.fields.name')} value={document.name} />
+                    <Detail
+                        label={t('pricingEngines.fields.party')}
+                        value={document.partyName === '' ? document.partyId : document.partyName}
+                    />
                     <Detail
                         label={t('pricingEngines.fields.variant')}
                         value={

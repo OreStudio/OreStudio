@@ -4522,6 +4522,7 @@ const fr: SourceCatalogue = {
         lead: 'Les configurations de moteur de valorisation de la partie dans laquelle vous travaillez, avec les produits et les paramètres de chacune.',
         columns: {
             name: 'Configuration',
+            party: 'Partie',
             variant: 'Variante',
             products: 'Produits',
             parameters: 'Paramètres',
@@ -4540,6 +4541,7 @@ const fr: SourceCatalogue = {
         },
         fields: {
             name: 'Nom',
+            party: 'Partie',
             description: 'Description',
             variant: 'Variante',
             modifiedBy: 'Modifié par',

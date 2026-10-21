@@ -4492,6 +4492,7 @@ const pt: SourceCatalogue = {
         lead: 'As configurações de motor de avaliação da parte em que trabalha, com os produtos e as definições de cada uma.',
         columns: {
             name: 'Configuração',
+            party: 'Parte',
             variant: 'Variante',
             products: 'Produtos',
             parameters: 'Definições',
@@ -4510,6 +4511,7 @@ const pt: SourceCatalogue = {
         },
         fields: {
             name: 'Nome',
+            party: 'Parte',
             description: 'Descrição',
             variant: 'Variante',
             modifiedBy: 'Alterado por',

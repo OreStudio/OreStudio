@@ -89,6 +89,9 @@ const vocabulary: PricingVocabulary = {
 
 const document: PricingDocument = {
     id: 'c1',
+    partyId: 'p1',
+    partyName: 'ACME Corporation UK',
+    partyCode: 'UK',
     version: 3,
     name: 'EOD pricing',
     description: '',

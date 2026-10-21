@@ -124,8 +124,11 @@ const PRODUCT_ID = '66666666-6666-4666-8666-666666666666';
 const PARAMETER_ID = '88888888-8888-4888-8888-888888888888';
 const HEADER_ID = '99999999-9999-4999-8999-999999999999';
 
+const PARTY_ID = '0a12c57f-1111-4222-8333-444444444444';
+
 const header = {
     id: CONFIG_ID,
+    party_id: PARTY_ID,
     version: 3,
     name: 'EOD pricing',
     description: 'The end of day set',
@@ -158,6 +161,19 @@ const parameter = {
 const stranger = { ...product, id: HEADER_ID, pricing_model_config_id: HEADER_ID };
 
 const reads = {
+    'iam.v1.ops.get_my_parties': {
+        result: ok,
+        default_party_id: PARTY_ID,
+        parties: [
+            {
+                party_id: PARTY_ID,
+                name: 'ACME Corporation UK',
+                short_code: 'ACMEUK',
+                party_category: 'Operational',
+                business_center_code: 'GBLO',
+            },
+        ],
+    },
     'analytics.v1.pricing_model_configs.list': { result: ok, configs: [header] },
     'analytics.v1.pricing_model_products.list': { result: ok, products: [product, stranger] },
     'analytics.v1.pricing_model_product_parameters.list': { result: ok, parameters: [parameter] },
@@ -205,6 +221,31 @@ describe('pricing engine routes', () => {
                 parameters: 1,
             }),
         ]);
+    });
+
+    it('names the party that holds each configuration', async () => {
+        const { server, sessionId } = buildTestServer(reads);
+        const list = await send(server, sessionId, 'GET', '/api/reporting/pricing-engines');
+        expect(list.json().rows[0]).toMatchObject({
+            partyId: PARTY_ID,
+            partyName: 'ACME Corporation UK',
+            partyCode: 'ACMEUK',
+        });
+        const one = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/pricing-engines/${CONFIG_ID}`,
+        );
+        expect(one.json()).toMatchObject({ partyId: PARTY_ID, partyName: 'ACME Corporation UK' });
+    });
+
+    it('still lists the configurations when the parties cannot be read', async () => {
+        const { 'iam.v1.ops.get_my_parties': _parties, ...withoutParties } = reads;
+        const { server, sessionId } = buildTestServer(withoutParties);
+        const response = await send(server, sessionId, 'GET', '/api/reporting/pricing-engines');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().rows[0]).toMatchObject({ partyId: PARTY_ID, partyName: '' });
     });
 
     it('reads one configuration with only its own products and parameters', async () => {

@@ -53,6 +53,9 @@ const parameterSchema = z.object({
 
 const documentSchema = z.object({
     id: z.string(),
+    partyId: z.string(),
+    partyName: z.string(),
+    partyCode: z.string(),
     version: z.int().nonnegative(),
     name: z.string(),
     description: z.string(),
@@ -68,6 +71,9 @@ const documentSchema = z.object({
 
 const summarySchema = z.object({
     id: z.string(),
+    partyId: z.string(),
+    partyName: z.string(),
+    partyCode: z.string(),
     version: z.int().nonnegative(),
     name: z.string(),
     description: z.string(),

@@ -52,7 +52,15 @@ export const PRICING_ENGINES_EVENTS = {
 } as const;
 
 /** The fields a column orders by, which are the ones the rows carry. */
-const SORTABLE = ['name', 'variant', 'products', 'parameters', 'modifiedBy', 'recordedAt'] as const;
+const SORTABLE = [
+    'name',
+    'partyName',
+    'variant',
+    'products',
+    'parameters',
+    'modifiedBy',
+    'recordedAt',
+] as const;
 
 type SortField = (typeof SORTABLE)[number];
 
@@ -70,8 +78,8 @@ export function pageOf(
         needle === ''
             ? [...rows]
             : rows.filter((row) =>
-                  [row.name, row.description, row.variant].some((text) =>
-                      text.toLowerCase().includes(needle),
+                  [row.name, row.description, row.variant, row.partyName, row.partyCode].some(
+                      (text) => text.toLowerCase().includes(needle),
                   ),
               );
     const field = isSortField(page.sort) ? page.sort : 'name';
@@ -109,6 +117,12 @@ function useColumns(): readonly ListColumn<PricingSummary>[] {
                     {row.name}
                 </Link>
             ),
+        },
+        {
+            id: 'party',
+            sort: 'partyName',
+            header: t('pricingEngines.columns.party'),
+            cell: (row) => (row.partyName === '' ? row.partyId : row.partyName),
         },
         {
             id: 'variant',

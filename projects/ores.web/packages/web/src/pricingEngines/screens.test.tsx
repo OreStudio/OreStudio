@@ -45,6 +45,9 @@ const PARAMETER = '88888888-8888-4888-8888-888888888888';
 const ROWS: readonly PricingSummary[] = [
     {
         id: EOD,
+        partyId: 'p-london',
+        partyName: 'ACME Corporation UK',
+        partyCode: 'UK',
         version: 3,
         name: 'EOD pricing',
         description: 'The end of day set',
@@ -57,6 +60,9 @@ const ROWS: readonly PricingSummary[] = [
     },
     {
         id: INTRADAY,
+        partyId: 'p-newyork',
+        partyName: 'ACME Corporation US',
+        partyCode: 'US',
         version: 1,
         name: 'Intraday pricing',
         description: '',
@@ -71,6 +77,9 @@ const ROWS: readonly PricingSummary[] = [
 
 const DOCUMENT: PricingDocument = {
     id: EOD,
+    partyId: 'p-london',
+    partyName: 'ACME Corporation UK',
+    partyCode: 'UK',
     version: 3,
     name: 'EOD pricing',
     description: 'The end of day set',
@@ -161,6 +170,15 @@ describe('pageOf', () => {
         );
     });
 
+    it('searches the party as well as the configuration', () => {
+        expect(
+            pageOf(ROWS, { ...page, search: 'corporation us' }).rows.map((row) => row.name),
+        ).toEqual(['Intraday pricing']);
+        expect(pageOf(ROWS, { ...page, search: 'UK' }).rows.map((row) => row.name)).toEqual([
+            'EOD pricing',
+        ]);
+    });
+
     it('searches the name, the description and the variant, and counts what it found', () => {
         expect(pageOf(ROWS, { ...page, search: 'end of day' })).toMatchObject({ total: 1 });
         expect(pageOf(ROWS, { ...page, search: 'EOD' }).rows.map((row) => row.name)).toEqual([
@@ -176,6 +194,13 @@ describe('the list of pricing engine configurations', () => {
         expect(text).toContain('EOD pricing');
         expect(text).toContain('Intraday pricing');
         expect(text).toContain('No variant');
+    });
+
+    it('names the party that holds each configuration', () => {
+        const text = textOf(list(READ));
+        expect(text).toContain('Party');
+        expect(text).toContain('ACME Corporation UK');
+        expect(text).toContain('ACME Corporation US');
     });
 
     it('opens each row by the id of the configuration', () => {
@@ -194,6 +219,7 @@ describe('one pricing engine configuration', () => {
     it('states its details, its product and the settings of that product', () => {
         const text = textOf(record(READ));
         expect(text).toContain('EOD pricing');
+        expect(text).toContain('ACME Corporation UK');
         expect(text).toContain('BermudanSwaption');
         expect(text).toContain('LGM / Grid');
         expect(text).toContain('Calibration');

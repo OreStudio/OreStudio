@@ -51,6 +51,34 @@ source and user guide, not invented. A setting that ORE does not read from the S
 Edit opens that group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
 numbers, and asks for a change reason like every record dialog.
 
+** Simple and Advanced
+
+The switch is the one the feed screens use, and the choice is remembered for every screen that offers it. Simple shows each
+setting with its label, its ORE XML argument name, its long description and its table of values. Advanced adds the
+documentation entry of the setting: the ORE XML location, the release that first reads it, the release that stopped reading
+it, the default, the format, whether it changes the numbers, and the source of the fact. The legacy settings that ORE does
+not read stay in both modes under a heading of their own, with their descriptions. Advanced opens that heading.
+
+The ORE XML argument name shows in both modes, so that a person who knows ORE can find the setting.
+
+** The documentation entries
+
+The documentation of a setting is data of its own, apart from the settings. It is documentation only. The type, the range
+and the validation of a value stay with the data model. The dialogs are written to look an entry up by the name of the
+setting. An entry relates to the ORE file it belongs to, such as =ore.xml=.
+
+The same entry shape serves every ORE document. The conventions, the pricing engines, today's market, the curve
+configuration and the analytics all have named elements and parameters that need the same facts. This prototype draws the
+Setup block only.
+
+** The engine build
+
+A configuration is checked against the ORE build that the reports run on. A setting that the build does not read produces a
+warning, not a refusal: the setting is newer than the build, or ORE stopped reading it. The warning shows on the group, on
+the setting and in the Edit dialog. The bar switches the build between the two vendored builds, 1.8.17.0 and 1.8.16.0, and
+a third, 1.8.8.0, that is an illustration. At 1.8.8.0 the thread count of the standard settings warns, because ORE reads
+=nThreads= from 1.8.9.0.
+
 ** History
 
 The History tab is the shared timeline. A change to a group is one entry that names the group and its part version. The
@@ -73,6 +101,7 @@ lists the reports bound to one configuration, and no operation returns a group c
 
 ** What it does not settle
 
+- The wording of the documentation is drawn from the ORE source. A reviewer who knows ORE should read the descriptions.
 - What to do with the seven settings ORE ignores, and the twelve live settings the model does not store. The prototype draws
   the 19 the model stores today, and tags the ones ORE ignores.
 - Who may change a group. The prototype lets an analyst edit all five. A change to a group that changes the numbers may

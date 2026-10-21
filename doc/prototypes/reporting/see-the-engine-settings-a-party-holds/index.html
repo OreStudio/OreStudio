@@ -149,6 +149,8 @@ label.plain{white-space:nowrap}
 .card table td:first-child,.card table th:first-child{padding-left:16px}
 .setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
 .shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
+details.legacy{border-top:1px solid var(--line-soft)}details.legacy>summary{cursor:pointer;padding:10px 16px;color:var(--ink-faint);font-size:.85rem}details.legacy .setting{background:#141417}
+.adv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px;border:1px solid var(--line-soft);border-radius:6px;padding:10px 12px;background:#161619}@media(max-width:820px){.adv{grid-template-columns:1fr}}
 .sdesc{color:var(--ink-dim);max-width:78ch;line-height:1.55}
 table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}table.vals td,table.vals th{padding:5px 10px}table.vals tr.curv td{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
 
@@ -173,6 +175,8 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
     ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
+    ?engine=1.8.17.0|1.8.16.0|1.8.8.0   the ORE build the settings are checked against
+  The Simple and Advanced switch is in the page, as on the feed screens. ?mode=simple|advanced sets it, and it is remembered.
 -->
 
 <div class="proto-note" id="note"></div>
@@ -254,6 +258,45 @@ const GROUPS = [
 ];
 const groupOf = id => GROUPS.find(g => g.id === id);
 const STATUS_TAG = { ignored: ['Not read by ORE 1.8.17', 'bad'], 'flag-misnamed': ['Not a flag', 'warn'] };
+
+// The documentation entry of each setting, apart from the setting itself. since is the first release tag whose source reads
+// the setting, until is the first release tag that no longer reads it. A setting that no tagged release reads has neither.
+const APP_SRC = 'OREAnalytics/orea/app/inputparameters.cpp';
+const FLAG_FMT = 'A flag. ORE accepts Y, YES, TRUE, true and 1, and N, NO, FALSE, false and 0.';
+const NEVER = { since: null, until: null, never: true };
+const META = {
+  accrualDate: { ...NEVER, format: 'Text. The shipped examples use the word ASOF.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
+  fixingCutoff: { since: '1.8.13.0', until: null, format: 'An ISO date, such as 2026-10-20.', source: 'OREAnalytics/orea/app/oreapp.cpp', affects: true },
+  dateCalendar: { ...NEVER, format: 'Text. The shipped examples use TARGET.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
+  dateConvention: { ...NEVER, format: 'Text. The shipped examples use P.', source: 'Not read. Set only in shipped legacy examples.', affects: false },
+  ignoreFixingLag: { since: '1.8.13.0', until: null, format: 'A whole number of days, zero or more.', source: APP_SRC, affects: true },
+  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, until: null, format: FLAG_FMT, source: APP_SRC + ', OREData/ored/marketdata/csvloader.cpp', affects: true },
+  includeTodaysCashFlows: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
+  includeReferenceDateEvents: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
+  enrichIndexFixings: { since: '1.8.13.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
+  observationModel: { since: '1.8.0.7', sinceBound: true, until: null, format: 'One of None, Disable, Defer, Unregister.', source: APP_SRC, affects: false },
+  lazyMarketBuilding: { since: '1.8.6.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: false },
+  buildFailedTrades: { since: '1.8.7.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
+  continueOnError: { since: '1.8.4.0', until: null, format: FLAG_FMT, source: APP_SRC, affects: true },
+  defaultMappingToIdentity: { ...NEVER, format: FLAG_FMT, source: 'Not read. Set only in shipped legacy examples.', affects: false },
+  nThreads: { since: '1.8.9.0', until: null, format: 'A whole number, at least 1.', source: APP_SRC, affects: false },
+  logMask: { since: '1.8.2.0', until: null, format: 'A whole number. A bit set of the message kinds.', source: 'OREAnalytics/orea/app/oreapp.cpp', affects: false },
+  useAnalytics: { since: '1.8.9.0', until: '1.8.9.1', format: FLAG_FMT, source: 'Read in 1.8.9.0 only. Set in two shipped examples.', affects: false },
+  csvCommentReportHeader: { since: '1.8.13.0', until: null, format: 'Exactly one character.', source: APP_SRC, affects: false },
+  additionalResults: { ...NEVER, format: FLAG_FMT, source: 'Not read from Setup. The analytic of that name reads its own active parameter.', affects: false }
+};
+GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › Parameter name="' + f.ore + '"'; f.legacy = f.status === 'ignored'; }));
+const ENGINES = ['1.8.17.0', '1.8.16.0', '1.8.8.0'];
+const ENGINE_NOTE = { '1.8.17.0': 'the build reports run on', '1.8.16.0': 'the older vendored build', '1.8.8.0': 'an illustration, not a vendored build' };
+const vnum = v => v.split('.').map(Number);
+const vcmp = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+// A warning when the engine build does not read a setting, because it is newer than the build or was dropped before it.
+const versionWarning = (f, build) => {
+  const m = f.meta; if (!m || m.never) return null;
+  if (m.since && vcmp(m.since, build) > 0) return `ORE ${build} does not read this setting. It needs ORE ${m.since} or later, so the build ignores it.`;
+  if (m.until && vcmp(m.until, build) <= 0) return `ORE ${build} does not read this setting. ORE stopped reading it in ${m.until}.`;
+  return null;
+};
 
 // FIXTURE. The reports and their run settings are the real names of ACME Corporation HK Ltd.
 // The engine setting values are the five the seed sets today. The third configuration, its
@@ -381,7 +424,11 @@ function timeline(entries) {
 document.addEventListener('click', e => { const b = e.target.closest('[data-bar]'); if (!b) return; const t = +b.dataset.bar, items = [...document.querySelectorAll('.tl .item')]; if (!items.length) return;
   const hit = items.map(i => [Math.abs(+i.dataset.ms - (t + (+b.dataset.step) / 2)), i]).sort((a, c) => a[0] - c[0])[0][1]; hit.scrollIntoView({ block: 'center', behavior: 'smooth' }); hit.classList.add('mark'); setTimeout(() => hit.classList.remove('mark'), 1200); });
 const state = P0.get('state') || 'all', actor = P0.get('actor') || 'analyst';
-KEEP = ['state', 'actor'];
+KEEP = ['state', 'actor', 'engine'];
+const engine = ENGINES.includes(P0.get('engine')) ? P0.get('engine') : ENGINES[0];
+// Simple or Advanced, remembered for every screen that offers both, as the application remembers it.
+let mode = (() => { const q = P0.get('mode'); if (q === 'advanced' || q === 'simple') return q; try { return window.localStorage.getItem('ores.editingMode') === 'advanced' ? 'advanced' : 'simple'; } catch (e) { return 'simple'; } })();
+const setMode = m => { mode = m; try { window.localStorage.setItem('ores.editingMode', m); } catch (e) { /* the choice holds for this visit */ } const p = new URLSearchParams(location.search); p.set('mode', m); window.history.replaceState({}, '', '?' + p.toString()); render(); };
 const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
@@ -426,23 +473,35 @@ function detailsTab(c) {
   <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
 }
 
+const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+function advancedStrip(f) {
+  const m = f.meta, since = m.never ? 'No tagged release reads it' : (m.sinceBound ? m.since + ' or earlier' : m.since), until = m.never ? '—' : (m.until || 'Still read');
+  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}${metaLine('Changes the numbers', m.affects ? 'Yes' : 'No')}${metaLine('Source', `<span class="mono">${esc(m.source)}</span>`)}</div>`;
+}
 function settingBlock(f, v) {
   const cur = v == null || v === '' ? '' : v;
-  const st = STATUS_TAG[f.status];
+  const st = STATUS_TAG[f.status], warn = cur !== '' ? versionWarning(f, engine) : null;
   const known = f.values.some(x => x[0] !== '' && x[0] === cur);
   const rows = f.values.map(x => `<tr class="${x[0] !== '' && x[0] === cur ? 'curv' : ''}"><td class="mono" style="width:11rem">${esc(x[1])}</td><td>${esc(x[2])}</td></tr>`).join('')
     + `<tr class="${cur === '' ? 'curv' : ''}"><td style="width:11rem"><span class="faint">Not set</span></td><td>${esc(f.dflt)}</td></tr>`;
   return `<div class="setting"><div class="shead"><div><b>${esc(f.label)}</b> <span class="mono faint">${esc(f.ore)}</span> ${st ? tag(st[0], st[1]) : ''}</div><div class="sval">${cell(f, v)}</div></div>
+    ${warn ? `<div class="warnbox">${esc(warn)}</div>` : ''}
     <p class="sdesc">${esc(f.desc)}</p>
-    <table class="vals"><thead><tr><th>Value</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>${cur !== '' && !known && f.values.some(x => x[0] === '') ? `<div class="faint">The current value is ${esc(valText(f, cur))}.</div>` : ''}</div>`;
+    <table class="vals"><thead><tr><th>Value</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>${cur !== '' && !known && f.values.some(x => x[0] === '') ? `<div class="faint">The current value is ${esc(valText(f, cur))}.</div>` : ''}
+    ${mode === 'advanced' ? advancedStrip(f) : ''}</div>`;
 }
 function groupCard(c, g) {
-  const part = c.groups[g.id];
+  const part = c.groups[g.id], live = g.fields.filter(f => !f.legacy), legacy = g.fields.filter(f => f.legacy);
+  const val = f => part ? part.vals[f.key] : null;
+  const warned = g.fields.filter(f => val(f) != null && val(f) !== '' && versionWarning(f, engine));
   return `<div class="card"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
     <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}${may('edit') ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}</div></div>
-    ${g.fields.map(f => settingBlock(f, part ? part.vals[f.key] : null)).join('')}
+    ${warned.length ? `<div class="warnbox" style="margin:12px 16px 0">${warned.length === 1 ? '1 setting' : warned.length + ' settings'} here ${warned.length === 1 ? 'is' : 'are'} set, and ORE ${engine} does not read ${warned.length === 1 ? 'it' : 'them'}: ${warned.map(f => esc(f.label)).join(', ')}.</div>` : ''}
+    ${live.map(f => settingBlock(f, val(f))).join('')}
+    ${legacy.length ? `<details class="legacy" ${mode === 'advanced' ? 'open' : ''}><summary>Legacy settings (${legacy.length}). ORE 1.8.17 does not read ${legacy.length === 1 ? 'it' : 'them'}.</summary>${legacy.map(f => settingBlock(f, val(f))).join('')}</details>` : ''}
     <div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its own default for every setting here.`}</div></div>`;
 }
+const modeToggle = () => `<div class="seg" role="radiogroup" aria-label="Editing mode"><button role="radio" aria-checked="${mode === 'simple'}" data-mode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button role="radio" aria-checked="${mode === 'advanced'}" data-mode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>`;
 function reportsTab(c) {
   const rows = c.reports.map(r => `<tr><td><span class="link">${esc(r.name)}</span></td><td>${esc(r.runSettings)}</td><td class="mono">version ${c.ver}</td></tr>`).join('');
   return `<div class="notice">A change reaches the next run of each report below. A run already produced keeps what it ran with.</div>
@@ -471,9 +530,9 @@ function recordScreen(c) {
   const tabs = [['details', 'Details']].concat(GROUPS.map(g => [g.id, g.title]), [['reports', 'Used by'], ['history', 'History']]);
   const body = groupOf(r.tab) ? groupCard(c, groupOf(r.tab)) : { details: detailsTab, reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], [esc(c.name)]])}
-  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports</div></div>
-    <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
-  <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
+  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports · checked against ORE ${engine}</div></div>
+    <div class="actions">${groupOf(r.tab) ? modeToggle() : ''}<span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
+  <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the releases that read it, its default, its format and its source. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
 }
 
 function control(f, v) {
@@ -486,7 +545,7 @@ function editDialog(c, gid) {
   const g = groupOf(gid), part = c.groups[gid], vals = part ? part.vals : {};
   const reach = c.reports.length ? `This group reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine settings, so this change reaches no run.';
   dialog('Edit ' + g.title, `<div class="${g.changes ? 'warnbox' : 'notice'}">${g.changes ? 'These settings change the numbers a run computes. ' : ''}${reach}</div>
-    ${g.fields.map(f => `<div class="field"><label>${esc(f.label)} <span class="mono faint">${esc(f.ore)}</span></label>${control(f, vals[f.key])}<div class="help">${esc(f.help)}</div></div>`).join('')}
+    ${g.fields.map(f => `<div class="field"><label>${esc(f.label)} <span class="mono faint">${esc(f.ore)}</span> ${STATUS_TAG[f.status] ? tag(STATUS_TAG[f.status][0], STATUS_TAG[f.status][1]) : ''}</label>${control(f, vals[f.key])}<div class="help">${esc(f.help)}${mode === 'advanced' ? ' ' + esc(f.meta.format) + ' Since ' + (f.meta.never ? 'never read' : f.meta.since) + '.' : ''}</div>${versionWarning(f, engine) ? `<div class="warnbox">${esc(versionWarning(f, engine))}</div>` : ''}</div>`).join('')}
     <div id="d-err"></div>${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${G.save} Save</button>`);
   ready('d-save');
   document.getElementById('d-save').onclick = () => {
@@ -542,6 +601,7 @@ function wire() {
   const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
   const ad = document.getElementById('add'); if (ad) ad.onclick = addDialog;
   const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
+  document.querySelectorAll('#app [data-mode]').forEach(x => x.onclick = () => setMode(x.dataset.mode));
   document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => editDialog(c, x.dataset.edit));
   document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
   document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
@@ -549,7 +609,7 @@ function wire() {
 function render() {
   const r = route();
   document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
-  chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor], ['engine', ENGINES, engine]]);
   wire();
 }
 render();

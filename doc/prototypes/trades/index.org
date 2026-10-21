@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:trading:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-20
 
 * Summary
 
 What a person does with a trade: book it, amend it, read it, bring it in from ORE and send it out, record what happens to it, and group trades into one deal. The [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] are use cases. These prototypes are the screens that serve them.
 
-5 prototypes answer to this group. Each one is a static page under =doc/prototypes/=, opens with no build and no session, and reads mock data only. They share one stylesheet and one script of mock data and components, by copy: each folder holds its own copy, so each prototype stands alone and opens without the others. =build/scripts/check_prototype_inventory.py= fails when the copies differ. The trade-entry prototype carries the shared stylesheet followed by its own rules. They link to each other, and to the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], which belongs to this group, for pricing and for composing a structure.
+4 prototypes answer to this group. Each one is a static page under =doc/prototypes/=, opens with no build and no session, and reads mock data only. They share one stylesheet and one script of mock data and components, by copy: each folder holds its own copy, so each prototype stands alone and opens without the others. =build/scripts/check_prototype_inventory.py= fails when the copies differ. They link to each other.
 
 [[file:../index.org][Prototypes]] is the top page and the only inventory.
 
@@ -25,8 +25,7 @@ What a person does with a trade: book it, amend it, read it, bring it in from OR
 | [[file:trade-page.org][The trade list and page]] | A trade is an entity. One page with a tab for each aspect serves review, amendment and lifecycle events. Edit asks for the kind of change first, and the kind bounds the fields. A save does not reload the page. The list is the request. | [[file:trade-page/][prototype]] | none |
 | [[file:book-a-trade.org][Book a trade]] | Booking is one page in tabs. The trade type is a combo box, and it decides which parts the Instrument tab has, one tab for each. | [[file:book-a-trade/][prototype]] | none |
 | [[file:ore-portfolio.org][ORE import and export]] | Import is a workflow because the person must see the plan before it is written and must be able to undo it. Export checks the trades before it makes the file. | [[file:ore-portfolio/][prototype]] | none |
-| [[file:structure-page.org][A structure or a package]] | A package is a kind of structure, so one screen serves every kind and its words follow the kind. It opens on the list of strategies, typed structures, dynamic structures and packages. A structure is one deal, confirmed as one document and priced as a whole. A package confirms trade by trade and is priced leg by leg. | [[file:structure-page/][prototype]] | none |
-| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. It was the first prototype of this work, built before the entity screen specification. It moved here from the Books and portfolios group, and now sits on the group's shell. | [[file:trade-entry/][prototype]] | none |
+| [[file:structure-page.org][A structure or a package]] | A package is a kind of structure, so one screen serves every kind and its words follow the kind. The page also checks the legs against the template and prices the structure from a market snapshot. It opens on the list of strategies, typed structures, dynamic structures and packages. A structure is one deal, confirmed as one document and priced as a whole. A package confirms trade by trade and is priced leg by leg. | [[file:structure-page/][prototype]] | none |
 
 * How the prototypes follow the UX standards
 
@@ -56,7 +55,7 @@ What a person does with a trade: book it, amend it, read it, bring it in from OR
 
 * What is not drawn
 
-- Pricing and the composition of a structure are the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]. The prototypes link to them and do not repeat them.
+- Authorisation. The first prototype of this work, the [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]], drew it and is retired. Its structure support now lives in Book a trade, which books a leg of a structure, and in the structure page, which manages, checks and prices one.
 - A person does not confirm anything with a counterparty here. Confirmations have no journey.
 - Currencies, books and the ORE directory wizard are other groups.
 

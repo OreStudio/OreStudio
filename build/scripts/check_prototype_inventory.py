@@ -85,7 +85,7 @@ REACT_PROTOTYPE_DIRS = (
 # the one prototype whose copy may carry its own rules after the shared text, or
 # to None when every copy must be identical.
 SHARED_COPIES: dict[str, dict[str, str | None]] = {
-    "trades": {"common.js": None, "prototype.css": "trade-entry"},
+    "trades": {"common.js": None, "prototype.css": None},
     "conventions": {"management.js": None, "management.css": None},
 }
 

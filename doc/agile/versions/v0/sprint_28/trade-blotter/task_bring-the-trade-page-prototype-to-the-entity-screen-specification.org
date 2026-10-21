@@ -1,0 +1,330 @@
+:PROPERTIES:
+:ID: 21E7C1F3-8657-4869-8C7C-EDA18F343DC5
+:END:
+#+title: Task: Bring the trade page prototype to the entity screen specification
+#+description: Fix the differences the review of the trade page prototype recorded, and carry the shared fixes to the four prototypes that share common.js.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter:sprint_28:v0:
+#+owner: marco
+#+branch: feature/trade-blotter
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the eighteen differences recorded in the review task's notes, so the trade page prototype follows doc/knowledge/ui/entity_screen_specification.org. Apply the decisions: the lifecycle event becomes a workflow with its own address, Book a similar trade leaves the Workflows menu, the child table dialog gains Add a row and Remove, the page title is the trade code, and a trade history entry offers no Revert.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- Each of the eighteen differences is fixed, or recorded with a reason.
+- The shared common.js is identical in the prototypes that share it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** What changed, 2026-10-19
+
+The numbers are those of the review in the task "Check the trade prototypes
+against the entity screen specification".
+
+| # | Fix |
+|---+-----|
+| 1 | The list reads =trading.v1.trade_summaries.list= with =book_id_one_of=, state, counterparty, type, search and =trade_date_from= and =_to=. A date range is drawn. The =server=today= mode keeps =trades.list= with a trade id filter |
+| 2 | Every card the reader may not change shows Read only, including the links cards |
+| 3 | Book and State are fixed fields that name the workflow that changes them. Values that exist are combo boxes, dates are date inputs, and optional fields have Clear |
+| 4 | =ref()=, =ccyRef()=, =calendarRef()=, =moneyRef()= and =tradeLink()= in =common.js= draw each reference as a link with its flag. =bond_issue= and the netting set link |
+| 5 | The party roles card draws =person()=, with the photo |
+| 6 | One line under the title: the identifier, the state, and the two versions. The structure moved to the booking card as a field |
+| 7 | The page has no stale strip. The Refresh tooltip gives the time. The list shows the strip only when the news names a trade that is off the page |
+| 8 | A tab switches in place and puts its address in the history, so a save and the stale mark stay. Back returns to the earlier tab |
+| 9 | The chart draws hour bars up to two days and day bars after, every bucket including the empty ones, and the first and last time. One emblem marks the newest version of each record |
+| 10 | The identifiers, party roles and additional fields have entries of their own, and each entry names its record |
+| 11 | An empty list says there are no trades and links to Book a trade |
+| 12 | Headers sort. The request line states the order, =updated_at= descending by default |
+| 13 | The page, size, search, filters and order are in the address. The sizes add 100 |
+| 14 | The page has loading, error and a refused History tab |
+| 15 | Recording a lifecycle event is a page with its own address and trail. Book a similar trade is a header button, not a menu line |
+| 16 | The child table dialog has Add a row and Remove |
+| 17 | =trade-page.org= says Book a trade is the Add of the list |
+| 18 | The footer pills state the client, the server and the environment. The role is out of the top bar |
+
+The decisions applied: the page title is the trade code, and a trade history
+entry offers no Revert. The specification still lacks a line for which
+permission shows each trade tab, and the prototype still draws every tab.
+
+Checked in headless Chrome at =6b0451ee62= plus this change. The nine pages of
+the five prototypes load without a console error. Scripted runs of the list, the
+edit-then-History flow, the lifecycle workflow, the empty state and the stale
+state pass. The scripts are not kept.
+
+=common.js= is identical in all five prototype folders and =prototype.css= got
+the same appended rules. The other four prototypes were not reviewed against the
+specification. They get the shared =timeline=, header and footer changes only.
+
+** Book a trade, 2026-10-19
+
+The twelve differences of the book a trade review are fixed in =book-a-trade/prototype.js=.
+=common.js= gained =valueInput()=, =failure()= and =needsRole()=, in all five folders. The
+Edit dialog of the trade page uses =valueInput()=, so both screens draw a combo box, a date
+input, a fixed value and Clear the same way.
+
+| # | Fix |
+|---+-----|
+| 1 | The terms use =valueInput()=: combo boxes for currency, calendar, option type and the other sets, date inputs, Clear on optional terms |
+| 2 | The party, counterparty, book and trade type are links in the review and the result |
+| 3 | A currency or calendar combo shows its flag |
+| 4 | The Review tab asks for the reason and commentary |
+| 5 | A reader sees what the screen needs and a link to request each role that gives it |
+| 6 | A refusal and a half-booked trade name the operation, status, code and request id |
+| 7 | The Review tab counts what is left to fix. The tooltip of Book gives the first |
+| 8 | A touched form asks "You have unsaved changes. Close anyway?" before the page or a link is left |
+| 9 | The booked trade takes the currency of its terms |
+| 10 | The mode choice has no activity codes. The review gives the kind of booking in words |
+| 11 | The count of types that cannot be booked and the closed counterparty note are gone |
+| 12 | The label is "Add a row" |
+
+The breadcrumb also named Trades twice. That is fixed here. The structure page and
+the ORE portfolio page have the same fault and are in the next task.
+
+Checked in headless Chrome at the commit of this change. A scripted run of the form,
+the review, the booking and the result passes. The reader, duplicate and half-booked
+states pass. The earlier trade page scripts pass again.
+
+** Structure page and ORE portfolio, 2026-10-20
+
+The numbers are those of the reviews in the task "Check the trade prototypes against the entity screen specification". =common.js= gained =leaveGuard()=, in all five folders.
+
+| Page | # | Fix |
+|------+---+-----|
+| Structure | 1 | The trail names Trades once |
+| Structure | 2 | One line under the title: the identifier, the kind, the template and whether the legs are complete. Confirmation and pricing are on their card |
+| Structure | 3 | A tab, a click in the tree and a click on a trade open in place, with Back |
+| Structure | 4 | The party, counterparty, template, parent structure, trade type and trade are links. Money has its flag |
+| Structure | 5, 6 | Link a trade is a button on the Trades card, without a plus, and not in the menu |
+| Structure | 7 | Link and Unlink ask for a reason and commentary, show the request and its precondition, and guard Cancel. They ask no kind of change: a membership change is not an amendment, as the Unlink dialog already says |
+| Structure | 8, 9 | A save keeps the old rows and turns Refresh gold. Refresh applies the change and adds an entry to History. Entries name their record: Structure, Member, Leg |
+| Structure | 10 | The chip, the "Internal version" field, the root explanation and the tree note are gone |
+| Structure | 11 | The list holds page, size, search, kind and order in the address. Headers sort and the request line states the order |
+| Structure | 12 | The list has loading, error and empty states. The page has loading, error and a refused History tab |
+| Structure | 13, 14 | A reader gets =needsRole()= and nothing else. Create asks for a reason and commentary, and leaving a half-chosen group asks first |
+| Structure | 15 | The line about the server enforcing the check is gone |
+| ORE | 1 | The trail names Trades once |
+| ORE | 2 | The Workflows menu is gone from both pages |
+| ORE | 3 | A reader gets =needsRole()= and nothing else |
+| ORE | 4 | The step is in the address. Back returns to the earlier step. A reload returns to the first step |
+| ORE | 5 | A touched form asks "You have unsaved changes. Close anyway?" |
+| ORE | 6 | The parent portfolio is a combo box |
+| ORE | 7 | The counterparty and trade type are links in the preview and the export check |
+| ORE | 8 | Confirm asks for a reason and commentary. I withdraw the export from this item: an export writes a file and changes no record |
+| ORE | 9 | Import and export show a loading line and a failure that names the operation, status and request id (=?fail=import=, =?fail=export=) |
+| ORE | 10 | Roll back asks for a reason in a dialog |
+| ORE | 11 | The preview and the export check have a pager. Their page is in memory: they are checks made by the client, not requests |
+| ORE | 12 | A disabled Continue, Preview and Export says why in its tooltip |
+
+A function named =history= in the structure page hid =window.history=. It is now =historyEntries=.
+
+Checked in headless Chrome. Scripted runs pass for the list (sort, kind, address), the page (tab in place, Unlink, Refresh, History, tree click, Back), the grouping workflow, the reader view, and the loading, error, empty and refused states. The import (every step, the failure, the rollback) and the export (done and failed) pass too. All nine pages load without a console error. The scripts are not kept.
+
+** Trade entry, 2026-10-20
+
+The numbers are those of the review in the task "Check the trade prototypes against the entity screen specification". This time I read all of =booking.js=, =pricing.js= and the two pages. I read only the parts of =catalogue.js= that the screens call.
+
+The three gaps are settled, and the specification has a new section, "A workbench".
+
+| Gap | Decision |
+|-----+----------|
+| A workbench that edits in place | It follows the Edit pattern with one working copy. A change writes nothing. Save asks for the kind of change, the reason and the commentary, claims the version read, and moves the version once. Discard puts the saved copy back. A removal and a change of mode need no confirmation of their own |
+| Booking from a priced ticket | The pricing screen does not book. A new trade goes to Book a trade with its type and terms in the address. The price of a structure goes back to the editor as a change to the copy ("Use this price") |
+| Live market data | The screen shows a snapshot and says when it was read. A newer snapshot turns Refresh gold, and Refresh reads it. Nothing ticks by itself |
+
+| # | Fix |
+|---+-----|
+| 1 | A reader gets =needsRole()= and nothing else. The role bar is back. =CAN.structure= decides |
+| 2 | The working copy and Save, in the new =draft.js=. The version moves once per save |
+| 3 | Authorise and Withdraw ask for a reason, and say the version does not move |
+| 4 | Remove and the mode switch are changes to the copy. Discard undoes them |
+| 5 | The header is =pageHead()= with the version, the state and the mode, and =refreshButton()= with its loaded-at time |
+| 6 | History is =timeline()=, with the author, the version, the kind of change, the reason and the commentary |
+| 7 | The author is the signed-in person, not the text "marco" |
+| 8 | Terms use =valueInput()=: combo boxes for currency, calendar, side, option type, tenor and the conventions, date inputs, Clear on an optional term. The pricing ticket does the same |
+| 9 | The selected row and its tab are in the address (=?node=&tab=), with Back |
+| 10 | Every dialog says when it was loaded. Cancel asks first when the dialog has input. Add a group is a dialog and no longer a =prompt()= |
+| 11 | The valid banner, the topology note, the envelope explanation, the generic form note and the legends that narrate are gone. A refusal still shows |
+| 12 | The counterparty, book, portfolio, netting set, trade type and trades are links. The currencies in the trades dialog have flags |
+| 13 | The ticker is gone. Refresh reads the next snapshot |
+| 14 | The Book button is gone. =Use this price= and =Book a trade= replace it. Book a trade reads =?type== and =?terms== |
+
+Not done: the trades in the editor are mock ids (T-8841), so their links name the record and open nothing, as other references do in the prototypes. A reload with the pricing ticket dialog open loses what was typed in it.
+
+Checked in headless Chrome. Scripted runs pass for the editor (header, address, edit, save, discard, authorise, group, picker, form from trades, the reader), the pricing screen (no tick, stale after news, Refresh, ticket, book link, the reader) and Book a trade with a seed. The self-check passes. All nine pages load with no console error. The scripts are not kept.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Four copies of common.js grow with every change (about 750 lines each) | doc/prototypes/trades/*/common.js | Decline | The prototypes are static files with no build step. The inventory check keeps the copies identical. |
+| 2 | Four lists of the book table (purposes, statuses, regulatory types, ledger feeds) and one constant had no reader | book-a-trade/common.js, book-a-trade/prototype.js | Accept | Removed. The seed files are named in a comment. |
+| 3 | A mixed list of trades and structures cannot page or order exactly when two reads are merged | trade-page/prototype.js | Accept | Recorded as an open decision in the task notes. The request line shows both reads. |
+| 4 | A structure row sorts as notional 0 and shows its created date under "Trade date" | trade-page/prototype.js | Decline | A structure has no notional and no trade date. The cells say so. Revisit when the read model is chosen. |
+| 5 | The instrument cards for the equity, commodity, credit and FX families omit the rules between columns and most child tables | book-a-trade/common.js | Accept | Recorded as limits in the task notes. Not fixed in this task. |
+| 6 | The Result named five prototypes and the commits of the first pass | this file | Accept | Rewritten. |
+| 7 | No end-of-line comment, no innerHTML, no console output, no TODO in the added script lines | doc/prototypes/trades | None | Checked with a search of the added lines. |
+| 8 | misspell-fixer on the changed paths | doc/prototypes/trades, build/scripts, doc/knowledge/ui, trade-blotter | None | Exit 0. |
+
+* Result
+
+The four trade prototypes (trade page, Book a trade, structure page and ORE
+portfolio) follow the entity screen specification. The trade entry prototype is
+retired: Book a trade and the structure page took its work. The closed sets, the
+book fields, the link types and the instrument cards read from the seed files
+and the create scripts. The sections below list each step.
+
+Headless Chrome scripts pass for each page, the local check gate passes, and all
+pages load with no console error.
+
+Known limits: which permission shows each trade tab is not yet specified; the
+cards of the equity, commodity and FX families omit the rules between columns
+and most child tables; a change reason that requires commentary is not
+enforced; the mixed list of trades and structures needs a read model decision.
+
+** Data model audit, 2026-10-20 (in progress)
+
+The prototypes drew several closed sets from memory. They now read from the seed files.
+
+| Set | Source | Change |
+|-----|--------|--------|
+| Entry channel | trading_entry_channel_types_populate.sql | manual, stp, ecn, allocation |
+| Booking nature | trading_booking_nature_types_populate.sql | actual, test, hypothetical. "Pre-agreement draft" removed (draft is a state) |
+| Counterparty scope | trading_counterparty_scope_types_populate.sql | external, inter_entity, intra_entity |
+| Activity type | trading_activity_types_populate.sql | all 33 codes with category, economic, confirmable, real |
+| Change reason | dq_change_reasons_populate.sql | real codes, filtered by new, amend and delete |
+| Trade identifier type | trading_trade_id_types_populate.sql | Internal, ORE, UTI (USI) |
+| Party role | trading_party_role_types_populate.sql | CalculationAgent; the trader is the actor, not a role |
+| Structure template roles | trading_structure_reference_data_populate.sql | RiskReversal long/short, CallableSwap swap/call, CalendarSpread added |
+| Sandbox | refdata_sandboxes_create.sql, import_choices.hpp | ORE import chooses a sandbox (or the official tree), then creates from folders or uses one existing book |
+
+Amounts show digit separators.
+
+Still open:
+- A change reason that requires commentary is not enforced by the screens.
+
+** Instrument fields compared with the tables, 2026-10-20
+
+The four instrument cards now follow the columns of their tables. Terms that the instrument table does not hold moved to the child table that holds them.
+
+| Instrument | Columns of the instrument table | Moved to a child table |
+|------------|---------------------------------|------------------------|
+| rate_instrument | start_date, maturity_date, description | Notional, rate, spread, index, day count, frequency: swap_leg, swap_leg_amount, swap_leg_rate |
+| fx_vanilla_option_instrument | option_type, bought and sold currency and amount, expiry_date, exercise_style, settlement, description | Strike: instrument_option_exercise_price. Premium: instrument_option_premium |
+| bond_instrument | issue_id, notional | Legs exist only for BondRepo, BondTRS and Ascot (bond_leg, with a leg role) |
+| composite_instrument | description | Leg: constituent trade and sequence. There is no weight and no aggregation |
+
+Removed from the cards: delivery date, strike on the option, long or short, payment calendar, yield convention, settlement days, coupon, face amount and the composite weight. None of them has a column. The option type, exercise style and settlement lists come from the seed files. The structure page reads the strike from the first exercise price row.
+
+Rate trades booked in the prototype take a default notional, because the notional now lives in the leg amounts.
+
+** Book fields and structures in the list, 2026-10-21
+
+A book in the prototypes now carries the columns of the book table: parent portfolio, owner unit, functional currency, ledger account, cost centre, status, regulatory type, purpose, ledger feed, sweepable, rates centre and sandbox. The code sets come from the seed files: purpose (9 codes), status (Active, Frozen, Closed), regulatory type (Trading, Banking) and ledger feed (None, Automatic, Manual).
+
+- The purpose "Virtual" never existed. A virtual book is a book with a sandbox. In a sandbox the table requires no ledger account and no sweeping.
+- Book a trade offers a book that is not Active as a disabled choice with its status, and shows the facts of the chosen book under the field. The book move and the ORE export offer open books only.
+- The ORE import asks for the functional currency of the books it creates. The planner sets them Active and Trading; in a sandbox the purpose is Test and the ledger feed is None.
+- Two books were added: EMEA-RATES-2025 (Closed) and EMEA-CMDTY (Frozen).
+- Decision, 2026-10-21: the screen enforces the book status. The database does not refuse a trade in a Frozen or Closed book today, so the rule lives in the screens (Book a trade, book move, ORE import and export) until the model states it.
+
+The trade list now shows structures and trades as rows of one level (=?show=trades|structures=). The real read model, trade_summaries, holds trades only. A mixed list needs either a read model that unions both, or two reads that the screen merges; a merged page then cannot be exact about paging and order. The request line shows both reads. This also needs a decision.
+
+** Link types, 2026-10-21
+
+The Links tab of the trade page now reads the 12 link types of the seed file, each with the role of its two ends and whether it has an economic effect: CloseOut, Novation, Roll, Exercise, MisbookingCorrection, Fixing, BookMove, Wash, WhatIfCopy, DealtFrom, Hedge, UserDefined.
+
+- The Linked trades card has the columns Link type, This trade is, The other trade is, Trade and Economic. The role names are the seed roles (for example hedged and hedging).
+- The book move writes a =BookMove= link and the novation a =Novation= link. The old label "Book move" is gone. The lifecycle step names the link and its roles.
+- The mock data holds a Hedge and a UserDefined link made by hand.
+- The structure page no longer names =trade_links.put_many=. A structure joins its trades through =structure_members=.
+
+Not done: a screen to add a link by hand (Hedge and UserDefined), and the links that the other lifecycle events write (Exercise, CloseOut, Roll, MisbookingCorrection). The prototype records those events without a new trade.
+
+** The other product families, 2026-10-21
+
+Every instrument table that a trade type uses now has a card built from its columns: commodity, credit, scripted, the nine equity tables (accumulator, Asian, barrier, digital, forward, option, position, swap, variance swap) and the six remaining FX tables (accumulator, Asian forward, barrier, digital, forward, variance swap). The column lists were read from the create scripts, so a column that the table adds or drops shows up when the list is read again.
+
+- A required column is filled; an optional one is empty and marked optional. The audit columns and the trade type are not fields.
+- A column that has a soft foreign key to a code set offers that set: option type, exercise type, settlement, long or short, barrier type, average type, return type, moment type, payoff type, target type, payment frequency, day count fraction.
+- The credit card also draws the shared swap leg and leg rate tables, and a premium for the options on credit swaps.
+- The JSON columns of the equity swap and the scripted trade show as text.
+
+Limits: the cards do not state the rules between columns, such as the cliquet frequency being set for a cliquet option only, or the barrier a touch option needs. The child tables of the equity, commodity and FX families (premiums, exercise prices, schedules) are drawn for rates, FX vanilla options, bonds, composite trades and credit only. A trade type with no instrument table still draws the generic card.
+
+** Trade entry folded into Book a trade and the structure page, 2026-10-20
+
+The trade-entry prototype is retired. It held its own idea of a structure and its own instrument forms. Its work went to the two screens that follow the real model.
+
+| Trade entry had | Now |
+|-----------------|-----|
+| Building a structure leg by leg | Book a trade, Structure card: a new structure or a leg of an existing one. The address carries =structure=, =role=, =kind=, =template= and =cp=. The booking and the membership are two writes. |
+| Strategy and package mode | The kind: Strategy, Typed, Dynamic, Package |
+| Strategy invariants | Checks on the Members tab, read from the legs' instruments |
+| Pricing | Price tab of the structure page: a market snapshot, Refresh gold for a newer one, shifts and Reprice, an indicative price |
+| Add and remove components | Link a trade and Unlink, with a reason, in the history |
+| Authorisation | Not drawn |
+
+The structure model (kinds, templates, base structures) moved into the shared =common.js=. The history of a structure reads persisted events, so a booked leg appears with its reason and commentary. "Instrument 2" came from the old editor and is gone.
+
+Mock data: the two legs of STR-0007 are now a call and a put at different strikes. The fx_vanilla_option_instruments table has no strike, long/short or delivery date column; the prototype still draws them, and the instrument field comparison covers that.

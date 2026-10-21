@@ -135,11 +135,7 @@ auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::
 
 /// The exact decimal an element of a xs:simpleContent decimal type carries.
 auto own_decimal_of(const record_reader& r) -> decimal {
-    if (const auto text = r.own_text()) {
-        if (auto parsed = decimal::from_string(*text))
-            return std::move(*parsed);
-    }
-    return decimal{};
+    return r.own_decimal().value_or(decimal{});
 }
 
 /// An absent or empty ORE date maps to an invalid calendar date, which renders

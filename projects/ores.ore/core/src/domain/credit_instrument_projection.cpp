@@ -154,11 +154,7 @@ auto flag_text(bool value) -> std::string_view {
 
 /// The exact decimal an xs:simpleContent numeric leaf carries.
 auto decimal_text(const record_reader& r) -> decimal {
-    if (const auto text = r.own_text()) {
-        if (auto parsed = decimal::from_string(*text))
-            return std::move(*parsed);
-    }
-    return decimal{};
+    return r.own_decimal().value_or(decimal{});
 }
 
 auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::optional<decimal> {

@@ -115,11 +115,7 @@ auto decimal_of(const record_reader& r, std::string_view name) -> decimal {
 
 /// The exact decimal an element of a xs:simpleContent decimal type carries.
 auto own_decimal_of(const record_reader& r) -> decimal {
-    if (const auto text = r.own_text()) {
-        if (auto parsed = decimal::from_string(*text))
-            return std::move(*parsed);
-    }
-    return decimal{};
+    return r.own_decimal().value_or(decimal{});
 }
 
 auto own_decimal_as_double(const record_reader& r) -> double {

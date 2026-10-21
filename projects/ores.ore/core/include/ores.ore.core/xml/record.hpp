@@ -97,6 +97,15 @@ public:
      */
     auto own_text() const -> std::optional<std::string>;
 
+    /**
+     * @brief The exact decimal the element carries as its own text.
+     *
+     * A field the table types as a decimal is copied, not formatted and parsed
+     * again. A field that holds text is parsed. Nothing is returned when the
+     * element has no text of its own, or when the text is not an exact decimal.
+     */
+    auto own_decimal() const -> std::optional<ores::utility::decimal::decimal>;
+
     /// A child element the document states, or nothing when it is absent.
     auto child(std::string_view name) const -> std::optional<record_reader>;
 

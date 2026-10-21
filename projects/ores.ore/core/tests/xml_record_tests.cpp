@@ -654,6 +654,17 @@ const document_type measure_document{"Measure", &measure_type};
 
 }
 
+TEST_CASE("an_element_with_no_text_of_its_own_has_no_own_decimal", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = "<Root><Entry><Name>a</Name></Entry></Root>";
+    root parsed{};
+    REQUIRE(read_root(text, parsed));
+    const auto entries = record_reader(root_record, &parsed).children("Entry");
+    REQUIRE(entries.size() == 1);
+    CHECK_FALSE(entries.front().own_decimal().has_value());
+}
+
 TEST_CASE("a_type_whose_own_text_is_a_number_keeps_its_digits", tags) {
     auto lg(make_logger(test_suite));
 
@@ -663,6 +674,11 @@ TEST_CASE("a_type_whose_own_text_is_a_number_keeps_its_digits", tags) {
     REQUIRE(bound);
     CHECK(record_reader(measure_type, &parsed).own_text() ==
           std::optional<std::string>("7342.8000000000002"));
+
+    const auto digits = ores::utility::decimal::decimal::from_string("7342.8000000000002");
+    REQUIRE(digits.has_value());
+    CHECK(record_reader(measure_type, &parsed).own_decimal() ==
+          std::optional<ores::utility::decimal::decimal>(*digits));
 
     std::string out;
     REQUIRE(emitter::emit(measure_document, &parsed, out));

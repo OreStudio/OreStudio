@@ -167,6 +167,23 @@ auto record_reader::flag(std::string_view name) const -> std::optional<bool> {
     return on;
 }
 
+auto record_reader::own_decimal() const -> std::optional<ores::utility::decimal::decimal> {
+    if (type_->text_field == no_text)
+        return std::nullopt;
+    const auto& f = type_->fields[type_->text_field];
+    if (!bit_is_set(record_, f))
+        return std::nullopt;
+    if (f.kind == field_kind::decimal)
+        return *static_cast<const ores::utility::decimal::decimal*>(slot_of(record_, f));
+    const auto text = own_text();
+    if (!text)
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(*text);
+    if (!parsed)
+        return std::nullopt;
+    return std::move(*parsed);
+}
+
 auto record_reader::own_text() const -> std::optional<std::string> {
     if (type_->text_field == no_text)
         return std::nullopt;

@@ -32,7 +32,7 @@ import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { Tag } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
 import { SYNTHETIC, heldBy, isSynthetic } from './bindingView.js';
-import { BINDINGS, VENDOR, bindingPath } from './bindingPaths.js';
+import { BINDINGS, BINDING_WATCHES, VENDOR, bindingPath } from './bindingPaths.js';
 import { BINDING_DIALOG_FIELDS } from './BindingPage.js';
 import { StatusTag } from './StatusTag.js';
 import { useBindingFacts } from './useBindings.js';
@@ -72,7 +72,12 @@ function BindingsList(): ReactNode {
     return (
         <>
             <RecordList
-                source={{ ...base, filters }}
+                source={{
+                    ...base,
+                    filters,
+                    watches: BINDING_WATCHES,
+                    recordKey: (row) => ({ source_name: show(row['source_name']) }),
+                }}
                 title={t('marketdata.bindings.title')}
                 lead={t('marketdata.bindings.lead')}
                 crumbs={[...useAreaRoot('marketdata'), { label: t('marketdata.bindings.title') }]}

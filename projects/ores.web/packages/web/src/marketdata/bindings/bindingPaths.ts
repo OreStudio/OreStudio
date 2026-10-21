@@ -21,6 +21,9 @@
 
 import { PATHS } from '../../shell/paths.js';
 
+/** The events a bindings screen hears: the change news of the bindings collection. */
+export const BINDING_WATCHES = [{ component: 'marketdata', entity: 'feed_bindings' }] as const;
+
 /** The record kind of a feed binding in the synthetic store. */
 export const BINDINGS = 'feed-bindings';
 

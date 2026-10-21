@@ -206,6 +206,20 @@ function BindingBody({
                 <RecordDetails
                     specs={BINDING_FIELDS}
                     row={binding as never}
+                    drawn={
+                        feed === undefined
+                            ? {}
+                            : {
+                                  source_name: (
+                                      <Link
+                                          className="font-mono text-accent hover:underline"
+                                          to={feedPageOf(feed)}
+                                      >
+                                          {sourceName}
+                                      </Link>
+                                  ),
+                              }
+                    }
                     extra={[
                         [t('marketdata.bindings.status'), <StatusTag status={status} />],
                         [

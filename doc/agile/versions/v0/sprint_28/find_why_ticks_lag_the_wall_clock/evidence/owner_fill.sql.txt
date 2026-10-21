@@ -1,0 +1,7 @@
+\set ON_ERROR_STOP on
+\timing on
+-- series k belongs to tenant k/20 and party k/2: 100 tenants, 1,000 parties, 2,000 series.
+insert into write_ceiling.tick_owner (tenant_id, party_id, series_id, ts, coord, value)
+select md5('t' || (k / 20))::uuid, md5('p' || (k / 2))::uuid, md5('s' || k)::uuid,
+       now() - interval '30 days' + (i * interval '518 ms'), 0, 1.5
+from (select i, (i % 2000) as k from generate_series(1, 5000000) i) x;

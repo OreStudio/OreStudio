@@ -71,10 +71,18 @@ task and name that file in the Command column.
 - =gather_trades= passes the definition to the resolver and says, when no book is left, that the report reads books of its type only.
 - The pgTAP suite =reporting_regulatory_book_type_test.sql= has 12 tests and passes. The official report suites and the publish suite still pass. The reporting C++ suites pass.
 
-** Not done (stage two: the screens)
+** Done (stage two: the screens)
 
-- The report page does not show or edit the type, and the BFF and the wire schema do not carry it yet.
-- The configuration page does not show the refusal.
+- The wire schema, the BFF and the client carry =regulatory_book_type=. The edit form offers it as an optional choice, with the codes the server holds. An account that may not read reference data gets no codes, and the form then offers none.
+- A save cannot blank the type. The BFF rebuilds the write from the read, so an edit that states no type keeps the one the report holds, and an edit that states null clears it. Three BFF tests cover keep, write and clear.
+- The report page shows the type in words and explains what the report reads. An empty type reads as "every type".
+- The configuration page tags each report that binds it with its type.
+- The English, French and Portuguese words are added. The suites pass: 1,776 web tests and 837 BFF tests, and the typecheck is clean.
+
+** Not done
+
+- No browser check of the new field. The tests render the components with canned data, and the running web build was not rebuilt.
+- The refusal shows as the server states it: the id of the definition and no names. The story asked for the names of the book and the report. The words come from the database trigger.
 - A run in which every trade fails to build still completes. That is issue 8 of the end to end run, and it hid the cause in this check: the engine could not build the HKD curve, built no trade and wrote no =npv.csv=, and the run said it completed.
 
 * Test Scenarios

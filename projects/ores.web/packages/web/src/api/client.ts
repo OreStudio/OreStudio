@@ -430,6 +430,7 @@ export interface ReportEdit {
     readonly concurrency_policy: string;
     readonly schedule_expression: string;
     readonly is_official: boolean;
+    readonly regulatory_book_type: string | null;
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;
@@ -1281,15 +1282,17 @@ export const api = {
         );
     },
 
-    /** The codes a report type and a concurrency policy may take. */
+    /** The codes a report type, a concurrency policy and a regulatory book type may take. */
     async reportChoices(): Promise<{
         readonly reportTypes: readonly string[];
         readonly concurrencyPolicies: readonly string[];
+        readonly regulatoryBookTypes: readonly string[];
     }> {
         return z
             .object({
                 reportTypes: z.array(z.string()),
                 concurrencyPolicies: z.array(z.string()),
+                regulatoryBookTypes: z.array(z.string()),
             })
             .parse(await request('/api/reporting/choices', { method: 'GET' }));
     },

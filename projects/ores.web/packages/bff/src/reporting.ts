@@ -24,6 +24,7 @@ import { z } from 'zod';
 import { readMyParties } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as typeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_type_protocol';
+import { subjects as bookTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/regulatory_book_type_protocol';
 import { subjects as policySubjects } from '@ores/wire-protocol/generated/reporting/protocol/concurrency_policy_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
@@ -726,6 +727,7 @@ function definitionRowOf(
         schedule_expression: text(definition['schedule_expression']),
         concurrency_policy: text(definition['concurrency_policy']),
         is_official: definition['is_official'] === true,
+        regulatory_book_type: nullableText(definition['regulatory_book_type']),
         pre_processing: text(definition['pre_processing']),
         prepared_input_key: text(definition['prepared_input_key']),
         post_processing: text(definition['post_processing']),
@@ -915,6 +917,7 @@ async function configurationDetailOf(
                 id: text(definition['id']),
                 name: text(definition['name']),
                 partyName: parties.get(text(definition['party_id']))?.name ?? '',
+                regulatoryBookType: nullableText(definition['regulatory_book_type']),
             }))
             .sort((left, right) => left.name.localeCompare(right.name)),
     };
@@ -927,6 +930,7 @@ const editSchema = z.object({
     concurrency_policy: z.string().trim().min(1).max(100),
     schedule_expression: z.string().trim().min(1).max(200),
     is_official: z.boolean(),
+    regulatory_book_type: z.string().trim().min(1).max(100).nullable().optional(),
     pre_processing: z.string().max(2000),
     prepared_input_key: z.string().max(500),
     post_processing: z.string().max(2000),
@@ -941,7 +945,7 @@ const editBodySchema = z.object({
 /**
  * The write the edit form makes, rebuilt from the read.
  *
- * The form offers eight fields and the record has eighteen, so the write is
+ * The form offers nine fields and the record has nineteen, so the write is
  * assembled from the definition just read and only the offered fields are
  * replaced. A save therefore cannot blank a field the screen does not show,
  * whatever the browser sends. The version is the one the form was drawn from,
@@ -967,6 +971,11 @@ function writeOf(
         prepared_input_key: change.prepared_input_key,
         post_processing: change.post_processing,
         is_official: change.is_official,
+        // An edit that states no book type keeps the one the report holds. Null clears it.
+        regulatory_book_type:
+            change.regulatory_book_type === undefined
+                ? nullableText(definition['regulatory_book_type'])
+                : change.regulatory_book_type,
     };
 }
 
@@ -1027,8 +1036,10 @@ export function registerReportingRoutes(
      * the five words add up to the list's own total.
      */
     /*
-     * The codes a definition's report type and concurrency policy may take, as
-     * the server holds them, so the edit form offers what a save will accept.
+     * The codes a definition's report type, concurrency policy and regulatory
+     * book type may take, as the server holds them, so the edit form offers what
+     * a save will accept. The book types are reference data, which an account
+     * may not read: the form then offers no type but the one the report holds.
      */
     server.get('/api/reporting/choices', async (request) => {
         const session = requireSession(request);
@@ -1042,6 +1053,10 @@ export function registerReportingRoutes(
                 policySubjects.list_concurrency_policies_request,
                 'policies',
             ),
+            regulatoryBookTypes: await codes(
+                bookTypeSubjects.list_regulatory_book_types_request,
+                'types',
+            ).catch(() => []),
         };
     });
 

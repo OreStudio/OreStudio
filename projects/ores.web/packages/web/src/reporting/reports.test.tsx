@@ -131,6 +131,7 @@ const DETAIL: ReportDetail = {
         schedule_expression: '0 0 9 L * ?',
         concurrency_policy: 'forbid',
         is_official: true,
+        regulatory_book_type: null,
         pre_processing: 'none',
         prepared_input_key: 'acme/audit',
         post_processing: 'none',
@@ -509,6 +510,31 @@ describe('one report definition', () => {
         expect(page).toContain('A run records only that the engine produced results');
     });
 
+    it('says a report with no book type reads books of every type', () => {
+        const page = textOf(detail());
+
+        expect(page).toContain('Book type');
+        expect(page).toContain('Empty means the report reads books of every type.');
+    });
+
+    it('states a typed report by its book type and explains what it reads', () => {
+        const page = textOf(
+            openedBy(AUDIT_ELSEWHERE, (client) => {
+                client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                    kind: 'record',
+                    detail: {
+                        ...DETAIL,
+                        definition: { ...DETAIL.definition, regulatory_book_type: 'Trading' },
+                    },
+                } satisfies ReportOpen);
+            }),
+        );
+
+        expect(page).toContain('Trading book');
+        expect(page).toContain('The report reads trading books only.');
+        expect(page).not.toContain('Empty means the report reads books of every type.');
+    });
+
     it('states the fields the record holds', () => {
         const page = textOf(detail());
 
@@ -710,8 +736,37 @@ const CONFIGURATION: ConfigurationDetail = {
         { code: 'npv', name: 'Net present value', active: true },
         { code: 'sensitivity', name: 'Sensitivity analysis', active: false },
     ],
-    reports: [{ id: AUDIT_ELSEWHERE, name: AUDIT_NAME, partyName: 'ACME Hong Kong' }],
+    reports: [
+        {
+            id: AUDIT_ELSEWHERE,
+            name: AUDIT_NAME,
+            partyName: 'ACME Hong Kong',
+            regulatoryBookType: null,
+        },
+    ],
 };
+
+describe('the book type on a configuration page', () => {
+    it('tags a report that reads one book type, and none that reads every type', () => {
+        const typed = textOf(
+            configurationPage({
+                ...CONFIGURATION,
+                reports: [
+                    {
+                        id: AUDIT_ELSEWHERE,
+                        name: AUDIT_NAME,
+                        partyName: 'ACME Hong Kong',
+                        regulatoryBookType: 'Trading',
+                    },
+                ],
+            }),
+        );
+        const untyped = textOf(configurationPage(CONFIGURATION));
+
+        expect(typed).toContain('Trading book');
+        expect(untyped).not.toContain('Trading book');
+    });
+});
 
 function configurationPage(detail: ConfigurationDetail): string {
     return renderRecords(

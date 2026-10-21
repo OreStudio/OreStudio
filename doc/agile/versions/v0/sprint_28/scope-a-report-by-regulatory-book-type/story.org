@@ -33,7 +33,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 - A report definition states a regulatory book type, or none for a report that reads any book, and the value comes from the regulatory book type table that books use.
 - The scope of a configuration is checked against the report: a book whose regulatory book type differs from the report's is refused, with a message that names the book and the report.
 - The seed states the type of the regulatory trading book measures (FRTB SA Capital, Stressed VaR and P&L Attribution) and leaves the other reports with none.
-- The configuration page shows the type and the refusal.
+- The report page shows and edits the type, and the configuration page tags each report that binds it with its type. The refusal reaches the person in the edit form, because the configuration page changes nothing.
 - A test proves that a trading book report scoped to the whole entity reads trading books only, or is refused, as the rule decides.
 
 * Tasks

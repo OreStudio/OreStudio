@@ -3666,6 +3666,10 @@ const fr: SourceCatalogue = {
         },
         choices: {
             report_type: { risk: 'Rapport de risque' },
+            regulatory_book_type: {
+                Trading: 'Portefeuille de négociation',
+                Banking: 'Portefeuille bancaire',
+            },
             pre_processing: { execute: 'Exécuter', substitute: 'Substituer' },
             post_processing: { execute: 'Exécuter', ignore: 'Ignorer' },
             concurrency_policy: { skip: 'Ignorer', queue: 'Mettre en file', fail: 'Échouer' },
@@ -4528,12 +4532,20 @@ const fr: SourceCatalogue = {
             pre_processing: 'Prétraitement',
             post_processing: 'Post-traitement',
             is_official: 'Officielle',
+            regulatory_book_type: 'Type de livre',
         },
         means: {
             name: 'Le nom du rapport. Il sert de clé à son historique et à son adresse : il est fixé à la création du rapport. Pour un autre nom, créez un nouveau rapport.',
             reportType: {
                 risk: 'Un calcul de risque complet sur la grille : VAN, flux, sensibilités, XVA, VaR et SIMM. Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
                 other: 'Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+            },
+            regulatoryBookType: {
+                Trading:
+                    'Le rapport lit les livres de négociation seulement. Un périmètre qui nomme un livre bancaire est refusé, et un portefeuille du périmètre est lu pour ses livres de négociation.',
+                Banking:
+                    'Le rapport lit les livres bancaires seulement. Un périmètre qui nomme un livre de négociation est refusé, et un portefeuille du périmètre est lu pour ses livres bancaires.',
+                other: 'Vide : le rapport lit les livres de tous les types. Un type le limite aux livres de ce type réglementaire.',
             },
             concurrencyPolicy: {
                 skip: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution ne démarre pas. Elle est enregistrée comme ignorée.',

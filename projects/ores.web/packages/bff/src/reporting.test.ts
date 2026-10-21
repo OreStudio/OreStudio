@@ -167,6 +167,7 @@ function definition(
         prepared_input_key: 'acme/daily',
         post_processing: 'none',
         is_official: true,
+        regulatory_book_type: null,
         modified_by: 'priya',
         performed_by: 'priya',
         change_reason_code: 'common.new_record',
@@ -595,6 +596,11 @@ describe('the codes a definition may take', () => {
                 policies: [{ code: 'skip' }, { code: 'queue' }, { code: 'fail' }],
                 total: 3,
             },
+            'refdata.v1.regulatory_book_types.list': {
+                result: ok,
+                types: [{ code: 'Trading' }, { code: 'Banking' }],
+                total: 2,
+            },
         });
         const response = await send(server, sessionId, 'GET', '/api/reporting/choices');
 
@@ -602,7 +608,26 @@ describe('the codes a definition may take', () => {
         expect(response.json()).toEqual({
             reportTypes: ['risk'],
             concurrencyPolicies: ['skip', 'queue', 'fail'],
+            regulatoryBookTypes: ['Trading', 'Banking'],
         });
+    });
+
+    it('offers no book type to an account that may not read reference data', async () => {
+        const { server, sessionId } = buildTestServer({
+            'reporting.v1.report_types.list': { result: ok, types: [{ code: 'risk' }], total: 1 },
+            'reporting.v1.concurrency_policies.list': {
+                result: ok,
+                policies: [{ code: 'skip' }],
+                total: 1,
+            },
+            'refdata.v1.regulatory_book_types.list': {
+                result: { ...ok, outcome: 'forbidden', message: 'No.' },
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/reporting/choices');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().regulatoryBookTypes).toEqual([]);
     });
 });
 
@@ -806,7 +831,12 @@ describe('the configurations a report binds', () => {
             { code: 'sensitivity', name: 'sensitivity', active: false },
         ]);
         expect(body.reports).toEqual([
-            { id: AUDIT_ELSEWHERE, name: AUDIT_NAME, partyName: 'ACME Hong Kong' },
+            {
+                id: AUDIT_ELSEWHERE,
+                name: AUDIT_NAME,
+                partyName: 'ACME Hong Kong',
+                regulatoryBookType: null,
+            },
         ]);
     });
 
@@ -870,6 +900,7 @@ describe('one report definition', () => {
             schedule_expression: '0 0 9 * * ?',
             concurrency_policy: 'forbid',
             is_official: true,
+            regulatory_book_type: null,
             pre_processing: 'none',
             prepared_input_key: 'acme/daily',
             post_processing: 'none',
@@ -1094,7 +1125,65 @@ describe('one report definition', () => {
             prepared_input_key: 'acme/daily',
             post_processing: 'none',
             is_official: false,
+            regulatory_book_type: null,
         });
+    });
+
+    /** The write the edit makes for a record that holds a book type. */
+    async function editedWith(
+        held: string | null,
+        stated: { regulatory_book_type?: string | null },
+    ): Promise<Record<string, unknown>> {
+        const replies = listReplies();
+        const typed = {
+            ...definition(AUDIT_ELSEWHERE, AUDIT_NAME, 'risk', OTHER_PARTY),
+            regulatory_book_type: held,
+        };
+        replies[DEFINITIONS] = { result: ok, definitions: [typed], total: 1 };
+        replies[PUT] = { result: ok, report_definition: { ...typed, version: 4 } };
+        const { server, sessionId, calls } = buildTestServer(replies);
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}`,
+            {
+                version: 3,
+                change: {
+                    description: 'Audit trail',
+                    report_type: 'risk',
+                    concurrency_policy: 'forbid',
+                    schedule_expression: '0 0 9 * * ?',
+                    is_official: true,
+                    pre_processing: 'none',
+                    prepared_input_key: 'acme/daily',
+                    post_processing: 'none',
+                    ...stated,
+                },
+                intent: INTENT,
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        const put = calls.find((call) => call.subject === PUT)?.body as {
+            change: { write: Record<string, unknown> };
+        };
+        return put.change.write;
+    }
+
+    it('keeps the book type the report holds when the edit states none', async () => {
+        const write = await editedWith('Banking', {});
+        expect(write['regulatory_book_type']).toBe('Banking');
+    });
+
+    it('writes the book type the edit states', async () => {
+        const write = await editedWith(null, { regulatory_book_type: 'Trading' });
+        expect(write['regulatory_book_type']).toBe('Trading');
+    });
+
+    it('clears the book type when the edit states null', async () => {
+        const write = await editedWith('Banking', { regulatory_book_type: null });
+        expect(write['regulatory_book_type']).toBeNull();
     });
 
     it('reports a refused write with the status the server stated', async () => {

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story, its first task and its Sprint 28 row.
 
 * Status
 
@@ -35,7 +35,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story states its goal, its acceptance and its scope.
+- The story, its first task and its sprint row link to each other.
 
 * Plan
 
@@ -80,7 +81,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story state STARTED, sprint row BACKLOG | sprint.org | Accept | Row set to STARTED with the start date. |
+| 2 | Story Now and Next fields are stale | story.org | Accept | Fields now name the scaffold PR and the next task. |
+| 3 | Empty Out of scope and Decisions | story.org | Accept in part | Out of scope lists three items. Decisions stays empty: no decision exists yet. |
+| 4 | Scaffold task Goal and Acceptance unfilled | scaffold task | Accept | Both filled. |
+| 5 | First task scope is wider than its title | first task | Accept | Narrowed to the wire call. The page moved to a new task. |
+| 6 | Environment empty on the first task | first task | Decline | Task start fills the field. |
+| 7 | Horizon date missing from the acceptance | story.org | Accept | Added to the first two bullets. |
+| 8 | Uneven table padding | story.org | Decline | Cosmetic. The generator writes this padding. |
 
 * Result
 

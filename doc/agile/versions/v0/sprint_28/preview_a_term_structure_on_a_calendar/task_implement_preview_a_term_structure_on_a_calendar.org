@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person picks a tenor convention, a calendar and a horizon date in ores.web. The page lists every tenor of the convention with the date it resolves to, so the term structure can be read at a glance. This replaces the approximate date column of the retired Qt Tenor Management screen.
+Give the preview page one wire call that resolves every tenor of a convention on a calendar and a horizon date. The call reuses the batch resolution engine. A tenor that cannot resolve returns its refusal and does not stop the others.
 
 * Status
 
@@ -35,10 +35,9 @@ A person picks a tenor convention, a calendar and a horizon date in ores.web. Th
 
 * Acceptance
 
-- One wire call resolves all the tenors of a convention on a calendar and returns a date or a refusal for each.
-- A preview page in ores.web lists each tenor of the chosen convention with its resolved date, in tenor order.
-- A tenor that cannot resolve shows the server's refusal in its row and does not hide the other rows.
-- The page has a loading state and a retry, as the entity screen specification requires.
+- One wire call resolves all the tenors of a convention on a calendar and a horizon date, and returns a date or a refusal for each.
+- A tenor that cannot resolve returns its refusal in its own entry, and the other entries still carry their dates.
+- A test pins the dates for one convention, including an IMM roll convention.
 
 * Plan
 

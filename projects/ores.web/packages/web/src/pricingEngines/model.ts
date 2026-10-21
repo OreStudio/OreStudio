@@ -49,6 +49,23 @@ export type KnownSetting = PricingVocabulary['settings'][number];
 /** A pair that prices a product type. */
 export type KnownPair = PricingVocabulary['pairs'][number];
 
+/** A model or an engine with the words that say what it is. */
+export type Described = PricingVocabulary['models'][number];
+
+/** A sensitivity template key. */
+export type KnownTemplate = PricingVocabulary['templates'][number];
+
+/** A vocabulary that knows nothing, for a screen that has not read one yet. */
+export const EMPTY_VOCABULARY: PricingVocabulary = {
+    types: [],
+    pairs: [],
+    settings: [],
+    models: [],
+    methods: [],
+    templates: [],
+    tenors: [],
+};
+
 /** The scope of a setting that belongs to the whole configuration and to no product. */
 export const GLOBAL_SCOPE = 'global';
 
@@ -110,6 +127,43 @@ export function enginesFor(
     return [...own, ...[...anywhere].filter((engine) => !own.has(engine)).sort()];
 }
 
+/** What the vocabulary says about a model, when it says anything. */
+export function modelInfo(vocabulary: PricingVocabulary, code: string): Described | undefined {
+    return vocabulary.models.find((model) => model.code === code);
+}
+
+/** What the vocabulary says about an engine, when it says anything. */
+export function methodInfo(vocabulary: PricingVocabulary, code: string): Described | undefined {
+    return vocabulary.methods.find((method) => method.code === code);
+}
+
+/** What the vocabulary says about a sensitivity template, when it says anything. */
+export function templateInfo(
+    vocabulary: PricingVocabulary,
+    code: string,
+): KnownTemplate | undefined {
+    return vocabulary.templates.find((template) => template.code === code);
+}
+
+/** How ORE builds the engine of a pair for a product type, when the vocabulary says. */
+export function pairNote(
+    vocabulary: PricingVocabulary,
+    typeCode: string,
+    model: string,
+    engine: string,
+): string {
+    return (
+        vocabulary.pairs.find(
+            (pair) => pair.typeCode === typeCode && pair.model === model && pair.engine === engine,
+        )?.note ?? ''
+    );
+}
+
+/** Whether a new product starts with the setting: ORE needs it and the vocabulary knows a value. */
+export function startsWith(setting: KnownSetting): boolean {
+    return setting.required && setting.usual !== '';
+}
+
 /** The settings a pair is known to take for a product type. */
 export function settingsFor(
     vocabulary: PricingVocabulary,
@@ -117,10 +171,14 @@ export function settingsFor(
     model: string,
     engine: string,
 ): readonly KnownSetting[] {
-    return vocabulary.settings.filter(
-        (setting) =>
-            setting.typeCode === typeCode && setting.model === model && setting.engine === engine,
-    );
+    return vocabulary.settings
+        .filter(
+            (setting) =>
+                setting.typeCode === typeCode &&
+                setting.model === model &&
+                setting.engine === engine,
+        )
+        .sort((a, b) => Number(b.required) - Number(a.required));
 }
 
 const keyOf = (scope: string, name: string): string => `${scope}:${name}`;
@@ -240,7 +298,7 @@ export function check(draft: Draft, vocabulary: PricingVocabulary): readonly Fin
             product.model,
             product.engine,
         )) {
-            if (setting.usual !== '' && !names.has(keyOf(setting.scope, setting.name))) {
+            if (startsWith(setting) && !names.has(keyOf(setting.scope, setting.name))) {
                 found.push({
                     level: 'info',
                     code: 'settingUsual',
@@ -514,7 +572,7 @@ export function withProductTypes(
     let next = Math.max(-1, ...draft.parameters.map((parameter) => parameter.position)) + 1;
     const settings = added.flatMap((product) =>
         settingsFor(vocabulary, product.typeCode, product.model, product.engine)
-            .filter((setting) => setting.usual !== '')
+            .filter(startsWith)
             .map((setting) =>
                 newParameter(product.id, setting.scope, setting.name, setting.usual, next++),
             ),
@@ -589,6 +647,6 @@ export function missingUsual(
         parametersOf(draft, product.id).map((parameter) => keyOf(parameter.scope, parameter.name)),
     );
     return settingsFor(vocabulary, product.typeCode, product.model, product.engine).filter(
-        (setting) => setting.usual !== '' && !held.has(keyOf(setting.scope, setting.name)),
+        (setting) => startsWith(setting) && !held.has(keyOf(setting.scope, setting.name)),
     );
 }

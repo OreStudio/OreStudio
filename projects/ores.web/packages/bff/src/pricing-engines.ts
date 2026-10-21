@@ -28,6 +28,10 @@ import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/ana
 import { subjects as typeSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_engine_type_protocol';
 import { subjects as pairSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_engine_pair_protocol';
 import { subjects as settingSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_pair_setting_protocol';
+import { subjects as modelSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_protocol';
+import { subjects as methodSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_method_protocol';
+import { subjects as templateSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
+import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -332,15 +336,29 @@ function saveFailure(message: string): HttpFailure {
     return invalidRequest(message);
 }
 
+/** A tenor a time setting offers: a count of days, weeks, months or years. */
+const PERIOD_UNITS = new Set(['DAY', 'WEEK', 'MONTH', 'YEAR']);
+const PERIOD_CODE = /^\d+[DWMY]$/;
+
 /** The pick lists a screen draws its combo boxes from. */
 async function vocabulary(session: LiveSession): Promise<Readonly<Record<string, unknown>>> {
     const rows = (subject: string, key: string) =>
         readAll(session, subject, key, { filter: null, as_of: null });
-    const [types, pairs, settings] = await Promise.all([
+    const [types, pairs, settings, models, methods, templates, tenors] = await Promise.all([
         rows(typeSubjects.list_pricing_engine_types_request, 'types'),
         rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
         rows(settingSubjects.list_pricing_pair_settings_request, 'settings'),
+        rows(modelSubjects.list_pricing_models_request, 'models'),
+        rows(methodSubjects.list_pricing_methods_request, 'methods'),
+        rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
+        rows(tenorSubjects.list_tenors_request, 'tenors'),
     ]);
+    const described = (row: Readonly<Record<string, unknown>>) => ({
+        code: text(row['code']),
+        description: text(row['description']),
+        detail: text(row['detail']),
+        source: text(row['source']),
+    });
     return {
         types: types.map((row) => ({
             code: text(row['code']),
@@ -363,8 +381,26 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             kind: text(row['kind']),
             usual: text(row['usual_value']),
             options: text(row['options']) === '' ? [] : text(row['options']).split(','),
+            required: row['is_required'] === true,
             note: text(row['note']),
         })),
+        models: models.map(described),
+        methods: methods.map(described),
+        templates: templates.map((row) => ({
+            code: text(row['code']),
+            assetClass: text(row['asset_class']),
+            method: text(row['method']),
+            description: text(row['description']),
+        })),
+        tenors: tenors
+            .filter(
+                (row) => PERIOD_UNITS.has(text(row['unit'])) && PERIOD_CODE.test(text(row['code'])),
+            )
+            .sort((a, b) => Number(a['sort_order'] ?? 0) - Number(b['sort_order'] ?? 0))
+            .map((row) => ({
+                code: text(row['code']),
+                displayName: text(row['display_name']),
+            })),
     };
 }
 

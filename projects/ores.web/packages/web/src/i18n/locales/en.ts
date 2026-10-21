@@ -4474,7 +4474,18 @@ export const en: SourceCatalogue = {
             remove: 'Remove',
             delete: 'Delete configuration',
         },
+        source: {
+            ore_guide: 'From the ORE guide',
+            ore_code: 'From the ORE code',
+            authored: 'Written for ORE Studio, to review',
+            unknown: 'Source not stated',
+        },
+        describe: {
+            none: 'No description is held for this choice.',
+            pair: 'How ORE builds the engine for {type}:',
+        },
         fields: {
+            required: 'required',
             name: 'Name',
             party: 'Party',
             description: 'Description',
@@ -4535,7 +4546,7 @@ export const en: SourceCatalogue = {
             typeRepeated: '{type} appears {detail} times. Only the first is normally used.',
             parameterRepeated: 'The setting {detail} of {type} appears more than once.',
             parameterMissingValue: 'The setting {detail} of {type} has no value.',
-            settingUsual: '{type} usually sets {detail}. It is not set here.',
+            settingUsual: 'ORE lists {detail} as required for {type}. It is not set here.',
         },
         save: {
             save: 'Save',

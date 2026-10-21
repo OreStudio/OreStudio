@@ -22,7 +22,16 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import type { PricingVocabulary } from '../api/pricingEngines.js';
 import { Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
-import { settingsFor, type Change, type Finding } from './model.js';
+import {
+    methodInfo,
+    modelInfo,
+    pairNote,
+    settingsFor,
+    templateInfo,
+    type Change,
+    type Described,
+    type Finding,
+} from './model.js';
 
 /**
  * The parts the pricing engine screens share: the findings of a check and the
@@ -117,7 +126,119 @@ export function DifferenceList({ changes }: { readonly changes: readonly Change[
     );
 }
 
-/** One setting's value, as a select where the vocabulary knows the options and as text where it does not. */
+/** Where the words of a model or an engine come from, as the person reads it. */
+function SourceTag({ source }: { readonly source: string }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Tag small tone={source === 'authored' ? 'warn' : 'muted'}>
+            {t(`pricingEngines.source.${source === '' ? 'unknown' : source}`)}
+        </Tag>
+    );
+}
+
+/** What a model or an engine is, drawn beside the control that picks it. */
+function Description({
+    info,
+    empty,
+}: {
+    readonly info: Described | undefined;
+    readonly empty: string;
+}): ReactNode {
+    if (info === undefined) {
+        return <p className="text-xs text-ink-faint">{empty}</p>;
+    }
+    return (
+        <div className="space-y-1 rounded-md border border-line-subtle bg-surface-raised/40 p-3 text-xs">
+            <p className="font-medium text-ink">{info.description}</p>
+            {info.detail !== '' && <p className="text-ink-muted">{info.detail}</p>}
+            <SourceTag source={info.source} />
+        </div>
+    );
+}
+
+/**
+ * The model and the engine of a product, each with its own description beside it,
+ * and below them how ORE builds the engine of the pair for this product type.
+ */
+export function ModelEnginePanels({
+    vocabulary,
+    typeCode,
+    model,
+    engine,
+    models,
+    engines,
+    onModel,
+    onEngine,
+    allowBlank = false,
+}: {
+    readonly vocabulary: PricingVocabulary;
+    readonly typeCode: string;
+    readonly model: string;
+    readonly engine: string;
+    readonly models: readonly string[];
+    readonly engines: readonly string[];
+    readonly onModel: (model: string) => void;
+    readonly onEngine: (engine: string) => void;
+    readonly allowBlank?: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    const note = pairNote(vocabulary, typeCode, model, engine);
+    const pick = (
+        label: string,
+        value: string,
+        options: readonly string[],
+        onChange: (value: string) => void,
+        info: Described | undefined,
+    ) => (
+        <div className="space-y-2">
+            <Field label={label}>
+                <Select value={value} onChange={(event) => onChange(event.target.value)}>
+                    {allowBlank && <option value="" />}
+                    {options.map((entry) => (
+                        <option key={entry} value={entry}>
+                            {entry}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+            <Description info={info} empty={t('pricingEngines.describe.none')} />
+        </div>
+    );
+    return (
+        <div className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2">
+                {pick(
+                    t('pricingEngines.fields.model'),
+                    model,
+                    models,
+                    onModel,
+                    modelInfo(vocabulary, model),
+                )}
+                {pick(
+                    t('pricingEngines.fields.engine'),
+                    engine,
+                    engines,
+                    onEngine,
+                    methodInfo(vocabulary, engine),
+                )}
+            </div>
+            {note !== '' && (
+                <p className="text-xs text-ink-muted">
+                    <span className="font-medium">
+                        {t('pricingEngines.describe.pair', { type: typeCode })}
+                    </span>{' '}
+                    {note}
+                </p>
+            )}
+        </div>
+    );
+}
+
+/**
+ * One setting's value, drawn for the kind the vocabulary gives it: a select for a
+ * list of values, a tenor or a sensitivity template, and a field for the rest. The
+ * meaning of the setting stands under the field.
+ */
 export function SettingValue({
     vocabulary,
     typeCode,
@@ -137,12 +258,25 @@ export function SettingValue({
     readonly value: string;
     readonly onChange: (value: string) => void;
 }): ReactNode {
+    const { t } = useTranslation();
     const setting = settingsFor(vocabulary, typeCode, model, engine).find(
         (candidate) => candidate.name === name && candidate.scope === scope,
     );
-    const options = setting?.options ?? [];
+    const kind = setting?.kind ?? 'text';
+    const options =
+        kind === 'tenor'
+            ? vocabulary.tenors.map((tenor) => tenor.code)
+            : kind === 'reference'
+              ? vocabulary.templates.map((template) => template.code)
+              : (setting?.options ?? []);
+    const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
+    const meaning =
+        template === undefined
+            ? (setting?.note ?? '')
+            : `${template.assetClass} · ${template.method}. ${template.description}`;
+    const label = `${name} (${scope})${setting?.required === true ? ` · ${t('pricingEngines.fields.required')}` : ''}`;
     return (
-        <Field label={`${name} (${scope})`} {...(setting?.note ? { hint: setting.note } : {})}>
+        <Field label={label} {...(meaning !== '' ? { hint: meaning } : {})}>
             {options.length > 0 ? (
                 <Select value={value} onChange={(event) => onChange(event.target.value)}>
                     {[...new Set([...options, value])].map((entry) => (
@@ -152,7 +286,11 @@ export function SettingValue({
                     ))}
                 </Select>
             ) : (
-                <Input value={value} onChange={(event) => onChange(event.target.value)} />
+                <Input
+                    value={value}
+                    {...(kind === 'number' ? { inputMode: 'decimal' as const } : {})}
+                    onChange={(event) => onChange(event.target.value)}
+                />
             )}
         </Field>
     );

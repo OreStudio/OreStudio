@@ -61,11 +61,10 @@ import {
     withValue,
     withoutParameter,
     type Draft,
+    EMPTY_VOCABULARY,
 } from './model.js';
-import { DifferenceList, FindingsList, SettingValue } from './parts.js';
+import { DifferenceList, FindingsList, ModelEnginePanels, SettingValue } from './parts.js';
 import { writeOf } from './SaveDialog.js';
-
-const NO_VOCABULARY: PricingVocabulary = { types: [], pairs: [], settings: [] };
 
 /** Where the list of configurations is cached, which the name check and the copy read. */
 export const HELD_KEY = ['records', 'pricing-engines', 'held'] as const;
@@ -89,7 +88,7 @@ export function PricingEngineJourney(): ReactNode {
         queryFn: pricingEngines.list,
         meta: { quiet: true },
     });
-    const known = vocabulary.data ?? NO_VOCABULARY;
+    const known = vocabulary.data ?? EMPTY_VOCABULARY;
     const rows = held.data ?? [];
 
     const copyFrom = async (id: string): Promise<void> => {
@@ -381,56 +380,30 @@ function EnginesStep({
                                     </Button>
                                 )}
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label={t('pricingEngines.fields.model')}>
-                                <Select
-                                    value={product.model}
-                                    onChange={(event) =>
-                                        onDraft(
-                                            withModelAndEngine(
-                                                draft,
-                                                product.id,
-                                                event.target.value,
-                                                enginesFor(
-                                                    vocabulary,
-                                                    product.typeCode,
-                                                    event.target.value,
-                                                )[0] ?? '',
-                                            ),
-                                        )
-                                    }
-                                >
-                                    <option value="" />
-                                    {models.map((entry) => (
-                                        <option key={entry} value={entry}>
-                                            {entry}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
-                            <Field label={t('pricingEngines.fields.engine')}>
-                                <Select
-                                    value={product.engine}
-                                    onChange={(event) =>
-                                        onDraft(
-                                            withModelAndEngine(
-                                                draft,
-                                                product.id,
-                                                product.model,
-                                                event.target.value,
-                                            ),
-                                        )
-                                    }
-                                >
-                                    <option value="" />
-                                    {engines.map((entry) => (
-                                        <option key={entry} value={entry}>
-                                            {entry}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Field>
-                        </div>
+                        <ModelEnginePanels
+                            vocabulary={vocabulary}
+                            typeCode={product.typeCode}
+                            model={product.model}
+                            engine={product.engine}
+                            models={models}
+                            engines={engines}
+                            allowBlank
+                            onModel={(model) =>
+                                onDraft(
+                                    withModelAndEngine(
+                                        draft,
+                                        product.id,
+                                        model,
+                                        enginesFor(vocabulary, product.typeCode, model)[0] ?? '',
+                                    ),
+                                )
+                            }
+                            onEngine={(engine) =>
+                                onDraft(
+                                    withModelAndEngine(draft, product.id, product.model, engine),
+                                )
+                            }
+                        />
                     </li>
                 );
             })}

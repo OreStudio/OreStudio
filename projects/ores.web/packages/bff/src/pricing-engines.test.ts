@@ -208,6 +208,93 @@ const body = {
     intent: INTENT,
 };
 
+/** The replies the vocabulary route reads from the analytics and refdata services. */
+function vocabularyReads(): Record<string, unknown> {
+    return {
+        'analytics.v1.pricing_engine_types.list': {
+            result: ok,
+            types: [
+                {
+                    code: 'BermudanSwaption',
+                    description: 'Bermudan',
+                    instrument_type_code: 'SWPTN',
+                },
+            ],
+        },
+        'analytics.v1.pricing_model_engine_pairs.list': {
+            result: ok,
+            pairs: [
+                {
+                    pricing_engine_type_code: 'BermudanSwaption',
+                    model: 'LGM',
+                    engine: 'Grid',
+                    is_usual: true,
+                    note: '',
+                },
+            ],
+        },
+        'analytics.v1.pricing_pair_settings.list': {
+            result: ok,
+            settings: [
+                {
+                    pricing_engine_type_code: 'BermudanSwaption',
+                    model: 'LGM',
+                    engine: 'Grid',
+                    scope: 'model',
+                    name: 'Calibration',
+                    kind: 'select',
+                    usual_value: 'Bootstrap',
+                    options: 'Bootstrap,BestFit,None',
+                    is_required: true,
+                    note: 'How the model is fitted.',
+                },
+            ],
+        },
+        'analytics.v1.pricing_models.list': {
+            result: ok,
+            models: [
+                {
+                    code: 'LGM',
+                    description: 'Linear Gauss Markov model',
+                    detail: 'A one-factor Gaussian rates model.',
+                    source: 'ore_guide',
+                },
+            ],
+        },
+        'analytics.v1.pricing_methods.list': {
+            result: ok,
+            methods: [
+                {
+                    code: 'Grid',
+                    description: 'Convolution grid engine',
+                    detail: 'Rolls the value back on a grid.',
+                    source: 'ore_guide',
+                },
+            ],
+        },
+        'analytics.v1.sensitivity_templates.list': {
+            result: ok,
+            templates: [
+                {
+                    code: 'IR_FD',
+                    asset_class: 'IR',
+                    method: 'Finite difference',
+                    description: 'Interest rate products priced on a grid.',
+                },
+            ],
+        },
+        'refdata.v1.tenors.list': {
+            result: ok,
+            tenors: [
+                { code: 'SPOT', display_name: 'Spot', unit: 'DAY', sort_order: 1 },
+                { code: '6M', display_name: '6 months', unit: 'MONTH', sort_order: 30 },
+                { code: '3M', display_name: '3 months', unit: 'MONTH', sort_order: 20 },
+                { code: 'ON', display_name: 'Overnight', unit: 'NONE', sort_order: 0 },
+            ],
+        },
+    };
+}
+
 describe('pricing engine routes', () => {
     it('lists the configurations with how many products and parameters each holds', async () => {
         const { server, sessionId } = buildTestServer(reads);
@@ -302,46 +389,7 @@ describe('pricing engine routes', () => {
     });
 
     it('reads the vocabulary the combo boxes draw from', async () => {
-        const { server, sessionId } = buildTestServer({
-            'analytics.v1.pricing_engine_types.list': {
-                result: ok,
-                types: [
-                    {
-                        code: 'BermudanSwaption',
-                        description: 'Bermudan',
-                        instrument_type_code: 'SWPTN',
-                    },
-                ],
-            },
-            'analytics.v1.pricing_model_engine_pairs.list': {
-                result: ok,
-                pairs: [
-                    {
-                        pricing_engine_type_code: 'BermudanSwaption',
-                        model: 'LGM',
-                        engine: 'Grid',
-                        is_usual: true,
-                        note: '',
-                    },
-                ],
-            },
-            'analytics.v1.pricing_pair_settings.list': {
-                result: ok,
-                settings: [
-                    {
-                        pricing_engine_type_code: 'BermudanSwaption',
-                        model: 'LGM',
-                        engine: 'Grid',
-                        scope: 'model',
-                        name: 'Calibration',
-                        kind: 'select',
-                        usual_value: 'Bootstrap',
-                        options: 'Bootstrap,BestFit,None',
-                        note: 'How the model is fitted.',
-                    },
-                ],
-            },
-        });
+        const { server, sessionId } = buildTestServer(vocabularyReads());
         const response = await send(
             server,
             sessionId,
@@ -360,6 +408,44 @@ describe('pricing engine routes', () => {
             usual: true,
         });
         expect(response.json().settings[0].options).toEqual(['Bootstrap', 'BestFit', 'None']);
+        expect(response.json().settings[0].required).toBe(true);
+    });
+
+    it('describes each model, engine and sensitivity template', async () => {
+        const { server, sessionId } = buildTestServer(vocabularyReads());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/pricing-engines/vocabulary',
+        );
+        expect(response.json().models[0]).toEqual({
+            code: 'LGM',
+            description: 'Linear Gauss Markov model',
+            detail: 'A one-factor Gaussian rates model.',
+            source: 'ore_guide',
+        });
+        expect(response.json().methods[0]).toMatchObject({ code: 'Grid' });
+        expect(response.json().templates[0]).toEqual({
+            code: 'IR_FD',
+            assetClass: 'IR',
+            method: 'Finite difference',
+            description: 'Interest rate products priced on a grid.',
+        });
+    });
+
+    it('offers the tenors that are a count of days, weeks, months or years, in order', async () => {
+        const { server, sessionId } = buildTestServer(vocabularyReads());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/pricing-engines/vocabulary',
+        );
+        expect(response.json().tenors.map((tenor: { code: string }) => tenor.code)).toEqual([
+            '3M',
+            '6M',
+        ]);
     });
 
     it('writes the header and then the document when it creates a configuration', async () => {

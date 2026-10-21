@@ -4539,7 +4539,18 @@ const fr: SourceCatalogue = {
             remove: 'Retirer',
             delete: 'Supprimer la configuration',
         },
+        source: {
+            ore_guide: 'Issu du guide ORE',
+            ore_code: 'Issu du code ORE',
+            authored: 'Rédigé pour ORE Studio, à relire',
+            unknown: 'Source non indiquée',
+        },
+        describe: {
+            none: 'Aucune description n’est conservée pour ce choix.',
+            pair: 'Comment ORE construit le moteur pour {type} :',
+        },
         fields: {
+            required: 'obligatoire',
             name: 'Nom',
             party: 'Partie',
             description: 'Description',
@@ -4600,7 +4611,8 @@ const fr: SourceCatalogue = {
             typeRepeated: '{type} apparaît {detail} fois. Seul le premier est normalement utilisé.',
             parameterRepeated: 'Le paramètre {detail} de {type} apparaît plusieurs fois.',
             parameterMissingValue: 'Le paramètre {detail} de {type} n’a pas de valeur.',
-            settingUsual: '{type} définit habituellement {detail}. Il n’est pas défini ici.',
+            settingUsual:
+                'ORE indique {detail} comme obligatoire pour {type}. Il n’est pas défini ici.',
         },
         save: {
             save: 'Enregistrer',

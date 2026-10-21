@@ -29,12 +29,18 @@ import {
     draftOf,
     enginesFor,
     isKnownPair,
+    methodInfo,
     missingUsual,
+    modelInfo,
     modelsFor,
     nameInUse,
     pairChange,
+    pairNote,
     pairsFor,
     settingKey,
+    settingsFor,
+    startsWith,
+    templateInfo,
     usualPair,
     withModelAndEngine,
     withParameter,
@@ -71,6 +77,7 @@ const vocabulary: PricingVocabulary = {
             kind: 'select',
             usual: 'Bootstrap',
             options: ['Bootstrap', 'BestFit'],
+            required: true,
             note: '',
         },
         {
@@ -82,8 +89,49 @@ const vocabulary: PricingVocabulary = {
             kind: 'number',
             usual: '3.0',
             options: [],
+            required: true,
             note: '',
         },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'SensitivityTemplate',
+            kind: 'reference',
+            usual: 'IR_FD',
+            options: [],
+            required: false,
+            note: '',
+        },
+    ],
+    models: [
+        {
+            code: 'LGM',
+            description: 'Linear Gauss Markov model',
+            detail: 'A one-factor Gaussian rates model.',
+            source: 'ore_guide',
+        },
+    ],
+    methods: [
+        {
+            code: 'Grid',
+            description: 'Convolution grid engine',
+            detail: 'Rolls the value back on a grid.',
+            source: 'ore_guide',
+        },
+    ],
+    templates: [
+        {
+            code: 'IR_FD',
+            assetClass: 'IR',
+            method: 'Finite difference',
+            description: 'Interest rate products priced on a grid.',
+        },
+    ],
+    tenors: [
+        { code: '3M', displayName: '3 months' },
+        { code: '6M', displayName: '6 months' },
     ],
 };
 
@@ -357,6 +405,49 @@ describe('authoring', () => {
             missingUsual(vocabulary, without, without.products[0]!).map((setting) => setting.name),
         ).toEqual(['sx']);
         expect(missingUsual(vocabulary, draft, draft.products[0]!)).toEqual([]);
+    });
+});
+
+describe('the words the vocabulary holds', () => {
+    it('finds what a model, an engine and a sensitivity template are', () => {
+        expect(modelInfo(vocabulary, 'LGM')?.detail).toBe('A one-factor Gaussian rates model.');
+        expect(methodInfo(vocabulary, 'Grid')?.description).toBe('Convolution grid engine');
+        expect(templateInfo(vocabulary, 'IR_FD')?.method).toBe('Finite difference');
+        expect(modelInfo(vocabulary, 'Unknown')).toBeUndefined();
+    });
+
+    it('finds how ORE builds the engine of a pair, or says nothing', () => {
+        const noted: PricingVocabulary = {
+            ...vocabulary,
+            pairs: [{ ...vocabulary.pairs[0]!, note: 'Builds a grid engine.' }],
+        };
+        expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'Grid')).toBe('Builds a grid engine.');
+        expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'MC')).toBe('');
+    });
+
+    it('starts a product with the settings ORE needs and leaves the optional ones out', () => {
+        const names = vocabulary.settings.filter(startsWith).map((setting) => setting.name);
+        expect(names).toEqual(['Calibration', 'sx']);
+        const draft = withProductTypes(vocabulary, EMPTY_DRAFT, ['BermudanSwaption']);
+        expect(parametersOfNames(draft)).toEqual(['Calibration', 'sx']);
+    });
+
+    it('lists the settings ORE needs first, then the optional ones', () => {
+        const names = settingsFor(vocabulary, 'BermudanSwaption', 'LGM', 'Grid').map(
+            (setting) => setting.name,
+        );
+        expect(names).toEqual(['Calibration', 'sx', 'SensitivityTemplate']);
+    });
+
+    it('reports only a missing setting that ORE needs', () => {
+        const draft = withProductTypes(vocabulary, EMPTY_DRAFT, ['BermudanSwaption']);
+        const without = withoutParameter(draft, draft.parameters[1]!.id);
+        const named = (d: typeof draft) =>
+            check({ ...d, name: 'x' }, vocabulary)
+                .filter((finding) => finding.code === 'settingUsual')
+                .map((finding) => finding.detail);
+        expect(named(without)).toEqual(['sx']);
+        expect(named(draft)).toEqual([]);
     });
 });
 

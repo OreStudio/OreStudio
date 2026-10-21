@@ -57,7 +57,7 @@ import { RefreshButton } from '../ui/RefreshButton.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
-import { SettingValue } from './parts.js';
+import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
     draftOf,
@@ -69,6 +69,9 @@ import {
     newProduct,
     pairChange,
     settingsFor,
+    startsWith,
+    templateInfo,
+    EMPTY_VOCABULARY,
     parametersOf,
     settingKey,
     withPair,
@@ -228,6 +231,7 @@ export function PricingEnginePage(): ReactNode {
             <ProductsSection
                 document={document}
                 draft={draft}
+                vocabulary={vocabulary.data}
                 mayWrite={mayWrite && known !== undefined}
                 onChange={(productId) => setDialog({ kind: 'product', productId })}
                 onRemove={(productId) => setDialog({ kind: 'remove', productId })}
@@ -277,6 +281,7 @@ export function PricingEnginePage(): ReactNode {
 function ProductsSection({
     document,
     draft,
+    vocabulary,
     mayWrite,
     onChange,
     onRemove,
@@ -284,6 +289,7 @@ function ProductsSection({
 }: {
     readonly document: PricingDocument;
     readonly draft: Draft;
+    readonly vocabulary: PricingVocabulary | undefined;
     readonly mayWrite: boolean;
     readonly onChange: (productId: string) => void;
     readonly onRemove: (productId: string) => void;
@@ -315,6 +321,7 @@ function ProductsSection({
                                 key={product.id}
                                 product={product}
                                 draft={draft}
+                                vocabulary={vocabulary}
                                 mayWrite={mayWrite}
                                 onChange={() => onChange(product.id)}
                                 onRemove={() => onRemove(product.id)}
@@ -329,12 +336,14 @@ function ProductsSection({
 function ProductRow({
     product,
     draft,
+    vocabulary,
     mayWrite,
     onChange,
     onRemove,
 }: {
     readonly product: PricingProduct;
     readonly draft: Draft;
+    readonly vocabulary: PricingVocabulary | undefined;
     readonly mayWrite: boolean;
     readonly onChange: () => void;
     readonly onRemove: () => void;
@@ -365,15 +374,43 @@ function ProductRow({
                 <p className="text-xs text-ink-faint">{t('pricingEngines.record.noSettings')}</p>
             ) : (
                 <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2 lg:grid-cols-3">
-                    {parameters.map((parameter) => (
-                        <div key={parameter.id} className="flex gap-2">
-                            <dt className="text-ink-faint">
-                                {parameter.name}
-                                <span className="ml-1 text-[10px]">({parameter.scope})</span>
-                            </dt>
-                            <dd className="font-mono">{parameter.value}</dd>
-                        </div>
-                    ))}
+                    {parameters.map((parameter) => {
+                        const kind = vocabulary
+                            ? settingsFor(
+                                  vocabulary,
+                                  product.typeCode,
+                                  product.model,
+                                  product.engine,
+                              ).find(
+                                  (setting) =>
+                                      setting.name === parameter.name &&
+                                      setting.scope === parameter.scope,
+                              )?.kind
+                            : undefined;
+                        const template =
+                            vocabulary && kind === 'reference'
+                                ? templateInfo(vocabulary, parameter.value)
+                                : undefined;
+                        return (
+                            <div key={parameter.id} className="flex gap-2">
+                                <dt className="text-ink-faint">
+                                    {parameter.name}
+                                    <span className="ml-1 text-[10px]">({parameter.scope})</span>
+                                </dt>
+                                <dd
+                                    className="font-mono"
+                                    {...(template ? { title: template.description } : {})}
+                                >
+                                    {parameter.value}
+                                    {template && (
+                                        <span className="ml-1 font-sans text-ink-faint">
+                                            {template.assetClass} · {template.method}
+                                        </span>
+                                    )}
+                                </dd>
+                            </div>
+                        );
+                    })}
                 </dl>
             )}
         </li>
@@ -400,7 +437,7 @@ function DetailsDialog({
             title={t('pricingEngines.change.detailsTitle', { name: document.name })}
             document={document}
             after={after}
-            vocabulary={vocabulary ?? { types: [], pairs: [], settings: [] }}
+            vocabulary={vocabulary ?? EMPTY_VOCABULARY}
             onClose={onClose}
         >
             <div className="grid gap-3 sm:grid-cols-2">
@@ -488,40 +525,24 @@ function ProductDialog({
         >
             <div className="space-y-4">
                 <p className="text-xs text-ink-faint">{t('pricingEngines.record.reachUnknown')}</p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label={t('pricingEngines.fields.model')}>
-                        <Select
-                            value={model}
-                            onChange={(event) => {
-                                setModel(event.target.value);
-                                setDrop([]);
-                                setAdd([]);
-                            }}
-                        >
-                            {models.map((entry) => (
-                                <option key={entry} value={entry}>
-                                    {entry}
-                                </option>
-                            ))}
-                        </Select>
-                    </Field>
-                    <Field label={t('pricingEngines.fields.engine')}>
-                        <Select
-                            value={engine}
-                            onChange={(event) => {
-                                setEngine(event.target.value);
-                                setDrop([]);
-                                setAdd([]);
-                            }}
-                        >
-                            {engines.map((entry) => (
-                                <option key={entry} value={entry}>
-                                    {entry}
-                                </option>
-                            ))}
-                        </Select>
-                    </Field>
-                </div>
+                <ModelEnginePanels
+                    vocabulary={vocabulary}
+                    typeCode={product.typeCode}
+                    model={model}
+                    engine={engine}
+                    models={models}
+                    engines={engines}
+                    onModel={(next) => {
+                        setModel(next);
+                        setDrop([]);
+                        setAdd([]);
+                    }}
+                    onEngine={(next) => {
+                        setEngine(next);
+                        setDrop([]);
+                        setAdd([]);
+                    }}
+                />
                 {!known && <Notice tone="warn">{t('pricingEngines.change.unknownPair')}</Notice>}
                 {change.dropped.length > 0 && (
                     <fieldset className="space-y-1">
@@ -645,7 +666,7 @@ function AddProductDialog({
                   parameters: [
                       ...start.parameters,
                       ...settings
-                          .filter((setting) => setting.usual !== '')
+                          .filter(startsWith)
                           .map((setting, index) =>
                               newParameter(
                                   added.id,

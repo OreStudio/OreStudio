@@ -85,6 +85,14 @@ const summarySchema = z.object({
     recordedAt: z.string(),
 });
 
+/** A model or an engine with the words that say what it is. */
+const described = z.object({
+    code: z.string(),
+    description: z.string(),
+    detail: z.string(),
+    source: z.string(),
+});
+
 const vocabularySchema = z.object({
     types: z.array(
         z.object({
@@ -112,9 +120,21 @@ const vocabularySchema = z.object({
             kind: z.string(),
             usual: z.string(),
             options: z.array(z.string()),
+            required: z.boolean(),
             note: z.string(),
         }),
     ),
+    models: z.array(described),
+    methods: z.array(described),
+    templates: z.array(
+        z.object({
+            code: z.string(),
+            assetClass: z.string(),
+            method: z.string(),
+            description: z.string(),
+        }),
+    ),
+    tenors: z.array(z.object({ code: z.string(), displayName: z.string() })),
 });
 
 /** One product of a configuration: a pricing engine type with the model and engine that price it. */

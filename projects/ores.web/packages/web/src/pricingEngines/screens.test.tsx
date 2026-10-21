@@ -27,6 +27,7 @@ import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { textOf } from '../textOf.js';
 import { PricingEnginePage, VOCABULARY_KEY, pricingEngineKey } from './PricingEnginePage.js';
 import { PricingEngineJourney, HELD_KEY } from './PricingEngineJourney.js';
+import { ModelEnginePanels, SettingValue } from './parts.js';
 import { PricingEnginesPage, pageOf } from './PricingEnginesPage.js';
 
 /**
@@ -114,8 +115,75 @@ const DOCUMENT: PricingDocument = {
 
 const VOCABULARY: PricingVocabulary = {
     types: [{ code: 'BermudanSwaption', description: '', instrumentTypeCode: 'SWPTN' }],
-    pairs: [{ typeCode: 'BermudanSwaption', model: 'LGM', engine: 'Grid', usual: true, note: '' }],
-    settings: [],
+    pairs: [
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            usual: true,
+            note: 'Builds a numeric multi-leg option engine.',
+        },
+    ],
+    settings: [
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'SensitivityTemplate',
+            kind: 'reference',
+            usual: 'IR_FD',
+            options: [],
+            required: false,
+            note: 'The sensitivity template of the product.',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'TimestepPeriod',
+            kind: 'tenor',
+            usual: '3M',
+            options: [],
+            required: true,
+            note: 'The step of the grid.',
+        },
+    ],
+    models: [
+        {
+            code: 'LGM',
+            description: 'Linear Gauss Markov model',
+            detail: 'A one-factor Gaussian rates model.',
+            source: 'ore_guide',
+        },
+    ],
+    methods: [
+        {
+            code: 'Grid',
+            description: 'Convolution grid engine',
+            detail: 'Rolls the value back on a grid.',
+            source: 'authored',
+        },
+    ],
+    templates: [
+        {
+            code: 'IR_FD',
+            assetClass: 'IR',
+            method: 'Finite difference',
+            description: 'Interest rate products priced on a grid.',
+        },
+        {
+            code: 'IR_Analytical',
+            assetClass: 'IR',
+            method: 'Analytical',
+            description: 'Interest rate products priced by a formula.',
+        },
+    ],
+    tenors: [
+        { code: '3M', displayName: '3 months' },
+        { code: '6M', displayName: '6 months' },
+    ],
 };
 
 const WRITE = ['analytics::pricing_model_configs:read', 'analytics::pricing_model_configs:write'];
@@ -286,5 +354,98 @@ describe('the authoring journey', () => {
 
     it('cannot move on before the configuration has a name', () => {
         expect(journey(ROWS)).toMatch(/<button[^>]*disabled[^>]*>\s*Next\s*<\/button>/);
+    });
+});
+
+describe('the model and engine panels', () => {
+    function panels(model: string, engine: string): string {
+        return renderRecords(
+            '/panels',
+            [],
+            <Route
+                path="/panels"
+                element={
+                    <ModelEnginePanels
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model={model}
+                        engine={engine}
+                        models={['LGM']}
+                        engines={['Grid']}
+                        onModel={() => undefined}
+                        onEngine={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+    }
+
+    it('states what the model is beside the model and what the engine is beside the engine', () => {
+        const text = textOf(panels('LGM', 'Grid'));
+        expect(text).toContain('Linear Gauss Markov model');
+        expect(text).toContain('A one-factor Gaussian rates model.');
+        expect(text).toContain('Convolution grid engine');
+        expect(text).toContain('Rolls the value back on a grid.');
+    });
+
+    it('states where the words come from, and flags the ones written for review', () => {
+        const text = textOf(panels('LGM', 'Grid'));
+        expect(text).toContain('From the ORE guide');
+        expect(text).toContain('Written for ORE Studio, to review');
+    });
+
+    it('states how ORE builds the engine of the pair for the product type', () => {
+        const text = textOf(panels('LGM', 'Grid'));
+        expect(text).toContain('How ORE builds the engine for BermudanSwaption:');
+        expect(text).toContain('Builds a numeric multi-leg option engine.');
+    });
+
+    it('says so when no description is held', () => {
+        expect(textOf(panels('Other', 'Grid'))).toContain(
+            'No description is held for this choice.',
+        );
+    });
+});
+
+describe('the value of a setting', () => {
+    function setting(name: string, value: string): string {
+        return renderRecords(
+            '/setting',
+            [],
+            <Route
+                path="/setting"
+                element={
+                    <SettingValue
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model="LGM"
+                        engine="Grid"
+                        name={name}
+                        scope="engine"
+                        value={value}
+                        onChange={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+    }
+
+    it('offers the tenors for a setting of the tenor kind, and marks a required one', () => {
+        const html = setting('TimestepPeriod', '3M');
+        expect(html).toContain('<option value="3M"');
+        expect(html).toContain('<option value="6M"');
+        expect(textOf(html)).toContain('required');
+        expect(textOf(html)).toContain('The step of the grid.');
+    });
+
+    it('offers the sensitivity templates and states the one chosen', () => {
+        const html = setting('SensitivityTemplate', 'IR_FD');
+        expect(html).toContain('<option value="IR_Analytical"');
+        expect(textOf(html)).toContain(
+            'IR · Finite difference. Interest rate products priced on a grid.',
+        );
+        expect(textOf(html)).not.toContain('required');
     });
 });

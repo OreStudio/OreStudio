@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: B418C38D-D16B-4256-9B13-01EEA59A2A28
+:END:
+#+title: Task: Record the issues of an end to end run
+#+description: The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix.
+#+type: task
+#+level: s1
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Keep one table of the issues met on the way, so a reader sees what stopped the run, why, and what changed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- Every issue has a symptom, a cause and a state.
+- A fixed issue names the commit that fixes it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Run under test
+
+The NPV report of ACME Corporation HK Ltd (party =2307069c-69ab-49b1-b0ba-6363916a75a7=).
+It binds one risk configuration, "Valuation - Trading Book", that holds only the
+NPV analytic. The party holds 8 bonds, and the database holds 32 trades, all of
+type Bond. The trigger is =reporting.v1.ops.trigger_report_instance=, and the
+chain is in [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]].
+
+** The environment, rebuilt on 2026-10-21
+
+The database was recreated (=compass db recreate -y -k=), the services started,
+and ACME provisioned with the =acme_demo= script. Every id from before the
+recreate is gone. The party that was =2307069c-...= (ACME Corporation HK Ltd) is
+now =734e60cd-d806-4f9b-9cd1-f571387d0224=.
+
+** How the bond population is made
+
+Provisioning makes it. The =acme_demo= seed profile has a =generate_trades= step
+with four trade generation configs, one for each party: asset class =bond=, a
+named book, a tenor band of 1Y to 10Y, a notional band of 100,000 to 10,000,000,
+and seed 42. The step stores the configs in
+=ores_synthetic_trade_generation_configs_tbl= and runs each as the party it books
+for. The same run can be repeated by hand with
+=synthetic generate-trades --config <id> [--config <id>...]=. A second run writes
+nothing.
+
+After the rebuild the population is 32 bond trades (8 for each of 4 parties) over
+18 bond issues, measured with =compass sql= on 2026-10-21.
+
+** Result
+
+The NPV report of ACME Corporation HK Ltd (definition =99c87db3-3b6f-478b-b5c5-d2afbbcee778=) ran from the trigger to a completed instance, with the portfolio widened as issue 7 says.
+
+- Instance =66f4a841-a8c9-42b3-a01b-aa08f87192a2=, started and completed at 2026-10-21 01:53, about ten seconds.
+- All seven steps completed: gather_trades (8 trades from 7 books), gather_market_data, assemble_bundle, prepare_ore_package, submit_compute, collect_compute_results, finalise.
+- The output archive is =reporting/runs/66f4a841-a8c9-42b3-a01b-aa08f87192a2/output.tar.gz= (676,864 bytes).
+- =npv.csv= holds 8 bond rows, all in HKD, each NPV close to its notional. The engine log says "built 0 failed trades". Its warnings are the missing security specific recovery rate for 5 bonds, which fall back on the credit curve's rate.
+- Four counterparties read as =UNKNWN..= codes in =npv.csv=. Not yet traced.
+
+** Issues
+
+Newest last. State is one of fixed, open or handed on.
+
+| # | Symptom | Cause | State | Fix |
+|---+---------+-------+-------+-----|
+| 1 | =ores.shell= fails to start: =libores.refdata.core.so.0: file too short= | A full build ran in the same tree and had linked the library to zero bytes when the shell was started | not an issue | Wait for the build. |
+| 2 | =trigger-report-instance= answers =no_run_grant=: the definition's runs act in its own party and the session is in another | The shell logs in under Acme Corporation Plc, which has no NPV report. The HK report needs a session in the HK party | not a defect | =accounts set-default-party <party-uuid>=, then =logout= and =login=. The name form needs the exact full name. |
+| 3 | A failed run says "Report execution failed during bundle assembly" while the step that failed is =prepare_ore_package= | The engine compensates the completed steps in reverse and the first compensation to reach =fail_report= sets the message. That one is the compensation of the last completed step, and its text is fixed in =report_execution_workflow.hpp=. The builder =build_compensation(command_json, response_json)= is not given the failure text | open | Pass the failing step's error to the compensation builder, so the instance reads the cause. This changes the shared engine and every workflow that compensates. The cause is on the failed workflow step meanwhile (=ores_workflow_workflow_steps_tbl.error=). |
+| 4 | =prepare_ore_package= fails: =Service error on refdata.v1.average_ois_conventions.list: forbidden= | The run token is the =ReportRun= role narrowed to the grantor. =ReportRun= held =refdata::conventions:read= and no convention family code. The packaging step reads every family in the registry, each checked by its own code, and it reads counterparties, portfolios, currencies, netting set identifiers and bond issues | fixed | =ReportRun= gains the 31 reads in =iam_roles_populate.sql=. |
+| 5 | The same step then fails: =no service is handling subject refdata.v1.conventions.list= | Three families in the registry (=convention=, =tenor_basis_swap_long_short=, =tenor_basis_swap_pay_receive=) have generated registrars that the refdata service never calls | fixed | =registrar.cpp= of =ores.refdata.core= registers the three. |
+| 6 | A role permission added to the populate script does not reach a tenant that exists: the tenant holds its own copy of =ReportRun= and =Member=, made when it was provisioned | The populate script grants the system tenant's roles. A tenant copy keeps the set it was given | open | A recreate and a reprovision picks them up. An existing tenant needs a migration or a re-copy of the role. In the running database the grants were applied to both copies by hand. |
+| 7 | The first complete run reads "Report execution completed." and gathered 0 trades ("Gathered 0 trades from 6 books") | The report's scope is the portfolio Trading Book (rule D10: a trading report reads the Trading Book branch). The generated bonds sit in =Liquidity Buffer Bonds=, under Banking Book. A completed run with no trades is a hollow success | open, needs a decision | For this run the portfolio Liquidity Buffer Portfolio was added to the scope of the HK configuration by an insert into =ores_reporting_risk_report_config_portfolios_tbl=. The choice is to scope an NPV report to the banking book too, or to book the bonds in the trading book. |
+| 8 | A run with 0 trades completes with no warning | Nothing compares the trade count with zero before packaging, so the engine prices an empty portfolio and the output looks normal | open | Fail or warn in =gather_trades= when the scope yields no trade. |
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

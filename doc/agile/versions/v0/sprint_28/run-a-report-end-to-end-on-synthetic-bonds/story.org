@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D
+:END:
+#+title: Story: Run a report end to end on a synthetic bond population
+#+description: Trigger the NPV report of an ACME party over its synthetic bonds and follow the run to a completed instance, recording every issue met on the way and fixing what can be fixed.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a completed report instance with an output archive in storage, and every issue met on the way is written down with its cause and its fix or its owner.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- The NPV report of ACME Corporation HK Ltd completes on its 8 synthetic bonds.
+- Each issue met is recorded with its symptom, cause and state: fixed, open or handed on.
+- Each fix has a test or a re-run that proves it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B418C38D-D16B-4256-9B13-01EEA59A2A28][Record the issues of an end to end run]] | BACKLOG | | | The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix. |
+
+* Decisions
+
+* Out of scope
+
+-

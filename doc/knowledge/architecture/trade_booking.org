@@ -1,0 +1,415 @@
+:PROPERTIES:
+:ID: E509AFFC-3924-428E-B504-96D68BF5568A
+:END:
+#+title: Trade booking
+#+description: How a trade is booked: one booking contract that every caller uses, the transaction that makes a trade whole or absent, the security that a bond trade names, and how a structure groups booked trades.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:trading:booking:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+One service books trades. Every caller books through the same operations: the
+[[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][trade booking journey]] in the UX, the REST gateway, the
+[[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][ORE import]] and the synthetic generator. A caller prepares a request and
+sends it. It does not decide how the trade is stored. The trading service
+writes a trade and its parts in one [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][unit of work]], so a trade is whole or absent.
+A bond trade names a security. The security is a separate aggregate, created
+by its own operation before the trade. A structure groups trades that are
+already booked, and its booking is a design in progress.
+
+* Detail
+
+** The principle
+
+Booking has one path. A caller may differ in the data it sends. It never
+differs in the operation it calls.
+
+- The trading service owns booking. It knows nothing about its callers. No
+  operation has a flag, a reason code or a branch that exists for one caller.
+- A caller owns its source. The UX reads a form. The ORE import reads an XML
+  document. The generator draws from a plan. Each turns its source into the
+  same request.
+- A trade is a position. It is not repaired after the fact. A stop in the
+  middle of a booking leaves nothing, and the caller sends the request again.
+- A trade records where it came from. Callers share one operation, so the
+  trade itself must say which caller created it. The origin is data on the
+  trade. It is never a branch in the service.
+
+** The booking contract
+
+A trade is an immutable [[id:4304A441-E532-45FB-837A-378F13693CAE][anchor]] with a [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][booking]] and a [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][state]]. Each is a row in its own
+table. Every row of the trade names the [[id:6B361413-828D-4F84-8AD7-58DA1442580B][activity]] that wrote it. The booking
+request carries all the parts, so that no part is written alone.
+
+| Part | What it holds | Model |
+|------+---------------+-------|
+| Anchor | The immutable facts: trade id, party, counterparty, trade type, booking nature, entry channel, counterparty scope | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+| Origin | Which of our systems created the trade, and which run of it. See the next section. | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+| Booking | Where the trade sits: book, netting set, trade date, execution time | [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][ores.trading.trade_booking]] |
+| Activity type | The cause of the booking: =new_booking= for a live trade, =draft_capture= for a draft | [[id:6B361413-828D-4F84-8AD7-58DA1442580B][ores.trading.trade_activity]] |
+| Identifiers | The firm's own identifier, a venue identifier, the ORE identifier | [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] |
+| Classification | Party roles, portfolios, additional fields | [[id:E031135C-5728-401B-BBD4-88B197B937B1][trade_party_role]], [[id:FC9528F7-7469-4D0A-87A8-C5FCE558CA52][trade_portfolio]], [[id:EDEBBAAB-C045-4D67-957C-C7F18497A8E6][trade_additional_field]] |
+| Instrument | The economic terms, as a typed batch with one array for each instrument table and child table | [[id:5BD2DC7D-2D07-486E-AD1E-41900FDC4DFF][ores.trading.trade_operations]] |
+
+The service creates the first state and the activity. It stamps the activity id
+on every other row. The caller never states an activity id. The service takes
+the tenant and the party from the session and the audit fields from the
+caller's change intent.
+
+The caller states the trade id. The trade id is the idempotency key. A second
+booking of a trade id answers a conflict with the code =already_exists= and
+writes nothing. A caller that sends a request again after a stop therefore
+reaches the same end state.
+
+The trade type routes the instrument to one table, through the
+[[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][trade type catalogue]]. The request is refused before it writes anything when the
+batch holds a row for another table, or when the trade type has no instrument
+table.
+
+** The origin of a trade
+
+Every trade states where it came from. The origin is part of the anchor, so
+it is immutable. It has two fields:
+
+- *Origin.* A code from a lookup table: =ux= for a person booking in the app,
+  =api= for an outside system on the REST gateway, =ore_import= for the ORE
+  import and =synthetic= for generated data. A new caller adds a row to the
+  lookup. It adds no code to the service.
+- *Origin reference.* An optional text that names the run in the source
+  system: the import id, the generation config id or the API client. It lets
+  a person find every trade of one run, and lets a rollback name its trades.
+
+The origin is not the entry channel. The entry channel says how the deal
+reached the firm: =manual=, =stp=, =ecn= or =allocation=. The origin says which
+of our systems wrote the record. The ORE import, the REST gateway and the
+generator all enter through =stp=, and only the origin tells them apart.
+
+The caller states the origin in the booking request. The service checks it
+against the lookup and stores it. The service never changes its behaviour for
+a given origin. The origin is how a report, a clean-up or an audit separates
+real trades from generated ones. The reason code and the commentary are not
+used for this.
+
+** The common flow
+
+Every caller follows the same six steps. A step belongs to the caller or to the
+service, never to both.
+
+1. *Resolve the references.* The caller finds the party, the counterparty, the
+   book, the netting set and the portfolios. These belong to refdata. The
+   caller reads them, and creates the missing ones through refdata's own
+   operations first.
+2. *Resolve the security.* A trade type that names a security needs it in place.
+   The caller reads the security by its identifier. When it does not exist, the
+   caller creates it with the security operation. See the section on bonds.
+3. *Build the request.* The caller builds the booking request from its source.
+4. *Book.* The caller sends one request. The service checks the permission and
+   the session, opens one unit of work, writes every part and commits.
+5. *Read the reply.* The reply carries the outcome and the activity id. A
+   conflict means the trade is already booked, whole.
+6. *Handle the outcome.* A refusal writes nothing. The caller reports it or
+   sends the request again.
+
+A four-eyes rule for booking, if one applies, wraps the one booking operation
+in the service. It is not added to any caller. See the
+[[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][four-eyes framework]]. The counterparty's confirmation is a different matter. The
+activity type states whether it is required, and the
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmation]] follows the booking.
+
+** Transactionality
+
+*** The rule
+
+A set of rows that one service owns is written in one =unit_of_work=: one
+connection, one transaction, one commit. A set that several services own is
+never one transaction. The sequence between the owners is the consistency
+mechanism. See the [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]], the
+[[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][database per service]] pattern and the
+[[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][rule that writes go through the repositories]].
+
+Trading owns every table of a trade. The catalogue names the two sets as
+bundles B7 (the trade and its parts) and B8 (the trade's instrument and legs).
+The booking operation writes both in one unit of work.
+
+*** The boundaries
+
+| Set | Owner | Unit of work |
+|-----+-------+--------------|
+| Trade, activity, booking, state, identifiers, classification, instrument and its child rows | trading | One, in the booking operation |
+| Bond issue with its legs, amounts, rates and schedules | trading | One, in the security operation |
+| Books, counterparties, netting sets, portfolios, currencies | refdata | Its own, before the booking |
+| An import of many trades | several | None. A workflow sequences the steps. |
+
+The trade and the security are two units of work. The security is shared by
+many trades and has its own life, so it cannot belong to one trade's
+transaction. A security with no trade is a valid state. A trade with no
+security is not, and the database refuses it. The order is therefore fixed:
+the security first, the trade second.
+
+*** What a stop leaves
+
+| The stop falls | State left |
+|----------------+------------|
+| Before the security operation commits | Nothing |
+| After the security commits, before the booking | A whole security and no trade. The state is valid. |
+| Inside the booking | Nothing |
+| After the booking commits | A whole trade |
+
+No state in this table is half-written. For that reason the service has no repair
+step, and a caller has no check for a half-booked trade. A caller that finds
+its trade id booked treats the trade as present.
+
+*** Reads and failures inside the unit of work
+
+A read made through the unit of work joins it and does not end it. Code that
+opens its own session for a read inside a booking ends the transaction early.
+The memory [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] states the rule.
+
+A refusal by the database rolls the whole unit back. The service reports the
+database's own words. It does not map them to a second set of codes.
+
+*** Across owners
+
+The ORE import writes refdata rows and trading rows. It is a workflow with one
+step for each owner. See [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][workflows]],
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]] and
+[[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][package transport]]. Each trade of the import is atomic. The import as a whole
+is not. A user may roll an import back. That rollback is a deliberate act on
+whole trades, and it is not the repair of a half-booked trade. A
+[[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]] holds an import that a person wants to examine before it goes live.
+
+** Instrument peculiarities
+
+An instrument is not one shape. The batch carries one array for each table
+because a variant cannot cross the wire.
+
+- *Header, fact row and children.* A swap writes a header row, a fact row and
+  its legs. The trade owns its legs. The booking writes all of them or none.
+- *Option and schedule children.* An option adds premium, exercise and payment
+  rows. A schedule adds its date rows. They follow the same rule: the
+  service stamps them and writes them in the same unit of work.
+- *Bonds.* A bond is the one family whose economics live outside the trade. See
+  the next section.
+
+*** Bonds and bond issues
+
+A bond issue is the security. A bond trade is a position in it. The trade holds
+a reference to the security and its own size, date, counterparty and book. The
+security holds the terms that every holder shares: issuer, issue date,
+maturity, currency, coupon and schedule.
+
+- *Two aggregates.* The [[id:6c67bf4c-ad4e-446e-a55e-d7aa43735903][bond issue]] and its children are one aggregate. The
+  [[id:326b86e9-df52-4921-a875-e9f5cfec0e49][bond instrument]] is part of the trade. The instrument names the issue
+  with =issue_id= and states the trade's notional.
+- *The issue has legs.* The legs, amounts, rates, schedules and dates sit on
+  the [[id:fb11c91a-929c-42c9-9442-9d226d606db6][issue's leg]], not on the trade. Call dates and conversion targets
+  sit on the issue. A swap differs: its legs belong to the trade.
+- *One table for ten trade types.* =Bond=, =ForwardBond=, =BondFuture=,
+  =BondOption=, =BondRepo=, =BondTRS=, =BondPosition=, =CallableBond=,
+  =ConvertibleBond= and =Ascot= all route to the bond instrument table, and each
+  names an issue.
+- *Security operation.* One operation creates the issue with its children in one
+  unit of work. The issue is create-only. A second creation of an issue id
+  answers a conflict, and the stored issue stays as it was. An issue is
+  therefore whole or absent, and its existence proves its completeness.
+- *Order.* A caller creates the issue before it books a trade that names it.
+  The database refuses a bond instrument whose issue does not exist.
+- *Sharing.* A security belongs to the tenant. It does not belong to a book or
+  a party. A currency belongs to the security, so every book that holds the
+  security has that currency.
+- *Resolution.* A caller names a security by its security identifier. It reads
+  the issue first. It creates the issue only when none exists. When the issue
+  exists, the caller checks that the terms it holds agree with the stored
+  terms, and refuses the trade when they differ.
+- *Concurrency.* Two callers may create the same issue at the same time. One
+  creation succeeds and the other answers a conflict. The second caller
+  treats the conflict as present and books its trade.
+
+** The callers
+
+All four callers send the same requests. The table lists what differs, and the
+differences are only data.
+
+| Caller | Source | Entry channel | Origin and reference | Security step | Reference step |
+|--------+--------+---------------+----------------------+---------------+----------------|
+| UX | A form with the tabs Trade, Instrument, Identifiers and Review | =manual= | =ux=, the session | Choose an issue, or create one in the issue editor | Pick lists read from refdata |
+| Web API | A JSON body from an outside system | =stp= | =api=, the API client | Create the issue, then book | The caller sends ids it holds |
+| ORE import | An ORE portfolio document | =stp= | =ore_import=, the import id | Resolve by security id, create when absent, compare terms | Create portfolios, books and netting sets in an earlier step |
+| Synthetic | A plan drawn from a generation config | =stp= | =synthetic=, the config id | Create the issues of the plan, then book | Read from the config's scope |
+
+*** UX trade booking
+
+The browser app sends the request through the BFF to the trading service. The
+page is one form with four tabs. Each tab fills a part of the request: the
+Trade tab fills the anchor and the booking, the Instrument tab fills the batch,
+the Identifiers tab fills identifiers and classification, and the Review tab
+shows the request before it is sent. The person chooses live or draft. The two
+choices differ in the activity type only. The person gets the refusal in the
+form and keeps the input. The [[id:60088AA3-832B-45F1-91C2-4723C75554EE][web component]] owns the transport. The
+[[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][booking journey]] owns the steps.
+
+*** Web API trade booking
+
+The REST gateway [[id:09BD5681-9C12-469A-80DA-27D1DF9D0808][ores.http]] terminates HTTP, authenticates the caller and
+forwards the request to the owning service over NATS. The booking operations
+become routes in the same way as the refdata and IAM operations. The route
+takes the request body unchanged. The gateway adds no booking logic. An outside
+system uses the trade id as its idempotency key, so a retry after a timeout is
+safe.
+
+*** ORE import trade booking
+
+The [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ORE component]] reads the XML and plans the import. The plan lists the trades,
+the securities and the references each needs. The execute step runs in this
+order:
+
+1. Create the missing refdata rows through refdata's operations.
+2. Create each missing security through the security operation.
+3. Book each trade through the booking operation.
+
+The import turns an ORE trade into the request. It maps the ORE trade id to an
+identifier under the ORE scheme and the envelope to classification rows. It
+holds no code that writes a part of a trade. It states the origin =ore_import=
+and the import id as the origin reference. Its rollback closes whole bookings,
+and it finds them by the origin reference. The result states how many trades it booked and how many it
+refused. See the [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][import journey]] and the [[id:65B02BD9-4633-490C-B8A3-F5680067054B][export journey]]. The export reads back
+what the import wrote.
+
+*** Synthetic trade booking
+
+The [[id:96AB808A-DF49-410F-8A90-D1065A3716AC][synthetic component]] generates trades and nothing else. A planner draws a
+pool of securities and a set of trades from a config. Every trade id is derived
+from the config, so the plan is the same on every run. The component turns each
+planned security into a security request and each planned trade into a booking
+request. It sends them through the client that every caller uses.
+
+Synthetic holds no booking logic. It does not decide the order of writes. It
+does not detect a half-booked trade, because none exists. A trade is present
+when its trade id is booked, so a second run books nothing and moves no
+version. The entry channel is =stp=. The origin is =synthetic= and the origin
+reference is the config id. A report that must exclude generated trades filters
+on the origin. The service treats the origin like any other data.
+
+** Structure booking
+
+A structure is one deal made of several trades. See
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][trade structures and deal composition]] and the
+[[id:3899F17C-232B-408C-B667-FA5C630BB71B][grouping journey]]. The legs are ordinary trades, and each is booked by the
+booking operation. The structure is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade set]] that adds a product on top of
+them. The members link the [[id:09D7A25C-D2CB-4B60-AF3B-D7E0FA72D053][structure]] to its legs through
+[[id:B0DACA4C-5A13-412D-92FB-5B97FAF400C4][structure members]], and [[id:05BD64BB-94D8-4007-99D5-F0CED9DB6D20][trade links]] type the relations.
+
+A structure can be arbitrarily large. One transaction that writes every leg in
+full, with its instrument rows, would grow without limit. The request would
+grow too. The design therefore does not book a structure in one transaction.
+It makes each leg atomic, keeps the legs out of risk until the structure is
+whole, and then makes the whole structure live in one small transaction.
+
+*** The three steps
+
+1. *Book each leg as a draft.* A leg is an ordinary trade. The caller books it
+   with the booking operation and the activity =draft_capture=. The leg is
+   atomic, as every trade is. The caller may book the legs one at a time or in
+   parallel, and a retry of a leg answers =already_exists=. A draft contributes
+   to no risk and no P&L, so a half-built structure affects no number.
+2. *Complete the structure.* The caller sends one request that names the
+   structure and lists its leg trade ids and their roles. It states the leg
+   count. The request holds ids only, so its size does not depend on the size
+   of the legs.
+3. *Go live in one unit of work.* The service checks that every leg exists, that
+   every leg is still a draft held for this structure, and that the count and the
+   roles agree. It then writes the structure, the members and the links. For each
+   leg it writes the next state with the activity =execution=. All of this commits
+   once. Either every leg is live and the structure exists, or no leg has changed.
+
+The unit of work in step 3 is bounded by the number of legs and writes small
+rows. The instrument rows were written in step 1.
+
+*** How this follows the lifecycle
+
+The step uses the [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] as it is. It adds no state.
+
+- A leg enters at =draft= through =draft_capture=. That is the machine's own
+  entry for a trade that is recorded and not yet agreed. The lifecycle names
+  the case: an agreement that exists with details missing is a draft, told apart
+  by its reason.
+- A leg goes from =draft= to =live= through the event Execute, which is the
+  activity =execution=. The state trigger takes the transition only from the
+  state the leg starts from, so a leg that is not a draft cannot be activated.
+- The legs arrive =live= and unauthorised, as every live trade does. The
+  authorisation and the confirmation then follow the normal queues.
+- The activity =execution= is confirmable and economic. The external version
+  of the structure therefore starts at activation, and a structure is confirmed
+  as a whole, as [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][trade structures]] requires.
+- A caller that gives up discards each draft leg. The machine allows
+  =draft= to =cancelled= through Discard. That is a deliberate act and not a
+  repair.
+
+A structure is never visible half-live. Its members do not exist until step 3,
+and the state of its legs changes in the one transaction.
+
+*** What a stop leaves
+
+| The stop falls | State left |
+|----------------+------------|
+| Inside a leg booking | Nothing of that leg |
+| After some legs, before the completion | Whole draft legs and no structure. Each state is valid. |
+| Inside the completion | Nothing. The legs stay drafts. |
+| After the completion | A whole structure, every leg live |
+
+The caller finishes the structure by booking the missing legs again and sending
+the completion again. Draft legs that wait too long show in the draft report,
+with their age and their reason.
+
+*** What this needs
+
+- *A draft reason.* The lifecycle states that a draft carries a reason that
+  names who must unblock it. The models have no such field. Structure booking
+  needs a reason such as =structure_incomplete=, so that a report separates
+  these drafts from a trade that waits for an agreement.
+- *A hold on the legs.* A leg needs a way to say which structure it waits for,
+  so that the completion can check it. The origin reference could carry the
+  structure id, or the draft reason could carry it. This is open.
+- *The completion operation.* It owns step 3. It is the only operation that
+  writes members and links for a new structure.
+
+*** Open decisions
+
+- *Whole or in parts.* The three steps suit a strategy that confirms as one
+  deal. A package binds nothing economic, so its legs could go live one by one
+  and be grouped later. The rule for choosing is not set.
+- *The external version.* The structure table has no column for the external
+  version. Activation creates it, so the column must exist.
+- *The composite trade.* A composite trade holds its own legs. A package links
+  separate trades. The two overlap, and a decision must say whether a composite
+  trade becomes a package.
+- *The reply.* The structure's internal version is read from its legs and is not
+  stored. The completion must return it.
+- *The hold.* Where the legs state the structure they wait for.
+
+** Conformance rules
+
+These rules describe the target. A check can enforce each one, and each one
+can become a task.
+
+1. One operation creates the parts of a new trade, and one operation creates a
+   security. No other operation creates them.
+2. The entity operations for a trade's parts edit an existing trade. They
+   refuse to create a part for a trade that is not booked.
+3. The booking request carries the identifiers, the classification and the
+   instrument, so that the caller makes one call for each trade.
+4. The service stamps the activity id. A request that states one is refused.
+5. The trading service holds no code and no field that names a caller.
+6. A caller holds no code that checks a trade for missing parts, repairs a
+   trade or orders the writes of its parts.
+7. The security operation is create-only, and its conflict answer is the
+   caller's proof that the security is present.
+8. A database-backed test proves, for each operation, that a refused part
+   leaves no row.
+9. Every trade states an origin from the lookup. The origin is immutable and
+   no service code branches on it.
+10. A leg of a new structure is booked as a draft. Only the completion
+    operation makes it live, and it does so for all legs in one unit of work.
+11. A database-backed test proves that a refused completion leaves every leg a
+    draft and writes no member.

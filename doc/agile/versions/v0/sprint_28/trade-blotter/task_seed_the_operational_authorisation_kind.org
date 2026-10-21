@@ -76,22 +76,28 @@ The request joins the booking transaction, so a trade is never live without one.
 The check reads the trade and its state through that transaction. A helper that
 opens its own connection cannot see the uncommitted rows.
 
-The request detail has a party isolation policy that matches the trade. A reader
-with no visible party sees no request, so the generated event test now uses a
-party-scoped context. The generated test also seeded the trade enums with
-strings, which does not compile. I removed that seeding by hand. Both are gaps
-in the entity test template.
+A request is read by its tenant alone. It holds a trade id and a version, no
+economics, so it has no party isolation of its own. The trade it names keeps
+that. I first added a party policy, and the generated event test could not read
+the row back through an unscoped context. The generated event test also cannot
+seed a trade through its enum columns, and the profile fixes that test on. The
+model now states the seeding in a =parent_seed= block under the foreign key.
 
 The new table needs the inbox and IAM libraries in the trading core tests, and
 the inbox libraries in the trading core. The trading service now writes the
 inbox request and notice tables, so the service registry and the generated grants
 changed.
 
-I did not generate the web wire types for the new entity.
+=./compass.sh check= ends with two failures that this change does not touch:
 
-=ores.trading.core.tests= has one failure that this change does not touch:
-=range_bound_reads_back_in_the_document_order= refuses an empty =modified_by=. I
-did not check it against main.
+- =xml-benchmark-recorded=: an earlier commit changed the XML code and recorded
+  no benchmark row. This task changes no XML code.
+- =ctest=: =range_bound_reads_back_in_the_document_order= in the trading core
+  refuses an empty =modified_by=, and a marketdata service test about repeated
+  ticks fails on a value. I did not check either against main.
+
+The first gate run found drift on main in the trade operations protocol: its
+header was newer than its model. I brought the model in line with the header.
 
 * Test Scenarios
 
@@ -133,5 +139,5 @@ The operational authorisation kind is seeded and a live trade raises a request.
 - Two tests cover the raise. The generated event test passes. The inbox already
   tests that a refusal is final.
 
-Left open: no request for an amendment, no Execute path, no web wire types, and
-the unrelated =range_bound= test failure.
+Left open: no request for an amendment, no Execute path, and the failures
+listed in the notes.

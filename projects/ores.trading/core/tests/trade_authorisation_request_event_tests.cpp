@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_nats_integration_test.cpp.mustache
- * To modify, update the template and regenerate.
+/*
+ * The generated event test for this entity cannot seed a trade through its enum
+ * columns, so this test is written by hand. The model turns that facet off.
  */
 #include "ores.database/domain/context.hpp"
 // A seeded parent is system-tenant reference data (its soft FK carries

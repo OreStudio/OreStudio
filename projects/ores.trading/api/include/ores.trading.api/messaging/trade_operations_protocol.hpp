@@ -105,9 +105,9 @@ struct trade_export_item {
      */
     std::string ore_id;
     /**
-     * @brief The ids of the trade's counterparty, netting set and portfolios, and the
-     * additional fields: the names and codes of those entities as context, beside
-     * any field the trade's source recorded. Absent when the trade has none.
+     * @brief The ids of the trade's counterparty, netting set and portfolios, and the additional
+     * fields: the names and codes of those entities as context, beside any field the trade's source
+     * recorded. Absent when the trade has none.
      */
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };

@@ -1,4 +1,6 @@
 :PROPERTIES:
+:ores.cpp.eventing-integration-test.enabled: false
+:ores.cpp.shell-command.enabled: true
 :ID: 496A9537-9017-42BE-A04C-32186B8A4360
 :END:
 #+title: ores.trading.trade_authorisation_request
@@ -47,6 +49,7 @@ ores_inbox_approval_requests_tbl.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:parent_entity: trade
 :END:
 
 The trade Operations is asked to release. FK reference to ores_trading_trades_tbl.

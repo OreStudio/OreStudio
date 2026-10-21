@@ -1681,3 +1681,7 @@ tangled into the runnable script library
 * Credit Limits
 
 - [[id:CA3C35D6-2C87-59F1-9B41-08C9BC66AD40][How do I run the credit_limits commands from the shell?]]
+
+* Trade Authorisation Requests
+
+- [[id:C39A3FBB-8625-538F-87DF-E780CBAE34B1][How do I run the trade_authorisation_requests commands from the shell?]]

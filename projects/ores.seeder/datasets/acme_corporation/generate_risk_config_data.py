@@ -18,9 +18,9 @@ one root and two branches (D13):
 
 - D9: a report runs in the functional currency of its entity, which is the
   aggregation currency of the entity's root portfolio.
-- D10: a report on trading positions reads the Trading Book branch. A liquidity,
-  leverage, regulatory or data report reads the whole entity. The holding company
-  has only its Group Treasury portfolio.
+- D10: every report reads the whole entity, because a report may be run on any
+  book, and the banking book holds positions a valuation report prices. The
+  holding company has only its Group Treasury portfolio.
 
 Usage:
     python3 generate_risk_config_data.py
@@ -89,13 +89,6 @@ PROFILES = {
     frozenset(["npv", "sensitivity"]): "Valuation and sensitivities",
     frozenset(["npv", "sensitivity", "parametric_var"]): "Intraday risk",
     frozenset(["npv", "saccr", "parametric_var"]): "Board risk",
-}
-
-# D10: the reports on trading positions.
-TRADING_REPORTS = {
-    "FRTB SA Capital", "NPV", "Cashflows", "Delta and Gamma", "Vega", "Bucketed DV01",
-    "Exposure", "CVA/DVA/FVA", "Stressed VaR", "P&L Attribution", "Intraday Risk Monitor",
-    "Headline Position",
 }
 
 ROOT_PORTFOLIO = {
@@ -235,10 +228,6 @@ def analytics_of(report_name):
 
 def scope_of(company, report_name):
     """The portfolio whose subtree the report reads (D10)."""
-    if company == "acme_group":
-        return ROOT_PORTFOLIO[company]
-    if report_name in TRADING_REPORTS:
-        return "Trading Book"
     return ROOT_PORTFOLIO[company]
 
 

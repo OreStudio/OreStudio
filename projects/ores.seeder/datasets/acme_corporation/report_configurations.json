@@ -522,7 +522,7 @@
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -837,7 +837,7 @@
     "version": 0,
     "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -872,7 +872,7 @@
     "version": 0,
     "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -907,7 +907,7 @@
     "version": 0,
     "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -942,7 +942,7 @@
     "version": 0,
     "report_name": "Vega",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -977,7 +977,7 @@
     "version": 0,
     "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1012,7 +1012,7 @@
     "version": 0,
     "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1047,7 +1047,7 @@
     "version": 0,
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1082,7 +1082,7 @@
     "version": 0,
     "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1117,7 +1117,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1152,7 +1152,7 @@
     "version": 0,
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
   },
   {
     "company_code": "acme_uk",
@@ -1187,7 +1187,7 @@
     "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1362,7 +1362,7 @@
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1642,7 +1642,7 @@
     "version": 0,
     "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1677,7 +1677,7 @@
     "version": 0,
     "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1712,7 +1712,7 @@
     "version": 0,
     "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1747,7 +1747,7 @@
     "version": 0,
     "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1782,7 +1782,7 @@
     "version": 0,
     "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1817,7 +1817,7 @@
     "version": 0,
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1852,7 +1852,7 @@
     "version": 0,
     "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1887,7 +1887,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1922,7 +1922,7 @@
     "version": 0,
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
   },
   {
     "company_code": "acme_us",
@@ -1957,7 +1957,7 @@
     "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2132,7 +2132,7 @@
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2412,7 +2412,7 @@
     "version": 0,
     "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2447,7 +2447,7 @@
     "version": 0,
     "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2482,7 +2482,7 @@
     "version": 0,
     "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2517,7 +2517,7 @@
     "version": 0,
     "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2552,7 +2552,7 @@
     "version": 0,
     "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2587,7 +2587,7 @@
     "version": 0,
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2622,7 +2622,7 @@
     "version": 0,
     "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2657,7 +2657,7 @@
     "version": 0,
     "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2692,7 +2692,7 @@
     "version": 0,
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
   },
   {
     "company_code": "acme_hk",
@@ -2727,6 +2727,6 @@
     "version": 0,
     "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
   }
 ]

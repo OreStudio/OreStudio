@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person who watches the compute grid sees the load of the whole grid, including the jobs of every tenant, and can follow a report run from its trigger to its compute result. Today the fleet row of the system tenant counts the work of every tenant through an interim change to ores_compute_grid_stats_fn. The installation ledger that the journey Watch the grid names replaces that change.
+A person who watches the compute grid sees the load of the whole grid and can follow a report run from its trigger to its compute result. The system tenant sees the fleet and the work in flight of every tenant. A tenant sees the fleet and its own work. No read crosses a tenant, and no policy widens.
+
+Today the system tenant sees 22 hosts and no jobs. The fleet is the installation's and every session reads it. The work belongs to the tenant, and a cross-tenant total is not a fact the installation owns, so the stored sample of the system tenant counts the system tenant's own work only.
 
 * Status
 
@@ -35,10 +37,12 @@ A person who watches the compute grid sees the load of the whole grid, including
 
 * Acceptance
 
-- The system tenant reads the load, the queue and the outcomes of all tenants from the installation ledger, not from a function that reads across tenants.
+- The system tenant reads the work in flight of all tenants: the queue, the jobs in progress and the active batches. It reads them from a table the installation owns, which only a session of the system tenant reads.
+- The poller writes that table by entering each tenant, as it does for the tenant rows. No function reads across tenants, and no function runs with its owner's rights for this.
 - A tenant administrator sees the hosts of the grid and the tenant's own jobs on the same screen.
 - A report run shows in the grid as a batch with its workunit, host and result, linked to the report instance.
-- The interim change in ores_compute_grid_stats_fn is removed.
+- The exceptions register has an entry for the new table, and the security page "Data read across tenants" and the ownership page state the rule for installation-wide work totals.
+- A pgTAP test proves that a tenant session reads none of the new table, and that the stats function reads one tenant only.
 
 * Plan
 
@@ -61,6 +65,33 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What the design says
+
+The pages to read first are [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]], [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]], the [[id:07177FE0-F0B9-44E8-B67C-CEAA6DCC696A][RLS and permission exceptions register]] and the memory [[id:C3D570EF-468D-427D-B355-30C0443BCDDF][Read another tenant's data from inside it]].
+
+- The fleet is the installation's. The work counts are the tenant's.
+- A total of every tenant's work is a fact about several tenants at once. The way to compute it is to act inside each tenant. The poller already does this (entry E5 of the register).
+- A system tenant session reads no other tenant's rows, and the operator's breakdown by tenant already enters each tenant from the BFF (entry E7).
+- The work ledger (entry E4) is the installation's table. It holds the entries that wait or run, and no finished work, so it cannot give the outcomes or the totals.
+- A function that runs with its owner's rights and takes a tenant is readable by every database role, unless its EXECUTE is revoked from public and granted by name (the memory on definer functions).
+
+** What was tried and withdrawn
+
+The first change made the fleet row of the system tenant count the work of every tenant. It made the function ores_compute_grid_stats_fn run with its owner's rights. A read-only database role could then read the job counts of any tenant and party through it, and every tenant session reads the fleet row. The change was reverted in the pull request #3607 before it merged.
+
+** Options for the stored total
+
+| Option | What it is | Verdict |
+|--------+------------+---------|
+| A | A table of the installation with one row for each sample. The poller sums the counts it reads inside each tenant and writes the sum. The policy admits a session of the system tenant only, as for the work ledger. | Fits the design. It needs a register entry and a decision on the audit. |
+| B | Add finished-work counters to the work ledger, so the ledger holds the operation as a fact. | The journey Watch the grid names this. It is a larger change to the claim and the reaper. |
+| C | Keep the sum in the fleet row. | Rejected. Every tenant session reads that row. |
+
+** Open decision
+
+Which of A or B, and whether the rule needs a sign-off before the merge, as the register states. Option A is the smaller step and can move to B later.
+
 
 * Test Scenarios
 

@@ -60,6 +60,7 @@
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_kind_registrar.hpp"
+#include "ores.refdata.core/messaging/convention_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_change_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_change_registrar.hpp"
@@ -289,6 +290,8 @@
 #include "ores.refdata.core/messaging/swaption_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_basis_swap_long_short_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_basis_swap_pay_receive_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_basis_two_swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_resolution_history_provider_registrar.hpp"
@@ -365,6 +368,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_type_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
+    append(register_convention_handlers(nats, ctx, verifier));
     append(register_convention_kind_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
     append(register_counterparty_change_handlers(nats, ctx, verifier));
@@ -495,6 +499,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_swap_index_convention_handlers(nats, ctx, verifier));
     append(register_swaption_volatility_config_handlers(nats, ctx, verifier));
     append(register_tenor_basis_swap_convention_handlers(nats, ctx, verifier));
+    append(register_tenor_basis_swap_long_short_handlers(nats, ctx, verifier));
+    append(register_tenor_basis_swap_pay_receive_handlers(nats, ctx, verifier));
     append(register_tenor_basis_two_swap_convention_handlers(nats, ctx, verifier));
     append(register_yield_curve_config_handlers(nats, ctx, verifier));
     append(register_yield_volatility_config_handlers(nats, ctx, verifier));

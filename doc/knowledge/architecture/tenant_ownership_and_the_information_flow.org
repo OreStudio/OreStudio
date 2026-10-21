@@ -150,12 +150,23 @@ Name the third owner, and give it the mechanism it has earned.
   [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let
   the system tenant read every tenant]].
 
+  The grid's work totals are the first such aggregate. The poller enters each
+  tenant, reads that tenant's counters there, and writes the sum to
+  =ores_compute_work_totals_tbl=, whose policy admits a session of the system
+  tenant and no other. The sum is stored in a table of its own and not in the
+  fleet row, because every session reads the fleet row. A function that runs
+  with its owner's rights to count across tenants is not the way: it lets any
+  database role read any tenant's counts.
+
 ** What follows for the grid
 
 The fleet is Class I: hosts, wrappers, node samples and the services roster
 describe the installation, and every session the permission admits should
 read them whole. The work counts are Class T: workunits, batches and results
 belong to the tenant that owns them.
+
+The installation-wide work totals are now written by the poller into a table that only the system tenant reads (entry E8 of the
+[[id:07177FE0-F0B9-44E8-B67C-CEAA6DCC696A][RLS and permission exceptions register]]).
 
 So the two questions the screen raises — "is the grid healthy?" and "what is
 my tenant running?" — are the same problem seen from two sides, and both

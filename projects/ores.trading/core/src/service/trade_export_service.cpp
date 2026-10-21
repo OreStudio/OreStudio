@@ -98,6 +98,23 @@ std::string to_uuid_array(const std::vector<std::string>& ids) {
 }
 
 /**
+ * Adds a name beside the ids of a trade's envelope, unless the trade's source
+ * already recorded a field of that name.
+ */
+void add_context(trade_export_item& item, const std::string& name, const std::string& value) {
+    if (value.empty())
+        return;
+    if (!item.envelope)
+        item.envelope.emplace();
+    auto& fields = item.envelope->additional_fields;
+    if (!fields)
+        fields.emplace();
+    if (std::ranges::any_of(*fields, [&](const auto& f) { return f.name == name; }))
+        return;
+    fields->push_back({.name = name, .value = value});
+}
+
+/**
  * Resolves a page of trades to their instruments and envelopes: bucket the
  * trade ids by the table the trade-type catalogue routes each type to, read
  * each table in one batch, and append what it returns to the page's batch.
@@ -301,10 +318,16 @@ void populate_instruments_for_trades(const Ctx& ctx,
     }
 
     // Phase 3: the instruments themselves.
+    std::unordered_map<std::string, std::string> security_codes;
     if (!bond_ids.empty()) {
         service::bond_instrument_reader reader(ctx);
-        for (auto& [id, data] : reader.read_instruments(bond_ids))
+        for (auto& [id, data] : reader.read_instruments(bond_ids)) {
+            // The package names a security by its issue's id, which is unique
+            // in the tenant, and keeps the issue's own code as context.
+            security_codes.emplace(id, data.issue.security_id);
+            data.issue.security_id = boost::uuids::to_string(data.issue.issue_id);
             batch.bond_instruments.push_back(std::move(data));
+        }
     }
     if (!credit_ids.empty()) {
         service::credit_instrument_service svc(ctx);
@@ -511,6 +534,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
         const auto id = boost::uuids::to_string(item.anchor.id);
         if (auto it = envelopes.find(id); it != envelopes.end())
             item.envelope = std::move(it->second);
+        if (auto it = security_codes.find(id); it != security_codes.end())
+            add_context(item, "SecurityCode", it->second);
     }
 }
 
@@ -590,11 +615,12 @@ trade_export_service::export_trades(const std::vector<std::string>& trade_ids,
     items.reserve(anchors.size());
     for (auto& anchor : anchors) {
         const auto id = boost::uuids::to_string(anchor.id);
-        const auto ore_id = ore_ids.find(id);
-        items.push_back(
-            {.anchor = std::move(anchor), .ore_id = ore_id != ore_ids.end() ? ore_id->second : id});
+        items.push_back({.anchor = std::move(anchor), .ore_id = id});
     }
     populate_instruments_for_trades(ctx_, items, instruments);
+    for (auto& item : items)
+        if (const auto alias = ore_ids.find(item.ore_id); alias != ore_ids.end())
+            add_context(item, "OreTradeId", alias->second);
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
     return items;
 }

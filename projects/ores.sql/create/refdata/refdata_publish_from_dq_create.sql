@@ -2943,14 +2943,14 @@ begin
         from (
             select lei,
                 ores_utility_generate_short_code_fn(
-                    entity_legal_name, entity_transliterated_name_1) as base_code,
+                    entity_legal_name, entity_transliterated_name_1, lei) as base_code,
                 row_number() over (
                     partition by ores_utility_generate_short_code_fn(
-                        entity_legal_name, entity_transliterated_name_1)
+                        entity_legal_name, entity_transliterated_name_1, lei)
                     order by lei) as rn,
                 count(*) over (
                     partition by ores_utility_generate_short_code_fn(
-                        entity_legal_name, entity_transliterated_name_1)) as cnt
+                        entity_legal_name, entity_transliterated_name_1, lei)) as cnt
             from lei_counterparty_uuid_map
         ) numbered
     ) sub
@@ -3310,14 +3310,14 @@ begin
         from (
             select lei,
                 ores_utility_generate_short_code_fn(
-                    entity_legal_name, entity_transliterated_name_1) as base_code,
+                    entity_legal_name, entity_transliterated_name_1, lei) as base_code,
                 row_number() over (
                     partition by ores_utility_generate_short_code_fn(
-                        entity_legal_name, entity_transliterated_name_1)
+                        entity_legal_name, entity_transliterated_name_1, lei)
                     order by lei) as rn,
                 count(*) over (
                     partition by ores_utility_generate_short_code_fn(
-                        entity_legal_name, entity_transliterated_name_1)) as cnt
+                        entity_legal_name, entity_transliterated_name_1, lei)) as cnt
             from lei_party_subtree
         ) numbered
     ) sub

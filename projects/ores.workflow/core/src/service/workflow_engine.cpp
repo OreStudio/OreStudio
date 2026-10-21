@@ -740,9 +740,10 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         if (step_def.compensation_subject.empty())
             continue;
 
-        const auto comp_json = step_def.build_compensation ?
-                                   step_def.build_compensation(s.command_json, s.response_json) :
-                                   "{}";
+        const auto comp_json =
+            step_def.build_compensation ?
+                step_def.build_compensation(s.command_json, s.response_json, failure_msg) :
+                "{}";
 
         // Persist compensation step (step_index negative to distinguish).
         const auto comp_id = boost::uuids::random_generator()();

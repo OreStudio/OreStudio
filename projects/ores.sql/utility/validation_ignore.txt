@@ -156,6 +156,7 @@ TENANT_002 ores_compute_grid_samples_tbl
 TENANT_002 ores_compute_node_samples_tbl
 TENANT_002 ores_compute_work_ledger_tbl
 TENANT_002 ores_compute_work_tenants_tbl
+TENANT_002 ores_compute_work_totals_tbl
 
 # =============================================================================
 # Workflow batch links - the batch id is a UUID and one workflow step waits for

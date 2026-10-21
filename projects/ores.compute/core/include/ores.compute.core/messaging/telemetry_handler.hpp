@@ -25,6 +25,7 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
+#include "ores.compute.core/repository/work_total_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -33,6 +34,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -106,6 +108,24 @@ public:
                 resp.outcomes_no_reply = grid->outcomes_no_reply;
 
                 resp.sampled_at = grid->sampled_at;
+            }
+
+            // The work of every tenant is the installation's total, which only a session of the
+            // system tenant reads. The totals replace the system tenant's own counters, which
+            // count its own work and not the grid's.
+            if (ctx.tenant_id() == ores::utility::uuid::tenant_id::system()) {
+                if (const auto totals = repository::work_total_repository().read_newest(ctx)) {
+                    resp.results_inactive = totals->results_inactive;
+                    resp.results_unsent = totals->results_unsent;
+                    resp.results_in_progress = totals->results_in_progress;
+                    resp.results_done = totals->results_done;
+                    resp.total_workunits = totals->total_workunits;
+                    resp.total_batches = totals->total_batches;
+                    resp.active_batches = totals->active_batches;
+                    resp.outcomes_success = totals->outcomes_success;
+                    resp.outcomes_client_error = totals->outcomes_client_error;
+                    resp.outcomes_no_reply = totals->outcomes_no_reply;
+                }
             }
 
             const auto nodes = repo.latest_node_samples(ctx);

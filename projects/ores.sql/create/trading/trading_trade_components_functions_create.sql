@@ -132,20 +132,51 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
 -- Envelope names
 -- =============================================================================
 
--- The names an ORE envelope gives a booked trade's counterparty and netting
--- set. Each is the identifier the trade's source named it by, else the
--- entity's ORE alias, else its own code; a trade with no counterparty or no
--- netting set gets no name for it. An identifier deleted since the booking
--- falls back the same way, deliberately: the trade keeps a name its entity
--- still answers to. Runs as the owner, because the names live
--- in refdata tables the trading service does not read; every row is held to
--- the caller's tenant and visible parties, as row-level security holds it.
+drop function if exists ores_trading_trade_envelope_names_fn(uuid[]);
+drop function if exists ores_trading_trade_portfolio_names_fn(uuid[]);
+
+-- What an ORE envelope says of a booked trade's counterparty, netting set and
+-- book. The counterparty, netting set and book are named by their ids, which
+-- are unique in the tenant and join back to every property the entity holds.
+-- The remaining columns are context for a reader: the entity's own names, its
+-- LEI, and the alias the trade's source named it by, which is the identifier
+-- the booking recorded, else the entity's ORE alias, else its short code or
+-- code. An identifier deleted since the booking falls back the same way,
+-- deliberately: the trade keeps a name its entity still answers to. A trade
+-- with no counterparty or no netting set gets none of its columns. Runs as the
+-- owner, because the names live in refdata tables the trading service does not
+-- read; every row is held to the caller's tenant and visible parties, as
+-- row-level security holds it.
 create or replace function ores_trading_trade_envelope_names_fn(p_trade_ids uuid[])
-returns table (trade_id uuid, counter_party text, netting_set_id text) as $$
+returns table (
+    trade_id uuid,
+    counter_party text,
+    netting_set_id text,
+    counterparty_name text,
+    counterparty_lei text,
+    counterparty_alias text,
+    netting_set_code text,
+    netting_set_alias text,
+    book_id text,
+    book_name text
+) as $$
 #variable_conflict use_column
 begin
     return query
     select a.id,
+        a.counterparty_id::text,
+        b.netting_set_id::text,
+        (select cp.full_name from ores_refdata_counterparties_tbl cp
+         where cp.tenant_id = a.tenant_id
+           and cp.id = a.counterparty_id
+           and cp.valid_to = ores_utility_infinity_timestamp_fn()),
+        (select ci.id_value from ores_refdata_counterparty_identifiers_tbl ci
+         where ci.tenant_id = a.tenant_id
+           and ci.counterparty_id = a.counterparty_id
+           and ci.id_scheme = 'LEI'
+           and ci.valid_to = ores_utility_infinity_timestamp_fn()
+         order by ci.id_value
+         limit 1),
         case when a.counterparty_id is not null then coalesce(
             (select ci.id_value from ores_refdata_counterparty_identifiers_tbl ci
              where ci.tenant_id = a.tenant_id
@@ -162,6 +193,10 @@ begin
              where cp.tenant_id = a.tenant_id
                and cp.id = a.counterparty_id
                and cp.valid_to = ores_utility_infinity_timestamp_fn())) end,
+        (select ns.code from ores_refdata_netting_sets_tbl ns
+         where ns.tenant_id = a.tenant_id
+           and ns.id = b.netting_set_id
+           and ns.valid_to = ores_utility_infinity_timestamp_fn()),
         case when b.netting_set_id is not null then coalesce(
             (select nsi.id_value from ores_refdata_netting_set_identifiers_tbl nsi
              where nsi.tenant_id = a.tenant_id
@@ -177,7 +212,12 @@ begin
             (select ns.code from ores_refdata_netting_sets_tbl ns
              where ns.tenant_id = a.tenant_id
                and ns.id = b.netting_set_id
-               and ns.valid_to = ores_utility_infinity_timestamp_fn())) end
+               and ns.valid_to = ores_utility_infinity_timestamp_fn())) end,
+        b.book_id::text,
+        (select bk.name from ores_refdata_books_tbl bk
+         where bk.tenant_id = a.tenant_id
+           and bk.id = b.book_id
+           and bk.valid_to = ores_utility_infinity_timestamp_fn())
     from ores_trading_trades_tbl a
     join ores_trading_trade_bookings_tbl b
       on b.tenant_id = a.tenant_id
@@ -190,16 +230,16 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
--- The names of the portfolios each booked trade is reported in, in the order
+-- The portfolios each booked trade is reported in, by id and name, in the order
 -- its source stated them. Runs as the owner, because the names live in a
 -- refdata table the trading service does not read; every row is held to the
 -- caller's tenant and visible parties, as row-level security holds it.
 create or replace function ores_trading_trade_portfolio_names_fn(p_trade_ids uuid[])
-returns table (trade_id uuid, sequence_number integer, name text) as $$
+returns table (trade_id uuid, sequence_number integer, portfolio_id uuid, name text) as $$
 #variable_conflict use_column
 begin
     return query
-    select tp.trade_id, tp.sequence_number, p.name
+    select tp.trade_id, tp.sequence_number, tp.portfolio_id, p.name
     from ores_trading_trade_portfolios_tbl tp
     join ores_refdata_portfolios_tbl p
       on p.tenant_id = tp.tenant_id

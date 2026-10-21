@@ -252,8 +252,12 @@ a compute screen yet.
 6. *The installation's own ledger is not built.* The work counts come from the
    stored grid sample, whose totals =ores_compute_grid_stats_fn= computes for
    one tenant, so the stored summary is that tenant's slice rather than the
-   installation's own accounting. The ledger the ownership study decides on
-   records the operation as an installation fact and is the missing piece
+   installation's own accounting. The work totals table now holds the sum of
+   every tenant's counters for a session of the system tenant, so the load
+   panels read the whole grid. The finished work and the outcomes sit in the
+   totals only as the last day's counts. The ledger the ownership study decides
+   on records the operation as an installation fact and is still the missing
+   piece
    ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
    information flow]]).
 7. *The newest-sample read is gated; the range read is not built.*

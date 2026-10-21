@@ -61,8 +61,8 @@ export function BindingHistory({
     const sourceName = show(row['source_name']);
     const [reverting, setReverting] = useState<number | null>(null);
     const history = useQuery({
-        queryKey: ['history', BINDING_ENTITY, id],
-        queryFn: () => api.history(BINDING_ENTITY, id),
+        queryKey: ['history', BINDING_ENTITY, sourceName],
+        queryFn: () => api.history(BINDING_ENTITY, sourceName),
     });
     // A source a running feed holds may not be written back: a revert would take
     // a series another feed is publishing.

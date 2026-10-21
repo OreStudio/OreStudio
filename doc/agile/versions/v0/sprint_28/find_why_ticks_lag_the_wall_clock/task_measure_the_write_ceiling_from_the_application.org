@@ -109,8 +109,8 @@ with the writer and the table of today.
   table with its insert trigger gives about 10,500, so the writer is a factor of about five.
   The same =COPY= without the trigger gives 46,000 to 54,000, so the trigger is another factor
   of about five. The append-only table gives about 185,000. The batch writer should use =COPY=
-  and the trigger must go. PostgreSQL refuses =COPY FROM= on a table with row-level security,
-  so =COPY= cannot write the table as built.
+  and the trigger must go. PostgreSQL refuses =COPY FROM= for a role that the policy
+  applies to. A later test showed that a role with =BYPASSRLS= can copy.
 - A transaction of fewer than 1,000 rows loses most of that. A batch split across 100
   tenants gives transactions of 500 rows, and the rate falls to 63,000 on the append-only
   table and 16,000 on the observation shape. A row for each source keeps one large transaction.

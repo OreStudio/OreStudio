@@ -8,12 +8,12 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/store-ticks-in-an-append-only-table
-#+pr:
+#+pr: 3606
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,7 +35,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 
 * Acceptance
 
-- A hypertable for ticks with no trigger, no valid_to and one index on the series and the time, with a compression policy and a retention policy for each class.
+- A hypertable for ticks with no trigger, no valid_to and one index on the series and the time, with a retention policy for each class and no compression.
 - The ingest writes ticks to it, and a batch needs no dedupe against a trigger.
 - A view joins it with the observation table, and the readers keep their results: snapshots, evolution, slices, ORE export, curve pillars, lineage and the feed binding activity.
 - The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector.
@@ -45,6 +45,29 @@ The observation table stops at about 8,300 rows per second for one connection be
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Decision of the owner, 2026-10-21: this task keeps one row for each series. A series is one
+observation with its provenance, owned by a tenant and a party, so ticks are not shared and one
+row for each source does not apply.
+
+The design is in the section on tenant and party isolation of the tick ingest pipeline note.
+In short: one append-only hypertable for each retention class, with =tenant_id=, =party_id=,
+=series_id=, =ts=, =coord= and =value=. The reads run under the tenant policy and the party
+policy, in the scalar subquery form. A writer role with =BYPASSRLS= and =INSERT= only writes
+with =COPY=. The tests of write rate, read cost and isolation are done and recorded in the
+note. The table is not compressed, because row-level security is not supported on compressed
+chunks (Timescale documentation). Retention drops whole chunks. The order of work:
+
+1. Provision the writer role in the role script, with =INSERT= on the tick table and no =SELECT=.
+2. Write the table, its index, its two policies and its retention class, in the model of the
+   marketdata component, with the notification trigger off.
+3. Move the ingest to =COPY= with the owner copied from the cached series, and give the service
+   a second pool for the writer role.
+4. Point the readers at the table, one at a time, with a test for each. A reader of a party or a
+   tenant lists its series first.
+5. Measure a burst with the tick injector.
+6. Open a separate task for the session functions of the policies, which cost seven times on an
+   indexed read.
 
 * Measurements
 
@@ -58,7 +81,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =COPY= of the owner shape, 50,000 rows in a transaction, by a =BYPASSRLS= role that does not own the table | 194,094 rows per second (append-only shape: 180,185) | =evidence/write_ceiling_owner_columns_output.txt= | this branch |
+| Read of one series, 2,500 rows, under both policies, session functions | 23 to 26 ms (3.4 ms without a policy) | =evidence/write_ceiling_owner_reads_output.txt= | same |
+| Read of one series, 2,500 rows, under both policies, scalar subquery form | 4.5 ms | same | same |
 
 * Notes
 
@@ -77,12 +102,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3606][#3606]] | [marketdata,doc] Design and measure the isolation of the tick table |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Row-level security is not supported on compressed chunks | =tick_ingest_pipeline.org= | Fixed | The design drops compression, states why, and names the fallbacks. |
+| 2 | "Owner columns cost nothing" rests on single runs | =tick_ingest_pipeline.org= | Fixed | The text states the 0.86 to 1.27 spread and that the two shapes ran as different roles. |
+| 3 | The benchmark creates the slow policy form | benchmark | Fixed | It now creates the scalar subquery form. |
+| 4 | Read table picks runs unevenly, inferred explanations | =tick_ingest_pipeline.org= | Fixed | The disk figure is marked as arithmetic. |
+| 5 | clang-format warnings and header comment | benchmark | Fixed | Formatted, and the header names the shape and the variables. |
 
 * Result

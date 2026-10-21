@@ -1,0 +1,19 @@
+# COPY of the owner shape, written by a BYPASSRLS role that does not own the table (append_only for comparison)
+RESULT shape=tick_owner writer=copy batch=100 transactions_per_batch=1 rows=300000 secs=14.50 rows_per_s=20688
+RESULT shape=tick_owner writer=copy batch=1000 transactions_per_batch=1 rows=300000 secs=2.57 rows_per_s=116845
+RESULT shape=tick_owner writer=copy batch=1000 transactions_per_batch=10 rows=300000 secs=12.55 rows_per_s=23908
+RESULT shape=tick_owner writer=copy batch=10000 transactions_per_batch=1 rows=300000 secs=1.93 rows_per_s=155531
+RESULT shape=tick_owner writer=copy batch=10000 transactions_per_batch=10 rows=300000 secs=3.76 rows_per_s=79742
+RESULT shape=tick_owner writer=copy batch=10000 transactions_per_batch=100 rows=300000 secs=14.12 rows_per_s=21248
+RESULT shape=tick_owner writer=copy batch=50000 transactions_per_batch=1 rows=300000 secs=1.55 rows_per_s=194094
+RESULT shape=tick_owner writer=copy batch=50000 transactions_per_batch=10 rows=300000 secs=2.73 rows_per_s=109787
+RESULT shape=tick_owner writer=copy batch=50000 transactions_per_batch=100 rows=300000 secs=3.90 rows_per_s=76952
+RESULT shape=append_only writer=copy batch=100 transactions_per_batch=1 rows=300000 secs=13.06 rows_per_s=22969
+RESULT shape=append_only writer=copy batch=1000 transactions_per_batch=1 rows=300000 secs=3.26 rows_per_s=92040
+RESULT shape=append_only writer=copy batch=1000 transactions_per_batch=10 rows=300000 secs=13.09 rows_per_s=22914
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=1 rows=300000 secs=1.66 rows_per_s=181129
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=10 rows=300000 secs=3.25 rows_per_s=92373
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=100 rows=300000 secs=15.31 rows_per_s=19593
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=1 rows=300000 secs=1.66 rows_per_s=180185
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=10 rows=300000 secs=1.88 rows_per_s=159300
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=100 rows=300000 secs=3.92 rows_per_s=76481

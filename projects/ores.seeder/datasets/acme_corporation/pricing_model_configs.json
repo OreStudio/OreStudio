@@ -5,7 +5,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "EOD Official",
-    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
+    "description": "The numbers that are booked. Every product type ORE prices, each on its usual pair, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
     "configuration_id": "7784ec69-9b83-5956-a0d0-f4794981bc5e"
   },
@@ -25,7 +25,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "EOD Official",
-    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
+    "description": "The numbers that are booked. Every product type ORE prices, each on its usual pair, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
     "configuration_id": "43b4a4b1-d4ff-537a-93bb-b08ebca273d3"
   },
@@ -115,7 +115,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "EOD Official",
-    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
+    "description": "The numbers that are booked. Every product type ORE prices, each on its usual pair, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
     "configuration_id": "87bf0157-6c27-5d25-887f-bd4f2bc9a902"
   },
@@ -175,7 +175,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "EOD Official",
-    "description": "The numbers that are booked. The usual pair for each product, a fine grid for bonds and a stop on any calibration that fails.",
+    "description": "The numbers that are booked. Every product type ORE prices, each on its usual pair, a fine grid for bonds and a stop on any calibration that fails.",
     "config_variant": "",
     "configuration_id": "d9e2f3fe-73f7-528d-adf5-9a42959ba18e"
   },

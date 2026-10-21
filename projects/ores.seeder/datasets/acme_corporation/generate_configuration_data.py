@@ -54,6 +54,29 @@ PRODUCTS = {
     "EuropeanSwaption": ("BlackBachelier", {}, "BlackBachelierSwaptionEngine", {}),
 }
 
+# The pairs and settings ORE documents for every product type, extracted from the ORE user
+# guide by ../ore_pricing_engines/generate_vocabulary_sql.py.
+with open(os.path.join(SCRIPT_DIR, "..", "ore_pricing_engines", "pricing_vocabulary.json")) as handle:
+    VOCABULARY = json.load(handle)
+
+
+def usual_pair(product_type):
+    """The model and engine ORE lists first for a product type, or None when it lists none."""
+    pairs = VOCABULARY.get(product_type, {}).get("pairs", [])
+    return next((p for p in pairs if p["usual"]), None)
+
+
+def required_settings(product_type, model, engine):
+    """The settings ORE needs for the pair, with the value its guide shows, as (model, engine)."""
+    pair = next((p for p in VOCABULARY.get(product_type, {}).get("pairs", [])
+                 if p["model"] == model and p["engine"] == engine), None)
+    found = {"model": {}, "engine": {}}
+    for setting in (pair or {"settings": []})["settings"]:
+        if setting["required"] and setting["usual"] is not None and setting["scope"] in found:
+            found[setting["scope"]][setting["name"]] = setting["usual"]
+    return found["model"], found["engine"]
+
+
 # What each entity prices. The holding company holds intercompany loans and the
 # hedges of its subsidiaries' currencies, so it prices linear products only. A
 # trading entity prices the products its desks trade. London alone holds option
@@ -105,8 +128,10 @@ SENSITIVITIES = {"SensitivityTemplate": "IR_Analytical"}
 #   ones for a product type.
 CONFIGURATIONS = {
     "EOD Official": {
-        "description": "The numbers that are booked. The usual pair for each product, a fine "
-                       "grid for bonds and a stop on any calibration that fails.",
+        "description": "The numbers that are booked. Every product type ORE prices, each on its "
+                       "usual pair, a fine grid for bonds and a stop on any calibration that "
+                       "fails.",
+        "all_products": True,
         "bond_step": "6M",
         "calibration_stops": True,
     },
@@ -323,10 +348,19 @@ def pricing_engines():
                 "configuration_id": new_uuid(f"configuration:{key}"),
             })
             wanted = [t for t in ENTITY_PRODUCTS[company] if t not in spec.get("skip", [])]
+            if spec.get("all_products"):
+                wanted += sorted(t for t in VOCABULARY if t not in wanted and usual_pair(t))
             for position, product_type in enumerate(wanted):
-                model, model_parameters, engine, engine_parameters = spec.get(
-                    "replace", {}).get(product_type, PRODUCTS[product_type])
-                engine_parameters = dict(engine_parameters)
+                if product_type in spec.get("replace", {}) or product_type in PRODUCTS:
+                    model, model_parameters, engine, engine_parameters = spec.get(
+                        "replace", {}).get(product_type, PRODUCTS.get(product_type))
+                else:
+                    pair = usual_pair(product_type)
+                    model, model_parameters, engine, engine_parameters = (
+                        pair["model"], {}, pair["engine"], {})
+                needed_model, needed_engine = required_settings(product_type, model, engine)
+                model_parameters = {**needed_model, **model_parameters}
+                engine_parameters = {**needed_engine, **engine_parameters}
                 if "TimestepPeriod" in engine_parameters:
                     engine_parameters["TimestepPeriod"] = spec["bond_step"]
                 engine_parameters.update(spec.get("settings", {}).get(product_type, {}))

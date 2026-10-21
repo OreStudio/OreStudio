@@ -21,6 +21,9 @@
 \ir ./analytics_pricing_engine_types_populate.sql
 \ir ./analytics_pricing_model_engine_pairs_populate.sql
 \ir ./analytics_pricing_pair_settings_populate.sql
+\ir ./analytics_pricing_models_populate.sql
+\ir ./analytics_pricing_methods_populate.sql
+\ir ./analytics_sensitivity_templates_populate.sql
 \ir ./analytics_stress_shift_families_populate.sql
 \ir ./analytics_shift_types_populate.sql
 \ir ./analytics_todays_market_collection_kinds_populate.sql

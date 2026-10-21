@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/store-ticks-in-an-append-only-table
-#+pr:
+#+pr: 3606
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3606][#3606]] | [marketdata,doc] Design and measure the isolation of the tick table |
 
 * Review
 

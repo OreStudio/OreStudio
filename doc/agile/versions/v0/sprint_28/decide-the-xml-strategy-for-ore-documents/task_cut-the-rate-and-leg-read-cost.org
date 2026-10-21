@@ -28,7 +28,7 @@ Name the cost inside read_rate_instrument and the leg append, remove what is avo
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | The decimal round trip is removed. The leg record is left as it is, with the reason in the Notes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-20                               |

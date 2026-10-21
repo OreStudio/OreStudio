@@ -10,7 +10,7 @@ is in exactly one of three states:
              The family moves to a table in its own migration task.
   unused     Nothing in the product reads it. Nothing is migrated, and no XML
              family suite may name it, because such a test would prove a
-             capability no feature has. The family leaves with xsdcpp.
+             capability no feature has.
 
 The three states are a decision, not a measurement, so the families are named
 here with the evidence for the state. What this check measures is whether the
@@ -73,8 +73,8 @@ FAMILIES = {
         "table written and proved; nothing in the product reads the ORE XML, "
         "and the analytics stress test store is modelled on the document",
     ),
-    # Unused: nothing in the product reads the family. Its generated types
-    # leave when xsdcpp does, and no XML family suite may name it.
+    # Unused: nothing in the product reads the family, and no XML family suite
+    # may name it.
     "Simulation": ("unused", "no product reader"),
     "SensitivityAnalysis": ("unused", "no product reader"),
     "ReferenceData": ("unused", "no product reader"),

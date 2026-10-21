@@ -14,4 +14,4 @@ Use the decimal type for every rate, spread, notional, amount, price, strike, fe
 
 *Why:* ORE types these values as xs:float. A float holds only the nearest binary value, so a strike of 0.005 was stored and exported as 0.00499999989, and a cap of 0.025 was stored as 0.02500000037252903. The FRA digits fix and the credit analysis both found this.
 
-*How to apply:* Give each money column in a new model the type numeric(38, 12). In the ORE binding, make the member a lexical leaf through scripts/reapply_ore_lexical_form.py, read it with exact_decimal and write it with set_exact. Add a mapper test that holds the digits. See doc/knowledge/architecture/exact_numbers_and_economic_change.org.
+*How to apply:* Give each money column in a new model the type numeric(38, 12). In the generated codec table, name the member in the --exact-decimal list of projects/ores.ore/scripts/regenerate_xml_bindings.sh, then regenerate. The table holds the member as an exact decimal. Read it with record_reader::decimal or own_decimal and write it with set_decimal. Add a mapper test that holds the digits. See doc/knowledge/architecture/exact_numbers_and_economic_change.org.

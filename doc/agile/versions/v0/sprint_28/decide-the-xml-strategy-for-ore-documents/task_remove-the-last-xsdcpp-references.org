@@ -26,11 +26,11 @@ No file outside the agile pages names xsdcpp or a script it used.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -39,6 +39,10 @@ No file outside the agile pages names xsdcpp or a script it used.
 - The memory and the runbook describe how a money member keeps its digits today
 
 * Plan
+
+Search the tree outside the agile pages for =xsdcpp= and for the scripts and
+types it produced. Delete a page that only describes the old tool. Rewrite any
+other mention to the current state.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -56,9 +60,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files outside =doc/agile= that name xsdcpp, before | 8 | =git grep -il xsdcpp -- . ':!doc/agile'= | 5f1675d6ac |
+| Files outside =doc/agile= that name xsdcpp, after | 0 | same | this branch |
 
 * Notes
+
+- Deleted: =doc/analysis/ore_xsd_schema_gaps.md= and
+  =doc/knowledge/architecture/ore_numeric_leaf_setters.txt=. Both described the
+  old tool only.
+- Rewritten to the current state: the memory on exact decimals, the runbook step
+  that carries the digits, the section of the exact numbers page on the ORE
+  boundary, three code comments, the evidence file header and one line of each of
+  two plans.
+- The agile pages keep their mentions. They are the record of the work.
 
 * Test Scenarios
 
@@ -84,3 +98,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+No file outside =doc/agile= names xsdcpp or a script it used.

@@ -211,6 +211,15 @@ BEGIN
     -- schedule cell reads the definition's job in the scheduler.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'dq::fsm_states:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::job_instances:read');
+    -- A report page lists the configurations the report binds and opens each
+    -- one: the binding, the configuration, its kind, and the analytics it holds
+    -- with their names. The first three are party-scoped by row-level security,
+    -- like the reads above. The two kinds lists are reference data of the tenant.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_configurations:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::configurations:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::configuration_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::configuration_analytics:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::analytic_types:read');
     -- Editing one of those definitions is the screen's other half, and the put
     -- handler gates it with this code (report_definition_handler.hpp). It is held
     -- by the two administrative roles and by ReportingService, so before this line

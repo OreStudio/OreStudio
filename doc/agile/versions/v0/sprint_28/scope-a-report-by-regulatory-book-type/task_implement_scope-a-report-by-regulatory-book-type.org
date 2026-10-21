@@ -8,7 +8,7 @@
 #+filetags: :scope-a-report-by-regulatory-book-type:sprint_28:v0:
 #+owner: marco
 #+branch: feature/scope-a-report-by-regulatory-book-type
-#+pr:
+#+pr: 3613
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3613][#3613]] | [reporting] Let a report read the books of one regulatory book type |
 
 * Review
 

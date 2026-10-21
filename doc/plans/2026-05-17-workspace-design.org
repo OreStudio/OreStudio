@@ -5,7 +5,7 @@
 #+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: MINED (2026-05-25: converted to agile tasks in ore_samples_support story)
+#+STATUS: MINED (2026-05-25: converted to agile tasks in ore_samples_support story). SUPERSEDED (2026-10-05: sandboxes and virtual books replace workspaces)
 #+OPTIONS: toc:t num:nil
 
 * Related Plans

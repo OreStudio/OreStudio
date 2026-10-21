@@ -79,7 +79,7 @@ and the commit it was measured at.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:2BCB9FC2-7D48-4046-85C2-86D49A9E0921][Test Scenario: Verify the pricing engine screens]] | PENDING | Eleven steps on the running stack as the Acme tenant administrator. |
 
 * PRs
 

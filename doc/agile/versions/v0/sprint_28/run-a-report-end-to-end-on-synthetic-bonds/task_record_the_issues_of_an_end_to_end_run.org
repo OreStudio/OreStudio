@@ -91,13 +91,27 @@ After the rebuild the population is 32 bond trades (8 for each of 4 parties) ove
 
 ** Result
 
-The NPV report of ACME Corporation HK Ltd (definition =99c87db3-3b6f-478b-b5c5-d2afbbcee778=) ran from the trigger to a completed instance, with the portfolio widened as issue 7 says.
+The NPV report of ACME Corporation HK Ltd (definition =99c87db3-3b6f-478b-b5c5-d2afbbcee778=) ran from the trigger to a completed instance, with the portfolio widened by hand, as issue 7 first said.
 
 - Instance =66f4a841-a8c9-42b3-a01b-aa08f87192a2=, started and completed at 2026-10-21 01:53, about ten seconds.
 - All seven steps completed: gather_trades (8 trades from 7 books), gather_market_data, assemble_bundle, prepare_ore_package, submit_compute, collect_compute_results, finalise.
 - The output archive is =reporting/runs/66f4a841-a8c9-42b3-a01b-aa08f87192a2/output.tar.gz= (676,864 bytes).
 - =npv.csv= holds 8 bond rows, all in HKD, each NPV close to its notional. The engine log says "built 0 failed trades". Its warnings are the missing security specific recovery rate for 5 bonds, which fall back on the credit curve's rate.
-- Four counterparties read as =UNKNWN..= codes in =npv.csv=. Not yet traced.
+- Four counterparties read as =UNKNWN..= codes in =npv.csv=. Issue 9 explains why.
+
+** Second run, from a clean seed
+
+After the fixes for issues 3, 7 and 9 the database was recreated and ACME
+provisioned again, with no hand-made change. The HK NPV report (definition
+=3d7c0b29-ef1d-4d8d-a46a-fc9a7c6fe1fc=) completed as instance
+=655144c0-b4bf-4614-9cff-d5d666ffd128=, and =npv.csv= holds 8 bond rows. No
+counterparty reads =UNKNWN=. The counterparties with no Latin name read as
+their LEI, and none of the 2,454 counterparties holds an =UNKNWN= code.
+
+To check issue 3, the refdata service was stopped and the report run again.
+Instance =d9f83ff0-92d8-4cad-b668-23ce1091f6ed= failed with "NATS request
+failed: no service is handling subject
+'...refdata.v1.average_ois_conventions.list'", the error of the failed step.
 
 ** Issues
 
@@ -107,12 +121,13 @@ Newest last. State is one of fixed, open or handed on.
 |---+---------+-------+-------+-----|
 | 1 | =ores.shell= fails to start: =libores.refdata.core.so.0: file too short= | A full build ran in the same tree and had linked the library to zero bytes when the shell was started | not an issue | Wait for the build. |
 | 2 | =trigger-report-instance= answers =no_run_grant=: the definition's runs act in its own party and the session is in another | The shell logs in under Acme Corporation Plc, which has no NPV report. The HK report needs a session in the HK party | not a defect | =accounts set-default-party <party-uuid>=, then =logout= and =login=. The name form needs the exact full name. |
-| 3 | A failed run says "Report execution failed during bundle assembly" while the step that failed is =prepare_ore_package= | The engine compensates the completed steps in reverse and the first compensation to reach =fail_report= sets the message. That one is the compensation of the last completed step, and its text is fixed in =report_execution_workflow.hpp=. The builder =build_compensation(command_json, response_json)= is not given the failure text | open | Pass the failing step's error to the compensation builder, so the instance reads the cause. This changes the shared engine and every workflow that compensates. The cause is on the failed workflow step meanwhile (=ores_workflow_workflow_steps_tbl.error=). |
+| 3 | A failed run says "Report execution failed during bundle assembly" while the step that failed is =prepare_ore_package= | The engine compensates the completed steps in reverse and the first compensation to reach =fail_report= sets the message. That one is the compensation of the last completed step, and its text was fixed in =report_execution_workflow.hpp=. The builder was not given the failure text | fixed | =build_compensation= takes the error of the failed step as a third argument, and the report steps pass it to =fail_report=. Commit =800d902bc0=. |
 | 4 | =prepare_ore_package= fails: =Service error on refdata.v1.average_ois_conventions.list: forbidden= | The run token is the =ReportRun= role narrowed to the grantor. =ReportRun= held =refdata::conventions:read= and no convention family code. The packaging step reads every family in the registry, each checked by its own code, and it reads counterparties, portfolios, currencies, netting set identifiers and bond issues | fixed | =ReportRun= gains the 31 reads in =iam_roles_populate.sql=. |
 | 5 | The same step then fails: =no service is handling subject refdata.v1.conventions.list= | Three families in the registry (=convention=, =tenor_basis_swap_long_short=, =tenor_basis_swap_pay_receive=) have generated registrars that the refdata service never calls | fixed | =registrar.cpp= of =ores.refdata.core= registers the three. |
 | 6 | A role permission added to the populate script does not reach a tenant that exists: the tenant holds its own copy of =ReportRun= and =Member=, made when it was provisioned | The populate script grants the system tenant's roles. A tenant copy keeps the set it was given | open | A recreate and a reprovision picks them up. An existing tenant needs a migration or a re-copy of the role. In the running database the grants were applied to both copies by hand. |
-| 7 | The first complete run reads "Report execution completed." and gathered 0 trades ("Gathered 0 trades from 6 books") | The report's scope is the portfolio Trading Book (rule D10: a trading report reads the Trading Book branch). The generated bonds sit in =Liquidity Buffer Bonds=, under Banking Book. A completed run with no trades is a hollow success | open, needs a decision | For this run the portfolio Liquidity Buffer Portfolio was added to the scope of the HK configuration by an insert into =ores_reporting_risk_report_config_portfolios_tbl=. The choice is to scope an NPV report to the banking book too, or to book the bonds in the trading book. |
+| 7 | The first complete run reads "Report execution completed." and gathered 0 trades ("Gathered 0 trades from 6 books") | The report's scope was the portfolio Trading Book (rule D10: a trading report reads the Trading Book branch). The generated bonds sit in =Liquidity Buffer Bonds=, under Banking Book. A completed run with no trades is a hollow success | fixed | Decision of 2026-10-21: a report may be run on any book, so every report reads the whole entity. =generate_risk_config_data.py= scopes each configuration to the root portfolio, and the populate scripts are regenerated. Commit =06e936ff61=. |
 | 8 | A run with 0 trades completes with no warning | Nothing compares the trade count with zero before packaging, so the engine prices an empty portfolio and the output looks normal | open | Fail or warn in =gather_trades= when the scope yields no trade. |
+| 9 | Four counterparties read as =UNKNWN43=, =UNKNWN48=, =UNKNWN30= and =UNKNWN7= style codes in =npv.csv= | The names are Japanese, Chinese or Russian and the GLEIF data holds no Latin form. The code generator drops every letter outside A to Z, finds nothing and returns =UNKNWN=. Provisioning then adds a number to keep the code unique. 72 of 2,454 counterparties are affected | fixed | =ores_utility_generate_short_code_fn= takes a fallback, and the publish step passes the LEI. A name with no Latin letters now codes as its LEI. Commit =ab61870ee3=. |
 
 * Test Scenarios
 

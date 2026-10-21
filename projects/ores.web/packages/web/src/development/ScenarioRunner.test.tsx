@@ -136,6 +136,21 @@ describe('a scenario being run', () => {
         expect(html).toContain('Failed');
     });
 
+    it('shows each step in its own colour, so a failed step is red and the others go on', () => {
+        const html = screen(
+            run(
+                fresh(),
+                { type: 'mark', mark: 'PASS' },
+                { type: 'mark', mark: 'FAIL' },
+                { type: 'next' },
+            ),
+        );
+        expect(html.match(/data-status="PASS"/g)).toHaveLength(1);
+        expect(html).toMatch(/data-status="FAIL" class="[^"]*bg-down/);
+        expect(html).toMatch(/data-status="PENDING" class="[^"]*bg-line-subtle/);
+        expect(html).toContain('Step 3 of 3');
+    });
+
     it('moves to the next step after a Pass', () => {
         const html = screen(run(fresh(), { type: 'mark', mark: 'PASS' }));
         expect(html).toContain('Step 2 of 3');

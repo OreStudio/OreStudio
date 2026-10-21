@@ -92,9 +92,12 @@ make_feed_series(const domain::feed_binding& binding,
  * offered to the CRM bridge.
  *
  * The subscription only decodes a tick and queues it. A worker thread takes
- * every tick that has arrived and stores them as one batch: one copy, one series read
- * for each series, and no commit for each tick.
- * Republish follows the copy of the batch that stored the tick, on core NATS
+ * every tick that has arrived and prepares them as one batch: it plans each tick, finds
+ * the series of each consumer once, numbers the datums and builds the rows. A second
+ * thread copies the batch to the tick table with one copy. A third thread then records the
+ * activity and republishes. The three stages work on three batches at once, and one batch waits
+ * at most between two stages, so a slow stage stops the stage before it and the batches do
+ * not pile up. Republish follows the copy of the batch that stored the tick, on core NATS
  * with no wait for an acknowledgement. A tick is perishable, because an old tick
  * that waits while a newer one arrives is worse than a tick that is lost. So the
  * queue is bounded and a full queue drops its oldest tick, and the worker drops a
@@ -176,9 +179,15 @@ private:
     std::unique_ptr<prepared_batch> prepare(std::vector<messaging::market_tick> ticks,
                                             std::vector<std::optional<tick_drop>>* outcomes);
 
-    /// The second stage: copies the rows of @p batch, and then records the activity, counts and
-    /// republishes. A store that does not answer, or that is left alone for a wait, leaves the
-    /// batch unstored and republished.
+    /// The second stage: copies the rows of @p batch, and marks each item stored, or unavailable
+    /// when the store does not answer or is left alone for a wait.
+    void commit(prepared_batch& batch);
+
+    /// The third stage: records the activity of the bindings, counts, and republishes the ticks
+    /// of @p batch, stored or not.
+    void announce(prepared_batch& batch);
+
+    /// Runs the second and the third stage in the calling thread, one after the other.
     void complete(prepared_batch& batch);
 
     /// Numbers the datums of @p batch and builds its rows. A number that cannot be assigned sets
@@ -192,8 +201,11 @@ private:
     /// activity_interval for each binding. A failure is logged and changes nothing else.
     void record_activity(const prepared_batch& batch);
 
-    /// The thread of the second stage. It ends when the handoff is closed and empty.
+    /// The thread of the second stage. It ends when its handoff is closed and empty.
     void commit_loop();
+
+    /// The thread of the third stage. It ends when its handoff is closed and empty.
+    void announce_loop();
 
     /// The id of the series that @p tick_datum belongs to for @p binding's party,
     /// created and classified on the first tick that lands in it. Read once for
@@ -332,8 +344,11 @@ private:
     /// The prepared batches that wait for the copy. One waits at most, so the first stage is at
     /// most one batch ahead of the second.
     batch_handoff<std::unique_ptr<prepared_batch>> handoff_{1};
+    /// The copied batches that wait for their republish, one at most.
+    batch_handoff<std::unique_ptr<prepared_batch>> announce_handoff_{1};
     std::thread worker_;
     std::thread commit_thread_;
+    std::thread announce_thread_;
     std::thread status_thread_;
 };
 

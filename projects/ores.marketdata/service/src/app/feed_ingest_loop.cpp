@@ -104,6 +104,9 @@ feed_ingest_loop::~feed_ingest_loop() {
     handoff_.close();
     if (commit_thread_.joinable())
         commit_thread_.join();
+    announce_handoff_.close();
+    if (announce_thread_.joinable())
+        announce_thread_.join();
     if (status_thread_.joinable())
         status_thread_.join();
 }
@@ -116,8 +119,10 @@ void feed_ingest_loop::start() {
     const auto wildcard = std::string(domain::synthetic_tick_subject) + ".>";
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
-    if (pipelined_)
+    if (pipelined_) {
+        announce_thread_ = std::thread(&feed_ingest_loop::announce_loop, this);
         commit_thread_ = std::thread(&feed_ingest_loop::commit_loop, this);
+    }
     worker_ = std::thread(&feed_ingest_loop::worker_loop, this);
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
@@ -226,9 +231,10 @@ void feed_ingest_loop::worker_loop() {
         const auto count = batch.size();
         try {
             const auto started = std::chrono::steady_clock::now();
-            if (pipelined_)
-                handoff_.push(prepare(std::move(batch), nullptr));
-            else
+            if (pipelined_) {
+                if (!handoff_.push(prepare(std::move(batch), nullptr)))
+                    shutdown_dropped_.fetch_add(count, std::memory_order_relaxed);
+            } else
                 process(std::move(batch), nullptr);
             // Size the next batch from the time of one turn of the two stages, so that it takes
             // about target_batch_ms. The push waits while the copy of the batch before this one
@@ -371,24 +377,46 @@ void feed_ingest_loop::process(std::vector<messaging::market_tick> ticks,
 void feed_ingest_loop::commit_loop() {
     while (auto batch = handoff_.pop()) {
         try {
-            complete(**batch);
+            commit(**batch);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to complete a batch of " << (*batch)->ticks.size()
+            BOOST_LOG_SEV(lg(), error) << "Failed to copy a batch of " << (*batch)->ticks.size()
+                                       << " tick(s): " << e.what();
+            continue;
+        }
+        const auto count = (*batch)->ticks.size();
+        if (!announce_handoff_.push(std::move(*batch)))
+            shutdown_dropped_.fetch_add(count, std::memory_order_relaxed);
+    }
+}
+
+void feed_ingest_loop::announce_loop() {
+    while (auto batch = announce_handoff_.pop()) {
+        try {
+            announce(**batch);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to announce a batch of " << (*batch)->ticks.size()
                                        << " tick(s): " << e.what();
         }
     }
 }
 
 void feed_ingest_loop::complete(prepared_batch& batch) {
-    const auto& ticks = batch.ticks;
-    const auto& items = batch.items;
+    commit(batch);
+    announce(batch);
+}
 
+void feed_ingest_loop::commit(prepared_batch& batch) {
     // A store that failed lately is left alone for a wait, and its ticks are republished
     // without a store.
     write_rows(batch);
-    for (const auto& it : items)
+    for (const auto& it : batch.items)
         if (it.unavailable)
             store_unavailable_.fetch_add(1, std::memory_order_relaxed);
+}
+
+void feed_ingest_loop::announce(prepared_batch& batch) {
+    const auto& ticks = batch.ticks;
+    const auto& items = batch.items;
     record_activity(batch);
 
     // After the commit, or without it when the store did not answer: stats, the CRM

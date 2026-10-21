@@ -8,7 +8,7 @@
 #+filetags: :account-for-the-grids-usage:sprint_28:v0:
 #+owner: marco
 #+branch: feature/reconcile-the-grid-stories-with-the-code
-#+pr:
+#+pr: 3611
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3611][#3611]] | [agile] Reconcile the grid stories with the code |
 
 * Review
 

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2C7A4944-5175-40BE-9906-5D74CFD024C4
+:END:
+#+title: Task: Show a convention's term structure on a page
+#+description: A page in ores.web lists each tenor of a chosen convention with the date it resolves to on a chosen calendar and horizon date.
+#+type: task
+#+level: s1
+#+filetags: :preview_a_term_structure_on_a_calendar:sprint_28:v0:
+#+owner: marco
+#+branch: feature/show-a-convention-term-structure-page
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6488895B-199E-4A35-90CD-967B0BA0430C][Preview a convention's term structure on a calendar]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the preview page to ores.web. A person picks a convention, a calendar and a horizon date. The page calls the batch resolve and lists each tenor with its date or its refusal, in tenor order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6488895B-199E-4A35-90CD-967B0BA0430C][Preview a convention's term structure on a calendar]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The page lists each tenor of the chosen convention with its resolved date, in tenor order.
+- A tenor that cannot resolve shows the server's refusal in its row and does not hide the other rows.
+- The page has a loading state and a retry, as the entity screen specification requires.
+- A test scenario walks the page for a period convention and for an IMM roll convention.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -40,7 +40,7 @@ A person picks a tenor convention, a calendar and a horizon date in ores.web. Th
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7CD9CAE0-5DAF-4ED0-8226-08ADD2635D43][Scaffold story: Preview a convention's term structure on a calendar]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6C11D66B-19F4-4152-B9F1-F6253A195083][Resolve a convention's tenors in one call]] | BACKLOG | | | Initial task for: Preview a convention's term structure on a calendar |
+| [[id:6C11D66B-19F4-4152-B9F1-F6253A195083][Resolve a convention's tenors in one call]] | STARTED | 2026-10-21 | | Initial task for: Preview a convention's term structure on a calendar |
 | [[id:2C7A4944-5175-40BE-9906-5D74CFD024C4][Show a convention's term structure on a page]] | BACKLOG | | | A page in ores.web lists each tenor of a chosen convention with the date it resolves to on a chosen calendar and horizon date. |
 
 * Decisions

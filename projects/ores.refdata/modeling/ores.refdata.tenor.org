@@ -269,6 +269,98 @@ answer.
 :cpp_type: std::optional<std::chrono::year_month_day>
 :END:
 
+** convention_tenor_resolution
+
+#+begin_src cpp :name comment
+/**
+ * @brief What one tenor of a convention resolved to.
+ *
+ * The same answer @c resolve_tenor_response gives for one tenor, named by the
+ * tenor it is about. A refusal is in @c result and the dates counted before
+ * it stay on the entry, so one tenor that cannot resolve costs only its own
+ * row.
+ */
+#+end_src
+
+*** tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** anchor_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** date_before_roll
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** adjusted_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+** resolve_convention_request
+:PROPERTIES:
+:subject: refdata.v1.ops.resolve_convention
+:response: resolve_convention_response
+:END:
+
+Asks what date every tenor of one convention resolves to, on one calendar, as
+at one horizon. It is the question =resolve_tenor_request= asks, asked once
+for each tenor the convention holds, so a screen that lays the whole term
+structure out makes one call instead of one per tenor. The tenant is the
+session's.
+
+*** convention_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** horizon
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** spot
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+
+** resolve_convention_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** roll_rule
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenors
+:PROPERTIES:
+:cpp_type: std::vector<convention_tenor_resolution>
+:END:
+
 * C++
 
 ** Flags

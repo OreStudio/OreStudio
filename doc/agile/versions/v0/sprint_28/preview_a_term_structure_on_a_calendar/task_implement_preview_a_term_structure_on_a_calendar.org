@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :preview_a_term_structure_on_a_calendar:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-preview-a-term-structure-on-a-calendar
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6488895B-199E-4A35-90CD-967B0BA0430C][Preview a convention's term structure on a calendar]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Give the preview page one wire call that resolves every tenor of a convention on
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6488895B-199E-4A35-90CD-967B0BA0430C][Preview a convention's term structure on a calendar]] |
-| Now          | Not yet started.                       |
+| Now          | The convention-level messages are modelled and regenerated. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Split the engine-request build out of =resolve_rows= and add =resolve_convention=. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -41,9 +41,28 @@ Give the preview page one wire call that resolves every tenor of a convention on
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What exists
+
+No wire call resolves many tenors. The engine does, and the service hides that.
+
+- =tenor_resolution_engine::resolve_batch= takes a span of requests and answers each by index, one status per row. A bad row does not stop the others.
+- =tenor_resolution_service::resolve= reads one tenor, one convention and one resolution row. It builds a one-row batch and returns one =resolve_tenor_response=.
+- The wire has =refdata.v1.ops.resolve_tenor= (one tenor) and =refdata.v1.ops.preview_tenor_resolution= (one draft). The BFF route =POST /api/tenors/resolve= serves the first.
+
+** Approach
+
+Add a convention-level operation beside =resolve_tenor=. It answers every resolution row of one convention in one reply.
+
+1. Model =resolve_convention_request= (convention, calendar, horizon, optional spot) and =resolve_convention_response= (one entry per tenor: the tenor code and the fields of =resolve_tenor_response=) in =ores.refdata.tenor.org=. Regenerate the header and the TypeScript twin.
+2. In =tenor_resolution_service=, split the engine-request build out of =resolve_rows=. Add =resolve_convention=. It reads the calendar once and builds one engine request per row. It makes one =resolve_batch= call. Rows that name a schedule share one schedule read per schedule code.
+3. Register the subject in =tenor_registrar.cpp= and the handler.
+4. Add the BFF route and its zod schema in =tenors.ts=, with a test in =tenors.test.ts=.
+5. Test the service: a period convention and the IMM roll convention (=CREDIT_CDS_IMM=), plus one row that refuses while the others resolve.
+
+** Open points
+
+- The engine takes one =schedule_index= per request. Several rows can name different schedules in one convention. Step 2 must assign the index per distinct schedule.
+- The calendar must be materialised past the horizon plus the longest tenor. The existing refusal =calendar_not_materialised= covers an absent calendar only.
 
 * Measurements
 

@@ -202,6 +202,36 @@ export interface PreviewTenorResolutionRequest {
     spot: string | null;
 }
 
+/**
+ * @brief What one tenor of a convention resolved to.
+ *
+ * The same answer @c resolve_tenor_response gives for one tenor, named by the
+ * tenor it is about. A refusal is in @c result and the dates counted before
+ * it stay on the entry, so one tenor that cannot resolve costs only its own
+ * row.
+ */
+export interface ConventionTenorResolution {
+    tenor_code: string;
+    result: Result;
+    anchor_date: string;
+    date_before_roll: string;
+    adjusted_date: string;
+}
+
+export interface ResolveConventionRequest {
+    convention_code: string;
+    calendar_code: string;
+    horizon: string;
+    spot: string | null;
+}
+
+export interface ResolveConventionResponse {
+    result: Result;
+    roll_rule: string;
+    calendar: string;
+    tenors: ConventionTenorResolution[];
+}
+
 export const subjects = {
     list_tenors_request: 'refdata.v1.tenors.list',
     get_tenor_request: 'refdata.v1.tenors.get',
@@ -214,6 +244,7 @@ export const subjects = {
     get_tenor_version_request: 'refdata.v1.tenors_versions.get',
     resolve_tenor_request: 'refdata.v1.ops.resolve_tenor',
     preview_tenor_resolution_request: 'refdata.v1.ops.preview_tenor_resolution',
+    resolve_convention_request: 'refdata.v1.ops.resolve_convention',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -232,6 +263,7 @@ export const requiresSession = {
     get_tenor_version_request: true,
     resolve_tenor_request: true,
     preview_tenor_resolution_request: true,
+    resolve_convention_request: true,
 } as const;
 
 /**

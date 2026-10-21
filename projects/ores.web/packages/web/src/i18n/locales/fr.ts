@@ -3346,6 +3346,9 @@ const fr: SourceCatalogue = {
                     'Une paire avec sa convention de cotation et ses calendriers de règlement.',
                 deskGroups: 'Groupes de devises',
                 deskGroupsBody: 'Des groupes de devises comme G11 ou Scandies.',
+                conventions: 'Conventions',
+                conventionsBody:
+                    'Les termes de marché sur lesquels chaque instrument est construit, regroupés par classe d’actifs.',
                 calendars: 'Calendriers de jours fériés',
                 tenors: 'Résoudre un ténor',
                 tenorsBody: 'Quelle date un ténor donne sur un calendrier, sous une convention.',
@@ -3843,6 +3846,42 @@ const fr: SourceCatalogue = {
             empty: 'Aucun groupe pour le moment.',
             removeWarning:
                 "Supprimer le groupe en retire d'abord ses membres ; les devises restent.",
+        },
+        conventions: {
+            title: 'Conventions',
+            lead: 'Les termes de marché sur lesquels les instruments sont construits, regroupés par classe d’actifs.',
+            tabs: 'Portée des conventions',
+            tab: {
+                party: 'Conventions de la partie',
+                shared: 'Conventions partagées',
+            },
+            sharedWarning: 'Toutes les parties lisent ces conventions.',
+            sharedWarningBody:
+                'Elles sont conservées une seule fois pour le locataire, et une modification s’applique à toutes les parties.',
+            sharedDocuments: 'Toutes les parties lisent ces documents.',
+            search: 'Rechercher un type',
+            assetClass: 'Classe d’actifs',
+            allClasses: 'Toutes les classes d’actifs',
+            classes: {
+                'interest-rates': 'Taux d’intérêt',
+                fx: 'Change',
+                inflation: 'Inflation',
+                credit: 'Crédit',
+                commodity: 'Matières premières',
+                bond: 'Obligations',
+                other: 'Autres',
+            },
+            summary: 'Documents {documents} · Types {kinds}',
+            groupSummary: 'Types {kinds} · Documents {documents}',
+            noMatch: 'Aucun type ne correspond à la recherche.',
+            columns: {
+                kind: 'Type',
+                documents: 'Documents',
+                terms: 'Termes',
+            },
+            documentsLead: '{class} · les documents que contient ce type.',
+            unknownKind: 'Il n’existe aucun type de convention nommé {kind}.',
+            backToKinds: 'Retour aux conventions',
         },
         pairs: {
             title: 'Paires de devises',

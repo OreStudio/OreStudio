@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: E8F993A5-AD96-4546-B970-753063F0F3D2
+:END:
+#+title: Story: Build the conventions list screens
+#+description: A person who reads conventions gets the plain entity screens the prototype draws: a list of kinds, grouped by asset class with the shared kinds in their own tab, and a list of one kind's documents. The guided run that authors a convention moves into the Workflows menu.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The conventions have the same list screens as every other record kind. The list of kinds shows the party's kinds under their asset class and the shared kinds in their own tab. The list of one kind's documents is paged by the server. Define instrument conventions becomes a workflow in the Workflows menu of the list.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- The list of kinds and the list of a kind's documents draw as the merged prototype does, in English, French and Portuguese.
+- Every line of the screen review checklist that applies to a list is marked Meets, Gap or N/A in the task.
+- Define instrument conventions opens from the Workflows menu and no longer from the area page.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:951CF9D3-CE1D-4847-A13E-5323BA81DB2C][Scaffold story: Build the conventions list screens]] | STARTED | 2026-10-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A7F8CE08-A441-4008-8C44-DC9FABDFA59B][Build the list of kinds and the list of documents]] | STARTED | 2026-10-21 | | Initial task for: Build the conventions list screens |
+
+* Decisions
+
+* Out of scope
+
+-

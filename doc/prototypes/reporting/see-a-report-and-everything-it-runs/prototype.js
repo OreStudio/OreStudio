@@ -7,8 +7,8 @@
  *   Definition          what the report is, with its report currency
  *   Scope               the portfolios and books it reads, and the book type rule
  *   Analytics           what it computes, and how the engine runs it
- *   Market and pricing  the market it prices against, and the three configurations
- *                       every report of the party shares
+ *   Market and pricing  the market configuration it prices against, and the three
+ *                       configurations every report of the party shares
  *   Conventions         the market terms it reads, and the proposed set choice
  *   History             the standard history of the definition, and the versions
  *                       of what it runs with
@@ -26,7 +26,7 @@
  *
  *   ?tab=definition|scope|analytics|market|conventions|history
  *   ?conv=today|sets  ?type=none|Trading|Banking  ?hand=no|yes  ?shared=no|yes
- *   ?role=admin|reader  ?version=1|2|3  ?changes=only|all
+ *   ?md=eod|intraday  ?role=admin|reader
  */
 
 (function () {
@@ -66,16 +66,43 @@
         scopeLines: [{ name: 'Global Portfolio', kind: 'portfolio', books: 8, trading: 6, banking: 2 }],
         handBook: { name: 'Rates Desk 1', kind: 'book', type: 'Trading' },
         engine: [
-            ['Threads', 'Engine default'],
-            ['Observation model', 'Engine default'],
-            ['Continue on error', 'No'],
-            ['Imply today’s fixings', 'No'],
-            ['Log mask', '31'],
-            ['Input, output and log', 'Input, Output, log.txt']
+            { group: 'Run', rows: [
+                ['Threads', 'nThreads', null],
+                ['Observation model', 'observationModel', null],
+                ['Continue on error', 'continueOnError', null],
+                ['Build failed trades', 'buildFailedTrades', null],
+                ['Lazy market building', 'lazyMarketBuilding', null],
+                ['Use analytics', 'useAnalytics', null]
+            ] },
+            { group: 'Dates', rows: [
+                ['Accrual date', 'accrualDate', null],
+                ['Fixing cutoff', 'fixingCutoff', null],
+                ['Date calendar', 'dateCalendar', null],
+                ['Date convention', 'dateConvention', null]
+            ] },
+            { group: 'Fixings and cash flows', rows: [
+                ['Imply today’s fixings', 'implyTodaysFixings', 'false'],
+                ['Include today’s cash flows', 'includeTodaysCashFlows', null],
+                ['Include reference date events', 'includeReferenceDateEvents', null],
+                ['Enrich index fixings', 'enrichIndexFixings', null],
+                ['Ignore fixing lag', 'ignoreFixingLag', null]
+            ] },
+            { group: 'Files', rows: [
+                ['Input path', 'inputPath', 'Input'],
+                ['Market input path', 'inputPathMarket', null],
+                ['Portfolio input path', 'inputPathPortfolio', null],
+                ['Output path', 'outputPath', 'Output'],
+                ['Log file', 'logFile', 'log.txt'],
+                ['Portfolio recurses into folders', 'portfolioRecurseIntoSubDirectories', null],
+                ['CSV header comment', 'csvCommentReportHeader', null],
+                ['Default mapping to identity', 'defaultMappingToIdentity', null],
+                ['Additional results', 'additionalResults', null]
+            ] },
+            { group: 'Logging', rows: [
+                ['Log mask', 'logMask', '31']
+            ] }
         ],
         market: [
-            ['Market data', 'End of day'],
-            ['Market data date', 'The latest date held'],
             ['Pricing market', 'default']
         ]
     };
@@ -126,40 +153,60 @@
     var TOTAL_DOCUMENTS = KINDS.reduce(function (n, k) { return n + k[1]; }, 0);
     SETS[0].documents = TOTAL_DOCUMENTS;
 
-    // The standard history of the definition: the version snapshots, as the
-    // server's history mapper names the fields.
-    var FIELDS = ['Description', 'Schedule expression', 'Concurrency policy', 'Official', 'Prepared input key'];
-    var VERSIONS = [
-        {
-            v: 3, at: '2026-10-21 14:40', by: 'tenant_admin', reason: 'common.non_material_update',
-            commentary: 'The description now says the report currency.',
-            snap: {
-                'Description': 'Net present value of every trade in the entity, in the report currency.',
-                'Schedule expression': '30 18 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
-            }
-        },
-        {
-            v: 2, at: '2026-10-21 11:02', by: 'tenant_admin', reason: 'common.non_material_update',
-            commentary: 'Moved after the Hong Kong close.',
-            snap: {
-                'Description': 'Net present value of every trade in the entity, in the entity currency.',
-                'Schedule expression': '30 18 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
-            }
-        },
-        {
-            v: 1, at: '2026-10-21 10:23', by: 'system', reason: 'system.external_data_import',
-            commentary: 'Published from DQ dataset',
-            snap: {
-                'Description': 'Net present value of every trade in the entity, in the entity currency.',
-                'Schedule expression': '0 6 * * 1-5', 'Concurrency policy': 'skip', 'Official': 'true', 'Prepared input key': ''
-            }
-        }
-    ];
+    // The history is one stream, as the entity screen specification draws it: the
+    // versions of the definition and of the configurations it binds share one rail,
+    // and each entry names its kind and its record.
+    var PEOPLE = {
+        tenant_admin: { name: 'Tenant Admin', initials: 'TA', service: false },
+        system: { name: 'ores_bright_faraday_iam_service', initials: 'IS', service: true }
+    };
 
-    var CONFIG_VERSIONS = [
-        { at: '2026-10-21 14:12', what: 'Run settings Valuation - Global Portfolio, version 2', note: 'The scope was set to Global Portfolio.' },
-        { at: '2026-10-21 10:23', what: 'HK pricing engines, version 1', note: 'Published from DQ dataset. Read by all 22 reports.' },
-        { at: '2026-10-21 10:23', what: 'HK today’s market, version 1', note: 'Published from DQ dataset. Read by all 22 reports.' }
+    var KINDS_OF_ENTRY = { raised: 'Raised', changed: 'Changed' };
+
+    var ENTRIES = [
+        {
+            id: 'e1', at: '2026-10-21T14:40:12', kind: 'changed', record: 'Report definition NPV', version: 3,
+            actor: 'tenant_admin', reason: 'common.non_material_update', current: true, revertable: true,
+            note: 'The description now says the report currency.',
+            diffs: [['Description', 'Net present value of every trade in the entity, in the entity currency.',
+                'Net present value of every trade in the entity, in the report currency.']]
+        },
+        {
+            id: 'e2', at: '2026-10-21T14:12:40', kind: 'changed', record: 'Run settings Valuation - Global Portfolio', version: 2,
+            actor: 'tenant_admin', reason: 'common.non_material_update', current: true, revertable: true,
+            note: 'The scope is the Global Portfolio.',
+            diffs: [['Scope portfolio', '', 'Global Portfolio']]
+        },
+        {
+            id: 'e3', at: '2026-10-21T11:02:05', kind: 'changed', record: 'Report definition NPV', version: 2,
+            actor: 'tenant_admin', reason: 'common.non_material_update', current: false, revertable: true,
+            note: 'Moved after the Hong Kong close.',
+            diffs: [['Schedule expression', '0 6 * * 1-5', '30 18 * * 1-5']]
+        },
+        {
+            id: 'e4', at: '2026-10-21T10:23:19', kind: 'raised', record: 'HK pricing engines', version: 1,
+            actor: 'system', reason: 'system.external_data_import', current: true, revertable: false,
+            note: 'Published from DQ dataset',
+            diffs: [['Name', '', 'HK pricing engines'], ['Configuration type', '', 'Pricing engines']]
+        },
+        {
+            id: 'e5', at: '2026-10-21T10:23:18', kind: 'raised', record: 'HK today\u2019s market', version: 1,
+            actor: 'system', reason: 'system.external_data_import', current: true, revertable: false,
+            note: 'Published from DQ dataset',
+            diffs: [['Name', '', 'HK today\u2019s market'], ['Configuration type', '', 'Today\u2019s market']]
+        },
+        {
+            id: 'e6', at: '2026-10-21T10:23:17', kind: 'raised', record: 'Run settings Valuation - Global Portfolio', version: 1,
+            actor: 'system', reason: 'system.external_data_import', current: false, revertable: false,
+            note: 'Published from DQ dataset',
+            diffs: [['Name', '', 'Valuation - Global Portfolio'], ['Report currency', '', 'HKD'], ['Market data', '', 'End of day']]
+        },
+        {
+            id: 'e7', at: '2026-10-21T10:23:16', kind: 'raised', record: 'Report definition NPV', version: 1,
+            actor: 'system', reason: 'system.external_data_import', current: false, revertable: false,
+            note: 'Published from DQ dataset',
+            diffs: [['Name', '', 'NPV'], ['Schedule expression', '', '0 6 * * 1-5'], ['Concurrency policy', '', 'skip']]
+        }
     ];
 
     // --------------------------------------------------------------- state
@@ -180,14 +227,17 @@
         type: query('type', 'none'),
         hand: query('hand', 'no'),
         shared: query('shared', 'no'),
+        md: query('md', 'eod'),
         role: query('role', 'admin'),
-        version: Number(query('version', '3')),
-        changes: query('changes', 'only'),
+        hideSystem: false,
+        revertOf: null,
+        flash: null,
         chosen: 'none',
         requested: false,
         reverted: false,
         dialog: false,
         dialogType: null,
+        dialogMd: null,
         dialogError: null,
         showKinds: false,
         showState: false
@@ -195,7 +245,7 @@
 
     function sync() {
         var p = [];
-        ['tab', 'conv', 'type', 'hand', 'shared', 'role', 'version', 'changes'].forEach(function (k) {
+        ['tab', 'conv', 'type', 'hand', 'shared', 'md', 'role'].forEach(function (k) {
             p.push(k + '=' + encodeURIComponent(S[k]));
         });
         window.history.replaceState(null, '', '?' + p.join('&'));
@@ -223,6 +273,22 @@
             .replace(/\bibor\b/, 'IBOR').replace(/\bbma\b/, 'BMA').replace(/^./, function (c) {
                 return c.toUpperCase();
             });
+    }
+
+    function mdWord() {
+        return S.md === 'intraday' ? 'Intraday' : 'End of day';
+    }
+
+    // Each run reads the market data of its own time point. The definition says only
+    // which kind of time point, and states no date.
+    function mdMeaning() {
+        return S.md === 'intraday'
+            ? 'Each run reads the market data as of the time the run starts. The definition states no date: the run carries its own time.'
+            : 'Each run reads the end of day market data of its business day. The definition states no date: the run carries its own.';
+    }
+
+    function asOf() {
+        return S.md === 'intraday' ? '2026-10-21 17:05 (the time of the run)' : '2026-10-20, the close of the business day';
     }
 
     function typeWord(type) {
@@ -291,21 +357,20 @@
             field('Schedule', esc(d.schedule) + ' <span class="faint mono">' + esc(d.cron) + '</span>') +
             field('Concurrency', esc(d.concurrency)) +
             field('Official', d.official ? 'Yes' : 'No') +
+            field('Description', esc(d.description)) +
+            field('Version', String(d.version)) +
             field('Report currency', currencyCell()) +
+            field('Market data', '<span class="tag accent">' + esc(mdWord()) + '</span>') +
             field('Book type', '<span class="tag ' + (S.type === 'none' ? 'muted' : 'accent') + '">' + esc(typeWord(S.type)) + '</span>') +
             '</div>' +
-            '<p class="hint" style="margin-top:10px">' + esc(typeMeaning()) + '</p>' +
-            '<p class="hint" style="margin-top:6px">' + esc(d.description) + '</p>' +
-            '<p class="rowfoot">The report currency is held by the run settings, so changing it reaches every report that shares them: ' +
-            (S.shared === 'yes' ? 'three reports here. ' : 'none here. ') +
-            'Every other field reaches this report only. Version ' + d.version + '.</p>' +
             '</section>' +
             '<section class="card">' +
             '<div class="sectionhead"><h2>Latest run</h2><div class="meta"><a class="btn small linklike" href="../read-what-a-run-produced/">Open the run</a></div></div>' +
             '<div class="runs"><div class="runrow"><span class="rid">' + d.latest.id + '</span>' +
             '<span class="rat">' + d.latest.at + '</span>' +
             '<span class="rstate">' + d.latest.state + ' in ' + d.latest.took + ', ' + d.latest.trades +
-            ' trades <span class="tag ok">Completed</span></span></div></div>' +
+            ' trades <span class="tag ok">Completed</span></span></div>' +
+            '<div class="runrow"><span class="rid">market data</span><span class="rat">as of</span><span class="rstate">' + esc(asOf()) + '</span></div></div>' +
             '</section>';
     }
 
@@ -342,8 +407,6 @@
             '<div class="statgrid" style="margin-top:12px">' +
             field('Book type of the report', '<span class="tag ' + (S.type === 'none' ? 'muted' : 'accent') + '">' + esc(typeWord(S.type)) + '</span>') +
             '</div>' +
-            '<p class="hint" style="margin-top:8px">' + esc(typeMeaning()) + ' The type is set on the Definition tab.</p>' +
-            '<p class="rowfoot">Editing the scope is a screen that does not exist today: the seed and the shell write it.</p>' +
             '</section>';
     }
 
@@ -351,6 +414,21 @@
         return '<div class="table-wrap"><table><tbody>' + rows.map(function (r) {
             return '<tr><td class="faint" style="width:14rem">' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>';
         }).join('') + '</tbody></table></div>';
+    }
+
+    // A setting the report leaves unset shows the engine default in a quiet tone.
+    function engineGroups(groups) {
+        return groups.map(function (g) {
+            var rows = g.rows.map(function (r) {
+                var value = r[2] === null
+                    ? '<span class="faint">Engine default</span>'
+                    : esc(r[2]);
+                return '<tr><td style="width:15rem">' + esc(r[0]) + '</td><td class="code faint" style="width:17rem">' +
+                    esc(r[1]) + '</td><td>' + value + '</td></tr>';
+            }).join('');
+            return '<h4 class="grouphead">' + esc(g.group) + '</h4>' +
+                '<div class="table-wrap"><table><tbody>' + rows + '</tbody></table></div>';
+        }).join('');
     }
 
     function analyticsSection() {
@@ -371,10 +449,8 @@
             '<p class="rowfoot">1 of ' + rs.analytics.length + ' is on. An analytic is turned off by setting it inactive, never by deleting it.</p>' +
             '</section>' +
             '<section class="card">' +
-            '<div class="sectionhead"><h3>Engine settings</h3><div class="meta"><span class="tag muted">Only what the seed sets is drawn</span></div></div>' +
-            settingsTable(rs.engine) +
-            '<p class="rowfoot">These are the engine’s setup parameters. They belong to the same run settings, so they reach the same reports. ' +
-            'About twenty more are held and unset, and the engine uses its own defaults for them.</p>' +
+            '<div class="sectionhead"><h2>Engine settings</h2><div class="meta"><span class="tag muted">Setup parameters of the engine</span></div></div>' +
+            engineGroups(rs.engine) +
             '</section>';
     }
 
@@ -389,8 +465,8 @@
         }).join('');
         return '' +
             '<section class="card">' +
-            '<div class="sectionhead"><h2>Market the run reads</h2><div class="meta"><span class="tag muted">Part of the run settings</span></div></div>' +
-            reachNote('The market choice') +
+            '<div class="sectionhead"><h2>Market configuration of the run</h2><div class="meta"><span class="tag muted">Part of the run settings</span></div></div>' +
+            reachNote('The pricing market') +
             '<div style="margin-top:10px">' + settingsTable(rs.market) + '</div>' +
             '</section>' +
             '<section class="card">' +
@@ -481,55 +557,110 @@
             '</section>';
     }
 
-    // The standard history of the record: every version, newest first, and the
-    // field difference of the version chosen from the one before it.
-    function historySection() {
-        var sel = VERSIONS.filter(function (v) { return v.v === S.version; })[0] || VERSIONS[0];
-        var before = VERSIONS.filter(function (v) { return v.v === sel.v - 1; })[0];
-        var rows = FIELDS.map(function (f) {
-            var a = before ? before.snap[f] : '';
-            var b = sel.snap[f];
-            var diff = before ? a !== b : true;
-            if (S.changes === 'only' && !diff) { return ''; }
-            return '<tr class="' + (diff ? 'changed' : 'same') + '"><td>' + esc(f) + '</td>' +
-                '<td>' + (diff && before ? '<span class="dfrom">' + esc(a === '' ? '(empty)' : a) + '</span>' : esc(a)) + '</td>' +
-                '<td>' + (diff ? '<span class="dto">' + esc(b === '' ? '(empty)' : b) + '</span>' : esc(b)) + '</td></tr>';
-        }).join('');
-        if (rows === '') {
-            rows = '<tr class="same"><td colspan="3" class="faint">No field changes between these versions.</td></tr>';
+    // The history tab is the shared Timeline of the entity screen specification:
+    // an event chart over time, the legend with the system activity toggle, and a
+    // rail of entries newest first under day headings. Each entry is one header
+    // line, its note on a line of its own, and its detail collapsed.
+    function initials(who) {
+        return PEOPLE[who] ? PEOPLE[who].initials : who.slice(0, 2).toUpperCase();
+    }
+
+    function shownEntries() {
+        return ENTRIES.filter(function (e) { return !(S.hideSystem && PEOPLE[e.actor].service); });
+    }
+
+    function chartOf(list) {
+        if (!list.length) { return ''; }
+        var HOUR = 3600000;
+        var times = list.map(function (e) { return new Date(e.at).getTime(); });
+        var lo = Math.floor(Math.min.apply(null, times) / HOUR) * HOUR;
+        var hi = Math.max.apply(null, times);
+        var bars = '';
+        for (var b = lo; b <= hi; b += HOUR) {
+            var inBucket = list.filter(function (e) {
+                var t = new Date(e.at).getTime();
+                return t >= b && t < b + HOUR;
+            });
+            var counts = {};
+            inBucket.forEach(function (e) { counts[e.kind] = (counts[e.kind] || 0) + 1; });
+            var segs = Object.keys(counts).map(function (k) {
+                return '<i class="k-' + k + '" style="height:' + (counts[k] * 18) + 'px" title="' + KINDS_OF_ENTRY[k] + ': ' + counts[k] + '"></i>';
+            }).join('');
+            var label = new Date(b).toISOString().slice(0, 13).replace('T', ' ') + ':00';
+            bars += '<div class="bar" data-act="jump" data-time="' + (b + HOUR / 2) + '" title="' +
+                (inBucket.length ? label + ': ' + inBucket.length : '') + '">' + segs + '</div>';
         }
-        var timeline = VERSIONS.map(function (v) {
-            return '<button class="vbtn' + (v.v === sel.v ? ' on' : '') + '" data-act="version" data-version="' + v.v + '">' +
-                '<span class="vno">v' + v.v + '</span>' +
-                '<span class="vwho">' + esc(v.by) + '</span>' +
-                '<span class="vat">' + esc(v.at) + '</span>' +
-                (v.v === DEFINITION.version ? '<span class="tag accent">current</span>' : '') + '</button>';
-        }).join('');
-        var revert = canWrite() && sel.v !== DEFINITION.version
-            ? '<button class="btn small" data-act="revert">Revert to v' + sel.v + '</button>'
+        var first = list[list.length - 1].at.slice(0, 16).replace('T', ' ');
+        var last = list[0].at.slice(0, 16).replace('T', ' ');
+        return '<div class="chart" role="img" aria-label="Events over time">' + bars + '</div>' +
+            '<div class="axis"><span>' + first + '</span><span>' + last + '</span></div>';
+    }
+
+    function entryHtml(e) {
+        var who = PEOPLE[e.actor];
+        var diffs = e.diffs && e.diffs.length
+            ? '<details class="det"><summary>Details</summary><div class="diff">' + e.diffs.map(function (x) {
+                return (x[1] !== '' ? '<div class="dl old"><span class="sign">\u2212</span><span class="fname">' + esc(x[0]) + '</span><span>' + esc(x[1]) + '</span></div>' : '') +
+                    '<div class="dl new"><span class="sign">+</span><span class="fname">' + esc(x[0]) + '</span><span>' + esc(x[2]) + '</span></div>';
+            }).join('') + '</div></details>'
+            : '<span class="faint small">No changes</span>';
+        var revert = e.revertable && !e.current && canWrite()
+            ? '<button class="btn small" data-act="revertopen" data-entry="' + e.id + '">Revert</button>'
             : '';
+        return '<div class="entry' + (e.current ? ' cur' : '') + (S.flash === e.id ? ' flash' : '') + '" data-entry="' + e.id + '" data-at="' + new Date(e.at).getTime() + '">' +
+            '<div class="at" title="' + e.at.replace('T', ' ') + '">' + e.at.slice(11, 19) + '</div>' +
+            '<div class="dot"><i title="' + (e.current ? 'Current version' : '') + '"></i></div>' +
+            '<div class="main"><span class="avatar' + (who.service ? ' service' : '') + '" title="' + esc(who.name) + '">' + initials(e.actor) + '</span>' +
+            '<div><div class="line1"><span class="chip ' + (e.kind === 'raised' ? 'acc' : 'warn') + '">' + KINDS_OF_ENTRY[e.kind] + '</span>' +
+            '<b>' + esc(e.record) + '</b><span class="chip v">v' + e.version + '</span>' +
+            '<span>' + (who.service ? esc(who.name) : '<a href="#">' + esc(who.name) + '</a>') + '</span>' +
+            '<span class="faint small">' + esc(e.reason) + '</span>' + revert + '</div>' +
+            '<div class="note">' + esc(e.note) + '</div>' + diffs + '</div></div></div>';
+    }
+
+    function historySection() {
+        var list = shownEntries().slice().sort(function (a, b) { return b.at.localeCompare(a.at); });
+        var kinds = {};
+        list.forEach(function (e) { kinds[e.kind] = (kinds[e.kind] || 0) + 1; });
+        var legend = '<div class="legend">' + Object.keys(kinds).map(function (k) {
+            return '<span><i class="k-' + k + '"></i>' + KINDS_OF_ENTRY[k] + ' ' + kinds[k] + '</span>';
+        }).join('') + '<span class="sp" style="flex:1"></span>' +
+            '<button class="btn small ghost" data-act="hidesys">' + (S.hideSystem ? 'Show system activity' : 'Hide system activity') + '</button></div>';
+        var rail = '';
+        var lastDay = '';
+        list.forEach(function (e) {
+            var day = e.at.slice(0, 10);
+            if (day !== lastDay) {
+                rail += '<div class="day">' + new Date(day).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</div>';
+                lastDay = day;
+            }
+            rail += entryHtml(e);
+        });
         return '' +
             '<section class="card">' +
-            '<div class="sectionhead"><h2>History</h2><div class="meta"><span class="tag muted">Standard record history</span></div></div>' +
-            '<p class="hint">Every version of this definition, newest first. It is the same history every record page has.</p>' +
-            '<div class="histgrid"><div class="timeline" role="list" aria-label="Timeline">' + timeline + '</div>' +
-            '<div><div class="sectionhead"><h3>' + (before ? 'Comparing v' + before.v + ' with v' + sel.v : 'Initial version') + '</h3><div class="meta">' +
-            '<button class="btn small ghost" data-act="changes">' + (S.changes === 'only' ? 'All fields' : 'Only changes') + '</button>' + revert + '</div></div>' +
-            '<p class="hint mono">Modified by ' + esc(sel.by) + ' · ' + esc(sel.reason) + ' · ' + esc(sel.at) + '</p>' +
-            '<p style="font-size:13px;margin:4px 0 10px">' + esc(sel.commentary) + '</p>' +
-            '<table class="difftable"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-            (S.reverted ? '<div class="notice ok" style="margin-top:10px">Revert prepared: the values of v' + sel.v +
-                ' will be written as v' + (DEFINITION.version + 1) + ', with a reason. History is never rewritten.</div>' : '') +
-            '</div></div></section>' +
-            '<section class="card">' +
-            '<div class="sectionhead"><h3>Versions of what it runs with</h3><div class="meta"><span class="tag accent">Proposed addition</span></div></div>' +
-            '<p class="hint">A figure that looks wrong may have changed because a configuration changed, and the definition’s own history does not show that. ' +
-            'This list merges the versions of the configurations the report binds. Each opens that record’s own history.</p>' +
-            '<div class="versions">' + CONFIG_VERSIONS.map(function (c) {
-                return '<div class="vrow"><span class="vat">' + esc(c.at) + '</span><span class="vno">' + esc(c.what) + '</span><span class="vnote">' + esc(c.note) + '</span></div>';
-            }).join('') + '</div>' +
-            '<p class="rowfoot">The version of a configuration that a run used is not recorded on the run, so the page cannot say which runs a change reached.</p>' +
+            '<div class="sectionhead"><h2>History</h2><div class="meta"><span class="tag muted">The shared timeline</span></div></div>' +
+            (S.reverted ? '<div class="notice ok" style="margin-bottom:10px"><b>Reverted.</b> The values of ' + esc(S.reverted) +
+                ' were written back as a new version of the definition. No version was lost.</div>' : '') +
+            '<p class="hint" style="margin-bottom:10px">One rail for the definition and for the configurations it binds. Each entry names its record. ' +
+            'The configurations are the proposed addition: the definition\u2019s own history does not show that a figure changed because a configuration did.</p>' +
+            chartOf(list) + legend + '<div class="rail">' + rail + '</div>' +
+            '<p class="rowfoot">Which version of a configuration a run used is not recorded on the run, so the rail cannot say which runs a change reached.</p>' +
             '</section>';
+    }
+
+    function revertDialog() {
+        if (S.revertOf === null) { return ''; }
+        var e = ENTRIES.filter(function (x) { return x.id === S.revertOf; })[0];
+        return '<div class="modal"><div class="modalbox card">' +
+            '<div class="sectionhead"><h2>Revert to v' + e.version + '</h2></div>' +
+            '<p style="font-size:13px">The values of version ' + e.version + ' of <b>' + esc(e.record) + '</b> are written back as a new version, v4. ' +
+            'No version is lost.</p>' +
+            '<label class="formrow" style="margin-top:10px"><span class="lbl">Reason</span><select>' +
+            '<option>common.rectification \u2014 Rectification</option><option>common.non_material_update \u2014 Non-material update</option></select></label>' +
+            '<label class="formrow"><span class="lbl">Comment</span><input type="text" value="Back to the schedule before the close moved" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit"></label>' +
+            '<p class="hint">The write is made against the current version, so a record somebody else changed in between is refused.</p>' +
+            '<div class="cellgroup" style="margin-top:12px"><button class="btn primary" data-act="revertdo">Revert</button>' +
+            '<button class="btn ghost" data-act="revertcancel">Cancel</button></div></div></div>';
     }
 
     // ------------------------------------------------------------- layout
@@ -556,20 +687,24 @@
     function dialog() {
         if (!S.dialog) { return ''; }
         var cur = S.dialogType === null ? S.type : S.dialogType;
+        var curMd = S.dialogMd === null ? S.md : S.dialogMd;
+        var mdOpts = [['eod', 'End of day'], ['intraday', 'Intraday']].map(function (o) {
+            return '<option value="' + o[0] + '"' + (curMd === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        }).join('');
         var opts = [['none', 'Every type (empty)'], ['Trading', 'Trading book'], ['Banking', 'Banking book']].map(function (o) {
             return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
         }).join('');
         return '<div class="modal"><div class="modalbox card">' +
             '<div class="sectionhead"><h2>Edit NPV</h2></div>' +
-            '<label class="formrow"><span class="lbl">Book type</span><select data-act="dialogtype">' + opts + '</select></label>' +
+            '<label class="formrow"><span class="lbl">Market data</span><select data-act="dialogmd">' + mdOpts + '</select></label>' +
+            '<p class="hint">' + esc(mdMeaning()) + '</p>' +
+            '<label class="formrow" style="margin-top:8px"><span class="lbl">Book type</span><select data-act="dialogtype">' + opts + '</select></label>' +
             '<p class="hint">' + esc(cur === 'Trading'
                 ? 'The report reads trading books only.'
                 : cur === 'Banking' ? 'The report reads banking books only.' : 'The report reads books of every type.') + '</p>' +
             (S.dialogError ? '<div class="notice err" style="margin-top:10px">' + esc(S.dialogError) + '</div>' : '') +
             '<div class="cellgroup" style="margin-top:12px"><button class="btn primary" data-act="save">Save</button>' +
             '<button class="btn ghost" data-act="cancel">Cancel</button></div>' +
-            '<p class="rowfoot">The other fields of the definition are edited as they are today and are not drawn here. ' +
-            'The refusal names the book and the report. Today the database says only which definition it refused.</p>' +
             '</div></div>';
     }
 
@@ -579,6 +714,7 @@
         return '<section class="card gaps"><div class="sectionhead"><h2>What this prototype cannot show</h2></div><dl>' +
             '<dt>Convention sets do not exist yet</dt><dd>The conventions of a party are 26 tables of documents. A set, with a name and a purpose and one document for each kind, is not stored anywhere. The sets drawn here are fixtures.</dd>' +
             '<dt>A run ignores the conventions binding</dt><dd>The packaging reads every convention row of the party. Choosing a set therefore needs the packaging to read the set, and that is a change to the run, not only a screen.</dd>' +
+            '<dt>The market data kind is held by the run settings</dt><dd>The run settings store market_data_type, with the values eod and date, and a date. The page puts the kind on the definition, as end of day or intraday, and shows no date: the date of a run is the run\u2019s own. How a run finds its time point is not drawn.</dd>' +
             '<dt>The currency is held by the run settings</dt><dd>The column is called base_currency and belongs to the run settings configuration, which several reports can share. The page calls it the report currency, because a report has one.</dd>' +
             '<dt>Three configurations have no screen</dt><dd>Pricing engines have a prototype and no page in the application. Today’s market and the curve configuration have neither.</dd>' +
             '<dt>The scope has no editor</dt><dd>The scope of a run settings configuration is written by the seed and the shell. The button here is the proposal.</dd>' +
@@ -599,7 +735,7 @@
             '<div class="pagehead"><div><h1>' + esc(d.name) + '</h1>' +
             '<p class="lede">Risk report of ' + esc(PARTY) + ' · <span class="mono">' + d.id + '</span> · version ' + d.version +
             ' · <span class="tag ok">' + d.health + '</span></p></div></div>' +
-            layout() + gaps() + '</main></div>' + dialog();
+            layout() + gaps() + '</main></div>' + dialog() + revertDialog();
         renderBar();
         bind();
     }
@@ -618,12 +754,14 @@
             '<span class="sep">|</span>' +
             group('Scope', 'hand', [['no', 'Portfolio only'], ['yes', 'Names a trading book']]) + '</div>' +
             '<div class="bar-line">' +
+            group('Market data', 'md', [['eod', 'End of day'], ['intraday', 'Intraday']]) +
+            '<span class="sep">|</span>' +
             group('Run settings', 'shared', [['no', 'This report only'], ['yes', 'Shared']]) +
             '<span class="sep">|</span>' +
             group('Role', 'role', [['admin', 'Administrator'], ['reader', 'Reader']]) +
             '<span class="sep">|</span><button data-act="state" class="' + (S.showState ? 'on' : '') + '">State</button></div>' +
             (S.showState ? '<div class="state-panel"><div class="state-grid">' +
-                ['tab', 'conv', 'type', 'hand', 'shared', 'role', 'version', 'changes'].map(function (k) {
+                ['tab', 'conv', 'type', 'hand', 'shared', 'md', 'role'].map(function (k) {
                     return '<div>' + k + ' <b>' + esc(S[k]) + '</b></div>';
                 }).join('') +
                 '</div><div class="state-note">The convention counts are measured on 2026-10-21 (' + number(TOTAL_DOCUMENTS) +
@@ -639,20 +777,37 @@
             if (!t) { return; }
             var act = t.getAttribute('data-act');
             if (act === 'tab') { e.preventDefault(); S.tab = t.getAttribute('data-tab'); sync(); render(); }
-            else if (act === 'edit') { S.dialog = true; S.dialogType = null; S.dialogError = null; render(); }
+            else if (act === 'edit') { S.dialog = true; S.dialogType = null; S.dialogMd = null; S.dialogError = null; render(); }
             else if (act === 'cancel') { S.dialog = false; render(); }
             else if (act === 'save') { save(); }
             else if (act === 'kinds') { S.showKinds = !S.showKinds; render(); }
             else if (act === 'request') { S.requested = true; render(); }
             else if (act === 'scope') { window.alert('A new screen: not built. Proposed.'); }
-            else if (act === 'version') { S.version = Number(t.getAttribute('data-version')); S.reverted = false; sync(); render(); }
-            else if (act === 'changes') { S.changes = S.changes === 'only' ? 'all' : 'only'; sync(); render(); }
-            else if (act === 'revert') { S.reverted = true; render(); }
+            else if (act === 'hidesys') { S.hideSystem = !S.hideSystem; render(); }
+            else if (act === 'revertopen') { S.revertOf = t.getAttribute('data-entry'); render(); }
+            else if (act === 'revertcancel') { S.revertOf = null; render(); }
+            else if (act === 'revertdo') {
+                var e = ENTRIES.filter(function (x) { return x.id === S.revertOf; })[0];
+                S.reverted = e.record + ' v' + e.version;
+                S.revertOf = null;
+                render();
+            }
+            else if (act === 'jump') {
+                var mid = Number(t.getAttribute('data-time'));
+                var near = shownEntries().slice().sort(function (a, b) {
+                    return Math.abs(new Date(a.at).getTime() - mid) - Math.abs(new Date(b.at).getTime() - mid);
+                })[0];
+                if (near) {
+                    var el = document.querySelector('[data-entry="' + near.id + '"]');
+                    if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('flash'); window.setTimeout(function () { el.classList.remove('flash'); }, 1500); }
+                }
+            }
         };
         app.onchange = function (e) {
             var t = e.target;
             if (t.getAttribute('data-act') === 'choose') { S.chosen = t.value; S.requested = false; render(); }
             if (t.getAttribute('data-act') === 'dialogtype') { S.dialogType = t.value; S.dialogError = null; render(); }
+            if (t.getAttribute('data-act') === 'dialogmd') { S.dialogMd = t.value; render(); }
         };
         var bar = document.getElementById('proto-bar');
         bar.onclick = function (e) {
@@ -674,6 +829,8 @@
             return;
         }
         S.type = next;
+        if (S.dialogMd !== null) { S.md = S.dialogMd; }
+        S.dialogMd = null;
         S.dialog = false;
         sync();
         render();

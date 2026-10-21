@@ -42,12 +42,12 @@ Each tab has one owner and says what a change on it reaches.
 
 | Tab | What it holds | What a change reaches |
 |-----+---------------+-----------------------|
-| Definition | The fields of the definition, the report currency with its flag, the regulatory book type, and the latest run. | This report. The currency is the exception: the run settings hold it. |
+| Definition | The fields of the definition, the report currency with its flag, the market data kind (end of day or intraday), the regulatory book type, and the latest run with its as-of time. | This report. The currency is the exception: the run settings hold it. |
 | Scope | The portfolios and books the report reads, what each resolves to, split by book type, and the book type rule. | Every report that shares the run settings. |
-| Analytics | The analytics with their state and order, and the engine settings that run them. | Every report that shares the run settings. |
-| Market and pricing | The market data choice of the run, and the pricing engines, today's market and the curve configuration of the party. | The market choice reaches the reports that share the run settings. The three configurations reach every report of the party. |
+| Analytics | The analytics with their state and order, and every engine setting of the run settings in five groups, each with its engine parameter name. | Every report that shares the run settings. |
+| Market and pricing | The pricing market of the run, and the pricing engines, today's market and the curve configuration of the party. | The pricing market reaches the reports that share the run settings. The three configurations reach every report of the party. |
 | Conventions | The market terms a run reads, and the proposed choice of a named set. | Today every report of the party. With sets, this report only. |
-| History | The standard history of the definition, with the field difference between any two versions. A proposed list merges the versions of the configurations the report binds. | Reads only, and a revert writes a new version. |
+| History | The standard timeline: the event chart, the rail of one-line entries and the collapsed details. The rail merges the versions of the definition and of the configurations it binds. | Reads only, and a revert writes a new version. |
 
 ** Why the run settings are not a tab
 
@@ -73,15 +73,21 @@ A report has a report currency. The column is called =base_currency= and belongs
 calls it the report currency, draws it with the flag of the currency as the application draws a currency, and
 says that changing it reaches the reports that share the run settings.
 
+** The market data kind
+
+Every run reads the market data of its own time point. The definition says only whether that point is the end of
+day or the time of the run, so it carries no date. The run settings store =market_data_type= with the values
+=eod=, =live= and =date=, plus a date. The page puts the kind on the Definition tab and draws no date on any
+configuration. The latest run shows the as-of time it used. How a run finds its time point is not drawn.
+
 ** The standard history
 
-The History tab is the history every record page has: a timeline of versions newest first, the version chosen
-compared with the one before it, a field difference with a switch between only the changes and all the fields,
-and a revert that writes the old values as a new version with a reason.
+The History tab is the shared timeline that every record page uses, not the older compare panel. It has the event
+chart, a switch that hides system activity, a rail of one-line entries under day headings with the details
+collapsed, and a Revert on every version except the current one, with a reason. The rail merges several kinds of
+record, so a change to a bound configuration appears beside the definition's own versions.
 
-The definition's own history does not show that a figure changed because a configuration changed. So a proposed
-list below it merges the versions of the configurations the report binds. The run does not record which version
-of a configuration it used, so the page says it cannot name the runs a change reached.
+The run does not record which version of a configuration it used, so the page cannot name the runs a change reached.
 
 ** The conventions
 
@@ -111,6 +117,7 @@ Scope tab shows the portfolio line struck out when a book is named.
 - A run reads every convention row, whatever the binding says, so choosing a set changes the run as well as the screen.
 - Today's market and the curve configuration have no screen and no prototype.
 - The scope has no editor.
+- The prototype draws a note on a tab only when the real screen would carry it. Notes about the prototype stay on the Definition tab, under "What this prototype cannot show".
 - The currency column keeps its name =base_currency=. Renaming it is a separate change.
 
 * See also

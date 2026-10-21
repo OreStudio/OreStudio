@@ -28,9 +28,9 @@ The observation table stops at about 8,300 rows per second for one connection be
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Steps 1 to 4 done. The ingest stores ticks in the tick table only. |
+| Now          | Steps 1 to 5 done. The store path passes 100,000 rows each second, and the drain through NATS reaches about 98,000. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 5: measure a burst with the tick injector. |
+| Next         | Step 6: a separate task for the session functions of the policies. A task to overlap the copy with the next batch. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 - A hypertable for ticks with no trigger, no valid_to and one index on the series and the time, with a retention policy for each class and no compression.
 - The ingest writes ticks to it, and a batch needs no dedupe against a trigger.
 - A view joins it with the observation table, and the readers keep their results: snapshots, evolution, slices, ORE export, curve pillars, lineage and the feed binding activity.
-- The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector.
+- The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector. Met for the store path of the loop (median 117,000). Not met with margin for the whole path through NATS (median 97,600 on a loaded machine).
 
 * Plan
 
@@ -130,7 +130,32 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
    Not covered by this step: the list and count of observations of a series, which the shell
    and the screens use, read the observation table only, so a live tick is not in them. The
    plan did not list that reader.
-5. Measure a burst with the tick injector.
+5. Measure a burst with the tick injector. Done, and the result is mixed. The hidden tests of
+   =app_feed_ingest_loop_tests.cpp= (tag =[burst]=) send 60,000 ticks over 200 datums to one
+   binding and time three paths: a bare =COPY= of the tick writer, the store path of the loop
+   with no NATS, and the drain through a real NATS subscription and the worker thread. A C++
+   publisher takes the place of the Python injector, because the Python injector needs a
+   running service and bindings for its source, and it cannot send fast enough to test a drain
+   of more than 100,000 rows each second. The last tick of a burst is the last row to appear,
+   so one index probe of that row finds the end of the drain. The tests delete their rows.
+   - The first measurement gave about 65,000 rows each second through NATS, and about 70,000
+     for the store path. A bare =COPY= gave about 225,000, so the loop added about 10 microseconds
+     for each tick.
+   - A profile with callgrind showed why. Reading and writing the URI of each tick took about
+     41,000 instructions in =plan_tick=, and the loop wrote the series URI again for every tick.
+     Each tick also copied its bindings and built its republish subject.
+   - The loop now names each distinct URI once and builds the targets once for each source and
+     datum. They live in the bindings snapshot, so a refresh leaves none that is stale. The
+     series, coordinate and stats lookups no longer build a string for each tick, and a row
+     holds views of its ids.
+   - After that, the store path gives about 117,000 rows each second and the drain through NATS
+     about 98,000, on a machine at 11 to 16 load on 8 CPUs, which other environments loaded.
+     The drain through NATS does not reliably pass 100,000 rows each second. The acceptance
+     criterion is met for the store path and not met with margin for the whole path.
+   - What is left is spread thin: allocation, the CSV time stamp, the TLS of the republish, and
+     locks. A bare =COPY= takes about 0.26 s of the 0.55 s for 60,000 rows, and the loop takes the
+     rest, one after the other in one worker. Overlapping the =COPY= of one batch with the
+     preparation of the next is the one large step left, and it needs its own task.
 6. Open a separate task for the session functions of the policies, which cost seven times on an
    indexed read.
 
@@ -149,6 +174,12 @@ task and name that file in the Command column.
 | =COPY= of the owner shape, 50,000 rows in a transaction, by a =BYPASSRLS= role that does not own the table | 194,094 rows per second (append-only shape: 180,185) | =evidence/write_ceiling_owner_columns_output.txt= | this branch |
 | Read of one series, 2,500 rows, under both policies, session functions | 23 to 26 ms (3.4 ms without a policy) | =evidence/write_ceiling_owner_reads_output.txt= | same |
 | Read of one series, 2,500 rows, under both policies, scalar subquery form | 4.5 ms | same | same |
+| Bare =COPY= of the tick writer, 60,000 rows, 5 runs | 215,000 to 237,000 rows per second | =evidence/step5_burst_output.txt=, =ores.marketdata.service.tests "[burst]"= | aade1047c6 |
+| Store path of the loop with no NATS, 60,000 ticks, 5 runs | 102,000 to 121,000 rows per second, median 117,000 | same | same |
+| Drain through NATS and the worker, 60,000 ticks, 5 runs | 83,000 to 107,000 rows per second, median 99,000 | same | same |
+| Drain through NATS and the worker, 60,000 ticks, 10 runs | 86,500 to 108,900 rows per second, median 97,600 | =evidence/step5_burst_nats_10_runs_output.txt=, =ORES_BURST_REPETITIONS=10= | same |
+| Load of the machine during these runs | 11 to 16 on 8 CPUs, from other environments | the header of each evidence file, =/proc/loadavg= | same |
+| First measurement before the change of the loop | about 65,000 rows per second through NATS, about 70,000 for the store path | the same tests on the tree before aade1047c6, not kept as a file | 70283e1640 |
 
 * Notes
 

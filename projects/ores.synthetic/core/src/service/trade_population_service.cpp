@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::synthetic::service {
 
@@ -37,6 +38,32 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
 
     for (const auto& slot : plan.slots) {
         const auto stored = writer_.read_trade(slot.trade_id);
+        if (stored.has_value() && !stored->has_instrument) {
+            if (!stored->activity_id)
+                throw trade_population_write_error(
+                    "Trade " + boost::uuids::to_string(slot.trade_id) +
+                    " is booked without an Internal identifier and without an instrument. "
+                    "Nothing names the activity to stamp the instrument with, so remove the "
+                    "trade and run again.");
+
+            trade_population_write write;
+            write.slot = slot;
+            write.security_id = slot.security_id;
+            write.issue_id = slot.issue_id;
+            write.activity_id = stored->activity_id;
+            writer_.write_instrument(write, scope);
+
+            ++run.written;
+            run.outcomes.push_back(
+                trade_population_outcome{.trade_id = slot.trade_id,
+                                         .internal_identifier = slot.internal_identifier,
+                                         .book_id = slot.book_id,
+                                         .counterparty_id = slot.counterparty_id,
+                                         .trade_type_code = slot.trade_type_code,
+                                         .already_present = false});
+            continue;
+        }
+
         if (stored.has_value()) {
             ++run.already_present;
             run.outcomes.push_back(

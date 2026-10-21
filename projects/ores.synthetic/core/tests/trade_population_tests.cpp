@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 // The generator's whole point is that a second provision states the same
 // population: no trade duplicated and no version advanced. These cases drive
@@ -86,6 +87,9 @@ domain::trade_generation_scope bond_scope() {
 struct recording_writer final : trade_population_writer {
     domain::trade_generation_scope scope;
     std::map<boost::uuids::uuid, std::uint32_t> versions;
+    std::set<boost::uuids::uuid> instrumented;
+    std::set<boost::uuids::uuid> identified;
+    std::vector<boost::uuids::uuid> repaired_with;
     std::size_t bookings = 0;
     std::size_t instruments = 0;
 
@@ -100,18 +104,30 @@ struct recording_writer final : trade_population_writer {
         const auto found = versions.find(id);
         if (found == versions.end())
             return std::nullopt;
-        return trade_population_stored{.version = found->second, .external_version = 0};
+        trade_population_stored stored{.version = found->second, .external_version = 0};
+        stored.has_instrument = instrumented.contains(id);
+        if (identified.contains(id))
+            stored.activity_id = activity_of(id);
+        return stored;
+    }
+
+    static boost::uuids::uuid activity_of(const boost::uuids::uuid& trade_id) {
+        return trade_id;
     }
 
     void write_trade(const trade_population_write& write,
                      const domain::trade_generation_scope&) override {
         ++bookings;
         versions[write.slot.trade_id] = 1;
+        identified.insert(write.slot.trade_id);
     }
 
-    void write_instrument(const trade_population_write&,
+    void write_instrument(const trade_population_write& write,
                           const domain::trade_generation_scope&) override {
         ++instruments;
+        instrumented.insert(write.slot.trade_id);
+        if (write.activity_id)
+            repaired_with.push_back(*write.activity_id);
     }
 };
 
@@ -278,15 +294,19 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", tags) {
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
-    const auto plan = plan_population(bond_scope());
+    auto scope = bond_scope();
+    scope.min_tenor_code = "5Y";
+    scope.max_tenor_code = "5Y";
+    const auto plan = plan_population(scope);
 
-    std::map<std::string, std::set<boost::uuids::uuid>> books_of;
-    for (const auto& slot : plan.slots)
-        books_of[slot.security_id].insert(slot.book_id);
-
-    const auto shared = std::ranges::any_of(
-        books_of, [](const auto& entry) { return entry.second.size() > 1; });
-    REQUIRE(shared);
+    std::set<std::string> securities;
+    std::set<boost::uuids::uuid> books;
+    for (const auto& slot : plan.slots) {
+        securities.insert(slot.security_id);
+        books.insert(slot.book_id);
+    }
+    REQUIRE(securities.size() == 1);
+    REQUIRE(books.size() == 2);
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
@@ -339,4 +359,40 @@ TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scope
         if (found != issuer_of.end())
             REQUIRE(slot.issuer_id == found->second);
     }
+}
+
+TEST_CASE("a_trade_booked_without_its_instrument_gets_the_instrument_on_the_next_run", tags) {
+    recording_writer writer(bond_scope());
+    trade_population_service service(writer);
+    REQUIRE(service.run(config_id).written != 0);
+
+    const auto plan = plan_population(bond_scope());
+    const auto cut = plan.slots.front().trade_id;
+    writer.instrumented.erase(cut);
+    const auto bookings = writer.bookings;
+    const auto instruments = writer.instruments;
+
+    const auto again = service.run(config_id);
+
+    CHECK(again.written == 1);
+    CHECK(again.already_present == trades_per_book * 2 - 1);
+    CHECK(writer.bookings == bookings);
+    CHECK(writer.instruments == instruments + 1);
+    CHECK(writer.instrumented.contains(cut));
+    REQUIRE(writer.repaired_with.size() == 1);
+    CHECK(writer.repaired_with.front() == recording_writer::activity_of(cut));
+    CHECK(version_of(writer, cut) == 1);
+}
+
+TEST_CASE("a_trade_booked_without_an_identifier_or_an_instrument_stops_the_run", tags) {
+    recording_writer writer(bond_scope());
+    trade_population_service service(writer);
+    REQUIRE(service.run(config_id).written != 0);
+
+    const auto cut = plan_population(bond_scope()).slots.front().trade_id;
+    writer.instrumented.erase(cut);
+    writer.identified.erase(cut);
+
+    CHECK_THROWS_WITH(service.run(config_id),
+                      Catch::Matchers::ContainsSubstring(boost::uuids::to_string(cut)));
 }

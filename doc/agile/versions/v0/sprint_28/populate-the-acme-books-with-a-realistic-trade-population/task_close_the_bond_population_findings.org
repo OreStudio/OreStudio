@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 55FC9437-F233-498B-AC3B-CF13D17BBCD3
+:END:
+#+title: Task: Close the open findings of the bond population
+#+description: Repair a trade that was booked without its bond instrument, prove the repair in a test, and remove the test that depends on the seed.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+owner: marco
+#+branch: feature/close-the-bond-population-findings
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run that stops between the booking of a trade and the write of its instrument is repaired by the next run. The tests do not depend on a seed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A trade that is booked without its instrument gets the instrument on the next run.
+- A trade that is booked without its identifier stops the run with a message that names the trade.
+- A second run on a complete population writes nothing.
+- No test depends on the seed to find two books that share a security.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trades after provisioning | 32, 20 issues, 20 schedules | =compass sql= counts on the trading tables | working tree on =8a311c1d34= |
+| Run after one instrument was closed by hand | wrote 1 in one config, 0 in the other three | =synthetic generate-trades= over the four configs | working tree on =8a311c1d34= |
+| Run after the repair | wrote 0 in all four configs | =synthetic generate-trades= over the four configs | working tree on =8a311c1d34= |
+
+* Notes
+
+Open items, not done here:
+
+- A cut-short issue is repaired by a run that writes a new trade of that
+  security. A run whose trades are all booked does not revisit the issue. No
+  run cut an issue short on a database.
+- The writer has no automated test against a database. The repair of a trade
+  is proven by hand on a provisioned tenant and by the planner tests with a
+  recording writer.
+- Pricing is not proven. The ORE validator found no quotes for the as-of date.
+- The pool is thin: 32 trades over 20 securities. This is a choice of the
+  config and of the tenor band, and not a defect.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A trade that a run booked without its bond instrument is now repaired. The
+writer reads whether the trade has an instrument. When it has none, the writer
+takes the activity from the Internal identifier of the trade and writes the
+instrument. When the trade has no identifier either, the run stops and names
+the trade.
+
+On a provisioned tenant I closed the instrument of one trade by hand. The next
+run wrote 1 instrument and left the other 31 trades alone. The run after that
+wrote 0.
+
+The test that found two books sharing a security by the draw of the seed now
+fixes the tenor to five years, so every slot has the same security. Two new tests
+cover the repair and the stop.

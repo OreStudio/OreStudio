@@ -52,6 +52,17 @@ public:
 struct trade_population_stored final {
     std::uint32_t version = 0;
     std::uint32_t external_version = 0;
+    /**
+     * @brief Whether the trade has its bond instrument. A run that stopped
+     * after the booking leaves a trade without one.
+     */
+    bool has_instrument = true;
+    /**
+     * @brief The activity the booking opened, read from the trade's Internal
+     * identifier, which is written with the activity's id. Absent when the
+     * trade has no identifier.
+     */
+    std::optional<boost::uuids::uuid> activity_id;
 };
 
 /**
@@ -65,6 +76,11 @@ struct trade_population_write final {
      */
     std::string security_id;
     boost::uuids::uuid issue_id;
+    /**
+     * @brief The activity to stamp the instrument with when the trade was
+     * booked by an earlier run. Absent when this run books the trade.
+     */
+    std::optional<boost::uuids::uuid> activity_id;
 };
 
 /**

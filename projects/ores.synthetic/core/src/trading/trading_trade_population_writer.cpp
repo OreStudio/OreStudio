@@ -89,6 +89,22 @@ trading_trade_population_writer::trading_trade_population_writer(
     : nats_(nats) {}
 
 template <typename Request>
+typename Request::response_type
+trading_trade_population_writer::read_reply(const Request& request, const std::string& what) {
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto reply = nats_.authenticated_request(Request::nats_subject, codec.encode(request));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(
+            std::format("Reading {} was refused: {}", what, error->second));
+    auto decoded = codec.decode<typename Request::response_type>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(std::format(
+            "Reading {} answered something unreadable: {}", what, decoded.error().what()));
+    return *decoded;
+}
+
+template <typename Request>
 bool trading_trade_population_writer::call_ok(std::string_view subject,
                                               const Request& request,
                                               const std::string& what) {
@@ -282,9 +298,32 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
                         decoded.error().what()));
     if (decoded->trades.empty())
         return std::nullopt;
-    return trade_population_stored{
+    trade_population_stored stored{
         .version = static_cast<std::uint32_t>(decoded->trades.front().version),
         .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
+
+    ores::trading::messaging::list_bond_instruments_request instrument_req;
+    instrument_req.limit = 1;
+    ores::trading::messaging::bond_instruments_filter instrument_filter;
+    instrument_filter.trade_id_one_of = std::vector<boost::uuids::uuid>{trade_id};
+    instrument_req.filter = instrument_filter;
+    stored.has_instrument =
+        !read_reply(instrument_req,
+                    "the bond instrument of trade " + boost::uuids::to_string(trade_id))
+             .bond_instruments.empty();
+    if (stored.has_instrument)
+        return stored;
+
+    ores::trading::messaging::list_trade_identifiers_request identifier_req;
+    identifier_req.limit = 1;
+    ores::trading::messaging::trade_identifiers_filter identifier_filter;
+    identifier_filter.trade_id = trade_id;
+    identifier_req.filter = identifier_filter;
+    const auto identifiers = read_reply(
+        identifier_req, "the identifier of trade " + boost::uuids::to_string(trade_id));
+    if (!identifiers.identifiers.empty())
+        stored.activity_id = identifiers.identifiers.front().trade_activity_id;
+    return stored;
 }
 
 bool trading_trade_population_writer::issue_complete(const boost::uuids::uuid& issue_id) {
@@ -442,15 +481,23 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
 void trading_trade_population_writer::write_instrument(
     const trade_population_write& write, const domain::trade_generation_scope&) {
     const auto& slot = write.slot;
-    const auto activity = activities_.find(slot.trade_id);
-    if (activity == activities_.end())
-        throw trade_population_write_error("Trade " + boost::uuids::to_string(slot.trade_id) +
-                                           " has no booking activity to stamp its instrument "
-                                           "with.");
+    boost::uuids::uuid activity_id;
+    if (write.activity_id) {
+        activity_id = *write.activity_id;
+    } else {
+        const auto activity = activities_.find(slot.trade_id);
+        if (activity == activities_.end())
+            throw trade_population_write_error("Trade " + boost::uuids::to_string(slot.trade_id) +
+                                               " has no booking activity to stamp its instrument "
+                                               "with.");
+        activity_id = activity->second;
+    }
+
+    ensure_issue(write);
 
     ores::trading::messaging::put_bond_instrument_request instrument_req;
     instrument_req.change.write.trade_id = slot.trade_id;
-    instrument_req.change.write.trade_activity_id = activity->second;
+    instrument_req.change.write.trade_activity_id = activity_id;
     instrument_req.change.write.trade_type_code = slot.trade_type_code;
     instrument_req.change.write.issue_id = write.issue_id;
     instrument_req.change.write.notional =

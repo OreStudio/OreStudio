@@ -95,6 +95,14 @@ private:
     bool issue_complete(const boost::uuids::uuid& issue_id);
 
     /**
+     * @brief Reads one list from the store, stating what was read on a refusal.
+     *
+     * @throws trade_population_write_error on a refusal or an unreadable reply.
+     */
+    template <typename Request>
+    typename Request::response_type read_reply(const Request& request, const std::string& what);
+
+    /**
      * @brief Issues an entity write, stating the entity on a refusal.
      *
      * @return True when the store took the write.

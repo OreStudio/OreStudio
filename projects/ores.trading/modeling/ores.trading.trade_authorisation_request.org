@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.eventing-integration-test.enabled: false
 :ores.cpp.shell-command.enabled: true
 :ID: 496A9537-9017-42BE-A04C-32186B8A4360
 :END:
@@ -81,6 +80,37 @@ The version of the trade the request covers.
 :error_message: Invalid trade_id: %. No active trade found with this id.
 :list_by:       true
 :END:
+
+A request is read by its tenant alone. It holds a trade id and a version, no
+economics, so it carries no party isolation of its own: the trade it names does.
+
+The generated event test cannot seed a trade through its enum columns, so the
+model states how the parent is seeded.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto trade_id_parent = ores::trading::generators::generate_synthetic_trade(ctx);
+        auto trade_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+        trade_id_party.change_reason_code = "system.test";
+        for (const auto& e : ores::refdata::repository::party_repository().read_latest(party_ctx)) {
+            if (e.tenant_id == trade_id_party.tenant_id) {
+                trade_id_party.parent_party_id = e.id;
+                break;
+            }
+        }
+        ores::refdata::repository::party_repository().write(party_ctx, trade_id_party);
+        trade_id_parent.party_id = trade_id_party.id;
+        ores::trading::repository::trade_repository().write(party_ctx, trade_id_parent);
+        v.trade_id = trade_id_parent.id;
+    }
+#+end_src
 
 * SQL
 

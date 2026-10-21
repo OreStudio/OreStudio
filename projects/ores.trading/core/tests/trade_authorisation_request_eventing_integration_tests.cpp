@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * The generated event test for this entity cannot seed a trade through its enum
- * columns, so this test is written by hand. The model turns that facet off.
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_integration_test.cpp.mustache
+ * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
 // A seeded parent is system-tenant reference data (its soft FK carries
@@ -44,12 +45,6 @@
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/service/trade_authorisation_request_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
-// mandatory party_id FK): the party generator and repository are used
-// regardless of the child's generator facet, hence the fully-qualified
-// refdata paths.
-#include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
 // Soft-FK parent seeding (ores_inbox_approval_requests_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -73,40 +68,16 @@
 // system-tenant grand-parent is read rather than generated.
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-// Soft-FK parent seeding (ores_trading_trades_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.trading.api/generators/trade_generator.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
-// Grand-parent seeding (ores_trading_trade_types_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.trading.core/repository/trade_type_repository.hpp"
-// Grand-parent seeding (ores_trading_counterparty_scope_types_tbl): the parent's own mandatory soft
-// FKs reference rows the test seeds before the parent, so their generator and repository headers
-// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
-// nothing, and a system-tenant grand-parent is read rather than generated.
-#include "ores.trading.api/generators/counterparty_scope_type_generator.hpp"
-#include "ores.trading.core/repository/counterparty_scope_type_repository.hpp"
-// Grand-parent seeding (ores_trading_booking_nature_types_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.trading.api/generators/booking_nature_type_generator.hpp"
-#include "ores.trading.core/repository/booking_nature_type_repository.hpp"
-// Grand-parent seeding (ores_trading_entry_channel_types_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
+// Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/generators/entry_channel_type_generator.hpp"
-#include "ores.trading.core/repository/entry_channel_type_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -128,24 +99,6 @@ namespace {
 const std::string_view test_suite("trading.tests");
 const std::string tags("[eventing][integration]");
 
-// A request is read through the party of its trade, so the writes and reads
-// need the session party set, as the trade tables do.
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
-    using ores::refdata::repository::party_repository;
-    party_repository party_repo;
-    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
-    party.change_reason_code = "system.test";
-    for (const auto& e : party_repo.read_latest(h.context())) {
-        if (e.tenant_id == party.tenant_id) {
-            party.parent_party_id = e.id;
-            break;
-        }
-    }
-    party_repo.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
 
 }
 
@@ -160,7 +113,7 @@ TEST_CASE("write_trade_authorisation_request_publishes_an_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto& party_ctx = h.context();
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -243,14 +196,21 @@ TEST_CASE("write_trade_authorisation_request_publishes_an_event", tags) {
     ores::inbox::repository::approval_request_repository request_id_repo;
     request_id_repo.write(party_ctx, request_id_parent);
     v.request_id = request_id_parent.id;
-    // Seed the active trade row ores_trading_trades_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto trade_id_parent = ores::trading::generators::generate_synthetic_trade(ctx);
-    trade_id_parent.party_id = *party_ctx.party_id();
-    ores::trading::repository::trade_repository trade_id_repo;
-    trade_id_repo.write(party_ctx, trade_id_parent);
-    v.trade_id = trade_id_parent.id;
+    {
+        auto trade_id_parent = ores::trading::generators::generate_synthetic_trade(ctx);
+        auto trade_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+        trade_id_party.change_reason_code = "system.test";
+        for (const auto& e : ores::refdata::repository::party_repository().read_latest(party_ctx)) {
+            if (e.tenant_id == trade_id_party.tenant_id) {
+                trade_id_party.parent_party_id = e.id;
+                break;
+            }
+        }
+        ores::refdata::repository::party_repository().write(party_ctx, trade_id_party);
+        trade_id_parent.party_id = trade_id_party.id;
+        ores::trading::repository::trade_repository().write(party_ctx, trade_id_parent);
+        v.trade_id = trade_id_parent.id;
+    }
     const auto id_str = boost::uuids::to_string(v.request_id);
     BOOST_LOG_SEV(lg, debug) << "Trade Authorisation Request: " << v;
 

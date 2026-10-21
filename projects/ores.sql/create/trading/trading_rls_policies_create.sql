@@ -134,21 +134,6 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
--- Trade authorisation requests
--- -----------------------------------------------------------------------------
--- The tenant policy is generated with the table. Party isolation matches the
--- trade the request covers. FOR SELECT only.
-drop policy if exists trade_authorisation_requests_party_isolation_policy
-    on ores_trading_trade_authorisation_requests_tbl;
-
-create policy trade_authorisation_requests_party_isolation_policy
-on ores_trading_trade_authorisation_requests_tbl
-as restrictive
-for select using (
-    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
 -- Trade Identifiers
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trade_identifiers_tbl enable row level security;

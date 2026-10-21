@@ -152,6 +152,12 @@ label.plain{white-space:nowrap}
 .adv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px;border:1px solid var(--line-soft);border-radius:6px;padding:10px 12px;background:#161619}@media(max-width:820px){.adv{grid-template-columns:1fr}}
 .setting details.doc>summary{cursor:pointer;color:var(--ink-faint);font-size:.85rem;width:fit-content}.setting details.doc>summary:hover{color:var(--ink)}
 .docbody{display:grid;gap:8px;margin-top:8px}
+.sval select,.sval input{min-width:15rem;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.setting .help{color:var(--ink-faint);font-size:.8rem}
+.setting.chg{box-shadow:inset 3px 0 var(--accent);background:#1a2029}
+.card.editing{border-color:var(--accent)}
+.editfoot{border-top:1px solid var(--line-soft);padding:14px 16px;display:grid;gap:12px;background:#17171b}
+.editfoot .field{max-width:42rem}
 .sdesc{color:var(--ink-dim);max-width:78ch;line-height:1.55}
 table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}table.vals td,table.vals th{padding:5px 10px}table.vals tr.curv td{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
 
@@ -175,6 +181,7 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
   Addresses: ?screen=list | record&id=e1|e2|e3&tab=details|dates|fixings|building|execution|output|reports|history
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
+    ?edit=fixings|building|execution   opens that group of the record in edit mode
     ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
   The Simple and Advanced switch is in the page, as on the feed screens. ?mode=simple or advanced sets it, and it is remembered.
 -->
@@ -185,45 +192,58 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
 <div id="layer"></div>
 
 <script>
-// Only settings that the ORE user guide (Docs/UserGuide/parameterisation/ore.tex and the examples chapter) describes appear here.
-// A setting seen in sample files or in the source, but not in the guide, is left out.
+// Every setting that the ORE user guide (Docs/UserGuide/parameterisation/ore.tex and the examples chapter) describes as an engine
+// choice appears here. A setting seen in sample files or in the source, but not in the guide, is left out. Where the guide and the
+// source disagree, the default is the one in the source. dv is the default as a person reads it.
 const GROUPS = [
   { id: 'fixings', title: 'Fixings and cash flows', table: 'engine_settings_fixings', changes: true, what: 'Which fixings and cash flows count.', fields: [
-    { key: 'imply_todays_fixings', ore: 'implyTodaysFixings', label: 'Imply today’s fixings', kind: 'bool', help: 'Whether today’s fixings are implied.',
+    { key: 'imply_todays_fixings', ore: 'implyTodaysFixings', label: 'Imply today’s fixings', kind: 'bool', dv: 'No', help: 'Whether today’s fixings are implied.',
       desc: 'Decides what the run does about the fixing of the valuation date. When it is No, the fixing for the valuation date is loaded from the fixing file like any earlier fixing. When it is Yes, that fixing is not loaded and the engine implies it from the curves. Use Yes when the run prices off hypothetical market data, as in scenario analysis and stress testing, because a fixing from the real market would not match the hypothetical curves.',
       dflt: 'No. Today’s fixing is loaded.' },
-    { key: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', label: 'Include today’s cash flows', kind: 'bool', help: 'Whether cash flows that pay today count.',
-      desc: 'Decides whether a cash flow that pays on the valuation date is part of the NPV or is treated as matured and excluded. It is one of two QuantLib flags that ORE exposes. A global choice here applies to every analytic of the run. Change it only when the NPV must agree with a system that treats payments on the valuation date the other way.',
-      dflt: 'Not set. The engine keeps the QuantLib default.' },
-    { key: 'include_reference_date_events', ore: 'includeReferenceDateEvents', label: 'Include reference date events', kind: 'bool', help: 'Whether events on the reference date count.',
-      desc: 'Decides whether an event that falls on the valuation date is still counted in the NPV or is treated as matured and excluded. It is the companion of Include today’s cash flows, and the two together decide how a trade is valued on the day of its payment or event. A global choice here applies to every analytic of the run.',
-      dflt: 'Not set. The engine keeps the QuantLib default.' },
-    { key: 'enrich_index_fixings', ore: 'enrichIndexFixings', label: 'Enrich index fixings', kind: 'bool', help: 'Whether gaps in index fixings are filled.',
-      desc: 'Fills gaps in the history of an index. When it is Yes, a missing fixing is replaced by a fallback: the previous fixing first, and the next fixing when there is no previous one. Ignore fixing lag limits how old the previous fixing may be. Use it when the fixing file has gaps. It changes the numbers, because a trade that reads a filled fixing is valued with it.',
+    { key: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', label: 'Include today’s cash flows', kind: 'bool', dv: 'No', help: 'Whether cash flows that pay today count.',
+      desc: 'Decides whether a cash flow that pays on the valuation date is part of the NPV or is treated as matured and excluded. It is one of two QuantLib flags that ORE exposes. A choice here applies to every analytic of the run. The simulation analytic has its own parameter of the same name, which applies to the XVA, XVA sensitivity and XVA stress analytics. Change it only when the NPV must agree with a system that treats payments on the valuation date the other way.',
+      dflt: 'No. A cash flow that pays on the valuation date is treated as matured.' },
+    { key: 'include_reference_date_events', ore: 'includeReferenceDateEvents', label: 'Include reference date events', kind: 'bool', dv: 'No', help: 'Whether events on the reference date count.',
+      desc: 'Decides whether an event that falls on the valuation date is still counted in the NPV or is treated as matured and excluded. It is the companion of Include today’s cash flows, and the two together decide how a trade is valued on the day of its payment or event. A choice here applies to every analytic of the run, and the simulation analytic has its own parameter of the same name.',
+      dflt: 'No. An event on the valuation date is treated as matured.' },
+    { key: 'enrich_index_fixings', ore: 'enrichIndexFixings', label: 'Enrich index fixings', kind: 'bool', dv: 'No', help: 'Whether gaps in index fixings are filled.',
+      desc: 'Fills gaps in the history of an index. When it is Yes, a missing fixing is replaced by a fallback: the previous fixing first, and the next fixing when there is no previous one. Ignore fixing lag and Ignore fixing lead limit how far the fallback may be from the gap. Use it when the fixing file has gaps. It changes the numbers, because a trade that reads a filled fixing is valued with it.',
       dflt: 'No. A gap stays a gap.' },
-    { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', help: 'A number of days. Zero turns the check off.',
+    { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', dv: '0', help: 'A number of days. Zero turns the check off.',
       desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the previous fixing, this setting limits how old that previous fixing may be. If the previous fixing is more days older than the gap than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any age can fill the gap.',
+      dflt: '0. The check is off.' },
+    { key: 'ignore_fixing_lead', ore: 'ignoreFixingLead', label: 'Ignore fixing lead', kind: 'number', dv: '0', help: 'A number of days. Zero turns the check off.',
+      desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the next fixing, this setting limits how far ahead that next fixing may be. If the next fixing date leads the gap by more days than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any distance can fill the gap.',
       dflt: '0. The check is off.' }] },
-  { id: 'building', title: 'Market and trade building', table: 'engine_settings_building', changes: true, what: 'What the run does with missing data and failed trades.', fields: [
-    { key: 'observation_model', ore: 'observationModel', label: 'Observation model', kind: 'select', opts: ['None', 'Disable', 'Defer', 'Unregister'], help: 'How the engine handles QuantLib notifications.',
+  { id: 'building', title: 'Market and trade building', table: 'engine_settings_building', changes: true, what: 'How the engine builds the market and the trades, and what it does when that fails.', fields: [
+    { key: 'observation_model', ore: 'observationModel', label: 'Observation model', kind: 'select', opts: ['None', 'Disable', 'Defer', 'Unregister'], dv: 'None', help: 'How the engine handles QuantLib notifications.',
       desc: 'Controls how many QuantLib observer notifications the engine uses when market data and fixings are updated and when the evaluation date moves. Notifications keep every dependent object up to date, and they cost time in a simulation. None is the normal QuantLib behaviour, where every update notifies every dependent object. The other three choices cut that cost in different ways and give a similar speed up. Disable switches all notifications off during market and fixing updates and when the evaluation date moves along a path, and the engine triggers the needed recalculations itself. Defer switches notifications off during market and fixing updates and runs the updates when notifications are on again. Unregister keeps notifications on but unregisters floating rate coupons from their indices, which removes most of them. The ORE user guide describes the setting as a control of performance during simulation.',
       dflt: 'None.' },
-    { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', help: 'Whether the market is built on demand.',
+    { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', dv: 'Yes', help: 'Whether the market is built on demand.',
       desc: 'Decides when the engine builds the curves listed in today’s market. When it is Yes, a curve is built only when a trade or analytic asks for it, which saves time when the configuration lists curves that the portfolio never uses. When it is No, every curve in today’s market is built at the start.',
       dflt: 'Yes. Curves are built on demand.' },
-    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', help: 'Whether a failed trade is replaced by a dummy.',
+    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', dv: 'Yes', help: 'Whether a failed trade is replaced by a dummy.',
       desc: 'Decides what happens to a trade that cannot be loaded or built. When it is Yes, the engine builds a dummy trade of type Failed, with zero notional and zero NPV, so the trade still appears in the portfolio. When it is No, the failed trade is left out. Yes keeps the trade count honest, but a reader must know that a Failed trade has no value.',
-      dflt: 'No.' },
-    { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', help: 'Whether the run goes on after an error.',
+      dflt: 'Yes. A failed trade becomes a dummy trade.' },
+    { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', dv: 'Yes', help: 'Whether the run goes on after an error.',
       desc: 'Decides whether the engine stops at the first error or goes on. When it is Yes, the engine does not exit on an error but tries to continue the processing, so one bad curve or trade does not lose the whole run, and the reports may be incomplete. When it is No, the run exits at the error.',
-      dflt: 'No.' }] },
-  { id: 'execution', title: 'Execution', table: 'engine_settings_execution', changes: false, what: 'How the engine runs and logs.', fields: [
-    { key: 'n_threads', ore: 'nThreads', label: 'Threads', kind: 'number', help: 'A whole number of at least 1.',
+      dflt: 'Yes. The run goes on after an error.' },
+    { key: 'use_at_par_coupons_curves', ore: 'useAtParCouponsCurves', label: 'At par coupons for curves', kind: 'bool', dv: 'Yes', help: 'Par approximation or indexed ibor coupons for curves.',
+      desc: 'Decides how the engine models a floating rate coupon when it builds the curves. When it is Yes, it uses the par approximation of the coupon. When it is No, it uses indexed ibor coupons. The choice goes back to the QuantLib flag QL_USE_INDEXED_COUPON and its run time setting. Yes is also the default of a QuantLib build.',
+      dflt: 'Yes. The par approximation.' },
+    { key: 'use_at_par_coupons_trades', ore: 'useAtParCouponsTrades', label: 'At par coupons for trades', kind: 'bool', dv: 'Yes', help: 'Par approximation or indexed ibor coupons for trades.',
+      desc: 'Decides how the engine models a floating rate coupon when it builds the trades. When it is Yes, it uses the par approximation of the coupon. When it is No, it uses indexed ibor coupons. It is the companion of At par coupons for curves, and the two can differ. The choice goes back to the QuantLib flag QL_USE_INDEXED_COUPON and its run time setting.',
+      dflt: 'Yes. The par approximation.' }] },
+  { id: 'execution', title: 'Execution', table: 'engine_settings_execution', changes: false, what: 'How the engine runs, logs and writes its files.', fields: [
+    { key: 'n_threads', ore: 'nThreads', label: 'Threads', kind: 'number', dv: '1', help: 'A whole number of at least 1.',
       desc: 'The number of threads the engine may use. More than one thread speeds up the analytics that spread their work over scenarios or paths: the sensitivity analytic, the classic exposure simulation and the AMC exposure simulation. These are the three analytics that the ORE user guide names.',
       dflt: '1.' },
-    { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', help: 'A bit set, such as 31.',
+    { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', dv: '15', help: 'A bit set, such as 31.',
       desc: 'Decides which messages the engine writes to its log file. Each kind of message has a bit: 1 alert, 2 critical, 4 error, 8 warning, 16 notice, 32 debug and 64 data. Add the bits of the kinds you want. Common totals are 15 for alert to warning, 31 for the same and notice, 63 for the same and debug, and 127 for the same and data. A higher total writes more and makes a larger log. The value 255 gives the most detail.',
-      dflt: 'Not set. ORE uses its own default.' }] }
+      dflt: '15. Alert, critical, error and warning.' },
+    { key: 'gzip_compression_level', ore: 'gzipCompressionLevel', label: 'Gzip compression level', kind: 'number', dv: '6', help: 'A whole number from 0 to 9.',
+      desc: 'Sets how strongly the engine compresses the zipped cube files it writes. The value is a whole number from 0 to 9. A value of 0 means no compression, which gives the fastest write and the largest file. A value of 9 means the strongest compression, which gives the slowest write and the smallest file. A value outside 0 to 9 is an error. The default of 6 balances speed and size.',
+      dflt: '6. A balance of speed and size.' }] }
 ];
 const groupOf = id => GROUPS.find(g => g.id === id);
 
@@ -236,12 +256,16 @@ const META = {
   includeReferenceDateEvents: { since: '1.8.13.0', removed: null, format: FLAG_FMT, affects: true },
   enrichIndexFixings: { since: '1.8.13.0', removed: null, format: FLAG_FMT, affects: true },
   ignoreFixingLag: { since: '1.8.13.0', removed: null, format: 'A whole number of days, zero or more.', affects: true },
+  ignoreFixingLead: { since: '1.8.13.0', removed: null, format: 'A whole number of days, zero or more.', affects: true },
   observationModel: { since: '1.8.0.7', sinceBound: true, removed: null, format: 'One of None, Disable, Defer, Unregister.', affects: false },
   lazyMarketBuilding: { since: '1.8.6.0', removed: null, format: FLAG_FMT, affects: false },
   buildFailedTrades: { since: '1.8.7.0', removed: null, format: FLAG_FMT, affects: true },
   continueOnError: { since: '1.8.4.0', removed: null, format: FLAG_FMT, affects: true },
+  useAtParCouponsCurves: { since: '1.8.15.0', removed: null, format: FLAG_FMT, affects: true },
+  useAtParCouponsTrades: { since: '1.8.15.0', removed: null, format: FLAG_FMT, affects: true },
   nThreads: { since: '1.8.9.0', removed: null, format: 'A whole number, at least 1.', affects: false },
-  logMask: { since: '1.8.2.0', removed: null, format: 'A whole number. A bit set of the message kinds.', affects: false }
+  logMask: { since: '1.8.2.0', removed: null, format: 'A whole number. A bit set of the message kinds.', affects: false },
+  gzipCompressionLevel: { since: '1.8.17.0', removed: null, format: 'A whole number from 0 to 9.', affects: false }
 };
 GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › ' + f.ore; }));
 
@@ -388,7 +412,12 @@ const LIST = () => href({ screen: 'list' });
 const protoNote = t => clean ? '' : `<div class="pn"><b>Prototype note.</b> ${t}</div>`;
 const setCount = c => GROUPS.filter(g => c.groups[g.id]).length;
 const threadsOf = c => { const e = c.groups.execution; return e && e.vals.n_threads ? e.vals.n_threads : null; };
-const cell = (f, v) => { const t = valText(f, v); return t == null ? '<span class="faint">Engine default</span>' : f.kind === 'text' || f.kind === 'select' ? `<span class="mono">${esc(t)}</span>` : esc(t); };
+const cell = (f, v) => { const t = valText(f, v); return t == null ? `<span class="faint">Default: ${esc(f.dv)}</span>` : f.kind === 'select' ? `<span class="mono">${esc(t)}</span>` : esc(t); };
+// Editing happens in place. editing holds the draft of one group, and openDocs holds the settings whose documentation is open.
+let editing = null;
+const openDocs = new Set();
+const isEditing = (c, g) => !!editing && editing.cid === c.id && editing.gid === g.id;
+const same = (a, b) => (a == null || a === '' ? '' : String(a)) === (b == null || b === '' ? '' : String(b));
 const changesTag = g => g.changes ? tag('Changes the numbers', 'warn') : tag('Operational', 'off');
 
 function visible() {
@@ -429,19 +458,37 @@ function advancedStrip(f) {
   const removed = m.removed || '—';
   return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Introduced in', esc(since))}${metaLine('Removed in', esc(removed))}${metaLine('Format', esc(m.format))}</div>`;
 }
-function settingBlock(f, v) {
-  return `<div class="setting"><div class="shead"><div><b>${esc(f.label)}</b> ${f.meta && f.meta.affects ? tag('Changes the numbers', 'warn') : ''}</div><div class="sval">${cell(f, v)}</div></div>
-    <details class="doc"><summary>Documentation</summary><div class="docbody"><p class="sdesc">${esc(f.desc)}</p>
-    <div class="faint">Default: ${esc(f.dflt)}</div>
-    ${mode === 'advanced' ? advancedStrip(f) : ''}</div></details></div>`;
+function docBody(f) {
+  return `<div class="docbody"><p class="sdesc">${esc(f.desc)}</p><div class="faint">Default: ${esc(f.dflt)}</div>${mode === 'advanced' ? advancedStrip(f) : ''}</div>`;
+}
+function control(f, v) {
+  const id = 'f-' + f.key, unset = `<option value="">Default (${esc(f.dv)})</option>`;
+  if (f.kind === 'bool') return `<select id="${id}" data-fld="${f.key}">${unset}<option value="yes" ${v === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${v === 'no' ? 'selected' : ''}>No</option></select>`;
+  if (f.kind === 'select') return `<select id="${id}" data-fld="${f.key}">${unset}${f.opts.map(o => `<option ${v === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+  return `<input type="text" id="${id}" data-fld="${f.key}" placeholder="Default (${esc(f.dv)})" value="${esc(v || '')}" inputmode="numeric">`;
+}
+function settingRow(c, g, f) {
+  const part = c.groups[g.id], cur = part ? part.vals[f.key] : undefined, edit = isEditing(c, g);
+  const key = c.id + ':' + f.key, changed = edit && !same(editing.draft[f.key], cur);
+  return `<div class="setting ${changed ? 'chg' : ''}" data-row="${f.key}"><div class="shead"><div><b>${esc(f.label)}</b> ${f.meta && f.meta.affects ? tag('Changes the numbers', 'warn') : ''}</div>
+    <div class="sval">${edit ? control(f, editing.draft[f.key]) : cell(f, cur)}</div></div>
+    ${edit ? `<div class="help">${esc(f.help)}</div>` : ''}
+    <details class="doc" data-doc="${key}" ${openDocs.has(key) ? 'open' : ''}><summary>Documentation</summary>${docBody(f)}</details></div>`;
+}
+function editFooter(c, g) {
+  const n = diffParts([{ group: g.id, before: (c.groups[g.id] || { vals: {} }).vals, after: editing.draft }]).length;
+  const reach = c.reports.length ? `This group reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine settings, so this change reaches no run.';
+  return `<div class="editfoot"><div class="${g.changes ? 'warnbox' : 'notice'}">${g.changes ? 'These settings change the numbers a run computes. ' : ''}${reach}</div>
+    <div id="d-err"></div>${reasonField(true)}
+    <div class="actions"><button class="btn primary" id="e-save">${G.save} Save</button><button class="btn" id="e-cancel">${G.cancel} Cancel</button><span class="faint" id="e-count">${n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes')}</span></div></div>`;
 }
 function groupCard(c, g) {
-  const part = c.groups[g.id];
-  const val = f => part ? part.vals[f.key] : null;
-  return `<div class="card"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
-    <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}${may('edit') ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}</div></div>
-    ${g.fields.map(f => settingBlock(f, val(f))).join('')}
-    <div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its own default for every setting here.`}</div></div>`;
+  const part = c.groups[g.id], edit = isEditing(c, g);
+  const keys = g.fields.map(f => c.id + ':' + f.key), allOpen = keys.every(k => openDocs.has(k));
+  return `<div class="card ${edit ? 'editing' : ''}"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
+    <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}<button class="btn small ghost" data-alldocs="${g.id}">${allOpen ? 'Hide documentation' : 'Show documentation'}</button>${may('edit') && !edit ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}${edit ? tag('Editing', 'info') : ''}</div></div>
+    ${g.fields.map(f => settingRow(c, g, f)).join('')}
+    ${edit ? editFooter(c, g) : `<div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its default for every setting here.`}</div>`}</div>`;
 }
 const modeToggle = () => `<div class="seg" role="radiogroup" aria-label="Editing mode"><button role="radio" aria-checked="${mode === 'simple'}" data-mode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button role="radio" aria-checked="${mode === 'advanced'}" data-mode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>`;
 function reportsTab(c) {
@@ -477,29 +524,36 @@ function recordScreen(c) {
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the release that introduced it, the release that removed it, its default and its format. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
 }
 
-function control(f, v) {
-  const id = 'f-' + f.key;
-  if (f.kind === 'bool') return `<select id="${id}"><option value="">Engine default</option><option value="yes" ${v === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${v === 'no' ? 'selected' : ''}>No</option></select>`;
-  if (f.kind === 'select') return `<select id="${id}"><option value="">Engine default</option>${f.opts.map(o => `<option ${v === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
-  return `<input type="text" id="${id}" placeholder="Engine default" value="${esc(v || '')}" ${f.kind === 'number' ? 'inputmode="numeric"' : ''}>`;
+const RULES = { n_threads: [1, null], gzip_compression_level: [0, 9], log_mask: [0, null], ignore_fixing_lag: [0, null], ignore_fixing_lead: [0, null] };
+function problem(g, draft) {
+  for (const f of g.fields) {
+    const v = draft[f.key]; if (v === undefined || v === '') continue;
+    if (f.kind === 'number') {
+      if (!/^\d+$/.test(v)) return `${f.label} must be a whole number.`;
+      const r = RULES[f.key] || [0, null];
+      if (Number(v) < r[0]) return `${f.label} must be at least ${r[0]}.`;
+      if (r[1] !== null && Number(v) > r[1]) return `${f.label} must be at most ${r[1]}.`;
+    }
+  }
+  return null;
 }
-function editDialog(c, gid) {
-  const g = groupOf(gid), part = c.groups[gid], vals = part ? part.vals : {};
-  const reach = c.reports.length ? `This group reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine settings, so this change reaches no run.';
-  dialog('Edit ' + g.title, `<div class="${g.changes ? 'warnbox' : 'notice'}">${g.changes ? 'These settings change the numbers a run computes. ' : ''}${reach}</div>
-    ${g.fields.map(f => `<div class="field"><label>${esc(f.label)} ${mode === 'advanced' ? `<span class="mono faint">${esc(f.ore)}</span> ` : ''}</label>${control(f, vals[f.key])}<div class="help">${esc(f.help)}${mode === 'advanced' ? ' ' + esc(f.meta.format) + ' Introduced in ' + f.meta.since + '.' : ''}</div></div>`).join('')}
-    <div id="d-err"></div>${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${G.save} Save</button>`);
-  ready('d-save');
-  document.getElementById('d-save').onclick = () => {
-    const after = {};
-    g.fields.forEach(f => { const x = document.getElementById('f-' + f.key).value.trim(); if (x !== '') after[f.key] = x; });
-    const bad = g.fields.find(f => f.kind === 'number' && after[f.key] !== undefined && !/^\d+$/.test(after[f.key]));
-    if (bad) { document.getElementById('d-err').innerHTML = `<div class="badbox">${esc(bad.label)} must be a whole number.</div>`; return; }
-    if (after.n_threads !== undefined && Number(after.n_threads) < 1) { document.getElementById('d-err').innerHTML = '<div class="badbox">Threads must be at least 1.</div>'; return; }
-    const before = clone(vals), p = [{ group: gid, gver: (part ? part.v : 0) + 1, before: part ? before : null, after }];
-    if (!diffParts(p).length) { document.getElementById('d-err').innerHTML = '<div class="notice">Nothing changed.</div>'; return; }
-    apply(c, p, document.getElementById('f-reason').value, document.getElementById('f-note').value, false); closeDlg(); render();
-  };
+function startEdit(c, gid) { const part = c.groups[gid]; editing = { cid: c.id, gid, draft: clone(part ? part.vals : {}), reason: null, note: '' }; render(); }
+// A control change updates the draft and the count without a new render, so the focus and the typed commentary stay.
+function refreshEdit(c) {
+  const g = groupOf(editing.gid), part = c.groups[g.id], cur = part ? part.vals : {};
+  g.fields.forEach(f => { const row = document.querySelector(`#app [data-row="${f.key}"]`); if (row) row.classList.toggle('chg', !same(editing.draft[f.key], cur[f.key])); });
+  const n = diffParts([{ group: g.id, before: cur, after: editing.draft }]).length, cnt = document.getElementById('e-count');
+  if (cnt) cnt.textContent = n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes');
+}
+function saveEdit(c) {
+  const g = groupOf(editing.gid), part = c.groups[g.id], before = clone(part ? part.vals : {}), after = {};
+  g.fields.forEach(f => { const v = editing.draft[f.key]; if (v !== undefined && v !== '') after[f.key] = String(v).trim(); });
+  const err = problem(g, after), box = document.getElementById('d-err');
+  if (err) { box.innerHTML = `<div class="badbox">${esc(err)}</div>`; return; }
+  const parts = [{ group: g.id, gver: (part ? part.v : 0) + 1, before: part ? before : null, after }];
+  if (!diffParts(parts).length) { box.innerHTML = '<div class="notice">Nothing changed.</div>'; return; }
+  apply(c, parts, document.getElementById('f-reason').value, document.getElementById('f-note').value, false);
+  editing = null; render();
 }
 function apply(c, parts, reason, note, reverted) {
   parts.forEach(p => { c.groups[p.group] = { v: p.gver, vals: clone(p.after) }; });
@@ -542,7 +596,20 @@ function wire() {
   const ad = document.getElementById('add'); if (ad) ad.onclick = addDialog;
   const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
   document.querySelectorAll('#app [data-mode]').forEach(x => x.onclick = () => setMode(x.dataset.mode));
-  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => editDialog(c, x.dataset.edit));
+  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => startEdit(c, x.dataset.edit));
+  document.querySelectorAll('#app [data-alldocs]').forEach(x => x.onclick = () => { const g = groupOf(x.dataset.alldocs), keys = g.fields.map(f => c.id + ':' + f.key); const open = !keys.every(k => openDocs.has(k)); keys.forEach(k => open ? openDocs.add(k) : openDocs.delete(k)); render(); });
+  if (editing && c && editing.cid === c.id && document.getElementById('e-save')) {
+    const g = groupOf(editing.gid);
+    document.querySelectorAll('#app [data-fld]').forEach(x => x.onchange = () => { editing.draft[x.dataset.fld] = x.value; refreshEdit(c); });
+    // Focusing a control opens the documentation of its setting, so a person reads it while changing the value.
+    document.querySelectorAll('#app [data-fld]').forEach(x => x.addEventListener('focus', () => { const d = document.querySelector(`#app [data-doc="${c.id}:${x.dataset.fld}"]`); if (d && !d.open) { d.open = true; openDocs.add(c.id + ':' + x.dataset.fld); } }));
+    document.getElementById('e-cancel').onclick = () => { editing = null; render(); };
+    document.getElementById('e-save').onclick = () => saveEdit(c);
+    const reason = document.getElementById('f-reason'), note = document.getElementById('f-note');
+    if (editing.reason) reason.value = editing.reason; note.value = editing.note || '';
+    ready('e-save');
+    reason.addEventListener('change', () => { editing.reason = reason.value; }); note.addEventListener('input', () => { editing.note = note.value; });
+  }
   document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
   document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
 }
@@ -552,6 +619,8 @@ function render() {
   chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();
 }
+{ const r0 = route(), eg = P0.get('edit'), c0 = byId(r0.id); if (eg && c0 && groupOf(eg) && may('edit')) { const part0 = c0.groups[eg]; editing = { cid: c0.id, gid: eg, draft: clone(part0 ? part0.vals : {}), reason: null, note: '' }; } }
+document.getElementById('app').addEventListener('toggle', e => { const k = e.target && e.target.dataset && e.target.dataset.doc; if (k) { e.target.open ? openDocs.add(k) : openDocs.delete(k); } }, true);
 render();
 
 </script>

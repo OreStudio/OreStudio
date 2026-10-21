@@ -227,27 +227,31 @@ its party's name.
 
 ** Effect of the documented-only rule
 
-Decided by the owner on 2026-10-21: the screens describe only the parameters that the official ORE documentation mentions. A
-parameter seen in sample files or in the source, and not in the user guide, is removed.
+Decided by the owner on 2026-10-21: the screens describe only the parameters that the official ORE documentation mentions, and
+the model holds all of them. Where the guide and the source disagree, the source wins.
 
-Checked against =Docs/UserGuide= of ORE 1.8.17.0. Eleven of the 19 stored settings are in the guide. Eight are not:
-=accrualDate=, =fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=,
-=csvCommentReportHeader= and =additionalResults= as a Setup parameter. The guide also documents four Setup parameters that the
-model does not store: =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=.
-
-With the eleven documented settings the five groups become three, and the table of the design above is superseded:
+Checked against =Docs/UserGuide= of ORE 1.8.17.0. Eleven of the 19 stored settings are in the guide. Eight are not and leave
+the model: =accrualDate=, =fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=,
+=csvCommentReportHeader= and =additionalResults= as a Setup parameter. Four documented settings were not stored and are
+added: =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=. That makes 15
+engine settings in three groups, and the table of the design above is superseded:
 
 | Table | Role | Settings |
 |-------+------+----------|
 | =engine_settings= | central row, the named configuration reports bind | name, description, =configuration_id= |
-| =engine_settings_fixings= | part, changes the numbers | =implyTodaysFixings=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =ignoreFixingLag= |
-| =engine_settings_building= | part, changes the numbers | =observationModel=, =lazyMarketBuilding=, =buildFailedTrades=, =continueOnError= |
-| =engine_settings_execution= | part, operational | =nThreads=, =logMask= |
+| =engine_settings_fixings= | part, changes the numbers | =implyTodaysFixings=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =ignoreFixingLag=, =ignoreFixingLead= |
+| =engine_settings_building= | part, changes the numbers | =observationModel=, =lazyMarketBuilding=, =buildFailedTrades=, =continueOnError=, =useAtParCouponsCurves=, =useAtParCouponsTrades= |
+| =engine_settings_execution= | part, operational | =nThreads=, =logMask=, =gzipCompressionLevel= |
 
-=ignoreFixingLag= moves to the fixings part, because it limits the fallback that Enrich index fixings fills. The groups Dates
-and Report output hold no documented setting. The owner confirms the three groups, or adds the four documented settings
-that are not stored. =ignoreFixingLead= belongs beside =ignoreFixingLag=, the two =useAtParCoupons= settings beside the
-building group, and =gzipCompressionLevel= beside the execution group.
+The groups Dates and Report output hold no documented setting. =ignoreFixingLag= moved to the fixings part, because it limits
+the fallback that Enrich index fixings fills.
+
+The documented Setup parameters that are not engine settings stay where they are: =asofDate= is the run's own time point,
+=baseCurrency= is the report currency, =inputPath=, =outputPath= and =logFile= are package layout, and the file parameters are
+documents. =includePastCashflows= is a parameter of the cashflow analytic in the guide, not of Setup.
+
+The defaults on the screen follow the source. The source defaults =continueOnError= and =buildFailedTrades= to Yes where the
+guide says No. The guide says =includeTodaysCashFlows= and =includeReferenceDateEvents= default to false.
 
 ** Two more findings
 
@@ -300,8 +304,8 @@ in any tag. For those, the entry shows the first and the last release whose ship
    an approval like a pricing engine change.
 2. Settled for ORE: every flag parses with =parseBool=, so the model can store booleans. The remaining choice is whether the
    projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
-5. Settled by the documented-only rule: the eight undocumented settings leave the screens. Open: whether the four
-   documented settings that the model does not store are added, and how the three groups look with them.
+5. Settled on 2026-10-21: the model holds every documented engine setting, 15 in three groups, and the source wins when
+   it disagrees with the guide.
 6. Where the target ORE build lives, and how the run records the build it used. See finding 13.
 3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
 4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.

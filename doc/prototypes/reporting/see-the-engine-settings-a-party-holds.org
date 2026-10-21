@@ -38,26 +38,37 @@ page shows one group on each tab, and the Used by tab shows who is reached by a 
 
 ** Only documented settings
 
-The prototype describes a setting only when the ORE user guide describes it. A setting that appears in the sample files or
-in the source, and not in the guide, is left out. Eleven of the 19 settings that the model stores today pass that rule. The
-other eight are not in the guide: =accrualDate=, =fixingCutoff=, =dateCalendar=, =dateConvention=,
-=defaultMappingToIdentity=, =useAnalytics=, =csvCommentReportHeader= and =additionalResults= as a Setup parameter.
+The prototype describes a setting only when the ORE user guide describes it, and it holds every documented engine setting.
+A setting that appears in the sample files or in the source, and not in the guide, is left out. Where the guide and the
+source disagree, the source wins, so the defaults on the screen are the source's.
 
-The eleven fall into three groups. Fixings and cash flows holds five. Market and trade building holds four. Execution holds
-two. The groups Dates and Report output of the earlier design hold no documented setting, so they are gone.
+Eleven of the 19 settings that the model stores today are in the guide. The other eight are not: =accrualDate=,
+=fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=, =csvCommentReportHeader= and
+=additionalResults= as a Setup parameter. Four documented settings are new: =useAtParCouponsCurves=,
+=useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=.
+
+The 15 settings fall into three groups. Fixings and cash flows holds six. Market and trade building holds six. Execution
+holds three. The groups Dates and Report output of the earlier design hold no documented setting, so they are gone.
+
+** Reading and changing
+
+A person uses the page in two ways, and the page serves both.
+
+*Reading.* The group tab lists each setting with its value. A setting that is not set shows the default that the engine
+uses, such as "Default: Yes", so the value in force is always visible. The documentation is collapsed under each setting. A
+button on the card opens or closes all of it.
+
+*Changing.* Edit turns the card into a form in place. There is no dialog, so nothing hides the documentation. Each setting
+becomes a control, and its first option is "Default (Yes)", which unsets it. Focusing a control opens the documentation of
+its setting. A setting that differs from the saved value is marked, with a count of the changes at the foot of the card. The
+foot says how many reports the group reaches and warns when the group changes the numbers, and asks for a change reason and
+a commentary. Save writes a new version of the group. Cancel leaves the card as it was.
 
 ** The group tabs
 
 Each tab holds one group, as one card. The card says whether the group changes the numbers a run computes or is
-operational, and shows its own version. Each setting shows its label, a label when it changes the numbers, and its value.
-A setting the group leaves unset shows Engine default. A group with no row shows "not set", and the engine uses its default
-for every setting in it.
-
-The documentation of a setting is collapsed under the setting, and a person expands it. It holds the long description, which
-says what each value means, and the default.
-
-Edit opens that group only. The dialog says how many reports the group reaches, adds a warning for a group that changes the
-numbers, and asks for a change reason like every record dialog.
+operational, and shows its own version. A setting that changes the numbers carries a label for it. A group with no row shows
+"not set", and the engine uses its default for every setting in it.
 
 ** Simple and Advanced
 
@@ -69,7 +80,7 @@ empty for a setting that ORE still reads.
 ** The documentation entries
 
 The documentation of a setting is data of its own, apart from the settings. It is documentation only. The type, the range
-and the validation of a value stay with the data model. The dialogs look an entry up by the name of the setting. An entry
+and the validation of a value stay with the data model. The screens look an entry up by the name of the setting. An entry
 relates to the ORE file it belongs to, such as =ore.xml=.
 
 The entries hold no table of values. A value that the model already knows as an entity, such as a calendar or a business day
@@ -101,7 +112,8 @@ row. Revert is offered on every entry that is not current and writes the values 
   report binds.
 - =?state=all|empty|error|loading= for the four list states.
 - =?actor=viewer|analyst|admin=. A viewer reads, an analyst adds and edits, and only the administrator deletes.
-- =?mode=simple|advanced= sets the switch. =?clean=1= hides the prototype furniture.
+- =?mode=simple|advanced= sets the switch. =?clean=1= hides the prototype furniture. =?edit=fixings|building|execution= opens
+  that group in edit mode.
 - Delete is refused while a report binds the configuration.
 
 ** What is fake
@@ -115,8 +127,6 @@ lists the reports bound to one configuration, and no operation returns a group c
 - The wording of the documentation is drawn from the ORE user guide, with the release numbers measured from the ORE source.
   A reviewer who knows ORE should read the descriptions.
 - Where the target ORE build lives in the data model, so that the screen can warn about a setting the build does not read.
-- Whether to add the documented settings that the model does not store: =useAtParCouponsCurves=, =useAtParCouponsTrades=,
-  =ignoreFixingLead= and =gzipCompressionLevel=.
 - Who may change a group. The prototype lets an analyst edit all three. A change to a group that changes the numbers may
   need an approval like a pricing engine change. That is decision 4 in the story.
 - The flags are drawn as Yes and No. ORE accepts every spelling, so the model can store booleans. Whether the projection

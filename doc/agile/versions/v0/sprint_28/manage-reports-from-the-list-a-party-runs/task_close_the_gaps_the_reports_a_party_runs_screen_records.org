@@ -188,7 +188,7 @@ against the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]]
 tried in a browser. The lines below are the gaps. Every other line meets the
 checklist.
 
-- [ ] The report shows its configuration and links to it. No configuration page or BFF read exists yet.
+- [X] The report shows its configurations and links to each. The configuration page is read only: its kind, owner and party, its analytics, and the reports that bind it. The reporting service now serves the five configuration reads, and =Member= holds them.
 - [ ] A fixed field says why in one line. Name shows its meaning instead of the fixed line.
 - [X] The page notice that lists the missing features is removed. The screen does not explain what is absent.
 - [X] A stale save offers a reload. The dialog says the record changed and offers Reload. Not tried against a real conflict.

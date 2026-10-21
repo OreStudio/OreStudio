@@ -176,3 +176,55 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", tags)
     CHECK(points.front().id == observed.id);
     CHECK(points.front().source == "feed.test");
 }
+
+TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto s = generate_synthetic_market_series(ctx);
+    market_series_repository{}.write(h.context(), s);
+
+    const auto t0 = now_second();
+    const auto owner = party_context(h, s.party_id);
+    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0);
+    insert_tick(owner, s.party_id, s.id, 0, t0 + std::chrono::minutes(10), 2.0);
+
+    const auto buckets = market_observation_repository{}.read_as_of_buckets(
+        owner, s.id, t0 + std::chrono::minutes(20), std::chrono::minutes(10), 3);
+    REQUIRE(buckets.size() == 3);
+    for (const auto& bucket : buckets)
+        REQUIRE(bucket.size() == 1);
+    CHECK(buckets[0].front().value == "1");
+    CHECK(buckets[1].front().value == "2");
+    CHECK(buckets[2].front().value == "2");
+}
+
+TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto s = generate_synthetic_market_series(ctx);
+    market_series_repository{}.write(h.context(), s);
+
+    const auto t0 = now_second();
+    const auto owner = party_context(h, s.party_id);
+    insert_tick(owner, s.party_id, s.id, 0, t0, 1.0);
+    insert_tick(owner, s.party_id, s.id, 0, t0 + std::chrono::seconds(5), 2.0);
+
+    market_observation_repository repo;
+    const auto all = repo.read_instants(
+        owner, s.id, t0 - std::chrono::seconds(1), t0 + std::chrono::seconds(10), {}, 10);
+    REQUIRE(all.size() == 2);
+    CHECK(all[0].as_of == t0);
+    REQUIRE(all[0].points.size() == 1);
+    CHECK(all[0].points.front().value == "1");
+    CHECK(all[1].as_of == t0 + std::chrono::seconds(5));
+    CHECK(all[1].points.front().value == "2");
+
+    const auto stated = repo.read_instants(owner,
+                                           s.id,
+                                           t0 - std::chrono::seconds(1),
+                                           t0 + std::chrono::seconds(10),
+                                           {t0 + std::chrono::seconds(5)},
+                                           10);
+    REQUIRE(stated.size() == 1);
+    CHECK(stated.front().points.front().value == "2");
+}

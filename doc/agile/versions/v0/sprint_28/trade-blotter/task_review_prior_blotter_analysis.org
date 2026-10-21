@@ -8,7 +8,7 @@
 #+filetags: :trade_blotter:sprint_28:v0:
 #+owner: marco
 #+branch: feature/design-the-blotter-import
-#+pr:
+#+pr: 3617
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3617][#3617]] | [agile] Design the blotter and import on the sandbox model |
 
 * Review
 

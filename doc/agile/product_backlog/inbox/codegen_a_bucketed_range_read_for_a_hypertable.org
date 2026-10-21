@@ -42,5 +42,4 @@ The shape is data-oriented on purpose. A chart reads one column, the time axis i
 * See also
 
 - [[id:61A3C1DF-CC23-439D-BD96-AF03B2D6B63E][Story: Serve the grid's samples as time series]], where the two reads were written.
-- [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]], the capture the first read answers.
 - [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]], the same kind of aggregate read on another table.

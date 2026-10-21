@@ -45,7 +45,7 @@ Three timer-driven loops and the dispatcher are the candidates, all in
 - =batch_workflow_bridge= — "runs every @p interval_seconds seconds. For each
   pending…"; it publishes and then removes, with a comment about a restart
   between the two.
-- =workunit_dispatcher= — publishes one assignment per result.
+- =workunit_dispatcher= — publishes one work-available notice when it queues work. The assignments stream is gone, and a wrapper claims its work from the work ledger, asking every few seconds with jitter when no notice arrives.
 
 Each takes its interval as a constructor argument from
 =cfg.telemetry_interval_seconds= (=application.cpp:145=).

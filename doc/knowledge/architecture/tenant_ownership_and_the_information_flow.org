@@ -108,17 +108,12 @@ tenants and impersonate each.
    system tenant into every wrapper's =--tenant-id=. The =tenant_id= on
    those rows says nothing about the node or the work; it holds the same
    value in every row.
-3. *A wrapper consumes one tenant's work.* A wrapper subscribes to the
-   system tenant's assignment subject, while the dispatcher publishes every
-   workunit to its own tenant's subject. Other tenants' work is dispatched
-   and never picked up
-   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one tenant's work]]).
-4. *The roster works by accident.* The services roster reads every expected
+3. *The roster works by accident.* The services roster reads every expected
    instance and every instance's last report. It works only because every
    process that reports is a service account, and service accounts live in
    the system tenant — so no policy had to be widened. The same read over a
    tenant-owned subject would not work.
-5. *The compute service cannot enumerate tenants.* The tenants registry is
+4. *The compute service cannot enumerate tenants.* The tenants registry is
    owned by the system tenant, so a system-tenant session may read it — but
    the only C++ that reads that table is =ores.iam.core=, and
    =ores.compute.service= has no dependency on it. The one cross-tenant read

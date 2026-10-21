@@ -194,34 +194,23 @@ a compute screen yet.
 
 * What is missing
 
-1. *No usage over time.* The headroom chart spans time and the grid read
-   answers with the newest sample alone. The poller keeps writing samples that
-   no read returns, so the chart has no series to draw
-   ([[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage
-   history]]).
-2. *No measured usage per resource.* The host states total cores, memory and
+1. *No measured usage per resource.* The host states total cores, memory and
    GPU, and no row states how much of any of them a node is using. The node
    sample reports tasks, durations and bytes. The headroom chart cannot draw a
    used line in cores, memory or GPUs today, and the candidate is to carry the
    node's in-use figures on the sample or a new resource sample.
-3. *The arrivals have no requirements until they are submitted.* The scheduler
+2. *The arrivals have no requirements until they are submitted.* The scheduler
    says when a job fires and nothing about what the run will need. The
    requirements matrix and the arrivals timeline therefore describe different
    sets: submitted jobs on one, scheduled jobs on the other. This is the open
    question the use cases raise, that "what is scheduled to kick in soon" is the
    scheduler's question and the grid's is what it does to the load
    ([[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]).
-4. *The grid serves one tenant's slice.* The grid read filters by the session
+3. *The grid serves one tenant's slice.* The grid read filters by the session
    tenant, so a headroom chart drawn from it would report one tenant's hosts as
    the fleet ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is
    scoped to the session tenant]]).
-5. *A wrapper consumes one tenant's work.* Capacity that is planned per tenant
-   must account for the wrapper subscribing to the system tenant's assignment
-   subject alone, which leaves another tenant's dispatched work with no node to
-   run it. The plan would reserve capacity for work the fleet cannot pick up
-   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
-   tenant's work]]).
-6. *The quotas and the fair share are targets, not rows.* The design for
+4. *The quotas and the fair share are targets, not rows.* The design for
    thousands of runs gives each tenant a weight and a cap on its assignments in
    flight, and each tenant and party a limit on running runs. Those numbers are
    capacity-test targets, and no table holds them, so the requirements matrix

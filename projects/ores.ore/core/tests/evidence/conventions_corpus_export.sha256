@@ -1,7 +1,6 @@
 # The digest of the bytes the conventions export writes for each corpus file.
 # Paths are relative to external/ore/examples. A line that changes is a change
-# to the export. Recorded again when conventions moved from the xsdcpp binding
-# onto the codec, which writes the document with its own serialiser.
+# to the export. The codec writes the document with its own serialiser.
 054cf83d6ab397620305409abd78aa97df25e3e1c08bb49df8115d74df0c283e Academy/FC003_Reporting_Currency/Input/conventions.xml
 bb603d139f9e65ad18fdddc842d84c67933ecb74f89a4ea54b5e3b18b59b1452 Academy/TA001_Equity_Option/Input/conventions.xml
 8ba552086065298e310b1757a2db4c4665dedc2a76ebc903c3c45e5c3a672ef7 Academy/TA002_IR_Swap/Input/conventions.xml

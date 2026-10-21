@@ -425,8 +425,8 @@ CATALOGUE: tuple[Check, ...] = (
             "ceiling in KNOWN when a file has improved.",
     ),
     # A family is either supported by a table, migrating from a mapper, or
-    # unused and on its way out with xsdcpp. The census is a decision; this
-    # check is whether the tree still agrees with it.
+    # unused. The census is a decision; this check is whether the tree still
+    # agrees with it.
     Check(
         id="xml-family-census",
         title="Every ORE document family is classified and the tree agrees",

@@ -221,8 +221,6 @@ example corpus the importer must consume. Commit under ~[scripts]~ or
   ~ores.ore.service~ phase can call into them.
 - [[proj:doc/plans/2026-03-29-ore-instrument-mappers-phase9.org][~doc/plans/2026-03-29-ore-instrument-mappers-phase9.org~]] — trade /
   instrument mapper correctness. Orthogonal.
-- [[proj:doc/analysis/ore_xsd_schema_gaps.md][~doc/analysis/ore_xsd_schema_gaps.md~]] — XSD schema gaps. Adjacent analysis,
-  not a blocker.
 
 * Open Questions
 

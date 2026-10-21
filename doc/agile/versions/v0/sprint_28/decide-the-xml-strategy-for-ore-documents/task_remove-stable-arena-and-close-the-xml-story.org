@@ -28,7 +28,7 @@ Delete stable_arena and its test, then bring the story header up to date and clo
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | stable_arena is deleted and the XML story is closed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-20                               |

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :trading:architecture:modeling:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-10-21
 
 * Summary
 
@@ -16,10 +16,9 @@ in the column, and the two agree. A continuous quantity stays binary
 floating point. The two never mix, and the conversion between them runs one
 way, at the numerical kernel seam.
 
-The ORE boundary is where the rule is broken today. The document states the
-amount as text, and the XML binding parses it into a C++ =float= before any
-mapper sees it, so the text is gone and no exact parse is possible. The
-binding has to carry the text, not the mapper.
+The ORE boundary keeps the rule. The document states an amount as text. The
+generated codec table holds a money member as an exact decimal parsed from
+those digits, and no float sits between the text and the decimal.
 
 An economic change is detected by a digest over the fields the model
 declares economic, folded from every component up to the trade. That fold is
@@ -68,82 +67,42 @@ baselines are the authoritative inventory for the work that pays it down; do
 not restate them in prose, because a second copy drifts and it is the copy
 that goes stale.
 
-* Where the ORE boundary loses the amount
+* How the ORE boundary keeps the amount
 
-The document's text reaches the generated binding intact, and dies there.
+ORE types the same money concept as =xs:float=, =xs:double= and =xs:string= in
+different places, so the schema cannot say which numbers are money. The
+generator takes the shape of each record from the schema and the kind of each
+number from this project's money vocabulary: the =--exact-decimal= list in
+=projects/ores.ore/scripts/regenerate_xml_bindings.sh=. A member on the list,
+or every number of a family when the list holds =*=, is held as an exact
+decimal. A number that is not on the list stays a binary float, which is right
+for a continuous quantity.
 
-#+begin_src cpp
-// domain.cpp:9583 — the generated setter for a fixed leg's Rate.
-void _set__FixedLegData_t_Rates_t_Rate_t(..., std::string&& val) {
-    float& base = *obj;
-    xsdcpp::set_float(&base, pos, std::move(val));   // the text is here…
-}
+The reader parses the digits of the element straight into the decimal, so the
+text the document wrote is the value the record holds. A projection reads it
+with =record_reader::decimal= for an element, or with =record_reader::own_decimal=
+for a type that carries its number as its own text. It writes it with
+=record_writer::set_decimal=.
 
-// domain.cpp:770 — and is discarded here.
-void set_float(float* obj, const Position& pos, std::string&& val) {
-    std::stringstream ss(val);
-    if (!(ss >> *obj)) throw VerificationException(pos, "…");
-}
-#+end_src
+The writer formats a decimal as fixed point from those digits. The output
+still validates against =input.xsd=, because a decimal literal is a valid
+=xs:float= literal. The round trip harness reads each corpus document, writes
+it, validates it, reads it again and compares every field including the exact
+decimals.
 
-The leaf is =_FixedLegData_t_Rates_t_Rate_t : xsd::base<float>=, and
-=xsd::base<T>= holds only =T _value=, so the lexical form is not retained
-anywhere. By the time a mapper converts with =from_double=, as 84 call sites
-do, there is no string left to parse exactly.
+A new money member needs three steps:
 
-The size of this patch, measured rather than assumed: =domain.cpp= is
-108,648 lines before the patch and 108,625 after it, and holds 1147 =_set_=
-functions either way, but only **37** of them are bindings that call
-=xsdcpp::set_float= or =set_double= (35 and 2). Those are the numeric leaves
-that lose the document's text. So the decision is not "patch a generated
-108k-line file"; it is "patch 37 generated functions, re-applied by a script
-in the shape of =reapply_export_macros.py=". The measurement is what makes the
-option reasonable to choose. The list is verified and not inferred: it holds
-the money leaves by name — =_set__FixedLegData_t_Rates_t_Rate_t=,
-=_set_legData_Notionals_t_Notional_t=, =_set_pricesType_Price_t=,
-=_set__CashflowData_t_Cashflow_t_Amount_t=, =_set_floatWithAttribute= — and
-the continuous ones the schema also types as =xs:float=, such as shifts,
-load factors and conversion ratios. The full list is beside this page in
-=ore_numeric_leaf_setters.txt=.
+1. Name the member in the =--exact-decimal= list.
+2. Regenerate the tables with =regenerate_xml_bindings.sh=.
+3. Add a mapper test that holds the digits of the member.
 
-*Decision.* The binding carries the lexical form. =xsd::base<T>= gains it,
-and the generated money-leaf setters stash it before converting, so the
-mapper reads the document's own digits with a decimal parse.
+The drift check =build/scripts/check_xml_bindings_drift.py= fails when a
+committed table and the generator disagree, so a table never carries a hand
+edit.
 
-The binding is emitted by xsdcpp, an external tool, so this is a patch to
-generated code. That is established practice here:
-=xsdcpp_generate_ore.sh= already re-applies =reapply_export_macros.py= to
-=domain.hpp= because "regeneration silently drops" the hand-patch. The
-lexical-form patch rides the same mechanism, and carries the same hazard: a
-patch not re-applied is a patch silently lost.
-
-** What the patch does not change
-
-The write side out of the domain still renders through ORE's =float=, because
-the schema's leaf is =xs:float= and there is nowhere else to put the value. So
-the patch changes what the system of record holds, not what ORE is handed back.
-The round trip is unaffected, and the reason is worth writing down because the
-opposite is the obvious guess:
-
-    before:  lexical → float → from_double → decimal → to_double → float
-    after:   lexical → float → decimal(lexical) → to_double → float
-
-Both end at =float(float32(lexical))=, so the exported text is the same before
-and after. The patch moves the *stored* value from the float's expansion to the
-document's own digits and changes nothing on the wire.
-
-Measured over ORE's own example trades rather than argued: 132 XML files and
-1639 numeric leaf texts, of which 21 are not what a nine-significant-digit
-render of their float produces — and most of those are dates caught by the same
-scan or trailing zeros such as =3200.00=. The genuine cases, =2147.56= whose
-float is =2147.56006= and =27807597.777444= whose float is =27807598=, already
-exported differently *before* this change. So the patch neither introduces nor
-removes a round-trip difference; it only stops the column from disagreeing with
-the document.
-
-What does change is the digest: it is computed over the stored decimal, so two
-documents that differ in a digit a float cannot hold are now distinguished.
-They were not before.
+What the digest sees follows from this. It is computed over the stored
+decimal, so two documents that differ in a digit a float cannot hold are
+distinguished.
 
 * Detecting an economic change
 
@@ -558,9 +517,9 @@ the gate's clean result on the bond corpus is partly tolerance and not
 fidelity, in the same family as a leg silently not written.
 
 *Decision.* The scale is =numeric(28, 12)=: it holds every spelling the
-corpus states, and still 16 integer digits. With the binding retaining the
-lexical form, these values round trip as text and the classifier's /numeric/
-bucket should fall to zero.
+corpus states, and still 16 integer digits. The codec holds the digits of
+the document as a decimal, so these values round trip as text and the
+classifier's /numeric/ bucket is zero.
 
 ** The classifier cannot see this loss, and a clean round trip is not the test
 

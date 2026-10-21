@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 496A9537-9017-42BE-A04C-32186B8A4360
+:END:
+#+title: ores.trading.trade_authorisation_request
+#+description: Codegen entity model for the trading trade_authorisation_request table: the trading detail of a trading.operational_authorisation approval request.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The trade and the trade version an authorisation request asks Operations to release.
+#+entity_singular: trade_authorisation_request
+#+entity_plural: trade_authorisation_requests
+#+entity_title: Trade Authorisation Request
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+The trading detail of a =trading.operational_authorisation= approval request.
+The request itself, who asked, when, why and where it stands, is the inbox's
+record. This row names the trade and the trade version that Operations is asked
+to release, keyed by the request it details.
+
+Authorisation is metadata about a version, not a state of the trade and not a new
+version. The row never changes the trade. A system raises the request when an
+actual trade goes live in a real book.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The approval request this row details. FK reference to
+ores_inbox_approval_requests_tbl.
+
+** trade_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The trade Operations is asked to release. FK reference to ores_trading_trades_tbl.
+
+** trade_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of the trade the request covers.
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. No active trade found with this id.
+:list_by:       true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_trading_trade_authorisation_requests_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_authorisation_request
+:entity_plural_short:   trade_authorisation_requests
+:entity_singular_words: trade authorisation request
+:entity_plural_words:   trade authorisation requests
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tar
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| request_id    | Request       |
+| trade_id      | Trade         |
+| trade_version | Trade Version |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] -- the record this row details.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]] -- the queue these requests feed.

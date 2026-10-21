@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/seed-the-operational-authorisation-kind
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Join the operational authorisation control to the inbox. Seed the approval kind,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Join the operational authorisation control to the inbox. Seed the approval kind,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Seed the kind. Add a trading detail table that names the trade and the trade
+version a request covers. Raise one request in the booking write when an actual
+trade is live. Test the raise.
+
+Decisions for the open points, taken with the user:
+
+- Decider permission: =inbox::approvals:decide_operations=, as the two refdata
+  kinds.
+- The system raises one request for each new live trade. An amendment does not
+  raise one yet.
+- The kind allows a hold. It has no hold reasons yet.
+- The kind needs a comment on every decision.
+- Auto-authorisation is out. Every request waits for a person.
+- A refusal is final. The inbox enforces this for every kind.
 
 * Measurements
 
@@ -60,6 +71,27 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The request joins the booking transaction, so a trade is never live without one.
+The check reads the trade and its state through that transaction. A helper that
+opens its own connection cannot see the uncommitted rows.
+
+The request detail has a party isolation policy that matches the trade. A reader
+with no visible party sees no request, so the generated event test now uses a
+party-scoped context. The generated test also seeded the trade enums with
+strings, which does not compile. I removed that seeding by hand. Both are gaps
+in the entity test template.
+
+The new table needs the inbox and IAM libraries in the trading core tests, and
+the inbox libraries in the trading core. The trading service now writes the
+inbox request and notice tables, so the service registry and the generated grants
+changed.
+
+I did not generate the web wire types for the new entity.
+
+=ores.trading.core.tests= has one failure that this change does not touch:
+=range_bound_reads_back_in_the_document_order= refuses an empty =modified_by=. I
+did not check it against main.
 
 * Test Scenarios
 
@@ -85,3 +117,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The operational authorisation kind is seeded and a live trade raises a request.
+
+- The kind =trading.operational_authorisation= is seeded. It names
+  =inbox::approvals:decide_operations=, allows a hold, needs a comment, and does
+  not expire.
+- The model =trade_authorisation_request= is new, with its table, repository,
+  service, handlers, events and shell commands. It names the trade and the trade
+  version a request covers. A policy limits reads to the parties a reader sees.
+- =book_trade= raises one request in its own transaction when an actual trade is
+  live, and tells the deciders after the commit. A test or draft trade raises
+  none.
+- The trading service may write the inbox request and notice tables.
+- Two tests cover the raise. The generated event test passes. The inbox already
+  tests that a refusal is final.
+
+Left open: no request for an amendment, no Execute path, no web wire types, and
+the unrelated =range_bound= test failure.

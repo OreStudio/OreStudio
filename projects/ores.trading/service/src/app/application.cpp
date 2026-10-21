@@ -113,6 +113,7 @@
 #include "ores.trading.service/messaging/trade_identifier_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_portfolio_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_authorisation_request_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_state_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
@@ -175,6 +176,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto trade_booking_sub =
         ores::trading::service::messaging::register_trade_booking_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_authorisation_request_sub =
+        ores::trading::service::messaging::register_trade_authorisation_request_event_mapping(
             event_source, event_bus, nats);
     auto trade_state_sub = ores::trading::service::messaging::register_trade_state_event_mapping(
         event_source, event_bus, nats);

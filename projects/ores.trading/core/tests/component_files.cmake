@@ -106,6 +106,7 @@ set(files
     "swap_leg_eventing_integration_tests.cpp"
     "swaption_instrument_eventing_integration_tests.cpp"
     "synthetic_cdo_instrument_eventing_integration_tests.cpp"
+    "trade_authorisation_request_eventing_integration_tests.cpp"
     "trade_booking_eventing_integration_tests.cpp"
     "trade_id_type_eventing_integration_tests.cpp"
     "trade_link_type_eventing_integration_tests.cpp"

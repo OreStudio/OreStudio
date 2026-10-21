@@ -20,6 +20,7 @@
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/lexical.hpp"
 #include "ores.ore.core/xml/scanner.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
 #include <charconv>
@@ -126,14 +127,12 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
         }
         case field_kind::real: {
             const auto digits = trim_space(text);
-            double value = 0;
-            const auto [stop, ec] =
-                std::from_chars(digits.data(), digits.data() + digits.size(), value);
-            if (ec != std::errc{} || stop != digits.data() + digits.size()) {
+            const auto value = ores::platform::numeric::parse_double(digits);
+            if (!value) {
                 error = "an element declared as a real does not hold one";
                 return false;
             }
-            *reinterpret_cast<double*>(slot) = value;
+            *reinterpret_cast<double*>(slot) = *value;
             break;
         }
         case field_kind::enumeration: {
@@ -183,14 +182,12 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                 }
                 case scalar_kind::real: {
                     const auto digits = trim_space(text);
-                    double value = 0;
-                    const auto [stop, ec] =
-                        std::from_chars(digits.data(), digits.data() + digits.size(), value);
-                    if (ec != std::errc{} || stop != digits.data() + digits.size()) {
+                    const auto value = ores::platform::numeric::parse_double(digits);
+                    if (!value) {
                         error = "a repeated real element does not hold one";
                         return false;
                     }
-                    reinterpret_cast<std::vector<double>*>(slot)->push_back(value);
+                    reinterpret_cast<std::vector<double>*>(slot)->push_back(*value);
                     break;
                 }
                 case scalar_kind::enumeration: {
@@ -231,9 +228,8 @@ auto find_field(const record_type& type, std::string_view name, bool attribute) 
     return find(type, name, attribute);
 }
 
-auto enumeration_spelling(const record_type& type,
-                          const void* record,
-                          std::string_view name) -> std::optional<std::string> {
+auto enumeration_spelling(const record_type& type, const void* record, std::string_view name)
+    -> std::optional<std::string> {
     const auto* f = find_by_name(type, name);
     if (f == nullptr || f->kind != field_kind::enumeration || !present(record, *f) ||
         f->tokens == nullptr)
@@ -290,9 +286,8 @@ auto mark_present(const record_type& type, void* record, std::string_view name) 
     return true;
 }
 
-auto binder::bind(const document_type& doc,
-                  std::string_view text,
-                  void* root) -> std::expected<void, bind_error> {
+auto binder::bind(const document_type& doc, std::string_view text, void* root)
+    -> std::expected<void, bind_error> {
     // A frame is either a record being filled or a leaf awaiting its text. A
     // leaf is a frame rather than a flag so a leaf with children is refused
     // instead of quietly popping its parent, and so a leaf's own attributes

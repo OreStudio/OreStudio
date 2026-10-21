@@ -2,51 +2,66 @@
 :ID: 42CD0D45-9401-4152-848E-591C94013269
 :END:
 #+title: Test Scenario: Verify the bindings list and record page
-#+description: Manually verify the market data Bindings list and record page in ores.web against the signed-off prototype: the columns, the search, the kind filter, the pager, the series link, and the record page with the access mark, status, last tick and the oresmd Inspect link.
+#+description: Manually verify the market data Bindings screen in ores.web against the signed-off prototype: the menu card, the list, the record page, the add, edit and delete dialogs, the history timeline with Revert, and the oresmd series page, link, tooltip and copy snags.
 #+type: test_scenario
 #+level: s1
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+target_dialog:
 #+created: 2026-10-15
-#+updated: 2026-10-15
+#+updated: 2026-10-21
 #+environment: eager_maxwell
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
-This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] in [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] and [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] in [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=. The file name keeps the first scope of the scenario, the list and the record page. The steps now cover the whole screen.
 
 * Before you start
 
 - The services run. Confirm with =./compass.sh services status=: 24 services running and =nats: running=.
 - The web app serves this work tree. It listens on =ORES_WEB_PORT=, which is 21402, so the site is at =http://127.0.0.1:21402=.
+- The web bundle that the server serves holds the fix of PR #3601, which reads a binding's history by its source name. Without that fix, step 13 fails with *There is no such binding for this party.* The task branch does not hold the fix until PR #3601 merges, so do not rebuild the web bundle from the task branch before that.
 - The database holds the Acme Corporation tenant with a party that owns feed bindings. The bindings are created by the =start_market_feeds= seed step (dataset =synthetic.feeds.bloomberg=), which runs during provisioning:
   #+begin_src sh
   ./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
   #+end_src
-- The party holds 55 feed bindings when provisioning finishes, and every one is a synthetic source, enabled and set to auto start.
-- The source names read =synthetic.bloomberg.<pair>= for an FX spot, such as =synthetic.bloomberg.usdcad=, and =synthetic.bloomberg.<index>= for an interest rate curve, such as =synthetic.bloomberg.audaonia=. The feeds tick, so the series column and the last tick carry values.
-- The Market data menu has no *Bindings* card yet: the card is a separate task (*Put Bindings in the Market data menu*). Open the list by its address, not from the menu. This is expected and is not a failure of this scenario.
-- Provisioning was blocked on 2026-10-15 by a missing JetStream stream for the =refdata.v1.ops.*= step subjects. The rebase onto main carries the fix (D9, =[nats,service] Cover every step-command subject with a stream=), and tenant setup now finishes and creates the bindings. If provisioning stops again at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=, this build does not hold the fix.
+- The party holds 55 feed bindings when provisioning finishes, and every one is a synthetic source, enabled and set to auto start. The default party is *Acme Corporation Plc*.
+- The source names read =synthetic.bloomberg.<pair>= for an FX spot, such as =synthetic.bloomberg.usdcad=, and =synthetic.bloomberg.<index>= for an interest rate curve, such as =synthetic.bloomberg.dkkdestr=. The feeds tick, so the series column and the last tick carry values.
+- A binding names a source. An IR source writes one series for each maturity of its curve, 12 series for =dkkdestr=. The Series column shows the title of the series with the newest observation. All pillars tick at the same instant, so the pillar that shows is not stable. The title leaves out =term=, so it reads *DKK swap rate · fwd_start=0D, tenor=1D*. This is known and is not a failure of this scenario. The task *Label a curve binding by its curve* covers it later.
+- The party can bind 24 more sources. They are 14 Refinitiv FX spots, such as =synthetic.refinitiv.audjpy=, and 5 ICE and 5 Tradeweb interest rate curves. The Add dialog offers these sources. No running feed holds any of their series, so the refusal for a held series cannot be reached from the seed data. The steps say what to record.
+- Provisioning stopped before on a missing JetStream stream for the =refdata.v1.ops.*= step subjects. If provisioning stops at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=, this build does not hold the fix.
 
 * Scenario Info
 
 | Field         | Value                                   |
 |---------------+------------------------------------------|
-| Verifies task | [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] |
+| Verifies task | [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]], [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] |
 | Parent story  | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]   |
-| Target screen | Market data > Bindings, the list and the record page, in ores.web |
+| Target screen | Market data > Bindings, in ores.web |
 | Clients       |                                          |
 | State         | PENDING                               |
 
 * Steps
 
-** Open the Bindings list by address
+** Open the Bindings list from the Market data menu
 
 - In a terminal in this work tree, run =./compass.sh open-as tenant_admin=. Chrome opens on the sign-in page with the form filled in as =tenant_admin@acme_corporation=.
 - Press *Sign in*. The home page loads and shows the Acme Corporation tenant.
-- In the address bar, go to =http://127.0.0.1:21402/market-data/bindings=.
+- Open the *Market data* area. The area shows a card named *Bindings* after the card *Synthetic*. The card reads *The feeds that write market data for this party: the series each one writes and whether it runs.*
+- Press the *Bindings* card. The address is =http://127.0.0.1:21402/market-data/bindings=.
 - The page shows the title *Bindings* and the lead *The feeds that write market data for this party: which source each one names, the series it writes and whether it runs.*
 - The trail above the title reads *Home* then *Market data* then *Bindings*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Check the words in French and Portuguese
+
+- Change the language to French, then to Portuguese. Use the language control of the site.
+- In each language, the *Market data* area, the *Bindings* card, the page title, the lead and the column heads show words. No text reads like a key, such as =marketdata.bindings.title=.
+- Change the language back to English.
 
 *** Result
 
@@ -57,9 +72,9 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 ** Check the list columns and its rows
 
 - The list shows six columns, left to right: *Source name*, *Kind*, *Series*, *Enabled*, *Status*, *Last tick*.
-- *Source name* is drawn in a monospace face and names a source, for example =synthetic.refinitiv.eurusd=.
+- *Source name* is drawn in a monospace face and names a source, for example =synthetic.bloomberg.usdcad=.
 - *Kind* reads *Synthetic* for these rows.
-- *Series* draws the series title as a link, and not the whole oresmd URL. The URL stays on the record page.
+- *Series* draws the series title as a link, and not the whole oresmd URL. The URL stays on the record page. An IR row shows one pillar title, as the notes in *Before you start* say.
 - *Enabled* reads *Yes*, and *Status* shows a tag, one of *Running*, *Stopped*, *Disabled* or *Quiet*.
 - *Last tick* shows a time relative to now, such as *2 minutes ago*. A source with no tick yet shows a dash.
 - If the list is empty, the page says so instead of drawing the table. Record which state you saw.
@@ -72,7 +87,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 ** Search the list by source name
 
-- In the *Search* box, type =refinitiv= and press Enter.
+- In the *Search* box, type =usdcad= and press Enter.
 - The list narrows to the rows whose source name holds that text, and the total count follows the search.
 - Clear the box and press Enter. Every row of the party comes back.
 - Now search for =zzzz=. The list says *No bindings match the search.* and offers *Clear the search*. Press *Clear the search*: the full list returns.
@@ -111,15 +126,15 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 ** Open a binding record page
 
-- Click a row, or press Enter on it. The address ends in =/market-data/bindings/= and the record's id.
-- The record page opens on its *Details* tab and draws the record as the record screen standard draws it.
+- Search for =usdcad= and click the row, or press Enter on it. The address ends in =/market-data/bindings/= and the record's id.
+- The record page opens on its *Details* tab, beside a *History* tab. It draws the record as the record screen standard draws it.
 - The main rows read *Source name*, *Kind* and *Enabled*, with the values of the row you opened.
 - Under them, the extra rows read *Status*, *Last tick*, *Feed*, *Folder*, *Ticks per hour* and *Series*.
-- *Feed* is a link to the feed behind the source; press it and the feed page opens. Return to the binding with *Back*.
+- *Feed* is a link to the feed behind the source. Press it and the feed page opens. Return to the binding with *Back*.
 - *Series* draws the series title as a link and, under it, the oresmd URL as the product ships it.
-- The hint under *Series* reads *The series this binding writes to, and the oresmd URL that names it.*
+- The hint under *Series* reads *The series this binding writes to, and the oresmd URL that names it.* Hover over the *Series* label. A tooltip shows the hint. Press Tab until the label has focus. The same tooltip shows. A native browser title does not count.
 - The last line of the record says who changed the binding last, when, and why.
-- The header carries the access mark only for a person who may change a synthetic binding. You are =tenant_admin=, so it shows.
+- The header carries the access mark, *Edit* and *Delete*. You are =tenant_admin=, who may write and remove a synthetic binding.
 
 *** Result
 
@@ -127,12 +142,43 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 |--------+-------|
 | Status |       |
 
-** Follow the series link and inspect it
+** Follow the series link, inspect it and copy it
 
-- On the record page, click the series title in the *Series* row. The series page opens for that series: the Evolution page when the series has an axis, and the series page otherwise.
+- On the record page, click the series title in the *Series* row. The series page opens for that series. For an FX spot, it is the series page. For an IR curve, it is the Evolution page, and the series page says *{series} has an axis, so its page is the Evolution page.* with a link *Open the Evolution page*.
 - The page names the same series and does not say that the party does not hold it.
-- Go back to the binding with the browser *Back*, or by joining =/market-data/bindings=<id> to the site address.
+- Go back to the binding with the browser *Back*.
 - Press the *Inspect* button beside the oresmd URL. The read only view of the URL's parts opens, showing the parts as a table.
+- Press *Copy*. The button reads *Copied*. Paste into the address bar and check that the oresmd URL is there.
+- Now make the copy fail. Block the clipboard for the site in the browser site settings, then press *Copy* again. The dialog shows *The browser refused the copy. Select the URL and copy it yourself.* Restore the clipboard setting.
+- Open the edit dialog of the oresmd URL on another screen that has one, such as a feed in *Synthetic*. Its *Copy* button behaves the same, including the failed copy message.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Use the observation window on the series page
+
+- Open the series page of an FX spot, for example the series of =synthetic.bloomberg.usdcad=.
+- The page offers *Observation window* with *Last hour*, *Last day*, *Last 30 days*, *Last 365 days* and *All*. The page says which one is on, in the form *Window: Last hour.*
+- Choose *Last hour*. The chart and the list show only observations of the last hour. The page says *Showing the latest {shown} of {total} observations.* when the count cap cuts the list.
+- A feed ticks every two seconds. Choose *All*. The chart now spans more than the latest 500 observations, up to the cap.
+- If a window holds no observation, the page says *This series holds no observation in this window.* Record whether you could reach this state.
+- Check the values of the FX series. They show with the places of the pair's convention. If the page says *This pair has no convention in the direction the series quotes, so the values are shown in the plain format.*, record the pair.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Check the oresmd URI column of the feed lists
+
+- Open *Market data* > *Synthetic*, then the FX feeds and the IR feeds.
+- The *oresmd URI* column draws a link to the series when a page can open it, as the detail view of a feed does. A cell that no page can open is plain text.
+- Open the browser developer tools, Network tab. Reload the list. There is no parse request for each row of the grid.
 
 *** Result
 
@@ -146,6 +192,7 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 - A vendor row shows the kind *Vendor* and the status *Not supported*.
 - Open it. The header shows no *Edit*, and it shows *Delete* only for a person who may delete.
 - The *Details* tab carries one notice: *A binding of a real feed is read only here. Only a binding of a synthetic feed can change.*
+- The *History* tab offers no *Revert* on any version.
 
 *** Result
 
@@ -154,22 +201,77 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 | Status |       |
 | Notes  |       |
 
-** Confirm Edit and Delete are absent
+** Edit a binding
 
-- This task draws the list and the record page only. The add, edit and delete dialogs belong to the next task, *Add, edit and delete a binding*.
-- On the list, the *Add* control is absent.
-- On a synthetic binding's record page, no *Edit* or *Delete* opens a dialog. If either is drawn, the task drew more than it was asked for and this step fails.
+- Open the record page of =synthetic.bloomberg.usdcad=. Press *Edit*.
+- The dialog offers the source name and the enabled flag. The source help reads *The synthetic feed this party will consume.* The enabled help reads *While it is No, no tick is stored for this party. The feed itself keeps running.*
+- The dialog asks for a change reason and a commentary.
+- Set *Enabled* to *No*, choose a change reason, write a commentary, and save.
+- The record page shows *Enabled* as *No* and the *Status* tag as *Disabled*. The last line of the record names =tenant_admin=, the time and your reason.
+- Open the source picker. It offers the sources that the party does not consume yet. If a source holds a series that a running feed writes, choosing it shows *{source} already writes this series. Only one running feed may write a series, so this source cannot be bound while it runs.* and Save stays off. Record whether you could reach this refusal.
+- Press *Edit* again. Set *Enabled* to *Yes* and save with a reason. The tag returns to *Running*, or *Quiet* until the next tick.
+- Open the same binding in a second browser tab, and open *Edit* in both tabs. Save in the first tab. Save in the second tab. The second save is refused as stale, and the dialog offers to reload.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status |       |
+| Notes  |       |
+
+** Read the history timeline of a binding
+
+- Open the record page of =synthetic.bloomberg.usdcad= and press the *History* tab.
+- The tab loads. It shows no banner that reads *There is no such binding for this party.* This is the check of the fix in PR #3601.
+- The lead reads *Every saved version of this binding and what changed in each, newest first.*
+- The tab draws the shared timeline: a chart, one line for each version, the details on demand, the emblem of the current version, and the system activity toggle. Switch the toggle and the entries that the system wrote hide and show.
+- The versions of step 12 show: the first version from provisioning, the version that set *Enabled* to *No*, and the version that set it back. Each names who changed it and why.
+- *Revert* shows on every version but the newest, for a person who may write. The hint reads *A version whose series a running feed holds cannot be written back, so it offers no Revert.* If a version has no *Revert*, record which version and whether a running feed holds its series.
+- Press *Revert* on an older version and confirm. The history gets a new newest version that holds the old values. No earlier version changes.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Check the status of the feed behind a binding
+
+- On the record page of =synthetic.bloomberg.usdcad=, press *Feed* to open the feed page.
+- Stop the feed. Go back to the binding. The *Status* tag reads *Stopped*.
+- Start the feed. Go back to the binding. The tag reads *Running* once a tick arrives. It reads *Quiet* before the first tick.
+- The *Last tick* time moves forward after the start.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Add a binding and delete it
+
+- On the list, press *Add binding*. The dialog states the reason for a new record in a note and does not ask for it.
+- Open the source picker. It offers the 24 sources of *Before you start*. No source of the party's 55 appears.
+- Choose =synthetic.refinitiv.audjpy=. The help reads *The synthetic feed this party will consume.* Set *Enabled* to *Yes* and save.
+- The page of the new binding opens. The list now holds 56 bindings. Within a few seconds the *Status* reads *Running* and *Last tick* moves.
+- Open its *History* tab. It shows one version.
+- Press *Delete*. The dialog names the binding. It reads *The binding is deleted and ingestion for this party stops. The series and its observations stay, and so does the binding's history.*
+- Confirm. The page returns to the list. The row is gone and the list holds 55 bindings again.
+- Press *Add binding* again. The picker offers =synthetic.refinitiv.audjpy= once more. Record what the *History* tab of a binding that you add again shows, the old versions or a new start.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
 
 ** Return to the list and leave
 
 - Press the *Bindings* crumb above the record, or go to =http://127.0.0.1:21402/market-data/bindings=.
-- The list comes back with the same search, kind filter and page you left in steps 3 to 5, or on page 1 if it does not hold them.
+- The list comes back with the same search, kind filter and page you left in steps 4 to 6, or on page 1 if it does not hold them.
 - Go back to the *Market data* area, and make sure nothing on the way asks a question about unsaved work.
 
 *** Result
@@ -190,7 +292,10 @@ This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F205
 
 * Notes
 
-- The scenario verifies the list and the record page of task *Build the bindings list and record page*. The add, edit, delete and history dialogs of the story are out of scope here and belong to their own tasks.
-- The menu card for Bindings is out of scope here, and the tester opens the list by address.
-- The environment was verified on 2026-10-15: the Acme tenant is active, the party holds 55 enabled synthetic bindings, and the feeds tick. The list states in steps 2 to 5 therefore show rows, not the empty state.
-- Only synthetic sources exist in the seed, so the vendor row in step 8 is absent and that step records the absence.
+- The scenario verifies the whole Bindings screen of the story: the menu card, the list, the record page, add, edit and delete, the history timeline with Revert, and the oresmd snags (the series window, the linked URI column, the hint tooltip and the copy hook).
+- The environment was verified on 2026-10-15: the Acme tenant is active, the party holds 55 enabled synthetic bindings, and the feeds tick. It was provisioned again on 2026-10-21 on a fresh database. The list states in steps 3 to 6 therefore show rows, not the empty state.
+- Only synthetic sources exist in the seed, so the vendor row in step 11 is absent and that step records the absence.
+- The scenario was rewritten on 2026-10-21. It had stopped at the list and the record page, and its step that required Edit and Delete to be absent would now fail by design.
+- Steps 12 to 15 change data. Step 12 sets the binding back to enabled. Step 13 adds a Revert version. Step 15 deletes and adds a binding. Recreate the database to reset the environment afterwards.
+- A curve binding shows one arbitrary pillar in the Series column. This is known and is not a failure. The task *Label a curve binding by its curve* covers it.
+- The steps that need a state the seed cannot give, such as a vendor binding, a refusal for a held series, or an empty window, say what to record when the state is out of reach.

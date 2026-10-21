@@ -22,12 +22,14 @@
  * pgTAP tests for the names an ORE envelope gives a booked trade.
  *
  * Tests cover:
- * - The booking's recorded identifiers name the counterparty and netting set
+ * - The envelope names the counterparty, netting set and book by id
+ * - The envelope carries the entities' names, LEI and codes as context
+ * - The booking's recorded identifiers are the aliases of the counterparty and netting set
  * - Two aliases of one counterparty each come back as the trade named them
  * - Without a recorded identifier, the entity's first ORE alias names it
  * - A trade with no netting set gets no netting set name
  * - A deleted identifier falls back to the entity's remaining ORE alias
- * - A trade's portfolios come back by name in the order it stated them
+ * - A trade's portfolios come back by id and name in the order it stated them
  * - A trade is reported only in its own party's portfolios
  * - A second publish of the ORE sample portfolios adds nothing
  * - Neither names function shows a trade of a party the caller cannot see
@@ -38,7 +40,7 @@
 
 begin;
 
-select plan(10);
+select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -265,28 +267,40 @@ select pg_temp.book('00000000-0000-0000-0000-00000000e103', 'CPTY_B', 'CPTY_B', 
 select pg_temp.book('00000000-0000-0000-0000-00000000e104', 'CPTY_A', null, true);
 
 select results_eq(
-    $$select counter_party, netting_set_id from ores_trading_trade_envelope_names_fn(
+    $$select counterparty_alias, netting_set_alias from ores_trading_trade_envelope_names_fn(
         array['00000000-0000-0000-0000-00000000e101'::uuid])$$,
     $$values ('CP'::text, 'NS'::text)$$,
-    'the recorded identifiers name the counterparty and netting set');
+    'the recorded identifiers are the aliases of the counterparty and netting set');
 
 select results_eq(
-    $$select counter_party from ores_trading_trade_envelope_names_fn(
+    $$select counter_party, netting_set_id, book_id, counterparty_name, netting_set_code,
+        book_name
+      from ores_trading_trade_envelope_names_fn(
+        array['00000000-0000-0000-0000-00000000e101'::uuid])$$,
+    $$values ('00000000-0000-0000-0000-0000000cf111'::text,
+              '00000000-0000-0000-0000-0000000cf131'::text,
+              '00000000-0000-0000-0000-00000000e001'::text,
+              'Envelope Counterparty One'::text, 'ENV-NS1'::text, 'ENVTEST-BOOK'::text)$$,
+    'the envelope names the counterparty, netting set and book by id, with their names');
+
+select results_eq(
+    $$select counterparty_alias from ores_trading_trade_envelope_names_fn(
         array['00000000-0000-0000-0000-00000000e101'::uuid,
               '00000000-0000-0000-0000-00000000e102'::uuid]) order by trade_id$$,
     $$values ('CP'::text), ('CPTY'::text)$$,
     'two aliases of one counterparty each come back as the trade named them');
 
 select results_eq(
-    $$select counter_party, netting_set_id from ores_trading_trade_envelope_names_fn(
+    $$select counterparty_alias, netting_set_alias from ores_trading_trade_envelope_names_fn(
         array['00000000-0000-0000-0000-00000000e103'::uuid])$$,
     $$values ('CPTY_7'::text, 'CPTY_B'::text)$$,
     'without a recorded identifier, the first ORE alias names the entity');
 
 select results_eq(
-    $$select counter_party, netting_set_id from ores_trading_trade_envelope_names_fn(
+    $$select counterparty_alias, netting_set_id, netting_set_alias
+      from ores_trading_trade_envelope_names_fn(
         array['00000000-0000-0000-0000-00000000e104'::uuid])$$,
-    $$values ('CPTY_A'::text, null::text)$$,
+    $$values ('CPTY_A'::text, null::text, null::text)$$,
     'a trade with no netting set gets no netting set name');
 
 select throws_like(
@@ -308,7 +322,7 @@ where tenant_id = ores_utility_system_tenant_id_fn()
   and id_scheme = 'ORE' and id_value = 'CP';
 
 select results_eq(
-    $$select counter_party from ores_trading_trade_envelope_names_fn(
+    $$select counterparty_alias from ores_trading_trade_envelope_names_fn(
         array['00000000-0000-0000-0000-00000000e101'::uuid])$$,
     $$values ('CPTY'::text)$$,
     'a deleted identifier falls back to the entity''s remaining ORE alias');
@@ -347,10 +361,11 @@ select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 1, pg_temp.port
 select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 2, pg_temp.portfolio_named('PF1'));
 
 select results_eq(
-    $$select name from ores_trading_trade_portfolio_names_fn(
+    $$select portfolio_id, name from ores_trading_trade_portfolio_names_fn(
         array['00000000-0000-0000-0000-00000000e102'::uuid])$$,
-    $$values ('PF2'::text), ('PF1'::text)$$,
-    'a trade''s portfolios come back by name in the order it stated them');
+    $$values ('00000000-0000-0000-0000-0000000cf152'::uuid, 'PF2'::text),
+             ('00000000-0000-0000-0000-0000000cf151'::uuid, 'PF1'::text)$$,
+    'a trade''s portfolios come back by id and name in the order it stated them');
 
 -- This suite proved here that a trade is reported only in its own party's
 -- portfolios. Nothing in the generated SQL refuses that report any more: the

@@ -164,16 +164,18 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
   standard (doc/knowledge/ui/record_screen_standard.org) draws a record screen, and
   beside the pricing engines prototype: breadcrumb, plural title, one sentence, Refresh
   and Add, search, a filter, the table, the pager and the four states; then the record
-  page with the access mark and the tabs Details, Settings, Reports and History.
+  page with the access mark and the tabs Details, the five groups, Used by and History.
 
-  The Settings tab holds the five groups, each one part table with its own version.
+  Each group has a tab of its own, and each group is one part table with its own version.
   A write to any group makes the next version of the whole, and History shows one
   entry for each group changed.
 
-  Addresses: ?screen=list | record&id=e1|e2|e3&tab=details|settings|reports|history
+  Addresses: ?screen=list | record&id=e1|e2|e3&tab=details|dates|fixings|building|execution|output|reports|history
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
     ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
+    ?engine=1.8.17.0 or 1.8.16.0   the ORE build the settings are checked against
+  The Simple and Advanced switch is in the page, as on the feed screens. ?mode=simple or advanced sets it, and it is remembered.
 -->
 
 <div class="proto-note" id="note"></div>

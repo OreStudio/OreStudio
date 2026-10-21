@@ -61,14 +61,33 @@ struct feed_ingest_loop::item {
     bool unavailable = false;
 };
 
+/// A batch between its two stages. The first stage fills it and the second reads it, so the
+/// second can copy this batch while the first prepares the next. The items point into @c plans,
+/// whose elements stay where they are when the batch is handed on, and the rows view the text of
+/// the targets and of @c series_text.
+struct feed_ingest_loop::prepared_batch {
+    std::vector<messaging::market_tick> ticks;
+    std::vector<std::optional<tick_plan>> plans;
+    std::vector<item> items;
+    std::map<std::string, ores::database::context> tenant_ctxs;
+    std::unordered_map<boost::uuids::uuid, std::string, boost::hash<boost::uuids::uuid>>
+        series_text;
+    std::vector<tick_row> rows;
+    /// Why the rows could not be prepared, or empty when they could.
+    std::string failure;
+    std::chrono::steady_clock::time_point started;
+};
+
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
                                    ores::database::context ctx,
                                    std::shared_ptr<crm_ingest_bridge> crm_bridge,
-                                   std::shared_ptr<tick_writer> tick_writer)
+                                   std::shared_ptr<tick_writer> tick_writer,
+                                   bool pipelined)
     : nats_(nats)
     , ctx_(std::move(ctx))
     , crm_bridge_(std::move(crm_bridge))
-    , tick_writer_(std::move(tick_writer)) {}
+    , tick_writer_(std::move(tick_writer))
+    , pipelined_(pipelined) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
     // The callback of the subscription queues into queue_, which is destroyed before
@@ -81,6 +100,10 @@ feed_ingest_loop::~feed_ingest_loop() {
     queue_.close();
     if (worker_.joinable())
         worker_.join();
+    // The second stage finishes the batch it holds and the one that waits, and then stops.
+    handoff_.close();
+    if (commit_thread_.joinable())
+        commit_thread_.join();
     if (status_thread_.joinable())
         status_thread_.join();
 }
@@ -93,6 +116,8 @@ void feed_ingest_loop::start() {
     const auto wildcard = std::string(domain::synthetic_tick_subject) + ".>";
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
+    if (pipelined_)
+        commit_thread_ = std::thread(&feed_ingest_loop::commit_loop, this);
     worker_ = std::thread(&feed_ingest_loop::worker_loop, this);
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
@@ -198,12 +223,18 @@ void feed_ingest_loop::worker_loop() {
         if (batch.empty())
             continue;
 
+        const auto count = batch.size();
         try {
             const auto started = std::chrono::steady_clock::now();
-            process(batch, nullptr);
-            // Size the next batch from the speed of this one, so that it takes about
-            // target_batch_ms. A slow store gets smaller batches and a tick waits less.
-            limit = next_batch_ticks(batch.size(),
+            if (pipelined_)
+                handoff_.push(prepare(std::move(batch), nullptr));
+            else
+                process(std::move(batch), nullptr);
+            // Size the next batch from the time of one turn of the two stages, so that it takes
+            // about target_batch_ms. The push waits while the copy of the batch before this one
+            // runs, so the turn is as long as the slower stage. A slow store gets smaller
+            // batches and a tick waits less.
+            limit = next_batch_ticks(count,
                                      std::chrono::duration_cast<std::chrono::milliseconds>(
                                          std::chrono::steady_clock::now() - started)
                                          .count(),
@@ -212,7 +243,7 @@ void feed_ingest_loop::worker_loop() {
                                      batch_limit);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to process a batch of " << batch.size() << " tick(s): " << e.what();
+                << "Failed to prepare a batch of " << count << " tick(s): " << e.what();
         }
     }
 }
@@ -249,9 +280,13 @@ void feed_ingest_loop::warn_dropped(const messaging::market_tick& tick, tick_dro
     }
 }
 
-void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
-                               std::vector<std::optional<tick_drop>>* outcomes) {
-    const auto started = std::chrono::steady_clock::now();
+std::unique_ptr<feed_ingest_loop::prepared_batch>
+feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
+                          std::vector<std::optional<tick_drop>>* outcomes) {
+    auto batch = std::make_unique<prepared_batch>();
+    batch->started = std::chrono::steady_clock::now();
+    batch->ticks = std::move(received);
+    const auto& ticks = batch->ticks;
 
     std::shared_ptr<const bindings_snapshot> bindings;
     {
@@ -261,7 +296,7 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     static const std::vector<domain::feed_binding> no_bindings;
 
     // Plan every tick against one snapshot of the bindings.
-    std::vector<std::optional<tick_plan>> plans(ticks.size());
+    batch->plans.resize(ticks.size());
     for (std::size_t i = 0; i < ticks.size(); ++i) {
         const auto found = bindings->by_source.find(ticks[i].source);
         const auto& source_bindings =
@@ -288,18 +323,18 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                 (*outcomes)[i] = plan.error();
             continue;
         }
-        plans[i] = std::move(*plan);
+        batch->plans[i] = std::move(*plan);
     }
 
     // Resolve the series of every consumer. The tenant context is made once for each tenant,
     // and the series is read once for each series, so a batch pays neither for each tick.
     boost::uuids::random_generator uuid_gen;
-    std::map<std::string, ores::database::context> tenant_ctxs;
-    std::vector<item> items;
+    auto& tenant_ctxs = batch->tenant_ctxs;
+    auto& items = batch->items;
     for (std::size_t i = 0; i < ticks.size(); ++i) {
-        if (!plans[i])
+        if (!batch->plans[i])
             continue;
-        for (const auto& target : *plans[i]->targets) {
+        for (const auto& target : *batch->plans[i]->targets) {
             const auto& b = target.binding;
             auto ctx_it = tenant_ctxs.find(target.tenant_text);
             if (ctx_it == tenant_ctxs.end())
@@ -309,10 +344,10 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                              .first;
             item it;
             it.tick_index = i;
-            it.plan = &*plans[i];
+            it.plan = &*batch->plans[i];
             it.target = &target;
             try {
-                it.series_id = series_id_for(ctx_it->second, b, *plans[i]->named, uuid_gen);
+                it.series_id = series_id_for(ctx_it->second, b, *batch->plans[i]->named, uuid_gen);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to prepare the tick for " << ticks[i].oresmd_uri << " from source '"
@@ -323,13 +358,38 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
         }
     }
 
+    prepare_rows(*batch);
+    return batch;
+}
+
+void feed_ingest_loop::process(std::vector<messaging::market_tick> ticks,
+                               std::vector<std::optional<tick_drop>>* outcomes) {
+    const auto batch = prepare(std::move(ticks), outcomes);
+    complete(*batch);
+}
+
+void feed_ingest_loop::commit_loop() {
+    while (auto batch = handoff_.pop()) {
+        try {
+            complete(**batch);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to complete a batch of " << (*batch)->ticks.size()
+                                       << " tick(s): " << e.what();
+        }
+    }
+}
+
+void feed_ingest_loop::complete(prepared_batch& batch) {
+    const auto& ticks = batch.ticks;
+    const auto& items = batch.items;
+
     // A store that failed lately is left alone for a wait, and its ticks are republished
     // without a store.
-    store_items(ticks, items, tenant_ctxs);
+    write_rows(batch);
     for (const auto& it : items)
         if (it.unavailable)
             store_unavailable_.fetch_add(1, std::memory_order_relaxed);
-    record_activity(ticks, items, tenant_ctxs);
+    record_activity(batch);
 
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
@@ -401,7 +461,7 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     batches_.fetch_add(1, std::memory_order_relaxed);
     last_batch_ticks_.store(ticks.size(), std::memory_order_relaxed);
     last_batch_ms_.store(std::chrono::duration_cast<std::chrono::milliseconds>(
-                             std::chrono::steady_clock::now() - started)
+                             std::chrono::steady_clock::now() - batch.started)
                              .count(),
                          std::memory_order_relaxed);
 }
@@ -427,23 +487,11 @@ struct row_key_hash {
 
 }
 
-void feed_ingest_loop::store_items(
-    const std::vector<messaging::market_tick>& ticks,
-    std::vector<item>& items,
-    const std::map<std::string, ores::database::context>& tenant_ctxs) {
+void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
+    const auto& ticks = batch.ticks;
+    auto& items = batch.items;
     if (items.empty())
         return;
-
-    bool store_open = false;
-    {
-        std::lock_guard lock(mu_);
-        store_open = tick_writer_ && store_backoff_.may_try(std::chrono::steady_clock::now());
-    }
-    if (!store_open) {
-        for (auto& it : items)
-            it.unavailable = true;
-        return;
-    }
 
     // The datum of a tick has a number within its series, which the table stores in place of
     // the URI. The loop assigns the numbers it does not know yet for the whole batch, with a
@@ -478,62 +526,76 @@ void feed_ingest_loop::store_items(
             }
         }
     }
-    std::string failure;
     for (const auto& [tenant, wanted] : unknown) {
         try {
             const auto numbers = repository::tick_coordinate_repository{}.resolve_all(
-                tenant_ctxs.at(tenant), wanted);
+                batch.tenant_ctxs.at(tenant), wanted);
             std::lock_guard lock(mu_);
             for (std::size_t j = 0; j < numbers.size(); ++j)
                 coords_[wanted[j].oresmd_uri].emplace_back(wanted[j].series_id, numbers[j]);
         } catch (const std::exception& e) {
-            failure = e.what();
-            break;
+            batch.failure = e.what();
+            return;
         }
     }
 
     // A tick of the same datum and time as an earlier one in the batch replaces it, so a
     // reader finds one row for each. The rows view the text of the targets, and of the series
     // ids written here once for each series.
-    std::vector<tick_row> rows;
-    std::unordered_map<boost::uuids::uuid, std::string, boost::hash<boost::uuids::uuid>>
-        series_text;
-    if (failure.empty()) {
-        {
-            std::lock_guard lock(mu_);
-            for (std::size_t i = 0; i < items.size(); ++i)
-                if (!numbered[i])
-                    coord_of[i] =
-                        *cached_number(items[i].series_id, ticks[items[i].tick_index].oresmd_uri);
-        }
-        rows.reserve(items.size());
-        std::unordered_map<row_key, std::size_t, row_key_hash> row_at;
-        row_at.reserve(items.size());
-        for (std::size_t i = 0; i < items.size(); ++i) {
-            const auto& it = items[i];
-            const auto& tick = ticks[it.tick_index];
-            auto& text = series_text[it.series_id];
-            if (text.empty())
-                text = boost::uuids::to_string(it.series_id);
-            tick_row row;
-            row.tenant_id = it.target->tenant_text;
-            row.party_id = it.target->party_text;
-            row.series_id = text;
-            row.ts = tick.observation_time;
-            row.coord = coord_of[i];
-            row.value = it.plan->value;
-            const auto at = row_at.try_emplace(
-                row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()}, rows.size());
-            if (at.second)
-                rows.push_back(row);
-            else
-                rows[at.first->second] = row;
-        }
+    {
+        std::lock_guard lock(mu_);
+        for (std::size_t i = 0; i < items.size(); ++i)
+            if (!numbered[i])
+                coord_of[i] =
+                    *cached_number(items[i].series_id, ticks[items[i].tick_index].oresmd_uri);
+    }
+    batch.rows.reserve(items.size());
+    std::unordered_map<row_key, std::size_t, row_key_hash> row_at;
+    row_at.reserve(items.size());
+    for (std::size_t i = 0; i < items.size(); ++i) {
+        const auto& it = items[i];
+        const auto& tick = ticks[it.tick_index];
+        auto& text = batch.series_text[it.series_id];
+        if (text.empty())
+            text = boost::uuids::to_string(it.series_id);
+        tick_row row;
+        row.tenant_id = it.target->tenant_text;
+        row.party_id = it.target->party_text;
+        row.series_id = text;
+        row.ts = tick.observation_time;
+        row.coord = coord_of[i];
+        row.value = it.plan->value;
+        const auto at = row_at.try_emplace(
+            row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()},
+            batch.rows.size());
+        if (at.second)
+            batch.rows.push_back(row);
+        else
+            batch.rows[at.first->second] = row;
+    }
+}
+
+void feed_ingest_loop::write_rows(prepared_batch& batch) {
+    auto& items = batch.items;
+    if (items.empty())
+        return;
+
+    bool store_open = false;
+    {
+        std::lock_guard lock(mu_);
+        store_open = tick_writer_ && store_backoff_.may_try(std::chrono::steady_clock::now());
+    }
+    if (!store_open) {
+        for (auto& it : items)
+            it.unavailable = true;
+        return;
     }
 
+    std::string failure = batch.failure;
     if (failure.empty()) {
         try {
-            tick_writer_->write(rows);
+            std::lock_guard writer(writer_mu_);
+            tick_writer_->write(batch.rows);
         } catch (const std::exception& e) {
             failure = e.what();
         }
@@ -543,7 +605,7 @@ void feed_ingest_loop::store_items(
     if (failure.empty()) {
         for (auto& it : items)
             it.stored = true;
-        ticks_stored_.fetch_add(rows.size(), std::memory_order_relaxed);
+        ticks_stored_.fetch_add(batch.rows.size(), std::memory_order_relaxed);
         if (store_backoff_.note_success())
             BOOST_LOG_SEV(lg(), info) << "The store answers again";
         return;
@@ -556,10 +618,9 @@ void feed_ingest_loop::store_items(
                                    << failure;
 }
 
-void feed_ingest_loop::record_activity(
-    const std::vector<messaging::market_tick>& ticks,
-    const std::vector<item>& items,
-    const std::map<std::string, ores::database::context>& tenant_ctxs) {
+void feed_ingest_loop::record_activity(const prepared_batch& batch) {
+    const auto& ticks = batch.ticks;
+    const auto& items = batch.items;
     // The newest stored tick of each target of the batch.
     struct newest {
         const item* it;
@@ -594,7 +655,8 @@ void feed_ingest_loop::record_activity(
     }
     for (const auto& [tenant, entries] : due) {
         try {
-            repository::feed_binding_activity_repository{}.record(tenant_ctxs.at(tenant), entries);
+            repository::feed_binding_activity_repository{}.record(batch.tenant_ctxs.at(tenant),
+                                                                  entries);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to record the activity of " << entries.size()
                                       << " feed binding(s): " << e.what();

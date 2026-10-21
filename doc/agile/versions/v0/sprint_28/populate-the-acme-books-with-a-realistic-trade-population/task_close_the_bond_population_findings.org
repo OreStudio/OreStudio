@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-bond-population-findings
-#+pr:
+#+pr: 3603
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3603][#3603]] | [synthetic] Repair a trade booked without its bond instrument |
 
 * Review
 

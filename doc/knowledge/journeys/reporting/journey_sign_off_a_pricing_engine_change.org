@@ -113,8 +113,8 @@ The journey ends on the proposal's page, with the proposal in a final state.
    button and says: you proposed this change, another person who holds the part
    must sign it off. The inbox refuses the same decision already.
 8. *Refuse.* *Refuse* opens a dialog that needs a reason. The request ends and the
-   proposal moves to *Rejected*. The version in force stays in force. The proposer reads the reason and
-   changes the proposal and submits it again, or withdraws it. A rejection never
+   proposal moves to *Refused*. The version in force stays in force. The proposer reads the reason and
+   changes the proposal and submits it again, or withdraws it. A refusal never
    deletes the proposal.
 9. *Make it official.* When every part approved, any person who may write the
    configuration sees *Make version N+1 official*. The dialog names the reports it

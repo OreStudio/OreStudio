@@ -376,7 +376,7 @@ const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
-const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Rejected: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
+const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Refused: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
 const pad2 = n => String(n).padStart(2, '0');
 const clock = ms => { const d = new Date(ms); return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':' + pad2(d.getUTCSeconds()); };
 const dayName = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });

@@ -375,7 +375,7 @@ const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
-const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Rejected: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
+const KIND_TONE = { Created: 'ok', Changed: 'info', Proposed: 'warn', Approved: 'ok', Refused: 'bad', 'Made official': 'ok', Withdrawn: 'off', Rebased: 'info' };
 const pad2 = n => String(n).padStart(2, '0');
 const clock = ms => { const d = new Date(ms); return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':' + pad2(d.getUTCSeconds()); };
 const dayName = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -460,7 +460,7 @@ const prById = id => PRS.find(p => p.id === id) || PR1;
 const cfgOf = p => byId(p.configId);
 const closed = p => p.state === 'official' || p.state === 'withdrawn';
 const nOk = p => p.approvals.filter(a => a.state === 'approved').length;
-const PSTATE = { pending: ['Awaiting sign-off', 'warn'], partly: ['Awaiting sign-off', 'warn'], ready: ['Approved, not in force', 'info'], rejected: ['Rejected', 'bad'], superseded: ['Out of date', 'warn'], official: ['In force', 'ok'], withdrawn: ['Withdrawn', 'off'] };
+const PSTATE = { pending: ['Awaiting sign-off', 'warn'], partly: ['Awaiting sign-off', 'warn'], ready: ['Approved, not in force', 'info'], rejected: ['Refused', 'bad'], superseded: ['Out of date', 'warn'], official: ['In force', 'ok'], withdrawn: ['Withdrawn', 'off'] };
 const pTag = p => tag(PSTATE[p.state][0], PSTATE[p.state][1]);
 const canSign = (p, a) => !closed(p) && p.state !== 'rejected' && p.state !== 'superseded' && a.state === 'pending';
 const ordOf = id => PARTS.find(r => r.id === id).order;
@@ -492,11 +492,11 @@ function signoffTab(p) {
   const rows = p.approvals.map((a, i) => {
     const mine = me.role === a.role;
     const wait = canSign(p, a) ? waitsFor(p, a) : [];
-    const act = !mine || !canSign(p, a) || wait.length ? '' : own ? `<span class="faint">You proposed this change. Another person who holds the ${esc(partName(a.role))} part must sign it off.</span>` : btn('Approve', 'save', 'small', `data-ap="${i}"`) + ' ' + btn('Reject', 'cancel', 'small danger', `data-rj="${i}"`);
-    return `<tr><td><b>${esc(partName(a.role))}</b></td><td>${a.state === 'approved' ? tag('Approved', 'ok') : a.state === 'rejected' ? tag('Rejected', 'bad') : `<span class="faint">${wait.length ? 'Waits for ' + esc(wait.join(', ')) : 'Waiting'}</span>`}</td><td>${a.by ? esc(a.by) : dash}</td><td>${a.at ? `<span title="${exact(a.at)}">${rel(a.at)}</span>` : dash}</td><td>${a.comment ? esc(a.comment) : dash}</td><td>${act}</td></tr>`; });
+    const act = !mine || !canSign(p, a) || wait.length ? '' : own ? `<span class="faint">You proposed this change. Another person who holds the ${esc(partName(a.role))} part must sign it off.</span>` : btn('Approve', 'save', 'small', `data-ap="${i}"`) + ' ' + btn('Refuse', 'cancel', 'small danger', `data-rj="${i}"`);
+    return `<tr><td><b>${esc(partName(a.role))}</b></td><td>${a.state === 'approved' ? tag('Approved', 'ok') : a.state === 'rejected' ? tag('Refused', 'bad') : `<span class="faint">${p.state === 'rejected' ? 'Not asked, the request is closed' : wait.length ? 'Waits for ' + esc(wait.join(', ')) : 'Waiting'}</span>`}</td><td>${a.by ? esc(a.by) : dash}</td><td>${a.at ? `<span title="${exact(a.at)}">${rel(a.at)}</span>` : dash}</td><td>${a.comment ? esc(a.comment) : dash}</td><td>${act}</td></tr>`; });
   const rej = p.approvals.find(a => a.state === 'rejected');
   const top = { superseded: `<div class="warnbox"><b>This proposal is out of date.</b> Version ${c.ver} was approved after this proposal was written on version ${p.base}. A proposal must sit on the version in force. ${me.name === p.by ? 'Rebase it, and the parts sign off again.' : 'The proposer must rebase it.'} ${me.name === p.by ? '<button class="btn" id="b-rebase">Rebase on version ' + c.ver + '</button>' : ''}</div>`,
-    rejected: `<div class="badbox"><b>Rejected.</b> ${esc(rej ? partName(rej.role) : '')} rejected version ${p.ver}. Version ${c.ver} stays in force. ${me.name === p.by ? 'Change the proposal and submit it again, or withdraw it.' : ''}</div>`,
+    rejected: `<div class="badbox"><b>Refused.</b> ${esc(rej ? partName(rej.role) : '')} refused version ${p.ver}. Version ${c.ver} stays in force. ${me.name === p.by ? 'Change the proposal and submit it again, or withdraw it.' : ''}</div>`,
     ready: `<div class="okbox"><b>All ${PARTS.length} approval parts approved.</b> Version ${p.ver} is not in force yet. Someone must make it official. Until then version ${c.ver} stays in force. ${me.role || own ? '<button class="btn primary" id="b-official">Make version ' + p.ver + ' official</button>' : ''}</div>`,
     official: `<div class="okbox"><b>In force.</b> Version ${p.ver} of ${esc(c.name)} is the version in force. The next run of each report that binds it uses it.</div>`,
     withdrawn: '<div class="notice">The proposer withdrew this proposal. It changed nothing.</div>' }[p.state] || '';
@@ -524,7 +524,7 @@ function reachTab(p) {
 }
 function historyTab(p) {
   const rec = 'pricing_model_config', ev = [{ at: p.at, kind: 'Proposed', rec, ver: p.ver, reason: p.reason, who: p.by, did: 'proposed version ' + p.ver + ' on version ' + p.base, note: p.note }];
-  p.approvals.filter(a => a.at).forEach(a => ev.push({ at: a.at, kind: a.state === 'approved' ? 'Approved' : 'Rejected', rec, ver: p.ver, who: a.by, did: (a.state === 'approved' ? 'approved' : 'rejected') + ' for ' + esc(partName(a.role)), note: a.comment }));
+  p.approvals.filter(a => a.at).forEach(a => ev.push({ at: a.at, kind: a.state === 'approved' ? 'Approved' : 'Refused', rec, ver: p.ver, who: a.by, did: (a.state === 'approved' ? 'approved' : 'refused') + ' for ' + esc(partName(a.role)), note: a.comment }));
   if (p.state === 'official') ev.push({ at: p.madeAt || p.approvals.map(a => a.at).sort().pop(), kind: 'Made official', rec, ver: p.ver, who: p.madeBy || 'tenant administrator', did: 'made version ' + p.ver + ' official', current: true });
   return `<div class="muted">Everything that happened to this proposal, newest first. The audit log holds the same events with the request details.</div>${timeline(ev)}`;
 }
@@ -539,14 +539,14 @@ function proposalScreen(p) {
 function decide(p, i, kind) {
   const a = p.approvals[i], c = cfgOf(p), ok = kind === 'approve';
   const body = ok ? `<div>You sign off version ${p.ver} of ${esc(c.name)} for ${esc(partName(a.role))}, as ${esc(me.name)}.</div><div class="field"><label class="plain"><input type="checkbox" id="f-att"> I have read the changes and the reports they reach.</label></div><div class="field"><label>Comment (optional)</label><textarea id="f-cm"></textarea></div>`
-    : `<div>You reject version ${p.ver} of ${esc(c.name)} for ${esc(partName(a.role))}. Version ${c.ver} stays in force, and the proposer is told why.</div><div class="field"><label>Reason</label><textarea id="f-cm"></textarea><div class="help" id="f-nh">A rejection needs a reason.</div></div>`;
-  dialog((ok ? 'Approve' : 'Reject') + ' version ' + p.ver + '?', body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn ${ok ? 'primary' : 'danger'}" id="d-save" disabled>${ok ? 'Approve' : 'Reject'}</button>`);
+    : `<div>You refuse version ${p.ver} of ${esc(c.name)} for ${esc(partName(a.role))}. Version ${c.ver} stays in force, and the proposer is told why.</div><div class="field"><label>Reason</label><textarea id="f-cm"></textarea><div class="help" id="f-nh">A refusal needs a reason.</div></div>`;
+  dialog((ok ? 'Approve' : 'Refuse') + ' version ' + p.ver + '?', body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn ${ok ? 'primary' : 'danger'}" id="d-save" disabled>${ok ? 'Approve' : 'Refuse'}</button>`);
   const chk = () => { document.getElementById('d-save').disabled = ok ? !document.getElementById('f-att').checked : !document.getElementById('f-cm').value.trim(); };
   (ok ? document.getElementById('f-att') : document.getElementById('f-cm')).oninput = chk; if (ok) document.getElementById('f-att').onchange = chk;
   document.getElementById('d-save').onclick = () => {
     Object.assign(a, { by: me.name, at: iso(), state: ok ? 'approved' : 'rejected', comment: document.getElementById('f-cm').value.trim() });
     p.state = !ok ? 'rejected' : nOk(p) === PARTS.length ? 'ready' : 'partly';
-    banner = ok ? (p.state === 'ready' ? `All ${PARTS.length} approval parts approved version ${p.ver}. It is not in force yet.` : `You approved for ${partName(a.role)}. ${nOk(p)} of ${PARTS.length} approval parts have approved.`) : `You rejected version ${p.ver}. Version ${c.ver} stays in force.`;
+    banner = ok ? (p.state === 'ready' ? `All ${PARTS.length} approval parts approved version ${p.ver}. It is not in force yet.` : `You approved for ${partName(a.role)}. ${nOk(p)} of ${PARTS.length} approval parts have approved.`) : `You refused version ${p.ver}. Version ${c.ver} stays in force.`;
     closeDlg(); render();
   };
 }

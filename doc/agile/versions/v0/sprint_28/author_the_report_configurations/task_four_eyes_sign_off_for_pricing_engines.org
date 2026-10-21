@@ -39,6 +39,7 @@ Build the sign-off that the sign-off journey and prototype draw. Each approval p
 - The approval parts =quant= and =model_validation= exist beside =market_risk=, each with its decide permission and answer order, as model risk confirms them.
 - A policy row for a put of =pricing_model_config= sends a write to an approved version through a request, and the pricing engines service reads the policy.
 - The inbox refuses an approval from the person who proposed the change, and from a person who lacks the part's permission. A test proves both for this kind.
+- The pricing engines service refuses a direct write to the official version when no policy row loads or the service cannot read it. A test proves it.
 - A status and a cycle on the configuration say which version is in force.
 - A proposal never replaces the rows that a run reads. Making it official changes the version in force in one step.
 - A run records the version of the configuration it used.

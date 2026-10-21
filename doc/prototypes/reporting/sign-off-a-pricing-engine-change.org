@@ -2,7 +2,7 @@
 :ID: 42662E5D-39C0-4543-B1EB-C77DE924B8E2
 :END:
 #+title: Sign off a pricing engine change prototype
-#+description: The queue of proposals to change an official pricing engine configuration, and one proposal's page with the sign-off by role, the changes, the reach and the history. The proposer cannot sign off.
+#+description: The queue of proposals to change an official pricing engine configuration, and one proposal's page with the sign-off by approval part, the changes, the reach and the history. The proposer cannot sign off.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -43,7 +43,7 @@ The page answers to the journey [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign 
 - *The version in force stays in force.* Every state of a proposal says so, and the Reach tab says that a run made after the change is not comparable with an earlier run for the changed products.
 - *The parts come from the inbox.* Market Risk is a seeded approval part (=market_risk=). Quant and Model Validation are new parts, and their names are assumed. Quant answers first (answer order 1), and the other two answer together (order 2). A refusal from a part that can answer ends the request. Each part is decided by a permission such as =inbox::approvals:decide_quant=, and a tenant grants it to whichever role does that work.
 - *The proposal is an approval request.* Its kind would be =analytics.pricing_engines_change=. That kind, the two new parts and a policy row for a put of =pricing_model_config= do not exist yet.
-- *A rejection needs a reason and deletes nothing.* The proposal stays in the history.
+- *A refusal needs a reason and deletes nothing.* The proposal stays in the history.
 
 ** What is fake
 

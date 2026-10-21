@@ -392,4 +392,111 @@ describe('tenor routes', () => {
         expect(response.json().result.fields[0].field).toBe('tenor_code');
         expect(calls[0]?.subject).toBe('refdata.v1.ops.resolve_tenor');
     });
+
+    it('resolves every tenor of a convention in one call', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ops.resolve_convention': {
+                result: ok,
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'Argentina',
+                tenors: [
+                    {
+                        tenor_code: '1M',
+                        result: ok,
+                        anchor_date: '2026-03-16',
+                        date_before_roll: '2026-04-16',
+                        adjusted_date: '2026-04-16',
+                    },
+                    {
+                        tenor_code: '3M',
+                        result: ok,
+                        anchor_date: '2026-03-16',
+                        date_before_roll: '2026-06-16',
+                        adjusted_date: '2026-06-16',
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve-convention', {
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().roll_rule).toBe('ModifiedFollowing');
+        expect(response.json().tenors.map((entry: { tenor_code: string }) => entry.tenor_code)).toEqual([
+            '1M',
+            '3M',
+        ]);
+        expect(response.json().tenors[1].adjusted_date).toBe('2026-06-16');
+        expect(calls).toHaveLength(1);
+        expect(calls[0]?.subject).toBe('refdata.v1.ops.resolve_convention');
+        expect(calls[0]?.body).toMatchObject({
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+            spot: null,
+        });
+    });
+
+    it('keeps a tenor that refused beside the tenors that resolved', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.ops.resolve_convention': {
+                result: ok,
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'Argentina',
+                tenors: [
+                    {
+                        tenor_code: '1M',
+                        result: ok,
+                        anchor_date: '2026-03-16',
+                        date_before_roll: '2026-04-16',
+                        adjusted_date: '2026-04-16',
+                    },
+                    {
+                        tenor_code: 'O/N',
+                        result: {
+                            outcome: 'invalid',
+                            code: 'special_tenor_without_offset',
+                            message: 'The rule did not resolve.',
+                            fields: [
+                                {
+                                    field: 'tenor_convention_resolutions',
+                                    code: 'special_tenor_without_offset',
+                                    message: 'The rule did not resolve.',
+                                },
+                            ],
+                        },
+                        anchor_date: '2026-03-16',
+                        date_before_roll: '',
+                        adjusted_date: '',
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve-convention', {
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().result.outcome).toBe('ok');
+        expect(response.json().tenors[0].adjusted_date).toBe('2026-04-16');
+        expect(response.json().tenors[1].result.code).toBe('special_tenor_without_offset');
+        expect(response.json().tenors[1].anchor_date).toBe('2026-03-16');
+    });
+
+    it('refuses a question that names no convention, before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve-convention', {
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
 });

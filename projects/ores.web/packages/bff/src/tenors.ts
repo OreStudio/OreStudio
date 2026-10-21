@@ -78,6 +78,36 @@ const resolveBodySchema = z.object({
 });
 
 /**
+ * A question about every tenor of one convention: which convention, on which
+ * calendar, counted from which date.
+ */
+const resolveConventionBodySchema = z.object({
+    convention_code: codeSchema,
+    calendar_code: codeSchema,
+    horizon: z.string().trim().min(1).max(40),
+    spot: z.string().trim().min(1).max(40).nullable().default(null),
+});
+
+/**
+ * What one tenor of a convention resolved to, or why it declined. Each entry
+ * carries its own result, so one refusal does not hide the other tenors.
+ */
+const conventionTenorSchema = z.looseObject({
+    tenor_code: z.string(),
+    result: resultSchema,
+    anchor_date: z.string().default(''),
+    date_before_roll: z.string().default(''),
+    adjusted_date: z.string().default(''),
+});
+
+const conventionReplySchema = z.looseObject({
+    result: resultSchema,
+    roll_rule: z.string().default(''),
+    calendar: z.string().default(''),
+    tenors: z.array(conventionTenorSchema).default([]),
+});
+
+/**
  * What the resolution answered, or why it declined. The dates travel on a
  * refusal too: a refusal that says only "no" cannot be acted on.
  */
@@ -234,6 +264,33 @@ export function registerTenorRoutes(
             resolutionReplySchema,
         );
         return resolutionReply(reply);
+    });
+
+    server.post('/api/tenors/resolve-convention', async (request) => {
+        const session = requireSession(request);
+        const body = input(resolveConventionBodySchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            tenorSubjects.resolve_convention_request,
+            {
+                convention_code: body.convention_code,
+                calendar_code: body.calendar_code,
+                horizon: body.horizon,
+                spot: body.spot,
+            },
+            conventionReplySchema,
+        );
+        return {
+            result: reply.result,
+            roll_rule: reply.roll_rule,
+            calendar: reply.calendar,
+            tenors: reply.tenors.map((entry) => ({
+                tenor_code: entry.tenor_code,
+                result: entry.result,
+                anchor_date: entry.anchor_date,
+                date_before_roll: entry.date_before_roll,
+                adjusted_date: entry.adjusted_date,
+            })),
+        };
     });
 
     server.get('/api/tenors/conventions/:code/resolutions', async (request) => {

@@ -577,6 +577,50 @@ public:
         }
     }
 
+    /**
+     * @brief Serves refdata.v1.ops.resolve_convention.
+     *
+     * The same question as resolve_tenor, asked once for every tenor the
+     * convention holds, so a screen that lays out the term structure makes one
+     * call. A tenor that refuses is a refusal in its own entry; only a
+     * convention or calendar that cannot be read at all refuses the whole
+     * reply.
+     */
+    void resolve_convention(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            tenor_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "refdata::tenors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<resolve_convention_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.resolve_convention(*req);
+            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resolve_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

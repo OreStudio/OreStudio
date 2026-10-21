@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -45,6 +45,22 @@ The observation table stops at about 8,300 rows per second for one connection be
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Decision of the owner, 2026-10-21: this task keeps one row for each tenant binding. One row
+for each source stays a separate task.
+
+The table must be written with =COPY=, and =COPY= cannot write a table with row-level
+security (see the section on tenant isolation in the tick ingest pipeline note). So the
+first step is to choose the isolation model. The owner asked to consider a table for each
+party. The order of work:
+
+1. Test the isolation options that the note lists: a writer role with =BYPASSRLS=, a view
+   with =security_barrier= over a table without a policy, and a table for each party at 100
+   tenants. Record each result in the note.
+2. Choose one, and write the table, its grants and its view.
+3. Move the writer of the ingest to =COPY= into the table, with one transaction for each tenant.
+4. Point the readers at the view, one at a time, with a test for each.
+5. Measure a burst with the tick injector.
 
 * Measurements
 

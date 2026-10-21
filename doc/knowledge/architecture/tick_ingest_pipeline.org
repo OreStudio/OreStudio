@@ -874,6 +874,61 @@ What stays untested: the row-level security policy and the tenant-aware connecti
 append-only table, a real mix of series and times, and the disk of a machine that is not
 shared.
 
+** Tenant isolation of the tick table
+
+The second pass of step 0 tried to write the observation table with =COPY=. The attempt
+failed. The server answered "COPY FROM not supported with row-level security", with the
+hint "Use INSERT statements instead". The DDL user of the test database sent the
+statement. The observation table has the policy =tenant_id = ores_iam_current_tenant_id_fn()=.
+So the fast writer and the present isolation model exclude each other. The benchmark
+measured =COPY= into a scratch copy that has the trigger and no policy. It did not measure
+=COPY= into a table with a policy, because the server refuses it.
+
+The tick table needs an isolation model that =COPY= can write. This note lists the options.
+The test did not measure any of them. The marks say what each option still needs.
+
+- *No policy on the tick table, and the filter in a view.* The tick table holds the series,
+  the time, the coordinate and the value. A series belongs to one tenant, so the tick
+  has no tenant column. A view with the =security_barrier= option joins the series table
+  and keeps the rows of the current tenant. The readers use the view, and they get the
+  same isolation. The writer uses =COPY=. Needs: a check that the planner pushes the
+  series filter below the join, so that a read of one series does not scan the chunks of
+  every tenant. The table must grant =SELECT= to no role that reads without the view.
+- *A writer role that bypasses the policy.* A role with =BYPASSRLS= can =COPY= into a
+  table that has a policy. The role gets =INSERT= on the tick table and nothing else.
+  Reads keep the policy. Needs: a test that =COPY= works for such a role, and a decision
+  on whether the project accepts a role that bypasses the policy. The tenant of each
+  row then comes from the series, and the writer must check it.
+- *A table for each party, or for each tenant.* The tenant is in the table name, and a
+  grant on the table isolates it. No policy is needed, so =COPY= works. A batch of one
+  tenant becomes one =COPY= into one table, which is the shape that the measurement
+  prefers. The cost is the catalog. A hypertable with one-day chunks has a chunk for
+  each table each day, so 100 tenants and 61 days make 6,100 chunks, and each chunk
+  has its own index. Each table needs its own retention and compression policy, a
+  new party needs a new table, and a reader that spans parties needs a view over all of
+  them. Needs: a measurement of the planner and the catalog at 100 tables, and a
+  procedure for a new party. A schema for each tenant has the same costs.
+- *A hypertable with the tenant as a space dimension.* One table, partitioned by
+  tenant and by time. The policy still applies to the parent, so =COPY= is still
+  refused. This option does not solve the problem alone. It helps the chunk layout when
+  it combines with one of the options above.
+- *A staging table, then an insert from it.* =COPY= writes an unprotected staging table,
+  and one =INSERT ... SELECT= moves the rows into the table with the policy. The policy
+  stays. Every row is written twice. Needs: a measurement of the second write.
+- *=INSERT= with the policy.* Keep the policy, give up =COPY=. A multi-row =INSERT= may be
+  faster than the repository insert, because it can skip the trigger. The test did not
+  measure it. This is the fallback if no other option is acceptable.
+- *One row for each source.* A tick of a source is market data, not the data of a tenant.
+  If the store keeps one row for each source, the tick table has no tenant at all, and
+  the bindings carry the isolation. The question of =COPY= then does not arise for the
+  tick table, because it needs no policy. This option depends on the decision about one
+  row for each source, which is open.
+
+The first and the second option keep one table and the measured shape. The third option
+trades the catalog for the simplest isolation. The first test to run is the second
+option, because it takes one role and one =COPY=. The second test is the view of the first
+option, with the planner checked at 100 tenants.
+
 ** The risks, and what would change the design
 
 #+ATTR_HTML: :class hug-leading
@@ -956,6 +1011,9 @@ a burst of ticks at a chosen rate and times the drain.
   view over an append-only tick table and the observation table is the proposal.
 - How long does the store keep raw ticks, and which classes keep bars only? The
   answer is a policy row for each class.
+- How does the tick table isolate tenants? =COPY= cannot write a table with a policy. The
+  options are in the section on tenant isolation, and the owner has asked for a table for
+  each party to be considered.
 - Which edition of TimescaleDB does the deployment run? The Community edition compresses and
   schedules policies. The Apache build of the Debian package does neither. The retention plan
   has a path for each, and the owner picks the edition.

@@ -281,6 +281,22 @@ describe('the Tests tab', () => {
         expect(html.match(/This environment/g)).toHaveLength(1);
     });
 
+    it('draws a red part in the bar for the failed steps of a row', () => {
+        const html = screen({
+            scenarios: [
+                summary({
+                    id: 'D',
+                    title: 'Half done',
+                    steps: { total: 4, pending: 1, pass: 2, fail: 1, dropped: 0 },
+                }),
+            ],
+        });
+        expect(html).toMatch(/data-status="pass" class="[^"]*bg-up"/);
+        expect(html).toMatch(/data-status="fail" class="[^"]*bg-down"/);
+        expect(html).toMatch(/data-status="pending" class="[^"]*bg-line-subtle"/);
+        expect(html).not.toContain('data-status="dropped"');
+    });
+
     it('shows the state of a done and an abandoned scenario', () => {
         const html = screen({ scenarios: ALL });
         expect(html).toContain('Passed');

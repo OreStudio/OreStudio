@@ -261,12 +261,25 @@ function Row({
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={percentDone(scenario)}
-                    className="h-1.5 w-24 overflow-hidden rounded-full bg-line-subtle"
+                    className="flex h-1.5 w-24 gap-px overflow-hidden rounded-full"
                 >
-                    <div
-                        className={state === 'failed' ? 'h-full bg-down' : 'h-full bg-up'}
-                        style={{ width: `${percentDone(scenario)}%` }}
-                    />
+                    {(
+                        [
+                            ['pass', 'bg-up'],
+                            ['fail', 'bg-down'],
+                            ['dropped', 'bg-ink-faint'],
+                            ['pending', 'bg-line-subtle'],
+                        ] as const
+                    ).map(([status, colour]) =>
+                        scenario.steps[status] > 0 ? (
+                            <div
+                                key={status}
+                                data-status={status}
+                                className={`h-full ${colour}`}
+                                style={{ flexGrow: scenario.steps[status] }}
+                            />
+                        ) : null,
+                    )}
                 </div>
                 <div className="text-xs text-ink-faint">
                     {t('development.tests.stepsDone', {

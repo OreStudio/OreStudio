@@ -606,6 +606,246 @@ describe('the codes a definition may take', () => {
     });
 });
 
+describe('the configurations a report binds', () => {
+    const MARKET = 'c1000000-0000-4000-8000-000000000001';
+    const ENGINES = 'c2000000-0000-4000-8000-000000000002';
+    const TYPES = 'reporting.v1.configuration_types.list';
+    const BINDINGS = 'reporting.v1.report_configurations.list';
+    const CONFIGURATIONS = 'reporting.v1.configurations.list';
+    const ANALYTICS = 'reporting.v1.configuration_analytics.list';
+    const ANALYTIC_TYPES = 'reporting.v1.analytic_types.list';
+
+    const kinds = {
+        result: ok,
+        types: [
+            { code: 'pricing_engines', name: 'Pricing engines' },
+            { code: 'todays_market', name: "Today's market" },
+        ],
+        total: 2,
+    };
+    const configurations = {
+        result: ok,
+        configurations: [
+            {
+                id: MARKET,
+                name: "HK today's market",
+                configuration_type_code: 'todays_market',
+                owning_component: 'ores.analytics',
+                party_id: OTHER_PARTY,
+                version: 2,
+                modified_by: 'priya',
+                performed_by: 'priya',
+                change_reason_code: 'common.new_record',
+                change_commentary: 'Seed',
+                recorded_at: '2026-10-17 08:00:00.000000Z',
+            },
+            {
+                id: ENGINES,
+                name: 'HK pricing engines',
+                configuration_type_code: 'pricing_engines',
+                owning_component: 'ores.analytics',
+                party_id: OTHER_PARTY,
+            },
+        ],
+        total: 2,
+    };
+
+    it('names each binding by its kind and the configuration it points at, in kind order', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [BINDINGS]: {
+                result: ok,
+                report_configurations: [
+                    {
+                        id: 'b1',
+                        report_definition_id: AUDIT_ELSEWHERE,
+                        configuration_type_code: 'todays_market',
+                        configuration_id: MARKET,
+                    },
+                    {
+                        id: 'b2',
+                        report_definition_id: AUDIT_ELSEWHERE,
+                        configuration_type_code: 'pricing_engines',
+                        configuration_id: ENGINES,
+                    },
+                ],
+                total: 2,
+            },
+            [TYPES]: kinds,
+            [CONFIGURATIONS]: configurations,
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}/configurations`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().bindings).toEqual([
+            {
+                id: 'b2',
+                typeCode: 'pricing_engines',
+                typeName: 'Pricing engines',
+                configurationId: ENGINES,
+                name: 'HK pricing engines',
+            },
+            {
+                id: 'b1',
+                typeCode: 'todays_market',
+                typeName: "Today's market",
+                configurationId: MARKET,
+                name: "HK today's market",
+            },
+        ]);
+        const asked = calls.find((call) => call.subject === BINDINGS)?.body as {
+            filter: { report_definition_id: string };
+        };
+        expect(asked.filter.report_definition_id).toBe(AUDIT_ELSEWHERE);
+    });
+
+    it('keeps the binding under its code when the kinds read is refused', async () => {
+        const { server, sessionId } = buildTestServer({
+            [BINDINGS]: {
+                result: ok,
+                report_configurations: [
+                    {
+                        id: 'b1',
+                        report_definition_id: AUDIT_ELSEWHERE,
+                        configuration_type_code: 'todays_market',
+                        configuration_id: MARKET,
+                    },
+                ],
+                total: 1,
+            },
+            [TYPES]: {
+                result: { outcome: 'denied', code: 'denied', message: 'No kinds.', fields: [] },
+                types: [],
+                total: 0,
+            },
+            [CONFIGURATIONS]: configurations,
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}/configurations`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().bindings[0].typeName).toBe('todays_market');
+    });
+
+    it('answers a report with no bindings with an empty list and reads no configuration', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [BINDINGS]: { result: ok, report_configurations: [], total: 0 },
+            [TYPES]: kinds,
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}/configurations`,
+        );
+
+        expect(response.json()).toEqual({ bindings: [] });
+        expect(calls.some((call) => call.subject === CONFIGURATIONS)).toBe(false);
+    });
+
+    it('reads one configuration with its analytics and the reports that bind it', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...listReplies(),
+            [CONFIGURATIONS]: configurations,
+            [TYPES]: kinds,
+            [ANALYTICS]: {
+                result: ok,
+                analytics: [
+                    { analytic_type_code: 'sensitivity', display_order: 2, active: 'N' },
+                    { analytic_type_code: 'npv', display_order: 1, active: 'Y' },
+                ],
+                total: 2,
+            },
+            [ANALYTIC_TYPES]: {
+                result: ok,
+                types: [{ code: 'npv', name: 'Net present value' }],
+                total: 1,
+            },
+            [BINDINGS]: {
+                result: ok,
+                report_configurations: [
+                    {
+                        id: 'b1',
+                        report_definition_id: AUDIT_ELSEWHERE,
+                        configuration_type_code: 'todays_market',
+                        configuration_id: MARKET,
+                    },
+                ],
+                total: 1,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/configurations/${MARKET}`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.configuration).toMatchObject({
+            id: MARKET,
+            name: "HK today's market",
+            typeCode: 'todays_market',
+            typeName: "Today's market",
+            owningComponent: 'ores.analytics',
+            partyName: 'ACME Hong Kong',
+            version: 2,
+            change_commentary: 'Seed',
+        });
+        expect(body.analytics).toEqual([
+            { code: 'npv', name: 'Net present value', active: true },
+            { code: 'sensitivity', name: 'sensitivity', active: false },
+        ]);
+        expect(body.reports).toEqual([
+            { id: AUDIT_ELSEWHERE, name: AUDIT_NAME, partyName: 'ACME Hong Kong' },
+        ]);
+    });
+
+    it('answers a configuration nobody holds as absent', async () => {
+        const { server, sessionId } = buildTestServer({
+            [CONFIGURATIONS]: { result: ok, configurations: [], total: 0 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/configurations/${UNKNOWN_ID}`,
+        );
+
+        expect(response.statusCode).toBe(404);
+    });
+
+    it('accepts the identifiers the seed gives a configuration, which are not version 4', async () => {
+        const { server, sessionId } = buildTestServer({
+            [CONFIGURATIONS]: { result: ok, configurations: [], total: 0 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/configurations/084e3604-5a5d-bd2f-f90a-8fcc1a2fa988',
+        );
+
+        expect(response.statusCode).toBe(404);
+    });
+
+    it('refuses an address that is not an id', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', '/api/reporting/configurations/x');
+
+        expect(response.statusCode).toBe(400);
+    });
+});
+
 describe('one report definition', () => {
     it('reads the definition the id names, and not one of the same name elsewhere', async () => {
         const { server, sessionId, calls } = buildTestServer(listReplies());

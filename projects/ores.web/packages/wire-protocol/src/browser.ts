@@ -351,6 +351,9 @@ export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './time
 // The reports a party runs: a definition composed with its latest run.
 export {
     REPORT_HEALTH_WORDS,
+    configurationDetailSchema,
+    reportConfigurationBindingSchema,
+    reportConfigurationBindingsSchema,
     reportDefinitionViewSchema,
     reportDetailSchema,
     reportHealthTallySchema,
@@ -364,6 +367,9 @@ export {
     reportsPageSchema,
 } from './reporting.js';
 export type {
+    ConfigurationDetail,
+    ReportConfigurationBinding,
+    ReportConfigurationBindings,
     ReportDefinitionView,
     ReportDetail,
     ReportHealthTally,

@@ -27,9 +27,14 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
+#include "ores.reporting.core/messaging/analytic_type_registrar.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
+#include "ores.reporting.core/messaging/configuration_analytic_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_error_event_handler.hpp"
@@ -367,6 +372,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // a run.
     // ----------------------------------------------------------------
     for (auto& sub : register_file_type_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // ----------------------------------------------------------------
+    // Configurations (generated CRUD handlers). A report page reads the
+    // configurations a report binds, their kinds and their analytics.
+    // ----------------------------------------------------------------
+    for (auto& sub : register_configuration_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_report_configuration_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_configuration_type_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_configuration_analytic_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_analytic_type_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     return subs;

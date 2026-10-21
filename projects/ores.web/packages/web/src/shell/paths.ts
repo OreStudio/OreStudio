@@ -49,6 +49,7 @@ export const PATHS = {
     bindings: '/market-data/bindings',
     reporting: '/reporting',
     reports: '/reporting/reports',
+    configurations: '/reporting/configurations',
 } as const;
 
 /** The address of one person's page. */
@@ -81,6 +82,11 @@ export function gridNodePath(hostId: string): string {
  */
 export function reportPath(id: string): string {
     return `${PATHS.reports}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one report configuration's page. */
+export function configurationPath(id: string): string {
+    return `${PATHS.configurations}/${encodeURIComponent(id)}`;
 }
 
 /** The address of the rescue screen for one account. */

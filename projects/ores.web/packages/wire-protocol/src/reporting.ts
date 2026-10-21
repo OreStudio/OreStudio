@@ -232,3 +232,66 @@ export const reportNameChoicesSchema = z.object({
 });
 
 export type ReportNameChoices = z.infer<typeof reportNameChoicesSchema>;
+
+/**
+ * One configuration a report binds, by the kind it is and the name it carries.
+ *
+ * The binding has its own id, and the configuration it points at has another.
+ * The page links to the configuration, so the configuration id is the one a
+ * link needs.
+ */
+export const reportConfigurationBindingSchema = z.object({
+    id: z.string(),
+    typeCode: z.string(),
+    typeName: z.string(),
+    configurationId: z.string(),
+    name: z.string(),
+});
+
+export type ReportConfigurationBinding = z.infer<typeof reportConfigurationBindingSchema>;
+
+export const reportConfigurationBindingsSchema = z.object({
+    bindings: z.array(reportConfigurationBindingSchema),
+});
+
+export type ReportConfigurationBindings = z.infer<typeof reportConfigurationBindingsSchema>;
+
+/**
+ * One configuration, the analytics it holds and the reports that use it.
+ *
+ * A configuration is shared by binding and never copied, so the reports that use
+ * it are part of what a person needs to know before they trust it.
+ */
+export const configurationDetailSchema = z.object({
+    configuration: z.object({
+        id: z.string(),
+        name: z.string(),
+        typeCode: z.string(),
+        typeName: z.string(),
+        owningComponent: z.string(),
+        partyId: z.string(),
+        partyName: z.string(),
+        version: z.int().nonnegative(),
+        modified_by: z.string(),
+        performed_by: z.string(),
+        change_reason_code: z.string(),
+        change_commentary: z.string(),
+        recorded_at: z.string(),
+    }),
+    analytics: z.array(
+        z.object({
+            code: z.string(),
+            name: z.string(),
+            active: z.boolean(),
+        }),
+    ),
+    reports: z.array(
+        z.object({
+            id: z.string(),
+            name: z.string(),
+            partyName: z.string(),
+        }),
+    ),
+});
+
+export type ConfigurationDetail = z.infer<typeof configurationDetailSchema>;

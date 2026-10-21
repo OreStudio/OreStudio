@@ -23,7 +23,12 @@ import { describe, expect, it } from 'vitest';
 import type { QueryClient } from '@tanstack/react-query';
 import { Route } from 'react-router';
 import { wireTimestamp } from '@ores/wire-protocol/browser';
-import type { ReportDetail, ReportsPage } from '@ores/wire-protocol/browser';
+import type {
+    ConfigurationDetail,
+    ReportConfigurationBinding,
+    ReportDetail,
+    ReportsPage,
+} from '@ores/wire-protocol/browser';
 import type { ReportOpen } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { textOf } from '../textOf.js';
@@ -32,6 +37,7 @@ import { enFlat } from '../i18n/locales/en.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { reportKey } from './ReportPage.js';
+import { ConfigurationPage, bindingsKey, configurationKey } from './ConfigurationPage.js';
 import { MY_PARTIES_QUERY_KEY, ReportsPage as ReportsScreen, unreadNotes } from './ReportsPage.js';
 import { HealthSummary } from './shared.js';
 import { ReportPage } from './ReportPage.js';
@@ -624,5 +630,131 @@ describe('an address that names a definition', () => {
         expect(html).toContain('href="/reporting/reports"');
         // The entity's own name is not a word a person reads.
         expect(page).not.toContain('report_definition');
+    });
+});
+
+const MARKET = 'c1000000-0000-4000-8000-000000000001';
+const ENGINES = 'c2000000-0000-4000-8000-000000000002';
+
+const BINDINGS: readonly ReportConfigurationBinding[] = [
+    {
+        id: 'b2',
+        typeCode: 'pricing_engines',
+        typeName: 'Pricing engines',
+        configurationId: ENGINES,
+        name: 'HK pricing engines',
+    },
+    {
+        id: 'b1',
+        typeCode: 'todays_market',
+        typeName: "Today's market",
+        configurationId: MARKET,
+        name: '',
+    },
+];
+
+function withBindings(bindings: readonly ReportConfigurationBinding[]): string {
+    return renderRecords(
+        `/reporting/reports/${AUDIT_ELSEWHERE}`,
+        [],
+        <Route path="/reporting/reports/:id" element={<ReportPage />} />,
+        (client) => {
+            client.setQueryData(['my-access'], accessOf([]));
+            client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                kind: 'record',
+                detail: DETAIL,
+            } satisfies ReportOpen);
+            client.setQueryData(bindingsKey(AUDIT_ELSEWHERE), bindings);
+        },
+    );
+}
+
+describe('the configurations of a report', () => {
+    it('lists each by its kind, and links its name to the configuration page', () => {
+        const html = withBindings(BINDINGS);
+        const page = textOf(html);
+
+        expect(page).toContain('Configurations');
+        expect(page).toContain('Pricing engines');
+        expect(page).toContain('HK pricing engines');
+        expect(html).toContain(`href="/reporting/configurations/${ENGINES}"`);
+        expect(html).toContain(`href="/reporting/configurations/${MARKET}"`);
+    });
+
+    it('shows the start of the id for a configuration whose name was not read', () => {
+        expect(textOf(withBindings(BINDINGS))).toContain(MARKET.slice(0, 8));
+    });
+
+    it('says a report binds nothing in words', () => {
+        expect(textOf(withBindings([]))).toContain('This report binds no configuration.');
+    });
+});
+
+const CONFIGURATION: ConfigurationDetail = {
+    configuration: {
+        id: MARKET,
+        name: "HK today's market",
+        typeCode: 'todays_market',
+        typeName: "Today's market",
+        owningComponent: 'ores.analytics',
+        partyId: ELSEWHERE,
+        partyName: 'ACME Hong Kong',
+        version: 2,
+        modified_by: 'priya',
+        performed_by: 'priya',
+        change_reason_code: 'common.new_record',
+        change_commentary: 'Seed',
+        recorded_at: '2026-10-17 08:00:00.000000Z',
+    },
+    analytics: [
+        { code: 'npv', name: 'Net present value', active: true },
+        { code: 'sensitivity', name: 'Sensitivity analysis', active: false },
+    ],
+    reports: [{ id: AUDIT_ELSEWHERE, name: AUDIT_NAME, partyName: 'ACME Hong Kong' }],
+};
+
+function configurationPage(detail: ConfigurationDetail): string {
+    return renderRecords(
+        `/reporting/configurations/${MARKET}`,
+        [],
+        <Route path="/reporting/configurations/:id" element={<ConfigurationPage />} />,
+        (client) => {
+            client.setQueryData(['my-access'], accessOf([]));
+            client.setQueryData(configurationKey(MARKET), detail);
+        },
+    );
+}
+
+describe('one configuration', () => {
+    it('states its name, kind, owner and party, and offers no Edit', () => {
+        const page = textOf(configurationPage(CONFIGURATION));
+
+        expect(page).toContain("HK today's market");
+        expect(page).toContain("Today's market");
+        expect(page).toContain('ores.analytics');
+        expect(page).toContain('ACME Hong Kong');
+        expect(page).toContain('Read only');
+        expect(page).not.toContain('Edit');
+    });
+
+    it('lists the analytics it holds and marks the ones that are off', () => {
+        const page = textOf(configurationPage(CONFIGURATION));
+
+        expect(page).toContain('Net present value');
+        expect(page).toContain('Sensitivity analysis');
+        expect(page.match(/Off/g)).toHaveLength(1);
+    });
+
+    it('links each report that binds it', () => {
+        const html = configurationPage(CONFIGURATION);
+
+        expect(textOf(html)).toContain('Reports that use it');
+        expect(html).toContain(`href="/reporting/reports/${AUDIT_ELSEWHERE}"`);
+    });
+
+    it('says in words when no report that the reader may see uses it', () => {
+        const page = textOf(configurationPage({ ...CONFIGURATION, reports: [] }));
+
+        expect(page).toContain('No report that you may see uses this configuration.');
     });
 });

@@ -85,8 +85,14 @@ ores::ore::market::fixing to_fixing(const std::string& index_name, const domain:
 ore_export_service::ore_export_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-ore_export_result
-ore_export_service::write_all(const std::optional<std::string>& valuation_date) const {
+ore_export_result ore_export_service::write_all(const std::optional<std::string>& valuation_date,
+                                                const std::optional<int>& max_age_days) const {
+    if (max_age_days && *max_age_days < 0)
+        throw std::invalid_argument("market data export: the limit of " +
+                                    std::to_string(*max_age_days) + " days is negative");
+    const auto limit = std::chrono::days{max_age_days.value_or(default_max_age_days)};
+    int carried_forward = 0;
+    int stale = 0;
     std::optional<std::chrono::year_month_day> date;
     std::chrono::system_clock::time_point close;
     if (valuation_date && !valuation_date->empty()) {
@@ -131,8 +137,16 @@ ore_export_service::write_all(const std::optional<std::string>& valuation_date) 
                 return std::chrono::year_month_day{
                            std::chrono::floor<std::chrono::days>(o.observation_datetime)} == *date;
             });
-            for (const auto& o : obs_repo.read_as_of(ctx_, s.id, close))
+            for (const auto& o : obs_repo.read_as_of(ctx_, s.id, close)) {
+                if (close - o.observation_datetime > limit) {
+                    ++stale;
+                    continue;
+                }
+                if (std::chrono::year_month_day{
+                        std::chrono::floor<std::chrono::days>(o.observation_datetime)} != *date)
+                    ++carried_forward;
                 data.push_back(to_datum(o, date));
+            }
         }
         for (const auto& o : observations)
             data.push_back(to_datum(o, std::nullopt));
@@ -142,6 +156,8 @@ ore_export_service::write_all(const std::optional<std::string>& valuation_date) 
     result.series_count = static_cast<int>(series.size());
     result.observation_count = static_cast<int>(data.size());
     result.fixing_count = static_cast<int>(fixings.size());
+    result.carried_forward_count = carried_forward;
+    result.stale_count = stale;
 
     std::ostringstream market_data;
     ores::ore::market::serialize_market_data(market_data, data);

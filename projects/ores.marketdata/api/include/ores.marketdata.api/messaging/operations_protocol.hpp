@@ -1037,6 +1037,15 @@ struct export_market_data_to_storage_request {
      * in that line. They are not in the history.
      */
     std::optional<std::string> valuation_date;
+    /**
+     * @brief The oldest value, in days before the valuation date, that the line of that date
+     * may carry forward. Empty means the service default.
+     *
+     * A datum whose latest value is older than this has no line of its own at the date, so the
+     * run does not use a stale quote as a current one. Its history lines stay. The answer counts
+     * these datums.
+     */
+    std::optional<int> max_age_days;
 };
 
 struct export_market_data_to_storage_response {
@@ -1048,6 +1057,15 @@ struct export_market_data_to_storage_response {
      * @brief Where the fixings body was written.
      */
     std::string fixings_storage_key;
+    /**
+     * @brief The datums whose line at the valuation date carries a value from an earlier day.
+     */
+    int carried_forward_count = 0;
+    /**
+     * @brief The datums left out of the valuation date because their latest value is older
+     * than the limit.
+     */
+    int stale_count = 0;
 };
 
 /**
@@ -1187,6 +1205,15 @@ struct export_market_data_request {
      * in that line. They are not in the history.
      */
     std::optional<std::string> valuation_date;
+    /**
+     * @brief The oldest value, in days before the valuation date, that the line of that date
+     * may carry forward. Empty means the service default.
+     *
+     * A datum whose latest value is older than this has no line of its own at the date, so the
+     * run does not use a stale quote as a current one. Its history lines stay. The answer counts
+     * these datums.
+     */
+    std::optional<int> max_age_days;
 };
 
 /**
@@ -1212,6 +1239,15 @@ struct export_market_data_response {
     int series_count = 0;
     int observation_count = 0;
     int fixing_count = 0;
+    /**
+     * @brief The datums whose line at the valuation date carries a value from an earlier day.
+     */
+    int carried_forward_count = 0;
+    /**
+     * @brief The datums left out of the valuation date because their latest value is older
+     * than the limit.
+     */
+    int stale_count = 0;
 };
 
 /**

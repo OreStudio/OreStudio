@@ -368,3 +368,61 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     // Without a date, the export is the rows of the observation table, as before.
     CHECK(lines_of(exporter.write_all().market_data) == lines{"20160204 1.05", "20160205 1.10"});
 }
+
+TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit", tags) {
+    export_tenant t;
+    ores::nats::service::nats_client auth_nats;
+    import_service importer(t.ctx, auth_nats);
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160101 FX/RATE/EUR/USD 1.00\n20160205 FX/RATE/EUR/GBP 0.80\n";
+    req.source = "test.ore_export";
+    REQUIRE(importer.import(req).success);
+
+    // Each line as "date key value", sorted.
+    const auto lines_of = [](const std::string& body) {
+        std::vector<std::string> lines;
+        std::istringstream in(body);
+        for (std::string line; std::getline(in, line);) {
+            std::ranges::replace(line, '\t', ' ');
+            if (!line.empty())
+                lines.push_back(line);
+        }
+        std::ranges::sort(lines);
+        return lines;
+    };
+    using lines = std::vector<std::string>;
+    const ore_export_service exporter(t.ctx);
+
+    // The pound quote is of the day, and the dollar quote is 35 days old, which is past the
+    // default limit. Its history line stays, and the date has no line for it.
+    const auto at_the_quote = exporter.write_all(std::string("2016-02-05"));
+    CHECK(lines_of(at_the_quote.market_data) ==
+          lines{"20160101 FX/RATE/EUR/USD 1.00", "20160205 FX/RATE/EUR/GBP 0.80"});
+    CHECK(at_the_quote.carried_forward_count == 0);
+    CHECK(at_the_quote.stale_count == 1);
+
+    // Three days later the pound quote is within the limit and is carried forward.
+    const auto three_days_later = exporter.write_all(std::string("2016-02-08"));
+    CHECK(lines_of(three_days_later.market_data) == lines{"20160101 FX/RATE/EUR/USD 1.00",
+                                                          "20160205 FX/RATE/EUR/GBP 0.80",
+                                                          "20160208 FX/RATE/EUR/GBP 0.80"});
+    CHECK(three_days_later.carried_forward_count == 1);
+    CHECK(three_days_later.stale_count == 1);
+
+    // A wider limit carries the dollar quote too.
+    const auto wide = exporter.write_all(std::string("2016-02-05"), 60);
+    CHECK(lines_of(wide.market_data) == lines{"20160101 FX/RATE/EUR/USD 1.00",
+                                              "20160205 FX/RATE/EUR/GBP 0.80",
+                                              "20160205 FX/RATE/EUR/USD 1.00"});
+    CHECK(wide.carried_forward_count == 1);
+    CHECK(wide.stale_count == 0);
+
+    // A limit of no days carries nothing, so a quote of an earlier day is left out.
+    const auto none = exporter.write_all(std::string("2016-02-08"), 0);
+    CHECK(lines_of(none.market_data) ==
+          lines{"20160101 FX/RATE/EUR/USD 1.00", "20160205 FX/RATE/EUR/GBP 0.80"});
+    CHECK(none.stale_count == 2);
+
+    CHECK_THROWS_AS(exporter.write_all(std::string("2016-02-05"), -1), std::invalid_argument);
+}

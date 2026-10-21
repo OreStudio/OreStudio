@@ -82,7 +82,7 @@ public:
         }
         try {
             const service::ore_export_service svc(ctx);
-            const auto written = svc.write_all(req->valuation_date);
+            const auto written = svc.write_all(req->valuation_date, req->max_age_days);
             export_market_data_response resp;
             resp.success = true;
             resp.market_data_content = written.market_data;
@@ -90,6 +90,8 @@ public:
             resp.series_count = written.series_count;
             resp.observation_count = written.observation_count;
             resp.fixing_count = written.fixing_count;
+            resp.carried_forward_count = written.carried_forward_count;
+            resp.stale_count = written.stale_count;
             BOOST_LOG_SEV(ore_export_handler_lg(), debug)
                 << "Completed " << msg.subject << ": series=" << resp.series_count
                 << " obs=" << resp.observation_count << " fixings=" << resp.fixing_count;

@@ -57,6 +57,9 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:C0DB57DB-D087-4608-802C-E333D095410C][Keep the tick tables immutable and pruned]] | BACKLOG | | | The service role can change and delete tick rows, and the dictionary and activity rows stay when a series or a binding goes. |
 | [[id:A174746A-6725-45A9-864F-749D0A24A6B3][One valuation date for a report run]] | BACKLOG | | | The run document and the market data export each compute the valuation date from the clock, and a configuration of type date with no date exports the whole history. |
 | [[id:95D8CC5B-6C6F-409C-BDC1-1A75EECDF547][Tidy the tick readers: record time, docs and tests]] | BACKLOG | | | The record time of a tick, the knowledge page of the readers, and the new tests need small corrections. |
+| [[id:F11C89A4-3484-487E-B12B-181EB1825000][Drop old ticks without the Timescale licence]] | BACKLOG | | | The retention policy of the tick table needs the timescale licence, so on the Apache build nothing drops old ticks and the table grows without bound. |
+| [[id:C3BE53DB-CD4F-497E-8391-96283FDDAEAF][Refuse a tick read with no party]] | BACKLOG | | | A context with no party sees no ticks, because the party policy of the tick table needs visible parties, so a tenant-level session gets snapshots and exports without live ticks and no error. |
+| [[id:3397BE56-F060-40B2-8962-F759D20692D2][Measure and trim the dated export]] | BACKLOG | | | A dated export makes three reads for each series, where the export without a date made one. |
 
 * Decisions
 

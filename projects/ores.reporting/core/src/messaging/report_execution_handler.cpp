@@ -394,6 +394,15 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         result.storage_key = md_resp->storage_key;
         result.fixings_storage_key = md_resp->fixings_storage_key;
         result.message = std::format("Gathered {} market data series", md_resp->series_count);
+        if (md_resp->stale_count > 0) {
+            result.message += std::format(
+                ". {} datum(s) have no value for the valuation date within the age limit, and "
+                "{} carry a value from an earlier day",
+                md_resp->stale_count,
+                md_resp->carried_forward_count);
+            BOOST_LOG_SEV(lg(), warn) << "gather_market_data left out " << md_resp->stale_count
+                                      << " stale datum(s) | instance=" << req.report_instance_id;
+        }
 
         BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
                                   << req.report_instance_id << " series=" << md_resp->series_count;

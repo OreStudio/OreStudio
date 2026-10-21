@@ -107,10 +107,15 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
      than one date. The report run passes the date of its run document, and the shell takes
      =--date=. Without a date, the export is the observation table as before, and the ticks
      of a live feed are not in it.
+   - The dated export carries a value forward only up to an age limit, 5 days by default, which
+     covers a weekend and a holiday. The request and the shell (=--max-age-days=) can change
+     it. A datum with an older value has no line at the date, and the answer counts these
+     datums and the carried ones. The report step logs a warning when any are left out. This
+     keeps a run from taking a stale quote for a current one.
    - Review of PR 3615 found two faults, both fixed on this branch. The first export with a
      date dropped the history. The assignment of coordinate numbers and the write of the
      activity row opened one database connection for each datum and each binding. Each now
-     takes a few statements for a batch. Six smaller findings are in four backlog tasks of the
+     takes a few statements for a batch. The smaller findings are in seven backlog tasks of the
      story.
    - Reader 5, the activity of a feed binding. Decision of the owner, 2026-10-21: the tick has
      no source column. The ingest writes one row for each binding in

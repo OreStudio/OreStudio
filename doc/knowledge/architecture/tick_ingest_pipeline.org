@@ -341,7 +341,9 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   and it doubled the writes. Decision of the owner, 2026-10-21: the ingest stores only the
   real tick. A close is a question for the reader, which asks for the latest tick at or
   before the end of the day. The export of ORE market data takes a valuation date and asks
-  that question for that date, and keeps the history of the other dates. A series with no tick at or before the date has no line in the file. A
+  that question for that date, and keeps the history of the other dates. A value older than
+  an age limit, 5 days by default, is not carried to the date, so a run does not take a stale
+  quote for a current one. A series with no tick at or before the date has no line in the file. A
   development environment that needs quotes for a past date gets them from a seed or a
   backfill, not from the ingest.
 - *One row for each party.* A tick is stored once for each binding. The cost grows

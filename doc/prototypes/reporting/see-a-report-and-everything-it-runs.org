@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 3F9B6C21-5D7A-4E0B-9A14-8C2E7D1B6F43
+:END:
+#+title: See a report and everything it runs prototype
+#+description: One page for a report definition on six tabs: the definition with its report currency, the scope, the analytics, the market and pricing, the conventions and the standard history.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+| Item          | Where                                                         |
+|---------------+---------------------------------------------------------------|
+| Prototype     | [[file:see-a-report-and-everything-it-runs/][the prototype]] |
+| Gemini review | none                                                          |
+| Group         | [[file:index.org][Reporting prototypes]]                        |
+
+* Summary
+
+This prototype argues how one page shows everything a report runs with. It answers to
+[[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]]
+and to
+[[file:../../knowledge/journeys/conventions/journey_see_the_conventions_a_party_uses.org][See the conventions a party uses]].
+
+[[file:change-what-a-report-runs.org][Change what a report runs]] reads the same material as a wizard of three panels.
+The owner asked for tabs instead, with the conventions on a tab of their own and the conventions changeable.
+This page draws that, and it replaces the wizard's first panel.
+
+It went through one round of review. The first version offered three layouts. The owner chose the four-tab layout
+and then asked for four changes: the run settings are split into a scope tab and an analytics tab, the report has a
+report currency and not a base currency, the currency carries its flag, and the page has the standard history.
+This version draws those.
+
+It is throwaway. It reads no service. The convention counts are measured and every other name is a fixture, and the
+page says which is which.
+
+* Detail
+
+** The six tabs
+
+Each tab has one owner and says what a change on it reaches.
+
+| Tab | What it holds | What a change reaches |
+|-----+---------------+-----------------------|
+| Definition | The fields of the definition, the report currency with its flag, the market data kind (end of day or intraday), the regulatory book type, and the latest run with its as-of time. | This report. The currency is the exception: the run settings hold it. |
+| Scope | The portfolios and books the report reads, what each resolves to, split by book type, and the book type rule. | Every report that shares the run settings. |
+| Analytics | The analytics with their state and order, and every engine setting of the run settings in five groups, each with its engine parameter name. | Every report that shares the run settings. |
+| Market and pricing | The pricing market of the run, and the pricing engines, today's market and the curve configuration of the party. | The pricing market reaches the reports that share the run settings. The three configurations reach every report of the party. |
+| Conventions | The market terms a run reads, and the proposed choice of a named set. | Today every report of the party. With sets, this report only. |
+| History | The standard timeline: the event chart, the rail of one-line entries and the collapsed details. The rail merges the versions of the definition and of the configurations it binds. | Reads only, and a revert writes a new version. |
+
+** Why the run settings are not a tab
+
+A run settings configuration is not one thing. The risk report configuration holds:
+
+| Property | Tab |
+|----------+-----|
+| Currency (=base_currency=) | Definition, as the report currency |
+| Market data type, date, accrual date, fixing cutoff, and the market binding for the pricing role | Market and pricing |
+| Observation model, threads, input and output paths, log, and about twenty engine flags | Analytics, as the engine settings |
+| The scope: portfolios and books | Scope |
+| The analytics, with their parameters | Analytics |
+
+The scope and the analytics are children of the configuration, with a table each. The others are plain columns.
+A tab called "Run settings" would hold all of them and none of them would be what a person came for.
+
+The configuration is still one record. So the scope tab, the analytics tab, the market choice and the currency
+each say that a change reaches every report that shares it, and name those reports.
+
+** The report currency
+
+A report has a report currency. The column is called =base_currency= and belongs to the run settings. The page
+calls it the report currency, draws it with the flag of the currency as the application draws a currency, and
+says that changing it reaches the reports that share the run settings.
+
+** The market data kind
+
+Every run reads the market data of its own time point. The definition says only whether that point is the end of
+day or the time of the run, so it carries no date. The run settings store =market_data_type= with the values
+=eod=, =live= and =date=, plus a date. The page puts the kind on the Definition tab and draws no date on any
+configuration. The latest run shows the as-of time it used. How a run finds its time point is not drawn.
+
+** The standard history
+
+The History tab is the shared timeline that every record page uses, not the older compare panel. It has the event
+chart, a switch that hides system activity, a rail of one-line entries under day headings with the details
+collapsed, and a Revert on every version except the current one, with a reason. The rail merges several kinds of
+record, so a change to a bound configuration appears beside the definition's own versions.
+
+The run does not record which version of a configuration it used, so the page cannot name the runs a change reached.
+
+** The conventions
+
+Two states, switched in the bar.
+
+*Today.* The binding chooses nothing. A run reads every convention document of the party: 11,027
+documents in 26 kinds, measured on 2026-10-21. The largest kind holds 3,950 documents and none of
+them is marked as the one that counts. Nothing on the page can change the terms.
+
+*With sets (proposed).* The report chooses one named set, and a run reads the documents of that
+set and no others. The page shows the choice, what the choice does (documents read, the one report
+it reaches, past runs unchanged) and what needs a decision (a kind the set does not cover, and the
+approval by Market Risk). Writing a set is its own screen and is not drawn.
+
+** The rule on the book type
+
+Set the book type to Banking and the scope to name a trading book, then press Edit on the Definition tab and
+Save. The refusal names the book and the report. Today the database names only the definition, so this is the
+wording the screen should give.
+
+Note also that a book named by hand replaces the portfolio lines of the scope, as the resolver does today. The
+Scope tab shows the portfolio line struck out when a book is named.
+
+** What the prototype cannot show
+
+- Convention sets are not stored anywhere. The sets are fixtures.
+- A run reads every convention row, whatever the binding says, so choosing a set changes the run as well as the screen.
+- Today's market and the curve configuration have no screen and no prototype.
+- The scope has no editor.
+- The prototype draws a note on a tab only when the real screen would carry it. Notes about the prototype stay on the Definition tab, under "What this prototype cannot show".
+- The currency column keeps its name =base_currency=. Renaming it is a separate change.
+
+* See also
+
+- [[file:change-what-a-report-runs.org][Change what a report runs]] — the wizard this page replaces.
+- [[file:manage-the-analytics.org][Manage the analytics]] — owns the analytic interaction that the Analytics tab links to.
+- [[file:../conventions/index.org][Conventions prototypes]] — the screens for the terms themselves.

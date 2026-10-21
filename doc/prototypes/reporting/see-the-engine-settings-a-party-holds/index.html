@@ -149,7 +149,6 @@ label.plain{white-space:nowrap}
 .card table td:first-child,.card table th:first-child{padding-left:16px}
 .setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
 .shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
-details.legacy{border-top:1px solid var(--line-soft)}details.legacy>summary{cursor:pointer;padding:10px 16px;color:var(--ink-faint);font-size:.85rem}details.legacy .setting{background:#141417}
 .adv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px;border:1px solid var(--line-soft);border-radius:6px;padding:10px 12px;background:#161619}@media(max-width:820px){.adv{grid-template-columns:1fr}}
 .sdesc{color:var(--ink-dim);max-width:78ch;line-height:1.55}
 table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}table.vals td,table.vals th{padding:5px 10px}table.vals tr.curv td{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
@@ -175,8 +174,6 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
     ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
-    ?engine=1.8.17.0|1.8.16.0|1.8.8.0   the ORE build the settings are checked against
-  The Simple and Advanced switch is in the page, as on the feed screens. ?mode=simple|advanced sets it, and it is remembered.
 -->
 
 <div class="proto-note" id="note"></div>
@@ -189,7 +186,7 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
 // oreapp.cpp, OREData/ored/marketdata/csvloader.cpp and Docs/UserGuide/parameterisation/ore.tex.
 // status: live (ORE reads it), ignored (ORE 1.8.17 does not read it in Setup), flag-misnamed (read, but not a flag).
 const YES = (y, n) => [['yes', 'Yes', y], ['no', 'No', n]];
-const IGNORED = (name, shipped) => `ORE 1.8.17 does not read ${name} from the Setup block. ${shipped} A document that sets it runs exactly as one that leaves it out, so setting it here changes nothing.`;
+const IGNORED = (name, shipped) => `Neither supported ORE build, 1.8.16.0 or 1.8.17.0, reads ${name} from the Setup block. ${shipped} A document that sets it runs exactly as one that leaves it out, so setting it here changes nothing.`;
 const GROUPS = [
   { id: 'dates', title: 'Dates', table: 'engine_settings_dates', changes: true, what: 'How the run reads dates.', fields: [
     { key: 'accrual_date', ore: 'accrualDate', label: 'Accrual date', kind: 'text', status: 'ignored', help: 'Not read by ORE 1.8.17.',
@@ -246,18 +243,18 @@ const GROUPS = [
       desc: 'Decides which messages the engine writes to its log file. Each kind of message has a bit: 1 alert, 2 critical, 4 error, 8 warning, 16 notice, 32 debug and 64 data. Add the bits of the kinds you want. The table lists the common totals. A higher total writes more and makes a larger log. The value 255 gives the most detail.',
       dflt: '15. Alert, critical, error and warning.', values: [['15', '15', 'Alert, critical, error and warning.'], ['31', '31', 'The same and notice.'], ['63', '63', 'The same and debug.'], ['127', '127', 'The same and data.'], ['255', '255', 'Every kind. The most detail.']] },
     { key: 'use_analytics', ore: 'useAnalytics', label: 'Use analytics', kind: 'bool', status: 'ignored', help: 'Not read by ORE 1.8.17.',
-      desc: IGNORED('useAnalytics', 'Two shipped examples set it to true.'), dflt: 'Not applicable. The setting has no effect.',
+      desc: IGNORED('useAnalytics', 'Two shipped examples set it to true. ORE read it in 1.8.9.0 only.'), dflt: 'Not applicable. The setting has no effect.',
       values: YES('The value the two shipped examples use. It has no effect on a run.', 'It has no effect on a run.') }] },
   { id: 'output', title: 'Report output', table: 'engine_settings_reports', changes: false, what: 'What the run writes into its reports.', fields: [
     { key: 'csv_comment_report_header', ore: 'csvCommentReportHeader', label: 'CSV comment character', kind: 'text', maxlen: 1, status: 'flag-misnamed', help: 'Exactly one character, such as #.',
       desc: 'The character that marks a comment line in the CSV reports. ORE reads exactly one character from this setting, and uses it for the comment character of the reports it writes and reads. It is not a flag. A value of Y or N is accepted as a character, so N would make the letter N the comment character. The model stores it as a flag today, and the two shipped examples that set it to N set the letter, not a flag.',
       dflt: '# (hash).', values: [['#', '#', 'The default comment character.'], ['', 'Another single character', 'That character marks comment lines. Any text longer than one character makes the run fail at the start.']] },
     { key: 'additional_results', ore: 'additionalResults', label: 'Additional results', kind: 'bool', status: 'ignored', help: 'Not read from Setup by ORE 1.8.17.',
-      desc: 'ORE 1.8.17 does not read additionalResults from the Setup block. Additional results are an analytic of their own: an Analytic element of type additionalResults with an active parameter, or, for backward compatibility, an additionalResults parameter inside the npv analytic. Three shipped examples set it to Y in Setup, and it has no effect there. Turning on additional results belongs in the analytics of the run, not in these settings.',
+      desc: 'Neither supported ORE build reads additionalResults from the Setup block. Additional results are an analytic of their own: an Analytic element of type additionalResults with an active parameter, or, for backward compatibility, an additionalResults parameter inside the npv analytic. Three shipped examples set it to Y in Setup, and it has no effect there. Turning on additional results belongs in the analytics of the run, not in these settings.',
       dflt: 'Not applicable. The setting has no effect in Setup.', values: YES('The value the three shipped examples use in Setup. It has no effect there.', 'It has no effect there.') }] }
 ];
 const groupOf = id => GROUPS.find(g => g.id === id);
-const STATUS_TAG = { ignored: ['Not read by ORE 1.8.17', 'bad'], 'flag-misnamed': ['Not a flag', 'warn'] };
+const STATUS_TAG = { ignored: ['Legacy', 'bad'], 'flag-misnamed': ['Not a flag', 'warn'] };
 
 // The documentation entry of each setting, apart from the setting itself. since is the first release tag whose source reads
 // the setting, until is the first release tag that no longer reads it. A setting that no tagged release reads has neither.
@@ -286,13 +283,15 @@ const META = {
   additionalResults: { ...NEVER, format: FLAG_FMT, source: 'Not read from Setup. The analytic of that name reads its own active parameter.', affects: false }
 };
 GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › Parameter name="' + f.ore + '"'; f.legacy = f.status === 'ignored'; }));
-const ENGINES = ['1.8.17.0', '1.8.16.0', '1.8.8.0'];
-const ENGINE_NOTE = { '1.8.17.0': 'the build reports run on', '1.8.16.0': 'the older vendored build', '1.8.8.0': 'an illustration, not a vendored build' };
+// The two ORE builds the application supports. The documentation covers the settings of these two only.
+const ENGINES = ['1.8.17.0', '1.8.16.0'];
+const readBy = (f, build) => !!f.meta && !f.meta.never && vcmp(f.meta.since, build) <= 0 && (!f.meta.until || vcmp(f.meta.until, build) > 0);
 const vnum = v => v.split('.').map(Number);
 const vcmp = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
 // A warning when the engine build does not read a setting, because it is newer than the build or was dropped before it.
 const versionWarning = (f, build) => {
-  const m = f.meta; if (!m || m.never) return null;
+  const m = f.meta; if (!m) return null;
+  if (m.never) return `ORE ${build} does not read this setting, and no ORE release has read it.`;
   if (m.since && vcmp(m.since, build) > 0) return `ORE ${build} does not read this setting. It needs ORE ${m.since} or later, so the build ignores it.`;
   if (m.until && vcmp(m.until, build) <= 0) return `ORE ${build} does not read this setting. ORE stopped reading it in ${m.until}.`;
   return null;
@@ -476,11 +475,11 @@ function detailsTab(c) {
 const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
 function advancedStrip(f) {
   const m = f.meta, since = m.never ? 'No tagged release reads it' : (m.sinceBound ? m.since + ' or earlier' : m.since), until = m.never ? '—' : (m.until || 'Still read');
-  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}${metaLine('Changes the numbers', m.affects ? 'Yes' : 'No')}${metaLine('Source', `<span class="mono">${esc(m.source)}</span>`)}</div>`;
+  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Read by ORE 1.8.17.0', readBy(f, '1.8.17.0') ? 'Yes' : 'No')}${metaLine('Read by ORE 1.8.16.0', readBy(f, '1.8.16.0') ? 'Yes' : 'No')}${metaLine('Since', esc(since))}${metaLine('Until', esc(until))}${metaLine('Default', esc(f.dflt))}${metaLine('Format', esc(m.format))}${metaLine('Changes the numbers', m.affects ? 'Yes' : 'No')}${metaLine('Source', `<span class="mono">${esc(m.source)}</span>`)}</div>`;
 }
 function settingBlock(f, v) {
   const cur = v == null || v === '' ? '' : v;
-  const st = STATUS_TAG[f.status], warn = cur !== '' ? versionWarning(f, engine) : null;
+  const st = STATUS_TAG[f.status], warn = (cur !== '' || f.legacy) ? versionWarning(f, engine) : null;
   const known = f.values.some(x => x[0] !== '' && x[0] === cur);
   const rows = f.values.map(x => `<tr class="${x[0] !== '' && x[0] === cur ? 'curv' : ''}"><td class="mono" style="width:11rem">${esc(x[1])}</td><td>${esc(x[2])}</td></tr>`).join('')
     + `<tr class="${cur === '' ? 'curv' : ''}"><td style="width:11rem"><span class="faint">Not set</span></td><td>${esc(f.dflt)}</td></tr>`;
@@ -491,14 +490,13 @@ function settingBlock(f, v) {
     ${mode === 'advanced' ? advancedStrip(f) : ''}</div>`;
 }
 function groupCard(c, g) {
-  const part = c.groups[g.id], live = g.fields.filter(f => !f.legacy), legacy = g.fields.filter(f => f.legacy);
+  const part = c.groups[g.id];
   const val = f => part ? part.vals[f.key] : null;
   const warned = g.fields.filter(f => val(f) != null && val(f) !== '' && versionWarning(f, engine));
   return `<div class="card"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
     <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}${may('edit') ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}</div></div>
     ${warned.length ? `<div class="warnbox" style="margin:12px 16px 0">${warned.length === 1 ? '1 setting' : warned.length + ' settings'} here ${warned.length === 1 ? 'is' : 'are'} set, and ORE ${engine} does not read ${warned.length === 1 ? 'it' : 'them'}: ${warned.map(f => esc(f.label)).join(', ')}.</div>` : ''}
-    ${live.map(f => settingBlock(f, val(f))).join('')}
-    ${legacy.length ? `<details class="legacy" ${mode === 'advanced' ? 'open' : ''}><summary>Legacy settings (${legacy.length}). ORE 1.8.17 does not read ${legacy.length === 1 ? 'it' : 'them'}.</summary>${legacy.map(f => settingBlock(f, val(f))).join('')}</details>` : ''}
+    ${g.fields.map(f => settingBlock(f, val(f))).join('')}
     <div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its own default for every setting here.`}</div></div>`;
 }
 const modeToggle = () => `<div class="seg" role="radiogroup" aria-label="Editing mode"><button role="radio" aria-checked="${mode === 'simple'}" data-mode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button role="radio" aria-checked="${mode === 'advanced'}" data-mode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>`;

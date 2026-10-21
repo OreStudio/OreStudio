@@ -57,7 +57,8 @@ The switch is the one the feed screens use, and the choice is remembered for eve
 setting with its label, its ORE XML argument name, its long description and its table of values. Advanced adds the
 documentation entry of the setting: the ORE XML location, the release that first reads it, the release that stopped reading
 it, the default, the format, whether it changes the numbers, and the source of the fact. The legacy settings that ORE does
-not read stay in both modes under a heading of their own, with their descriptions. Advanced opens that heading.
+not read stay in place in both modes, in the order of their group, with their descriptions. Each carries a Legacy tag and a
+warning that names the engine build.
 
 The ORE XML argument name shows in both modes, so that a person who knows ORE can find the setting.
 
@@ -75,9 +76,12 @@ Setup block only.
 
 A configuration is checked against the ORE build that the reports run on. A setting that the build does not read produces a
 warning, not a refusal: the setting is newer than the build, or ORE stopped reading it. The warning shows on the group, on
-the setting and in the Edit dialog. The bar switches the build between the two vendored builds, 1.8.17.0 and 1.8.16.0, and
-a third, 1.8.8.0, that is an illustration. At 1.8.8.0 the thread count of the standard settings warns, because ORE reads
-=nThreads= from 1.8.9.0.
+the setting and in the Edit dialog. The bar switches the build between 1.8.17.0 and 1.8.16.0,
+which are the only two builds the application supports. The documentation covers the settings of these two builds, so
+the earlier releases appear only in the since and until columns. A legacy setting warns on both builds. A live setting warns
+only when it is set and the build does not read it. No stored setting differs between the two builds today. The only Setup
+parameter that the two builds read differently is =gzipCompressionLevel=, which 1.8.17.0 reads and 1.8.16.0 does not, and the
+model does not store it.
 
 ** History
 

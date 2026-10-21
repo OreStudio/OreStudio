@@ -250,8 +250,10 @@ Decided by the owner on 2026-10-21, after the review of the ORE source.
 4. An entry carries the ORE XML name, the first release that reads it (since), the first release that no longer reads it
    (until), the default, a long description, the format as text, whether it changes the numbers, the values with their
    meanings, and the source of the fact.
-5. A setting that the engine build does not read produces a warning, not a refusal.
-6. The legacy settings stay and keep their descriptions. They sit under a heading of their own.
+5. A setting that the engine build does not read produces a warning, not a refusal. The application supports two builds,
+   ORE 1.8.17.0 and 1.8.16.0, and the documentation covers the parameters of those two only.
+6. The legacy settings stay and keep their descriptions. They stay in place among the other settings, each with a warning
+   that names the engine build.
 7. The screens show the ORE XML argument name, and a Simple and Advanced switch as on the feed screens. Advanced shows the
    documentation entry.
 

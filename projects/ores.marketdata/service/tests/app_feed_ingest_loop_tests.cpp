@@ -363,7 +363,7 @@ namespace {
 /// has no BYPASSRLS, under the tenant and party of the test. This read proves what the
 /// policies let a reader see.
 std::string
-tick_rows_of(const std::string& tenant, const std::string& party, const std::string& series) {
+tick_scalar(const std::string& tenant, const std::string& party, const std::string& sql_text) {
     const auto env = [](const char* name) {
         const auto* v = std::getenv(name);
         return v != nullptr ? std::string(v) : std::string();
@@ -382,7 +382,15 @@ tick_rows_of(const std::string& tenant, const std::string& party, const std::str
     };
     run("set app.current_tenant_id = '" + tenant + "'");
     run("set app.visible_party_ids = '{" + party + "}'");
-    return run("select count(*) from ores_marketdata_ticks_tbl where series_id = '" + series + "'");
+    return run(sql_text);
+}
+
+std::string
+tick_rows_of(const std::string& tenant, const std::string& party, const std::string& series) {
+    return tick_scalar(tenant,
+                       party,
+                       "select count(*) from ores_marketdata_ticks_tbl where series_id = '" +
+                           series + "'");
 }
 
 }
@@ -421,4 +429,54 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
     CHECK(tick_rows_of(tenant,
                        boost::uuids::to_string(boost::uuids::random_generator{}()),
                        series_text) == "0");
+}
+
+TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinate_number", tags) {
+    const auto* writer_user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
+    const auto* writer_password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
+    if (writer_user == nullptr || writer_password == nullptr ||
+        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+        SKIP("The tick writer role is not configured");
+
+    fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto name = std::string{"AAAAA"} + run_tag()[0] + "A";
+    const auto cds_series = "oresmd://credit/" + name +
+                            "?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&"
+                            "ccy=USD&doc_clause=XR14";
+    const auto cds = [&](const std::string& term) {
+        return cds_series + "&term=" + term;
+    };
+    f.bind(bound_source, "SYNTHETIC");
+    f.connect();
+
+    auto writer = std::make_shared<ores::marketdata::service::app::tick_writer>(
+        ores::marketdata::service::app::tick_writer_options{
+            .user = writer_user,
+            .password = writer_password,
+            .host = std::getenv("ORES_TEST_DB_HOST"),
+            .database = std::getenv("ORES_TEST_DB_DATABASE")});
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, cds("5Y"))).has_value());
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, cds("10Y"))).has_value());
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, cds("5Y"))).has_value());
+
+    const auto series = f.series_for(cds_series);
+    REQUIRE(series.size() == 1);
+    const auto series_text = boost::uuids::to_string(series.front().id);
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+
+    CHECK(tick_rows_of(tenant, party, series_text) == "3");
+    CHECK(tick_scalar(tenant,
+                      party,
+                      "select count(distinct coord) from ores_marketdata_ticks_tbl "
+                      "where coord > 0 and series_id = '" +
+                          series_text + "'") == "2");
+    CHECK(tick_scalar(tenant,
+                      party,
+                      "select count(*) from ores_marketdata_tick_coords_tbl where series_id = '" +
+                          series_text + "'") == "2");
 }

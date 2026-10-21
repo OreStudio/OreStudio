@@ -192,9 +192,11 @@ private:
                      std::span<const std::size_t> indexes);
 
     /// Copies the ticks of the stored @p items to the tick table. A failure is logged and
-    /// counted, and it does not change what the loop does with the tick.
+    /// counted, and it does not change what the loop does with the tick. The context of a
+    /// tenant in @p tenant_ctxs assigns the coordinate numbers of its series.
     void write_ticks(const std::vector<messaging::market_tick>& ticks,
-                     const std::vector<item>& items);
+                     const std::vector<item>& items,
+                     const std::map<std::string, ores::database::context>& tenant_ctxs);
 
     /// The id of the series that @p tick_datum belongs to for @p binding's party,
     /// created and classified on the first tick that lands in it. Read once for
@@ -256,9 +258,9 @@ private:
     std::set<std::string> unbound_warned_;
     std::set<std::string> unnameable_warned_;
     std::set<std::string> bad_value_warned_;
-    /// Series URIs with coordinates that the tick table does not store yet, reported once
-    /// per refresh().
-    std::set<std::string> coordinate_warned_;
+    /// Coordinate numbers by series id and datum URI. A number never changes while its
+    /// series exists, so refresh() keeps them.
+    std::map<std::string, std::int16_t> coords_;
 
     static constexpr std::size_t queue_capacity = 65536;
     /// The most ticks one batch holds. A batch takes about target_batch_ms: the worker sizes

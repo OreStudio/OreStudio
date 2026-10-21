@@ -536,14 +536,44 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     // as_of_datetime -- reconstructing a curve/grid snapshot from independently-ticking rows.
     // Correct whether every point shares one observation_datetime or the points have
     // staggered timestamps.
+    //
+    // The points come from two tables: the observation table, and the tick table through the
+    // coordinate dictionary. The tick branch takes the latest tick of each coordinate with one
+    // index probe, so it reads a few rows however long the series is. On a tie the observation
+    // row wins, because it carries the source and its own id.
     static const std::string sql = R"(
+        WITH coords AS (
+            SELECT 0::smallint AS coord, s.oresmd_uri
+            FROM ores_marketdata_market_series_tbl s
+            WHERE s.tenant_id = $1 AND s.id = $2 AND s.valid_to = $4
+            UNION ALL
+            SELECT coord, oresmd_uri
+            FROM ores_marketdata_tick_coords_tbl
+            WHERE series_id = $2::uuid
+        ),
+        points AS (
+            SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
+                   source, valid_from, valid_to, 0 AS src_rank
+            FROM ores_marketdata_market_observations_tbl
+            WHERE tenant_id = $1 AND series_id = $2 AND observation_datetime <= $3
+                AND valid_to = $4
+            UNION ALL
+            SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
+                   t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
+                   NULL::text, t.ts, $4::timestamptz, 1
+            FROM coords c
+            CROSS JOIN LATERAL (
+                SELECT * FROM ores_marketdata_ticks_tbl x
+                WHERE x.series_id = $2::uuid AND x.coord = c.coord AND x.ts <= $3::timestamptz
+                ORDER BY x.ts DESC
+                LIMIT 1
+            ) t
+        )
         SELECT DISTINCT ON (oresmd_uri)
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
             source, valid_from, valid_to
-        FROM ores_marketdata_market_observations_tbl
-        WHERE tenant_id = $1 AND series_id = $2 AND observation_datetime <= $3
-            AND valid_to = $4
-        ORDER BY oresmd_uri, observation_datetime DESC
+        FROM points
+        ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
 
     const auto rows = execute_parameterized_multi_column_query(

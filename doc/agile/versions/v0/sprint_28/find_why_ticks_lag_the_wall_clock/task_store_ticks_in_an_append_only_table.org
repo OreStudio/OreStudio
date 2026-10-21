@@ -28,7 +28,7 @@ The observation table stops at about 8,300 rows per second for one connection be
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Steps 1 to 3 done: the role, the table and the copy. |
+| Now          | Steps 1 to 3 done. Step 4 started: the dictionary and the as-of snapshot reader. |
 | Waiting on   | Nothing.                               |
 | Next         | Step 4: point the readers at the table, one at a time. |
 | Last touched | 2026-10-21                               |
@@ -84,7 +84,22 @@ chunks (Timescale documentation). Retention drops whole chunks. The order of wor
    reads it back as the marketdata service, which has no =BYPASSRLS=: 1 row for the party of the
    series and 0 for another party.
 4. Point the readers at the table, one at a time, with a test for each. A reader of a party or a
-   tenant lists its series first.
+   tenant lists its series first. Done so far:
+   - The coordinate dictionary, =ores_marketdata_tick_coords_tbl=. The ingest gives each datum
+     of a series a number the first time it sees it, and the copy stores that number in =coord=.
+     Coordinate 0 is the datum of a series without coordinates. The loop now copies datums with
+     coordinates, so the warning of step 3 is gone. The table has the tenant policy only,
+     because the ingest context names no party.
+   - Reader 1, the as-of snapshot (=read_as_of_records=, which =read_as_of= calls). It serves the
+     snapshot, the curve pillars and the curve republish. It reads the latest tick of each
+     coordinate with one index probe, and it reads the observation table as before. On a tie
+     the observation row wins. Four tests: a series without coordinates, two coordinates and
+     an instant, a party that does not own the series, and the tie.
+   Still to do: the buckets (evolution), the instants (slices), the latest rows of a series (ORE
+   export), and the newest row of a source (feed binding activity). Two questions block the end
+   of the step. The ingest writes a second row for each tick under the close of the previous
+   business day, and the tick table does not hold it. The tick table also has no source, so the
+   activity of a binding has nothing to read.
 5. Measure a burst with the tick injector.
 6. Open a separate task for the session functions of the policies, which cost seven times on an
    indexed read.

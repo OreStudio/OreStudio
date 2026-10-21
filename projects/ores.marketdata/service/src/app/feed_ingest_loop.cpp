@@ -29,6 +29,7 @@
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
 #include "ores.marketdata.service/app/observation_batch.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -114,7 +115,6 @@ void feed_ingest_loop::refresh() {
     unbound_warned_.clear();
     unnameable_warned_.clear();
     bad_value_warned_.clear();
-    coordinate_warned_.clear();
     classifiers_.clear();
 
     // A stats entry per bound consumer, so a binding that never ticks still
@@ -337,7 +337,7 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
     for (const auto& it : items)
         if (it.unavailable)
             store_unavailable_.fetch_add(1, std::memory_order_relaxed);
-    write_ticks(ticks, items);
+    write_ticks(ticks, items, tenant_ctxs);
 
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
@@ -405,34 +405,65 @@ void feed_ingest_loop::process(const std::vector<messaging::market_tick>& ticks,
                          std::memory_order_relaxed);
 }
 
-void feed_ingest_loop::write_ticks(const std::vector<messaging::market_tick>& ticks,
-                                   const std::vector<item>& items) {
+void feed_ingest_loop::write_ticks(
+    const std::vector<messaging::market_tick>& ticks,
+    const std::vector<item>& items,
+    const std::map<std::string, ores::database::context>& tenant_ctxs) {
     if (!tick_writer_)
         return;
 
     std::vector<tick_row> rows;
     rows.reserve(items.size());
+    std::size_t unnumbered = 0;
+    std::string unnumbered_reason;
     for (const auto& it : items) {
         if (!it.stored)
             continue;
-        // The tick table has no column for a coordinate yet, so a datum with one would
-        // share its series with every other point of the series.
-        if (it.plan->datum.fields().size() != datum::series_of(it.plan->datum).fields().size()) {
-            std::lock_guard lock(mu_);
-            if (coordinate_warned_.insert(it.series_key).second)
-                BOOST_LOG_SEV(lg(), warn) << "The tick table does not store datums with a "
-                                             "coordinate yet, so the ticks of series '"
-                                          << it.series_key << "' are not copied to it";
-            continue;
-        }
         const auto& b = it.target->binding;
+        const auto& series_id = it.rows.front().series_id;
+
+        std::int16_t coord = 0;
+        if (it.plan->datum.fields().size() != datum::series_of(it.plan->datum).fields().size()) {
+            const auto& uri = ticks[it.tick_index].oresmd_uri;
+            const auto key = boost::uuids::to_string(series_id) + '|' + uri;
+            bool known = false;
+            {
+                std::lock_guard lock(mu_);
+                const auto found = coords_.find(key);
+                if (found != coords_.end()) {
+                    coord = found->second;
+                    known = true;
+                }
+            }
+            if (!known) {
+                try {
+                    coord = repository::tick_coordinate_repository{}.resolve(
+                        tenant_ctxs.at(b.tenant_id.to_string()), b.party_id, series_id, uri);
+                } catch (const std::exception& e) {
+                    ++unnumbered;
+                    unnumbered_reason = e.what();
+                    continue;
+                }
+                std::lock_guard lock(mu_);
+                coords_[key] = coord;
+            }
+        }
+
         tick_row row;
         row.tenant_id = b.tenant_id.to_string();
         row.party_id = boost::uuids::to_string(b.party_id);
-        row.series_id = boost::uuids::to_string(it.rows.front().series_id);
+        row.series_id = boost::uuids::to_string(series_id);
         row.ts = ticks[it.tick_index].observation_time;
+        row.coord = coord;
         row.value = it.plan->value;
         rows.push_back(std::move(row));
+    }
+    if (unnumbered > 0) {
+        tick_copy_failures_.fetch_add(unnumbered, std::memory_order_relaxed);
+        if (!tick_write_failing_.exchange(true))
+            BOOST_LOG_SEV(lg(), error)
+                << "The tick table cannot take " << unnumbered
+                << " tick(s) of datums with a coordinate: " << unnumbered_reason;
     }
     if (rows.empty())
         return;
@@ -440,7 +471,7 @@ void feed_ingest_loop::write_ticks(const std::vector<messaging::market_tick>& ti
     try {
         tick_writer_->write(rows);
         ticks_copied_.fetch_add(rows.size(), std::memory_order_relaxed);
-        if (tick_write_failing_) {
+        if (unnumbered == 0 && tick_write_failing_) {
             tick_write_failing_ = false;
             BOOST_LOG_SEV(lg(), info) << "The tick table accepts copies again";
         }

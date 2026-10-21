@@ -62,9 +62,22 @@ The rule reaches from the reporting tables to a refdata code. The pattern for th
 |--------+------+---------|
 | A | Refuse a scope that holds a book of another type. | The whole entity is then invalid for every typed report, so each typed report needs a narrower scope in the seed. |
 | B | Read only the books of the report's type, and say nothing. | A person who names a banking book for FRTB gets an empty report that reads as a success. This is issue 8 of the end to end run. |
-| C | Read only the books of the report's type when the scope is a portfolio, refuse when the scope names a book of another type, and refuse when no book of the type is left. | Recommended. |
+| C | Read only the books of the report's type when the scope is a portfolio, refuse when the scope names a book of another type, and refuse when no book of the type is left. | Chosen by the owner on 2026-10-21. |
 
-Option C keeps the whole entity as the default scope, as decided on 2026-10-21, and a typed report never prices a book of the other type. The refusals cover the two mistakes a person can make: a named book of the wrong type, and a scope with nothing to read.
+The owner chose option C on 2026-10-21. It keeps the whole entity as the default scope, as decided the same day, and a typed report never prices a book of the other type. The refusals cover the two mistakes a person can make: a named book of the wrong type, and a scope with nothing to read.
+
+** Reports that read both books
+
+A report with no type reads both books. Several reports need that:
+
+- Valuation and fair value cover every position, and the banking book needs a fair value too.
+- Counterparty exposure, CVA and large exposure limits are measured per counterparty over all its derivatives, in whichever book they sit.
+- The liquidity coverage ratio, the net stable funding ratio and the leverage ratio are measures of the whole balance sheet.
+- A banking book position is often hedged by a trading book derivative, so net FX and net interest rate risk are right only over both books.
+- A report that monitors reclassifications between the books must see both.
+- Data quality, trade reporting by instrument and audit do not depend on the book.
+
+The empty value covers them, so the table of codes needs no entry for "both".
 
 ** What follows in the code
 
@@ -81,4 +94,5 @@ Option C keeps the whole entity as the default scope, as decided on 2026-10-21, 
 
 * Out of scope
 
--
+- A total capital report. It adds market risk capital on the trading book to credit risk capital on the banking book, with a different method for each. It reads both books, but it needs a different analytic setup for each type, so it is two typed runs and a combined view and not one untyped run. A story of its own decides how a report holds more than one setup.
+- A third regulatory book type. The table can hold one, and the rule reads the table, but no report states it.

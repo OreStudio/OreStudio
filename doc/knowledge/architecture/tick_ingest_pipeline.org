@@ -357,23 +357,22 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   as step 0 measured. An append-only row takes 162 bytes. Thirty thousand ticks each
   second reach about 276,000 rows each second with today's fan-out, which is about 24
   billion rows each day. That is 29 terabytes each day in the observation table, and 3.9
-  terabytes each day in an append-only table, before any compression. With one row for
+  terabytes each day in an append-only table. With one row for
   each source, the append-only table takes about 0.4 terabytes each day. No store holds
-  the first figure, and the plan has three parts. Raw ticks stay for a short time, such
-  as a week. Older chunks are compressed, with the series as the segment key and the
-  time as the order. Bars of one second and one minute are kept for good. The class
-  policy states the retention of each part.
-- *Compression needs the Community edition of TimescaleDB.* The server of the test
-  environment runs the Debian package =postgresql-18-timescaledb 2.30.1+dfsg=, which has
-  the Apache license only. =compress_chunk= is refused there with "functionality not
-  supported under the current apache license". The test did not try the policy jobs or
-  =drop_chunks= on that build. The SQL of the repository already skips a policy when
-  =timescaledb.license= is not =timescale=. So the plan has two paths. On the
-  Community edition, a policy compresses and drops chunks. On the Apache build, a job
-  that the service schedules drops old chunks with =drop_chunks=, and the bars carry the
-  long history. The Apache path needs a test of =drop_chunks= first. No compression ratio was measured, because
-  the test server cannot compress. The ratio that Timescale quotes for tick data is not a
-  figure of this project.
+  the first figure, and the plan has two parts. Raw ticks stay for a short time, such
+  as a week, and then a job drops the chunk. Bars of one second and one minute are kept
+  for good. The class policy states the retention of each part.
+- *The design does not compress.* Compression needs the Community edition of TimescaleDB.
+  The server of the test environment runs the Debian package
+  =postgresql-18-timescaledb 2.30.1+dfsg=, which has the Apache license only.
+  =compress_chunk= is refused there with "functionality not supported under the current
+  apache license". The Timescale documentation also says that row-level security is not
+  supported on compressed chunks, and the tick table needs the policies. So the plan drops
+  chunks and does not compress them. The test did not try the policy jobs or =drop_chunks=
+  on the Apache build. The SQL of the repository skips a policy when =timescaledb.license=
+  is not =timescale=, so a job that the service schedules drops old chunks with
+  =drop_chunks=. That path needs a test first. A deployment that wants compressed history
+  must choose between the policy and the compression, and that is a new decision.
 - *One row for each source.* The largest factor that the design controls is the
   fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
   each source, with parties reading it through the bindings, removes both factors.
@@ -425,7 +424,7 @@ message. The fields of a row are these.
 | =window= | The recent ticks kept for a watched datum. | 600 ticks or 10 minutes |
 | =overload_limits= | The two lags that change the state of a lane. | 5 s and 30 s |
 | =consistency= | =none= or =series=. A series publishes as one consistent set. | =none= |
-| =retention= | How long raw ticks stay, when they are compressed, and how long bars stay. | 7 days, then compressed, bars for good |
+| =retention= | How long raw ticks stay, and how long bars stay. | 7 days, bars for good |
 | =silence_after= | The gap after which a source counts as silent. | 15 minutes |
 
 A new asset class works with the default row. It needs a row only when a field
@@ -869,7 +868,7 @@ Four conclusions follow.
   each source.* With today's fan-out the
   target is 276,000 rows each second, which needs two connections at 141,000. With a row for
   each source it is about 30,000 rows each second, which one connection holds with room.
-- *Compression is not part of the plan on this server.* See the volume item above.
+- *Compression is not part of the plan.* See the volume item above.
 
 What stays untested: the row-level security policy and the tenant-aware connection on the
 append-only table, a real mix of series and times, and the disk of a machine that is not
@@ -901,6 +900,11 @@ table. So the fast writer and the policy do not exclude each other. The rule is 
   one index on the series and the time. Retention drops whole chunks by time, so a class
   with a different retention needs its own table. The number of tables follows the policy
   table and does not grow with the tenants.
+- *No compression.* The documentation of Timescale says that row-level security is not
+  supported on compressed chunks. A compressed chunk would either refuse the read or skip
+  the policy. Neither is acceptable, and the Apache build cannot test it. The table keeps
+  raw chunks until retention drops them. If compression is needed later, the fallbacks are
+  a table for each party, or a read layer that enforces the owner on compressed history.
 - *The two policies of the other tables.* A tenant policy keeps the rows of the tenant of
   the session. A restrictive party policy keeps the rows of the visible parties. =FORCE ROW
   LEVEL SECURITY= makes the policy apply to the owner too.
@@ -935,8 +939,10 @@ output is in the =evidence= folder of the task that measured them.
 | same, 50,000 rows split over 100 tenants | 500 | 76,952 |
 | append-only, 50,000 rows split over 100 tenants | 500 | 76,481 |
 
-The owner columns cost nothing that this test can see. The differences between the two
-shapes are inside the difference between two runs of the same shape.
+The owner columns show no cost that this test can resolve. The ratio of the owner shape to
+the append-only shape ranged from 0.86 to 1.27 across the cells, and the two shapes ran as
+different roles in separate processes. These are single runs, so the table does not show
+that the cost is zero. It shows that the cost is smaller than the noise.
 
 The read test held 5 million rows in 30 chunks of one day, with 100 tenants, 1,000 parties
 and 2,000 series. The reader was subject to both policies. The times are milliseconds.
@@ -973,8 +979,7 @@ Five findings follow.
   with only one party visible read 0 rows of another party and 5,000 rows of its own.
   The writer role was refused =SELECT=.
 - *The cost of the owner columns on disk is not measured.* They add 32 bytes to a row of
-  about 178 before compression. A compression =segmentby= of the series makes them
-  constant inside a segment, but only the Community edition compresses.
+  about 178. This is arithmetic from the column sizes, and the design does not compress.
 
 *** The options that were set aside
 
@@ -1002,8 +1007,7 @@ Five findings follow.
 - The provisioning of the writer role. The project creates its service roles with a
   script, and none of them has =BYPASSRLS= except the DDL users. A new role needs a change
   to that script in every environment.
-- Compression with the owner columns, and the behaviour of the policy on a compressed
-  chunk.
+- =drop_chunks= as the retention job on the Apache build.
 - A read of one party or one tenant by its series list, at the size of a real deployment.
 - The cost of the policy in the repository code that reads through the tenant-aware pool,
   which adds the client path to these figures.
@@ -1095,9 +1099,9 @@ a burst of ticks at a chosen rate and times the drain.
   and the measurements.
 - Should the session functions of the policies change for every table? The section on tenant
   and party isolation shows a seven-fold cost on an indexed read.
-- Which edition of TimescaleDB does the deployment run? The Community edition compresses and
-  schedules policies. The Apache build of the Debian package does neither. The retention plan
-  has a path for each, and the owner picks the edition.
+- Which edition of TimescaleDB does the deployment run? The Community edition schedules
+  policies. The Apache build of the Debian package does not. The design does not compress, so
+  both editions can run it, and a service job drops the chunks on the Apache build.
 - How many lanes does one server need, and how many connections can the database
   give them?
 

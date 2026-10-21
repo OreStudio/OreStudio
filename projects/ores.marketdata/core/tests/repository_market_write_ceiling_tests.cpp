@@ -50,12 +50,18 @@
  * The COPY case creates scratch tables in the schema write_ceiling with the DDL user of the
  * test database. It drops the schema at the end, also after a failure, unless
  * WRITE_CEILING_KEEP is set, which lets a script fill the tables with history first.
- * Three settings change the run:
+ * These settings change the run:
  *
  *   WRITE_CEILING_KEEP         keep the scratch schema.
  *   WRITE_CEILING_ONLY_CREATE  create the scratch tables and stop.
  *   WRITE_CEILING_SHAPES       run only the shapes whose name contains this text, for example
  *                              append_only.
+ *   ORES_DB_DDL_USER and ORES_DB_DDL_PASSWORD
+ *                              the role that writes the tick_owner shape. It has BYPASSRLS
+ *                              and does not own the table.
+ *
+ * The shape tick_owner is the append-only shape with a tenant and a party on each row, the two
+ * policies of the other tables in the scalar subquery form, and FORCE row-level security.
  *
  * The shape observation_with_trigger is a scratch copy of the observation table with a copy of
  * its insert trigger. COPY cannot write the real table, because PostgreSQL refuses COPY FROM
@@ -94,7 +100,8 @@ connection connect_as(const char* user_setting, const char* password_setting) {
     const auto user = setting(user_setting);
     const auto password = setting(password_setting);
     const char* keys[] = {"host", "dbname", "user", "password", nullptr};
-    const char* values[] = {host.c_str(), database.c_str(), user.c_str(), password.c_str(), nullptr};
+    const char* values[] = {
+        host.c_str(), database.c_str(), user.c_str(), password.c_str(), nullptr};
     connection c(PQconnectdbParams(keys, values, 0));
     if (PQstatus(c.get()) != CONNECTION_OK)
         throw std::runtime_error(std::string("Cannot connect: ") + PQerrorMessage(c.get()));
@@ -121,7 +128,9 @@ std::string scalar(PGconn* c, const std::string& sql) {
 /// Drops the scratch schema when the case ends, whether it passes or fails.
 class scratch_schema_guard {
 public:
-    scratch_schema_guard(PGconn* c, bool keep) : conn_(c), keep_(keep) {}
+    scratch_schema_guard(PGconn* c, bool keep)
+        : conn_(c)
+        , keep_(keep) {}
     scratch_schema_guard(const scratch_schema_guard&) = delete;
     scratch_schema_guard& operator=(const scratch_schema_guard&) = delete;
     ~scratch_schema_guard() {
@@ -217,8 +226,8 @@ std::string owner_text(std::size_t count,
     out.reserve(count * 140);
     for (std::size_t i = 0; i < count; ++i) {
         const auto at = base + microseconds{static_cast<std::int64_t>((first + i) * 10)};
-        out += tenants[group] + '\t' + parties[group] + '\t' + series[group * 20 + (i % 20)] + '\t' +
-               std::format("{:%Y-%m-%d %H:%M:%S}+00", at) + "\t0\t43.98966624067043\n";
+        out += tenants[group] + '\t' + parties[group] + '\t' + series[group * 20 + (i % 20)] +
+               '\t' + std::format("{:%Y-%m-%d %H:%M:%S}+00", at) + "\t0\t43.98966624067043\n";
     }
     return out;
 }
@@ -344,19 +353,19 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
         "interval '1 day', if_not_exists => true)");
     run(conn.get(), "alter table write_ceiling.tick_owner enable row level security");
     run(conn.get(), "alter table write_ceiling.tick_owner force row level security");
-    run(conn.get(),
-        "drop policy if exists tenant_policy on write_ceiling.tick_owner");
+    run(conn.get(), "drop policy if exists tenant_policy on write_ceiling.tick_owner");
     run(conn.get(),
         "create policy tenant_policy on write_ceiling.tick_owner for all using (tenant_id = "
-        "ores_iam_current_tenant_id_fn()) with check (tenant_id = ores_iam_current_tenant_id_fn())");
+        "(select nullif(current_setting('app.current_tenant_id', true), '')::uuid)) with check "
+        "(tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid))");
     run(conn.get(), "drop policy if exists party_policy on write_ceiling.tick_owner");
     run(conn.get(),
         "create policy party_policy on write_ceiling.tick_owner as restrictive for select using "
-        "(party_id = ANY(ores_iam_visible_party_ids_fn()))");
+        "(party_id in (select unnest(nullif(current_setting('app.visible_party_ids', true), "
+        "'')::uuid[])))");
     if (!writer_role.empty()) {
         run(conn.get(), "grant usage on schema write_ceiling to \"" + writer_role + "\"");
-        run(conn.get(),
-            "grant insert on write_ceiling.tick_owner to \"" + writer_role + "\"");
+        run(conn.get(), "grant insert on write_ceiling.tick_owner to \"" + writer_role + "\"");
     }
 
     if (std::getenv("WRITE_CEILING_ONLY_CREATE") != nullptr) {

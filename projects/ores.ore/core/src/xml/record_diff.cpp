@@ -53,8 +53,10 @@ auto describe_number(const T& value) -> std::string {
 /**
  * @brief Compares one leaf value, which the row names the type of.
  */
-auto compare_value(std::string& path, const field& f, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_value(std::string& path,
+                   const field& f,
+                   const void* left,
+                   const void* right) -> std::optional<record_difference> {
     switch (f.kind) {
         case field_kind::text: {
             const auto& lhs = *static_cast<const std::string*>(left);
@@ -296,8 +298,9 @@ auto compare_record(std::string& path,
 
 }
 
-auto compare_records(const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_records(const record_type& type,
+                     const void* left,
+                     const void* right) -> std::optional<record_difference> {
     std::string path(type.name);
     return compare_record(path, type, left, right, nullptr, nullptr);
 }

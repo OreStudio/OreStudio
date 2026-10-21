@@ -22,9 +22,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-#include <algorithm>
 #include <chrono>
 #include <map>
 #include <set>
@@ -284,8 +284,8 @@ TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
     for (const auto& slot : plan.slots)
         books_of[slot.security_id].insert(slot.book_id);
 
-    const auto shared = std::ranges::any_of(
-        books_of, [](const auto& entry) { return entry.second.size() > 1; });
+    const auto shared =
+        std::ranges::any_of(books_of, [](const auto& entry) { return entry.second.size() > 1; });
     REQUIRE(shared);
 }
 

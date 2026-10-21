@@ -208,9 +208,10 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     for (const auto& counterparty : counterparties.counterparties)
         scope.issuer_ids.push_back(counterparty.id);
     for (const auto& counterparty_id : scope.counterparty_ids) {
-        const auto known = std::ranges::any_of(
-            counterparties.counterparties,
-            [&](const auto& candidate) { return candidate.id == counterparty_id; });
+        const auto known =
+            std::ranges::any_of(counterparties.counterparties, [&](const auto& candidate) {
+                return candidate.id == counterparty_id;
+            });
         if (!known)
             throw trade_population_write_error(
                 "Counterparty " + boost::uuids::to_string(counterparty_id) +
@@ -439,8 +440,8 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
             "the Internal identifier of trade " + boost::uuids::to_string(slot.trade_id));
 }
 
-void trading_trade_population_writer::write_instrument(
-    const trade_population_write& write, const domain::trade_generation_scope&) {
+void trading_trade_population_writer::write_instrument(const trade_population_write& write,
+                                                       const domain::trade_generation_scope&) {
     const auto& slot = write.slot;
     const auto activity = activities_.find(slot.trade_id);
     if (activity == activities_.end())
@@ -476,8 +477,7 @@ void trading_trade_population_writer::write_issue_leg(const trade_population_wri
     leg_req.change.write.currency = slot.currency;
     leg_req.change.write.payment_convention = "F";
     leg_req.change.write.day_counter = "ACT/ACT";
-    leg_req.change.precondition = {ores::utility::domain::precondition_kind::any,
-                                   std::nullopt};
+    leg_req.change.precondition = {ores::utility::domain::precondition_kind::any, std::nullopt};
     leg_req.intent.reason_code = std::string(population_reason);
     leg_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_request::nats_subject,
@@ -491,8 +491,7 @@ void trading_trade_population_writer::write_issue_leg(const trade_population_wri
     amount_req.change.write.sequence_number = 1;
     amount_req.change.write.value =
         ores::utility::decimal::decimal::from_double(security_face_value).value();
-    amount_req.change.precondition = {ores::utility::domain::precondition_kind::any,
-                                      std::nullopt};
+    amount_req.change.precondition = {ores::utility::domain::precondition_kind::any, std::nullopt};
     amount_req.intent.reason_code = std::string(population_reason);
     amount_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_amount_request::nats_subject,
@@ -508,8 +507,7 @@ void trading_trade_population_writer::write_issue_leg(const trade_population_wri
     rate_req.change.write.issue_id = write.issue_id;
     rate_req.change.write.leg_number = 1;
     rate_req.change.write.rate_kind = "fixed";
-    rate_req.change.precondition = {ores::utility::domain::precondition_kind::any,
-                                    std::nullopt};
+    rate_req.change.precondition = {ores::utility::domain::precondition_kind::any, std::nullopt};
     rate_req.intent.reason_code = std::string(population_reason);
     rate_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_rate_request::nats_subject,
@@ -523,8 +521,7 @@ void trading_trade_population_writer::write_issue_leg(const trade_population_wri
     coupon_req.change.write.sequence_number = 2;
     coupon_req.change.write.value =
         ores::utility::decimal::decimal::from_double(coupon_rate).value();
-    coupon_req.change.precondition = {ores::utility::domain::precondition_kind::any,
-                                      std::nullopt};
+    coupon_req.change.precondition = {ores::utility::domain::precondition_kind::any, std::nullopt};
     coupon_req.intent.reason_code = std::string(population_reason);
     coupon_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_amount_request::nats_subject,

@@ -104,3 +104,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One wire call now resolves every tenor of a convention.
+
+- The subject =refdata.v1.ops.resolve_convention= takes a convention, a calendar, a horizon date and an optional spot date. It returns one entry per tenor, in catalogue order.
+- A tenor that cannot resolve returns its refusal in its own entry. The other entries keep their dates. A missing convention or an unmaterialised calendar is a refusal on the whole reply, with no entries.
+- The service reads the calendar once, reads each schedule once, and makes one =resolve_batch= call. The single-tenor path uses the same helpers.
+- The BFF route =POST /api/tenors/resolve-convention= serves the call.
+- Five service tests pin the dates: catalogue order, one refusing tenor, a shared =ROLL_QUARTER= schedule, an unknown convention and an unmaterialised calendar. Three BFF tests cover the route.
+
+Not done: no test uses the seeded =CREDIT_CDS_IMM= convention. The shared-schedule test uses the =ROLL_QUARTER= schedule that this convention uses. No live call ran against a started service.

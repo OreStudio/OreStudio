@@ -474,18 +474,19 @@ resolve_convention_request convention_request(const fixture& f) {
     return req;
 }
 
-const convention_tenor_resolution*
-entry_for(const resolve_convention_response& response, const std::string& tenor_code) {
-    const auto found = std::find_if(
-        response.tenors.begin(), response.tenors.end(), [&tenor_code](const auto& entry) {
-            return entry.tenor_code == tenor_code;
-        });
+const convention_tenor_resolution* entry_for(const resolve_convention_response& response,
+                                             const std::string& tenor_code) {
+    const auto found =
+        std::find_if(response.tenors.begin(),
+                     response.tenors.end(),
+                     [&tenor_code](const auto& entry) { return entry.tenor_code == tenor_code; });
     return found == response.tenors.end() ? nullptr : &*found;
 }
 
 }
 
-TEST_CASE("a convention resolves every tenor it holds in one answer, in the catalogue's order", tags) {
+TEST_CASE("a convention resolves every tenor it holds in one answer, in the catalogue's order",
+          tags) {
     fixture f(true, "ANCHOR_OFFSET", "TEST_CONVENTION_CATALOGUE_ORDER");
     f.tenor_code = "3M";
     f.write_tenor("3M", "PERIOD", "MONTH", 3);
@@ -504,7 +505,8 @@ TEST_CASE("a convention resolves every tenor it holds in one answer, in the cata
     // 19 January plus a month is Thursday 19 February, so nothing rolls.
     CHECK(response.tenors[0].result.outcome == outcome::ok);
     CHECK(response.tenors[0].anchor_date == spot);
-    CHECK(response.tenors[0].date_before_roll == std::chrono::year{2026} / std::chrono::February / 19);
+    CHECK(response.tenors[0].date_before_roll ==
+          std::chrono::year{2026} / std::chrono::February / 19);
     CHECK(response.tenors[0].adjusted_date == std::chrono::year{2026} / std::chrono::February / 19);
 
     // Plus three months is Sunday 19 April, which ModifiedFollowing takes to

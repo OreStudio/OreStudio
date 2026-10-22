@@ -425,10 +425,9 @@ describe('tenor routes', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json().roll_rule).toBe('ModifiedFollowing');
-        expect(response.json().tenors.map((entry: { tenor_code: string }) => entry.tenor_code)).toEqual([
-            '1M',
-            '3M',
-        ]);
+        expect(
+            response.json().tenors.map((entry: { tenor_code: string }) => entry.tenor_code),
+        ).toEqual(['1M', '3M']);
         expect(response.json().tenors[1].adjusted_date).toBe('2026-06-16');
         expect(calls).toHaveLength(1);
         expect(calls[0]?.subject).toBe('refdata.v1.ops.resolve_convention');

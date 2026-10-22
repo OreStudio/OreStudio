@@ -143,8 +143,8 @@ refusal_result(outcome what, std::string code, std::string message, std::string 
     refusal.outcome = what;
     refusal.message = std::move(message);
     refusal.code = std::move(code);
-    refusal.fields.push_back(field_failure{
-        .field = std::move(field), .code = refusal.code, .message = refusal.message});
+    refusal.fields.push_back(
+        field_failure{.field = std::move(field), .code = refusal.code, .message = refusal.message});
     return refusal;
 }
 
@@ -154,8 +154,7 @@ messaging::resolve_tenor_response refuse_with(messaging::resolve_tenor_response 
                                               std::string code,
                                               std::string message,
                                               std::string field) {
-    response.result =
-        refusal_result(what, std::move(code), std::move(message), std::move(field));
+    response.result = refusal_result(what, std::move(code), std::move(message), std::move(field));
     return response;
 }
 
@@ -173,8 +172,8 @@ ores::utility::domain::result calendar_not_materialised(const std::string& calen
 
 /// The calendar's holidays as the engine takes them, or nothing when the
 /// calendar has no materialised dates.
-std::optional<business_day_calendar_set>
-load_calendar(const tenor_resolution_service::context& ctx, const std::string& calendar_code) {
+std::optional<business_day_calendar_set> load_calendar(const tenor_resolution_service::context& ctx,
+                                                       const std::string& calendar_code) {
     calendar_date_repository dates{ctx};
     const auto days = dates.read_latest_by_calendar(calendar_code);
     if (days.empty())
@@ -216,7 +215,9 @@ public:
         return true;
     }
 
-    const std::vector<schedule_date>& dates() const { return dates_; }
+    const std::vector<schedule_date>& dates() const {
+        return dates_;
+    }
 
 private:
     struct axis {
@@ -320,8 +321,11 @@ bool build_request(const domain::tenor& tenor,
                            *resolution_rule.offset_multiplier};
         }
     } catch (const std::invalid_argument& e) {
-        response = refuse_with(
-            std::move(response), outcome::invalid, "unparseable_code", e.what(), "tenor_convention");
+        response = refuse_with(std::move(response),
+                               outcome::invalid,
+                               "unparseable_code",
+                               e.what(),
+                               "tenor_convention");
         return false;
     }
 
@@ -333,14 +337,15 @@ bool build_request(const domain::tenor& tenor,
     // at the schedule at all, so a row naming one there would be silently
     // ignored. Contradictory data is refused rather than read one way.
     if (engine_request.rule->algorithm != aquant_domain::resolution_algorithm::schedule_step) {
-        response = refuse_with(std::move(response),
-                               outcome::invalid,
-                               "schedule_under_anchor_offset",
-                               "The resolution row for tenor '" + tenor.code + "' names schedule '" +
-                                   *resolution_rule.schedule_code + "', but convention '" +
-                                   convention.code + "' resolves by " +
-                                   convention.resolution_algorithm + ", which never walks a schedule.",
-                               "resolution_algorithm");
+        response =
+            refuse_with(std::move(response),
+                        outcome::invalid,
+                        "schedule_under_anchor_offset",
+                        "The resolution row for tenor '" + tenor.code + "' names schedule '" +
+                            *resolution_rule.schedule_code + "', but convention '" +
+                            convention.code + "' resolves by " + convention.resolution_algorithm +
+                            ", which never walks a schedule.",
+                        "resolution_algorithm");
         return false;
     }
 
@@ -497,9 +502,9 @@ messaging::resolve_convention_response tenor_resolution_service::resolve_convent
     std::vector<row_and_tenor> ordered;
     ordered.reserve(resolution_rows.size());
     for (const auto& row : resolution_rows) {
-        const auto tenor = std::find_if(tenor_rows.begin(), tenor_rows.end(), [&row](const auto& t) {
-            return t.code == row.tenor_code;
-        });
+        const auto tenor = std::find_if(tenor_rows.begin(),
+                                        tenor_rows.end(),
+                                        [&row](const auto& t) { return t.code == row.tenor_code; });
         ordered.emplace_back(&row, tenor == tenor_rows.end() ? nullptr : &*tenor);
     }
     const auto order_of = [](const row_and_tenor& entry) {
@@ -526,8 +531,14 @@ messaging::resolve_convention_response tenor_resolution_service::resolve_convent
                                  "tenor_not_found",
                                  "No tenor '" + rule->tenor_code + "' for this tenant.",
                                  "tenor_code");
-        } else if (build_request(
-                       *tenor, convention, *rule, request.horizon, request.spot, axes, question, answer)) {
+        } else if (build_request(*tenor,
+                                 convention,
+                                 *rule,
+                                 request.horizon,
+                                 request.spot,
+                                 axes,
+                                 question,
+                                 answer)) {
             asked.push_back(question);
             asked_entry.push_back(response.tenors.size());
         }
@@ -540,7 +551,8 @@ messaging::resolve_convention_response tenor_resolution_service::resolve_convent
     const auto results = tenor_resolution_engine::resolve_batch(asked, *calendars, axes.dates());
     for (std::size_t i = 0; i != results.size(); ++i) {
         auto& entry = response.tenors[asked_entry[i]];
-        entry = entry_of(entry.tenor_code, answered(messaging::resolve_tenor_response{}, results[i]));
+        entry =
+            entry_of(entry.tenor_code, answered(messaging::resolve_tenor_response{}, results[i]));
     }
     return response;
 }

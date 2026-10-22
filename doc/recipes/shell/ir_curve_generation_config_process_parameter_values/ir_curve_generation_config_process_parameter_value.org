@@ -86,7 +86,7 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ir_curve_generation_config_process_parameter_values add <config_id> <ore_parameter_id> <parameter_value> <reason> <commentary>
+ir_curve_generation_config_process_parameter_values add <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put=.
@@ -107,7 +107,7 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-ir_curve_generation_config_process_parameter_values set <id> <config_id> <ore_parameter_id> <parameter_value> <reason> <commentary> [--version <n>]
+ir_curve_generation_config_process_parameter_values set <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put=.
@@ -128,7 +128,7 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-ir_curve_generation_config_process_parameter_values put-many --count <n> <id> <config_id> <ore_parameter_id> <parameter_value> <reason> <commentary>
+ir_curve_generation_config_process_parameter_values put-many --count <n> <id> <config_id> <parameter_definition_id> <parameter_value> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.ir_curve_generation_config_process_parameter_values.put_many=.

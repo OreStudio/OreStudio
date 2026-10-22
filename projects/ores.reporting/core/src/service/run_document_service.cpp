@@ -162,9 +162,8 @@ engine_settings_of(const ores::database::context& ctx, const boost::uuids::uuid&
     messaging::run_engine_settings out;
     out.settings = central.front();
     const auto first = [&](auto repository) {
-        auto rows = read_where(ctx, repository, [&](const auto& p) {
-            return p.engine_settings_id == id;
-        });
+        auto rows =
+            read_where(ctx, repository, [&](const auto& p) { return p.engine_settings_id == id; });
         using row = typename decltype(rows)::value_type;
         return rows.empty() ? std::optional<row>{} : std::optional<row>{rows.front()};
     };
@@ -214,9 +213,8 @@ void remove_engine_settings(const ores::database::context& ctx,
     });
     for (const auto& c : central) {
         const auto remove_parts = [&](auto repository) {
-            const auto rows = read_where(ctx, repository, [&](const auto& p) {
-                return p.engine_settings_id == c.id;
-            });
+            const auto rows = read_where(
+                ctx, repository, [&](const auto& p) { return p.engine_settings_id == c.id; });
             if (!rows.empty())
                 repository.remove(ctx, ids_of(rows));
         };
@@ -304,8 +302,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
             domain::configuration_analytic_parameter row;
             row.id = next_id();
             row.configuration_analytic_id = a.analytic.id;
-            row.ore_parameter_id =
-                definition_ids.at({a.analytic.analytic_type_code, p.name});
+            row.ore_parameter_id = definition_ids.at({a.analytic.analytic_type_code, p.name});
             row.value = p.value;
             row.position = p.position;
             parameters.push_back(std::move(row));

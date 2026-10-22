@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ore_parameters add <scope> <subtype> <name> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary>
+ore_parameters add <scope> <subtype> <name> <schema_name> <xpath> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameters.put=.
 
 #+name: ore_parameters-add
 #+begin_src ores-shell :tangle ore_parameters-add.ores :exports none
-ore_parameters add __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ore_parameters add __none__ __none__ __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-ore_parameters set <id> <scope> <subtype> <name> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary> [--version <n>]
+ore_parameters set <id> <scope> <subtype> <name> <schema_name> <xpath> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameters.put=.
 
 #+name: ore_parameters-set
 #+begin_src ores-shell :tangle ore_parameters-set.ores :exports none
-ore_parameters set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ore_parameters set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-ore_parameters put-many --count <n> <id> <scope> <subtype> <name> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary>
+ore_parameters put-many --count <n> <id> <scope> <subtype> <name> <schema_name> <xpath> <position> <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameters.put_many=.
 
 #+name: ore_parameters-put-many
 #+begin_src ores-shell :tangle ore_parameters-put-many.ores :exports none
-ore_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ore_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

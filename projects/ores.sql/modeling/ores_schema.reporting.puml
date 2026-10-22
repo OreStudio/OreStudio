@@ -445,39 +445,6 @@ package "reporting" #E0F7FA {
     The table lists names and patterns. It does not hold the content of a file.
     end note
 
-    entity ores_reporting_ore_parameters_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * scope : text
-        * subtype : text
-        * name : text
-        * position : integer
-        * ore_parameter_value_domain_code : text <<FK>>
-        * is_required : boolean
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_reporting_ore_parameters_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Ore Parameter Table
-    The vocabulary of the run document. ORE writes parameters as a name and a
-    value inside a block; scope names the block (Setup, Markets, an analytic)
-    and subtype narrows it, so a pair of them plus name says which parameter
-    this is. position keeps the order the document wrote, because a document
-    that is not reproducible in order is not reproducible.
-    165 of the 218 parameter names observed in the shipped corpus belong to
-    exactly one analytic kind, which is why the name alone is not the key.
-    end note
-
     entity ores_reporting_ore_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -509,6 +476,52 @@ package "reporting" #E0F7FA {
     leaves the entity type unresolved and the generator writes files called
     unknown_* rather than reporting the bad line. Check the header first when a
     model generates unknown.
+    end note
+
+    entity ores_reporting_ore_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * scope : text
+        * subtype : text
+        * name : text
+        * schema_name : text
+        * xpath : text
+        * position : integer
+        * ore_parameter_value_domain_code : text <<FK>>
+        * is_required : boolean
+          label : text
+          help : text
+          description : text
+          default_text : text
+          format : text
+          introduced_in : text
+          removed_in : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Table
+    The vocabulary of ORE XML. A row documents one leaf of one ORE document: an
+    attribute or an element that holds a value. schema_name names the XML schema
+    of the document, for example ore.xsd, and xpath is the path to the leaf in
+    a document of that schema. The two together say which leaf this is.
+    ORE writes the parameters of ore.xml as a name and a value inside a block.
+    For them scope names the block (Setup, Markets, an analytic), subtype
+    narrows it, and name is the parameter, so the three give the same path as
+    xpath. position keeps the order the document wrote, because a document that
+    is not reproducible in order is not reproducible.
+    165 of the 218 parameter names observed in the shipped corpus belong to
+    exactly one analytic kind, which is why the name alone is not the key.
     end note
 
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {

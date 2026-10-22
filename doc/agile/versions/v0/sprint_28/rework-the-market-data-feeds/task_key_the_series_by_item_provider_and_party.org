@@ -95,7 +95,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The pillar reader reads only the provider ore, and a missing series is silent | curve_pillar_reader.cpp | Accept | It logs a warning for each pillar with no series. A provider on the curve configuration waits for the routing task. |
+| 2 | SQL literals duplicate the C++ constants | publish_from_dq, curve_series | Defer | A test of the constants against the populated rows needs a database run. The literals carry a comment that names the populate script. |
+| 3 | Install order and no check of source_id | populate | Decline | The catalogue populate runs first in the marketdata populate. A source_id check waits for the task that adds routes. |
+| 4 | Schema change without a migration | SQL | Decline | The schema is applied by recreation. |
+| 5 | producer_kind stays beside provider_code on feed_binding | feed_binding | Accept | The task Build the market data service screens removes both. |
+| 6 | The one_of filters of provider_code and source_id | feed_binding | Decline | The generated repository applies them with the template every entity uses. |
 
 * Result
 

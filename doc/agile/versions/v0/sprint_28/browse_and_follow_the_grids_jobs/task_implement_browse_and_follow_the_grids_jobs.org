@@ -26,11 +26,11 @@ The web client reads the batches, workunits and results that the session may see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | The routes work against a live service. Newest first holds since the ordering task. The acceptance bullet "a party member reads the tree" waits for its task.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Land the two follow-up tasks, then close this one. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -119,12 +119,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3642 | [web] Serve the paged job tree through the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An empty offset reads as 0 | grid-jobs.ts | Fixed | The BFF refuses an empty offset or limit. Two tests cover it. |
+| 2 | The refusal union repeats | grid-jobs.ts | Fixed | The type GridJobsRefusal names it. |
+| 3 | The BFF and wire page limits differ | grid-jobs.ts | Fixed | A comment states both. |
+| 4 | Hidden rows answer alike | grid-jobs.ts | No change | Each single-id route answers 404 for a hidden row. |
 
 * Result
+
+Six routes under =/api/operations/grid/jobs/= serve the batches, workunits and
+results, one page at a time, and one row by id. Each route is one generated
+read on the session's own client. The batch list reads newest first once PR
+#3643 merges. A party member of the batches' own party reads the batches and is
+refused the workunit and result reads. The task Let a party member read
+workunits and results gives the Member role those read codes, so the last
+acceptance line holds for batches now and for the whole tree after that task.

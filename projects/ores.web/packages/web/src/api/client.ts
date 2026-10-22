@@ -430,7 +430,7 @@ export interface ReportEdit {
     readonly concurrency_policy: string;
     readonly schedule_expression: string;
     readonly is_official: boolean;
-    readonly regulatory_book_type: string | null;
+    readonly regulatory_book_type?: string | null;
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;

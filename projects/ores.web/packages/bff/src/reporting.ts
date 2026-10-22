@@ -1056,7 +1056,14 @@ export function registerReportingRoutes(
             regulatoryBookTypes: await codes(
                 bookTypeSubjects.list_regulatory_book_types_request,
                 'types',
-            ).catch(() => []),
+            ).catch((failure: unknown) => {
+                // Only a refusal means the account may not read reference data. An outage
+                // must not read as "no types available".
+                if (failure instanceof HttpFailure && failure.status === 403) {
+                    return [];
+                }
+                throw failure;
+            }),
         };
     });
 

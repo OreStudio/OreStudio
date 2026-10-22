@@ -621,13 +621,30 @@ describe('the codes a definition may take', () => {
                 total: 1,
             },
             'refdata.v1.regulatory_book_types.list': {
-                result: { ...ok, outcome: 'forbidden', message: 'No.' },
+                result: { ...ok, outcome: 'denied', message: 'No.' },
             },
         });
         const response = await send(server, sessionId, 'GET', '/api/reporting/choices');
 
         expect(response.statusCode).toBe(200);
         expect(response.json().regulatoryBookTypes).toEqual([]);
+    });
+
+    it('does not hide a failed book type read as an empty list', async () => {
+        const { server, sessionId } = buildTestServer({
+            'reporting.v1.report_types.list': { result: ok, types: [{ code: 'risk' }], total: 1 },
+            'reporting.v1.concurrency_policies.list': {
+                result: ok,
+                policies: [{ code: 'skip' }],
+                total: 1,
+            },
+            'refdata.v1.regulatory_book_types.list': {
+                result: { ...ok, outcome: 'unavailable', message: 'The service is down.' },
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/reporting/choices');
+
+        expect(response.statusCode).toBe(502);
     });
 });
 

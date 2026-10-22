@@ -50,17 +50,23 @@ export const REPORTING = 'reporting';
  * narrowed here: the server rebuilds the rest of the record from the read it
  * makes at write time, and a field this screen does not offer keeps its value.
  */
-function editOf(row: Readonly<Record<string, unknown>>): ReportEdit {
+export function editOf(row: Readonly<Record<string, unknown>>): ReportEdit {
     return {
         description: String(row['description'] ?? ''),
         report_type: String(row['report_type'] ?? ''),
         concurrency_policy: String(row['concurrency_policy'] ?? ''),
         schedule_expression: String(row['schedule_expression'] ?? ''),
         is_official: row['is_official'] === true,
-        regulatory_book_type:
-            row['regulatory_book_type'] === null || row['regulatory_book_type'] === undefined
-                ? null
-                : String(row['regulatory_book_type']),
+        // A row that has no such field was read before the field existed. The write then states
+        // nothing, so the server keeps the type the report holds and does not clear it.
+        ...(row['regulatory_book_type'] === undefined
+            ? {}
+            : {
+                  regulatory_book_type:
+                      row['regulatory_book_type'] === null
+                          ? null
+                          : String(row['regulatory_book_type']),
+              }),
         pre_processing: String(row['pre_processing'] ?? ''),
         prepared_input_key: String(row['prepared_input_key'] ?? ''),
         post_processing: String(row['post_processing'] ?? ''),

@@ -108,8 +108,8 @@ def check_prerequisites(company, records):
 
 
 def bindings(company, records):
-    """Every definition binds the document of each type its entity holds, and the run
-    settings its report needs. The risk report type requires all of them."""
+    """Every definition binds the document of each type its entity holds, the run
+    settings and the engine settings its report needs. The risk report type requires all of them."""
     return [{
         "company_code": company,
         "version": 0,
@@ -119,7 +119,8 @@ def bindings(company, records):
     } for r in records for type_code, name in (
         [(t, documents.document_name(company, t)) for t in documents.DOCUMENT_NAMES]
         + [("pricing_engines", documents.pricing_for_report(company, r["name"]))]
-        + [("risk_report_config", risk.configuration_name(company, r["name"]))])]
+        + [("risk_report_config", risk.configuration_name(company, r["name"])),
+           ("engine_settings", risk.engine_settings_name(company, r["name"]))])]
 
 
 def report_definitions():
@@ -144,6 +145,9 @@ def main():
     write("configuration_analytics", analytics_rows)
     write("configuration_analytic_parameters", parameter_rows)
     write("configuration_market_bindings", market_rows)
+    for table, rows in zip(("engine_settings", "engine_settings_fixings", "engine_settings_building",
+                            "engine_settings_execution"), risk.engine_settings(definitions)):
+        write(table, rows)
 
 
 if __name__ == "__main__":

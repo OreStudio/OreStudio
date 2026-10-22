@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iterator>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -70,6 +71,30 @@ std::map<std::string, std::string> setup_of(const xg::ore& d) {
     return out;
 }
 
+/// The Setup parameters a round trip is expected to keep.
+///
+/// A parameter the model does not hold is dropped, and an engine flag is written in
+/// one spelling whatever spelling the document used.
+std::map<std::string, std::string> kept_setup_of(const xg::ore& d) {
+    static const std::set<std::string> flags = {"implyTodaysFixings",
+                                                "includeTodaysCashFlows",
+                                                "includeReferenceDateEvents",
+                                                "enrichIndexFixings",
+                                                "lazyMarketBuilding",
+                                                "buildFailedTrades",
+                                                "continueOnError",
+                                                "useAtParCouponsCurves",
+                                                "useAtParCouponsTrades"};
+    auto out = setup_of(d);
+    for (const auto& name : run_document_projection::map_setup(d).dropped)
+        out.erase(name);
+    for (auto& [name, value] : out) {
+        if (flags.contains(name))
+            value = (value == "Y" || value == "true") ? "true" : "false";
+    }
+    return out;
+}
+
 /// The analytics, in document order, as a canonical rendering.
 ///
 /// The parameters of one analytic are compared by name and value rather than by
@@ -106,7 +131,7 @@ std::string round_trip(const std::string& text, const std::string& path) {
         const auto exported =
             run_document_projection::read(run_document_projection::write(rebuilt), path);
 
-        if (setup_of(original) != setup_of(exported))
+        if (kept_setup_of(original) != setup_of(exported))
             return path + ": the Setup parameters differ";
         if (analytics_of(original) != analytics_of(exported))
             return path + ": the analytics differ";
@@ -158,7 +183,7 @@ TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
     <Parameter name="nThreads">4</Parameter>
     <Parameter name="continueOnError">false</Parameter>
     <Parameter name="conventionsFile">conventions.xml</Parameter>
-    <Parameter name="continueOnError">true</Parameter>
+    <Parameter name="continueOnError">Y</Parameter>
   </Setup>
   <Markets>
     <Parameter name="EQ">EUR</Parameter>
@@ -175,11 +200,15 @@ TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
     CHECK(mapped.settings.market_data_type == "date");
     CHECK(mapped.settings.market_data_date == "2026-01-02");
     // A choice and a file name go to different places.
-    CHECK(mapped.settings.n_threads == std::optional<int>(4));
+    REQUIRE(mapped.engine_settings);
+    REQUIRE(mapped.engine_settings->execution);
+    CHECK(mapped.engine_settings->execution->n_threads == std::optional<int>(4));
+    CHECK_FALSE(mapped.engine_settings->fixings);
     CHECK(mapped.files.size() == 1);
     CHECK(mapped.files.front().parameter == "conventionsFile");
     // A name stated twice is read from its last occurrence.
-    CHECK(mapped.settings.continue_on_error == std::optional<std::string>("true"));
+    REQUIRE(mapped.engine_settings->building);
+    CHECK(mapped.engine_settings->building->continue_on_error == std::optional<bool>(true));
 
     REQUIRE(mapped.analytics.size() == 2);
     for (std::size_t i = 0; i < mapped.analytics.size(); ++i)
@@ -203,18 +232,52 @@ TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
     CHECK(active_at < next_at);
 }
 
-TEST_CASE("a_setup_parameter_no_column_holds_is_refused", tags) {
+TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning", tags) {
     auto lg(make_logger(test_suite));
 
     const auto original = run_document_projection::read(R"(<ORE>
   <Setup>
     <Parameter name="inputPath">a</Parameter>
     <Parameter name="notAParameter">b</Parameter>
+    <Parameter name="fixingCutoff">2026-01-01</Parameter>
+    <Parameter name="dateCalendar">TARGET</Parameter>
   </Setup>
   <Analytics/>
 </ORE>)");
-    CHECK_THROWS_WITH(run_document_projection::map(original),
-                      Catch::Matchers::ContainsSubstring("no column holds Setup parameter"));
+
+    const auto mapped = run_document_projection::map_setup(original);
+    CHECK(mapped.dropped == std::vector<std::string>{"notAParameter", "fixingCutoff", "dateCalendar"});
+    CHECK_FALSE(mapped.engine_settings);
+
+    const auto warnings = run_document_projection::dropped_parameter_warnings(original);
+    REQUIRE(warnings.size() == 3);
+    CHECK_THAT(warnings[0], Catch::Matchers::ContainsSubstring("'notAParameter'"));
+    CHECK_THAT(warnings[1], Catch::Matchers::ContainsSubstring("'fixingCutoff'"));
+    CHECK_THAT(warnings[1], Catch::Matchers::ContainsSubstring("numbers may differ"));
+    CHECK_THAT(warnings[2], Catch::Matchers::ContainsSubstring("'dateCalendar'"));
+}
+
+TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = [](std::string_view parameter) {
+        return run_document_projection::read(std::format(R"(<ORE>
+  <Setup>
+    <Parameter name="inputPath">a</Parameter>
+    {}
+  </Setup>
+  <Analytics/>
+</ORE>)",
+                                                         parameter));
+    };
+    CHECK_THROWS_WITH(
+        run_document_projection::map(
+            document("<Parameter name=\"observationModel\">Move</Parameter>")),
+        Catch::Matchers::ContainsSubstring("is not one of None, Disable, Defer or Unregister"));
+    CHECK_THROWS_WITH(
+        run_document_projection::map(
+            document("<Parameter name=\"lazyMarketBuilding\">maybe</Parameter>")),
+        Catch::Matchers::ContainsSubstring("is not a flag"));
 }
 
 TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused", tags) {

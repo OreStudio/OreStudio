@@ -23,10 +23,10 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The report page analysis is merged. The engine settings design and prototype are in PR 3619 and wait for the owner's sign-off. |
-| Waiting on    | Owner sign-off on the three groups, the 15 engine settings and the open questions under Design. |
-| Next          | Owner signs off the engine settings prototype, then the data model starts. |
-| Last touched  | 2026-10-21                               |
+| Now           | The report page analysis, the engine settings design and the prototype are merged. The engine settings data model, the seed, the export and the import are in one PR, and the 19 engine columns of the run settings are gone. |
+| Waiting on    | Review of the data model PR. Owner answers to the open questions under Design that still stand. |
+| Next          | Move the currency and the market kind to the report definition, record what a run used, and build the engine settings screens. |
+| Last touched  | 2026-10-22                               |
 
 * Acceptance
 
@@ -41,6 +41,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
 | [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
+| [[id:EA01F699-420E-4889-95EF-E7FAFA2DD646][Model the engine settings]] | STARTED | 2026-10-22 | | Store the engine settings as a named configuration with a central row and three parts. |
 
 * Analysis
 
@@ -299,8 +300,8 @@ in any tag. For those, the entry shows the first and the last release whose ship
 
 1. Who may change a group. The prototype lets an analyst edit all three. The two groups that change the numbers may need
    an approval like a pricing engine change.
-2. The spelling of the flags. Every flag parses with =parseBool=, so the model can store booleans. The remaining choice is
-   whether the projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
+2. The spelling of the flags. Every flag parses with =parseBool=, so the model stores booleans. The projection writes =true=
+   and =false=. This is a default taken in the data model PR. The owner may change it, and the change is one function.
 3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
 4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.
 5. Where the target ORE build lives, and how the run records the build it used. See finding 13.
@@ -319,7 +320,8 @@ disagrees with the guide. The importer warns about parameters it drops.
 - Only parameters that the official ORE documentation mentions appear on the screens. Decided by the owner on 2026-10-21.
 - The documentation holds no table of values. A value that refers to an entity is bound to that entity.
 - The importer drops a Setup parameter that the model does not hold and warns, instead of refusing the document. Decided by the owner on 2026-10-21.
-- Open: who may change a group, the spelling of the flags, and when the currency and the market kind move. See the design.
+- The data model PR decommissions the 19 engine columns of =risk_report_config=. The export reads the Setup block from the bound engine settings and the import writes it to them. The import drops a Setup parameter the model does not hold and warns.
+- Open: who may change a group, and when the currency and the market kind move. The flags are written as =true= and =false= until the owner says otherwise. See the design.
 
 * Out of scope
 

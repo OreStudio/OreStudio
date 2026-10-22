@@ -25,6 +25,7 @@
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,14 +34,13 @@ namespace ores::reporting::service {
 /**
  * @brief What a run document is built from.
  *
- * Every field comes from the risk report configuration the definition binds or
- * from the bindings of the definition.
+ * Every field comes from the risk report configuration and the engine settings
+ * the definition binds or from the bindings of the definition.
  */
 struct run_document_inputs {
     /**
      * @brief The risk report configuration, which holds the choices of the run:
-     * the base currency, the thread count, the observation model, the folders,
-     * the flags and the market data of the run.
+     * the base currency, the folders and the market data of the run.
      */
     ores::reporting::domain::risk_report_config risk;
 
@@ -56,6 +56,12 @@ struct run_document_inputs {
      * the order the run executes them.
      */
     std::vector<messaging::run_analytic> analytics;
+
+    /**
+     * @brief The engine settings the definition binds, when it binds any. A run
+     * with none uses the engine defaults.
+     */
+    std::optional<messaging::run_engine_settings> engine;
 
     /**
      * @brief The market bindings of the configuration, in the order the run

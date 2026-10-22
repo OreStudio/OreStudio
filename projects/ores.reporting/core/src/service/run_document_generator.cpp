@@ -129,9 +129,11 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
     r.settings = in.risk;
     r.settings.market_data_date = valuation_date_of(in.risk, in.run_date);
     r.settings.market_data_type = "date";
+    r.engine_settings = in.engine;
     for (const auto& type : in.bound_types) {
         // The risk configuration fills no file: the run document is built from it.
-        if (type == "risk_report_config")
+        // The engine settings fill no file either: they are Setup parameters.
+        if (type == "risk_report_config" || type == "engine_settings")
             continue;
         const auto* t = domain::setup_file_type_of(in.file_types, type);
         if (t == nullptr)

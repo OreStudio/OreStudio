@@ -46,12 +46,12 @@ std::string convert_to_table(const std::vector<risk_report_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Base Currency" << "Observation Model" << "Market Data"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Name" << "Base Currency" << "Market Data" << "Modified By"
+          << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rrc : v) {
-        table << rrc.name << opt_str(rrc.base_currency) << opt_str(rrc.observation_model)
-              << rrc.market_data_type << rrc.modified_by << rrc.version << fort::endr;
+        table << rrc.name << opt_str(rrc.base_currency) << rrc.market_data_type << rrc.modified_by
+              << rrc.version << fort::endr;
     }
     return table.to_string();
 }

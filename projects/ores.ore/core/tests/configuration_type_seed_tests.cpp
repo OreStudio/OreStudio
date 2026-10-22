@@ -70,6 +70,7 @@ const std::map<std::string, std::string>& roots_written() {
     static const std::map<std::string, std::string> table = {
         {"pricing_engines", std::string(xg::pricing_engines::pricing_engines_document().root_name)},
         {"risk_report_config", std::string(xg::ore::ore_document().root_name)},
+        {"engine_settings", std::string(xg::ore::ore_document().root_name)},
         {"todays_market", std::string(xg::todays_market::todays_market_document().root_name)},
         {"stress_test", std::string(xg::stress_testing::stress_testing_document().root_name)},
         {"credit_simulation",
@@ -126,6 +127,10 @@ std::set<std::string> run_document_parameters() {
     return names;
 }
 
+// The kinds that are parts of the run document, so they share its root element. Every
+// other kind has a root of its own.
+const std::set<std::string> run_document_kinds = {"risk_report_config", "engine_settings"};
+
 const std::set<std::string> unbound = {"simulation",
                                        "sensitivity",
                                        "simm_calibration",
@@ -152,7 +157,8 @@ TEST_CASE("every seeded configuration type the codec carries names its root elem
     std::set<std::string> roots;
     for (const auto& type : types) {
         INFO(type.code);
-        CHECK(roots.insert(type.ore_root_element).second);
+        if (!run_document_kinds.contains(type.code))
+            CHECK(roots.insert(type.ore_root_element).second);
         CHECK(!type.owning_component.empty());
         if (type.run_parameter)
             CHECK(parameters.contains(*type.run_parameter));

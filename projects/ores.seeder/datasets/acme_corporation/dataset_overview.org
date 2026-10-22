@@ -48,7 +48,8 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =report_definitions.json= | ores_dq_report_definitions_artefact_tbl shape -- the reports each entity runs, chosen by rules, not one shared list |
 | =report_configurations.json= | ores_dq_report_configurations_artefact_tbl shape -- the documents and run settings each report binds, by name |
 | =generate_risk_config_data.py= | Run settings design table; re-run to regenerate the three configuration files from report_definitions.json |
-| =risk_report_configs.json= | ores_dq_risk_report_configs_artefact_tbl shape -- the run settings each entity shares between its reports (the base currency, the folders, the log and the flags, as ORE spells them), with the portfolio each reads |
+| =risk_report_configs.json= | ores_dq_risk_report_configs_artefact_tbl shape -- the run settings each entity shares between its reports (the base currency, the market data and the folders and log file), with the portfolio each reads |
+| =engine_settings.json=, =engine_settings_fixings.json=, =engine_settings_building.json=, =engine_settings_execution.json= | the engine settings each entity binds, as the central row and its three parts. A report that asks for a simulation binds the simulation settings, which add threads. Only the settings the ACME runs state are set; the others use the engine defaults |
 | =configuration_analytics.json= | ores_dq_configuration_analytics_artefact_tbl shape -- the analytics each configuration runs, in order |
 | =configuration_analytic_parameters.json= | ores_dq_configuration_analytic_parameters_artefact_tbl shape -- the value of each analytic parameter, named by the parameter |
 | =configuration_market_bindings.json= | ores_dq_configuration_market_bindings_artefact_tbl shape -- the today's market configuration each market role reads |

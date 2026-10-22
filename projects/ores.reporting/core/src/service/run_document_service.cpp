@@ -24,6 +24,10 @@
 #include "ores.reporting.core/repository/configuration_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_building_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_execution_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
@@ -38,6 +42,7 @@
 #include <chrono>
 #include <format>
 #include <map>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <utility>
@@ -57,6 +62,9 @@ ores::database::context system_scope(const ores::database::context& ctx) {
 
 // The slot a risk report configuration fills in a definition.
 constexpr const char* run_settings_type = "risk_report_config";
+
+// The slot a named set of engine settings fills in a definition.
+constexpr const char* engine_settings_type = "engine_settings";
 
 // The parameter definitions of the analytics, by id.
 std::map<boost::uuids::uuid, std::string>
@@ -141,6 +149,85 @@ domain::configuration write_configuration(const ores::database::context& ctx,
     return c;
 }
 
+// The engine settings a configuration holds: the central row and the parts it sets.
+std::optional<messaging::run_engine_settings>
+engine_settings_of(const ores::database::context& ctx, const boost::uuids::uuid& configuration_id) {
+    const auto central = read_where(ctx, engine_settings_repository(), [&](const auto& e) {
+        return e.configuration_id == configuration_id;
+    });
+    if (central.empty())
+        return std::nullopt;
+
+    const auto id = central.front().id;
+    messaging::run_engine_settings out;
+    out.settings = central.front();
+    const auto first = [&](auto repository) {
+        auto rows = read_where(ctx, repository, [&](const auto& p) {
+            return p.engine_settings_id == id;
+        });
+        using row = typename decltype(rows)::value_type;
+        return rows.empty() ? std::optional<row>{} : std::optional<row>{rows.front()};
+    };
+    out.fixings = first(engine_settings_fixings_repository());
+    out.building = first(engine_settings_building_repository());
+    out.execution = first(engine_settings_execution_repository());
+    return out;
+}
+
+// Writes the engine settings of a run document as a configuration of their own.
+// The central row goes first: a part names it, and a write to a part makes the
+// next version of it.
+boost::uuids::uuid write_engine_settings(const ores::database::context& ctx,
+                                         const std::string& definition_name,
+                                         messaging::run_engine_settings e) {
+    auto next_id = boost::uuids::random_generator();
+    const auto name = definition_name + " engine settings";
+    const auto configuration = write_configuration(ctx, engine_settings_type, name);
+
+    e.settings.id = next_id();
+    e.settings.name = name;
+    e.settings.description =
+        "The engine settings imported with the run document of " + definition_name;
+    e.settings.configuration_id = configuration.id;
+    ores::service::messaging::stamp_document(e.settings, ctx);
+    engine_settings_repository().write(ctx, e.settings);
+
+    const auto write_part = [&](auto& part, auto repository) {
+        if (!part)
+            return;
+        part->id = next_id();
+        part->engine_settings_id = e.settings.id;
+        ores::service::messaging::stamp_document(*part, ctx);
+        repository.write(ctx, *part);
+    };
+    write_part(e.fixings, engine_settings_fixings_repository());
+    write_part(e.building, engine_settings_building_repository());
+    write_part(e.execution, engine_settings_execution_repository());
+    return configuration.id;
+}
+
+// Removes the engine settings a configuration holds, the parts first.
+void remove_engine_settings(const ores::database::context& ctx,
+                            const boost::uuids::uuid& configuration_id) {
+    const auto central = read_where(ctx, engine_settings_repository(), [&](const auto& e) {
+        return e.configuration_id == configuration_id;
+    });
+    for (const auto& c : central) {
+        const auto remove_parts = [&](auto repository) {
+            const auto rows = read_where(ctx, repository, [&](const auto& p) {
+                return p.engine_settings_id == c.id;
+            });
+            if (!rows.empty())
+                repository.remove(ctx, ids_of(rows));
+        };
+        remove_parts(engine_settings_fixings_repository());
+        remove_parts(engine_settings_building_repository());
+        remove_parts(engine_settings_execution_repository());
+    }
+    if (!central.empty())
+        engine_settings_repository().remove(ctx, ids_of(central));
+}
+
 void write_binding(const ores::database::context& ctx,
                    const boost::uuids::uuid& report_definition_id,
                    const std::string& configuration_type_code,
@@ -165,6 +252,9 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
         throw std::invalid_argument(
             "The report definition already binds a risk report configuration; import into a new "
             "definition.");
+    if (v.engine_settings && !bindings_of_type(report_definition_id, engine_settings_type).empty())
+        throw std::invalid_argument(
+            "The report definition already binds engine settings; import into a new definition.");
     if (std::ranges::none_of(v.analytics, [](const auto& a) { return a.analytic.active == "Y"; }))
         throw std::invalid_argument("The run document switches no analytic on.");
 
@@ -230,6 +320,12 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
 
     // The binding comes last: it refuses a configuration whose analytics make no run.
     write_binding(ctx_, report_definition_id, run_settings_type, configuration.id);
+
+    if (v.engine_settings)
+        write_binding(ctx_,
+                      report_definition_id,
+                      engine_settings_type,
+                      write_engine_settings(ctx_, definition.name, std::move(*v.engine_settings)));
 }
 
 std::optional<messaging::run_document>
@@ -250,6 +346,9 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
     in.run_date = std::format(
         "{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()));
     in.analytics = analytics_of(ctx_, configuration_id);
+    if (const auto engine = bindings_of_type(report_definition_id, engine_settings_type);
+        !engine.empty())
+        in.engine = engine_settings_of(ctx_, engine.front().configuration_id);
     in.market_bindings = market_bindings_of(ctx_, configuration_id);
     for (const auto& b : bindings(report_definition_id))
         in.bound_types.push_back(b.configuration_type_code);
@@ -305,6 +404,8 @@ void run_document_service::remove(const boost::uuids::uuid& report_definition_id
             if (!risk.empty())
                 risk_report_config_repository().remove(ctx_, ids_of(risk));
         }
+        if (b.configuration_type_code == engine_settings_type)
+            remove_engine_settings(ctx_, b.configuration_id);
         configuration_repository().remove(ctx_, boost::uuids::to_string(b.configuration_id));
     }
 }

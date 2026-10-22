@@ -168,6 +168,10 @@
 -- Analytics artefact tables
 \ir ./dq_report_definitions_artefact_create.sql
 \ir ./dq_risk_report_configs_artefact_create.sql
+\ir ./dq_engine_settings_artefact_create.sql
+\ir ./dq_engine_settings_fixings_artefact_create.sql
+\ir ./dq_engine_settings_building_artefact_create.sql
+\ir ./dq_engine_settings_execution_artefact_create.sql
 \ir ./dq_configuration_analytics_artefact_create.sql
 \ir ./dq_configuration_analytic_parameters_artefact_create.sql
 \ir ./dq_configuration_market_bindings_artefact_create.sql

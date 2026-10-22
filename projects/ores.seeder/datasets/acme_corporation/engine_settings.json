@@ -1,0 +1,65 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "722b3002-e413-5615-833c-60abec22aeab",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Group - Standard engine settings",
+    "description": "Engine settings shared by Audit Trail Summary, Board Risk Dashboard, Cross-Entity Counterparty Concentration, Data Quality Completeness, Group Consolidated Exposure, Intercompany Exposure Matrix, Large Exposures, Leverage Ratio, Liquidity Coverage, System Health.",
+    "configuration_id": "69d4ee4b-4154-5d2a-b077-0bec3cc7edd7"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "5a3c772c-c6d3-5931-ae15-0cfbb226065b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "UK - Simulation engine settings",
+    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
+    "configuration_id": "c192769f-b9a3-512b-835c-fdcd847c40df"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "7f4516d2-96c8-50eb-bce8-4f74908f3500",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "UK - Standard engine settings",
+    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, MIFID II Transaction Reporting, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Vega, Volatility Surfaces, Yield Curves.",
+    "configuration_id": "3b25134e-d1bf-5f0e-9477-9e8737e751d9"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "2d1c4d30-e0d8-52e3-83fc-397d7314763e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "US - Simulation engine settings",
+    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
+    "configuration_id": "72dd98ae-79f2-5bfc-9557-e73b9e4784e5"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "cc979142-bcbe-5e4f-a077-db4dfbabc02a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "US - Standard engine settings",
+    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, CFTC Swap Data Reporting, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Yield Curves.",
+    "configuration_id": "547fd158-86dd-5631-9227-52fb58aa2476"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "c0b0f980-86e9-5bba-ad0c-e0c656562c17",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "HK - Simulation engine settings",
+    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
+    "configuration_id": "6f8d683a-b7a0-506c-87ca-1253bd89e50c"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "af61c06a-866e-53bc-a38b-084a749b8618",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "name": "HK - Standard engine settings",
+    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, HKMA Trade Repository, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Yield Curves.",
+    "configuration_id": "1b01cf50-0750-5b01-bbe8-079f8d67b1bb"
+  }
+]

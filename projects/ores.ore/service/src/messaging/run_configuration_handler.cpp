@@ -193,6 +193,9 @@ void run_configuration_import_handler::execute(ores::nats::message msg) {
             import_run(owners, req->report_definition_id, req->name, files_of(req->files));
         BOOST_LOG_SEV(lg(), info) << "run configuration imported | corr=" << req->correlation_id
                                   << " stored=" << result.stored.size();
+        for (const auto& warning : result.warnings)
+            BOOST_LOG_SEV(lg(), warn) << "run configuration import | corr=" << req->correlation_id
+                                      << " " << warning;
         wf->complete(rfl::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {

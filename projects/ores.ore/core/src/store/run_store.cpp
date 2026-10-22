@@ -105,8 +105,10 @@ std::optional<std::string> file_of(const reporting::messaging::run_document& doc
     return std::nullopt;
 }
 
-// The run settings are no input file: the run document is built from them.
+// The run settings and the engine settings are no input file: the run document is
+// built from them.
 constexpr std::string_view run_settings_type = "risk_report_config";
+constexpr std::string_view engine_settings_type = "engine_settings";
 
 const document_kind* find_kind(const std::vector<document_kind>& kinds, std::string_view code) {
     for (const auto& k : kinds)
@@ -299,6 +301,7 @@ run_import_result import_run(const context& ctx,
     runs.save(report_definition_id, document);
 
     run_import_result r;
+    r.warnings = domain::run_document_projection::dropped_parameter_warnings(run);
     r.stored.push_back(std::string(run_document_file));
     for (const auto& kind : kinds) {
         const auto file = file_of(document, kind.parameter);
@@ -344,7 +347,8 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     input_files files;
     files[std::string(run_document_file)] = domain::run_document_projection::write(run);
     for (const auto& b : runs.bindings(report_definition_id)) {
-        if (b.configuration_type_code == run_settings_type)
+        if (b.configuration_type_code == run_settings_type ||
+            b.configuration_type_code == engine_settings_type)
             continue;
         const auto* kind = find_kind(kinds, b.configuration_type_code);
         if (kind == nullptr)

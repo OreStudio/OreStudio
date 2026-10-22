@@ -147,9 +147,13 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_us_curve_configuration_artefact_populate.sql
 \ir acme/acme_hk_curve_configuration_artefact_populate.sql
 \ir acme/acme_group_risk_report_configs_artefact_populate.sql
+\ir acme/acme_group_engine_settings_artefact_populate.sql
 \ir acme/acme_uk_risk_report_configs_artefact_populate.sql
+\ir acme/acme_uk_engine_settings_artefact_populate.sql
 \ir acme/acme_us_risk_report_configs_artefact_populate.sql
+\ir acme/acme_us_engine_settings_artefact_populate.sql
 \ir acme/acme_hk_risk_report_configs_artefact_populate.sql
+\ir acme/acme_hk_engine_settings_artefact_populate.sql
 \ir acme/acme_group_business_units_artefact_populate.sql
 \ir acme/acme_group_portfolios_artefact_populate.sql
 \ir acme/acme_group_books_artefact_populate.sql

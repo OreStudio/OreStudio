@@ -24,6 +24,10 @@
  */
 import type { ConfigurationAnalytic } from '../domain/configuration_analytic.js';
 import type { ConfigurationMarketBinding } from '../domain/configuration_market_binding.js';
+import type { EngineSettings } from '../domain/engine_settings.js';
+import type { EngineSettingsBuilding } from '../domain/engine_settings_building.js';
+import type { EngineSettingsExecution } from '../domain/engine_settings_execution.js';
+import type { EngineSettingsFixings } from '../domain/engine_settings_fixings.js';
 import type { RiskReportConfig } from '../domain/risk_report_config.js';
 
 /**
@@ -67,15 +71,31 @@ export interface RunFile {
 }
 
 /**
+ * @brief The engine settings of a run: the central row and the parts it sets.
+ *
+ * A part that is absent means the engine default for every setting in it. The
+ * Setup block of a run document holds these as parameters, and the projection
+ * reads them into the parts and writes them back.
+ */
+export interface RunEngineSettings {
+    settings: EngineSettings;
+    fixings: EngineSettingsFixings | null;
+    building: EngineSettingsBuilding | null;
+    execution: EngineSettingsExecution | null;
+}
+
+/**
  * @brief One ORE run document, built from the configuration a report definition
  * binds: the choices of the run, the analytics with their parameters, the market
  * bindings and the names of the files the run reads.
  *
- * The choices, the analytics and the market bindings belong to the shared
- * configuration. Only the file names are not stored.
+ * The choices, the engine settings, the analytics and the market bindings belong
+ * to shared configurations. Only the file names are not stored. A document with
+ * no engine settings runs with the engine defaults.
  */
 export interface RunDocument {
     settings: RiskReportConfig;
+    engine_settings: RunEngineSettings | null;
     files: RunFile[];
     analytics: RunAnalytic[];
     market_bindings: ConfigurationMarketBinding[];

@@ -121,6 +121,8 @@ struct run_configuration_import_execute_result {
     std::vector<std::string> world_conventions_kept;
     /** FX conventions, which have no store yet. */
     std::vector<std::string> fx_conventions_skipped;
+    /** Setup parameters the model does not hold and the import dropped, one warning each. */
+    std::vector<std::string> warnings;
     std::string report_definition_id;
     /** Whether reporting stored the run document, which the undo deletes. */
     bool run_document_saved = false;

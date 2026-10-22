@@ -36,8 +36,8 @@ export interface MarketSeries {
     id: string;
     party_id: string;
     oresmd_uri: string;
+    provider_code: string;
     series_subclass: string;
-    producer_kind: string;
     derivation_kind: string;
     derivation_config_id: string;
     derivation_config_version: number;

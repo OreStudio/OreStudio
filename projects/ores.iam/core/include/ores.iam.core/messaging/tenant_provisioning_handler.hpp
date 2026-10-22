@@ -46,6 +46,7 @@
 #include "ores.iam.core/service/seed_profile_step_service.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -2108,6 +2109,10 @@ private:
             // The stream these bindings consume is the tenant's own simulated
             // one, not a real feed.
             req.change.write.producer_kind = "SYNTHETIC";
+            req.change.write.provider_code =
+                std::string(marketdata::domain::catalogue_ids::ore_provider);
+            req.change.write.source_id =
+                marketdata::domain::catalogue_ids::ore_simulated_source_id();
             // The write states no expectation, because the store's
             // must-not-exist claim is keyed on the source alone while the
             // binding's natural key is the party with the source. A

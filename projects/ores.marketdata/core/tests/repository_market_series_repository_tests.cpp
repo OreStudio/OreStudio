@@ -31,6 +31,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 namespace {
 
@@ -58,6 +59,7 @@ ores::marketdata::domain::market_series make_identity_test_series(database_helpe
     s.oresmd_uri = std::string("oresmd://generic/identity-test-") + boost::uuids::to_string(s.id) +
                    "?type=fixing";
     s.series_subclass = "yield";
+    s.provider_code = "ore";
     s.derivation_kind = "OBSERVED";
     s.derivation_config_id = boost::uuids::nil_uuid();
     s.derivation_config_version = 0;
@@ -144,8 +146,8 @@ TEST_CASE("read_latest_market_series_by_identity", tags) {
 
     // Scoped to the row's own party: the identity is unique per party, so one
     // identity can name a series in each of several parties.
-    auto read =
-        repo.read_latest_by_uri(h.context(), s.oresmd_uri, boost::uuids::to_string(s.party_id));
+    auto read = repo.read_latest_by_key(
+        h.context(), s.oresmd_uri, s.provider_code, boost::uuids::to_string(s.party_id));
     BOOST_LOG_SEV(lg, debug) << "Read by identity: " << read;
 
     REQUIRE(read.size() == 1);
@@ -241,6 +243,7 @@ ores::marketdata::domain::market_series make_fixing_test_series(database_helper&
     s.party_id = party;
     s.oresmd_uri = uri;
     s.series_subclass = "yield";
+    s.provider_code = "ore";
     s.derivation_kind = "OBSERVED";
     s.derivation_config_id = boost::uuids::nil_uuid();
     s.derivation_config_version = 0;
@@ -519,4 +522,55 @@ TEST_CASE("reprojecting_fills_a_new_column_an_earlier_projection_left_empty", ta
         ores::marketdata::repository::market_series_identity_projector::reproject(h.context(), {s});
     CHECK(second.written == 0);
     CHECK(second.unchanged == 1);
+}
+
+TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", tags) {
+    database_helper h;
+    market_series_repository repo;
+    const auto party = boost::uuids::random_generator{}();
+
+    auto bloomberg = make_identity_test_series(h, party);
+    bloomberg.provider_code = "bloomberg";
+    repo.write(h.context(), bloomberg);
+
+    auto lseg = bloomberg;
+    lseg.id = boost::uuids::random_generator{}();
+    lseg.provider_code = "lseg";
+    repo.write(h.context(), lseg);
+
+    const auto party_text = boost::uuids::to_string(party);
+    const auto from_bloomberg =
+        repo.read_latest_by_key(h.context(), bloomberg.oresmd_uri, "bloomberg", party_text);
+    const auto from_lseg =
+        repo.read_latest_by_key(h.context(), bloomberg.oresmd_uri, "lseg", party_text);
+    REQUIRE(from_bloomberg.size() == 1);
+    REQUIRE(from_lseg.size() == 1);
+    CHECK(from_bloomberg.front().id == bloomberg.id);
+    CHECK(from_lseg.front().id == lseg.id);
+}
+
+TEST_CASE("one_provider_keeps_one_series_for_one_item_and_party", tags) {
+    database_helper h;
+    market_series_repository repo;
+    const auto party = boost::uuids::random_generator{}();
+
+    auto first = make_identity_test_series(h, party);
+    first.provider_code = "bloomberg";
+    repo.write(h.context(), first);
+
+    auto second = first;
+    second.id = boost::uuids::random_generator{}();
+    CHECK_THROWS_WITH(
+        repo.write(h.context(), second),
+        Catch::Matchers::ContainsSubstring("duplicate key value violates unique constraint"));
+}
+
+TEST_CASE("a_series_needs_a_provider_in_the_catalogue", tags) {
+    database_helper h;
+    market_series_repository repo;
+
+    auto s = make_identity_test_series(h, boost::uuids::random_generator{}());
+    s.provider_code = "not_a_provider";
+    CHECK_THROWS_WITH(repo.write(h.context(), s),
+                      Catch::Matchers::ContainsSubstring("Invalid provider"));
 }

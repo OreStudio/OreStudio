@@ -46,11 +46,11 @@
  * specific derived point came from) is a separate concern, tracked by
  * observation_lineage, not this catalog-level marker.
  *
- * producer_kind answers a different question: not how the series was
- * produced but who produced it, a real feed (VENDOR) or a generated one
- * (SYNTHETIC). It is stamped once, from the feed_binding the first
- * observation arrived under, and is never revised -- a series a generated
- * producer created stays generated however it is later read.
+ * provider_code names the provider whose ids the series carries. A series is one
+ * item of one provider held by one party, so two providers that quote the same item
+ * keep two series, and a party that switches the source of a provider keeps one
+ * series and one history. The observations beneath it record the source that
+ * produced each one, for information; the source is never part of the key.
  */
 
 create table if not exists "ores_marketdata_market_series_tbl" (
@@ -59,8 +59,8 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "oresmd_uri" text not null,
+    "provider_code" text not null,
     "series_subclass" text not null,
-    "producer_kind" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
     "derivation_config_version" integer not null default 0,
@@ -84,8 +84,8 @@ create table if not exists "ores_marketdata_market_series_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists market_series_party_id_oresmd_uri_uniq_idx
-on "ores_marketdata_market_series_tbl" (tenant_id, party_id, oresmd_uri)
+create unique index if not exists market_series_party_id_oresmd_uri_provider_code_uniq_idx
+on "ores_marketdata_market_series_tbl" (tenant_id, party_id, oresmd_uri, provider_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -112,8 +112,8 @@ begin
     -- Validate series_subclass
     NEW.series_subclass := ores_refdata_validate_series_subclass_code_fn(NEW.tenant_id, NEW.series_subclass);
 
-    -- Validate producer_kind
-    NEW.producer_kind := ores_refdata_validate_producer_kind_fn(NEW.tenant_id, NEW.producer_kind);
+    -- Validate provider_code
+    NEW.provider_code := ores_marketdata_validate_provider_fn(NEW.tenant_id, NEW.provider_code);
 
     -- Validate derivation_kind
     NEW.derivation_kind := ores_refdata_validate_derivation_kind_fn(NEW.tenant_id, NEW.derivation_kind);

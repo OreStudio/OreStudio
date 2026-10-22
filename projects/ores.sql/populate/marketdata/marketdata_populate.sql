@@ -29,6 +29,9 @@
 \echo '=== Market Data Component Population ==='
 \echo ''
 
+\echo '--- Market Data Catalogue ---'
+\ir ./marketdata_catalogue_populate.sql
+
 \echo '--- FX Driver Rates Seed Data: 2016 Vintages ---'
 \ir ./marketdata_fx_driver_rates_populate.sql
 

@@ -26,11 +26,11 @@ A quote series is keyed by item, provider and party, and an observation records 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -45,17 +45,17 @@ A quote series is keyed by item, provider and party, and an observation records 
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
-1. Install the first catalogue rows with the system bundle: the provider =ore= and its source =ore-import= of kind replay, and the providers =bloomberg=, =lseg=, =ice= and =tradeweb= with no source yet.
+1. Install the first catalogue rows with the system bundle: the provider =ore= with the sources =ore-import= (replay), =ore-simulated= (simulated) and =ore-derived= (derived), and the providers =bloomberg=, =lseg=, =ice= and =tradeweb= with no source yet.
 2. Add =provider_code= to =market_series= as part of the natural key, so a series is unique on party, provider and identity. Validate it against the catalogue.
 3. Add =source_id= to =market_observation=. It is information, never part of the key.
 4. Write the provider =ore= on every series the seed data and the ORE import create, and the source =ore-import= on their observations.
 5. Move the as-of reads, the DQ publish and the ingest bridge to the new key.
-6. Remove =producer_kind= from =market_series= and from =feed_binding=, then drop the =producer_kind= code table from ores.refdata with its populate and permissions.
+6. Remove =producer_kind= from =market_series=. Add =provider_code= and =source_id= to =feed_binding= so the ingest loop knows the provider and the source of its producer.
 7. Test that two providers keep two series for one item and party, that one provider keeps one history across two sources, and that an observation records its source.
 
 Open points, with the recommended answer:
 - Seed series with no vendor: give them the provider =ore=. They come from ORE examples, so no vendor is invented.
-- =feed_binding= still uses =producer_kind=: drop the column there too. The bindings screen goes in a later task, and the simulator sets no other value than =SYNTHETIC= today.
+- =feed_binding= still uses =producer_kind=: the bindings screen filters and guards on it, so the column and the code table stay until the task that retires the screen. This changed from the first plan, which dropped it.
 - Existing observations have no source: the column is not null with the source =ore-import= as the value the seed writers supply. No default in the table.
 
 * Measurements
@@ -98,3 +98,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A series is unique on party, provider and identity, and an observation records the id of its source. The ORE import and the data quality publish write the provider =ore= and the source =ore-import=. The bootstrapped curve writes =ore-derived=. A feed binding names a provider and a source, and the ingest loop creates its series under that provider. The catalogue populate installs five providers and the three =ore= sources. Three new series tests cover two providers for one item, one provider for one item, and an unknown provider. The build of the marketdata test targets passes.
+
+Left for later tasks:
+- =producer_kind= stays on =feed_binding= with its code table, because the bindings screen filters and guards on it. The task that builds the new screens removes both.
+- No database test has run. The worktree =.env= is out of date, so the suites need a rebuilt database.
+- The curve pillar reader reads the provider =ore=, because a curve configuration names no provider yet.

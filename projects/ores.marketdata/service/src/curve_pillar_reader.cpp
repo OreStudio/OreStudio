@@ -18,6 +18,7 @@
  *
  */
 #include "curve_pillar_reader.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -56,8 +57,13 @@ read_pillar_rates(ores::database::context ctx,
                                                      p.end_tenor_code);
         // The config's own party, as the ingest loop scopes the series it writes:
         // the curve is bootstrapped for that party, so its quotes come from it.
-        const auto series = series_repo.read_latest_by_uri(
-            ctx, core::pillar_series_uri(key), boost::uuids::to_string(config.party_id));
+        // The curve configuration names no provider yet, so the quotes are the
+        // ones the ingest loop stores for the default provider of its bindings.
+        const auto series = series_repo.read_latest_by_key(
+            ctx,
+            core::pillar_series_uri(key),
+            std::string(ores::marketdata::domain::catalogue_ids::ore_provider),
+            boost::uuids::to_string(config.party_id));
         if (series.empty())
             continue;
 

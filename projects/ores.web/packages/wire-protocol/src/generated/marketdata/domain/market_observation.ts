@@ -39,4 +39,5 @@ export interface MarketObservation {
     oresmd_uri: string;
     value: string;
     source: string;
+    source_id: string;
 }

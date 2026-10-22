@@ -59,7 +59,7 @@ std::vector<ores::marketdata::domain::market_series>
 series_with_uri(ores::marketdata::repository::market_series_repository& repo,
                 ores::database::context ctx,
                 const std::string& oresmd_uri) {
-    return repo.read_latest_by_uri(ctx, oresmd_uri);
+    return repo.read_latest_by_key(ctx, oresmd_uri, "ore");
 }
 
 // A curve id no earlier run used. The test tenant is shared and nothing clears it
@@ -452,8 +452,8 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
     req.source = "test.import_service";
     REQUIRE(svc.import(req).success);
 
-    const auto by_identity = series_repo.read_latest_by_uri(
-        h.context(), "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
+    const auto by_identity = series_repo.read_latest_by_key(
+        h.context(), "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD", "ore");
     REQUIRE(by_identity.size() == 1);
     CHECK(by_identity.front().oresmd_uri ==
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
@@ -484,7 +484,7 @@ TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tag
 
     const auto uri =
         "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
-    const auto by_identity = series_repo.read_latest_by_uri(h.context(), uri);
+    const auto by_identity = series_repo.read_latest_by_key(h.context(), uri, "ore");
     REQUIRE(by_identity.size() == 1);
     CHECK(by_identity.front().oresmd_uri == uri);
 }

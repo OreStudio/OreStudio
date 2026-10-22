@@ -22,6 +22,7 @@
 
 #include "feed_run_identity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
@@ -484,6 +485,8 @@ public:
         b.id = uuid_gen();
         b.source_name = source_name;
         b.producer_kind = "SYNTHETIC";
+        b.provider_code = std::string(ores::marketdata::domain::catalogue_ids::ore_provider);
+        b.source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
         b.enabled = true;
         b.change_reason_code = "system.new_record";
         b.change_commentary = "Auto-created by feed_controller on feed start.";

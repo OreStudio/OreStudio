@@ -37,6 +37,8 @@ export interface FeedBindingWrite {
     party_id: string;
     source_name: string;
     producer_kind: string;
+    provider_code: string;
+    source_id: string;
     enabled: boolean;
 }
 
@@ -58,9 +60,13 @@ export interface FeedBindingLookup {
 export interface FeedBindingsFilter {
     party_id: string | null;
     producer_kind: string | null;
+    provider_code: string | null;
+    source_id: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
     producer_kind_one_of: string[] | null;
+    provider_code_one_of: string[] | null;
+    source_id_one_of: string[] | null;
     search: string | null;
 }
 

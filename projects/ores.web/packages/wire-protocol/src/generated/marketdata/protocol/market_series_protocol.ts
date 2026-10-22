@@ -36,8 +36,8 @@ export interface MarketSeriesWrite {
     id: string;
     party_id: string;
     oresmd_uri: string;
+    provider_code: string;
     series_subclass: string;
-    producer_kind: string;
     derivation_kind: string;
     derivation_config_id: string;
     derivation_config_version: number;
@@ -59,7 +59,9 @@ export interface MarketSeriesLookup {
 }
 
 export interface MarketSeriesFilter {
+    provider_code: string | null;
     id_one_of: string[] | null;
+    provider_code_one_of: string[] | null;
 }
 
 export interface MarketSeriesEvent {

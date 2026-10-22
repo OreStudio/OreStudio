@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source>
-     * <reason> <commentary>
+     * <source_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source>
-     * <reason> <commentary> [--version <n>]
+     * <source_id> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri>
-     * <value> <source> <reason> <commentary>
+     * <value> <source> <source_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

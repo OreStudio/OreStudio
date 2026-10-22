@@ -43,8 +43,8 @@ struct market_series_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     std::string oresmd_uri;
+    std::string provider_code;
     std::string series_subclass;
-    std::string producer_kind;
     std::string derivation_kind;
     boost::uuids::uuid derivation_config_id;
     int derivation_config_version;
@@ -66,7 +66,9 @@ struct market_series_lookup {
 };
 
 struct market_series_filter {
+    std::optional<std::string> provider_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> provider_code_one_of;
 };
 
 struct market_series_event {

@@ -47,6 +47,7 @@ create table if not exists "ores_marketdata_market_observations_tbl" (
     "oresmd_uri" text not null,
     "value" text not null,
     "source" text null,
+    "source_id" uuid not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, observation_datetime),

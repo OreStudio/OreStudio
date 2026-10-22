@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:catalogue:bundle:provisioning:
 #+created: 2026-10-22
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 
 * Summary
 
@@ -47,6 +47,15 @@ catalogue rows of its provider.
 The service must own the catalogue because the mapping is the same for every
 source of a provider. The simulator must own its generators because only it needs
 them. A real adapter has no generators.
+
+** What the bundle holds
+
+The bundle installs five providers: =bloomberg=, =lseg=, =ice=, =tradeweb= and =ore=. The data
+format of each is on its own page, for example [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]]. The provider =ore= has three
+sources of fixed ids: =ore-import= of kind =replay=, which the ORE import and the data quality
+publish use; =ore-simulated= of kind =simulated=; and =ore-derived= of kind =derived=, which
+the service uses for the values it computes, such as a bootstrapped curve. An observation
+records the id of its source, and the series it lands in belongs to the provider.
 
 ** The system bundle
 

@@ -253,6 +253,7 @@ void write_fx_row(export_tenant& t, const std::string& series_uri, const std::st
     s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
     s.oresmd_uri = series_uri;
     s.series_subclass = "spot";
+    s.provider_code = "ore";
     s.modified_by = t.ctx.actor();
     s.performed_by = t.ctx.service_account();
     s.change_reason_code =

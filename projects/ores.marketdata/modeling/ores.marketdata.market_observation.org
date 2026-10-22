@@ -13,7 +13,7 @@
 #+entity_title: Market Observation
 #+brief: One observed value for a (series, observation_datetime, coordinate) triple; TimescaleDB hypertable partitioned by observation_datetime.
 #+created: 2026-06-30
-#+updated: 2026-09-04
+#+updated: 2026-10-23
 
 A single market data observation: the value of a series at a given
 =observation_datetime= and =oresmd_uri= (the datum's coordinate).
@@ -126,6 +126,22 @@ std::to_string(faker::number::decimal<double>(0.0, 100.0))
 
 Source tag identifying the producer channel that published this observation
 (e.g. =synthetic.v1.ops.tick.fx_spot.eur-usd=).
+
+** source_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+References =market_data_source.id= -- the catalogue source that produced this
+observation. It is information. The series key does not contain it, so a
+party that switches the source of a provider keeps one history and each
+observation says which source it came from.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
 
 * Artefact columns
 :PROPERTIES:

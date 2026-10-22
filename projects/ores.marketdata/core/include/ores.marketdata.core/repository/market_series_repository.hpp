@@ -192,8 +192,9 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
-    std::vector<domain::market_series> read_latest_by_uri(context ctx,
+    std::vector<domain::market_series> read_latest_by_key(context ctx,
                                                           const std::string& oresmd_uri,
+                                                          const std::string& provider_code,
                                                           const std::string& party_id = {});
 
 private:

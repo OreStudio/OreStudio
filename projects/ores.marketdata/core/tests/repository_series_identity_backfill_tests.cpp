@@ -65,10 +65,10 @@ std::string insert_without_identity(database_helper& h,
         h.context(),
         "insert into ores_marketdata_market_series_tbl ("
         "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"
-        "    producer_kind, derivation_kind, derivation_config_id, derivation_config_version,"
+        "    provider_code, derivation_kind, derivation_config_id, derivation_config_version,"
         "    modified_by, performed_by, change_reason_code, change_commentary)"
         " values ($1::uuid, $2::uuid, 0, $3::uuid, $4, 'yield',"
-        "    'VENDOR', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,"
+        "    'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,"
         "    current_user, current_user, 'system.external_data_import',"
         "    'inserted in SQL by a backfill test')"
         " returning id::text",
@@ -112,6 +112,7 @@ TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone", tags)
     written.party_id = party;
     written.oresmd_uri = zero_uri(fresh_curve_id());
     written.series_subclass = "yield";
+    written.provider_code = "ore";
     written.derivation_kind = "OBSERVED";
     written.derivation_config_id = boost::uuids::nil_uuid();
     written.derivation_config_version = 0;

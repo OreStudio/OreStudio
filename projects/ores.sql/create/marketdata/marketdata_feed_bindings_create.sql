@@ -45,6 +45,12 @@
  * defaults to VENDOR, so every binding a real feed creates carries it without
  * setting anything.
  *
+ * A binding also says which provider's ids its producer publishes (provider_code)
+ * and which catalogue source it reads (source_id). The ingest loop creates the
+ * series it needs under that provider and records the source on every observation
+ * it stores, so a reader of a series learns where a value came from from the
+ * catalogue and not from the source string.
+ *
  * This model binds to no variability profile. Its features match
  * uuid-surrogate-lookup, but that profile also enables the shell command
  * facet, which feed bindings do not have today. Binding it is a decision about
@@ -58,6 +64,8 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "party_id" uuid not null,
     "source_name" text not null,
     "producer_kind" text not null,
+    "provider_code" text not null,
+    "source_id" uuid not null,
     "enabled" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -104,6 +112,9 @@ begin
 
     -- Validate producer_kind
     NEW.producer_kind := ores_refdata_validate_producer_kind_fn(NEW.tenant_id, NEW.producer_kind);
+
+    -- Validate provider_code
+    NEW.provider_code := ores_marketdata_validate_provider_fn(NEW.tenant_id, NEW.provider_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

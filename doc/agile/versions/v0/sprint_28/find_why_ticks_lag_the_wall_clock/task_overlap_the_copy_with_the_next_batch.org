@@ -74,6 +74,11 @@ task and name that file in the Command column.
 | Two stages (copy and republish together), 10 runs through NATS | median 109,300 rows per second (90,000 to 117,400) | =evidence/overlap_burst_nats_10_runs_output.txt= | af54ad7977 |
 | Three stages, 10 runs through NATS in one loop | median 128,100 rows per second (86,400 to 144,600) | =evidence/overlap_three_stages_nats_10_runs_output.txt=, =ORES_BURST_REPETITIONS=10 ... burst_through_nats_and_the_worker_of_the_loop= | f92fac4827 |
 | Load of the machine | 6 to 12 on 8 CPUs for these runs, from other environments. At 28 the serial and the pipelined loop gave the same rate, about 68,000. | the header of each evidence file, =/proc/loadavg= | same |
+| Rows per second, serial against pipelined, median of 5 pairs, with the age test | 106,802 against 130,147 | =evidence/overlap_age_at_republish_output.txt=, =ORES_BURST_REPETITIONS=5 ... burst_serial_against_pipelined_through_nats= | c4ceb20965 |
+| Age at republish of a burst of 60,000 ticks, median of the 5 medians | 326.1 ms serial, 320.5 ms pipelined | same | same |
+| Age at republish of a burst, median of the 5 p99 values | 477.5 ms serial, 373.0 ms pipelined | same | same |
+| Age at republish of a stream of 500 ticks, one every 2 ms, median of the 5 medians | 6.0 ms serial, 13.9 ms pipelined | same | same |
+| Age at republish of the stream, median of the 5 p99 values | 16.9 ms serial, 42.1 ms pipelined | same | same |
 |      |       |         |        |
 
 * Notes

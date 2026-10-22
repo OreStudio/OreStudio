@@ -39,7 +39,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.marketdata.core.tests");
 const std::string tags("[repository][catalogue]");
 
 }

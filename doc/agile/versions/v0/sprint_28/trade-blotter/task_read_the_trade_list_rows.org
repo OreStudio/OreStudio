@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-the-trade-list-rows
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,43 @@ Build the read model under the trade list. A row holds the trade or the structur
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written. The trade summary task is absorbed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Measure the generator gap for a table-less read model. |
+| Last touched | 2026-10-22                               |
 
 * Acceptance
 
 - One query returns trade rows and structure rows.
 - The query pages, sorts and filters in the service.
 - A row names the authorisation status.
+- One read states one =as_of=, and the state and the booking in a row come from that instant.
+- The generator supports a read-model entity that has no table. It reads from a set-returning SQL function that takes =as_of=.
+- The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
+- The identifier search is measured on a large list. A trigram index is added if the scan is too slow.
+- A portfolio scope over more than 1000 books is refused by the client, never truncated.
+- A repository test covers each filter, the search and the total.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The design is already settled. This task builds it. It does not redesign it.
+
+- The entity protocol specification defines the read model: =list= and =get= only, the standard filter record over the columns of every part, one =as_of= for all parts, its own key and permission, and no change event.
+- The story [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]] holds the task [[id:95E127BE-AFC8-4CF6-8DB4-961135A76C19][Add the trade summary entity]]. That task asks for the same read model. Its three blockers are done: the spike, the specification and the by-trade reads.
+- The trade list also needs two things that task does not state: structure rows at the same level, and the authorisation status.
+
+Decision (2026-10-22): this task absorbs the trade summary task. The summary entity is the first part of the work, so the two tasks would build one thing twice if they stayed apart. The old task is ABANDONED and points here. Its acceptance moves into this task.
+
+Steps, once the decision is made:
+
+1. Generator: support a read-model entity that has no table. It reads from a set-returning SQL function that takes =as_of=. This is the main risk of the task, so measure it first.
+2. SQL function: one row for each trade, with the book, the current state, the booking, the counterparty, the instrument type and the identifiers as one search text.
+3. Add the authorisation status to the row. Read it from the =trade_authorisation_request= detail row and the inbox request status, for the trade version that is current at =as_of=.
+4. Add the structure rows. A structure row has no state, notional or version of its own. It carries the count of its trades. It matches a filter when one of its trades does.
+5. Declare the model, then generate the protocol, repository, service, handler and TypeScript twin.
+6. Repository tests for each filter, the search, the total, =as_of= and the structure rows.
 
 * Measurements
 

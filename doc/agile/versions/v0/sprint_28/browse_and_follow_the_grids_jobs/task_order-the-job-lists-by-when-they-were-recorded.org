@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The batch list reads newest first, and the workunit and result lists can be orde
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | The models, the generator and the tests are done and a live check read the batches newest first. The work is not committed. |
-| Waiting on   | The owner's go-ahead to commit and open a PR. |
-| Next         | Commit, open a draft PR and close the task. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -118,12 +118,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3643 | [codegen] Order the job lists by when they were recorded |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A sortable column named recorded_at collides with the flag | core.py | Fixed | The generator raises a ValueError. A test covers it. |
+| 2 | The batch index lacks the id tie-break | ores.compute.batch.org | Declined | The index serves the first key and Postgres sorts the ties. |
+| 3 | The unscoped result and workunit lists have no index | ores.compute.result.org | Declined | The Jobs routes always scope these reads. |
+| 4 | Include order in the template | repository_impl.org | Declined | Clang-format sorts the generated files. |
+| 5 | Changed index needs an upgrade path | ores.compute.result.org | Noted | The repo has create scripts only. A recreate builds the index. |
+| 6 | Offset paging can show a moved batch twice | story.org | Noted | The story records the decision. |
 
 * Result
+
+The recording time is sortable through the model flag =:sortable_recorded_at:=.
+The batch model orders by it, newest first, and the workunit and result lists
+accept it. A live check read the batches newest first through the BFF, and the
+order matched the database order by =valid_from=. The order is that of the
+latest change of a batch, not of its creation. The new indexes were proven in a
+rolled-back transaction and not by a full recreate.

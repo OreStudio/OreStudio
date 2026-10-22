@@ -51,7 +51,9 @@ trade_operations_service::trade_operations_service(context ctx)
 namespace {
 
 // The audit members are the store's to set, so two rows hold the same terms
-// when they are equal once the incoming row takes the stored row's audit.
+// when they are equal once the incoming row takes the stored row's audit. A row
+// type that gains another member the store sets must be listed here, or a
+// repeat write reads as other terms.
 template <typename Row>
 bool same_terms(const Row& stored, Row incoming) {
     incoming.version = stored.version;
@@ -63,14 +65,19 @@ bool same_terms(const Row& stored, Row incoming) {
     return incoming == stored;
 }
 
+// Each incoming row must match a different stored row.
 template <typename Row>
-bool same_rows(const std::vector<Row>& stored, const std::vector<Row>& incoming) {
-    if (stored.size() != incoming.size())
+bool same_rows(std::vector<Row> remaining, const std::vector<Row>& incoming) {
+    if (remaining.size() != incoming.size())
         return false;
-    return std::ranges::all_of(incoming, [&](const Row& row) {
-        return std::ranges::any_of(stored,
-                                   [&](const Row& other) { return same_terms(other, row); });
-    });
+    for (const auto& row : incoming) {
+        const auto match = std::ranges::find_if(
+            remaining, [&](const Row& other) { return same_terms(other, row); });
+        if (match == remaining.end())
+            return false;
+        remaining.erase(match);
+    }
+    return true;
 }
 
 template <typename Repository, typename Row>
@@ -189,17 +196,18 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
     BOOST_LOG_SEV(lg(), debug) << "Creating bond issue " << issue.issue_id;
 
     messaging::put_bond_issue_composite_response response;
-
-    // One transaction writes the issue and every child row, so a refusal in
-    // any of them leaves no issue. A read made through the transaction joins
-    // it without ending it.
-    unit_of_work uow(ctx_);
-    const auto& ctx = uow.ctx();
-
-    repository::bond_issue_repository issues;
     const auto issue_key = boost::uuids::to_string(issue.issue_id);
-    const auto stored = issues.read_latest(ctx, issue_key);
-    if (!stored.empty()) {
+
+    // The answer for an issue the store already holds: equal terms are
+    // already_exists, and other terms are content_differs. Neither writes.
+    const auto answer_if_stored =
+        [&](const ores::database::context& ctx)
+        -> std::optional<messaging::put_bond_issue_composite_response> {
+        repository::bond_issue_repository issues;
+        const auto stored = issues.read_latest(ctx, issue_key);
+        if (stored.empty())
+            return std::nullopt;
+
         const std::vector<std::string> keys{issue_key};
         const bool same =
             same_terms(stored.front(), issue) &&
@@ -214,37 +222,65 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
             same_rows(repository::read_call_dates_by_issue_ids(ctx, keys), call_dates) &&
             same_rows(repository::read_conversion_targets_by_issue_ids(ctx, keys),
                       conversion_targets);
-        response.result.outcome = outcome::conflict;
-        response.result.code = same ? "already_exists" : "content_differs";
-        response.result.message = "Bond issue " + issue_key +
-                                  (same ? " is already stored." :
-                                          " is stored with other terms.");
+        messaging::put_bond_issue_composite_response answer;
+        answer.result.outcome = outcome::conflict;
+        answer.result.code = same ? "already_exists" : "content_differs";
+        answer.result.message = "Bond issue " + issue_key +
+                                (same ? " is already stored." : " is stored with other terms.");
+        BOOST_LOG_SEV(lg(), info) << "Bond issue " << issue_key << " answered "
+                                  << answer.result.code << ".";
+        return answer;
+    };
+
+    try {
+        // One transaction writes the issue and every child row, so a refusal
+        // in any of them leaves no issue. A read made through the transaction
+        // joins it without ending it.
+        unit_of_work uow(ctx_);
+        const auto& ctx = uow.ctx();
+
+        if (auto answer = answer_if_stored(ctx))
+            return *answer;
+
+        const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};
+        issue.version = 0;
+        repository::bond_issue_repository issues;
+        issues.write(ctx, issue, must_not_exist);
+
+        repository::bond_issue_leg_repository leg_repository;
+        create_rows(leg_repository, ctx, legs, must_not_exist);
+        repository::bond_issue_leg_amount_repository amount_repository;
+        create_rows(amount_repository, ctx, amounts, must_not_exist);
+        repository::bond_issue_leg_rate_repository rate_repository;
+        create_rows(rate_repository, ctx, rates, must_not_exist);
+        repository::bond_issue_leg_schedule_repository schedule_repository;
+        create_rows(schedule_repository, ctx, schedules, must_not_exist);
+        repository::bond_issue_leg_schedule_date_repository schedule_date_repository;
+        create_rows(schedule_date_repository, ctx, schedule_dates, must_not_exist);
+        repository::bond_issue_leg_amortization_repository amortization_repository;
+        create_rows(amortization_repository, ctx, amortizations, must_not_exist);
+        repository::bond_issue_call_date_repository call_date_repository;
+        create_rows(call_date_repository, ctx, call_dates, must_not_exist);
+        repository::bond_issue_conversion_target_repository conversion_target_repository;
+        create_rows(conversion_target_repository, ctx, conversion_targets, must_not_exist);
+
+        uow.commit();
+        BOOST_LOG_SEV(lg(), info)
+            << "Created bond issue " << issue_key << " with " << legs.size() << " legs, "
+            << amounts.size() << " amounts, " << rates.size() << " rates, " << schedules.size()
+            << " schedules, " << schedule_dates.size() << " schedule dates, "
+            << amortizations.size() << " amortisations, " << call_dates.size()
+            << " call dates and " << conversion_targets.size() << " conversion targets.";
         return response;
+    } catch (const std::exception&) {
+        // A parallel write of the same issue can pass the read above and fail
+        // at the store. The transaction is gone by now, so a new one reads what
+        // the other write left. A failure with nothing stored is the caller's.
+        unit_of_work retry(ctx_);
+        if (auto answer = answer_if_stored(retry.ctx()))
+            return *answer;
+        throw;
     }
-
-    const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};
-    issue.version = 0;
-    issues.write(ctx, issue, must_not_exist);
-
-    repository::bond_issue_leg_repository leg_repository;
-    create_rows(leg_repository, ctx, legs, must_not_exist);
-    repository::bond_issue_leg_amount_repository amount_repository;
-    create_rows(amount_repository, ctx, amounts, must_not_exist);
-    repository::bond_issue_leg_rate_repository rate_repository;
-    create_rows(rate_repository, ctx, rates, must_not_exist);
-    repository::bond_issue_leg_schedule_repository schedule_repository;
-    create_rows(schedule_repository, ctx, schedules, must_not_exist);
-    repository::bond_issue_leg_schedule_date_repository schedule_date_repository;
-    create_rows(schedule_date_repository, ctx, schedule_dates, must_not_exist);
-    repository::bond_issue_leg_amortization_repository amortization_repository;
-    create_rows(amortization_repository, ctx, amortizations, must_not_exist);
-    repository::bond_issue_call_date_repository call_date_repository;
-    create_rows(call_date_repository, ctx, call_dates, must_not_exist);
-    repository::bond_issue_conversion_target_repository conversion_target_repository;
-    create_rows(conversion_target_repository, ctx, conversion_targets, must_not_exist);
-
-    uow.commit();
-    return response;
 }
 
 }

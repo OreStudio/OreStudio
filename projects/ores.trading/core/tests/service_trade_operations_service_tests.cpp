@@ -27,9 +27,13 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_amortization_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_leg_amount_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_leg_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_schedule_date_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
@@ -39,6 +43,7 @@
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <string>
 
@@ -108,6 +113,42 @@ struct fixture final {
         amount.sequence_number = 1;
         amount.change_reason_code = "system.test";
         r.amounts.push_back(amount);
+        return r;
+    }
+
+    // The request with a row of each optional child type, so a comparison that
+    // skipped one of them would pass the same-terms test and fail the other.
+    put_bond_issue_composite_request full_issue_request() {
+        namespace gen_tr = ores::trading::generators;
+        auto r = issue_request();
+
+        auto schedule_date = gen_tr::generate_synthetic_bond_issue_leg_schedule_date(gen);
+        schedule_date.issue_id = r.issue.issue_id;
+        schedule_date.leg_number = 1;
+        schedule_date.schedule_role = "schedule";
+        schedule_date.schedule_sequence_number = 1;
+        schedule_date.sequence_number = 1;
+        schedule_date.change_reason_code = "system.test";
+        r.schedule_dates.push_back(schedule_date);
+
+        auto amortization = gen_tr::generate_synthetic_bond_issue_leg_amortization(gen);
+        amortization.issue_id = r.issue.issue_id;
+        amortization.leg_number = 1;
+        amortization.sequence_number = 1;
+        amortization.change_reason_code = "system.test";
+        r.amortizations.push_back(amortization);
+
+        auto call_date = gen_tr::generate_synthetic_bond_issue_call_date(gen);
+        call_date.issue_id = r.issue.issue_id;
+        call_date.sequence_number = 1;
+        call_date.change_reason_code = "system.test";
+        r.call_dates.push_back(call_date);
+
+        auto conversion_target = gen_tr::generate_synthetic_bond_issue_conversion_target(gen);
+        conversion_target.issue_id = r.issue.issue_id;
+        conversion_target.sequence_number = 1;
+        conversion_target.change_reason_code = "system.test";
+        r.conversion_targets.push_back(conversion_target);
         return r;
     }
 
@@ -227,4 +268,57 @@ TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
     CHECK(ores::trading::repository::bond_issue_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
               .empty());
+}
+
+TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", tags) {
+    fixture f;
+    const auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "already_exists");
+}
+
+TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
+    const auto change = GENERATE(0, 1, 2, 3);
+    fixture f;
+    auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    switch (change) {
+        case 0:
+            req.schedule_dates.front().schedule_date += std::chrono::months(1);
+            break;
+        case 1:
+            req.amortizations.front().amortization_type += "-other";
+            break;
+        case 2:
+            req.call_dates.front().call_date += std::chrono::months(1);
+            break;
+        default:
+            req.conversion_targets.front().underlying_id += "-other";
+            break;
+    }
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
+}
+
+TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", tags) {
+    fixture f;
+    auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+    req.call_dates.clear();
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
 }

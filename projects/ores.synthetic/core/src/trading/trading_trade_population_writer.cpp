@@ -292,12 +292,15 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
     const std::string commentary = "Generated trade population.";
     const auto reason = std::string(population_reason);
 
+    const auto face_value =
+        ores::utility::decimal::decimal::from_double(security_face_value).value();
+
     ores::trading::messaging::put_bond_issue_composite_request req;
     auto& issue = req.issue;
     issue.issue_id = write.issue_id;
     issue.security_id = write.security_id;
     issue.issuer = boost::uuids::to_string(slot.issuer_id);
-    issue.face_value = ores::utility::decimal::decimal::from_double(security_face_value).value();
+    issue.face_value = face_value;
     issue.issue_date = slot.issue_date;
     issue.settlement_days = 2;
     issue.calendar = slot.calendar;
@@ -327,7 +330,7 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
     notional.leg_number = 1;
     notional.amount_role = "notional";
     notional.sequence_number = 1;
-    notional.value = ores::utility::decimal::decimal::from_double(security_face_value).value();
+    notional.value = face_value;
     req.amounts.push_back(notional);
 
     /*

@@ -24,11 +24,16 @@
  *
  * Ore Parameter Table
  *
- * The vocabulary of the run document. ORE writes parameters as a name and a
- * value inside a block; scope names the block (Setup, Markets, an analytic)
- * and subtype narrows it, so a pair of them plus name says which parameter
- * this is. position keeps the order the document wrote, because a document
- * that is not reproducible in order is not reproducible.
+ * The vocabulary of ORE XML. A row documents one leaf of one ORE document: an
+ * attribute or an element that holds a value. schema_name names the XML schema
+ * of the document, for example ore.xsd, and xpath is the path to the leaf in
+ * a document of that schema. The two together say which leaf this is.
+ *
+ * ORE writes the parameters of ore.xml as a name and a value inside a block.
+ * For them scope names the block (Setup, Markets, an analytic), subtype
+ * narrows it, and name is the parameter, so the three give the same path as
+ * xpath. position keeps the order the document wrote, because a document that
+ * is not reproducible in order is not reproducible.
  *
  * 165 of the 218 parameter names observed in the shipped corpus belong to
  * exactly one analytic kind, which is why the name alone is not the key.
@@ -41,6 +46,8 @@ create table if not exists "ores_reporting_ore_parameters_tbl" (
     "scope" text not null,
     "subtype" text not null,
     "name" text not null,
+    "schema_name" text not null,
+    "xpath" text not null,
     "position" integer not null,
     "ore_parameter_value_domain_code" text not null,
     "is_required" boolean not null,

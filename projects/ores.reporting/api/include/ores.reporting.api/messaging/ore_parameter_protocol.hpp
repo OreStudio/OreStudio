@@ -44,6 +44,8 @@ struct ore_parameter_write {
     std::string scope;
     std::string subtype;
     std::string name;
+    std::string schema_name;
+    std::string xpath;
     int position;
     std::string ore_parameter_value_domain_code;
     bool is_required;

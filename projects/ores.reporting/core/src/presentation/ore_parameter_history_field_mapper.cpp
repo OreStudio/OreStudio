@@ -42,6 +42,8 @@ render_ore_parameter_fields(const domain::ore_parameter& v) {
     fields.push_back({.name = "Scope", .value = v.scope});
     fields.push_back({.name = "Subtype", .value = v.subtype});
     fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back({.name = "Schema Name", .value = v.schema_name});
+    fields.push_back({.name = "Xpath", .value = v.xpath});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     fields.push_back(
         {.name = "Ore Parameter Value Domain Code", .value = v.ore_parameter_value_domain_code});

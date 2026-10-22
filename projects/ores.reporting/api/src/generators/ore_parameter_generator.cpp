@@ -48,6 +48,8 @@ generate_synthetic_ore_parameter(utility::generation::generation_context& ctx) {
     r.scope = std::string(faker::word::noun());
     r.subtype = std::string(faker::word::noun());
     r.name = std::string(faker::word::noun());
+    r.schema_name = std::string(faker::word::noun());
+    r.xpath = std::string(faker::word::noun());
     r.ore_parameter_value_domain_code = std::string(faker::word::noun());
     r.label = std::string("Parameter");
     r.help = std::string("A flag.");

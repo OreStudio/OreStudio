@@ -33,12 +33,12 @@ std::string convert_to_table(const std::vector<ore_parameter>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Scope" << "Subtype" << "Name" << "Value Is" << "Modified By"
-          << "Version" << fort::endr;
+    table << fort::header << "Schema" << "XPath" << "Scope" << "Subtype" << "Name" << "Value Is"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pd : v) {
-        table << pd.scope << pd.subtype << pd.name << pd.ore_parameter_value_domain_code
-              << pd.modified_by << pd.version << fort::endr;
+        table << pd.schema_name << pd.xpath << pd.scope << pd.subtype << pd.name
+              << pd.ore_parameter_value_domain_code << pd.modified_by << pd.version << fort::endr;
     }
     return table.to_string();
 }

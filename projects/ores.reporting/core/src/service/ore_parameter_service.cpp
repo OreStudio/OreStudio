@@ -104,6 +104,8 @@ domain::ore_parameter to_domain(const messaging::ore_parameter_write& write) {
     v.scope = write.scope;
     v.subtype = write.subtype;
     v.name = write.name;
+    v.schema_name = write.schema_name;
+    v.xpath = write.xpath;
     v.position = write.position;
     v.ore_parameter_value_domain_code = write.ore_parameter_value_domain_code;
     v.is_required = write.is_required;

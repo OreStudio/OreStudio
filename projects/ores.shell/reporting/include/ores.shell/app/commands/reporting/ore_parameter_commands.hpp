@@ -87,25 +87,25 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <scope> <subtype> <name> <position> <ore_parameter_value_domain_code>
-     * <is_required> <label> <help> <description> <default_text> <format> <introduced_in>
-     * <removed_in> <reason> <commentary>
+     * @brief add <scope> <subtype> <name> <schema_name> <xpath> <position>
+     * <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text>
+     * <format> <introduced_in> <removed_in> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <scope> <subtype> <name> <position> <ore_parameter_value_domain_code>
-     * <is_required> <label> <help> <description> <default_text> <format> <introduced_in>
-     * <removed_in> <reason> <commentary> [--version <n>]
+     * @brief set <id> <scope> <subtype> <name> <schema_name> <xpath> <position>
+     * <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text>
+     * <format> <introduced_in> <removed_in> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <scope> <subtype> <name> <position>
+     * @brief put-many --count <n> <id> <scope> <subtype> <name> <schema_name> <xpath> <position>
      * <ore_parameter_value_domain_code> <is_required> <label> <help> <description> <default_text>
      * <format> <introduced_in> <removed_in> <reason> <commentary>
      */

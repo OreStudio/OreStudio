@@ -42,11 +42,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'active', 1, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''active'']', 'analytic', 'npv', 'active', 1, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.active'
         );
     end if;
@@ -59,11 +59,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'baseCurrency', 2, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''baseCurrency'']', 'analytic', 'npv', 'baseCurrency', 2, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.baseCurrency'
         );
     end if;
@@ -76,11 +76,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'outputFileName', 3, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''outputFileName'']', 'analytic', 'npv', 'outputFileName', 3, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.outputFileName'
         );
     end if;
@@ -93,11 +93,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'cashflow', 'active', 4, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflow'']/Parameter[@name=''active'']', 'analytic', 'cashflow', 'active', 4, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: cashflow.active'
         );
     end if;
@@ -110,11 +110,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'cashflow', 'outputFileName', 5, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflow'']/Parameter[@name=''outputFileName'']', 'analytic', 'cashflow', 'outputFileName', 5, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: cashflow.outputFileName'
         );
     end if;
@@ -127,11 +127,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'active', 6, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''active'']', 'analytic', 'curves', 'active', 6, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.active'
         );
     end if;
@@ -144,11 +144,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'configuration', 7, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''configuration'']', 'analytic', 'curves', 'configuration', 7, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.configuration'
         );
     end if;
@@ -161,11 +161,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'grid', 8, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''grid'']', 'analytic', 'curves', 'grid', 8, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.grid'
         );
     end if;
@@ -178,11 +178,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'outputFileName', 9, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''outputFileName'']', 'analytic', 'curves', 'outputFileName', 9, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.outputFileName'
         );
     end if;
@@ -195,11 +195,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'active', 10, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''active'']', 'analytic', 'simulation', 'active', 10, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.active'
         );
     end if;
@@ -212,11 +212,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amc', 11, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amc'']', 'analytic', 'simulation', 'amc', 11, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amc'
         );
     end if;
@@ -229,11 +229,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcTradeTypes', 12, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcTradeTypes'']', 'analytic', 'simulation', 'amcTradeTypes', 12, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcTradeTypes'
         );
     end if;
@@ -246,11 +246,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'simulationConfigFile', 13, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'simulation', 'simulationConfigFile', 13, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationConfigFile'
         );
     end if;
@@ -263,11 +263,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'pricingEnginesFile', 14, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'simulation', 'pricingEnginesFile', 14, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.pricingEnginesFile'
         );
     end if;
@@ -280,11 +280,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcPricingEnginesFile', 15, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPricingEnginesFile'']', 'analytic', 'simulation', 'amcPricingEnginesFile', 15, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPricingEnginesFile'
         );
     end if;
@@ -297,11 +297,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'baseCurrency', 16, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''baseCurrency'']', 'analytic', 'simulation', 'baseCurrency', 16, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.baseCurrency'
         );
     end if;
@@ -314,11 +314,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeScenarios', 17, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeScenarios'']', 'analytic', 'simulation', 'storeScenarios', 17, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeScenarios'
         );
     end if;
@@ -331,11 +331,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'cubeFile', 18, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''cubeFile'']', 'analytic', 'simulation', 'cubeFile', 18, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.cubeFile'
         );
     end if;
@@ -348,11 +348,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'aggregationScenarioDataFileName', 19, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''aggregationScenarioDataFileName'']', 'analytic', 'simulation', 'aggregationScenarioDataFileName', 19, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.aggregationScenarioDataFileName'
         );
     end if;
@@ -365,11 +365,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'aggregationScenarioDataDump', 20, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''aggregationScenarioDataDump'']', 'analytic', 'simulation', 'aggregationScenarioDataDump', 20, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.aggregationScenarioDataDump'
         );
     end if;
@@ -382,11 +382,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'allowPartialScenarios', 21, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''allowPartialScenarios'']', 'analytic', 'simulation', 'allowPartialScenarios', 21, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.allowPartialScenarios'
         );
     end if;
@@ -399,11 +399,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'active', 22, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''active'']', 'analytic', 'xva', 'active', 22, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.active'
         );
     end if;
@@ -416,11 +416,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'csaFile', 23, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''csaFile'']', 'analytic', 'xva', 'csaFile', 23, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.csaFile'
         );
     end if;
@@ -433,11 +433,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'cubeFile', 24, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cubeFile'']', 'analytic', 'xva', 'cubeFile', 24, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cubeFile'
         );
     end if;
@@ -450,11 +450,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'scenarioFile', 25, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''scenarioFile'']', 'analytic', 'xva', 'scenarioFile', 25, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.scenarioFile'
         );
     end if;
@@ -467,11 +467,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'baseCurrency', 26, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''baseCurrency'']', 'analytic', 'xva', 'baseCurrency', 26, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.baseCurrency'
         );
     end if;
@@ -484,11 +484,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'exposureProfiles', 27, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exposureProfiles'']', 'analytic', 'xva', 'exposureProfiles', 27, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.exposureProfiles'
         );
     end if;
@@ -501,11 +501,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'exposureProfilesByTrade', 28, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exposureProfilesByTrade'']', 'analytic', 'xva', 'exposureProfilesByTrade', 28, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.exposureProfilesByTrade'
         );
     end if;
@@ -518,11 +518,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'quantile', 29, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''quantile'']', 'analytic', 'xva', 'quantile', 29, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.quantile'
         );
     end if;
@@ -535,11 +535,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'calculationType', 30, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''calculationType'']', 'analytic', 'xva', 'calculationType', 30, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.calculationType'
         );
     end if;
@@ -552,11 +552,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'cva', 31, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cva'']', 'analytic', 'xva', 'cva', 31, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cva'
         );
     end if;
@@ -569,11 +569,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'rawCubeOutputFile', 32, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''rawCubeOutputFile'']', 'analytic', 'xva', 'rawCubeOutputFile', 32, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.rawCubeOutputFile'
         );
     end if;
@@ -586,11 +586,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'netCubeOutputFile', 33, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''netCubeOutputFile'']', 'analytic', 'xva', 'netCubeOutputFile', 33, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.netCubeOutputFile'
         );
     end if;
@@ -603,11 +603,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dim', 34, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dim'']', 'analytic', 'xva', 'dim', 34, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dim'
         );
     end if;
@@ -620,11 +620,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimModel', 35, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimModel'']', 'analytic', 'xva', 'dimModel', 35, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimModel'
         );
     end if;
@@ -637,11 +637,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimQuantile', 36, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimQuantile'']', 'analytic', 'xva', 'dimQuantile', 36, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimQuantile'
         );
     end if;
@@ -654,11 +654,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimHorizonCalendarDays', 37, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimHorizonCalendarDays'']', 'analytic', 'xva', 'dimHorizonCalendarDays', 37, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimHorizonCalendarDays'
         );
     end if;
@@ -671,11 +671,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimRegressionOrder', 38, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionOrder'']', 'analytic', 'xva', 'dimRegressionOrder', 38, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimRegressionOrder'
         );
     end if;
@@ -688,11 +688,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'active', 39, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''active'']', 'analytic', 'xvaSensitivity', 'active', 39, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.active'
         );
     end if;
@@ -705,11 +705,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'marketConfigFile', 40, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'xvaSensitivity', 'marketConfigFile', 40, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.marketConfigFile'
         );
     end if;
@@ -722,11 +722,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'sensitivityConfigFile', 41, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'xvaSensitivity', 'sensitivityConfigFile', 41, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.sensitivityConfigFile'
         );
     end if;
@@ -739,11 +739,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'outputSensitivityThreshold', 42, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputSensitivityThreshold'']', 'analytic', 'xvaSensitivity', 'outputSensitivityThreshold', 42, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.outputSensitivityThreshold'
         );
     end if;
@@ -756,11 +756,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'parSensitivity', 43, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''parSensitivity'']', 'analytic', 'xvaSensitivity', 'parSensitivity', 43, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.parSensitivity'
         );
     end if;
@@ -773,11 +773,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'outputJacobi', 44, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputJacobi'']', 'analytic', 'xvaSensitivity', 'outputJacobi', 44, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.outputJacobi'
         );
     end if;
@@ -790,11 +790,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'jacobiOutputFile', 45, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiOutputFile'']', 'analytic', 'xvaSensitivity', 'jacobiOutputFile', 45, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.jacobiOutputFile'
         );
     end if;
@@ -807,11 +807,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaSensitivity', 'jacobiInverseOutputFile', 46, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']', 'analytic', 'xvaSensitivity', 'jacobiInverseOutputFile', 46, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.jacobiInverseOutputFile'
         );
     end if;
@@ -824,11 +824,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'allocationMethod', 47, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''allocationMethod'']', 'analytic', 'xva', 'allocationMethod', 47, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.allocationMethod'
         );
     end if;
@@ -841,11 +841,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'marginalAllocationLimit', 48, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''marginalAllocationLimit'']', 'analytic', 'xva', 'marginalAllocationLimit', 48, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.marginalAllocationLimit'
         );
     end if;
@@ -858,11 +858,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'exerciseNextBreak', 49, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exerciseNextBreak'']', 'analytic', 'xva', 'exerciseNextBreak', 49, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.exerciseNextBreak'
         );
     end if;
@@ -875,11 +875,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dva', 50, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dva'']', 'analytic', 'xva', 'dva', 50, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dva'
         );
     end if;
@@ -892,11 +892,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dvaName', 51, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dvaName'']', 'analytic', 'xva', 'dvaName', 51, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dvaName'
         );
     end if;
@@ -909,11 +909,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fva', 52, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fva'']', 'analytic', 'xva', 'fva', 52, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fva'
         );
     end if;
@@ -926,11 +926,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fvaBorrowingCurve', 53, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaBorrowingCurve'']', 'analytic', 'xva', 'fvaBorrowingCurve', 53, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaBorrowingCurve'
         );
     end if;
@@ -943,11 +943,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fvaLendingCurve', 54, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaLendingCurve'']', 'analytic', 'xva', 'fvaLendingCurve', 54, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaLendingCurve'
         );
     end if;
@@ -960,11 +960,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'colva', 55, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''colva'']', 'analytic', 'xva', 'colva', 55, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.colva'
         );
     end if;
@@ -977,11 +977,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'collateralSpread', 56, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralSpread'']', 'analytic', 'xva', 'collateralSpread', 56, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.collateralSpread'
         );
     end if;
@@ -994,11 +994,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'collateralFloor', 57, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralFloor'']', 'analytic', 'xva', 'collateralFloor', 57, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.collateralFloor'
         );
     end if;
@@ -1011,11 +1011,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimScaling', 58, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimScaling'']', 'analytic', 'xva', 'dimScaling', 58, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimScaling'
         );
     end if;
@@ -1028,11 +1028,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimEvolutionFile', 59, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimEvolutionFile'']', 'analytic', 'xva', 'dimEvolutionFile', 59, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimEvolutionFile'
         );
     end if;
@@ -1045,11 +1045,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimRegressionFiles', 60, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionFiles'']', 'analytic', 'xva', 'dimRegressionFiles', 60, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimRegressionFiles'
         );
     end if;
@@ -1062,11 +1062,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimOutputNettingSet', 61, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputNettingSet'']', 'analytic', 'xva', 'dimOutputNettingSet', 61, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimOutputNettingSet'
         );
     end if;
@@ -1079,11 +1079,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimOutputGridPoints', 62, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputGridPoints'']', 'analytic', 'xva', 'dimOutputGridPoints', 62, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimOutputGridPoints'
         );
     end if;
@@ -1096,11 +1096,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimLocalRegressionEvaluations', 63, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimLocalRegressionEvaluations'']', 'analytic', 'xva', 'dimLocalRegressionEvaluations', 63, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimLocalRegressionEvaluations'
         );
     end if;
@@ -1113,11 +1113,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimLocalRegressionBandwidth', 64, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimLocalRegressionBandwidth'']', 'analytic', 'xva', 'dimLocalRegressionBandwidth', 64, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimLocalRegressionBandwidth'
         );
     end if;
@@ -1130,11 +1130,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'active', 65, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''active'']', 'analytic', 'xvaExplain', 'active', 65, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.active'
         );
     end if;
@@ -1147,11 +1147,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'marketConfigFile', 66, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'xvaExplain', 'marketConfigFile', 66, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.marketConfigFile'
         );
     end if;
@@ -1164,11 +1164,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'sensitivityConfigFile', 67, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'xvaExplain', 'sensitivityConfigFile', 67, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.sensitivityConfigFile'
         );
     end if;
@@ -1181,11 +1181,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'writeCubes', 68, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''writeCubes'']', 'analytic', 'xvaExplain', 'writeCubes', 68, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.writeCubes'
         );
     end if;
@@ -1198,11 +1198,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'shiftThreshold', 69, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''shiftThreshold'']', 'analytic', 'xvaExplain', 'shiftThreshold', 69, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.shiftThreshold'
         );
     end if;
@@ -1215,11 +1215,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'mporDays', 70, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporDays'']', 'analytic', 'xvaExplain', 'mporDays', 70, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.mporDays'
         );
     end if;
@@ -1232,11 +1232,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'mporCalendar', 71, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporCalendar'']', 'analytic', 'xvaExplain', 'mporCalendar', 71, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.mporCalendar'
         );
     end if;
@@ -1249,11 +1249,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'bacva', 'active', 72, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''active'']', 'analytic', 'bacva', 'active', 72, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.active'
         );
     end if;
@@ -1266,11 +1266,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'bacva', 'simmVersion', 73, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''simmVersion'']', 'analytic', 'bacva', 'simmVersion', 73, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.simmVersion'
         );
     end if;
@@ -1283,11 +1283,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'bacva', 'csaFile', 74, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''csaFile'']', 'analytic', 'bacva', 'csaFile', 74, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.csaFile'
         );
     end if;
@@ -1300,11 +1300,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'bacva', 'collateralBalancesFile', 75, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''collateralBalancesFile'']', 'analytic', 'bacva', 'collateralBalancesFile', 75, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.collateralBalancesFile'
         );
     end if;
@@ -1317,11 +1317,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'scenariodump', 76, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''scenariodump'']', 'analytic', 'simulation', 'scenariodump', 76, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.scenariodump'
         );
     end if;
@@ -1334,11 +1334,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaStress', 'active', 77, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''active'']', 'analytic', 'xvaStress', 'active', 77, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.active'
         );
     end if;
@@ -1351,11 +1351,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaStress', 'marketConfigFile', 78, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'xvaStress', 'marketConfigFile', 78, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.marketConfigFile'
         );
     end if;
@@ -1368,11 +1368,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaStress', 'stressConfigFile', 79, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'xvaStress', 'stressConfigFile', 79, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.stressConfigFile'
         );
     end if;
@@ -1385,11 +1385,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaStress', 'writeCubes', 80, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''writeCubes'']', 'analytic', 'xvaStress', 'writeCubes', 80, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.writeCubes'
         );
     end if;
@@ -1402,11 +1402,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sacva', 'active', 81, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''active'']', 'analytic', 'sacva', 'active', 81, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.active'
         );
     end if;
@@ -1419,11 +1419,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'active', 82, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''active'']', 'analytic', 'zeroToParShift', 'active', 82, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.active'
         );
     end if;
@@ -1436,11 +1436,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'marketConfigFile', 83, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'zeroToParShift', 'marketConfigFile', 83, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.marketConfigFile'
         );
     end if;
@@ -1453,11 +1453,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'stressConfigFile', 84, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'zeroToParShift', 'stressConfigFile', 84, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.stressConfigFile'
         );
     end if;
@@ -1470,11 +1470,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'sensitivityConfigFile', 85, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'zeroToParShift', 'sensitivityConfigFile', 85, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.sensitivityConfigFile'
         );
     end if;
@@ -1487,11 +1487,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'pricingEnginesFile', 86, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'zeroToParShift', 'pricingEnginesFile', 86, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.pricingEnginesFile'
         );
     end if;
@@ -1504,11 +1504,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'scenarioOutputFile', 87, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'zeroToParShift', 'scenarioOutputFile', 87, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.scenarioOutputFile'
         );
     end if;
@@ -1521,11 +1521,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParShift', 'parShiftsFile', 88, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''parShiftsFile'']', 'analytic', 'zeroToParShift', 'parShiftsFile', 88, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.parShiftsFile'
         );
     end if;
@@ -1538,11 +1538,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'additionalResults', 'active', 89, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''additionalResults'']/Parameter[@name=''active'']', 'analytic', 'additionalResults', 'active', 89, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: additionalResults.active'
         );
     end if;
@@ -1555,11 +1555,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'additionalResults', 'outputFileName', 90, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''additionalResults'']/Parameter[@name=''outputFileName'']', 'analytic', 'additionalResults', 'outputFileName', 90, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: additionalResults.outputFileName'
         );
     end if;
@@ -1572,11 +1572,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'active', 91, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''active'']', 'analytic', 'sensitivity', 'active', 91, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.active'
         );
     end if;
@@ -1589,11 +1589,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'marketConfigFile', 92, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'sensitivity', 'marketConfigFile', 92, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.marketConfigFile'
         );
     end if;
@@ -1606,11 +1606,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'sensitivityConfigFile', 93, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'sensitivity', 'sensitivityConfigFile', 93, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.sensitivityConfigFile'
         );
     end if;
@@ -1623,11 +1623,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'pricingEnginesFile', 94, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'sensitivity', 'pricingEnginesFile', 94, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.pricingEnginesFile'
         );
     end if;
@@ -1640,11 +1640,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'scenarioOutputFile', 95, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'sensitivity', 'scenarioOutputFile', 95, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.scenarioOutputFile'
         );
     end if;
@@ -1657,11 +1657,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'sensitivityOutputFile', 96, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''sensitivityOutputFile'']', 'analytic', 'sensitivity', 'sensitivityOutputFile', 96, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.sensitivityOutputFile'
         );
     end if;
@@ -1674,11 +1674,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'crossGammaOutputFile', 97, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''crossGammaOutputFile'']', 'analytic', 'sensitivity', 'crossGammaOutputFile', 97, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.crossGammaOutputFile'
         );
     end if;
@@ -1691,11 +1691,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'outputSensitivityThreshold', 98, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputSensitivityThreshold'']', 'analytic', 'sensitivity', 'outputSensitivityThreshold', 98, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputSensitivityThreshold'
         );
     end if;
@@ -1708,11 +1708,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'recalibrateModels', 99, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''recalibrateModels'']', 'analytic', 'sensitivity', 'recalibrateModels', 99, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.recalibrateModels'
         );
     end if;
@@ -1725,11 +1725,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'active', 100, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''active'']', 'analytic', 'calibration', 'active', 100, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.active'
         );
     end if;
@@ -1742,11 +1742,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'configFile', 101, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''configFile'']', 'analytic', 'calibration', 'configFile', 101, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.configFile'
         );
     end if;
@@ -1759,11 +1759,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'outputFile', 102, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''outputFile'']', 'analytic', 'calibration', 'outputFile', 102, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.outputFile'
         );
     end if;
@@ -1776,11 +1776,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'initialMargin', 'active', 103, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''active'']', 'analytic', 'initialMargin', 'active', 103, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: initialMargin.active'
         );
     end if;
@@ -1793,11 +1793,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'applySimmExemptions', 104, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''applySimmExemptions'']', 'analytic', 'sensitivity', 'applySimmExemptions', 104, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.applySimmExemptions'
         );
     end if;
@@ -1810,11 +1810,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'outputProductClassMapping', 105, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputProductClassMapping'']', 'analytic', 'sensitivity', 'outputProductClassMapping', 105, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputProductClassMapping'
         );
     end if;
@@ -1827,11 +1827,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'productClassMappingOutputFile', 106, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''productClassMappingOutputFile'']', 'analytic', 'sensitivity', 'productClassMappingOutputFile', 106, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.productClassMappingOutputFile'
         );
     end if;
@@ -1844,11 +1844,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'active', 107, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''active'']', 'analytic', 'zeroToParSensiConversion', 'active', 107, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.active'
         );
     end if;
@@ -1861,11 +1861,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'marketConfigFile', 108, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'zeroToParSensiConversion', 'marketConfigFile', 108, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.marketConfigFile'
         );
     end if;
@@ -1878,11 +1878,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'sensitivityConfigFile', 109, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'zeroToParSensiConversion', 'sensitivityConfigFile', 109, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.sensitivityConfigFile'
         );
     end if;
@@ -1895,11 +1895,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'pricingEnginesFile', 110, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'zeroToParSensiConversion', 'pricingEnginesFile', 110, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.pricingEnginesFile'
         );
     end if;
@@ -1912,11 +1912,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'sensitivityInputFile', 111, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityInputFile'']', 'analytic', 'zeroToParSensiConversion', 'sensitivityInputFile', 111, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.sensitivityInputFile'
         );
     end if;
@@ -1929,11 +1929,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'outputThreshold', 112, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputThreshold'']', 'analytic', 'zeroToParSensiConversion', 'outputThreshold', 112, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputThreshold'
         );
     end if;
@@ -1946,11 +1946,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'outputFile', 113, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputFile'']', 'analytic', 'zeroToParSensiConversion', 'outputFile', 113, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputFile'
         );
     end if;
@@ -1963,11 +1963,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'outputJacobi', 114, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputJacobi'']', 'analytic', 'zeroToParSensiConversion', 'outputJacobi', 114, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputJacobi'
         );
     end if;
@@ -1980,11 +1980,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'jacobiOutputFile', 115, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiOutputFile'']', 'analytic', 'zeroToParSensiConversion', 'jacobiOutputFile', 115, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.jacobiOutputFile'
         );
     end if;
@@ -1997,11 +1997,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'zeroToParSensiConversion', 'jacobiInverseOutputFile', 116, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiInverseOutputFile'']', 'analytic', 'zeroToParSensiConversion', 'jacobiInverseOutputFile', 116, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.jacobiInverseOutputFile'
         );
     end if;
@@ -2014,11 +2014,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcCg', 117, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCg'']', 'analytic', 'simulation', 'amcCg', 117, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCg'
         );
     end if;
@@ -2031,11 +2031,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgUseExternalComputeDevice', 118, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseExternalComputeDevice'']', 'analytic', 'simulation', 'xvaCgUseExternalComputeDevice', 118, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseExternalComputeDevice'
         );
     end if;
@@ -2048,11 +2048,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgExternalDeviceCompatibilityMode', 119, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgExternalDeviceCompatibilityMode'']', 'analytic', 'simulation', 'xvaCgExternalDeviceCompatibilityMode', 119, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgExternalDeviceCompatibilityMode'
         );
     end if;
@@ -2065,11 +2065,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgUseDoublePrecisionForExternalCalculation', 120, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseDoublePrecisionForExternalCalculation'']', 'analytic', 'simulation', 'xvaCgUseDoublePrecisionForExternalCalculation', 120, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseDoublePrecisionForExternalCalculation'
         );
     end if;
@@ -2082,11 +2082,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgExternalComputeDevice', 121, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgExternalComputeDevice'']', 'analytic', 'simulation', 'xvaCgExternalComputeDevice', 121, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgExternalComputeDevice'
         );
     end if;
@@ -2099,11 +2099,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcCgPricingEnginesFile', 122, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCgPricingEnginesFile'']', 'analytic', 'simulation', 'amcCgPricingEnginesFile', 122, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCgPricingEnginesFile'
         );
     end if;
@@ -2116,11 +2116,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgDynamicIM', 123, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgDynamicIM'']', 'analytic', 'simulation', 'xvaCgDynamicIM', 123, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgDynamicIM'
         );
     end if;
@@ -2133,11 +2133,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgDynamicIMStepSize', 124, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgDynamicIMStepSize'']', 'analytic', 'simulation', 'xvaCgDynamicIMStepSize', 124, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgDynamicIMStepSize'
         );
     end if;
@@ -2150,11 +2150,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgRegressionOrder', 125, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrder'']', 'analytic', 'simulation', 'xvaCgRegressionOrder', 125, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrder'
         );
     end if;
@@ -2167,11 +2167,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgRegressionOrderDynamicIm', 126, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrderDynamicIm'']', 'analytic', 'simulation', 'xvaCgRegressionOrderDynamicIm', 126, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrderDynamicIm'
         );
     end if;
@@ -2184,11 +2184,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgTradeLevelBreakDown', 127, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgTradeLevelBreakDown'']', 'analytic', 'simulation', 'xvaCgTradeLevelBreakDown', 127, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgTradeLevelBreakDown'
         );
     end if;
@@ -2201,11 +2201,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgUseRedBlocks', 128, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseRedBlocks'']', 'analytic', 'simulation', 'xvaCgUseRedBlocks', 128, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseRedBlocks'
         );
     end if;
@@ -2218,11 +2218,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeFlows', 129, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeFlows'']', 'analytic', 'simulation', 'storeFlows', 129, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeFlows'
         );
     end if;
@@ -2235,11 +2235,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'mva', 130, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mva'']', 'analytic', 'xva', 'mva', 130, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.mva'
         );
     end if;
@@ -2252,11 +2252,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimRegressors', 131, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressors'']', 'analytic', 'xva', 'dimRegressors', 131, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimRegressors'
         );
     end if;
@@ -2269,11 +2269,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeSensis', 132, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeSensis'']', 'analytic', 'simulation', 'storeSensis', 132, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeSensis'
         );
     end if;
@@ -2286,11 +2286,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'curveSensiGrid', 133, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''curveSensiGrid'']', 'analytic', 'simulation', 'curveSensiGrid', 133, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.curveSensiGrid'
         );
     end if;
@@ -2303,11 +2303,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'vegaSensiGrid', 134, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''vegaSensiGrid'']', 'analytic', 'simulation', 'vegaSensiGrid', 134, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.vegaSensiGrid'
         );
     end if;
@@ -2320,11 +2320,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'collateralBalancesFile', 135, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralBalancesFile'']', 'analytic', 'xva', 'collateralBalancesFile', 135, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.collateralBalancesFile'
         );
     end if;
@@ -2337,11 +2337,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'saccr', 'active', 136, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''active'']', 'analytic', 'saccr', 'active', 136, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.active'
         );
     end if;
@@ -2354,11 +2354,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'saccr', 'csaFile', 137, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''csaFile'']', 'analytic', 'saccr', 'csaFile', 137, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.csaFile'
         );
     end if;
@@ -2371,11 +2371,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'saccr', 'collateralBalancesFile', 138, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''collateralBalancesFile'']', 'analytic', 'saccr', 'collateralBalancesFile', 138, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.collateralBalancesFile'
         );
     end if;
@@ -2388,11 +2388,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'smrc', 'active', 139, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''smrc'']/Parameter[@name=''active'']', 'analytic', 'smrc', 'active', 139, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: smrc.active'
         );
     end if;
@@ -2405,11 +2405,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'useXvaRunner', 140, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''useXvaRunner'']', 'analytic', 'xva', 'useXvaRunner', 140, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.useXvaRunner'
         );
     end if;
@@ -2422,11 +2422,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'parSensitivity', 141, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivity'']', 'analytic', 'sensitivity', 'parSensitivity', 141, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.parSensitivity'
         );
     end if;
@@ -2439,11 +2439,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'parSensitivityOutputFile', 142, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivityOutputFile'']', 'analytic', 'sensitivity', 'parSensitivityOutputFile', 142, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.parSensitivityOutputFile'
         );
     end if;
@@ -2456,11 +2456,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'outputJacobi', 143, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputJacobi'']', 'analytic', 'sensitivity', 'outputJacobi', 143, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputJacobi'
         );
     end if;
@@ -2473,11 +2473,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'jacobiOutputFile', 144, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiOutputFile'']', 'analytic', 'sensitivity', 'jacobiOutputFile', 144, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.jacobiOutputFile'
         );
     end if;
@@ -2490,11 +2490,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'jacobiInverseOutputFile', 145, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']', 'analytic', 'sensitivity', 'jacobiInverseOutputFile', 145, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.jacobiInverseOutputFile'
         );
     end if;
@@ -2507,11 +2507,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'portfolioDetails', 'active', 146, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''active'']', 'analytic', 'portfolioDetails', 'active', 146, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.active'
         );
     end if;
@@ -2524,11 +2524,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'portfolioDetails', 'riskFactorFileName', 147, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''riskFactorFileName'']', 'analytic', 'portfolioDetails', 'riskFactorFileName', 147, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.riskFactorFileName'
         );
     end if;
@@ -2541,11 +2541,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'portfolioDetails', 'marketObjectFileName', 148, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''marketObjectFileName'']', 'analytic', 'portfolioDetails', 'marketObjectFileName', 148, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.marketObjectFileName'
         );
     end if;
@@ -2558,11 +2558,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeSurvivalProbabilities', 149, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeSurvivalProbabilities'']', 'analytic', 'simulation', 'storeSurvivalProbabilities', 149, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeSurvivalProbabilities'
         );
     end if;
@@ -2575,11 +2575,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dynamicCredit', 150, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dynamicCredit'']', 'analytic', 'xva', 'dynamicCredit', 150, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dynamicCredit'
         );
     end if;
@@ -2592,11 +2592,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'simulationModelFile', 151, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationModelFile'']', 'analytic', 'simulation', 'simulationModelFile', 151, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationModelFile'
         );
     end if;
@@ -2609,11 +2609,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'simulationMarketFile', 152, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationMarketFile'']', 'analytic', 'simulation', 'simulationMarketFile', 152, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationMarketFile'
         );
     end if;
@@ -2626,11 +2626,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'simulationParamFile', 153, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationParamFile'']', 'analytic', 'simulation', 'simulationParamFile', 153, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationParamFile'
         );
     end if;
@@ -2643,11 +2643,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fvaFundingCurve', 154, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaFundingCurve'']', 'analytic', 'xva', 'fvaFundingCurve', 154, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaFundingCurve'
         );
     end if;
@@ -2660,11 +2660,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fvaInvestmentCurve', 155, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaInvestmentCurve'']', 'analytic', 'xva', 'fvaInvestmentCurve', 155, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaInvestmentCurve'
         );
     end if;
@@ -2677,11 +2677,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'colvaSpread', 156, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''colvaSpread'']', 'analytic', 'xva', 'colvaSpread', 156, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.colvaSpread'
         );
     end if;
@@ -2694,11 +2694,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'eoniaFloor', 157, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''eoniaFloor'']', 'analytic', 'xva', 'eoniaFloor', 157, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.eoniaFloor'
         );
     end if;
@@ -2711,11 +2711,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'extendedResults', 158, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''extendedResults'']', 'analytic', 'npv', 'extendedResults', 158, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.extendedResults'
         );
     end if;
@@ -2728,11 +2728,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'active', 159, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''active'']', 'analytic', 'stress', 'active', 159, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.active'
         );
     end if;
@@ -2745,11 +2745,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'precision', 160, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''precision'']', 'analytic', 'stress', 'precision', 160, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.precision'
         );
     end if;
@@ -2762,11 +2762,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'marketConfigFile', 161, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'stress', 'marketConfigFile', 161, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.marketConfigFile'
         );
     end if;
@@ -2779,11 +2779,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'stressConfigFile', 162, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'stress', 'stressConfigFile', 162, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.stressConfigFile'
         );
     end if;
@@ -2796,11 +2796,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'pricingEnginesFile', 163, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'stress', 'pricingEnginesFile', 163, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.pricingEnginesFile'
         );
     end if;
@@ -2813,11 +2813,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'scenarioOutputFile', 164, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'stress', 'scenarioOutputFile', 164, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioOutputFile'
         );
     end if;
@@ -2830,11 +2830,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'outputThreshold', 165, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''outputThreshold'']', 'analytic', 'stress', 'outputThreshold', 165, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.outputThreshold'
         );
     end if;
@@ -2847,11 +2847,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'generateCashflows', 166, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''generateCashflows'']', 'analytic', 'stress', 'generateCashflows', 166, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.generateCashflows'
         );
     end if;
@@ -2864,11 +2864,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'scenarioCashflowOutputFile', 167, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioCashflowOutputFile'']', 'analytic', 'stress', 'scenarioCashflowOutputFile', 167, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioCashflowOutputFile'
         );
     end if;
@@ -2881,11 +2881,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'active', 168, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''active'']', 'analytic', 'parametricVar', 'active', 168, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.active'
         );
     end if;
@@ -2898,11 +2898,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'sensitivityInputFile', 169, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''sensitivityInputFile'']', 'analytic', 'parametricVar', 'sensitivityInputFile', 169, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.sensitivityInputFile'
         );
     end if;
@@ -2915,11 +2915,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'covarianceInputFile', 170, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''covarianceInputFile'']', 'analytic', 'parametricVar', 'covarianceInputFile', 170, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.covarianceInputFile'
         );
     end if;
@@ -2932,11 +2932,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'quantiles', 171, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''quantiles'']', 'analytic', 'parametricVar', 'quantiles', 171, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.quantiles'
         );
     end if;
@@ -2949,11 +2949,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'breakdown', 172, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''breakdown'']', 'analytic', 'parametricVar', 'breakdown', 172, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.breakdown'
         );
     end if;
@@ -2966,11 +2966,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'portfolioFilter', 173, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''portfolioFilter'']', 'analytic', 'parametricVar', 'portfolioFilter', 173, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.portfolioFilter'
         );
     end if;
@@ -2983,11 +2983,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'method', 174, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''method'']', 'analytic', 'parametricVar', 'method', 174, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.method'
         );
     end if;
@@ -3000,11 +3000,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parametricVar', 'outputFile', 175, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''outputFile'']', 'analytic', 'parametricVar', 'outputFile', 175, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.outputFile'
         );
     end if;
@@ -3017,11 +3017,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'active', 176, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''active'']', 'analytic', 'simm', 'active', 176, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.active'
         );
     end if;
@@ -3034,11 +3034,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'version', 177, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''version'']', 'analytic', 'simm', 'version', 177, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.version'
         );
     end if;
@@ -3051,11 +3051,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'crif', 178, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''crif'']', 'analytic', 'simm', 'crif', 178, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.crif'
         );
     end if;
@@ -3068,11 +3068,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'calculationCurrency', 179, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrency'']', 'analytic', 'simm', 'calculationCurrency', 179, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrency'
         );
     end if;
@@ -3085,11 +3085,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'enforceIMRegulations', 180, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''enforceIMRegulations'']', 'analytic', 'simm', 'enforceIMRegulations', 180, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.enforceIMRegulations'
         );
     end if;
@@ -3102,11 +3102,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'mporDays', 181, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''mporDays'']', 'analytic', 'simm', 'mporDays', 181, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.mporDays'
         );
     end if;
@@ -3119,11 +3119,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'imschedule', 'active', 182, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''active'']', 'analytic', 'imschedule', 'active', 182, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.active'
         );
     end if;
@@ -3136,11 +3136,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'imschedule', 'crif', 183, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''crif'']', 'analytic', 'imschedule', 'crif', 183, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.crif'
         );
     end if;
@@ -3153,11 +3153,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'imschedule', 'calculationCurrency', 184, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrency'']', 'analytic', 'imschedule', 'calculationCurrency', 184, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrency'
         );
     end if;
@@ -3170,11 +3170,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'simmCalibration', 185, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''simmCalibration'']', 'analytic', 'simm', 'simmCalibration', 185, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.simmCalibration'
         );
     end if;
@@ -3187,11 +3187,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simm', 'writeIntermediateReports', 186, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''writeIntermediateReports'']', 'analytic', 'simm', 'writeIntermediateReports', 186, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.writeIntermediateReports'
         );
     end if;
@@ -3204,11 +3204,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'creditcurves', 'active', 187, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''active'']', 'analytic', 'creditcurves', 'active', 187, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.active'
         );
     end if;
@@ -3221,11 +3221,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'creditcurves', 'configuration', 188, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''configuration'']', 'analytic', 'creditcurves', 'configuration', 188, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.configuration'
         );
     end if;
@@ -3238,11 +3238,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'creditcurves', 'grid', 189, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''grid'']', 'analytic', 'creditcurves', 'grid', 189, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.grid'
         );
     end if;
@@ -3255,11 +3255,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'creditcurves', 'outputFileName', 190, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''outputFileName'']', 'analytic', 'creditcurves', 'outputFileName', 190, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.outputFileName'
         );
     end if;
@@ -3272,11 +3272,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'computeCube', 191, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''computeCube'']', 'analytic', 'simulation', 'computeCube', 191, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.computeCube'
         );
     end if;
@@ -3289,11 +3289,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'additionalScenarioDataFileName', 192, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''additionalScenarioDataFileName'']', 'analytic', 'simulation', 'additionalScenarioDataFileName', 192, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.additionalScenarioDataFileName'
         );
     end if;
@@ -3306,11 +3306,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeCreditStateNPVs', 193, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeCreditStateNPVs'']', 'analytic', 'simulation', 'storeCreditStateNPVs', 193, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeCreditStateNPVs'
         );
     end if;
@@ -3323,11 +3323,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'hyperCube', 194, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''hyperCube'']', 'analytic', 'xva', 'hyperCube', 194, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.hyperCube'
         );
     end if;
@@ -3340,11 +3340,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'creditMigration', 195, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigration'']', 'analytic', 'xva', 'creditMigration', 195, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigration'
         );
     end if;
@@ -3357,11 +3357,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'creditMigrationDistributionGrid', 196, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationDistributionGrid'']', 'analytic', 'xva', 'creditMigrationDistributionGrid', 196, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationDistributionGrid'
         );
     end if;
@@ -3374,11 +3374,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'creditMigrationTimeSteps', 197, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationTimeSteps'']', 'analytic', 'xva', 'creditMigrationTimeSteps', 197, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationTimeSteps'
         );
     end if;
@@ -3391,11 +3391,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'creditMigrationConfig', 198, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationConfig'']', 'analytic', 'xva', 'creditMigrationConfig', 198, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationConfig'
         );
     end if;
@@ -3408,11 +3408,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'creditMigrationOutputFiles', 199, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationOutputFiles'']', 'analytic', 'xva', 'creditMigrationOutputFiles', 199, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationOutputFiles'
         );
     end if;
@@ -3425,11 +3425,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'parRateSensitivityOutputFile', 200, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parRateSensitivityOutputFile'']', 'analytic', 'sensitivity', 'parRateSensitivityOutputFile', 200, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.parRateSensitivityOutputFile'
         );
     end if;
@@ -3442,11 +3442,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'sensitivityConfigFile', 201, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'stress', 'sensitivityConfigFile', 201, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.sensitivityConfigFile'
         );
     end if;
@@ -3459,11 +3459,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'optimiseRiskFactors', 202, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''optimiseRiskFactors'']', 'analytic', 'sensitivity', 'optimiseRiskFactors', 202, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.optimiseRiskFactors'
         );
     end if;
@@ -3476,11 +3476,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaStress', 'sensitivityConfigFile', 203, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'xvaStress', 'sensitivityConfigFile', 203, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.sensitivityConfigFile'
         );
     end if;
@@ -3493,11 +3493,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xvaExplain', 'stressConfigFile', 204, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'xvaExplain', 'stressConfigFile', 204, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.stressConfigFile'
         );
     end if;
@@ -3510,11 +3510,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenario', 'active', 205, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''active'']', 'analytic', 'scenario', 'active', 205, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.active'
         );
     end if;
@@ -3527,11 +3527,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenario', 'simulationConfigFile', 206, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'scenario', 'simulationConfigFile', 206, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.simulationConfigFile'
         );
     end if;
@@ -3544,11 +3544,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenario', 'scenarioOutputFile', 207, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'scenario', 'scenarioOutputFile', 207, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.scenarioOutputFile'
         );
     end if;
@@ -3561,11 +3561,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'additionalResults', 208, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''additionalResults'']', 'analytic', 'npv', 'additionalResults', 208, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.additionalResults'
         );
     end if;
@@ -3578,11 +3578,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'outputTodaysMarketCalibration', 209, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''outputTodaysMarketCalibration'']', 'analytic', 'curves', 'outputTodaysMarketCalibration', 209, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.outputTodaysMarketCalibration'
         );
     end if;
@@ -3595,11 +3595,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'observationModel', 210, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''observationModel'']', 'analytic', 'simulation', 'observationModel', 210, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.observationModel'
         );
     end if;
@@ -3612,11 +3612,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'flipViewXVA', 211, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewXVA'']', 'analytic', 'xva', 'flipViewXVA', 211, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.flipViewXVA'
         );
     end if;
@@ -3629,11 +3629,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'flipViewBorrowingCurvePostfix', 212, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewBorrowingCurvePostfix'']', 'analytic', 'xva', 'flipViewBorrowingCurvePostfix', 212, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.flipViewBorrowingCurvePostfix'
         );
     end if;
@@ -3646,11 +3646,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'flipViewLendingCurvePostfix', 213, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewLendingCurvePostfix'']', 'analytic', 'xva', 'flipViewLendingCurvePostfix', 213, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.flipViewLendingCurvePostfix'
         );
     end if;
@@ -3663,11 +3663,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'initialMargin', 'method', 214, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''method'']', 'analytic', 'initialMargin', 'method', 214, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: initialMargin.method'
         );
     end if;
@@ -3680,11 +3680,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'npv', 'additionalResultsReportPrecision', 215, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npv'']/Parameter[@name=''additionalResultsReportPrecision'']', 'analytic', 'npv', 'additionalResultsReportPrecision', 215, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: npv.additionalResultsReportPrecision'
         );
     end if;
@@ -3697,11 +3697,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'timeAveragedNettedExposureOutputFile', 216, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''timeAveragedNettedExposureOutputFile'']', 'analytic', 'xva', 'timeAveragedNettedExposureOutputFile', 216, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.timeAveragedNettedExposureOutputFile'
         );
     end if;
@@ -3714,11 +3714,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'includeTodaysCashFlows', 217, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''includeTodaysCashFlows'']', 'analytic', 'simulation', 'includeTodaysCashFlows', 217, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.includeTodaysCashFlows'
         );
     end if;
@@ -3731,11 +3731,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'active', 218, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''active'']', 'analytic', 'pnlExplain', 'active', 218, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.active'
         );
     end if;
@@ -3748,11 +3748,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'mporDate', 219, 'date', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporDate'']', 'analytic', 'pnlExplain', 'mporDate', 219, 'date', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.mporDate'
         );
     end if;
@@ -3765,11 +3765,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'simulationConfigFile', 220, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'pnlExplain', 'simulationConfigFile', 220, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.simulationConfigFile'
         );
     end if;
@@ -3782,11 +3782,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'sensitivityConfigFile', 221, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'pnlExplain', 'sensitivityConfigFile', 221, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.sensitivityConfigFile'
         );
     end if;
@@ -3799,11 +3799,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'parSensitivity', 222, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''parSensitivity'']', 'analytic', 'pnlExplain', 'parSensitivity', 222, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.parSensitivity'
         );
     end if;
@@ -3816,11 +3816,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'curveConfigMporFile', 223, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''curveConfigMporFile'']', 'analytic', 'pnlExplain', 'curveConfigMporFile', 223, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.curveConfigMporFile'
         );
     end if;
@@ -3833,11 +3833,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'conventionsMporFile', 224, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsMporFile'']', 'analytic', 'pnlExplain', 'conventionsMporFile', 224, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.conventionsMporFile'
         );
     end if;
@@ -3850,11 +3850,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'portfolioMporFile', 225, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''portfolioMporFile'']', 'analytic', 'pnlExplain', 'portfolioMporFile', 225, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.portfolioMporFile'
         );
     end if;
@@ -3867,11 +3867,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnlExplain', 'outputFileName', 226, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''outputFileName'']', 'analytic', 'pnlExplain', 'outputFileName', 226, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.outputFileName'
         );
     end if;
@@ -3884,11 +3884,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'active', 227, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''active'']', 'analytic', 'pnl', 'active', 227, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.active'
         );
     end if;
@@ -3901,11 +3901,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'mporDays', 228, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporDays'']', 'analytic', 'pnl', 'mporDays', 228, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.mporDays'
         );
     end if;
@@ -3918,11 +3918,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'mporCalendar', 229, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporCalendar'']', 'analytic', 'pnl', 'mporCalendar', 229, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.mporCalendar'
         );
     end if;
@@ -3935,11 +3935,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'curveConfigMporFile', 230, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''curveConfigMporFile'']', 'analytic', 'pnl', 'curveConfigMporFile', 230, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.curveConfigMporFile'
         );
     end if;
@@ -3952,11 +3952,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'conventionsMporFile', 231, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsMporFile'']', 'analytic', 'pnl', 'conventionsMporFile', 231, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.conventionsMporFile'
         );
     end if;
@@ -3969,11 +3969,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'portfolioMporFile', 232, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''portfolioMporFile'']', 'analytic', 'pnl', 'portfolioMporFile', 232, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.portfolioMporFile'
         );
     end if;
@@ -3986,11 +3986,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'simulationConfigFile', 233, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'pnl', 'simulationConfigFile', 233, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.simulationConfigFile'
         );
     end if;
@@ -4003,11 +4003,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pnl', 'outputFileName', 234, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''outputFileName'']', 'analytic', 'pnl', 'outputFileName', 234, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.outputFileName'
         );
     end if;
@@ -4020,11 +4020,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'firstMporCollateralAdjustment', 235, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''firstMporCollateralAdjustment'']', 'analytic', 'xva', 'firstMporCollateralAdjustment', 235, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.firstMporCollateralAdjustment'
         );
     end if;
@@ -4037,11 +4037,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'active', 236, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''active'']', 'analytic', 'historicalSimulationVar', 'active', 236, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.active'
         );
     end if;
@@ -4054,11 +4054,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 237, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalScenarioFile'']', 'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 237, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.historicalScenarioFile'
         );
     end if;
@@ -4071,11 +4071,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'simulationConfigFile', 238, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'historicalSimulationVar', 'simulationConfigFile', 238, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.simulationConfigFile'
         );
     end if;
@@ -4088,11 +4088,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'historicalPeriod', 239, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalPeriod'']', 'analytic', 'historicalSimulationVar', 'historicalPeriod', 239, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.historicalPeriod'
         );
     end if;
@@ -4105,11 +4105,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'mporDays', 240, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporDays'']', 'analytic', 'historicalSimulationVar', 'mporDays', 240, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.mporDays'
         );
     end if;
@@ -4122,11 +4122,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'mporCalendar', 241, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporCalendar'']', 'analytic', 'historicalSimulationVar', 'mporCalendar', 241, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.mporCalendar'
         );
     end if;
@@ -4139,11 +4139,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 242, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporOverlappingPeriods'']', 'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 242, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.mporOverlappingPeriods'
         );
     end if;
@@ -4156,11 +4156,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'quantiles', 243, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''quantiles'']', 'analytic', 'historicalSimulationVar', 'quantiles', 243, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.quantiles'
         );
     end if;
@@ -4173,11 +4173,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'outputFile', 244, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputFile'']', 'analytic', 'historicalSimulationVar', 'outputFile', 244, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.outputFile'
         );
     end if;
@@ -4190,11 +4190,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'filterRiskKeys', 245, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''filterRiskKeys'']', 'analytic', 'simulation', 'filterRiskKeys', 245, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.filterRiskKeys'
         );
     end if;
@@ -4207,11 +4207,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgSensitivityConfigFile', 246, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgSensitivityConfigFile'']', 'analytic', 'simulation', 'xvaCgSensitivityConfigFile', 246, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgSensitivityConfigFile'
         );
     end if;
@@ -4224,11 +4224,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgBumpSensis', 247, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgBumpSensis'']', 'analytic', 'simulation', 'xvaCgBumpSensis', 247, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgBumpSensis'
         );
     end if;
@@ -4241,11 +4241,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgRegressionCacheSize', 248, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionCacheSize'']', 'analytic', 'simulation', 'xvaCgRegressionCacheSize', 248, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionCacheSize'
         );
     end if;
@@ -4258,11 +4258,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'amc', 'active', 249, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''active'']', 'analytic', 'amc', 'active', 249, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.active'
         );
     end if;
@@ -4275,11 +4275,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'amc', 'pricingEnginesFile', 250, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'amc', 'pricingEnginesFile', 250, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.pricingEnginesFile'
         );
     end if;
@@ -4292,11 +4292,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'amc', 'amcTradeTypes', 251, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''amcTradeTypes'']', 'analytic', 'amc', 'amcTradeTypes', 251, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.amcTradeTypes'
         );
     end if;
@@ -4309,11 +4309,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'disableEvaluationDateObservation', 252, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''disableEvaluationDateObservation'']', 'analytic', 'simulation', 'disableEvaluationDateObservation', 252, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.disableEvaluationDateObservation'
         );
     end if;
@@ -4326,11 +4326,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'active', 253, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''active'']', 'analytic', 'scenarioGeneration', 'active', 253, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.active'
         );
     end if;
@@ -4343,11 +4343,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'simulationConfigFile', 254, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'scenarioGeneration', 'simulationConfigFile', 254, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.simulationConfigFile'
         );
     end if;
@@ -4360,11 +4360,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'scenarioOutputFile', 255, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'scenarioGeneration', 'scenarioOutputFile', 255, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioOutputFile'
         );
     end if;
@@ -4377,11 +4377,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'amcPathDataOutput', 256, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''amcPathDataOutput'']', 'analytic', 'scenarioGeneration', 'amcPathDataOutput', 256, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.amcPathDataOutput'
         );
     end if;
@@ -4394,11 +4394,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'outputStatistics', 257, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputStatistics'']', 'analytic', 'scenarioGeneration', 'outputStatistics', 257, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputStatistics'
         );
     end if;
@@ -4411,11 +4411,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'outputDistributions', 258, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputDistributions'']', 'analytic', 'scenarioGeneration', 'outputDistributions', 258, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputDistributions'
         );
     end if;
@@ -4428,11 +4428,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'scenarioFile', 259, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''scenarioFile'']', 'analytic', 'simulation', 'scenarioFile', 259, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.scenarioFile'
         );
     end if;
@@ -4445,11 +4445,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcPathDataOutput', 260, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPathDataOutput'']', 'analytic', 'simulation', 'amcPathDataOutput', 260, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPathDataOutput'
         );
     end if;
@@ -4462,11 +4462,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcIndividualTrainingOutput', 261, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcIndividualTrainingOutput'']', 'analytic', 'simulation', 'amcIndividualTrainingOutput', 261, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcIndividualTrainingOutput'
         );
     end if;
@@ -4479,11 +4479,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'amcIndividualTrainingInput', 262, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcIndividualTrainingInput'']', 'analytic', 'simulation', 'amcIndividualTrainingInput', 262, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcIndividualTrainingInput'
         );
     end if;
@@ -4496,11 +4496,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'includeReferenceDateEvents', 263, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''includeReferenceDateEvents'']', 'analytic', 'simulation', 'includeReferenceDateEvents', 263, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.includeReferenceDateEvents'
         );
     end if;
@@ -4513,11 +4513,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'stressZeroScenarioDataFile', 264, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressZeroScenarioDataFile'']', 'analytic', 'stress', 'stressZeroScenarioDataFile', 264, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.stressZeroScenarioDataFile'
         );
     end if;
@@ -4530,11 +4530,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'active', 265, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''active'']', 'analytic', 'parStressConversion', 'active', 265, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.active'
         );
     end if;
@@ -4547,11 +4547,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'marketConfigFile', 266, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'parStressConversion', 'marketConfigFile', 266, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.marketConfigFile'
         );
     end if;
@@ -4564,11 +4564,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'stressConfigFile', 267, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'parStressConversion', 'stressConfigFile', 267, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.stressConfigFile'
         );
     end if;
@@ -4581,11 +4581,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'sensitivityConfigFile', 268, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'parStressConversion', 'sensitivityConfigFile', 268, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.sensitivityConfigFile'
         );
     end if;
@@ -4598,11 +4598,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'pricingEnginesFile', 269, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''pricingEnginesFile'']', 'analytic', 'parStressConversion', 'pricingEnginesFile', 269, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.pricingEnginesFile'
         );
     end if;
@@ -4615,11 +4615,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'scenarioOutputFile', 270, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''scenarioOutputFile'']', 'analytic', 'parStressConversion', 'scenarioOutputFile', 270, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.scenarioOutputFile'
         );
     end if;
@@ -4632,11 +4632,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'outputThreshold', 271, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''outputThreshold'']', 'analytic', 'parStressConversion', 'outputThreshold', 271, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.outputThreshold'
         );
     end if;
@@ -4649,11 +4649,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 272, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressZeroScenarioDataFile'']', 'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 272, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.stressZeroScenarioDataFile'
         );
     end if;
@@ -4666,11 +4666,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'outputCrossAssetModelData', 273, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''outputCrossAssetModelData'']', 'analytic', 'xva', 'outputCrossAssetModelData', 273, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.outputCrossAssetModelData'
         );
     end if;
@@ -4683,11 +4683,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'correlationInputFile', 274, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''correlationInputFile'']', 'analytic', 'xva', 'correlationInputFile', 274, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.correlationInputFile'
         );
     end if;
@@ -4700,11 +4700,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'scenarioCorrSimulation', 275, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''scenarioCorrSimulation'']', 'analytic', 'xva', 'scenarioCorrSimulation', 275, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.scenarioCorrSimulation'
         );
     end if;
@@ -4717,11 +4717,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'simulationConfigFile', 276, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''simulationConfigFile'']', 'analytic', 'xva', 'simulationConfigFile', 276, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.simulationConfigFile'
         );
     end if;
@@ -4734,11 +4734,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'historicalScenarioFile', 277, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''historicalScenarioFile'']', 'analytic', 'xva', 'historicalScenarioFile', 277, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.historicalScenarioFile'
         );
     end if;
@@ -4751,11 +4751,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'sensitivityConfigFile', 278, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'xva', 'sensitivityConfigFile', 278, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.sensitivityConfigFile'
         );
     end if;
@@ -4768,11 +4768,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'historicalPeriod', 279, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''historicalPeriod'']', 'analytic', 'xva', 'historicalPeriod', 279, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.historicalPeriod'
         );
     end if;
@@ -4785,11 +4785,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'mporDays', 280, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mporDays'']', 'analytic', 'xva', 'mporDays', 280, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.mporDays'
         );
     end if;
@@ -4802,11 +4802,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'mporCalendar', 281, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mporCalendar'']', 'analytic', 'xva', 'mporCalendar', 281, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.mporCalendar'
         );
     end if;
@@ -4819,11 +4819,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'model', 282, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''model'']', 'analytic', 'calibration', 'model', 282, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.model'
         );
     end if;
@@ -4836,11 +4836,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'mode', 283, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''mode'']', 'analytic', 'calibration', 'mode', 283, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.mode'
         );
     end if;
@@ -4853,11 +4853,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'foreignCurrencies', 284, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''foreignCurrencies'']', 'analytic', 'calibration', 'foreignCurrencies', 284, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.foreignCurrencies'
         );
     end if;
@@ -4870,11 +4870,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'pcaCalibration', 285, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaCalibration'']', 'analytic', 'calibration', 'pcaCalibration', 285, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaCalibration'
         );
     end if;
@@ -4887,11 +4887,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'curveTenors', 286, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''curveTenors'']', 'analytic', 'calibration', 'curveTenors', 286, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.curveTenors'
         );
     end if;
@@ -4904,11 +4904,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'useForwardOrZeroRate', 287, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''useForwardOrZeroRate'']', 'analytic', 'calibration', 'useForwardOrZeroRate', 287, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.useForwardOrZeroRate'
         );
     end if;
@@ -4921,11 +4921,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'pcaInputFileName', 288, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaInputFileName'']', 'analytic', 'calibration', 'pcaInputFileName', 288, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaInputFileName'
         );
     end if;
@@ -4938,11 +4938,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'meanReversionCalibration', 289, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''meanReversionCalibration'']', 'analytic', 'calibration', 'meanReversionCalibration', 289, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.meanReversionCalibration'
         );
     end if;
@@ -4955,11 +4955,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'basisFunctionNumber', 290, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''basisFunctionNumber'']', 'analytic', 'calibration', 'basisFunctionNumber', 290, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.basisFunctionNumber'
         );
     end if;
@@ -4972,11 +4972,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'kappaUpperBound', 291, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''kappaUpperBound'']', 'analytic', 'calibration', 'kappaUpperBound', 291, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.kappaUpperBound'
         );
     end if;
@@ -4989,11 +4989,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'haltonMaxGuess', 292, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''haltonMaxGuess'']', 'analytic', 'calibration', 'haltonMaxGuess', 292, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.haltonMaxGuess'
         );
     end if;
@@ -5006,11 +5006,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'meanReversionOutputFileName', 293, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''meanReversionOutputFileName'']', 'analytic', 'calibration', 'meanReversionOutputFileName', 293, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.meanReversionOutputFileName'
         );
     end if;
@@ -5023,11 +5023,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'scenarioInputFile', 294, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''scenarioInputFile'']', 'analytic', 'calibration', 'scenarioInputFile', 294, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.scenarioInputFile'
         );
     end if;
@@ -5040,11 +5040,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'startDate', 295, 'date', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''startDate'']', 'analytic', 'calibration', 'startDate', 295, 'date', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.startDate'
         );
     end if;
@@ -5057,11 +5057,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'endDate', 296, 'date', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''endDate'']', 'analytic', 'calibration', 'endDate', 296, 'date', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.endDate'
         );
     end if;
@@ -5074,11 +5074,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'lambda', 297, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''lambda'']', 'analytic', 'calibration', 'lambda', 297, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.lambda'
         );
     end if;
@@ -5091,11 +5091,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'varianceRetained', 298, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''varianceRetained'']', 'analytic', 'calibration', 'varianceRetained', 298, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.varianceRetained'
         );
     end if;
@@ -5108,11 +5108,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'calibration', 'pcaOutputFileName', 299, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaOutputFileName'']', 'analytic', 'calibration', 'pcaOutputFileName', 299, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaOutputFileName'
         );
     end if;
@@ -5125,11 +5125,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'saccr', 'simmVersion', 300, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''simmVersion'']', 'analytic', 'saccr', 'simmVersion', 300, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.simmVersion'
         );
     end if;
@@ -5142,11 +5142,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'active', 301, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''active'']', 'analytic', 'pfe', 'active', 301, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.active'
         );
     end if;
@@ -5159,11 +5159,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'csaFile', 302, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''csaFile'']', 'analytic', 'pfe', 'csaFile', 302, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.csaFile'
         );
     end if;
@@ -5176,11 +5176,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'cubeFile', 303, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''cubeFile'']', 'analytic', 'pfe', 'cubeFile', 303, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.cubeFile'
         );
     end if;
@@ -5193,11 +5193,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'scenarioFile', 304, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''scenarioFile'']', 'analytic', 'pfe', 'scenarioFile', 304, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.scenarioFile'
         );
     end if;
@@ -5210,11 +5210,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'baseCurrency', 305, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''baseCurrency'']', 'analytic', 'pfe', 'baseCurrency', 305, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.baseCurrency'
         );
     end if;
@@ -5227,11 +5227,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'exposureProfiles', 306, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfiles'']', 'analytic', 'pfe', 'exposureProfiles', 306, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.exposureProfiles'
         );
     end if;
@@ -5244,11 +5244,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'exposureProfilesByTrade', 307, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfilesByTrade'']', 'analytic', 'pfe', 'exposureProfilesByTrade', 307, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.exposureProfilesByTrade'
         );
     end if;
@@ -5261,11 +5261,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'quantile', 308, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''quantile'']', 'analytic', 'pfe', 'quantile', 308, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.quantile'
         );
     end if;
@@ -5278,11 +5278,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'calculationType', 309, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''calculationType'']', 'analytic', 'pfe', 'calculationType', 309, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.calculationType'
         );
     end if;
@@ -5295,11 +5295,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'allocationMethod', 310, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''allocationMethod'']', 'analytic', 'pfe', 'allocationMethod', 310, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.allocationMethod'
         );
     end if;
@@ -5312,11 +5312,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'marginalAllocationLimit', 311, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''marginalAllocationLimit'']', 'analytic', 'pfe', 'marginalAllocationLimit', 311, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.marginalAllocationLimit'
         );
     end if;
@@ -5329,11 +5329,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'exerciseNextBreak', 312, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exerciseNextBreak'']', 'analytic', 'pfe', 'exerciseNextBreak', 312, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.exerciseNextBreak'
         );
     end if;
@@ -5346,11 +5346,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'rawCubeOutputFile', 313, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''rawCubeOutputFile'']', 'analytic', 'pfe', 'rawCubeOutputFile', 313, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.rawCubeOutputFile'
         );
     end if;
@@ -5363,11 +5363,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'pfe', 'netCubeOutputFile', 314, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''netCubeOutputFile'']', 'analytic', 'pfe', 'netCubeOutputFile', 314, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.netCubeOutputFile'
         );
     end if;
@@ -5380,11 +5380,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'deterministicInitialMarginFile', 315, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''deterministicInitialMarginFile'']', 'analytic', 'xva', 'deterministicInitialMarginFile', 315, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.deterministicInitialMarginFile'
         );
     end if;
@@ -5397,11 +5397,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'active', 316, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''active'']', 'analytic', 'crif', 'active', 316, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.active'
         );
     end if;
@@ -5414,11 +5414,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'marketConfigFile', 317, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'crif', 'marketConfigFile', 317, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.marketConfigFile'
         );
     end if;
@@ -5431,11 +5431,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'sensitivityConfigFile', 318, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'crif', 'sensitivityConfigFile', 318, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.sensitivityConfigFile'
         );
     end if;
@@ -5448,11 +5448,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'baseCurrency', 319, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''baseCurrency'']', 'analytic', 'crif', 'baseCurrency', 319, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.baseCurrency'
         );
     end if;
@@ -5465,11 +5465,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'simmVersion', 320, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''simmVersion'']', 'analytic', 'crif', 'simmVersion', 320, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.simmVersion'
         );
     end if;
@@ -5482,11 +5482,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'crif', 'crifOutputFile', 321, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''crifOutputFile'']', 'analytic', 'crif', 'crifOutputFile', 321, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.crifOutputFile'
         );
     end if;
@@ -5499,11 +5499,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'imschedule', 'version', 322, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''version'']', 'analytic', 'imschedule', 'version', 322, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.version'
         );
     end if;
@@ -5516,11 +5516,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgRegressionReportTimeStepsDynamicIM', 323, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionReportTimeStepsDynamicIM'']', 'analytic', 'simulation', 'xvaCgRegressionReportTimeStepsDynamicIM', 323, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionReportTimeStepsDynamicIM'
         );
     end if;
@@ -5533,11 +5533,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgUsePythonIntegration', 324, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegration'']', 'analytic', 'simulation', 'xvaCgUsePythonIntegration', 324, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegration'
         );
     end if;
@@ -5550,11 +5550,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgUsePythonIntegrationDynamicIm', 325, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegrationDynamicIm'']', 'analytic', 'simulation', 'xvaCgUsePythonIntegrationDynamicIm', 325, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegrationDynamicIm'
         );
     end if;
@@ -5567,11 +5567,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgTradeLevelBreakdown', 326, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgTradeLevelBreakdown'']', 'analytic', 'simulation', 'xvaCgTradeLevelBreakdown', 326, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgTradeLevelBreakdown'
         );
     end if;
@@ -5584,11 +5584,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'fullInitialCollateralisation', 327, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fullInitialCollateralisation'']', 'analytic', 'xva', 'fullInitialCollateralisation', 327, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fullInitialCollateralisation'
         );
     end if;
@@ -5601,11 +5601,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimDistributionCoveredStdDevs', 328, 'double', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionCoveredStdDevs'']', 'analytic', 'xva', 'dimDistributionCoveredStdDevs', 328, 'double', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimDistributionCoveredStdDevs'
         );
     end if;
@@ -5618,11 +5618,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'dimDistributionGridSize', 329, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionGridSize'']', 'analytic', 'xva', 'dimDistributionGridSize', 329, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimDistributionGridSize'
         );
     end if;
@@ -5635,11 +5635,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'storeExerciseValues', 330, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeExerciseValues'']', 'analytic', 'simulation', 'storeExerciseValues', 330, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeExerciseValues'
         );
     end if;
@@ -5652,11 +5652,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'simulation', 'xvaCgEnableCgOptimization', 331, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgEnableCgOptimization'']', 'analytic', 'simulation', 'xvaCgEnableCgOptimization', 331, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgEnableCgOptimization'
         );
     end if;
@@ -5669,11 +5669,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'curves', 'calendar', 332, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''calendar'']', 'analytic', 'curves', 'calendar', 332, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.calendar'
         );
     end if;
@@ -5686,11 +5686,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'borrowingCurve', 333, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''borrowingCurve'']', 'analytic', 'xva', 'borrowingCurve', 333, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.borrowingCurve'
         );
     end if;
@@ -5703,11 +5703,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'xva', 'lendingCurve', 334, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''lendingCurve'']', 'analytic', 'xva', 'lendingCurve', 334, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.lendingCurve'
         );
     end if;
@@ -5720,11 +5720,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'cashflow', 'includePastCashflows', 335, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflow'']/Parameter[@name=''includePastCashflows'']', 'analytic', 'cashflow', 'includePastCashflows', 335, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: cashflow.includePastCashflows'
         );
     end if;
@@ -5737,11 +5737,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'laxFxConversion', 336, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''laxFxConversion'']', 'analytic', 'sensitivity', 'laxFxConversion', 336, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.laxFxConversion'
         );
     end if;
@@ -5754,11 +5754,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'scenarioType', 337, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioType'']', 'analytic', 'scenarioGeneration', 'scenarioType', 337, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioType'
         );
     end if;
@@ -5771,11 +5771,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'stressConfigFile', 338, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'scenarioGeneration', 'stressConfigFile', 338, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.stressConfigFile'
         );
     end if;
@@ -5788,11 +5788,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'scenarioGeneration', 'scenarioPrecision', 339, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioPrecision'']', 'analytic', 'scenarioGeneration', 'scenarioPrecision', 339, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioPrecision'
         );
     end if;
@@ -5805,11 +5805,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'decomposeIndexSensitivities', 340, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''decomposeIndexSensitivities'']', 'analytic', 'sensitivity', 'decomposeIndexSensitivities', 340, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.decomposeIndexSensitivities'
         );
     end if;
@@ -5822,11 +5822,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivityStress', 'active', 341, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''active'']', 'analytic', 'sensitivityStress', 'active', 341, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.active'
         );
     end if;
@@ -5839,11 +5839,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivityStress', 'marketConfigFile', 342, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''marketConfigFile'']', 'analytic', 'sensitivityStress', 'marketConfigFile', 342, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.marketConfigFile'
         );
     end if;
@@ -5856,11 +5856,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivityStress', 'stressConfigFile', 343, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''stressConfigFile'']', 'analytic', 'sensitivityStress', 'stressConfigFile', 343, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.stressConfigFile'
         );
     end if;
@@ -5873,11 +5873,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivityStress', 'sensitivityConfigFile', 344, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'sensitivityStress', 'sensitivityConfigFile', 344, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.sensitivityConfigFile'
         );
     end if;
@@ -5890,11 +5890,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivityStress', 'calcBaseScenario', 345, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''calcBaseScenario'']', 'analytic', 'sensitivityStress', 'calcBaseScenario', 345, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.calcBaseScenario'
         );
     end if;
@@ -5907,11 +5907,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'active', 346, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''active'']', 'analytic', 'correlation', 'active', 346, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.active'
         );
     end if;
@@ -5924,11 +5924,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'correlation_method', 347, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''correlation_method'']', 'analytic', 'correlation', 'correlation_method', 347, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.correlation_method'
         );
     end if;
@@ -5941,11 +5941,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'scenarioCorrSimulation', 348, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''scenarioCorrSimulation'']', 'analytic', 'correlation', 'scenarioCorrSimulation', 348, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.scenarioCorrSimulation'
         );
     end if;
@@ -5958,11 +5958,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'historicalScenarioFile', 349, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalScenarioFile'']', 'analytic', 'correlation', 'historicalScenarioFile', 349, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.historicalScenarioFile'
         );
     end if;
@@ -5975,11 +5975,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'sensitivityConfigFile', 350, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''sensitivityConfigFile'']', 'analytic', 'correlation', 'sensitivityConfigFile', 350, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.sensitivityConfigFile'
         );
     end if;
@@ -5992,11 +5992,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'historicalPeriod', 351, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalPeriod'']', 'analytic', 'correlation', 'historicalPeriod', 351, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.historicalPeriod'
         );
     end if;
@@ -6009,11 +6009,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'mporDays', 352, 'integer', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporDays'']', 'analytic', 'correlation', 'mporDays', 352, 'integer', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.mporDays'
         );
     end if;
@@ -6026,11 +6026,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'mporCalendar', 353, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporCalendar'']', 'analytic', 'correlation', 'mporCalendar', 353, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.mporCalendar'
         );
     end if;
@@ -6043,11 +6043,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 354, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''filterCamCorrelationScenarioTenor'']', 'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 354, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.filterCamCorrelationScenarioTenor'
         );
     end if;
@@ -6060,11 +6060,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'correlation', 'outputFile', 355, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''outputFile'']', 'analytic', 'correlation', 'outputFile', 355, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.outputFile'
         );
     end if;
@@ -6077,11 +6077,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 356, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeExpectedShortfall'']', 'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 356, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includeExpectedShortfall'
         );
     end if;
@@ -6094,11 +6094,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'breakdown', 357, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''breakdown'']', 'analytic', 'historicalSimulationVar', 'breakdown', 357, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.breakdown'
         );
     end if;
@@ -6111,11 +6111,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'tradePnl', 358, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''tradePnl'']', 'analytic', 'historicalSimulationVar', 'tradePnl', 358, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.tradePnl'
         );
     end if;
@@ -6128,11 +6128,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 359, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskFactorBreakdown'']', 'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 359, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.riskFactorBreakdown'
         );
     end if;
@@ -6145,11 +6145,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 360, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskClassBreakdown'']', 'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 360, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.riskClassBreakdown'
         );
     end if;
@@ -6162,11 +6162,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 361, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputHistoricalScenarios'']', 'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 361, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.outputHistoricalScenarios'
         );
     end if;
@@ -6179,11 +6179,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'sensitivity', 'alignPillars', 362, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''alignPillars'']', 'analytic', 'sensitivity', 'alignPillars', 362, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.alignPillars'
         );
     end if;
@@ -6196,11 +6196,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'includeTheta', 363, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeTheta'']', 'analytic', 'historicalSimulationVar', 'includeTheta', 363, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includeTheta'
         );
     end if;
@@ -6213,11 +6213,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 364, 'boolean', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includePeriodCashflow'']', 'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 364, 'boolean', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includePeriodCashflow'
         );
     end if;
@@ -6230,11 +6230,11 @@ begin
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
-            'analytic', 'stress', 'scenarioFile', 365, 'string', false,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioFile'']', 'analytic', 'stress', 'scenarioFile', 365, 'string', false,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioFile'
         );
     end if;

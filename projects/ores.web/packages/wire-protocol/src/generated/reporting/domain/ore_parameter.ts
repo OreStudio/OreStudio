@@ -37,6 +37,8 @@ export interface OreParameter {
     scope: string;
     subtype: string;
     name: string;
+    schema_name: string;
+    xpath: string;
     position: number;
     ore_parameter_value_domain_code: string;
     is_required: boolean;

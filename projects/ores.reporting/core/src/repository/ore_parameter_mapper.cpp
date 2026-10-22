@@ -50,6 +50,8 @@ domain::ore_parameter ore_parameter_mapper::map(const ore_parameter_entity& v) {
     r.scope = v.scope;
     r.subtype = v.subtype;
     r.name = v.name;
+    r.schema_name = v.schema_name;
+    r.xpath = v.xpath;
     r.position = v.position;
     r.ore_parameter_value_domain_code = v.ore_parameter_value_domain_code;
     r.is_required = v.is_required;
@@ -80,6 +82,8 @@ ore_parameter_entity ore_parameter_mapper::map(const domain::ore_parameter& v) {
     r.scope = v.scope;
     r.subtype = v.subtype;
     r.name = v.name;
+    r.schema_name = v.schema_name;
+    r.xpath = v.xpath;
     r.position = v.position;
     r.ore_parameter_value_domain_code = v.ore_parameter_value_domain_code;
     r.is_required = v.is_required;

@@ -48,6 +48,8 @@ struct ore_parameter_entity {
     std::string scope;
     std::string subtype;
     std::string name;
+    std::string schema_name;
+    std::string xpath;
     int position = 0;
     std::string ore_parameter_value_domain_code;
     bool is_required = false;

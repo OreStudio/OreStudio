@@ -96,11 +96,12 @@ def render():
     ) then
         insert into ores_reporting_ore_parameters_tbl (
             id, tenant_id, version,
-            scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
             label, help, description, default_text, format, introduced_in, removed_in,
             modified_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', {sql_text("/ORE/Setup/Parameter[@name='" + p["name"] + "']")},
             'Setup', '', {sql_text(p["name"])}, {position}, {sql_text(p["domain"])}, false,
             {sql_text(p["label"])}, {sql_text(p["help"])},
             {sql_text(p["description"])},

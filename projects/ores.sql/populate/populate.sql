@@ -416,6 +416,21 @@ from ores_compute_platforms_tbl where valid_to = ores_utility_infinity_timestamp
 union all
 select 'Analytics: Pricing Engine Types', count(*)
 from ores_analytics_pricing_engine_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Pricing Model Engine Pairs', count(*)
+from ores_analytics_pricing_model_engine_pairs_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Pricing Pair Settings', count(*)
+from ores_analytics_pricing_pair_settings_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Pricing Models', count(*)
+from ores_analytics_pricing_models_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Pricing Methods', count(*)
+from ores_analytics_pricing_methods_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Sensitivity Templates', count(*)
+from ores_analytics_sensitivity_templates_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
 
 commit;

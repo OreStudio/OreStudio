@@ -261,6 +261,23 @@ export const CARDS = {
         permission: 'reporting::report_definitions:read',
         screenTitleKey: 'reporting.title',
     },
+    pricingEngines: {
+        titleKey: 'reporting.area.screens.pricingEngines',
+        bodyKey: 'reporting.area.screens.pricingEnginesBody',
+        to: PATHS.pricingEngines,
+        icon: 'pairs',
+        permission: 'analytics::pricing_model_configs:read',
+        screenTitleKey: 'pricingEngines.title',
+    },
+    pricingEngineAuthoring: {
+        titleKey: 'pricingEngines.workflows.author',
+        bodyKey: 'pricingEngines.workflows.authorBody',
+        to: PATHS.pricingEngineAuthoring,
+        icon: 'document',
+        kind: 'workflow',
+        on: 'pricingEngines',
+        permission: 'analytics::pricing_model_configs:write',
+    },
     tenants: {
         titleKey: 'home.system.tenants',
         bodyKey: 'home.system.tenantsLead',
@@ -307,7 +324,7 @@ export const AREA_CARDS = {
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'bindings', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
-    reporting: ['reports'],
+    reporting: ['reports', 'pricingEngines'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 

@@ -24,6 +24,7 @@
 #include "ores.database/repository/document_operations.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <set>
 
 namespace ores::analytics::service {
@@ -38,6 +39,25 @@ pricing_engines_document_service::pricing_engines_document_service(context ctx)
 
 void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
+
+    // A saved document is the whole document, so a product or parameter the
+    // earlier version held and this one omits is removed.
+    const auto of_config = [&](const auto& row) {
+        return row.pricing_model_config_id == v.config.id;
+    };
+    const auto omitted = [&](auto repo, const auto& kept) {
+        auto rows = read_where(ctx_, repo, of_config);
+        std::erase_if(rows, [&](const auto& r) {
+            return std::ranges::any_of(kept, [&](const auto& k) { return k.id == r.id; });
+        });
+        return rows;
+    };
+    if (const auto gone = omitted(pricing_model_product_parameter_repository(), v.parameters);
+        !gone.empty())
+        pricing_model_product_parameter_repository().remove(ctx_, ids_of(gone));
+    if (const auto gone = omitted(pricing_model_product_repository(), v.products); !gone.empty())
+        pricing_model_product_repository().remove(ctx_, ids_of(gone));
+
     pricing_model_config_repository().write(ctx_, v.config);
     pricing_model_product_repository().write(ctx_, v.products);
     pricing_model_product_parameter_repository().write(ctx_, v.parameters);

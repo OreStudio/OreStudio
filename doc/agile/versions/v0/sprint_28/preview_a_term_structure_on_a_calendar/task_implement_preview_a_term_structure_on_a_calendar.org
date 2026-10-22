@@ -108,7 +108,7 @@ via its "Verifies task" field.
 | 5 | BFF =horizon= is not checked as a date | tenors.ts | Defer | It matches =resolveBodySchema=. Tighten both together in the page task. |
 | 6 | Garbled sentence in the PR description | PR body | Accept | Fixed in the PR body. |
 | 7 | Track the =er-diagram= and =step-consumers= failures | none | Accept | To be filed as captures. |
-| 8 | Run one smoke call before merge | none | Open | Needs a started service. |
+| 8 | Run one smoke call before merge | none | Done | =POST /api/tenors/resolve-convention= on a started fleet: =CREDIT_CDS_IMM= on calendar =X-2=, horizon and spot 2026-10-22. Six tenors resolved, 12M to 10Y. Without a spot date each entry refused with =missing_spot_date= and the reply was still ok. |
 
 * Result
 

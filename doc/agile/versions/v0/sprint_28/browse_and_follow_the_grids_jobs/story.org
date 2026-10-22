@@ -54,7 +54,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 | [[id:A2D86110-9343-487F-990E-C8AA4A491575][Store a release note with the app version]] | BACKLOG | | | The app version model has no release note. A job pins a version and a person cannot read what changed in it. Add the note to the version, and publish it with the bundle. |
 | [[id:B5C3CA59-67B9-4826-9191-0AB40C6B80CE][Build the app version page]] | BACKLOG | | | One app version of the compute catalogue: the build, its release note, its packages and the other versions of its app, drawn in the prototype and not yet in the web client. |
 | [[id:75489199-9605-4135-AFA9-7F03CBAAFD5F][Order the job lists by when they were recorded]] | DONE | | 2026-10-23 | The batch, workunit and result lists order by their key alone, and the key is a random identifier. A page cannot read newest first. Make the recording time sortable. |
-| [[id:97AA0C61-915C-4650-B717-3F4416AF9610][Let a party member read workunits and results]] | BACKLOG | | | A party member may read batches and is refused the workunit and result reads with forbidden. The Browse the grid's jobs journey gives the party member the whole tree. |
+| [[id:97AA0C61-915C-4650-B717-3F4416AF9610][Let a party member read workunits and results]] | DONE | | 2026-10-23 | A party member may read batches and is refused the workunit and result reads with forbidden. The Browse the grid's jobs journey gives the party member the whole tree. |
 
 * Decisions
 

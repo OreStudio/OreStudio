@@ -8,12 +8,12 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/let-a-party-member-read-workunits-and-results
-#+pr:
+#+pr: 3647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A party member reads the workunits and results of the batches of their own party
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -42,9 +42,11 @@ A party member reads the workunits and results of the batches of their own party
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add =compute::workunits:read= and =compute::results:read= to the Member role in
+=iam_roles_populate.sql=. The party policies of the compute tables already cut
+the rows, so no policy changes. Record the grant in the RLS exceptions register
+and state the roles in the journey. Recreate the database and check three
+accounts through the BFF.
 
 * Measurements
 
@@ -58,9 +60,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Workunits of a batch read by a member of its party | 3 of 3 | =GET /api/operations/grid/jobs/batches/:id/workunits= as =adrian.vance= | 6479664f05 plus the working tree |
+| Results of a workunit read by the same member | 1 of 1, host hidden | =GET /api/operations/grid/jobs/workunits/:id/results= as =adrian.vance= | 6479664f05 plus the working tree |
+| Batches, workunits and results read by a member of another party | 0, 0, 0 | the same routes as =diane.kay= | 6479664f05 plus the working tree |
+| That member reads the workunit by id | 404 | =GET /api/operations/grid/jobs/workunits/:id= as =diane.kay= | 6479664f05 plus the working tree |
 
 * Notes
+
+- A database that is not rebuilt does not hold the new grants. =compass db
+  recreate= is the only upgrade path.
+- The tenant administrator holds every code, so the grant changes nothing for
+  that role.
 
 * Test Scenarios
 
@@ -77,12 +87,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3647 | [iam] Let a party member read workunits and results |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Live roles still lack the grants | rls_exceptions_register.org | Fixed | The register states it. |
+| 2 | The journey keeps a dated history line | journey_browse_the_grids_jobs.org | Fixed | The line is removed. |
 
 * Result
+
+The Member role holds the workunit and result read codes in the seed. After a
+database recreate, a member of the batches' own party reads the batches, the
+workunits of a batch and the results of a workunit, and sees the host of a
+result as hidden. A member of another party reads none of them and gets 404 for
+a workunit by id.

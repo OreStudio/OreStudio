@@ -138,10 +138,10 @@ filters, the open rows, the page and the selection.
 Each read checks its entity's read code (=compute::batches:read=,
 =compute::workunits:read=, =compute::results:read=) and serves the session's
 tenant. The row-level policy narrows a party member to their own party. The
-Member role holds the batch read in the seed. A live check on 2026-10-22 showed
-that a party member is refused the workunit and result reads with =forbidden=, so
-the member sees the batches and cannot open one. The seed must give the Member
-role the workunit and result read codes.
+Member role holds the batch, workunit and result read codes in the seed, so a
+party member opens a batch of their own party and reads its workunits and
+results. The TenantAdmin role holds every code, and the ReportRun service role
+holds the three reads.
 
 The batch list reads newest first. The batch model declares =recorded_at=
 sortable and orders by it, descending, and the workunit and result lists accept

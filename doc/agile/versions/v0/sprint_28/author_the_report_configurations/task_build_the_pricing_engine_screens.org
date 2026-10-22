@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 986E1372-9BA6-4CA5-BFC1-FBDA134F221A
+:END:
+#+title: Task: Build the pricing engine configuration screens
+#+description: Task for: Author the report configurations on guided screens
+#+type: task
+#+level: s1
+#+filetags: :author_the_report_configurations:sprint_28:v0:
+#+owner: marco
+#+branch: feature/pricing-engine-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the screens that the pricing engine journeys and prototypes draw. This first slice reads and writes configurations in place. It has no status, no sign-off and no proposal. Those stay in the task Four-eyes sign-off for pricing engine changes. A configuration here is a draft that a person with the write permission changes at once, with a reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
+| Now          | See, Author and Change are built. Import and History are not.                       |
+| Waiting on   | Nothing.                               |
+| Next         | A server operation that parses an ORE file, then the Import screen.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A list shows the configurations of the party, with the variant, the product count and the setting count, and it searches and sorts.
+- A record page shows one configuration with its products and settings, and offers Change, Add product, Remove and Delete to a person with the write permission only.
+- A change states the difference, runs the checks, asks for a reason and saves the whole document against the version it read. A stale version is a conflict, and the dialog offers to read again.
+- Authoring is a journey of six steps: name, products, model and engine, settings, check, review and save. It starts empty or from a copy.
+- The models, engines, pairs and settings come from lookup tables, seeded from the ORE user guide chapter on the pricing engine configuration: pricing_model_engine_pair and pricing_pair_setting for the pairs and their settings, pricing_model and pricing_method for the description of each model and engine, and sensitivity_template for the sensitivity template keys.
+- A product dialog shows the model and the engine side by side, each with its description and the source of the words. A setting shows its meaning under its field. A tenor setting offers the tenor list, and a sensitivity template setting offers the templates.
+- Saving a document removes the products and parameters that the new version omits.
+- The BFF routes, the web client and the screens have unit tests.
+
+* Plan
+
+** What was built
+
+| Layer | What |
+|-------+------|
+| SQL and analytics | The tables pricing_model_engine_pair, pricing_pair_setting, pricing_model, pricing_method and sensitivity_template, generated from codegen models. The seeds are written by =projects/ores.seeder/datasets/ore_pricing_engines/generate_vocabulary_sql.py= from the ORE user guide: 108 product types, 194 pairs, 834 settings, 25 models, 74 engines and 19 sensitivity templates. The document save removes omitted rows. |
+| BFF | The routes under =/api/reporting/pricing-engines=: list, vocabulary, read, create, save and delete. A create writes the reporting configuration header first and removes it again when the document does not save. |
+| Web | The list, the record page with its dialogs, the authoring journey, the card and workflow, the paths, the permissions and the strings in three languages. |
+
+** What is left
+
+- Import. The journey says the parse belongs on the server, so a browser parser cannot drift from it. The work is a server operation that turns a file into a document without saving, then the screen.
+- History. The history provider exists on the server. The screen draws the shared timeline when the BFF serves it for this entity.
+- The reach of a change. No operation lists the reports that bind a configuration, so the screens say so.
+- Deleting a configuration leaves its reporting configuration header. A later change removes both.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web tests after this task | 153 files, 1819 tests, all pass | =npx vitest run= in =projects/ores.web/packages/web= | the working tree of this branch |
+| BFF tests after this task | 69 files, 848 tests, all pass | =npx vitest run= in =projects/ores.web/packages/bff= | the working tree of this branch |
+
+* Notes
+
+- *Document save.* The service stamps the tenant and the party itself, and it keeps the change reason that a row names. The BFF therefore puts the reason on every row of the document.
+- *Vocabulary source.* The ORE user guide chapter lists the pairs and the settings. Where the guide and the ORE code spell a name differently, the generator takes the code's spelling, and it drops any name that the code does not know. The descriptions of the models and engines come from the guide where it has them. Where it has none, the description is written for ORE Studio and carries the source =authored=, so a person can find it and review it. The allowed values of a setting come from the ORE parsers where a parser fixes them.
+- *Required settings.* The guide marks a setting optional when ORE has a default. A setting that is not marked is required. A new product starts with the required settings only.
+- *Sensitivity template.* A template is a key. The pricing engine configuration puts it on a product, and the sensitivity configuration sets shift sizes for the products that carry it. The screens offer the templates and state what each one is. A link to the shifts of a template needs the sensitivity configuration screens, which are not built.
+- *Timestamps.* A row the browser creates carries the epoch in the wire format, and the service stamps the real time.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:2BCB9FC2-7D48-4046-85C2-86D49A9E0921][Test Scenario: Verify the pricing engine screens]] | PENDING | Eleven steps on the running stack as the Acme tenant administrator. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

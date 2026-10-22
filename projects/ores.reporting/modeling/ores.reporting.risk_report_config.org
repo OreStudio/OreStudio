@@ -14,7 +14,7 @@
 #+created: 2026-09-17
 #+updated: 2026-09-17
 
-The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
+The ORE-level run settings that risk report definitions of a party share: the base currency, the market data of the run and the folders and log file of the package. The engine settings are not here. They are a named configuration of their own, =engine_settings=, that the definition binds in its own slot. A report definition binds this configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
 
 * Flags
 :PROPERTIES:
@@ -106,33 +106,6 @@ Reporting base currency (ISO 4217 code) that all results are converted to. Empty
 std::string(faker::finance::currencyCode())
 #+end_src
 
-** observation_model
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the engine handles absent market data, as ORE spells it: Disable, None, Move
-or Defer.
-
-#+begin_src cpp :name generator
-std::string("Disable")
-#+end_src
-
-** n_threads
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-Number of worker threads the risk engine may use.
-
-#+begin_src cpp :name generator
-faker::number::integer(1, 8)
-#+end_src
-
 ** market_data_type
 :PROPERTIES:
 :type:     text
@@ -162,24 +135,6 @@ CHECK requires while =market_data_type= stays =eod=.
 #+begin_src cpp :name generator
 std::string("")
 #+end_src
-
-** accrual_date
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The accrual date, a date or the literal ASOF. Empty when the run does not state it.
-
-** fixing_cutoff
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The date before which fixings are not read. Empty when the run does not state it.
 
 ** input_path
 :PROPERTIES:
@@ -244,114 +199,6 @@ The name of the log file.
 std::string("log.txt")
 #+end_src
 
-** date_calendar
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The calendar of the run's dates. Empty when the run does not state it.
-
-** date_convention
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The convention of the run's dates. Empty when the run does not state it.
-
-** continue_on_error
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the run goes on after an error, as ORE spells it: true or false. Empty when the run does not state it.
-
-** build_failed_trades
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the run builds the trades that failed, as ORE spells it: true or false. Empty when the run does not state it.
-
-** imply_todays_fixings
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether today's fixings are implied, as ORE spells it: Y or N. Empty when the run does not state it.
-
-** include_todays_cash_flows
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether today's cash flows are included, as ORE spells it: Y or N. Empty when the run does not state it.
-
-** include_reference_date_events
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether events on the reference date are included, as ORE spells it: Y or N. Empty when the run does not state it.
-
-** lazy_market_building
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the market is built on demand, as ORE spells it: true or false. Empty when the run does not state it.
-
-** enrich_index_fixings
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether index fixings are enriched, as ORE spells it: true or false. Empty when the run does not state it.
-
-** use_analytics
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the run uses the analytics framework, as ORE spells it: true or false. Empty when the run does not state it.
-
-** csv_comment_report_header
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether report headers are written as comments, as ORE spells it: Y or N. Empty when the run does not state it.
-
-** default_mapping_to_identity
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether a missing mapping maps to itself, as ORE spells it: true or false. Empty when the run does not state it.
-
 ** portfolio_recurse_into_sub_directories
 :PROPERTIES:
 :type:     text
@@ -360,33 +207,6 @@ Whether a missing mapping maps to itself, as ORE spells it: true or false. Empty
 :END:
 
 Whether the portfolio is read from sub directories, as ORE spells it: true or false. Empty when the run does not state it.
-
-** log_mask
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-The log mask, a bit set of the message kinds to write. Empty when the run does not state it.
-
-** ignore_fixing_lag
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-The number of days of fixing lag to ignore. Empty when the run does not state it.
-
-** additional_results
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the run writes additional results, as ORE spells it: Y or N. Empty when the run does not state it.
 
 * SQL
 
@@ -406,8 +226,6 @@ checks the template emits on its own.
 | expression |
 |------------|
 | "base_currency" is null or "base_currency" <> '' |
-| "n_threads" is null or "n_threads" >= 1 |
-| "log_mask" is null or "log_mask" >= 0 |
 | "market_data_type" in ('live', 'eod', 'date') |
 | (market_data_type = 'date') = (market_data_date is not null) |
 
@@ -455,18 +273,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 :nullable: true
 :END:
 
-** observation_model
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** n_threads
-:PROPERTIES:
-:type: integer
-:nullable: true
-:END:
-
 ** market_data_type
 :PROPERTIES:
 :type: text
@@ -475,18 +281,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 ** market_data_date
 :PROPERTIES:
 :type: date
-:nullable: true
-:END:
-
-** accrual_date
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** fixing_cutoff
-:PROPERTIES:
-:type: text
 :nullable: true
 :END:
 
@@ -517,97 +311,7 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 :type: text
 :END:
 
-** date_calendar
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** date_convention
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** continue_on_error
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** build_failed_trades
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** imply_todays_fixings
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** include_todays_cash_flows
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** include_reference_date_events
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** lazy_market_building
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** enrich_index_fixings
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** use_analytics
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** csv_comment_report_header
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** default_mapping_to_identity
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
 ** portfolio_recurse_into_sub_directories
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** log_mask
-:PROPERTIES:
-:type: integer
-:nullable: true
-:END:
-
-** ignore_fixing_lag
-:PROPERTIES:
-:type: integer
-:nullable: true
-:END:
-
-** additional_results
 :PROPERTIES:
 :type: text
 :nullable: true
@@ -681,7 +385,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 |---------------------------------+--------------------|
 | name                            | Name               |
 | base_currency                   | Base Currency      |
-| observation_model               | Observation Model  |
 | market_data_type                | Market Data        |
 | modified_by                     | Modified By        |
 | version                         | Version            |

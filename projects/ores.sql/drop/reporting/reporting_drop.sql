@@ -31,6 +31,14 @@
 \ir ./reporting_report_instance_kinds_drop.sql
 \ir ./reporting_report_error_scopes_notify_trigger_drop.sql
 \ir ./reporting_report_error_scopes_drop.sql
+\ir ./reporting_engine_settings_execution_notify_trigger_drop.sql
+\ir ./reporting_engine_settings_execution_drop.sql
+\ir ./reporting_engine_settings_building_notify_trigger_drop.sql
+\ir ./reporting_engine_settings_building_drop.sql
+\ir ./reporting_engine_settings_fixings_notify_trigger_drop.sql
+\ir ./reporting_engine_settings_fixings_drop.sql
+\ir ./reporting_engine_settings_notify_trigger_drop.sql
+\ir ./reporting_engine_settings_drop.sql
 \ir ./reporting_risk_report_config_books_drop.sql
 \ir ./reporting_risk_report_config_portfolios_drop.sql
 \ir ./reporting_risk_report_configs_notify_trigger_drop.sql

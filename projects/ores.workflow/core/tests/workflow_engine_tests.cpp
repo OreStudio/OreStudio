@@ -246,9 +246,10 @@ struct fixture {
                     s.build_command = [request](const std::string&, const workflow_step_results&) {
                         return request;
                     };
-                    s.build_compensation = [](const std::string& command, const std::string&) {
-                        return command;
-                    };
+                    s.build_compensation =
+                        [](const std::string&, const std::string&, const std::string& failure) {
+                            return R"({"failure":")" + failure + R"("})";
+                        };
                     steps.push_back(std::move(s));
                 }
                 return steps;
@@ -286,9 +287,10 @@ struct fixture {
                     s.build_command = [request](const std::string&, const workflow_step_results&) {
                         return request;
                     };
-                    s.build_compensation = [](const std::string& command, const std::string&) {
-                        return command;
-                    };
+                    s.build_compensation =
+                        [](const std::string& command, const std::string&, const std::string&) {
+                            return command;
+                        };
                     built.push_back(std::move(s));
                 }
                 return built;
@@ -1083,6 +1085,14 @@ TEST_CASE("a definition that declares compensate still rolls its work back", tag
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("compensating"));
     CHECK(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // The compensation reads why the run is rolling back, which is the error of
+    // the step that failed and not a text fixed by the step it undoes.
+    std::string compensation_command;
+    for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100))
+        if (s.step_index < 0)
+            compensation_command = s.command_json;
+    CHECK(compensation_command == R"({"failure":"two broke"})");
     BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 

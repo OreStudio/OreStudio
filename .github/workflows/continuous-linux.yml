@@ -417,15 +417,64 @@ jobs:
         # actions/cache tars the cache directory, and a tar that reads a file
         # while sccache writes it exits non-zero. actions/cache reports that tar
         # failure as a warning and still exits zero, so the Save step below
-        # passes while storing nothing. Stop the server first, which flushes it
-        # and leaves the directory still.
+        # passes while storing nothing. --stop-server returns before the server
+        # has finished writing, so wait for the process to exit and for the
+        # directory to go quiet before the tar starts.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        run: sccache --stop-server || true
+        run: |
+          sccache --stop-server || true
+          for _ in $(seq 1 120); do
+            if ! pgrep -x sccache >/dev/null \
+               && [ -z "$(find "${SCCACHE_DIR}" -type f -newermt '-3 seconds' -print -quit)" ]; then
+              break
+            fi
+            sleep 1
+          done
+          if pgrep -x sccache >/dev/null; then
+            echo "::warning::sccache was still running when the save began."
+          fi
 
       - name: Save sccache
         id: save_sccache
         # The key is unique per run, so the save never collides.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+
+      - name: Check the compiler cache was stored
+        id: sccache_stored
+        # The save step exits zero when its tar fails or the upload is
+        # rejected, so ask the service. The answer decides the retry below.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          keep="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}"
+          if gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
+               --jq '.actions_caches[].key' | grep -qxF "${keep}"; then
+            echo "stored=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "stored=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Wait for the compiler cache to be still
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' && steps.sccache_stored.outputs.stored == 'false' }}
+        run: |
+          pkill -x sccache || true
+          for _ in $(seq 1 120); do
+            if ! pgrep -x sccache >/dev/null \
+               && [ -z "$(find "${SCCACHE_DIR}" -type f -newermt '-3 seconds' -print -quit)" ]; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Save sccache again
+        # One retry. The old entry of this variant is already gone, so a save
+        # that fails twice leaves the next run cold.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' && steps.sccache_stored.outputs.stored == 'false' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

@@ -27,8 +27,13 @@
 
 #include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/domain/configuration_market_binding.hpp"
+#include "ores.reporting.api/domain/engine_settings.hpp"
+#include "ores.reporting.api/domain/engine_settings_building.hpp"
+#include "ores.reporting.api/domain/engine_settings_execution.hpp"
+#include "ores.reporting.api/domain/engine_settings_fixings.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -76,15 +81,31 @@ struct run_file {
 };
 
 /**
+ * @brief The engine settings of a run: the central row and the parts it sets.
+ *
+ * A part that is absent means the engine default for every setting in it. The
+ * Setup block of a run document holds these as parameters, and the projection
+ * reads them into the parts and writes them back.
+ */
+struct run_engine_settings {
+    ores::reporting::domain::engine_settings settings;
+    std::optional<ores::reporting::domain::engine_settings_fixings> fixings;
+    std::optional<ores::reporting::domain::engine_settings_building> building;
+    std::optional<ores::reporting::domain::engine_settings_execution> execution;
+};
+
+/**
  * @brief One ORE run document, built from the configuration a report definition
  * binds: the choices of the run, the analytics with their parameters, the market
  * bindings and the names of the files the run reads.
  *
- * The choices, the analytics and the market bindings belong to the shared
- * configuration. Only the file names are not stored.
+ * The choices, the engine settings, the analytics and the market bindings belong
+ * to shared configurations. Only the file names are not stored. A document with
+ * no engine settings runs with the engine defaults.
  */
 struct run_document {
     ores::reporting::domain::risk_report_config settings;
+    std::optional<run_engine_settings> engine_settings;
     std::vector<run_file> files;
     std::vector<run_analytic> analytics;
     std::vector<ores::reporting::domain::configuration_market_binding> market_bindings;

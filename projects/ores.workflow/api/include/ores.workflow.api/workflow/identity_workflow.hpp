@@ -168,7 +168,8 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
                                                               .delay_seconds = delay});
             };
 
-            s.build_compensation = [name](const std::string&, const std::string&) -> std::string {
+            s.build_compensation =
+                [name](const std::string&, const std::string&, const std::string&) -> std::string {
                 return rfl::json::write(identity_step_request{.name = name,
                                                               .behaviour = "complete",
                                                               .compensate = false,

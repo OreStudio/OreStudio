@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -37,6 +39,7 @@
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
@@ -46,6 +49,7 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -69,6 +73,14 @@ struct fixture final {
         namespace gen_rd = ores::refdata::generators;
         namespace repo = ores::refdata::repository;
 
+        // The context acts as an account of the tenant, so a raise finds the
+        // account it raises for. A service account leaves the tenant's
+        // bootstrap alone.
+        auto maker = ores::iam::generators::generate_synthetic_account(gen);
+        maker.account_type = "service";
+        maker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository{}.write(h.context(), maker);
+
         auto party = gen_rd::generate_synthetic_party(gen);
         party.change_reason_code = "system.test";
         for (const auto& e : repo::party_repository().read_latest(h.context())) {
@@ -78,7 +90,7 @@ struct fixture final {
             }
         }
         repo::party_repository().write(h.context(), party);
-        ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+        ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, maker.username);
 
         auto currency = gen_rd::generate_synthetic_currency(gen);
         repo::currency_repository().write(ctx, {currency});
@@ -321,4 +333,45 @@ TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", 
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "content_differs");
+}
+
+namespace {
+
+/**
+ * @brief The requests that cover one trade. Tests share a tenant, so the tenant's
+ * whole list holds the requests of other tests too.
+ */
+std::vector<ores::trading::domain::trade_authorisation_request>
+requests_for(const ores::database::context& ctx, const boost::uuids::uuid& trade_id) {
+    std::vector<ores::trading::domain::trade_authorisation_request> out;
+    for (auto& r :
+         ores::trading::repository::trade_authorisation_request_repository().read_latest(ctx)) {
+        if (r.trade_id == trade_id)
+            out.push_back(std::move(r));
+    }
+    return out;
+}
+
+}
+
+TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
+
+    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+
+    const auto raised = requests_for(f.ctx, req.anchor.id);
+    REQUIRE(raised.size() == 1);
+    CHECK(raised.front().trade_version >= 1);
+}
+
+TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
+
+    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+
+    CHECK(requests_for(f.ctx, req.anchor.id).empty());
 }

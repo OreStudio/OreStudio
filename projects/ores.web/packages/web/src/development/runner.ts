@@ -98,7 +98,9 @@ export function reduce(runner: Runner, action: Action): Runner {
                 ...runner,
                 steps: replaceStep(runner.steps, runner.index, { status: action.mark }),
                 index:
-                    action.mark === 'PASS' && runner.index < last ? runner.index + 1 : runner.index,
+                    (action.mark === 'PASS' || action.mark === 'FAIL') && runner.index < last
+                        ? runner.index + 1
+                        : runner.index,
             };
         case 'note':
             if (runner.closed) return runner;

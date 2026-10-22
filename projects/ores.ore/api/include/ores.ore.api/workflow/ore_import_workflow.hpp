@@ -87,7 +87,8 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                                      const std::string& result_json) -> std::string {
+                                      const std::string& result_json,
+                                      const std::string&) -> std::string {
                 using ores::ore::messaging::ore_import_execute_request;
                 using ores::ore::messaging::ore_import_execute_result;
                 using ores::ore::messaging::ore_import_rollback_request;

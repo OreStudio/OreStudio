@@ -21,12 +21,12 @@ The grid screen draws the node heatmap and state ribbon, a node sample states th
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | The heatmap and the tenant and party grid views are built. The run statistics, the state ribbon and the cost are not.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13                               |
+| Next          | Record the run statistics on the result, then measure them in the wrapper.            |
+| Last touched  | 2026-10-21                               |
 
 * Acceptance
 
@@ -39,14 +39,19 @@ The grid screen draws the node heatmap and state ribbon, a node sample states th
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C84D4CE6-CE41-4F7B-A71E-BAA8CA2F84FE][Draw the node heatmap and the state ribbon]] | BACKLOG | | | One row per node, one column per interval, grouped by machine. |
+| [[id:C84D4CE6-CE41-4F7B-A71E-BAA8CA2F84FE][Draw the node heatmap and the state ribbon]] | STARTED | | | One row per node, one column per interval, grouped by machine. |
 | [[id:8737DBA8-5049-4F1F-934A-C7C49029EA91][Add the engine run time and peak memory to the node sample]] | BACKLOG | | | The wrapper reads ORE's runtimes.csv and its memory lines and reports them in the node sample. |
-| [[id:DC09FAC1-7AFD-4B06-88B0-7702969D5535][Attribute job cost and show the grid to a tenant]] | BACKLOG | | | Give each host a cost rate and each result a cost, apportion idle cost, and open the grid screens to a tenant's administrator with a breakdown by party. Carries on from Operate the grid across tenants and by party. |
+| [[id:DC09FAC1-7AFD-4B06-88B0-7702969D5535][Attribute job cost and show the grid to a tenant]] | STARTED | | | Give each host a cost rate and each result a cost, apportion idle cost, and open the grid screens to a tenant's administrator with a breakdown by party. Carries on from Operate the grid across tenants and by party. |
 | [[id:CB30997D-D8FF-45FC-AD6E-BB5070863CE0][Record the run statistics on the result]] | BACKLOG | | | Add started_at, finished_at, input_bytes, output_bytes and peak_memory_bytes to the result, and carry them in the submit message. |
 | [[id:209FA8E5-DA98-46A6-8805-96F79E2372FB][Measure the run statistics in the wrapper]] | BACKLOG | | | The wrapper measures the start and end of the engine run, the input and output bytes, and the engine's peak memory per job, and sends them with the result. |
 | [[id:CE7B06DF-5AD8-4FA3-9FA0-A5AA3E12E096][Aggregate the run statistics per workunit and batch]] | BACKLOG | | | A grouped read returns, for a workunit or a batch, the earliest start, the latest finish, the summed bytes and the largest peak memory of its results. |
 
 * Decisions
+
+- 2026-10-21: The heatmap and the tenant and party grid views were built before
+  the run statistics. The grid screen shows counts of batches, workunits and
+  results. It shows no row of any of them, because the journeys that define
+  those screens (Browse the grid's jobs, Follow a job) are not built.
 
 * Out of scope
 

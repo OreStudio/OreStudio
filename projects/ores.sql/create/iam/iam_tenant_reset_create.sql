@@ -112,6 +112,10 @@ declare
         -- above, so leaving any of it behind leaves a config that names a
         -- definition the tenant no longer has. Re-provisioning seeds the
         -- definitions, and re-running the import rebuilds the rest.
+        'ores_reporting_engine_settings_fixings_tbl',
+        'ores_reporting_engine_settings_building_tbl',
+        'ores_reporting_engine_settings_execution_tbl',
+        'ores_reporting_engine_settings_tbl',
         'ores_reporting_risk_report_config_books_tbl',
         'ores_reporting_risk_report_config_portfolios_tbl',
         'ores_reporting_risk_report_configs_tbl',

@@ -28,10 +28,10 @@ Run the ACME definition against a freshly recreated database, record the instanc
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Now          | Every code task of the story is in place. No run has been recorded.                       |
+| Waiting on   | A live run on a database built from nothing.                               |
+| Next         | Run one report end to end and record the instance states, the compute job and where the output landed.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

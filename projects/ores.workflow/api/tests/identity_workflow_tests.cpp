@@ -109,7 +109,7 @@ TEST_CASE("identity_workflow_compensates_by_completing", tags) {
 
     REQUIRE(steps.size() == 1);
     const auto compensation = rfl::json::read<wf::identity_step_request>(
-        steps[0].build_compensation(steps[0].build_command("{}", {}), "{}"));
+        steps[0].build_compensation(steps[0].build_command("{}", {}), "{}", ""));
     REQUIRE(compensation.has_value());
     CHECK(compensation->name == "one");
     CHECK(compensation->outcome() == "complete");

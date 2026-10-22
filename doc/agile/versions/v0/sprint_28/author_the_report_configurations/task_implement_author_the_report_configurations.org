@@ -98,6 +98,8 @@ The follow-up task Govern the pricing engine configurations reworked these four 
 the official-configuration model (status, proposal in place of edit, draft copy) and
 added a fifth journey and prototype, Sign off a pricing engine change.
 
+The screens themselves are built in the task Build the pricing engine configuration screens.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

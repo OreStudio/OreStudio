@@ -79,6 +79,8 @@ export interface Scenario {
     readonly description: string;
     /** The date of the doc's `#+created:` line, or an empty string when it has none. */
     readonly created: string;
+    /** The environment named by the doc's `#+environment:` line, or empty. */
+    readonly environment: string;
     readonly state: ScenarioState;
     readonly target: string;
     readonly story: DocLink | null;
@@ -287,6 +289,7 @@ export function parseScenario(text: string): Scenario {
         title,
         description: doc.keywords.get('description') ?? '',
         created: (doc.keywords.get('created') ?? '').trim(),
+        environment: (doc.keywords.get('environment') ?? '').trim(),
         state: stateOf(fields.get('state') ?? '', resultFields.get('status') ?? ''),
         target: plainText(
             linkText(fields.get('target screen') ?? '') ||

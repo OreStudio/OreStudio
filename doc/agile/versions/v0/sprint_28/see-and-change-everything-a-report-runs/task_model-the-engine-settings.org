@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: EA01F699-420E-4889-95EF-E7FAFA2DD646
+:END:
+#+title: Task: Model the engine settings
+#+description: Store the engine settings as a named configuration with a central row and three parts.
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr: 3630
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Store the engine settings of a report as a named configuration: a central row and three parts, a configuration type, a binding slot, and the seed that replaces the run settings columns.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Schema, models, generated code and publish are committed (191b124478). Seed, column removal and the projection are next. |
+| Waiting on   | Nothing.                               |
+| Next         | Map where the engine columns are read and written, then seed, decommission and project. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The central table and the three part tables exist, generated from models.
+- A write to a part bumps the central version in the same transaction.
+- A report definition binds an engine settings configuration in its own slot.
+- The ACME seed holds the engine settings configurations in place of the twenty run settings columns.
+- The engine setting columns are gone from =risk_report_config=. The export reads the Setup block from the bound engine settings, and the import writes it to them.
+- The importer drops a Setup parameter that the model does not hold and warns, naming it.
+
+* Plan
+
+Reference entities, chosen so the knobs are the standard ones. The central row follows =risk_report_config= in the same
+component and binds the profile =uuid-identified-lookup=. Each part follows =book= and binds the profile
+=fk-scoped-child=, with =parent_entity_singular= set and the foreign key to the central row flagged
+=bump_parent_version=. The central row sets =generate_touch_function=, as =convention= and =portfolio= do. The drift check
+(=projects/ores.codegen/scripts/check_model_drift.py=) passes.
+
+1. Four models under =projects/ores.reporting/modeling/=: =engine_settings= and the parts =engine_settings_fixings=,
+   =engine_settings_building= and =engine_settings_execution=. Every setting column is nullable. A null means the
+   engine default, and a missing part row means the default for the whole group.
+2. Generate the SQL, the domain, entity, mapper, repository and generator, and the TypeScript twins.
+3. Wire the new scripts into the create and drop lists and the tenant reset list.
+4. Seed the configuration type =engine_settings=. A report type does not require it, because absent settings mean the defaults.
+5. Add the publish function, the artefact type row, the operation and its subject, so a dataset can stage a document.
+6. Test the publish with pgTAP.
+7. Seed the ACME engine settings (7 configurations, only the five values the rows set today) and bind them in the report
+   definitions by name.
+8. Decommission the engine columns of =risk_report_config=: the model, the generated code, the staging table, the publish
+   and the seed. The currency, the market data kind and the package layout columns stay. They have their own tasks.
+9. Project the Setup block from the bound engine settings (export), and write it to them (import). The importer drops a
+   parameter the model does not hold and warns.
+10. Update the tests that name the old columns.
+
+Not in this task: moving the currency and the market kind to the report definition, recording what a run used, and the
+engine settings messaging, service and screens.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3630 | Replace the engine columns of the run settings with named engine settings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

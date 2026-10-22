@@ -34,10 +34,12 @@
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
+#include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <exception>
 #include <optional>
 #include <string>
 
@@ -160,7 +162,23 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     repository::trade_booking_repository{}.write(ctx, booking, must_not_exist);
     repository::trade_state_repository{}.write(ctx, state, must_not_exist);
 
+    // A trade booked live in a real book awaits Operations. The request joins
+    // this transaction, so a trade is never live without one.
+    operational_authorisation_service authorisation(ctx);
+    const auto raised = authorisation.raise_if_awaiting(anchor.id);
+
     uow.commit();
+
+    // The request stands whether or not anybody is told, so the telling
+    // happens after the commit and a failure there never fails the booking.
+    if (raised) {
+        try {
+            operational_authorisation_service(ctx_).announce(*raised);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Trade " << anchor.id
+                                      << " was booked but its deciders were not told: " << e.what();
+        }
+    }
 
     response.activity_id = activity.id;
     return response;

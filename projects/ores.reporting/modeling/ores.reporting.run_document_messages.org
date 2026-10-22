@@ -24,8 +24,13 @@ that owns the definition; a session that acts for no party may only read.
 #+begin_src cpp :name includes
 #include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/domain/configuration_market_binding.hpp"
+#include "ores.reporting.api/domain/engine_settings.hpp"
+#include "ores.reporting.api/domain/engine_settings_building.hpp"
+#include "ores.reporting.api/domain/engine_settings_execution.hpp"
+#include "ores.reporting.api/domain/engine_settings_fixings.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -108,6 +113,38 @@ that owns the definition; a session that acts for no party may only read.
 :cpp_type: std::string
 :END:
 
+** run_engine_settings
+
+#+begin_src cpp :name comment
+/**
+ * @brief The engine settings of a run: the central row and the parts it sets.
+ *
+ * A part that is absent means the engine default for every setting in it. The
+ * Setup block of a run document holds these as parameters, and the projection
+ * reads them into the parts and writes them back.
+ */
+#+end_src
+
+*** settings
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::engine_settings
+:END:
+
+*** fixings
+:PROPERTIES:
+:cpp_type: std::optional<ores::reporting::domain::engine_settings_fixings>
+:END:
+
+*** building
+:PROPERTIES:
+:cpp_type: std::optional<ores::reporting::domain::engine_settings_building>
+:END:
+
+*** execution
+:PROPERTIES:
+:cpp_type: std::optional<ores::reporting::domain::engine_settings_execution>
+:END:
+
 ** run_document
 
 #+begin_src cpp :name comment
@@ -116,14 +153,20 @@ that owns the definition; a session that acts for no party may only read.
  * binds: the choices of the run, the analytics with their parameters, the market
  * bindings and the names of the files the run reads.
  *
- * The choices, the analytics and the market bindings belong to the shared
- * configuration. Only the file names are not stored.
+ * The choices, the engine settings, the analytics and the market bindings belong
+ * to shared configurations. Only the file names are not stored. A document with
+ * no engine settings runs with the engine defaults.
  */
 #+end_src
 
 *** settings
 :PROPERTIES:
 :cpp_type: ores::reporting::domain::risk_report_config
+:END:
+
+*** engine_settings
+:PROPERTIES:
+:cpp_type: std::optional<run_engine_settings>
 :END:
 
 *** files

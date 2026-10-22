@@ -107,6 +107,20 @@ Open point for the review: the policy admits the whole system-tenant row, and th
 | Review | Pending |
 | Sign-off | Pending |
 
+** E8. The installation's work totals
+
+| What | The table =ores_compute_work_totals_tbl=, one row for each grid sample, with the counters of every tenant's work summed. Its policy is =tenant_id = current and tenant_id = system=, as the work ledger's is. Files: =projects/ores.sql/create/compute/compute_work_totals_create.sql=, =projects/ores.compute/core/src/repository/work_total_repository.cpp=. |
+| Why | A session of the system tenant saw 22 hosts and no jobs, because the work counts are each tenant's and the system tenant reads none of them. The owner chose on 2026-10-21 a table of the installation that only the system tenant reads. A first change made the fleet row count every tenant's work through a function with its owner's rights. A review found that a database role could read any tenant's counts through it, and every tenant session reads the fleet row, so it was withdrawn. |
+| Exposes | To a session of the system tenant: the sum of the job counters of all tenants. |
+| Limits | The table holds counts and names no tenant, party, batch or result. A tenant session reads none of it, and the grid reads take it only for a session of the system tenant. The compute service writes it as the system tenant. The poller sums the counters it reads inside each tenant (entry E5), so no read crosses a tenant and no function runs with its owner's rights. A poll that could not read a tenant writes no row, so the totals never show a tenant's work as empty. |
+| Evidence | PR #3607. Repository tests check that the totals add up, that the system tenant reads what it wrote, and that a tenant session reads none. A read-only database role reads 0 job counts of the ACME tenant through the stats function. |
+| Review | Pending |
+| Sign-off | The owner chose the table on 2026-10-21. A separate sign-off after the security review is pending. |
+
+Open points for the review:
+- The totals are a cross-tenant aggregate, which the ownership page calls a fact of several tenants. The table keeps it where only the system tenant reads it. The review should say whether the audit task needs to confirm the rule.
+- The outcome counters cover the last day, as the rows they sum do.
+
 * See also
 
 - [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: the rule that an exception needs a reason, a review and a sign-off.

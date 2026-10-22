@@ -50,6 +50,9 @@ export const PERMISSION = {
     deploymentRead: 'installation::deployment:read',
     reportDefinitionsRead: 'reporting::report_definitions:read',
     reportDefinitionsWrite: 'reporting::report_definitions:write',
+    pricingEnginesRead: 'analytics::pricing_model_configs:read',
+    pricingEnginesWrite: 'analytics::pricing_model_configs:write',
+    pricingEnginesDelete: 'analytics::pricing_model_configs:delete',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

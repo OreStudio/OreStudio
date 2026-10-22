@@ -111,13 +111,12 @@ std::string previous_weekday(const std::string& iso_date) {
     return std::format("{:%F}", day);
 }
 
-// The date a run values the portfolio at.
-std::string as_of(const domain::risk_report_config& risk, const std::string& run_date) {
+}
+
+std::string valuation_date_of(const domain::risk_report_config& risk, const std::string& run_date) {
     if (risk.market_data_type == "date")
         return risk.market_data_date;
     return risk.market_data_type == "eod" ? previous_weekday(run_date) : run_date;
-}
-
 }
 
 messaging::run_document generate_run_document(const run_document_inputs& in) {
@@ -128,11 +127,13 @@ messaging::run_document generate_run_document(const run_document_inputs& in) {
 
     messaging::run_document r;
     r.settings = in.risk;
-    r.settings.market_data_date = as_of(in.risk, in.run_date);
+    r.settings.market_data_date = valuation_date_of(in.risk, in.run_date);
     r.settings.market_data_type = "date";
+    r.engine_settings = in.engine;
     for (const auto& type : in.bound_types) {
         // The risk configuration fills no file: the run document is built from it.
-        if (type == "risk_report_config")
+        // The engine settings fill no file either: they are Setup parameters.
+        if (type == "risk_report_config" || type == "engine_settings")
             continue;
         const auto* t = domain::setup_file_type_of(in.file_types, type);
         if (t == nullptr)

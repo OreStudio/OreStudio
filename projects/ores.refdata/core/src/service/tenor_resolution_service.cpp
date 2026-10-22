@@ -31,11 +31,15 @@
 #include <algorithm>
 #include <bitset>
 #include <chrono>
+#include <cstdint>
+#include <limits>
+#include <map>
 #include <optional>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace ores::refdata::service {
@@ -53,6 +57,7 @@ using ores::analytics::quant::domain::schedule_date;
 using ores::analytics::quant::domain::schedule_kind;
 using ores::analytics::quant::domain::tenor_resolution_request;
 using ores::analytics::quant::domain::tenor_resolution_result;
+using ores::analytics::quant::domain::tenor_rule;
 using ores::analytics::quant::service::tenor_resolution_engine;
 using ores::refdata::repository::calendar_date_repository;
 using ores::refdata::repository::calendar_event_repository;
@@ -130,21 +135,252 @@ std::string field_name_for(aquant_domain::resolution_status status) {
     return {};
 }
 
-/// Fills a refusal into a response and hands it back. Every refusal on every
-/// path is the same shape: what happened, which step refused, and the row a
-/// caller can go and look at.
+/// A refusal: what happened, which step refused, and the row a caller can go
+/// and look at. Every refusal on every path is this shape.
+ores::utility::domain::result
+refusal_result(outcome what, std::string code, std::string message, std::string field) {
+    ores::utility::domain::result refusal;
+    refusal.outcome = what;
+    refusal.message = std::move(message);
+    refusal.code = std::move(code);
+    refusal.fields.push_back(
+        field_failure{.field = std::move(field), .code = refusal.code, .message = refusal.message});
+    return refusal;
+}
+
+/// Fills a refusal into a response and hands it back.
 messaging::resolve_tenor_response refuse_with(messaging::resolve_tenor_response response,
                                               outcome what,
                                               std::string code,
                                               std::string message,
                                               std::string field) {
-    response.result.outcome = what;
-    response.result.message = std::move(message);
-    response.result.code = std::move(code);
-    response.result.fields.push_back(field_failure{.field = std::move(field),
-                                                   .code = response.result.code,
-                                                   .message = response.result.message});
+    response.result = refusal_result(what, std::move(code), std::move(message), std::move(field));
     return response;
+}
+
+/// The refusal for a calendar nobody materialised. An unmaterialised calendar
+/// has no business days at all, so every date would look like a business day.
+/// That is a missing prerequisite rather than an answer, and saying so is the
+/// only honest reply.
+ores::utility::domain::result calendar_not_materialised(const std::string& calendar_code) {
+    return refusal_result(outcome::missing,
+                          "calendar_not_materialised",
+                          "Calendar '" + calendar_code +
+                              "' has no materialised dates for this tenant.",
+                          "calendar_code");
+}
+
+/// The calendar's holidays as the engine takes them, or nothing when the
+/// calendar has no materialised dates.
+std::optional<business_day_calendar_set> load_calendar(const tenor_resolution_service::context& ctx,
+                                                       const std::string& calendar_code) {
+    calendar_date_repository dates{ctx};
+    const auto days = dates.read_latest_by_calendar(calendar_code);
+    if (days.empty())
+        return std::nullopt;
+    return build_calendar_set(days);
+}
+
+/// The dates of every schedule a batch walks, in the flat shape the engine
+/// reads: ordered by schedule and then by date. A schedule is read the first
+/// time a row names it, so a convention whose rows share a schedule reads it
+/// once.
+class schedule_axes final {
+public:
+    explicit schedule_axes(tenor_resolution_service::context ctx)
+        : ctx_(std::move(ctx)) {}
+
+    /// Points the rule at the named schedule. A schedule that cannot be walked
+    /// is a refusal in the response, and every row that names it gets the same
+    /// one.
+    bool attach(const std::string& schedule_code,
+                tenor_rule& rule,
+                messaging::resolve_tenor_response& response) {
+        auto found = known_.find(schedule_code);
+        if (found == known_.end())
+            found = known_.emplace(schedule_code, load(schedule_code)).first;
+
+        if (const auto* refused = std::get_if<refusal>(&found->second)) {
+            response = refuse_with(std::move(response),
+                                   refused->what,
+                                   refused->code,
+                                   refused->message,
+                                   refused->field);
+            return false;
+        }
+
+        const auto& walked = std::get<axis>(found->second);
+        rule.schedule = walked.kind;
+        rule.schedule_index = walked.index;
+        return true;
+    }
+
+    const std::vector<schedule_date>& dates() const {
+        return dates_;
+    }
+
+private:
+    struct axis {
+        schedule_kind kind;
+        std::size_t index;
+    };
+
+    struct refusal {
+        outcome what;
+        std::string code;
+        std::string message;
+        std::string field;
+    };
+
+    using verdict = std::variant<axis, refusal>;
+
+    /// The schedule's source decides how its dates are produced, and a closed
+    /// form this engine does not carry is refused rather than walked as an
+    /// event lookup that will find nothing.
+    verdict load(const std::string& schedule_code) {
+        tenor_schedule_repository schedules;
+        const auto schedule_rows = schedules.read_latest(ctx_, schedule_code);
+        if (schedule_rows.empty()) {
+            return refusal{outcome::missing,
+                           "schedule_not_found",
+                           "No tenor schedule '" + schedule_code + "' for this tenant.",
+                           "schedule_code"};
+        }
+        const auto& schedule = schedule_rows.front();
+        const std::size_t index = known_.size();
+
+        if (schedule.schedule_source == "CLOSED_FORM") {
+            if (schedule_code != "ROLL_QUARTER") {
+                return refusal{outcome::invalid,
+                               "schedule_not_walkable",
+                               "Tenor schedule '" + schedule_code +
+                                   "' is closed-form and this engine walks only ROLL_QUARTER.",
+                               "schedule_code"};
+            }
+            return axis{schedule_kind::cds_roll_quarter, index};
+        }
+
+        if (!schedule.calendar_code || !schedule.diary_entry_type) {
+            return refusal{outcome::invalid,
+                           "schedule_incomplete",
+                           "Tenor schedule '" + schedule_code +
+                               "' is an event lookup with no calendar or diary entry type.",
+                           "schedule_code"};
+        }
+
+        calendar_event_repository events;
+        const auto entries =
+            events.read_latest_by_calendar_code(ctx_, *schedule.calendar_code, 0, diary_read_limit);
+        std::vector<schedule_date> mine;
+        for (const auto& entry : entries) {
+            if (entry.diary_entry_type == *schedule.diary_entry_type)
+                mine.push_back(schedule_date{index, entry.event_date});
+        }
+        std::sort(mine.begin(), mine.end(), [](const schedule_date& a, const schedule_date& b) {
+            return a.date < b.date;
+        });
+        dates_.insert(dates_.end(), mine.begin(), mine.end());
+        return axis{schedule_kind::event_lookup, index};
+    }
+
+    tenor_resolution_service::context ctx_;
+    std::map<std::string, verdict> known_;
+    std::vector<schedule_date> dates_;
+};
+
+/// Turns one resolution row into the engine's question. The persisted codes
+/// become the engine's vocabulary here and nowhere else. A row that cannot be
+/// asked about is refused in @p response and the function returns false: an
+/// unparseable code is data the engine cannot be asked about, and it refuses
+/// rather than guessing at a nearest match.
+bool build_request(const domain::tenor& tenor,
+                   const domain::tenor_convention& convention,
+                   const domain::tenor_convention_resolution& resolution_rule,
+                   year_month_day horizon,
+                   const std::optional<year_month_day>& spot,
+                   schedule_axes& axes,
+                   tenor_resolution_request& engine_request,
+                   messaging::resolve_tenor_response& response) {
+    engine_request = tenor_resolution_request{};
+    engine_request.horizon = horizon;
+    engine_request.spot_date = spot;
+    engine_request.calendar_index = 0;
+    try {
+        engine_request.tenor.kind = parse_tenor_kind_code(tenor.kind);
+        engine_request.tenor.period = {parse_period_unit_code(tenor.unit),
+                                       tenor.multiplier.value_or(0)};
+
+        auto& rule = engine_request.rule.emplace();
+        rule.anchor = parse_tenor_anchor_code(
+            resolution_rule.anchor_override.value_or(convention.measured_from));
+        rule.algorithm = parse_resolution_algorithm_code(convention.resolution_algorithm);
+        rule.roll = parse_business_day_convention_code(convention.business_day_convention_type);
+        rule.schedule_step_count = resolution_rule.schedule_step_count.value_or(0);
+        if (resolution_rule.offset_unit && resolution_rule.offset_multiplier) {
+            rule.offset = {parse_period_unit_code(*resolution_rule.offset_unit),
+                           *resolution_rule.offset_multiplier};
+        }
+    } catch (const std::invalid_argument& e) {
+        response = refuse_with(std::move(response),
+                               outcome::invalid,
+                               "unparseable_code",
+                               e.what(),
+                               "tenor_convention");
+        return false;
+    }
+
+    if (!resolution_rule.schedule_code)
+        return true;
+
+    // A row that names a schedule binds it to the schedule algorithm: under
+    // ANCHOR_OFFSET the engine resolves on the calendar axis and never looks
+    // at the schedule at all, so a row naming one there would be silently
+    // ignored. Contradictory data is refused rather than read one way.
+    if (engine_request.rule->algorithm != aquant_domain::resolution_algorithm::schedule_step) {
+        response =
+            refuse_with(std::move(response),
+                        outcome::invalid,
+                        "schedule_under_anchor_offset",
+                        "The resolution row for tenor '" + tenor.code + "' names schedule '" +
+                            *resolution_rule.schedule_code + "', but convention '" +
+                            convention.code + "' resolves by " + convention.resolution_algorithm +
+                            ", which never walks a schedule.",
+                        "resolution_algorithm");
+        return false;
+    }
+
+    return axes.attach(*resolution_rule.schedule_code, *engine_request.rule, response);
+}
+
+/// Reads the engine's answer into a response. The dates the resolution reached
+/// travel on the response whether the answer stands or not: a refusal that says
+/// only "no" cannot be acted on.
+messaging::resolve_tenor_response answered(messaging::resolve_tenor_response response,
+                                           const tenor_resolution_result& result) {
+    response.anchor_date = result.anchor_date;
+    response.date_before_roll = result.unadjusted_date;
+    response.adjusted_date = result.resolved_date;
+
+    if (result.status != aquant_domain::resolution_status::ok) {
+        return refuse_with(std::move(response),
+                           outcome::invalid,
+                           std::string(aquant_domain::to_string(result.status)),
+                           "The rule did not resolve: " +
+                               std::string(aquant_domain::to_string(result.status)) + ".",
+                           field_name_for(result.status));
+    }
+
+    return response;
+}
+
+/// One tenor's answer, named by the tenor it is about.
+messaging::convention_tenor_resolution entry_of(std::string tenor_code,
+                                                const messaging::resolve_tenor_response& answer) {
+    return messaging::convention_tenor_resolution{.tenor_code = std::move(tenor_code),
+                                                  .result = answer.result,
+                                                  .anchor_date = answer.anchor_date,
+                                                  .date_before_roll = answer.date_before_roll,
+                                                  .adjusted_date = answer.adjusted_date};
 }
 
 } // namespace
@@ -220,6 +456,107 @@ messaging::resolve_tenor_response tenor_resolution_service::preview(
                         request.spot);
 }
 
+messaging::resolve_convention_response tenor_resolution_service::resolve_convention(
+    const messaging::resolve_convention_request& request) const {
+    messaging::resolve_convention_response response;
+    response.calendar = request.calendar_code;
+
+    tenor_convention_repository conventions;
+    const auto convention_rows = conventions.read_latest(ctx_, request.convention_code);
+    if (convention_rows.empty()) {
+        response.result =
+            refusal_result(outcome::missing,
+                           "convention_not_found",
+                           "No tenor convention '" + request.convention_code + "' for this tenant.",
+                           "convention_code");
+        return response;
+    }
+    const auto& convention = convention_rows.front();
+    response.roll_rule = convention.business_day_convention_type;
+
+    const auto calendars = load_calendar(ctx_, request.calendar_code);
+    if (!calendars) {
+        response.result = calendar_not_materialised(request.calendar_code);
+        return response;
+    }
+
+    // The rows are the convention's membership: a tenor is in the convention
+    // because a row says so, and that row is what the tenor resolves by.
+    tenor_convention_resolution_repository resolutions{ctx_};
+    const auto resolution_rows = resolutions.read_latest_by_convention(request.convention_code);
+    if (resolution_rows.empty())
+        return response;
+
+    std::vector<std::string> codes;
+    codes.reserve(resolution_rows.size());
+    for (const auto& row : resolution_rows)
+        codes.push_back(row.tenor_code);
+    tenor_repository tenors;
+    const auto tenor_rows = tenors.read_latest(ctx_, codes);
+
+    // The catalogue's own order, so the answer reads the way the term
+    // structure does. A row whose tenor the catalogue does not hold sorts last
+    // and is refused where it stands.
+    using row_and_tenor =
+        std::pair<const domain::tenor_convention_resolution*, const domain::tenor*>;
+    std::vector<row_and_tenor> ordered;
+    ordered.reserve(resolution_rows.size());
+    for (const auto& row : resolution_rows) {
+        const auto tenor = std::find_if(tenor_rows.begin(),
+                                        tenor_rows.end(),
+                                        [&row](const auto& t) { return t.code == row.tenor_code; });
+        ordered.emplace_back(&row, tenor == tenor_rows.end() ? nullptr : &*tenor);
+    }
+    const auto order_of = [](const row_and_tenor& entry) {
+        return entry.second ? entry.second->sort_order : std::numeric_limits<int>::max();
+    };
+    std::sort(ordered.begin(), ordered.end(), [&order_of](const auto& a, const auto& b) {
+        if (order_of(a) != order_of(b))
+            return order_of(a) < order_of(b);
+        return a.first->tenor_code < b.first->tenor_code;
+    });
+
+    // A row that cannot be asked about is refused in its own entry and left
+    // out of the batch, so it costs only itself.
+    schedule_axes axes{ctx_};
+    std::vector<tenor_resolution_request> asked;
+    std::vector<std::size_t> asked_entry;
+    response.tenors.reserve(ordered.size());
+    for (const auto& [rule, tenor] : ordered) {
+        messaging::resolve_tenor_response answer;
+        tenor_resolution_request question;
+        if (!tenor) {
+            answer = refuse_with(std::move(answer),
+                                 outcome::missing,
+                                 "tenor_not_found",
+                                 "No tenor '" + rule->tenor_code + "' for this tenant.",
+                                 "tenor_code");
+        } else if (build_request(*tenor,
+                                 convention,
+                                 *rule,
+                                 request.horizon,
+                                 request.spot,
+                                 axes,
+                                 question,
+                                 answer)) {
+            asked.push_back(question);
+            asked_entry.push_back(response.tenors.size());
+        }
+        response.tenors.push_back(entry_of(rule->tenor_code, answer));
+    }
+
+    if (asked.empty())
+        return response;
+
+    const auto results = tenor_resolution_engine::resolve_batch(asked, *calendars, axes.dates());
+    for (std::size_t i = 0; i != results.size(); ++i) {
+        auto& entry = response.tenors[asked_entry[i]];
+        entry =
+            entry_of(entry.tenor_code, answered(messaging::resolve_tenor_response{}, results[i]));
+    }
+    return response;
+}
+
 messaging::resolve_tenor_response
 tenor_resolution_service::resolve_rows(const domain::tenor& tenor,
                                        const domain::tenor_convention& convention,
@@ -231,138 +568,22 @@ tenor_resolution_service::resolve_rows(const domain::tenor& tenor,
     response.calendar = calendar_code;
     response.roll_rule = convention.business_day_convention_type;
 
-    // An unmaterialised calendar has no business days at all, so every date
-    // would look like a business day. That is a missing prerequisite rather
-    // than an answer, and saying so is the only honest reply.
-    calendar_date_repository dates{ctx_};
-    const auto calendar_days = dates.read_latest_by_calendar(calendar_code);
-    if (calendar_days.empty()) {
-        return refuse_with(response,
-                           outcome::missing,
-                           "calendar_not_materialised",
-                           "Calendar '" + calendar_code +
-                               "' has no materialised dates for this "
-                               "tenant.",
-                           "calendar_code");
+    const auto calendars = load_calendar(ctx_, calendar_code);
+    if (!calendars) {
+        response.result = calendar_not_materialised(calendar_code);
+        return response;
     }
-    const auto calendars = build_calendar_set(calendar_days);
 
-    // The persisted codes become the engine's vocabulary here and nowhere
-    // else. An unparseable code is data the engine cannot be asked about, so
-    // it refuses rather than guessing at a nearest match.
+    schedule_axes axes{ctx_};
     tenor_resolution_request engine_request;
-    engine_request.horizon = horizon;
-    engine_request.spot_date = spot;
-    engine_request.calendar_index = 0;
-    try {
-        engine_request.tenor.kind = parse_tenor_kind_code(tenor.kind);
-        engine_request.tenor.period = {parse_period_unit_code(tenor.unit),
-                                       tenor.multiplier.value_or(0)};
-
-        auto& rule = engine_request.rule.emplace();
-        rule.anchor = parse_tenor_anchor_code(
-            resolution_rule.anchor_override.value_or(convention.measured_from));
-        rule.algorithm = parse_resolution_algorithm_code(convention.resolution_algorithm);
-        rule.roll = parse_business_day_convention_code(convention.business_day_convention_type);
-        rule.schedule_step_count = resolution_rule.schedule_step_count.value_or(0);
-        if (resolution_rule.offset_unit && resolution_rule.offset_multiplier) {
-            rule.offset = {parse_period_unit_code(*resolution_rule.offset_unit),
-                           *resolution_rule.offset_multiplier};
-        }
-    } catch (const std::invalid_argument& e) {
-        return refuse_with(
-            response, outcome::invalid, "unparseable_code", e.what(), "tenor_convention");
-    }
-
-    // A row that names a schedule binds it to the schedule algorithm: under
-    // ANCHOR_OFFSET the engine resolves on the calendar axis and never looks
-    // at the schedule at all, so a row naming one there would be silently
-    // ignored. Contradictory data is refused rather than read one way.
-    if (resolution_rule.schedule_code &&
-        engine_request.rule->algorithm != aquant_domain::resolution_algorithm::schedule_step) {
-        return refuse_with(response,
-                           outcome::invalid,
-                           "schedule_under_anchor_offset",
-                           "The resolution row for tenor '" + tenor.code + "' names schedule '" +
-                               *resolution_rule.schedule_code + "', but convention '" +
-                               convention.code + "' resolves by " +
-                               convention.resolution_algorithm + ", which never walks a schedule.",
-                           "resolution_algorithm");
-    }
-
-    // The schedule axis, if the row names one. Its source decides how its
-    // dates are produced, and a closed form this engine does not carry is
-    // refused rather than walked as an event lookup that will find nothing.
-    std::vector<schedule_date> schedule_dates;
-    if (resolution_rule.schedule_code) {
-        const auto& schedule_code = *resolution_rule.schedule_code;
-        tenor_schedule_repository schedules;
-        const auto schedule_rows = schedules.read_latest(ctx_, schedule_code);
-        if (schedule_rows.empty()) {
-            return refuse_with(response,
-                               outcome::missing,
-                               "schedule_not_found",
-                               "No tenor schedule '" + schedule_code + "' for this tenant.",
-                               "schedule_code");
-        }
-        const auto& schedule = schedule_rows.front();
-
-        if (schedule.schedule_source == "CLOSED_FORM") {
-            if (schedule_code != "ROLL_QUARTER") {
-                return refuse_with(response,
-                                   outcome::invalid,
-                                   "schedule_not_walkable",
-                                   "Tenor schedule '" + schedule_code +
-                                       "' is closed-form and this engine walks only "
-                                       "ROLL_QUARTER.",
-                                   "schedule_code");
-            }
-            engine_request.rule->schedule = schedule_kind::cds_roll_quarter;
-        } else {
-            engine_request.rule->schedule = schedule_kind::event_lookup;
-            if (!schedule.calendar_code || !schedule.diary_entry_type) {
-                return refuse_with(response,
-                                   outcome::invalid,
-                                   "schedule_incomplete",
-                                   "Tenor schedule '" + schedule_code +
-                                       "' is an event lookup with no calendar or diary entry "
-                                       "type.",
-                                   "schedule_code");
-            }
-            calendar_event_repository events;
-            const auto entries = events.read_latest_by_calendar_code(
-                ctx_, *schedule.calendar_code, 0, diary_read_limit);
-            for (const auto& entry : entries) {
-                if (entry.diary_entry_type == *schedule.diary_entry_type)
-                    schedule_dates.push_back(schedule_date{0, entry.event_date});
-            }
-            const auto by_date = [](const schedule_date& a, const schedule_date& b) {
-                return a.date < b.date;
-            };
-            std::sort(schedule_dates.begin(), schedule_dates.end(), by_date);
-        }
+    if (!build_request(
+            tenor, convention, resolution_rule, horizon, spot, axes, engine_request, response)) {
+        return response;
     }
 
     const auto results = tenor_resolution_engine::resolve_batch(
-        std::span<const tenor_resolution_request>(&engine_request, 1), calendars, schedule_dates);
-    const tenor_resolution_result& result = results.front();
-
-    // The dates the resolution reached travel on the response whether the
-    // answer stands or not: a refusal that says only "no" cannot be acted on.
-    response.anchor_date = result.anchor_date;
-    response.date_before_roll = result.unadjusted_date;
-    response.adjusted_date = result.resolved_date;
-
-    if (result.status != aquant_domain::resolution_status::ok) {
-        return refuse_with(response,
-                           outcome::invalid,
-                           std::string(aquant_domain::to_string(result.status)),
-                           "The rule did not resolve: " +
-                               std::string(aquant_domain::to_string(result.status)) + ".",
-                           field_name_for(result.status));
-    }
-
-    return response;
+        std::span<const tenor_resolution_request>(&engine_request, 1), *calendars, axes.dates());
+    return answered(std::move(response), results.front());
 }
 
 } // namespace ores::refdata::service

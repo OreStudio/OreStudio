@@ -28,6 +28,7 @@ import { ApiFailure } from '../api/transport.js';
 import { docKey } from './DocPanel.js';
 import { AppRoutes } from '../AppRoutes.js';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { SiteProvider, SITE_QUERY_KEY } from '../session/SiteProvider.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import type { SessionState } from '../session/SessionProvider.js';
 import { QA_SCENARIOS_KEY } from './TestsQueue.js';
@@ -117,6 +118,17 @@ function render(path: string, seed: (client: QueryClient) => void = () => undefi
     });
     client.setQueryData(QA_SCENARIOS_KEY, [summary({ id: ID, title: scenario.title })]);
     client.setQueryData(['qa-scenario', ID], scenario);
+    client.setQueryData(SITE_QUERY_KEY, {
+        appName: 'ORE Studio',
+        environment: {
+            id: 'eager_maxwell',
+            displayName: 'Eager Maxwell',
+            description: '',
+            nonProduction: true,
+        },
+        developerTools: true,
+        developerAccounts: [],
+    });
     client.setQueryData(['permissions'], []);
     client.setQueryData(['unread-notifications'], 0);
     client.setQueryData(['notifications'], { items: [], total: 0 });
@@ -125,22 +137,27 @@ function render(path: string, seed: (client: QueryClient) => void = () => undefi
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter initialEntries={[path]}>
-                    <AppRoutes
-                        gate={gate}
-                        session={session}
-                        journey={<p>First run journey</p>}
-                        newTenantJourney={<p>New tenant journey</p>}
-                        newPartyJourney={<p>New party journey</p>}
-                        signUpJourney={<p>Registration door</p>}
-                        journeyInProgress={false}
-                        onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
-                        onChooseParty={async () => undefined}
-                        onSwitchParty={async () => undefined}
-                        onSignOut={() => undefined}
-                        onRetryBootstrap={() => undefined}
-                    />
-                </MemoryRouter>
+                <SiteProvider>
+                    <MemoryRouter initialEntries={[path]}>
+                        <AppRoutes
+                            gate={gate}
+                            session={session}
+                            journey={<p>First run journey</p>}
+                            newTenantJourney={<p>New tenant journey</p>}
+                            newPartyJourney={<p>New party journey</p>}
+                            signUpJourney={<p>Registration door</p>}
+                            journeyInProgress={false}
+                            onSignIn={async () => ({
+                                outcome: 'active',
+                                passwordResetRequired: false,
+                            })}
+                            onChooseParty={async () => undefined}
+                            onSwitchParty={async () => undefined}
+                            onSignOut={() => undefined}
+                            onRetryBootstrap={() => undefined}
+                        />
+                    </MemoryRouter>
+                </SiteProvider>
             </TranslationProvider>
         </QueryClientProvider>,
     );

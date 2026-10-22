@@ -1,0 +1,22 @@
+\set ON_ERROR_STOP on
+drop policy tenant_policy on write_ceiling.tick_owner;
+drop policy party_policy on write_ceiling.tick_owner;
+create policy tenant_policy on write_ceiling.tick_owner for all
+  using (tenant_id = nullif(current_setting('app.current_tenant_id', true), '')::uuid)
+  with check (tenant_id = nullif(current_setting('app.current_tenant_id', true), '')::uuid);
+create policy party_policy on write_ceiling.tick_owner as restrictive for select
+  using (party_id = ANY(nullif(current_setting('app.visible_party_ids', true), '')::uuid[]));
+
+\set ON_ERROR_STOP on
+drop policy tenant_policy on write_ceiling.tick_owner;
+drop policy party_policy on write_ceiling.tick_owner;
+create policy tenant_policy on write_ceiling.tick_owner for all
+  using (tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid))
+  with check (tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid));
+create policy party_policy on write_ceiling.tick_owner as restrictive for select
+  using (party_id = ANY((select nullif(current_setting('app.visible_party_ids', true), '')::uuid[])));
+
+\set ON_ERROR_STOP on
+drop policy if exists party_policy on write_ceiling.tick_owner;
+create policy party_policy on write_ceiling.tick_owner as restrictive for select
+  using (party_id in (select unnest(nullif(current_setting('app.visible_party_ids', true), '')::uuid[])));

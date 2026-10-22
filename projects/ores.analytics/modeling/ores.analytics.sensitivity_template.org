@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: E5052BA8-882F-4EC0-9A5A-E7DC6E36C8E3
+:END:
+#+title: ores.analytics.sensitivity_template
+#+description: Codegen entity model for the analytics =sensitivity_template= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A key that a product carries so the sensitivity configuration can set its own shifts.
+#+entity_singular: sensitivity_template
+#+entity_plural: sensitivity_templates
+#+entity_title: Sensitivity Template
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+Unique template key as ORE writes it.
+
+Examples: 'IR_Analytical', 'EQ_MC'.
+
+** asset_class
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The asset class of the products that carry the template: IR, FX, EQ, COMM, CR or ALL.
+
+#+begin_src cpp :name generator
+std::string("IR")
+#+end_src
+
+** method
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+How the products with this template are priced: Analytical, Semianalytical, Finite difference, Monte Carlo or Trade level.
+
+#+begin_src cpp :name generator
+std::string("Analytical")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the template stands for.
+
+#+begin_src cpp :name generator
+std::string("Interest rate products priced by a closed formula.")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_sensitivity_templates_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: sensi_template
+:entity_plural_short:   templates
+:entity_singular_words: sensitivity template
+:entity_plural_words:   sensitivity templates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: st
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code | Code |
+| asset_class | Asset class |
+| method | Method |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  templates
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget         | type      | is_key | is_required | placeholder |
+|-------------+-------------+----------------+-----------+--------+-------------+-------------|
+| code        | Code        | codeEdit       | line_edit | true   | true        | Enter the template key |
+| asset_class | Asset class | assetClassEdit | line_edit |        | true        | IR, FX, EQ, COMM, CR or ALL |
+| method      | Method      | methodEdit     | line_edit |        | true        | Enter the method |
+| description | Description | descriptionEdit | text_edit |        | true        | Enter a description |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Code       | code        | Code        | string    | 180   |
+| AssetClass | asset_class | Asset class | string    | 90    |
+| Method     | method      | Method      | string    | 140   |
+| Description | description | Description | string   | 380   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

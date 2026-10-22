@@ -46,7 +46,10 @@ using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::domain::tenor_convention_resolution;
 using ores::refdata::domain::tenor_schedule;
+using ores::refdata::messaging::convention_tenor_resolution;
 using ores::refdata::messaging::preview_tenor_resolution_request;
+using ores::refdata::messaging::resolve_convention_request;
+using ores::refdata::messaging::resolve_convention_response;
 using ores::refdata::messaging::resolve_tenor_request;
 using ores::refdata::messaging::resolve_tenor_response;
 using ores::refdata::repository::calendar_exception_repository;
@@ -81,10 +84,15 @@ void write_zz_country_sentinel(scoped_database_helper& h,
 struct fixture {
     scoped_database_helper h;
     std::string calendar_code;
-    std::string convention_code = "TEST_SPOT_FORWARD";
+    std::string convention_code;
     std::string tenor_code = "1M";
 
-    explicit fixture(bool materialise = true, const std::string& algorithm = "ANCHOR_OFFSET") {
+    /// The rows of one test run share a tenant, so a test that reads a whole
+    /// convention names one of its own and sees only the rows it wrote.
+    explicit fixture(bool materialise = true,
+                     const std::string& algorithm = "ANCHOR_OFFSET",
+                     const std::string& convention = "TEST_SPOT_FORWARD")
+        : convention_code(convention) {
         auto gctx = ores::testing::make_generation_context(h);
         write_zz_country_sentinel(h, gctx);
 
@@ -453,4 +461,149 @@ TEST_CASE("a preview of a rule that needs a spot date refuses and says so", tags
     CHECK(response.result.code == "missing_spot_date");
     REQUIRE(response.result.fields.size() == 1);
     CHECK(response.result.fields[0].field == "spot");
+}
+
+namespace {
+
+resolve_convention_request convention_request(const fixture& f) {
+    resolve_convention_request req;
+    req.convention_code = f.convention_code;
+    req.calendar_code = f.calendar_code;
+    req.horizon = horizon;
+    req.spot = spot;
+    return req;
+}
+
+const convention_tenor_resolution* entry_for(const resolve_convention_response& response,
+                                             const std::string& tenor_code) {
+    const auto found =
+        std::find_if(response.tenors.begin(),
+                     response.tenors.end(),
+                     [&tenor_code](const auto& entry) { return entry.tenor_code == tenor_code; });
+    return found == response.tenors.end() ? nullptr : &*found;
+}
+
+}
+
+TEST_CASE("a convention resolves every tenor it holds in one answer, in the catalogue's order",
+          tags) {
+    fixture f(true, "ANCHOR_OFFSET", "TEST_CONVENTION_CATALOGUE_ORDER");
+    f.tenor_code = "3M";
+    f.write_tenor("3M", "PERIOD", "MONTH", 3);
+    f.write_resolution();
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.resolve_convention(convention_request(f));
+
+    CHECK(response.result.outcome == outcome::ok);
+    CHECK(response.roll_rule == "ModifiedFollowing");
+    CHECK(response.calendar == f.calendar_code);
+    REQUIRE(response.tenors.size() == 2);
+    CHECK(response.tenors[0].tenor_code == "1M");
+    CHECK(response.tenors[1].tenor_code == "3M");
+
+    // 19 January plus a month is Thursday 19 February, so nothing rolls.
+    CHECK(response.tenors[0].result.outcome == outcome::ok);
+    CHECK(response.tenors[0].anchor_date == spot);
+    CHECK(response.tenors[0].date_before_roll ==
+          std::chrono::year{2026} / std::chrono::February / 19);
+    CHECK(response.tenors[0].adjusted_date == std::chrono::year{2026} / std::chrono::February / 19);
+
+    // Plus three months is Sunday 19 April, which ModifiedFollowing takes to
+    // the Monday.
+    CHECK(response.tenors[1].result.outcome == outcome::ok);
+    CHECK(response.tenors[1].date_before_roll == std::chrono::year{2026} / std::chrono::April / 19);
+    CHECK(response.tenors[1].adjusted_date == std::chrono::year{2026} / std::chrono::April / 20);
+}
+
+TEST_CASE("a tenor that cannot resolve costs only its own entry", tags) {
+    fixture f(true, "ANCHOR_OFFSET", "TEST_CONVENTION_ONE_REFUSAL");
+    f.tenor_code = "O/N";
+    f.write_tenor("O/N", "SPECIAL", "NONE", 0);
+    // A row with no offset: a SPECIAL tenor has no duration of its own, so
+    // the rule has to supply one and this one does not.
+    f.write_resolution();
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.resolve_convention(convention_request(f));
+
+    CHECK(response.result.outcome == outcome::ok);
+    REQUIRE(response.tenors.size() == 2);
+
+    const auto* resolved = entry_for(response, "1M");
+    REQUIRE(resolved != nullptr);
+    CHECK(resolved->result.outcome == outcome::ok);
+    CHECK(resolved->adjusted_date == std::chrono::year{2026} / std::chrono::February / 19);
+
+    const auto* refused = entry_for(response, "O/N");
+    REQUIRE(refused != nullptr);
+    CHECK(refused->result.outcome == outcome::invalid);
+    CHECK(refused->result.code == "special_tenor_without_offset");
+    // The dates counted before the refusal stay on the entry.
+    CHECK(refused->anchor_date == spot);
+    REQUIRE(refused->result.fields.size() == 1);
+    CHECK(refused->result.fields[0].field == "tenor_convention_resolutions");
+}
+
+TEST_CASE("rows that name one schedule resolve against it together", tags) {
+    fixture f(true, "SCHEDULE_STEP", "TEST_CONVENTION_SHARED_SCHEDULE");
+    f.write_tenor("1Y", "PERIOD", "YEAR", 1);
+    f.write_tenor("2Y", "PERIOD", "YEAR", 2);
+    f.write_schedule("ROLL_QUARTER", "CLOSED_FORM");
+    f.tenor_code = "1Y";
+    f.write_resolution("ROLL_QUARTER", 1);
+    f.tenor_code = "2Y";
+    f.write_resolution("ROLL_QUARTER", 1);
+
+    auto req = convention_request(f);
+    req.horizon = std::chrono::year{2026} / std::chrono::January / 1;
+    req.spot = std::chrono::year{2026} / std::chrono::January / 2;
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.resolve_convention(req);
+
+    CHECK(response.result.outcome == outcome::ok);
+
+    // A year from spot is 2 January 2027, and the first quarterly roll on or
+    // after it is 20 March 2027, a Saturday the convention takes to the Monday.
+    const auto* one_year = entry_for(response, "1Y");
+    REQUIRE(one_year != nullptr);
+    CHECK(one_year->result.outcome == outcome::ok);
+    CHECK(one_year->date_before_roll == std::chrono::year{2027} / std::chrono::March / 20);
+    CHECK(one_year->adjusted_date == std::chrono::year{2027} / std::chrono::March / 22);
+
+    // Two years from spot is 2 January 2028; the roll is Monday 20 March 2028.
+    const auto* two_years = entry_for(response, "2Y");
+    REQUIRE(two_years != nullptr);
+    CHECK(two_years->result.outcome == outcome::ok);
+    CHECK(two_years->date_before_roll == std::chrono::year{2028} / std::chrono::March / 20);
+    CHECK(two_years->adjusted_date == std::chrono::year{2028} / std::chrono::March / 20);
+}
+
+TEST_CASE("a convention that does not exist is refused with the code it was asked for", tags) {
+    fixture f;
+    auto req = convention_request(f);
+    req.convention_code = "NOSUCH";
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.resolve_convention(req);
+
+    CHECK(response.result.outcome == outcome::missing);
+    CHECK(response.result.code == "convention_not_found");
+    REQUIRE(response.result.fields.size() == 1);
+    CHECK(response.result.fields[0].field == "convention_code");
+    CHECK(response.tenors.empty());
+}
+
+TEST_CASE("a calendar nobody materialised refuses the whole convention", tags) {
+    fixture f(false);
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.resolve_convention(convention_request(f));
+
+    CHECK(response.result.outcome == outcome::missing);
+    CHECK(response.result.code == "calendar_not_materialised");
+    REQUIRE(response.result.fields.size() == 1);
+    CHECK(response.result.fields[0].field == "calendar_code");
+    CHECK(response.tenors.empty());
 }

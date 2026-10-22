@@ -1,0 +1,299 @@
+:PROPERTIES:
+:ID: 2AC4F807-F96E-4BA2-B720-7C7251A09EB7
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.reporting.engine_settings_building
+#+description: Codegen entity model for the reporting =engine_settings_building= part. Market and trade building of a named engine settings configuration.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: engine_settings_building
+#+entity_plural: engine_settings_building
+#+entity_title: Engine Settings Building
+#+brief: Market and trade building of a named engine settings configuration.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+The market and trade building part of a named engine settings configuration. How the engine builds the market and the trades, and what it does when that fails. A change here changes the numbers. A column that is null means the engine default,
+and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the
+central =engine_settings= row in the same transaction.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:profile:       fk-scoped-child
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** engine_settings_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The central engine settings row this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the configuration this part belongs to. Carried so row level security can isolate the part without a
+join, and stamped from the session that writes it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** observation_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the engine handles QuantLib observer notifications: None, Disable, Defer or Unregister.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** lazy_market_building
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a curve is built only when something asks for it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** build_failed_trades
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a trade that cannot be built becomes a dummy trade of type Failed.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** continue_on_error
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the run goes on after an error instead of exiting.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_at_par_coupons_curves
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether floating rate coupons use the par approximation when the engine builds curves.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_at_par_coupons_trades
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether floating rate coupons use the par approximation when the engine builds trades.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_building_tbl
+:index_prefix: engine_settings_building
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal and nil-uuid checks.
+
+| expression |
+|------------|
+| "observation_model" is null or "observation_model" in ('None', 'Disable', 'Defer', 'Unregister') |
+
+
+** Indexes
+
+A configuration has at most one row of this part.
+
+| name | columns | unique | current_only | where_extra |
+|------------------+-------------------------------+--------+--------------+-------------|
+| one_per_settings | tenant_id, engine_settings_id | true | true | |
+
+* Foreign keys
+
+** engine_settings_id
+:PROPERTIES:
+:table:                ores_reporting_engine_settings_tbl
+:parent_entity:        engine_settings
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid engine_settings_id: %. No active engine settings found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: engine_settings_building
+:entity_plural_short:   engine_settings_building
+:entity_singular_words: engine settings building
+:entity_plural_words:   engine settings building
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.reporting.api/domain/engine_settings_building.hpp
+:domain_class:            reporting::domain::engine_settings_building
+:protocol_include:        ores.reporting.api/messaging/engine_settings_building_protocol.hpp
+:collection_name:         engine_settings_building
+:key_field:               id
+:save_request_item_field: engine_settings_building
+:has_change_reason_cache: true
+:has_export_macro:        true
+:parent_entity_singular:  engine_settings
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|---+---+---+---+---+---+---|
+| id | Id | idEdit | line_edit | true | true | |
+| observation_model | Observation Model | observationModelEdit | line_edit |  |  | |
+| lazy_market_building | Lazy Market Building | lazyMarketBuildingEdit | check_box |  |  | |
+| build_failed_trades | Build Failed Trades | buildFailedTradesEdit | check_box |  |  | |
+| continue_on_error | Continue On Error | continueOnErrorEdit | check_box |  |  | |
+| use_at_par_coupons_curves | Use At Par Coupons Curves | useAtParCouponsCurvesEdit | check_box |  |  | |
+| use_at_par_coupons_trades | Use At Par Coupons Trades | useAtParCouponsTradesEdit | check_box |  |  | |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|------------------+-------------------------------+--------+--------------+-------------|
+| ObservationModel | observation_model | Observation Model | string | 120 |
+| LazyMarketBuilding | lazy_market_building | Lazy Market Building | bool | 120 |
+| BuildFailedTrades | build_failed_trades | Build Failed Trades | bool | 120 |
+| ContinueOnError | continue_on_error | Continue On Error | bool | 120 |
+| UseAtParCouponsCurves | use_at_par_coupons_curves | Use At Par Coupons Curves | bool | 120 |
+| UseAtParCouponsTrades | use_at_par_coupons_trades | Use At Par Coupons Trades | bool | 120 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* Physical space
+
+The messaging, eventing and history surface is not generated yet. This task models the data.
+
+| Address                          | Enabled |
+|----------------------------------+---------|
+| ores.cpp.service                 | false   |
+| ores.cpp.protocol                | false   |
+| ores.cpp.nats-handler            | false   |
+| ores.cpp.nats-sub-registrar      | false   |
+| ores.cpp.nats-event-registrar    | false   |
+| ores.cpp.nats-eventing           | false   |
+| ores.cpp.nats-event-cache        | false   |
+| ores.cpp.history-provider-registrar | false |
+| ores.cpp.presentation            | false   |
+| ores.cpp.eventing-integration-test | false |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:AD4E924C-932C-4C55-B57A-D07A441FE5AC][ores.reporting.engine_settings]] — the central row this part belongs to.

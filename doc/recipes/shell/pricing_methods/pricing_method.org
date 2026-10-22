@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: FC4F033E-9672-5CB9-A439-327F2816AA76
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the pricing_methods commands from the shell?
+#+description: Every command the pricing_methods submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:pricing_methods:
+
+This file documents the pricing_methods resource at the shell, one section per command. Every command is a subcommand of =pricing_methods=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1529B0DF-2A3B-5E9F-812F-99BBEE5427E9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.list=.
+
+#+name: pricing_methods-list
+#+begin_src ores-shell :tangle pricing_methods-list.ores :exports none
+pricing_methods list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5A44DEA8-7C13-55B0-A249-8DE7DDA6DAA4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods get <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.get=.
+
+#+name: pricing_methods-get
+#+begin_src ores-shell :tangle pricing_methods-get.ores :exports none
+pricing_methods get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 39D346A7-C6AA-5566-A6DE-B5BC0585E4A3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.get_many=.
+
+#+name: pricing_methods-get-many
+#+begin_src ores-shell :tangle pricing_methods-get-many.ores :exports none
+pricing_methods get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3488EDD4-B476-5249-8C7C-6865D4EA23C7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods add <code> <description> <detail> <source> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.put=.
+
+#+name: pricing_methods-add
+#+begin_src ores-shell :tangle pricing_methods-add.ores :exports none
+pricing_methods add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8FFB927E-4099-52AC-9A5E-7A8AFF441751
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods set <code> <description> <detail> <source> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.put=.
+
+#+name: pricing_methods-set
+#+begin_src ores-shell :tangle pricing_methods-set.ores :exports none
+pricing_methods set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 90E0AA49-9DD8-5E03-8A15-DC1EA0A50678
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods put-many --count <n> <code> <description> <detail> <source> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.put_many=.
+
+#+name: pricing_methods-put-many
+#+begin_src ores-shell :tangle pricing_methods-put-many.ores :exports none
+pricing_methods put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E19E699F-0A3F-56B9-A88C-FD3616C14972
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.delete=.
+
+#+name: pricing_methods-delete
+#+begin_src ores-shell :tangle pricing_methods-delete.ores :exports none
+pricing_methods delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 50781021-570A-5470-898C-CD9324902D41
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods.delete_many=.
+
+#+name: pricing_methods-delete-many
+#+begin_src ores-shell :tangle pricing_methods-delete-many.ores :exports none
+pricing_methods delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BB81F387-09D9-5871-9335-14FE6FE1E4B0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods_versions.list=.
+
+#+name: pricing_methods-versions
+#+begin_src ores-shell :tangle pricing_methods-versions.ores :exports none
+pricing_methods versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B374F938-063C-581D-9465-0303EB43E56A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_methods version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_methods_versions.get=.
+
+#+name: pricing_methods-version
+#+begin_src ores-shell :tangle pricing_methods-version.ores :exports none
+pricing_methods version __none__ --version 1
+#+end_src
+

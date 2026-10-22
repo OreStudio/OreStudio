@@ -257,13 +257,7 @@ a compute screen yet.
    current catalogue and cannot say what a job ran if the version's package was
    replaced. The result's =output_uri= and the log lines are the only record of
    the old run.
-6. *One tenant's work is dispatched to nobody.* The catalogue is what a tenant
-   reads before submitting, and the wrapper's single assignment subject means
-   the tenant's submission may not be picked up. A catalogue screen that says
-   "the grid may run this" is not yet a promise the fleet will
-   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
-   tenant's work]]).
-7. *Nothing marks a release newest.* The jobs-per-release chart marks each bar
+6. *Nothing marks a release newest.* The jobs-per-release chart marks each bar
    as the app's newest release or an older one, and the =app_version= model
    states no flag and no ordering that says which build that is. The only rule
    today is the highest =engine_version=, and =engine_version= is text, so the

@@ -422,6 +422,7 @@ function summarise(id: string, path: string, scenario: Scenario): ScenarioSummar
         path,
         sprint: sprintOf(path),
         created: scenario.created,
+        environment: scenario.environment,
         state: scenario.state,
         phase:
             scenario.state === 'PENDING'

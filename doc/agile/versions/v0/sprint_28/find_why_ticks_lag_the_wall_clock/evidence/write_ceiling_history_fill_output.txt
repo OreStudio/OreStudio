@@ -1,0 +1,33 @@
+NOTICE:  obs_a1 chunk 1 of 5 done in 18.6 s
+NOTICE:  obs_a1 chunk 2 of 5 done in 18.9 s
+NOTICE:  obs_a1 chunk 3 of 5 done in 24.1 s
+NOTICE:  obs_a1 chunk 4 of 5 done in 21.4 s
+NOTICE:  obs_a1 chunk 5 of 5 done in 22.0 s
+NOTICE:  tick_append chunk 1 of 20 done in 26.1 s
+NOTICE:  tick_append chunk 2 of 20 done in 25.2 s
+NOTICE:  tick_append chunk 3 of 20 done in 28.2 s
+NOTICE:  tick_append chunk 4 of 20 done in 22.5 s
+NOTICE:  tick_append chunk 5 of 20 done in 21.4 s
+NOTICE:  tick_append chunk 6 of 20 done in 21.3 s
+NOTICE:  tick_append chunk 7 of 20 done in 21.3 s
+NOTICE:  tick_append chunk 8 of 20 done in 20.7 s
+NOTICE:  tick_append chunk 9 of 20 done in 20.9 s
+NOTICE:  tick_append chunk 10 of 20 done in 20.3 s
+NOTICE:  tick_append chunk 11 of 20 done in 20.1 s
+NOTICE:  tick_append chunk 12 of 20 done in 21.8 s
+NOTICE:  tick_append chunk 13 of 20 done in 20.8 s
+NOTICE:  tick_append chunk 14 of 20 done in 20.7 s
+NOTICE:  tick_append chunk 15 of 20 done in 21.3 s
+NOTICE:  tick_append chunk 16 of 20 done in 20.6 s
+NOTICE:  tick_append chunk 17 of 20 done in 21.1 s
+NOTICE:  tick_append chunk 18 of 20 done in 20.2 s
+NOTICE:  tick_append chunk 19 of 20 done in 20.2 s
+NOTICE:  tick_append chunk 20 of 20 done in 21.2 s
+ shape  |  rows   |  size   | bytes_per_row 
+ obs_a1 | 5000000 | 4701 MB |           986
+    shape    |   rows    | size  | bytes_per_row 
+ tick_append | 100000000 | 17 GB |           178
+ hypertable_name | num_chunks 
+ obs_a1          |          4
+ tick_append     |         61
+(2 rows)

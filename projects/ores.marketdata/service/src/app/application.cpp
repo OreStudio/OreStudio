@@ -106,7 +106,22 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             nats, cfg.database.user, cfg.database.password()));
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
-    auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
+    std::shared_ptr<tick_writer> ticks;
+    if (!cfg.tick_writer_user.empty()) {
+        ticks = std::make_shared<tick_writer>(
+            tick_writer_options{.user = cfg.tick_writer_user,
+                                .password = cfg.tick_writer_password(),
+                                .host = cfg.database.host,
+                                .database = cfg.database.database,
+                                .port = cfg.database.port});
+        BOOST_LOG_SEV(lg(), info) << "Ticks are stored in the tick table as '"
+                                  << cfg.tick_writer_user << "'";
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "No tick writer role is set, so ticks are republished and "
+                                     "not stored";
+    }
+    auto ingest =
+        std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge, ticks);
 
     namespace ev = ores::eventing;
     namespace mdm = ores::marketdata::messaging;

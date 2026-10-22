@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-10-13
-#+environment: bright_faraday
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ collect_compute_results completes without downloading anything, and ores.reporti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Implemented. =collect_results= reads the batch from compute as the run, fails the run on a failed result, and keeps the output under the component's own key. |
-| Waiting on   | The hourly validation, then a run with a finished compute job, to exercise the retrieval live. |
-| Next         | A live run, and the retrieval's own test target if the handler is to be covered rather than only the plan. |
-| Last touched | 2026-10-09                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The live run belongs to Prove the run end to end and keep it repeatable. |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

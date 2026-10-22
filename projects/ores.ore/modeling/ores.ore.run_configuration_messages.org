@@ -242,6 +242,15 @@ reaches them through its =import-run= and =export-run= verbs.
 /** FX conventions, which have no store yet. */
 #+end_src
 
+*** warnings
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** Setup parameters the model does not hold and the import dropped, one warning each. */
+#+end_src
+
 *** report_definition_id
 :PROPERTIES:
 :cpp_type: std::string

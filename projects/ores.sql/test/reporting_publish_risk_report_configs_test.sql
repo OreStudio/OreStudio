@@ -29,7 +29,7 @@
  *   for the party
  * - A staged parameter names the parameter, and the publish resolves it to the
  *   definition of the analytic type the staged analytic has
- * - The run settings the configuration states, and the market bindings it holds,
+ * - The run choices the configuration states, and the market bindings it holds,
  *   reach the live tables as staged
  * - The portfolio scope names the portfolio the party holds under that name
  * - A repeat publish adds nothing
@@ -88,11 +88,10 @@ where code = 'test.risk_report_configs' and valid_to = ores_utility_infinity_tim
 
 insert into ores_dq_risk_report_configs_artefact_tbl (
     dataset_id, tenant_id, id, version, party_id, name, description, configuration_id,
-    base_currency, observation_model, n_threads, market_data_type, input_path, output_path,
-    log_file, log_mask, imply_todays_fixings, scope_portfolio)
+    base_currency, market_data_type, input_path, output_path, log_file, scope_portfolio)
 select d.id, ores_utility_system_tenant_id_fn(), c.config_id, 0, c.party_id,
     'Test exposure', 'A risk report configuration', c.configuration_id,
-    'GBP', 'Disable', 1, 'eod', 'Input', 'Output', 'log.txt', 31, 'N', 'RRC-FIXTURE-PORTFOLIO'
+    'GBP', 'eod', 'Input', 'Output', 'log.txt', 'RRC-FIXTURE-PORTFOLIO'
 from t_dataset d, t_ctx c;
 
 insert into ores_dq_configuration_analytics_artefact_tbl (
@@ -149,11 +148,10 @@ select is(
     'the configuration keeps its settings');
 
 select results_eq(
-    $$select r.observation_model, r.input_path, r.output_path, r.log_file, r.log_mask,
-             r.imply_todays_fixings, r.continue_on_error
+    $$select r.market_data_type, r.input_path, r.output_path, r.log_file,
+             r.input_path_market
       from t_live r$$,
-    $$values ('Disable'::text, 'Input'::text, 'Output'::text, 'log.txt'::text, 31,
-              'N'::text, null::text)$$,
+    $$values ('eod'::text, 'Input'::text, 'Output'::text, 'log.txt'::text, null::text)$$,
     'the configuration keeps the run choices it states and leaves the others empty');
 
 select results_eq(
@@ -272,11 +270,10 @@ where dataset_id = (select id from t_dataset);
 
 insert into ores_dq_risk_report_configs_artefact_tbl (
     dataset_id, tenant_id, id, version, party_id, name, description, configuration_id,
-    base_currency, observation_model, n_threads, market_data_type, input_path, output_path,
-    log_file, log_mask, imply_todays_fixings, scope_portfolio)
+    base_currency, market_data_type, input_path, output_path, log_file, scope_portfolio)
 select d.id, ores_utility_system_tenant_id_fn(), c.empty_config_id, 0, c.party_id,
     'Test empty', 'A configuration that stages no analytic', gen_random_uuid(),
-    'GBP', 'Disable', 1, 'eod', 'Input', 'Output', 'log.txt', null, null, null
+    'GBP', 'eod', 'Input', 'Output', 'log.txt', null
 from t_dataset d, t_ctx c;
 
 select throws_ok(

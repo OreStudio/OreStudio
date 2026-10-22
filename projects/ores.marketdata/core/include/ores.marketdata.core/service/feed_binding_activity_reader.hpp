@@ -22,9 +22,9 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/feed_binding.hpp"
-#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
@@ -35,17 +35,14 @@ namespace ores::marketdata::service {
 /**
  * @brief Says what each feed binding of the caller has written.
  *
- * A binding names a source and not a series, and the ingest loop keeps its tick count
- * and last tick in memory with no read. A source writes one series, and a series is
- * stamped with the source of the observations it holds, so the newest observation a
- * source has written names both the series the binding feeds and when the source
- * last ticked. The reader asks for that one observation for each binding, which the
- * observations_source index serves, and reads no series or axis of its own.
+ * A binding names a source and not a series, and a tick of the tick table carries no source.
+ * The ingest loop records the series and the time of the newest tick of each binding in a row
+ * of its own, at most every few seconds, and the reader reads that row for each binding.
  *
- * The bindings and the observations are isolated by tenant alone, so the reader states
- * the caller's party itself: it reads only that party's bindings and that party's
- * observations. A binding whose source has written nothing for the party stays in the
- * answer with no series and no tick, so the screen can say so.
+ * The bindings and the activity rows are isolated by tenant alone, so the reader states the
+ * caller's party itself: it reads only that party's bindings and that party's rows. A binding
+ * whose source has written nothing for the party stays in the answer with no series and no
+ * tick, so the screen can say so.
  */
 class ORES_MARKETDATA_CORE_EXPORT feed_binding_activity_reader final {
 public:
@@ -65,12 +62,11 @@ public:
                       const boost::uuids::uuid& party_id);
 
     /**
-     * @brief The activity of one binding, from the newest observation its source has
-     * written, or from none.
+     * @brief The activity of one binding, from the row recorded for it, or from none.
      */
     static messaging::feed_binding_activity
     activity_of(const std::string& source_name,
-                const std::optional<domain::market_observation>& newest);
+                const std::optional<repository::feed_binding_activity_record>& recorded);
 };
 
 }

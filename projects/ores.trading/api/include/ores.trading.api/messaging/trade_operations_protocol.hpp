@@ -180,12 +180,13 @@ struct trade_export_item {
      */
     ores::trading::domain::trade anchor;
     /**
-     * @brief The trade's ORE identifier, or its id when it has none.
+     * @brief The id the package names the trade by, which is the trade's own UUID.
      */
     std::string ore_id;
     /**
-     * @brief The names the trade's source used: counterparty, netting set, portfolios and
-     * additional fields. Absent when the trade has none.
+     * @brief The ids of the trade's counterparty, netting set and portfolios, and the additional
+     * fields: the names and codes of those entities as context, beside any field the trade's source
+     * recorded. Absent when the trade has none.
      */
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };

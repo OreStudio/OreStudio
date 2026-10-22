@@ -19,7 +19,12 @@
  */
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include <algorithm>
+#include <optional>
+#include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace ores::trading::service {
 
@@ -50,24 +55,38 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
     if (trade_ids.empty())
         return result;
 
+    // The names a reader sees beside the ids, kept apart from the fields the
+    // trade's own source recorded so that a recorded field is never replaced.
+    std::unordered_map<std::string, std::vector<std::pair<std::string, std::optional<std::string>>>>
+        context;
+    std::unordered_map<std::string, std::vector<std::string>> portfolio_names;
+
     const auto ids = to_uuid_array(trade_ids);
     for (const auto& row : execute_parameterized_multi_column_query(
              ctx_,
-             "SELECT trade_id::text, counter_party, netting_set_id "
-             "FROM ores_trading_trade_envelope_names_fn($1::uuid[])",
+             "SELECT trade_id::text, counter_party, netting_set_id, counterparty_name, "
+             "counterparty_lei, counterparty_alias, netting_set_code, netting_set_alias, "
+             "book_id, book_name FROM ores_trading_trade_envelope_names_fn($1::uuid[])",
              {ids},
              lg(),
              "Reading the envelope names of booked trades.")) {
         auto& data = result[*row[0]];
         data.counter_party = row[1];
         data.netting_set_id = row[2];
+        context[*row[0]] = {{"CounterpartyName", row[3]},
+                            {"CounterpartyLei", row[4]},
+                            {"CounterpartyAlias", row[5]},
+                            {"NettingSetCode", row[6]},
+                            {"NettingSetAlias", row[7]},
+                            {"BookId", row[8]},
+                            {"BookName", row[9]}};
     }
     if (result.empty())
         return result;
 
     for (const auto& row : execute_parameterized_multi_column_query(
              ctx_,
-             "SELECT trade_id::text, name "
+             "SELECT trade_id::text, portfolio_id::text, name "
              "FROM ores_trading_trade_portfolio_names_fn($1::uuid[])",
              {ids},
              lg(),
@@ -79,6 +98,7 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
         if (!portfolios)
             portfolios.emplace();
         portfolios->push_back(row[1].value_or(""));
+        portfolio_names[*row[0]].push_back(row[2].value_or(""));
     }
 
     for (const auto& row : execute_parameterized_multi_column_query(
@@ -97,6 +117,28 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
         if (!fields)
             fields.emplace();
         fields->push_back({.name = row[1].value_or(""), .value = row[2].value_or("")});
+    }
+
+    for (auto& [trade_id, data] : result) {
+        auto& fields = data.additional_fields;
+        const auto recorded = [&](const std::string& name) {
+            return fields &&
+                   std::ranges::any_of(*fields, [&](const auto& f) { return f.name == name; });
+        };
+        const auto add = [&](const std::string& name, const std::string& value) {
+            if (value.empty() || recorded(name))
+                return;
+            if (!fields)
+                fields.emplace();
+            fields->push_back({.name = name, .value = value});
+        };
+        for (const auto& [name, value] : context[trade_id])
+            if (value)
+                add(name, *value);
+        std::string names;
+        for (const auto& name : portfolio_names[trade_id])
+            names += (names.empty() ? "" : ", ") + name;
+        add("PortfolioNames", names);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";

@@ -1,0 +1,300 @@
+:PROPERTIES:
+:ID: 38297094-48D8-4A7F-A7F0-E5DAD71AFB72
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.reporting.engine_settings_fixings
+#+description: Codegen entity model for the reporting =engine_settings_fixings= part. Fixings and cash flows of a named engine settings configuration.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: engine_settings_fixings
+#+entity_plural: engine_settings_fixings
+#+entity_title: Engine Settings Fixings
+#+brief: Fixings and cash flows of a named engine settings configuration.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+The fixings and cash flows part of a named engine settings configuration. Which fixings and cash flows count in a run. A change here changes the numbers. A column that is null means the engine default,
+and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the
+central =engine_settings= row in the same transaction.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:profile:       fk-scoped-child
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** engine_settings_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The central engine settings row this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the configuration this part belongs to. Carried so row level security can isolate the part without a
+join, and stamped from the session that writes it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** imply_todays_fixings
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the engine implies the fixing of the valuation date from the curves instead of loading it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_todays_cash_flows
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a cash flow that pays on the valuation date is part of the NPV.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_reference_date_events
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an event on the valuation date is still counted in the NPV.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** enrich_index_fixings
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a gap in the fixing history of an index is filled from a neighbouring fixing.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** ignore_fixing_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many days older than the gap the previous fixing may be when it fills the gap. Zero turns the check off.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** ignore_fixing_lead
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many days ahead of the gap the next fixing may be when it fills the gap. Zero turns the check off.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_fixings_tbl
+:index_prefix: engine_settings_fixings
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal and nil-uuid checks.
+
+| expression |
+|------------|
+| "ignore_fixing_lag" is null or "ignore_fixing_lag" >= 0 |
+| "ignore_fixing_lead" is null or "ignore_fixing_lead" >= 0 |
+
+
+** Indexes
+
+A configuration has at most one row of this part.
+
+| name | columns | unique | current_only | where_extra |
+|------------------+-------------------------------+--------+--------------+-------------|
+| one_per_settings | tenant_id, engine_settings_id | true | true | |
+
+* Foreign keys
+
+** engine_settings_id
+:PROPERTIES:
+:table:                ores_reporting_engine_settings_tbl
+:parent_entity:        engine_settings
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid engine_settings_id: %. No active engine settings found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: engine_settings_fixings
+:entity_plural_short:   engine_settings_fixings
+:entity_singular_words: engine settings fixings
+:entity_plural_words:   engine settings fixings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.reporting.api/domain/engine_settings_fixings.hpp
+:domain_class:            reporting::domain::engine_settings_fixings
+:protocol_include:        ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp
+:collection_name:         engine_settings_fixings
+:key_field:               id
+:save_request_item_field: engine_settings_fixings
+:has_change_reason_cache: true
+:has_export_macro:        true
+:parent_entity_singular:  engine_settings
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|---+---+---+---+---+---+---|
+| id | Id | idEdit | line_edit | true | true | |
+| imply_todays_fixings | Imply Todays Fixings | implyTodaysFixingsEdit | check_box |  |  | |
+| include_todays_cash_flows | Include Todays Cash Flows | includeTodaysCashFlowsEdit | check_box |  |  | |
+| include_reference_date_events | Include Reference Date Events | includeReferenceDateEventsEdit | check_box |  |  | |
+| enrich_index_fixings | Enrich Index Fixings | enrichIndexFixingsEdit | check_box |  |  | |
+| ignore_fixing_lag | Ignore Fixing Lag | ignoreFixingLagEdit | line_edit |  |  | |
+| ignore_fixing_lead | Ignore Fixing Lead | ignoreFixingLeadEdit | line_edit |  |  | |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|------------------+-------------------------------+--------+--------------+-------------|
+| ImplyTodaysFixings | imply_todays_fixings | Imply Todays Fixings | bool | 120 |
+| IncludeTodaysCashFlows | include_todays_cash_flows | Include Todays Cash Flows | bool | 120 |
+| IncludeReferenceDateEvents | include_reference_date_events | Include Reference Date Events | bool | 120 |
+| EnrichIndexFixings | enrich_index_fixings | Enrich Index Fixings | bool | 120 |
+| IgnoreFixingLag | ignore_fixing_lag | Ignore Fixing Lag | int | 120 |
+| IgnoreFixingLead | ignore_fixing_lead | Ignore Fixing Lead | int | 120 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* Physical space
+
+The messaging, eventing and history surface is not generated yet. This task models the data.
+
+| Address                          | Enabled |
+|----------------------------------+---------|
+| ores.cpp.service                 | false   |
+| ores.cpp.protocol                | false   |
+| ores.cpp.nats-handler            | false   |
+| ores.cpp.nats-sub-registrar      | false   |
+| ores.cpp.nats-event-registrar    | false   |
+| ores.cpp.nats-eventing           | false   |
+| ores.cpp.nats-event-cache        | false   |
+| ores.cpp.history-provider-registrar | false |
+| ores.cpp.presentation            | false   |
+| ores.cpp.eventing-integration-test | false |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:AD4E924C-932C-4C55-B57A-D07A441FE5AC][ores.reporting.engine_settings]] — the central row this part belongs to.

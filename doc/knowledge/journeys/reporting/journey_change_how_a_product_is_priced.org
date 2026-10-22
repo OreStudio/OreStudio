@@ -157,14 +157,14 @@ configuration version a run used. Switches: =?status=approved|draft=,
 | 1, the row | Read the document | =analytics.v1.pricing_engines_documents.get= | exists |
 | 2, the reach | Read the definitions bound to the configuration | =reporting.v1.report_configurations.list= | partial; no read by configuration id |
 | 2, the open proposal | Read the proposals of a configuration | (no operation) | missing |
-| 3 and 4, the combo boxes | Read the models, engines and settings | (no operation) | missing |
+| 3 and 4, the combo boxes | Read the models, engines and settings | =analytics.v1.pricing_model_engine_pairs.list=, =analytics.v1.pricing_pair_settings.list= | exists |
 | 8, a draft | Write one product | =analytics.v1.pricing_model_products.put= | exists |
 | 8, a draft | Write one parameter | the =put= subject of =pricing_model_product_parameter= | exists |
 | 8, a draft | Write the whole document | =analytics.v1.pricing_engines_documents.put= | exists |
 | 8, a proposal | Hold a new version apart from the version in force | (no operation) | missing |
 | 6, a draft copy | Write a new document as a draft | =analytics.v1.pricing_engines_documents.put= | exists; no status |
 | 9, history | Read the versions of the configuration and its parts | (the generic history request) | partial |
-| The screen | Change from the browser | (no BFF route) | missing |
+| The screen | Change from the browser | =PUT /api/reporting/pricing-engines/:id= | exists, in place and without a proposal |
 
 * What is missing
 

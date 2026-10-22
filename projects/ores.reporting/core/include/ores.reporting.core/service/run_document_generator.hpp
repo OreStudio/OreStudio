@@ -25,6 +25,7 @@
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,14 +34,13 @@ namespace ores::reporting::service {
 /**
  * @brief What a run document is built from.
  *
- * Every field comes from the risk report configuration the definition binds or
- * from the bindings of the definition.
+ * Every field comes from the risk report configuration and the engine settings
+ * the definition binds or from the bindings of the definition.
  */
 struct run_document_inputs {
     /**
      * @brief The risk report configuration, which holds the choices of the run:
-     * the base currency, the thread count, the observation model, the folders,
-     * the flags and the market data of the run.
+     * the base currency, the folders and the market data of the run.
      */
     ores::reporting::domain::risk_report_config risk;
 
@@ -56,6 +56,12 @@ struct run_document_inputs {
      * the order the run executes them.
      */
     std::vector<messaging::run_analytic> analytics;
+
+    /**
+     * @brief The engine settings the definition binds, when it binds any. A run
+     * with none uses the engine defaults.
+     */
+    std::optional<messaging::run_engine_settings> engine;
 
     /**
      * @brief The market bindings of the configuration, in the order the run
@@ -74,6 +80,18 @@ struct run_document_inputs {
      */
     std::vector<ores::reporting::domain::file_type> file_types;
 };
+
+/**
+ * @brief The date a run values the portfolio at, as an ISO 8601 date.
+ *
+ * A live configuration values it on @p run_date, an end of day one on the weekday before it, and
+ * a configuration that names its own date uses that date. Holiday calendars are not consulted.
+ *
+ * @throws std::invalid_argument if the run date is not an ISO 8601 date.
+ */
+ORES_REPORTING_CORE_EXPORT std::string
+valuation_date_of(const ores::reporting::domain::risk_report_config& risk,
+                  const std::string& run_date);
 
 /**
  * @brief Builds the run document for a definition.

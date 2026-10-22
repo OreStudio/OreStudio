@@ -10,13 +10,6 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Data Quality Completeness",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "report_name": "Data Quality Completeness",
     "configuration_type_code": "todays_market",
     "configuration_name": "Group today's market"
   },
@@ -31,8 +24,22 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Data Quality Completeness",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
     "configuration_type_code": "risk_report_config",
     "configuration_name": "Portfolio details - Group Treasury Portfolio"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
@@ -40,13 +47,6 @@
     "report_name": "System Health",
     "configuration_type_code": "conventions",
     "configuration_name": "Group conventions"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "report_name": "System Health",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
   },
   {
     "company_code": "acme_group",
@@ -66,8 +66,22 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "System Health",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "System Health",
     "configuration_type_code": "risk_report_config",
     "configuration_name": "Portfolio details - Group Treasury Portfolio"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "System Health",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
@@ -75,13 +89,6 @@
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "conventions",
     "configuration_name": "Group conventions"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "report_name": "Audit Trail Summary",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
   },
   {
     "company_code": "acme_group",
@@ -101,8 +108,22 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Audit Trail Summary",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
     "configuration_type_code": "risk_report_config",
     "configuration_name": "Portfolio details - Group Treasury Portfolio"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
@@ -110,13 +131,6 @@
     "report_name": "Leverage Ratio",
     "configuration_type_code": "conventions",
     "configuration_name": "Group conventions"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "report_name": "Leverage Ratio",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
   },
   {
     "company_code": "acme_group",
@@ -131,6 +145,13 @@
     "report_name": "Leverage Ratio",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_group",
@@ -142,16 +163,16 @@
   {
     "company_code": "acme_group",
     "version": 0,
-    "report_name": "Liquidity Coverage",
-    "configuration_type_code": "conventions",
-    "configuration_name": "Group conventions"
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Liquidity Coverage",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "Group conventions"
   },
   {
     "company_code": "acme_group",
@@ -166,6 +187,13 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_group",
@@ -177,16 +205,16 @@
   {
     "company_code": "acme_group",
     "version": 0,
-    "report_name": "Large Exposures",
-    "configuration_type_code": "conventions",
-    "configuration_name": "Group conventions"
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Large Exposures",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "Group conventions"
   },
   {
     "company_code": "acme_group",
@@ -201,6 +229,13 @@
     "report_name": "Large Exposures",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_group",
@@ -212,16 +247,16 @@
   {
     "company_code": "acme_group",
     "version": 0,
-    "report_name": "Group Consolidated Exposure",
-    "configuration_type_code": "conventions",
-    "configuration_name": "Group conventions"
+    "report_name": "Large Exposures",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Group Consolidated Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "Group conventions"
   },
   {
     "company_code": "acme_group",
@@ -236,6 +271,13 @@
     "report_name": "Group Consolidated Exposure",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Group Consolidated Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
   },
   {
     "company_code": "acme_group",
@@ -247,16 +289,16 @@
   {
     "company_code": "acme_group",
     "version": 0,
-    "report_name": "Board Risk Dashboard",
-    "configuration_type_code": "conventions",
-    "configuration_name": "Group conventions"
+    "report_name": "Group Consolidated Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Board Risk Dashboard",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "Group conventions"
   },
   {
     "company_code": "acme_group",
@@ -271,6 +313,13 @@
     "report_name": "Board Risk Dashboard",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "Group curve configuration"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Board Risk Dashboard",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_group",
@@ -282,16 +331,16 @@
   {
     "company_code": "acme_group",
     "version": 0,
-    "report_name": "Cross-Entity Counterparty Concentration",
-    "configuration_type_code": "conventions",
-    "configuration_name": "Group conventions"
+    "report_name": "Board Risk Dashboard",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Cross-Entity Counterparty Concentration",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "Group conventions"
   },
   {
     "company_code": "acme_group",
@@ -311,8 +360,22 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Cross-Entity Counterparty Concentration",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Cross-Entity Counterparty Concentration",
     "configuration_type_code": "risk_report_config",
     "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Cross-Entity Counterparty Concentration",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_group",
@@ -320,13 +383,6 @@
     "report_name": "Intercompany Exposure Matrix",
     "configuration_type_code": "conventions",
     "configuration_name": "Group conventions"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "report_name": "Intercompany Exposure Matrix",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "Group pricing engines"
   },
   {
     "company_code": "acme_group",
@@ -346,22 +402,29 @@
     "company_code": "acme_group",
     "version": 0,
     "report_name": "Intercompany Exposure Matrix",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "report_name": "Intercompany Exposure Matrix",
     "configuration_type_code": "risk_report_config",
     "configuration_name": "Standardised counterparty exposure - Group Treasury Portfolio"
   },
   {
-    "company_code": "acme_uk",
+    "company_code": "acme_group",
     "version": 0,
-    "report_name": "Data Quality Completeness",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Intercompany Exposure Matrix",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "Group - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Data Quality Completeness",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -376,6 +439,13 @@
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -387,16 +457,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Audit Trail Summary",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Audit Trail Summary",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -411,6 +481,13 @@
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -422,16 +499,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -446,6 +523,13 @@
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -457,16 +541,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Leverage Ratio",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Leverage Ratio",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -481,6 +565,13 @@
     "report_name": "Leverage Ratio",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -492,16 +583,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "FRTB SA Capital",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "FRTB SA Capital",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -516,13 +607,27 @@
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Regulatory FRTB"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -530,13 +635,6 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Liquidity Coverage",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -551,6 +649,13 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -562,16 +667,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Large Exposures",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Large Exposures",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -586,6 +691,13 @@
     "report_name": "Large Exposures",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -597,16 +709,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "MIFID II Transaction Reporting",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Large Exposures",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "MIFID II Transaction Reporting",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -621,6 +733,13 @@
     "report_name": "MIFID II Transaction Reporting",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "MIFID II Transaction Reporting",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -632,16 +751,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Model Calibration",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "MIFID II Transaction Reporting",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Model Calibration",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -656,6 +775,13 @@
     "report_name": "Model Calibration",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
   },
   {
     "company_code": "acme_uk",
@@ -667,16 +793,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Yield Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Model Calibration",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Yield Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -691,6 +817,13 @@
     "report_name": "Yield Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -702,16 +835,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "FX Spot Rates",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Yield Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "FX Spot Rates",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -726,6 +859,13 @@
     "report_name": "FX Spot Rates",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -737,16 +877,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Volatility Surfaces",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Volatility Surfaces",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -761,6 +901,13 @@
     "report_name": "Volatility Surfaces",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Volatility Surfaces",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -772,16 +919,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "Credit Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Volatility Surfaces",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Credit Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -796,6 +943,13 @@
     "report_name": "Credit Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "UK curve configuration"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_uk",
@@ -807,16 +961,16 @@
   {
     "company_code": "acme_uk",
     "version": 0,
-    "report_name": "NPV",
-    "configuration_type_code": "conventions",
-    "configuration_name": "UK conventions"
+    "report_name": "Credit Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "NPV",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "UK conventions"
   },
   {
     "company_code": "acme_uk",
@@ -836,8 +990,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "NPV",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -850,13 +1018,6 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Cashflows",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Cashflows",
     "configuration_type_code": "todays_market",
     "configuration_name": "UK today's market"
   },
@@ -871,8 +1032,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Cashflows",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -885,13 +1060,6 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Delta and Gamma",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Delta and Gamma",
     "configuration_type_code": "todays_market",
     "configuration_name": "UK today's market"
   },
@@ -906,8 +1074,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Delta and Gamma",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Risk Sensitivities"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -920,13 +1102,6 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Vega",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Vega",
     "configuration_type_code": "todays_market",
     "configuration_name": "UK today's market"
   },
@@ -941,8 +1116,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Vega",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Risk Sensitivities"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Vega",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Vega",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -955,13 +1144,6 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Bucketed DV01",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Bucketed DV01",
     "configuration_type_code": "todays_market",
     "configuration_name": "UK today's market"
   },
@@ -976,8 +1158,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Bucketed DV01",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Risk Sensitivities"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -990,13 +1186,6 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Exposure",
     "configuration_type_code": "todays_market",
     "configuration_name": "UK today's market"
   },
@@ -1011,8 +1200,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Simulation engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -1020,13 +1223,6 @@
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "CVA/DVA/FVA",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -1046,8 +1242,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Simulation engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -1055,13 +1265,6 @@
     "report_name": "Stressed VaR",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Stressed VaR",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -1081,8 +1284,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Stressed VaR",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Stress Test Shocked"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -1090,13 +1307,6 @@
     "report_name": "P&L Attribution",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "P&L Attribution",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -1116,8 +1326,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "P&L Attribution",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -1125,13 +1349,6 @@
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Intraday Risk Monitor",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -1151,8 +1368,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_uk",
@@ -1160,13 +1391,6 @@
     "report_name": "Headline Position",
     "configuration_type_code": "conventions",
     "configuration_name": "UK conventions"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "report_name": "Headline Position",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "UK pricing engines"
   },
   {
     "company_code": "acme_uk",
@@ -1186,8 +1410,22 @@
     "company_code": "acme_uk",
     "version": 0,
     "report_name": "Headline Position",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "UK - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1195,13 +1433,6 @@
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Data Quality Completeness",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1216,6 +1447,13 @@
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1227,16 +1465,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Audit Trail Summary",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Audit Trail Summary",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1251,6 +1489,13 @@
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1262,16 +1507,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1286,6 +1531,13 @@
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1297,16 +1549,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Leverage Ratio",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Leverage Ratio",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1321,6 +1573,13 @@
     "report_name": "Leverage Ratio",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1332,16 +1591,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "FRTB SA Capital",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "FRTB SA Capital",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1356,13 +1615,27 @@
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Regulatory FRTB"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1370,13 +1643,6 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Liquidity Coverage",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1391,6 +1657,13 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1402,16 +1675,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Large Exposures",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Large Exposures",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1426,6 +1699,13 @@
     "report_name": "Large Exposures",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1437,16 +1717,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "CFTC Swap Data Reporting",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Large Exposures",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "CFTC Swap Data Reporting",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1461,6 +1741,13 @@
     "report_name": "CFTC Swap Data Reporting",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "CFTC Swap Data Reporting",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1472,16 +1759,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Model Calibration",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "CFTC Swap Data Reporting",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Model Calibration",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1496,6 +1783,13 @@
     "report_name": "Model Calibration",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
   },
   {
     "company_code": "acme_us",
@@ -1507,16 +1801,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Yield Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Model Calibration",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Yield Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1531,6 +1825,13 @@
     "report_name": "Yield Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1542,16 +1843,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "FX Spot Rates",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Yield Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "FX Spot Rates",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1566,6 +1867,13 @@
     "report_name": "FX Spot Rates",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1577,16 +1885,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "Credit Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Credit Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1601,6 +1909,13 @@
     "report_name": "Credit Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "US curve configuration"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_us",
@@ -1612,16 +1927,16 @@
   {
     "company_code": "acme_us",
     "version": 0,
-    "report_name": "NPV",
-    "configuration_type_code": "conventions",
-    "configuration_name": "US conventions"
+    "report_name": "Credit Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "report_name": "NPV",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "US conventions"
   },
   {
     "company_code": "acme_us",
@@ -1641,8 +1956,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "NPV",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1655,13 +1984,6 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Cashflows",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Cashflows",
     "configuration_type_code": "todays_market",
     "configuration_name": "US today's market"
   },
@@ -1676,8 +1998,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Cashflows",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1690,13 +2026,6 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Delta and Gamma",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Delta and Gamma",
     "configuration_type_code": "todays_market",
     "configuration_name": "US today's market"
   },
@@ -1711,8 +2040,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Delta and Gamma",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1725,13 +2068,6 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Bucketed DV01",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Bucketed DV01",
     "configuration_type_code": "todays_market",
     "configuration_name": "US today's market"
   },
@@ -1746,8 +2082,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Bucketed DV01",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1760,13 +2110,6 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Exposure",
     "configuration_type_code": "todays_market",
     "configuration_name": "US today's market"
   },
@@ -1781,8 +2124,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Simulation engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1790,13 +2147,6 @@
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "CVA/DVA/FVA",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1816,8 +2166,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Simulation engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1825,13 +2189,6 @@
     "report_name": "Stressed VaR",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Stressed VaR",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1851,8 +2208,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Stressed VaR",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Stress Test Shocked"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1860,13 +2231,6 @@
     "report_name": "P&L Attribution",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "P&L Attribution",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1886,8 +2250,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "P&L Attribution",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1895,13 +2273,6 @@
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Intraday Risk Monitor",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1921,8 +2292,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_us",
@@ -1930,13 +2315,6 @@
     "report_name": "Headline Position",
     "configuration_type_code": "conventions",
     "configuration_name": "US conventions"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "report_name": "Headline Position",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "US pricing engines"
   },
   {
     "company_code": "acme_us",
@@ -1956,8 +2334,22 @@
     "company_code": "acme_us",
     "version": 0,
     "report_name": "Headline Position",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "US - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -1965,13 +2357,6 @@
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Data Quality Completeness",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -1986,6 +2371,13 @@
     "report_name": "Data Quality Completeness",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -1997,16 +2389,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Audit Trail Summary",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Data Quality Completeness",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Audit Trail Summary",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2021,6 +2413,13 @@
     "report_name": "Audit Trail Summary",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2032,16 +2431,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Audit Trail Summary",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "SA-CCR Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2056,6 +2455,13 @@
     "report_name": "SA-CCR Exposure",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2067,16 +2473,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Leverage Ratio",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "SA-CCR Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Leverage Ratio",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2091,6 +2497,13 @@
     "report_name": "Leverage Ratio",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2102,16 +2515,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "FRTB SA Capital",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Leverage Ratio",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "FRTB SA Capital",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2126,13 +2539,27 @@
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Regulatory FRTB"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "FRTB SA Capital",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "FRTB SA Capital",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2140,13 +2567,6 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Liquidity Coverage",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2161,6 +2581,13 @@
     "report_name": "Liquidity Coverage",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2172,16 +2599,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Large Exposures",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Liquidity Coverage",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Large Exposures",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2196,6 +2623,13 @@
     "report_name": "Large Exposures",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Large Exposures",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2207,16 +2641,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "HKMA Trade Repository",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Large Exposures",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "HKMA Trade Repository",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2231,6 +2665,13 @@
     "report_name": "HKMA Trade Repository",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "HKMA Trade Repository",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2242,16 +2683,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Model Calibration",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "HKMA Trade Repository",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Model Calibration",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2266,6 +2707,13 @@
     "report_name": "Model Calibration",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Model Calibration",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
   },
   {
     "company_code": "acme_hk",
@@ -2277,16 +2725,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Yield Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Model Calibration",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Yield Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2301,6 +2749,13 @@
     "report_name": "Yield Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Yield Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2312,16 +2767,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "FX Spot Rates",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Yield Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "FX Spot Rates",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2336,6 +2791,13 @@
     "report_name": "FX Spot Rates",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2347,16 +2809,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "Credit Curves",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "FX Spot Rates",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Credit Curves",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2371,6 +2833,13 @@
     "report_name": "Credit Curves",
     "configuration_type_code": "curve_configuration",
     "configuration_name": "HK curve configuration"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Credit Curves",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
   },
   {
     "company_code": "acme_hk",
@@ -2382,16 +2851,16 @@
   {
     "company_code": "acme_hk",
     "version": 0,
-    "report_name": "NPV",
-    "configuration_type_code": "conventions",
-    "configuration_name": "HK conventions"
+    "report_name": "Credit Curves",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "NPV",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
+    "configuration_type_code": "conventions",
+    "configuration_name": "HK conventions"
   },
   {
     "company_code": "acme_hk",
@@ -2411,8 +2880,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "NPV",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "NPV",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation - Trading Book"
+    "configuration_name": "Valuation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "NPV",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2425,13 +2908,6 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Cashflows",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Cashflows",
     "configuration_type_code": "todays_market",
     "configuration_name": "HK today's market"
   },
@@ -2446,8 +2922,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Cashflows",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Cashflows",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Cashflows - Trading Book"
+    "configuration_name": "Cashflows - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Cashflows",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2460,13 +2950,6 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Delta and Gamma",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Delta and Gamma",
     "configuration_type_code": "todays_market",
     "configuration_name": "HK today's market"
   },
@@ -2481,8 +2964,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Delta and Gamma",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Delta and Gamma",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2495,13 +2992,6 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Bucketed DV01",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Bucketed DV01",
     "configuration_type_code": "todays_market",
     "configuration_name": "HK today's market"
   },
@@ -2516,8 +3006,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Bucketed DV01",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Sensitivities - Trading Book"
+    "configuration_name": "Sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Bucketed DV01",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2530,13 +3034,6 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Exposure",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Exposure",
     "configuration_type_code": "todays_market",
     "configuration_name": "HK today's market"
   },
@@ -2551,8 +3048,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Exposure",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Exposure",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Exposure simulation - Trading Book"
+    "configuration_name": "Exposure simulation - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Exposure",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Simulation engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2560,13 +3071,6 @@
     "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "CVA/DVA/FVA",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2586,8 +3090,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "XVA Overnight"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation adjustments - Trading Book"
+    "configuration_name": "Valuation adjustments - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "CVA/DVA/FVA",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Simulation engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2595,13 +3113,6 @@
     "report_name": "Stressed VaR",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Stressed VaR",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2621,8 +3132,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Stressed VaR",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Stress Test Shocked"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Stressed VaR",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Stressed VaR - Trading Book"
+    "configuration_name": "Stressed VaR - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Stressed VaR",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2630,13 +3155,6 @@
     "report_name": "P&L Attribution",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "P&L Attribution",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2656,8 +3174,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "P&L Attribution",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "EOD Official"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "P&L Attribution",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Profit and loss explain - Trading Book"
+    "configuration_name": "Profit and loss explain - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "P&L Attribution",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2665,13 +3197,6 @@
     "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Intraday Risk Monitor",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2691,8 +3216,22 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Intraday risk - Trading Book"
+    "configuration_name": "Intraday risk - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Intraday Risk Monitor",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   },
   {
     "company_code": "acme_hk",
@@ -2700,13 +3239,6 @@
     "report_name": "Headline Position",
     "configuration_type_code": "conventions",
     "configuration_name": "HK conventions"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "report_name": "Headline Position",
-    "configuration_type_code": "pricing_engines",
-    "configuration_name": "HK pricing engines"
   },
   {
     "company_code": "acme_hk",
@@ -2726,7 +3258,21 @@
     "company_code": "acme_hk",
     "version": 0,
     "report_name": "Headline Position",
+    "configuration_type_code": "pricing_engines",
+    "configuration_name": "Intraday Indicative"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Headline Position",
     "configuration_type_code": "risk_report_config",
-    "configuration_name": "Valuation and sensitivities - Trading Book"
+    "configuration_name": "Valuation and sensitivities - Global Portfolio"
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "report_name": "Headline Position",
+    "configuration_type_code": "engine_settings",
+    "configuration_name": "HK - Standard engine settings"
   }
 ]

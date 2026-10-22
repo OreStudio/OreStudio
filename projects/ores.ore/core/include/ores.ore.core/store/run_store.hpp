@@ -68,6 +68,8 @@ struct run_import_result {
     std::vector<std::string> world_conventions_kept;
     /** FX conventions, by ORE id, which have no store yet. */
     std::vector<std::string> fx_conventions_skipped;
+    /** Setup parameters the model does not hold and the import dropped, one warning each. */
+    std::vector<std::string> warnings;
 };
 
 /**

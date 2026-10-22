@@ -34,7 +34,7 @@ moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -53,7 +53,7 @@ moved here.
 |------+-------+-------+-----+-------------|
 | [[id:B067A8C9-A7B0-4A28-AA6A-A701318D56B4][Extract the ores.analytics user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.analytics, reading its legacy screens in ores.qt/analytics. |
 | [[id:C08E91B8-0731-4A0A-89ED-6F7AD82E1C63][Extract the application shell user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.qt application shell, reading its legacy screens in ores.qt/application. |
-| [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute. |
+| [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] | STARTED | | | Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute. |
 | [[id:1424617D-B285-401B-915A-BAEC5A0C2006][Extract the ores.dq user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.dq, reading its legacy screens in ores.qt/dq. |
 | [[id:78D214D7-84E8-4578-BF92-8A667F520E79][Extract the ores.iam user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.iam, reading its legacy screens in ores.qt/iam. |
 | [[id:60413C24-9780-4274-9E45-DB4AB2BFB3E1][Extract the ores.marketdata user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.marketdata, reading its legacy screens in ores.qt/marketdata, ores.qt/mktdata. |

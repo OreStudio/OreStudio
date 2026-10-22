@@ -18,6 +18,8 @@
  *
  */
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
+#include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
+#include "ores.analytics.api/generators/pricing_model_product_parameter_generator.hpp"
 #include "ores.analytics.api/generators/todays_market_config_generator.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.core/messaging/configuration_document_handler.hpp"
@@ -150,6 +152,70 @@ TEST_CASE("a pricing engines document saves, reads back and deletes by its confi
                 get_pricing_engines_document_request{.configuration_id = configuration}));
     REQUIRE(gone);
     CHECK_FALSE(gone->success);
+}
+
+TEST_CASE("saving a pricing engines document again removes what it omits", tags) {
+    fixture f;
+    const auto token = f.token({"analytics::pricing_model_configs:read",
+                                "analytics::pricing_model_configs:write"});
+    auto gen = ores::testing::make_generation_context(f.db);
+    ores::analytics::messaging::pricing_engines_document doc;
+    doc.config = ores::analytics::generators::generate_synthetic_pricing_model_config(gen);
+    doc.config.change_reason_code = "system.test";
+    doc.config.configuration_id = boost::uuids::random_generator()();
+    const auto configuration = boost::uuids::to_string(doc.config.configuration_id);
+
+    const auto product = [&](const std::string& type, int position) {
+        auto p = ores::analytics::generators::generate_synthetic_pricing_model_product(gen);
+        p.pricing_model_config_id = doc.config.id;
+        p.pricing_engine_type_code = type;
+        p.position = position;
+        p.change_reason_code = "system.test";
+        return p;
+    };
+    doc.products = {product("Swap", 0), product("CapFloor", 1)};
+    auto parameter = ores::analytics::generators::generate_synthetic_pricing_model_product_parameter(gen);
+    parameter.pricing_model_config_id = doc.config.id;
+    parameter.pricing_model_product_id = doc.products.front().id;
+    parameter.change_reason_code = "system.test";
+    doc.parameters = {parameter};
+
+    const auto save = [&](const ores::analytics::messaging::pricing_engines_document& d) {
+        const auto reply = decode_reply<save_pricing_engines_document_response>(
+            request(f.nats,
+                    subject("save_pricing_engines_document"),
+                    token,
+                    save_pricing_engines_document_request{.document = d}));
+        REQUIRE(reply);
+        INFO(reply->message);
+        REQUIRE(reply->success);
+    };
+    const auto read = [&] {
+        const auto reply = decode_reply<get_pricing_engines_document_response>(
+            request(f.nats,
+                    subject("get_pricing_engines_document"),
+                    token,
+                    get_pricing_engines_document_request{.configuration_id = configuration}));
+        REQUIRE(reply);
+        REQUIRE(reply->success);
+        return reply->document;
+    };
+
+    save(doc);
+    auto held = read();
+    REQUIRE(held.products.size() == 2);
+    REQUIRE(held.parameters.size() == 1);
+
+    // The second save keeps the first product and omits the second product and the parameter.
+    auto next = held;
+    std::erase_if(next.products, [](const auto& p) { return p.pricing_engine_type_code == "CapFloor"; });
+    next.parameters.clear();
+    save(next);
+
+    const auto after = read();
+    REQUIRE(after.products.size() == 1);
+    CHECK(after.products.front().pricing_engine_type_code == "Swap");
+    CHECK(after.parameters.empty());
 }
 
 TEST_CASE("a today's market document saves and reads back by its configuration", tags) {

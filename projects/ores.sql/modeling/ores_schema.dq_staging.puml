@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 133
+Tables: 137
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1472,6 +1472,79 @@ package "dq_staging" #F3E5F5 {
     Specifies the settlement lag, calendar, and day count for short-term deposits used as the near-end instruments when bootstrapping a yield curve. Corresponds to the <Deposit> element in ORE conventions.xml. When index_based is true the remaining fields may be omitted and are instead inherited from the referenced IBOR index convention. - Artefact Table
     end note
 
+    entity ores_dq_engine_settings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+        * configuration_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_engine_settings_artefact_tbl
+    The central row of a named engine settings configuration. A report definition binds the configuration through report_configuration, in the slot of configuration type engine_settings, as it binds its pricing engines. The row holds only the identity. The settings live in three parts, each its own table keyed by this row: engine_settings_fixings, engine_settings_building and engine_settings_execution. A part that has no row means the engine default for every setting in it. A write to any part bumps the version of this row in the same transaction. - Artefact Table
+    end note
+
+    entity ores_dq_engine_settings_building_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * engine_settings_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+          observation_model : text
+          lazy_market_building : boolean
+          build_failed_trades : boolean
+          continue_on_error : boolean
+          use_at_par_coupons_curves : boolean
+          use_at_par_coupons_trades : boolean
+    }
+
+    note right of ores_dq_engine_settings_building_artefact_tbl
+    The market and trade building part of a named engine settings configuration. How the engine builds the market and the trades, and what it does when that fails. A change here changes the numbers. A column that is null means the engine default, and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the central engine_settings row in the same transaction. - Artefact Table
+    end note
+
+    entity ores_dq_engine_settings_execution_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * engine_settings_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+          n_threads : integer
+          log_mask : integer
+          gzip_compression_level : integer
+    }
+
+    note right of ores_dq_engine_settings_execution_artefact_tbl
+    The execution part of a named engine settings configuration. How the engine runs and logs. A change here does not change the numbers. A column that is null means the engine default, and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the central engine_settings row in the same transaction. - Artefact Table
+    end note
+
+    entity ores_dq_engine_settings_fixings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * engine_settings_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+          imply_todays_fixings : boolean
+          include_todays_cash_flows : boolean
+          include_reference_date_events : boolean
+          enrich_index_fixings : boolean
+          ignore_fixing_lag : integer
+          ignore_fixing_lead : integer
+    }
+
+    note right of ores_dq_engine_settings_fixings_artefact_tbl
+    The fixings and cash flows part of a named engine settings configuration. Which fixings and cash flows count in a run. A change here changes the numbers. A column that is null means the engine default, and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the central engine_settings row in the same transaction. - Artefact Table
+    end note
+
     entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -2401,38 +2474,19 @@ package "dq_staging" #F3E5F5 {
           description : text
         * configuration_id : uuid <<FK>>
           base_currency : text
-          observation_model : text
-          n_threads : integer
         * market_data_type : text
           market_data_date : date
-          accrual_date : text
-          fixing_cutoff : text
         * input_path : text
           input_path_market : text
           input_path_portfolio : text
         * output_path : text
         * log_file : text
-          date_calendar : text
-          date_convention : text
-          continue_on_error : text
-          build_failed_trades : text
-          imply_todays_fixings : text
-          include_todays_cash_flows : text
-          include_reference_date_events : text
-          lazy_market_building : text
-          enrich_index_fixings : text
-          use_analytics : text
-          csv_comment_report_header : text
-          default_mapping_to_identity : text
           portfolio_recurse_into_sub_directories : text
-          log_mask : integer
-          ignore_fixing_lag : integer
-          additional_results : text
           scope_portfolio : text
     }
 
     note right of ores_dq_risk_report_configs_artefact_tbl
-    The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
+    The ORE-level run settings that risk report definitions of a party share: the base currency, the market data of the run and the folders and log file of the package. The engine settings are not here. They are a named configuration of their own, engine_settings, that the definition binds in its own slot. A report definition binds this configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
     end note
 
     entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {

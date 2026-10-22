@@ -25,8 +25,10 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -45,7 +47,8 @@ namespace {
  * spelling; a row whose URI does not read is a data-integrity error and names
  * itself.
  */
-ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
+ores::ore::market::market_datum to_datum(const domain::market_observation& o,
+                                         const std::optional<std::chrono::year_month_day>& date) {
     const auto fail = [&](const std::string& why) {
         return std::runtime_error("market data export: observation " +
                                   boost::uuids::to_string(o.id) + " has no ORE key: " + why);
@@ -57,8 +60,9 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
     if (!key)
         throw fail(key.error());
     ores::ore::market::market_datum d;
-    d.date =
-        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(o.observation_datetime)};
+    d.date = date ? *date :
+                    std::chrono::year_month_day{
+                        std::chrono::floor<std::chrono::days>(o.observation_datetime)};
     d.value = o.value;
     d.key = *key;
     return d;
@@ -81,7 +85,26 @@ ores::ore::market::fixing to_fixing(const std::string& index_name, const domain:
 ore_export_service::ore_export_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-ore_export_result ore_export_service::write_all() const {
+ore_export_result ore_export_service::write_all(const std::optional<std::string>& valuation_date,
+                                                const std::optional<int>& max_age_days) const {
+    if (max_age_days && *max_age_days < 0)
+        throw std::invalid_argument("market data export: the limit of " +
+                                    std::to_string(*max_age_days) + " days is negative");
+    const auto limit = std::chrono::days{max_age_days.value_or(default_max_age_days)};
+    int carried_forward = 0;
+    int stale = 0;
+    std::optional<std::chrono::year_month_day> date;
+    std::chrono::system_clock::time_point close;
+    if (valuation_date && !valuation_date->empty()) {
+        try {
+            date = ores::platform::time::datetime::from_iso8601_date(*valuation_date);
+        } catch (const std::invalid_argument&) {
+            throw std::invalid_argument("market data export: the valuation date '" +
+                                        *valuation_date + "' is not an ISO 8601 date");
+        }
+        close = std::chrono::sys_days{*date} + std::chrono::days{1} - std::chrono::microseconds{1};
+    }
+
     repository::market_series_repository series_repo;
     repository::market_observation_repository obs_repo;
     repository::market_fixing_repository fixings_repo;
@@ -105,14 +128,36 @@ ore_export_result ore_export_service::write_all() const {
                 fixings.push_back(to_fixing(index_name, f));
             continue;
         }
-        for (const auto& o : obs_repo.read_latest_for_series(ctx_, s.id))
-            data.push_back(to_datum(o));
+        auto observations = obs_repo.read_latest_for_series(ctx_, s.id);
+        if (date) {
+            // The history stays, because an analytic may read several dates. The lines of the
+            // valuation date are replaced by the value each datum had at its close, which is
+            // the latest of the observation table and the tick table.
+            std::erase_if(observations, [&](const domain::market_observation& o) {
+                return std::chrono::year_month_day{
+                           std::chrono::floor<std::chrono::days>(o.observation_datetime)} == *date;
+            });
+            for (const auto& o : obs_repo.read_as_of(ctx_, s.id, close)) {
+                if (close - o.observation_datetime > limit) {
+                    ++stale;
+                    continue;
+                }
+                if (std::chrono::year_month_day{
+                        std::chrono::floor<std::chrono::days>(o.observation_datetime)} != *date)
+                    ++carried_forward;
+                data.push_back(to_datum(o, date));
+            }
+        }
+        for (const auto& o : observations)
+            data.push_back(to_datum(o, std::nullopt));
     }
 
     ore_export_result result;
     result.series_count = static_cast<int>(series.size());
     result.observation_count = static_cast<int>(data.size());
     result.fixing_count = static_cast<int>(fixings.size());
+    result.carried_forward_count = carried_forward;
+    result.stale_count = stale;
 
     std::ostringstream market_data;
     ores::ore::market::serialize_market_data(market_data, data);

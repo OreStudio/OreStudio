@@ -28,10 +28,10 @@ A usage row is written per completed result, carrying the tenant, the host, the 
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Story: Account for the grid's usage]] |
-| Now          | Not yet started.                       |
+| Now          | Not built as written. The service writes no usage row with duration, cores or outcome. The work ledger is the queue, and holds no finished-work accounting.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Decide whether the run statistics replace the usage row (see the story's Decisions).                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

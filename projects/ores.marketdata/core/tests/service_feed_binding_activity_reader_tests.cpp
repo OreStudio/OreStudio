@@ -27,9 +27,9 @@
 
 /**
  * @file service_feed_binding_activity_reader_tests.cpp
- * @brief What one binding's activity says, from the newest observation of its source.
+ * @brief What one binding's activity says, from the row recorded for it.
  *
- * The read over the bindings and the observations needs a database. These tests cover
+ * The read over the bindings and the rows needs a database. These tests cover
  * what it builds from each answer: only the caller's party's bindings are kept, a source that has
  * written names its series and the time of its newest observation, and a source that has written
  * nothing names neither.
@@ -42,12 +42,9 @@ const std::string tags("[marketdata][service][feed_binding_activity_reader]");
 using namespace ores::marketdata;
 using ores::marketdata::service::feed_binding_activity_reader;
 
-domain::market_observation observation(const std::string& series_id,
-                                       std::chrono::system_clock::time_point at) {
-    domain::market_observation obs;
-    obs.series_id = boost::uuids::string_generator{}(series_id);
-    obs.observation_datetime = at;
-    return obs;
+repository::feed_binding_activity_record recorded(const std::string& series_id,
+                                                  std::chrono::system_clock::time_point at) {
+    return {boost::uuids::string_generator{}(series_id), at};
 }
 
 
@@ -86,7 +83,7 @@ TEST_CASE("a source that has written names its series and its last tick", tags) 
     using namespace std::chrono;
     const auto at = sys_days{year{2026} / 10 / 12} + hours{23} + minutes{50} + seconds{26};
     const auto activity = feed_binding_activity_reader::activity_of(
-        "synthetic.bloomberg.audusd", observation("5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f", at));
+        "synthetic.bloomberg.audusd", recorded("5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f", at));
 
     CHECK(activity.source_name == "synthetic.bloomberg.audusd");
     REQUIRE(activity.series_id.has_value());

@@ -1,0 +1,14 @@
+ timescaledb_version 
+---------------------
+ 2.30.1
+(1 row)
+
+        step        | size  |    bytes    | chunks 
+--------------------+-------+-------------+--------
+ before compression | 17 GB | 18270068736 |     62
+(1 row)
+
+compress.sql:12: ERROR:  functionality not supported under the current "apache" license. Learn
+HINT:  To access all features and the best time-series experience, try out Timescale Cloud.
+
+[exited with code 3]

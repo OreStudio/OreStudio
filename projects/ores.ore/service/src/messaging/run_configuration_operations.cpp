@@ -97,8 +97,10 @@ constexpr std::string_view imported_types[] = {
     "pricing_engines",
 };
 
-// The run settings are no input file: the run document is built from them.
+// The run settings and the engine settings are no input file: the run document is
+// built from them.
 constexpr std::string_view run_settings_type = "risk_report_config";
+constexpr std::string_view engine_settings_type = "engine_settings";
 
 const document_kind* find_kind(const std::vector<document_kind>& kinds, std::string_view code) {
     for (const auto& k : kinds)
@@ -362,6 +364,7 @@ run_configuration_import_execute_result import_run(nats_client& owners,
 
     run_configuration_import_execute_result r;
     r.report_definition_id = report_definition_id;
+    r.warnings = ores::ore::domain::run_document_projection::dropped_parameter_warnings(run);
     try {
         call(owners,
              rp::save_run_document_request{.report_definition_id = report_definition_id,
@@ -401,6 +404,9 @@ run_configuration_import_execute_result import_run(nats_client& owners,
             r.not_stored.push_back(file);
     r.success = true;
     r.message = std::format("Stored {} files.", r.stored.size());
+    if (!r.warnings.empty())
+        r.message += std::format(" Dropped {} Setup parameter(s) the model does not hold.",
+                                 r.warnings.size());
     return r;
 }
 
@@ -436,7 +442,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
     input_files files;
     files[std::string(run_document_file)] = run_document_projection::write(document);
     for (const auto& b : run.bindings) {
-        if (b.configuration_type_code == run_settings_type)
+        if (b.configuration_type_code == run_settings_type ||
+            b.configuration_type_code == engine_settings_type)
             continue;
         const auto* kind = find_kind(kinds, b.configuration_type_code);
         if (kind == nullptr)
@@ -494,7 +501,8 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
     std::optional<ores::analytics::messaging::todays_market_document> market;
 
     for (const auto& b : run.bindings) {
-        if (b.configuration_type_code == run_settings_type)
+        if (b.configuration_type_code == run_settings_type ||
+            b.configuration_type_code == engine_settings_type)
             continue;
         const auto configuration = boost::uuids::to_string(b.configuration_id);
         const auto& code = b.configuration_type_code;

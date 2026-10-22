@@ -66,7 +66,7 @@ export const MENU: readonly MenuItem[] = [
     {
         nameKey: 'shell.menu.reporting',
         to: PATHS.reporting,
-        permission: 'reporting::report_definitions:read',
+        permission: ['reporting::report_definitions:read', 'analytics::pricing_model_configs:read'],
     },
     { nameKey: 'shell.menu.development', to: '/development' },
     { nameKey: 'shell.menu.tenants', to: '/tenants', permission: DEPLOYMENT_READ },

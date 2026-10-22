@@ -18,9 +18,9 @@ one root and two branches (D13):
 
 - D9: a report runs in the functional currency of its entity, which is the
   aggregation currency of the entity's root portfolio.
-- D10: a report on trading positions reads the Trading Book branch. A liquidity,
-  leverage, regulatory or data report reads the whole entity. The holding company
-  has only its Group Treasury portfolio.
+- D10: every report reads the whole entity, because a report may be run on any
+  book, and the banking book holds positions a valuation report prices. The
+  holding company has only its Group Treasury portfolio.
 
 Usage:
     python3 generate_risk_config_data.py
@@ -89,13 +89,6 @@ PROFILES = {
     frozenset(["npv", "sensitivity"]): "Valuation and sensitivities",
     frozenset(["npv", "sensitivity", "parametric_var"]): "Intraday risk",
     frozenset(["npv", "saccr", "parametric_var"]): "Board risk",
-}
-
-# D10: the reports on trading positions.
-TRADING_REPORTS = {
-    "FRTB SA Capital", "NPV", "Cashflows", "Delta and Gamma", "Vega", "Bucketed DV01",
-    "Exposure", "CVA/DVA/FVA", "Stressed VaR", "P&L Attribution", "Intraday Risk Monitor",
-    "Headline Position",
 }
 
 ROOT_PORTFOLIO = {
@@ -202,10 +195,13 @@ SETUP_CHOICES = {
     "input_path": "Input",
     "output_path": "Output",
     "log_file": "log.txt",
-    "log_mask": 31,
-    "imply_todays_fixings": "N",
-    "continue_on_error": "false",
 }
+
+# The engine settings every ACME run states. A report that asks for a simulation
+# of the exposure profiles runs on the simulation settings, which add threads.
+ENGINE_FIXINGS = {"imply_todays_fixings": False}
+ENGINE_BUILDING = {"observation_model": "Disable", "continue_on_error": False}
+ENGINE_EXECUTION = {"log_mask": 31}
 
 # The market roles a run prices against and the today's market configuration each
 # one reads. Every ACME document names one configuration, default.
@@ -235,10 +231,6 @@ def analytics_of(report_name):
 
 def scope_of(company, report_name):
     """The portfolio whose subtree the report reads (D10)."""
-    if company == "acme_group":
-        return ROOT_PORTFOLIO[company]
-    if report_name in TRADING_REPORTS:
-        return "Trading Book"
     return ROOT_PORTFOLIO[company]
 
 
@@ -331,8 +323,6 @@ def risk_report_configs(definitions, portfolios):
                 "description": f"Run settings shared by {', '.join(sorted(reports))}.",
                 "configuration_id": configuration_id,
                 "base_currency": currency,
-                "observation_model": "Disable",
-                "n_threads": SIMULATION_THREADS if "simulation" in analytics else 1,
                 "market_data_type": "eod",
                 "market_data_date": None,
                 **SETUP_CHOICES,
@@ -355,6 +345,51 @@ def risk_report_configs(definitions, portfolios):
     return configs, analytics_rows, parameter_rows, market_rows
 
 
+def engine_settings_name(company, report_name):
+    kind = "Simulation" if "simulation" in analytics_of(report_name) else "Standard"
+    return f"{documents.LABEL[company]} - {kind} engine settings"
+
+
+def engine_settings(definitions):
+    """One engine settings configuration for each distinct kind of run an entity has,
+    as the central row and its three parts."""
+    central, fixings, building, execution = [], [], [], []
+    for company in documents.LABEL:
+        used = {}
+        for d in definitions:
+            if d["company_code"] != company:
+                continue
+            name = engine_settings_name(company, d["name"])
+            used.setdefault(name, (d["name"], []))[1].append(d["name"])
+        for name in sorted(used):
+            first, reports = used[name]
+            simulation = "simulation" in analytics_of(first)
+            settings_id = documents.new_uuid(f"engine_settings:{company}:{name}")
+            central.append({
+                "company_code": company,
+                "id": settings_id,
+                "version": 0,
+                "party_id": documents.NO_PARTY,
+                "name": name,
+                "description": f"Engine settings shared by {', '.join(sorted(reports))}.",
+                "configuration_id": documents.new_uuid(f"engine_settings_header:{company}:{name}"),
+            })
+            for rows, part, values in (
+                    (fixings, "fixings", ENGINE_FIXINGS),
+                    (building, "building", ENGINE_BUILDING),
+                    (execution, "execution",
+                     {**ENGINE_EXECUTION, "n_threads": SIMULATION_THREADS if simulation else 1})):
+                rows.append({
+                    "company_code": company,
+                    "id": documents.new_uuid(f"engine_settings_{part}:{company}:{name}"),
+                    "version": 0,
+                    "party_id": documents.NO_PARTY,
+                    "engine_settings_id": settings_id,
+                    **values,
+                })
+    return central, fixings, building, execution
+
+
 def main():
     definitions = load("report_definitions")
     configs, analytics_rows, parameter_rows, market_rows = risk_report_configs(
@@ -363,6 +398,9 @@ def main():
     write("configuration_analytics", analytics_rows)
     write("configuration_analytic_parameters", parameter_rows)
     write("configuration_market_bindings", market_rows)
+    for table, rows in zip(("engine_settings", "engine_settings_fixings", "engine_settings_building",
+                            "engine_settings_execution"), engine_settings(definitions)):
+        write(table, rows)
 
 
 if __name__ == "__main__":

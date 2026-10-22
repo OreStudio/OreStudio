@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: E90EEF7C-087C-4157-A6A1-B4F391396EC0
+:END:
+#+title: ores.marketdata.adapter_operations
+#+description: Codegen operation model for the four messages an adapter and the market data service exchange: announce, demand, tick and heartbeat.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: adapter_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The announce, demand, tick and heartbeat messages of the adapter contract.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+An adapter and the market data service meet at four messages: announce, demand, tick and
+heartbeat. This model declares the four, and the vendor id and the rejected id they share.
+The messages carry no subject here, because the subjects hold an adapter id and a vendor id.
+=ores.marketdata.api/domain/adapter_subjects.hpp= builds them.
+
+No message names a tenant, a party, an oresmd URI or a source kind. The service applies the
+mapping and the routes. The adapter knows only the ids of its provider.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** vendor_id
+
+One value a provider publishes, named in the vendor's own notation.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One value a provider publishes: an id scheme, an external id and a field.
+ *
+ * The three parts are the vendor's own notation, so the text is stored exactly
+ * as the vendor writes it, with its spaces and punctuation.
+ */
+#+end_src
+
+*** id_scheme
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+How to read the external id, such as bbg_ticker or ric.
+
+*** external_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The id in the vendor's notation, such as EURUSD Curncy.
+
+*** field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value of the instrument, such as PX_LAST or BID.
+
+** rejected_id
+
+An id an adapter does not serve, with the reason.
+
+#+begin_src cpp :name comment
+/**
+ * @brief An id that an adapter refuses to serve, with the reason.
+ *
+ * The reason is a short code such as not_entitled or unknown_id.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: vendor_id
+:END:
+
+The refused id.
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason code.
+
+** adapter_announce_request
+
+What an adapter tells the service when it starts.
+
+#+begin_src cpp :name comment
+/**
+ * @brief An adapter announces itself, its provider and its universe.
+ *
+ * The universe is the set of ids the adapter can serve. The service checks it
+ * against the catalogue of the provider and never takes it as the catalogue.
+ */
+#+end_src
+
+*** adapter_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The opaque id of the adapter. No code parses it.
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the provider whose ids the adapter publishes.
+
+*** universe
+:PROPERTIES:
+:cpp_type: std::vector<vendor_id>
+:END:
+
+The ids the adapter can serve.
+
+** adapter_announce_response
+
+What the service answers to an announce.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The service accepts or refuses an announce.
+ *
+ * The counts say how the universe compared with the catalogue.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the service accepted the adapter.
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason when the announce was refused. Empty on success.
+
+*** served_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The ids in both the universe and the catalogue.
+
+*** unknown_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The ids in the universe and not in the catalogue. They are ignored.
+
+** adapter_demand_request
+
+The full set of ids the parties routed to an adapter need.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The service tells an adapter which ids to publish.
+ *
+ * The set replaces the last one: an adapter opens subscriptions for the ids in it
+ * and closes the others.
+ */
+#+end_src
+
+*** ids
+:PROPERTIES:
+:cpp_type: std::vector<vendor_id>
+:END:
+
+Every id that a party routed to this adapter needs.
+
+** adapter_demand_response
+
+What an adapter answers to a demand.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The adapter accepts some ids and rejects the others, each with a reason.
+ */
+#+end_src
+
+*** accepted
+:PROPERTIES:
+:cpp_type: std::vector<vendor_id>
+:END:
+
+The ids the adapter now publishes.
+
+*** rejected
+:PROPERTIES:
+:cpp_type: std::vector<rejected_id>
+:END:
+
+The ids the adapter refuses.
+
+** adapter_tick
+
+One value an adapter publishes.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One value of one vendor id at one time.
+ *
+ * It carries no oresmd URI, no tenant, no party and no source kind. The service
+ * maps the id and finds the parties.
+ */
+#+end_src
+
+*** id_scheme
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+How to read the external id.
+
+*** external_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The id in the vendor's notation.
+
+*** field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value of the instrument.
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value as decimal text, so the digits survive the trip.
+
+*** vendor_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The time of the value, as the vendor states it.
+
+*** sequence
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+A number that rises by one for each tick of the adapter.
+
+** adapter_heartbeat
+
+The adapter says it is alive.
+
+#+begin_src cpp :name comment
+/**
+ * @brief A periodic sign of life.
+ *
+ * A missed heartbeat makes the adapter stale.
+ */
+#+end_src
+
+*** adapter_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The opaque id of the adapter.
+
+*** counter
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+A number that rises by one for each heartbeat.
+
+* See also
+
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — the contract these messages carry.
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.

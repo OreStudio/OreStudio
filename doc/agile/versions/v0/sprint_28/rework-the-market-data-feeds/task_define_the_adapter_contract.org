@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/define-the-adapter-contract
+#+pr: 3645
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The four adapter messages exist as protocol types with their subjects, and the i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,10 @@ The four adapter messages exist as protocol types with their subjects, and the i
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Model the four messages and the vendor id and rejected id they share in an operation model, so the C++ header and its TypeScript twin generate from one place.
+2. Build the adapter subjects in a hand-written domain header, on the subject token encoder that the party stream already uses.
+3. Test the subjects, their round trip and the absence of any mark of the source kind.
 
 * Measurements
 
@@ -76,12 +80,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3645][#3645]] | [marketdata] Define the adapter contract |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An empty id builds a subject with an empty token | adapter_subjects.hpp | Accept | The reader refuses an empty adapter id or external id, and a test shows it. The announce handler validates the id in the ingest task. |
+| 2 | An adapter named announce could clash with a future single token subject | adapter_subjects.hpp | Decline | The subject has two tokens and the demand and heartbeat subjects have three. No single token subject is planned. |
+| 3 | The ingress subject drops the id scheme and the field | adapter_subjects.hpp | Accept | A comment on the builder says a reader takes both from the payload. |
+| 4 | Awkward adapter ids on the demand and heartbeat subjects | tests | Accept | A test pins the encoding. |
+| 5 | No TypeScript twin of the subjects | adapter_subjects.hpp | Decline | The browser does not publish to adapter subjects. The message types have their twin. |
 
 * Result
+
+The messages announce, demand, tick and heartbeat exist as generated types in =adapter_operation_protocol.hpp= with a TypeScript twin, with the vendor id and the rejected id they share. =adapter_subjects.hpp= builds the announce, demand, heartbeat and ingress subjects, the two ingress wildcards, and reads an adapter id and an external id back out of an ingress subject. Seven tests pass: the control subjects, one token for the adapter and one for the id, the encoding of spaces, equals signs and dots, the round trip, subjects that are not ingress subjects, the wildcards, and the absence of any source-kind word in a subject. The codegen checks for protocol twins and subject conformance pass.
+
+Left for later tasks: the service does not subscribe to these subjects yet, and no adapter sends them.

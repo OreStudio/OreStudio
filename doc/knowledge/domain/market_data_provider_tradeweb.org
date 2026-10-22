@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 22DDAB03-5CD7-4E14-B1B0-23DB61F2DC95
+:END:
+#+title: Tradeweb data format
+#+description: The id scheme, the fields and the mapping we use for Tradeweb, and what Tradeweb makes public.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:tradeweb:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+Tradeweb publishes pricing for fixed income and other OTC markets. It does not publish a public symbology or field dictionary. We therefore identify a Tradeweb quote by a standard market identifier and say plainly what is still open.
+
+* Detail
+
+** The id scheme
+
+Tradeweb has no public id grammar. FIX, the protocol it uses for connectivity, names an id with a =SecurityIDSource= and a =SecurityID=. For a bond we use the scheme =isin=, and the external id is the ISIN. Another standard source, such as =cusip=, gets its own scheme code. We do not invent a Tradeweb notation.
+
+** The fields
+
+Tradeweb gives indicative and benchmark prices, and an end of day dataset called Marks. The public pages do not list field names.
+
+*Not yet decided:* the field names and the pricing basis (bid, ask, mid, yield or price). The mapping inventory task settles them with the contract in hand.
+
+** On the wire
+
+An adapter of this provider sends the tick fields below. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] for the subject.
+
+| Tick field | Example |
+|------------+---------|
+| id scheme | =isin= |
+| external id | =(an ISIN)= |
+| field | =(a Tradeweb field name)= |
+| value | =(decimal text)= (decimal text) |
+
+The ingress subject token for the id is =(the ISIN)=. The service never decodes the token. It reads the id from the payload.
+
+** The mapping
+
+A Tradeweb vendor instrument maps to the oresmd item for the bond or for the rate it quotes. Several providers can quote one bond, so the mapping is many to one.
+
+** What the simulator does
+
+The simulated Tradeweb source publishes ticks with =isin=, the ISIN and a field. It does not speak FIX.
+
+** External references
+
+- [[https://www.lseg.com/en/data-analytics/financial-data/pricing-and-market-data/fixed-income-pricing-data/tradeweb-data][Tradeweb data through LSEG]] — the Tradeweb datasets that LSEG distributes, with their frequencies and delivery.
+- [[https://www.lseg.com/en/data-analytics/financial-data/pricing-and-market-data/fixed-income-pricing-data/tradeweb-marks][Tradeweb Marks through LSEG]] — the end of day dataset.
+- The Tradeweb FIX specification and its market data field dictionary are not public. Tradeweb gives them to clients.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the three parts this page fills in.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how these ids reach an oresmd item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of the notations.
+- [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — completes: the protocol whose =SecurityIDSource= names the id scheme.

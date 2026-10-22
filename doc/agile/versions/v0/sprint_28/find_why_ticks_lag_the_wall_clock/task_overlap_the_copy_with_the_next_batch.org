@@ -135,3 +135,8 @@ What a reader needs to know:
   the pool of the service, as before.
 - The numbers vary with the load of the machine. The runs here had a load of 6 to 12 on 8 CPUs.
   One of ten runs through NATS gave 86,000 rows per second.
+- The age of a tick at republish is the time from its observation to its arrival on the republish
+  subject. A burst of 60,000 ticks waits less in the pipelined loop, because the drain is shorter.
+  A slow stream waits more: the median is 13.9 ms against 6.0 ms, and the p99 is 42.1 ms against
+  16.9 ms. The cause is a guess: each of the two handoffs wakes a thread that has to wait for a
+  free CPU at a load of 6 on 8. The task =Run a quiet loop in one thread= removes this cost.

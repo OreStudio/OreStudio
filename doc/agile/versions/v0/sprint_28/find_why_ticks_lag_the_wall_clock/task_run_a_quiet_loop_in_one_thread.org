@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 0913264D-CBED-4995-A91D-10F42A60EC57
+:END:
+#+title: Task: Run a quiet loop in one thread
+#+description: At a slow rate the three stages add about 8 ms to the median wait of a tick and about 25 ms to the p99, because each handoff wakes another thread.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+When ticks arrive slowly, the loop prepares, copies and republishes each batch in the worker, as the serial loop did. When ticks arrive fast, the three stages run as they do now. A slow stream gets the wait of the serial loop and a burst keeps its throughput.
+
+Measured in the parent task (evidence file =overlap_age_at_republish_output.txt=, 5 runs at a load of about 6 on 8 CPUs): a stream of 500 ticks, one every 2 ms, was republished with a median age of 6.0 ms by the serial loop and 13.9 ms by the pipelined one, and a p99 of 16.9 ms against 42.1 ms. The cause is a guess: each handoff wakes a thread that waits for a free CPU. A burst shows the opposite, with a p99 age of 373 ms against 478 ms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- When the loop is idle, the worker runs the three stages of a batch itself, in order, and the stream test shows a median age within 2 ms of the serial loop.
+- The order of the batches stays the one of arrival. A batch is not republished before a batch that came before it, and a test says so while a burst and a slow stream alternate.
+- The burst keeps a median above 110,000 rows per second through NATS over ten runs.
+- A failed copy still loses no tick and stores none twice, and the existing test passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -188,7 +188,7 @@ STRUCT_NOTES = {
         "Basel Traffic Light, Credit Simulation, and the ORE run itself.",
     "configuration": "one named, reusable configuration. The name is ours; the "
         "detail lives with the component named by owning_component.",
-    "parameter_definition": "the vocabulary of an ORE run document: which parameter "
+    "ore_parameter": "the vocabulary of an ORE run document: which parameter "
         "names a scope and subtype accepts, and the domain of each value. 165 of "
         "the 218 names observed belong to exactly one analytic kind.",
     "configuration_parameter": "one value. value is text because the domain says "
@@ -299,11 +299,11 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
   }
   class configuration_parameter {
     configuration_id : uuid
-    parameter_definition_id : uuid
+    ore_parameter_id : uuid
     position : integer
     value : text
   }
-  class parameter_definition {
+  class ore_parameter {
     id : uuid
     configuration_type_id : uuid
     scope : text
@@ -354,9 +354,9 @@ REPORTING_RELS = [
     'report_configuration *-- "1" configuration : to',
     'configuration *-- "1" configuration_type : is one of',
     'configuration *-- "0..*" configuration_parameter : holds',
-    'configuration_parameter *-- "1" parameter_definition : named by',
-    'parameter_definition *-- "1" value_domain : valued as',
-    'parameter_definition *-- "1" configuration_type : belongs to',
+    'configuration_parameter *-- "1" ore_parameter : named by',
+    'ore_parameter *-- "1" value_domain : valued as',
+    'ore_parameter *-- "1" configuration_type : belongs to',
 ]
 
 def load(inventory: Path) -> dict:

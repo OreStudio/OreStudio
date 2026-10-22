@@ -36,7 +36,7 @@ export interface ConfigurationAnalyticParameterKey {
 export interface ConfigurationAnalyticParameterWrite {
     id: string;
     configuration_analytic_id: string;
-    parameter_definition_id: string;
+    ore_parameter_id: string;
     value: string;
     position: number;
 }
@@ -58,10 +58,10 @@ export interface ConfigurationAnalyticParameterLookup {
 
 export interface ConfigurationAnalyticParametersFilter {
     configuration_analytic_id: string | null;
-    parameter_definition_id: string | null;
+    ore_parameter_id: string | null;
     id_one_of: string[] | null;
     configuration_analytic_id_one_of: string[] | null;
-    parameter_definition_id_one_of: string[] | null;
+    ore_parameter_id_one_of: string[] | null;
 }
 
 export interface ConfigurationAnalyticParameterEvent {
@@ -169,8 +169,8 @@ export interface ListByConfigurationAnalyticIdConfigurationAnalyticParametersRes
     total: number;
 }
 
-export interface ListByParameterDefinitionIdConfigurationAnalyticParametersRequest {
-    parameter_definition_id: string;
+export interface ListByOreParameterIdConfigurationAnalyticParametersRequest {
+    ore_parameter_id: string;
     scope: Scope;
     offset: number;
     limit: number;
@@ -178,7 +178,7 @@ export interface ListByParameterDefinitionIdConfigurationAnalyticParametersReque
     filter: ConfigurationAnalyticParametersFilter | null;
 }
 
-export interface ListByParameterDefinitionIdConfigurationAnalyticParametersResponse {
+export interface ListByOreParameterIdConfigurationAnalyticParametersResponse {
     result: Result;
     parameter_values: ConfigurationAnalyticParameter[];
     total: number;
@@ -224,8 +224,8 @@ export const subjects = {
         'reporting.v1.configuration_analytic_parameters.delete_many',
     list_by_configuration_analytic_id_configuration_analytic_parameters_request:
         'reporting.v1.configuration_analytic_parameters.list_by_configuration_analytic_id',
-    list_by_parameter_definition_id_configuration_analytic_parameters_request:
-        'reporting.v1.configuration_analytic_parameters.list_by_parameter_definition_id',
+    list_by_ore_parameter_id_configuration_analytic_parameters_request:
+        'reporting.v1.configuration_analytic_parameters.list_by_ore_parameter_id',
     list_configuration_analytic_parameter_versions_request:
         'reporting.v1.configuration_analytic_parameters_versions.list',
     get_configuration_analytic_parameter_version_request:
@@ -245,7 +245,7 @@ export const requiresSession = {
     delete_configuration_analytic_parameter_request: true,
     delete_many_configuration_analytic_parameters_request: true,
     list_by_configuration_analytic_id_configuration_analytic_parameters_request: true,
-    list_by_parameter_definition_id_configuration_analytic_parameters_request: true,
+    list_by_ore_parameter_id_configuration_analytic_parameters_request: true,
     list_configuration_analytic_parameter_versions_request: true,
     get_configuration_analytic_parameter_version_request: true,
 } as const;

@@ -75,7 +75,7 @@ comment on function ores_dq_party_uuid_fn(uuid, uuid) is
  * @param p_resolve       for a table, the live columns whose value is an expression
  *                        over the staged row, which is the alias a. A dataset cannot
  *                        stage a column whose value differs between databases, such
- *                        as the id of a parameter definition, so it stages a name and
+ *                        as the id of a ore parameter, so it stages a name and
  *                        the expression looks the id up. A staged row whose expression
  *                        is null refuses the publish. The shape is
  *                        {"table": {"live_column": "sql expression"}}.

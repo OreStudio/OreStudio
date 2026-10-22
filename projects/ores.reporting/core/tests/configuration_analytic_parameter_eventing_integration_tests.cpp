@@ -70,10 +70,10 @@
 // rather than seeded, so its grand-parents need nothing, and a
 // system-tenant grand-parent is read rather than generated.
 #include "ores.reporting.core/repository/analytic_type_repository.hpp"
-// Soft-FK parent seeding (ores_reporting_parameter_definitions_tbl): the parent may live in another
+// Soft-FK parent seeding (ores_reporting_ore_parameters_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
-#include "ores.reporting.core/repository/parameter_definition_repository.hpp"
+#include "ores.reporting.core/repository/ore_parameter_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -235,19 +235,17 @@ TEST_CASE("write_configuration_analytic_parameter_publishes_an_event", tags) {
     ores::reporting::repository::configuration_analytic_repository configuration_analytic_id_repo;
     configuration_analytic_id_repo.write(party_ctx, configuration_analytic_id_parent);
     v.configuration_analytic_id = configuration_analytic_id_parent.id;
-    // parameter_definition is system-tenant reference data: reference a
+    // ore_parameter is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, so the shared system
     // catalogue keeps exactly the rows the populate scripts put there. The
     // referencing row's insert trigger resolves the parent under the system
     // tenant.
     {
-        ores::reporting::repository::parameter_definition_repository
-            parameter_definition_id_catalogue_repo;
-        const auto parameter_definition_id_catalogue =
-            parameter_definition_id_catalogue_repo.read_latest(
-                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(parameter_definition_id_catalogue.empty());
-        v.parameter_definition_id = parameter_definition_id_catalogue.front().id;
+        ores::reporting::repository::ore_parameter_repository ore_parameter_id_catalogue_repo;
+        const auto ore_parameter_id_catalogue = ore_parameter_id_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(ore_parameter_id_catalogue.empty());
+        v.ore_parameter_id = ore_parameter_id_catalogue.front().id;
     }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Configuration Analytic Parameter: " << v;

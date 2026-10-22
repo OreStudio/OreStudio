@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <configuration_analytic_id> <parameter_definition_id> <value> <position> <reason>
+     * @brief add <configuration_analytic_id> <ore_parameter_id> <value> <position> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,16 +95,16 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <configuration_analytic_id> <parameter_definition_id> <value> <position>
-     * <reason> <commentary> [--version <n>]
+     * @brief set <id> <configuration_analytic_id> <ore_parameter_id> <value> <position> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <configuration_analytic_id> <parameter_definition_id>
-     * <value> <position> <reason> <commentary>
+     * @brief put-many --count <n> <id> <configuration_analytic_id> <ore_parameter_id> <value>
+     * <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -133,12 +133,12 @@ public:
                                                      const std::vector<std::string>& args);
 
     /**
-     * @brief by-parameter-definition-id <parameter_definition_id> [--offset <n>] [--limit <n>]
-     * [--order <field>] [--desc]
+     * @brief by-ore-parameter-id <ore_parameter_id> [--offset <n>] [--limit <n>] [--order <field>]
+     * [--desc]
      */
-    static void process_by_parameter_definition_id(std::ostream& out,
-                                                   ores::nats::service::nats_client& session,
-                                                   const std::vector<std::string>& args);
+    static void process_by_ore_parameter_id(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::vector<std::string>& args);
 
     /**
      * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

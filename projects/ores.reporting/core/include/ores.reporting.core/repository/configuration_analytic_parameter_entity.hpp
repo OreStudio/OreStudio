@@ -47,7 +47,7 @@ struct configuration_analytic_parameter_entity {
     int version = 0;
     std::string party_id;
     std::string configuration_analytic_id;
-    std::string parameter_definition_id;
+    std::string ore_parameter_id;
     std::string value;
     int position = 0;
     std::string modified_by;

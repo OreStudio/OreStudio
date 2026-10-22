@@ -43,6 +43,7 @@ Keys this group states reach into:
 - ores_iam_account_parties_tbl (iam)
 - ores_iam_accounts_tbl (iam)
 - ores_inbox_approval_requests_tbl (inbox)
+- ores_reporting_report_definitions_tbl (reporting)
 - ores_trading_trade_activities_tbl (trading)
 - ores_trading_trade_bookings_tbl (trading)
 - ores_trading_trade_portfolios_tbl (trading)

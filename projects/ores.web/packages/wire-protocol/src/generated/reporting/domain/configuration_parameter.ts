@@ -36,7 +36,7 @@ export interface ConfigurationParameter {
     id: string;
     party_id: string;
     configuration_id: string;
-    parameter_definition_id: string;
+    ore_parameter_id: string;
     value: string;
     position: number;
     modified_by: string;

@@ -1,0 +1,337 @@
+:PROPERTIES:
+:ID: 3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184
+:END:
+#+title: ores.reporting.ore_parameter
+#+description: Codegen entity model for the reporting =ore_parameter= table. The vocabulary of an ORE document: which leaves a schema accepts, and what each value means.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A parameter an ORE document accepts, and what its value is.
+#+entity_singular: ore_parameter
+#+entity_plural: ore_parameters
+#+entity_title: Ore Parameter
+#+created: 2026-09-27
+#+updated: 2026-10-22
+
+The vocabulary of ORE XML. A row documents one leaf of one ORE document: an
+attribute or an element that holds a value. =schema_name= names the XML schema
+of the document, for example =ore.xsd=, and =xpath= is the path to the leaf in
+a document of that schema. The two together say which leaf this is.
+
+ORE writes the parameters of =ore.xml= as a name and a value inside a block.
+For them =scope= names the block (Setup, Markets, an analytic), =subtype=
+narrows it, and =name= is the parameter, so the three give the same path as
+=xpath=. =position= keeps the order the document wrote, because a document that
+is not reproducible in order is not reproducible.
+
+165 of the 218 parameter names observed in the shipped corpus belong to
+exactly one analytic kind, which is why the name alone is not the key.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:profile:   uuid-identified-lookup
+:tablename: ores_reporting_ore_parameters_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the definition.
+
+** scope
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The block the parameter belongs to, for example Setup or Markets.
+
+** subtype
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The kind within the block that accepts the parameter, for example the
+analytic type. Empty when the block is the whole context.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The parameter name as ORE writes it.
+
+** schema_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The XML schema the leaf belongs to, named by the file name of the schema, for example =ore.xsd=. A document is of this schema whatever its own file name is.
+
+** xpath
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The XPath of the leaf in a document of the schema, for example =/ORE/Setup/Parameter[@name='implyTodaysFixings']=. The schema name and the XPath together say which leaf this is. For =ore.xsd=, scope, subtype and name give the same path.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document writes the parameter in.
+
+** ore_parameter_value_domain_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What a value of this parameter is.
+
+** is_required
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the document must carry the parameter.
+
+** label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The name a screen shows for the parameter, for example Imply today’s fixings. Null when no screen presents the parameter yet.
+
+#+begin_src cpp :name generator
+std::string("Parameter")
+#+end_src
+
+** help
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+One line a screen shows next to the control. It says what kind of value the parameter takes.
+
+#+begin_src cpp :name generator
+std::string("A flag.")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The full text a screen shows for the parameter. It says what the parameter decides, what each value does and when to change it. Null when the parameter has no text yet.
+
+#+begin_src cpp :name generator
+std::string("What the parameter decides.")
+#+end_src
+
+** default_text
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The default as a person reads it, with what it means, for example =No. Today’s fixing is loaded.=
+
+#+begin_src cpp :name generator
+std::string("No.")
+#+end_src
+
+** format
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+How a value is written in the document, for example a flag written Y or N, or a whole number from 0 to 9.
+
+#+begin_src cpp :name generator
+std::string("A flag.")
+#+end_src
+
+** introduced_in
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE release that introduced the parameter. When the project could not measure an earlier release, the text says so, for example =1.8.0.7 or earlier=.
+
+#+begin_src cpp :name generator
+std::string("1.8.13.0")
+#+end_src
+
+** removed_in
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE release that removed the parameter. Null while the parameter still exists.
+
+#+begin_src cpp :name generator
+std::string("1.9.0.0")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_parameters_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** ore_parameter_value_domain_code
+:PROPERTIES:
+:table:         ores_reporting_ore_parameter_value_domains_tbl
+:target_column: code
+:parent_entity: ore_parameter_value_domain
+:nullable:      false
+:error_message: Invalid ore_parameter_value_domain_code: %. No active value domain found with this code.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter
+:entity_plural_short:   parameters
+:entity_singular_words: ore parameter
+:entity_plural_words:   ore parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pd
+:END:
+
+** Table display
+
+| column | header | 
+|--------+--------|
+| schema_name | Schema |
+| xpath | XPath |
+| scope  | Scope  |
+| subtype | Subtype |
+| name   | Name   |
+| ore_parameter_value_domain_code | Value Is |
+| modified_by | Modified By |
+| version | Version |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/ore_parameter.hpp
+:domain_class:           reporting::domain::ore_parameter
+:protocol_include:       ores.reporting.api/messaging/ore_parameter_protocol.hpp
+:collection_name:        parameters
+:key_field:              name
+:get_request_class:      reporting::messaging::get_ore_parameters_request
+:get_response_class:     reporting::messaging::get_ore_parameters_response
+:get_message_type:       get_ore_parameters_request
+:save_request_class:     reporting::messaging::save_ore_parameter_request
+:save_response_class:    reporting::messaging::save_ore_parameter_response
+:save_message_type:      save_ore_parameter_request
+:delete_request_class:   reporting::messaging::delete_ore_parameter_request
+:delete_response_class:  reporting::messaging::delete_ore_parameter_response
+:delete_message_type:    delete_ore_parameter_request
+:parent_entity_singular:  ore_parameter_value_domain
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| schema_name | Schema | line_edit | true | true | Enter schema name |
+| xpath | XPath | line_edit | true | true | Enter XPath |
+| scope | Scope | line_edit | true | true | Enter scope |
+| subtype | Subtype | line_edit | true | true | Enter subtype |
+| name | Name | line_edit | true | true | Enter parameter name |
+| ore_parameter_value_domain_code | Value Is | line_edit | | true | Enter value domain code |
+| label | Label | line_edit | | | Enter label |
+| description | Description | line_edit | | | Enter description |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Schema | schema_name | Schema | string | 120 |
+| XPath | xpath | XPath | string | 360 |
+| Scope | scope | Scope | string | 140 |
+| Subtype | subtype | Subtype | string | 160 |
+| Name | name | Name | string | 200 |
+| ValueDomain | ore_parameter_value_domain_code | Value Is | string | 160 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

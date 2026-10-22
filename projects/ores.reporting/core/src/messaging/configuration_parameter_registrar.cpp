@@ -84,10 +84,10 @@ std::vector<ores::nats::service::subscription> register_configuration_parameter_
             h->list_by_configuration_id_configuration_parameters(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_by_parameter_definition_id_configuration_parameters_request::nats_subject,
+        list_by_ore_parameter_id_configuration_parameters_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) {
-            h->list_by_parameter_definition_id_configuration_parameters(std::move(msg));
+            h->list_by_ore_parameter_id_configuration_parameters(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(list_configuration_parameter_versions_request::nats_subject,
                                         queue_group,

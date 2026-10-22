@@ -41,7 +41,10 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
 | [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
-| [[id:EA01F699-420E-4889-95EF-E7FAFA2DD646][Model the engine settings]] | STARTED | 2026-10-22 | | Store the engine settings as a named configuration with a central row and three parts. |
+| [[id:EA01F699-420E-4889-95EF-E7FAFA2DD646][Model the engine settings]] | DONE | 2026-10-22 | 2026-10-22 | Store the engine settings as a named configuration with a central row and three parts. |
+| [[id:B722E327-40BE-472B-8868-1D08F4B50583][Describe the engine setting parameters]] | DONE | 2026-10-22 | 2026-10-22 | Give the parameter definition the fields a screen presents, and seed the 15 engine settings with their full text. |
+| [[id:EC556A9D-3EC6-4AA6-A3C9-1C78B1167E77][Rename the parameter definition to ore parameter]] | DONE | 2026-10-22 | 2026-10-22 | Rename the entity to ore_parameter and key it by schema name and XPath, so it documents any leaf of any ORE XML schema. |
+| [[id:78AB66E8-2D4D-4CCE-910B-15175F722B82][Document the analytic ORE parameters]] | BACKLOG | | | Write the full documentation of every analytic parameter of ore.xml, in batches of analytics, and make the documentation fields NOT NULL. |
 
 * Analysis
 

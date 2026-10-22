@@ -36,7 +36,7 @@ namespace ores::reporting::domain {
  * @brief One value on a configuration.
  *
  * One value. The value is text because the definition says what it is: the
- * value domain on parameter_definition decides whether this is a currency, a
+ * value domain on ore_parameter decides whether this is a currency, a
  * date, a boolean, a tenor or a reference, and the mapper writes it into the
  * document accordingly. Storing it as text is not the same as storing an
  * untyped blob, because the meaning comes from a foreign key rather than from
@@ -74,7 +74,7 @@ struct configuration_parameter final {
     /**
      * @brief The definition that says what this value means.
      */
-    boost::uuids::uuid parameter_definition_id;
+    boost::uuids::uuid ore_parameter_id;
 
     /**
      * @brief The value, whose type comes from the definition's value domain.

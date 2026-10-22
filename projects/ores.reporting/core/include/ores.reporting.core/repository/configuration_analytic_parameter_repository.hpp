@@ -158,16 +158,16 @@ public:
 
 
     /**
-     * @brief Reads latest analytic parameters filtered by parameter_definition_id, with pagination.
+     * @brief Reads latest analytic parameters filtered by ore_parameter_id, with pagination.
      * @param ctx Repository context with database connection
-     * @param parameter_definition_id The parameter_definition_id to filter by
+     * @param ore_parameter_id The ore_parameter_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::configuration_analytic_parameter> read_latest_by_parameter_definition_id(
+    std::vector<domain::configuration_analytic_parameter> read_latest_by_ore_parameter_id(
         context ctx,
-        const std::string& parameter_definition_id,
+        const std::string& ore_parameter_id,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -175,12 +175,11 @@ public:
             std::nullopt);
 
     /**
-     * @brief Gets the total count of active analytic parameters filtered by
-     * parameter_definition_id.
+     * @brief Gets the total count of active analytic parameters filtered by ore_parameter_id.
      */
-    std::uint32_t get_total_parameter_value_count_by_parameter_definition_id(
+    std::uint32_t get_total_parameter_value_count_by_ore_parameter_id(
         context ctx,
-        const std::string& parameter_definition_id,
+        const std::string& ore_parameter_id,
         const std::optional<messaging::configuration_analytic_parameters_filter>& filter =
             std::nullopt);
 

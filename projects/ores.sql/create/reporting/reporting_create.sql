@@ -44,10 +44,10 @@
 \ir ./reporting_configuration_analytic_parameters_notify_trigger_create.sql
 \ir ./reporting_configuration_market_bindings_create.sql
 \ir ./reporting_configuration_market_bindings_notify_trigger_create.sql
-\ir ./reporting_parameter_value_domains_create.sql
-\ir ./reporting_parameter_value_domains_notify_trigger_create.sql
-\ir ./reporting_parameter_definitions_create.sql
-\ir ./reporting_parameter_definitions_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_value_domains_create.sql
+\ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql
+\ir ./reporting_ore_parameters_create.sql
+\ir ./reporting_ore_parameters_notify_trigger_create.sql
 \ir ./reporting_configuration_parameters_create.sql
 \ir ./reporting_configuration_parameters_notify_trigger_create.sql
 \ir ./reporting_configurations_create.sql

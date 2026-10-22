@@ -40,7 +40,7 @@ select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
 -- Every uuid column of the document tables other than the key, the tenant, the party, the
--- reporting configuration and the parameter definition, which a publish resolves by name.
+-- reporting configuration and the ore parameter, which a publish resolves by name.
 -- Each refers to a row of the same document: a header, a collection, a curve definition,
 -- a segment or an analytic.
 select is(
@@ -48,7 +48,7 @@ select is(
      from information_schema.columns c
      where table_schema = 'public' and data_type = 'uuid'
        and column_name not in ('id', 'tenant_id', 'party_id', 'configuration_id',
-                               'parameter_definition_id')
+                               'ore_parameter_id')
        and table_name in (
          select concat('ores_analytics_', t, '_tbl') from unnest(array['pricing_model_configs',
            'pricing_model_products', 'pricing_model_product_parameters', 'todays_market_configs',

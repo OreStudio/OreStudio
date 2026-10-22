@@ -826,14 +826,6 @@ tangled into the runnable script library
 
 - [[id:C10B8762-D5B0-575D-8CFB-17312188CEDA][How do I run the credit_simulation_matrix_row_configs commands from the shell?]]
 
-* Parameter Definitions
-
-- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the parameter_definitions commands from the shell?]]
-
-* Parameter Value Domains
-
-- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the parameter_value_domains commands from the shell?]]
-
 * Report Configurations
 
 - [[id:107EC378-86EB-52A7-90ED-62512A7BD785][How do I run the report_configurations commands from the shell?]]
@@ -1705,3 +1697,11 @@ tangled into the runnable script library
 * Sensitivity Templates
 
 - [[id:08C2B365-7E21-5D7E-A5E0-C40C41E2B963][How do I run the sensitivity_templates commands from the shell?]]
+
+* Ore Parameter Value Domains
+
+- [[id:10EE66B7-D0C5-52AC-84E3-0367181F65F9][How do I run the ore_parameter_value_domains commands from the shell?]]
+
+* Ore Parameters
+
+- [[id:30745220-F498-5666-A6BB-F586CDEE8F3E][How do I run the ore_parameters commands from the shell?]]

@@ -49,7 +49,7 @@ configuration_parameter_mapper::map(const configuration_parameter_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.configuration_id);
-    r.parameter_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.parameter_definition_id);
+    r.ore_parameter_id = boost::lexical_cast<boost::uuids::uuid>(v.ore_parameter_id);
     r.value = v.value;
     r.position = v.position;
     r.modified_by = v.modified_by;
@@ -72,7 +72,7 @@ configuration_parameter_mapper::map(const domain::configuration_parameter& v) {
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.configuration_id = boost::uuids::to_string(v.configuration_id);
-    r.parameter_definition_id = boost::uuids::to_string(v.parameter_definition_id);
+    r.ore_parameter_id = boost::uuids::to_string(v.ore_parameter_id);
     r.value = v.value;
     r.position = v.position;
     r.modified_by = v.modified_by;

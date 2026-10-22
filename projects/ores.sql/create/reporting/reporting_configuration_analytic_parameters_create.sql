@@ -24,7 +24,7 @@
  *
  * Configuration Analytic Parameter Table
  *
- * One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column.
+ * One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in ore_parameter whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column.
  */
 
 create table if not exists "ores_reporting_configuration_analytic_parameters_tbl" (
@@ -33,7 +33,7 @@ create table if not exists "ores_reporting_configuration_analytic_parameters_tbl
     "version" integer not null,
     "party_id" uuid not null,
     "configuration_analytic_id" uuid not null,
-    "parameter_definition_id" uuid not null,
+    "ore_parameter_id" uuid not null,
     "value" text not null,
     "position" integer not null,
     "modified_by" text not null,
@@ -84,14 +84,14 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate parameter_definition_id (soft FK to ores_reporting_parameter_definitions_tbl)
+    -- Validate ore_parameter_id (soft FK to ores_reporting_ore_parameters_tbl)
     if not exists (
-        select 1 from ores_reporting_parameter_definitions_tbl
+        select 1 from ores_reporting_ore_parameters_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and id = NEW.parameter_definition_id
+          and id = NEW.ore_parameter_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid parameter_definition_id: %. No active parameter definition found with this id.', NEW.parameter_definition_id
+        raise exception 'Invalid ore_parameter_id: %. No active ore parameter found with this id.', NEW.ore_parameter_id
             using errcode = '23503';
     end if;
 

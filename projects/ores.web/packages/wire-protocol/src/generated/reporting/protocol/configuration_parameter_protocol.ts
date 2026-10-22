@@ -36,7 +36,7 @@ export interface ConfigurationParameterKey {
 export interface ConfigurationParameterWrite {
     id: string;
     configuration_id: string;
-    parameter_definition_id: string;
+    ore_parameter_id: string;
     value: string;
     position: number;
 }
@@ -58,10 +58,10 @@ export interface ConfigurationParameterLookup {
 
 export interface ConfigurationParametersFilter {
     configuration_id: string | null;
-    parameter_definition_id: string | null;
+    ore_parameter_id: string | null;
     id_one_of: string[] | null;
     configuration_id_one_of: string[] | null;
-    parameter_definition_id_one_of: string[] | null;
+    ore_parameter_id_one_of: string[] | null;
 }
 
 export interface ConfigurationParameterEvent {
@@ -169,8 +169,8 @@ export interface ListByConfigurationIdConfigurationParametersResponse {
     total: number;
 }
 
-export interface ListByParameterDefinitionIdConfigurationParametersRequest {
-    parameter_definition_id: string;
+export interface ListByOreParameterIdConfigurationParametersRequest {
+    ore_parameter_id: string;
     scope: Scope;
     offset: number;
     limit: number;
@@ -178,7 +178,7 @@ export interface ListByParameterDefinitionIdConfigurationParametersRequest {
     filter: ConfigurationParametersFilter | null;
 }
 
-export interface ListByParameterDefinitionIdConfigurationParametersResponse {
+export interface ListByOreParameterIdConfigurationParametersResponse {
     result: Result;
     parameter_values: ConfigurationParameter[];
     total: number;
@@ -218,8 +218,8 @@ export const subjects = {
         'reporting.v1.configuration_parameters.delete_many',
     list_by_configuration_id_configuration_parameters_request:
         'reporting.v1.configuration_parameters.list_by_configuration_id',
-    list_by_parameter_definition_id_configuration_parameters_request:
-        'reporting.v1.configuration_parameters.list_by_parameter_definition_id',
+    list_by_ore_parameter_id_configuration_parameters_request:
+        'reporting.v1.configuration_parameters.list_by_ore_parameter_id',
     list_configuration_parameter_versions_request:
         'reporting.v1.configuration_parameters_versions.list',
     get_configuration_parameter_version_request:
@@ -239,7 +239,7 @@ export const requiresSession = {
     delete_configuration_parameter_request: true,
     delete_many_configuration_parameters_request: true,
     list_by_configuration_id_configuration_parameters_request: true,
-    list_by_parameter_definition_id_configuration_parameters_request: true,
+    list_by_ore_parameter_id_configuration_parameters_request: true,
     list_configuration_parameter_versions_request: true,
     get_configuration_parameter_version_request: true,
 } as const;

@@ -134,10 +134,10 @@ runs no valuation and needs no =Analytic= element.
 * Parameters
 
 A definition of this report states the rows below. No seed declares these
-parameter definitions yet, so the domains in the table are the ones the
+ore parameters yet, so the domains in the table are the ones the
 classification taxonomy and the engine fix, and the registry rows are still to
 be written. The mechanism is on
-[[proj:projects/ores.reporting/modeling/ores.reporting.parameter_definition.org][parameter definition]].
+[[proj:projects/ores.reporting/modeling/ores.reporting.ore_parameter.org][ore parameter]].
 
 #+ATTR_HTML: :class hug-leading
 | Parameter       | Domain                                    | Default     | Meaning                                                    |

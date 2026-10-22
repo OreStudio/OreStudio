@@ -42,8 +42,8 @@ render_configuration_analytic_parameter_fields(const domain::configuration_analy
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Configuration Analytic ID",
                       .value = boost::uuids::to_string(v.configuration_analytic_id)});
-    fields.push_back({.name = "Parameter Definition ID",
-                      .value = boost::uuids::to_string(v.parameter_definition_id)});
+    fields.push_back(
+        {.name = "Ore Parameter ID", .value = boost::uuids::to_string(v.ore_parameter_id)});
     fields.push_back({.name = "Value", .value = v.value});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;

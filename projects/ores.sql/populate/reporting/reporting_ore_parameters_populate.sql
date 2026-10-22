@@ -281,7 +281,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflow'']/Parameter[@name=''outputFileName'']',
             'analytic', 'cashflow', 'outputFileName', 11, 'string', false,
             'Cash flow report file', 'A file name.',
-            'Names the file that holds the cash flow report. Change it when one run writes several reports and you need to tell the files apart. For example, flows.csv writes the report to flows.csv in the output path.',
+            'Names the file that holds the cash flow report: one row for each cash flow with the trade, the pay date, the amount, the currency and the flow type. Change it when one run writes several reports and you need to tell the files apart. For example, flows.csv writes the report to flows.csv in the output path. The default is cashflow.csv.',
             'cashflow.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: cashflow.outputFileName'
@@ -373,7 +373,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''active'']',
             'analytic', 'curves', 'active', 15, 'boolean', true,
             'Run the curves analytic', 'A flag. Y runs the analytic.',
-            'Switches the curves analytic on or off. When it is on, the run exports the discount factors of the yield curves that it builds from the market data, as set in the todaysmarket file. Use it to check the curves behind an NPV.',
+            'Switches the curves analytic on or off. When it is on, the run exports the discount factors of the yield curves that it builds from the market data, as set in the todaysmarket file, on the dates of the grid. Use it to check the curves behind an NPV, or to hand the curves to another system. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.active'
@@ -396,7 +396,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''configuration'']',
             'analytic', 'curves', 'configuration', 16, 'string', false,
             'Market configuration', 'The name of a market configuration.',
-            'Selects the set of curves that the analytic exports. The todaysmarket file groups the curves in named configurations, and this parameter picks one. For example, default exports the curves of the default configuration.',
+            'Selects the set of curves that the analytic exports. The todaysmarket file groups the curves in named configurations, for example one for discounting with collateral in euro and one for discounting in the local currency of each trade, and this parameter picks one. For example, default exports the curves of the default configuration. The name must exist in the todaysmarket file.',
             'default', 'The name of a configuration in the todaysmarket file.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.configuration'
@@ -442,7 +442,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''curves'']/Parameter[@name=''outputFileName'']',
             'analytic', 'curves', 'outputFileName', 18, 'string', false,
             'Curves report file', 'A file name.',
-            'Names the file that holds the exported discount factors. The file has one row for each date of the grid and one column for each curve. For example, curves.csv writes the report to curves.csv in the output path.',
+            'Names the file that holds the exported discount factors. The file has one row for each date of the grid and one column for each curve. Change it when one run writes several reports and you need to tell the files apart. For example, curves.csv writes the report to curves.csv in the output path.',
             'curves.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: curves.outputFileName'
@@ -626,7 +626,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'simulation', 'pricingEnginesFile', 26, 'string', false,
             'Pricing engines file for the simulation', 'A file name.',
-            'Names the XML file that sets the pricing engines for the valuations on the simulated scenarios. These can differ from the engines of the valuation date, for example faster approximations. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the valuations on the simulated scenarios. These can differ from the engines of the valuation date, for example faster approximations, because the simulation values every trade on every date and path. The cost of an engine matters much more here than in the NPV run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.pricingEnginesFile'
@@ -649,7 +649,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPricingEnginesFile'']',
             'analytic', 'simulation', 'amcPricingEnginesFile', 27, 'string', false,
             'Pricing engines file for AMC', 'A file name.',
-            'Names the XML file that sets the pricing engines for the trades that AMC values. These engines differ from the classic ones, because they are the AMC pricers. For example, pricingengine_amc.xml.',
+            'Names the XML file that sets the pricing engines for the trades that American Monte Carlo (AMC) values. These engines differ from the classic ones, because they are the AMC pricers: they value a trade on the simulated paths with a regression and not with a full revaluation on each path. A trade type that this file does not cover stays with the classic engine. For example, pricingengine_amc.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPricingEnginesFile'
@@ -672,7 +672,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''baseCurrency'']',
             'analytic', 'simulation', 'baseCurrency', 28, 'string', false,
             'Base currency for the cube', 'A currency code, for example EUR.',
-            'Names the currency in which ORE converts all NPVs before it writes them to the trade-level cube and the netting set cube. Exposures and XVA are then stated in this currency. For example, EUR stores all cube values in euro.',
+            'Names the currency in which ORE converts all NPVs before it writes them to the trade-level cube and the netting set cube. Exposures and XVA are then stated in this currency. Choose the currency of the reports that you will produce, because the cube cannot change it later. For example, EUR stores all cube values in euro. The Setup block has a parameter of the same name.',
             'The base currency of the Setup block.', 'A currency code of three letters, for example EUR.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.baseCurrency'
@@ -856,7 +856,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseExternalComputeDevice'']',
             'analytic', 'simulation', 'xvaCgUseExternalComputeDevice', 36, 'boolean', false,
             'CG use an external compute device', 'A flag. Y runs the graph on an external device.',
-            'Decides whether the CG engine runs the computation graph on an external compute device, for example a GPU, instead of the CPU. The parameter CG external compute device names the device.',
+            'Decides whether the CG engine runs the computation graph on an external compute device, for example a GPU, instead of the CPU. A device pays off for a graph that is evaluated on many paths. The parameter CG external compute device names the device. The default is No, so the engine runs on the CPU.',
             'No. The engine runs on the CPU.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseExternalComputeDevice'
@@ -879,7 +879,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgExternalDeviceCompatibilityMode'']',
             'analytic', 'simulation', 'xvaCgExternalDeviceCompatibilityMode', 37, 'boolean', false,
             'CG device compatibility mode', 'A flag. Y uses the compatibility mode.',
-            'Decides whether the CG engine runs the external device in its compatibility mode. Switch it on when the device does not run the normal mode correctly. Example files set it together with the name of the device.',
+            'Decides whether the CG engine runs the external device in its compatibility mode. Switch it on when the device does not run the normal mode correctly, for example when a driver rejects the kernels of the normal mode. The compatibility mode can be slower. Example files set it together with the name of the device.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgExternalDeviceCompatibilityMode'
@@ -902,7 +902,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseDoublePrecisionForExternalCalculation'']',
             'analytic', 'simulation', 'xvaCgUseDoublePrecisionForExternalCalculation', 38, 'boolean', false,
             'CG double precision on the device', 'A flag. Y uses double precision.',
-            'Decides whether the external device calculates with double precision numbers instead of single precision. Double precision is more exact and slower, and some devices do not support it.',
+            'Decides whether the external device calculates with double precision numbers instead of single precision. Double precision is more exact and slower, and some devices do not support it. Single precision is enough for many exposure profiles, and double precision is the safe choice when you compare results with a CPU run. ORE uses it only when the CG engine uses an external device.',
             'No. The device uses single precision.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseDoublePrecisionForExternalCalculation'
@@ -948,7 +948,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCgPricingEnginesFile'']',
             'analytic', 'simulation', 'amcCgPricingEnginesFile', 40, 'string', false,
             'Pricing engines file for the CG engine', 'A file name.',
-            'Names the XML file that sets the pricing engines for the computation graph engine. For example, pricingengine_amccg.xml.',
+            'Names the XML file that sets the pricing engines for the computation graph (CG) engine. The CG engine builds a graph of the calculation of each trade and then evaluates it on all paths, so it needs engines that can produce such a graph. A trade type without such an engine cannot run in the CG engine. For example, pricingengine_amccg.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCgPricingEnginesFile'
@@ -971,7 +971,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgDynamicIM'']',
             'analytic', 'simulation', 'xvaCgDynamicIM', 41, 'boolean', false,
             'CG dynamic initial margin', 'A flag. Y computes dynamic initial margin with the CG engine.',
-            'Decides whether the CG engine also computes the initial margin along each path. The DIM model DynamicIM of the XVA analytic needs this. It makes the run longer and the memory use higher.',
+            'Decides whether the CG engine also computes the initial margin along each path. The DIM model DynamicIM of the XVA analytic needs this, because that model reads the margin from the CG run. It makes the run longer and the memory use higher. Leave it off when the XVA analytic uses another DIM model or does not compute MVA.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgDynamicIM'
@@ -1017,7 +1017,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrder'']',
             'analytic', 'simulation', 'xvaCgRegressionOrder', 43, 'integer', false,
             'CG regression order', 'A whole number.',
-            'Sets the order of the polynomial that the CG engine uses in the regression for the exposures. A higher order fits the value better and needs more paths to stay stable. For example, 4.',
+            'Sets the order of the polynomial that the CG engine uses in the regression for the exposures. A higher order fits the value of a trade better on each date and needs more paths to stay stable, because the fit has more coefficients. The default is 4. For example, 2 gives a quadratic fit that is steady with few paths. Raise it for trades with a strong non-linear payoff.',
             '4', 'A whole number of one or more.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrder'
@@ -1040,7 +1040,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrderDynamicIm'']',
             'analytic', 'simulation', 'xvaCgRegressionOrderDynamicIm', 44, 'integer', false,
             'CG regression order for dynamic IM', 'A whole number.',
-            'Sets the order of the regression polynomial that the CG engine uses for dynamic initial margin. It works like the CG regression order and applies to the margin only.',
+            'Sets the order of the regression polynomial that the CG engine uses for dynamic initial margin. It works like the CG regression order and applies to the margin only, so you can fit the margin with another order than the exposure. The default is 4. A lower order is steadier with few paths, and a higher order follows a non-linear margin better.',
             '4', 'A whole number of one or more.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrderDynamicIm'
@@ -1063,7 +1063,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgTradeLevelBreakDown'']',
             'analytic', 'simulation', 'xvaCgTradeLevelBreakDown', 45, 'boolean', false,
             'CG trade level breakdown', 'A flag. Y keeps the results for each trade.',
-            'Decides whether the CG engine produces the exposure results for each trade as well as for each netting set. Switch it off when you need only the netting set results.',
+            'Decides whether the CG engine produces the exposure results for each trade as well as for each netting set. The default is Yes. Switch it off when you need only the netting set results, because the trade level results take memory and time for a large portfolio. Reports that need the trade level, such as the allocation of the XVA to trades, then have no data.',
             'Yes. The engine keeps the results for each trade.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgTradeLevelBreakDown'
@@ -1109,7 +1109,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeFlows'']',
             'analytic', 'simulation', 'storeFlows', 47, 'boolean', false,
             'Store cash flows in the cube', 'A flag. Y stores the cash flows.',
-            'Decides whether the cube also stores the cumulative cash flows between the simulation dates. Some dynamic initial margin and variation margin models need them in the XVA post processing.',
+            'Decides whether the cube also stores the cumulative cash flows between the simulation dates. Some dynamic initial margin and variation margin models need them in the XVA post processing, because the exposure depends on the cash that a trade pays between two dates. The cube gets larger when this is on. Leave it off when no model of the run needs the flows.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeFlows'
@@ -1155,7 +1155,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''curveSensiGrid'']',
             'analytic', 'simulation', 'curveSensiGrid', 49, 'string', false,
             'Curve sensitivity grid', 'A comma-separated list of numbers of years.',
-            'Lists the points on the yield curves for which the simulation stores sensitivities when Store sensitivities along the paths is on. For example, 1,2,3,5,7,10,15,20.',
+            'Lists the points on the yield curves for which the simulation stores sensitivities when Store sensitivities along the paths is on. Each number is a tenor in years. For example, 1,2,3,5,7,10,15,20 stores the sensitivity to eight points of each curve. More points give a finer hedge and a larger cube.',
             'None.', 'A comma-separated list of numbers of years, for example 1,2,3,5,7,10.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.curveSensiGrid'
@@ -1178,7 +1178,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''vegaSensiGrid'']',
             'analytic', 'simulation', 'vegaSensiGrid', 50, 'string', false,
             'Vega sensitivity grid', 'A comma-separated list of numbers of years.',
-            'Lists the option expiries for which the simulation stores vega sensitivities when Store sensitivities along the paths is on. For example, 1,2,3,5,7,10,15,20.',
+            'Lists the option expiries for which the simulation stores vega sensitivities when Store sensitivities along the paths is on. Each number is an expiry in years. For example, 1,2,3,5,7,10,15,20 stores the vega at eight expiries. More points give a finer hedge and a larger cube.',
             'None.', 'A comma-separated list of numbers of years, for example 1,2,3,5,7,10.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.vegaSensiGrid'
@@ -1201,7 +1201,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeSurvivalProbabilities'']',
             'analytic', 'simulation', 'storeSurvivalProbabilities', 51, 'boolean', false,
             'Store survival probabilities', 'A flag. Y stores the survival probabilities.',
-            'Decides whether the cube stores the survival probabilities of the counterparties on each simulation date. The dynamic credit XVA calculation needs them.',
+            'Decides whether the cube stores the survival probabilities of the counterparties on each simulation date. The dynamic credit XVA calculation needs them, because the default probability then changes along the path. The cube gets larger when this is on. Leave it off when the credit curves are static.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeSurvivalProbabilities'
@@ -1408,7 +1408,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''filterRiskKeys'']',
             'analytic', 'simulation', 'filterRiskKeys', 60, 'string', false,
             'Risk factor types in the dump', 'A comma-separated list of risk factor types.',
-            'Limits the scenario dump to the listed types of risk factor. Without it the dump holds every risk factor of the simulation market and can be very large. For example, DiscountCurve writes the discount factors only.',
+            'Limits the scenario dump to the listed types of risk factor. Without it the dump holds every risk factor of the simulation market and can be very large. Write the types as a comma-separated list. For example, DiscountCurve writes the discount factors only, and DiscountCurve,FXSpot adds the spot rates of the currencies.',
             'None. The dump holds all risk factors.', 'A comma-separated list of risk factor key types such as DiscountCurve.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.filterRiskKeys'
@@ -1431,7 +1431,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgSensitivityConfigFile'']',
             'analytic', 'simulation', 'xvaCgSensitivityConfigFile', 61, 'string', false,
             'CG sensitivity configuration file', 'A file name.',
-            'Names the XML file that sets which sensitivities the CG engine computes: the risk factors and the shifts. Without it the CG engine computes no sensitivities. For example, xvasensiconfig.xml.',
+            'Names the XML file that sets which sensitivities the CG engine computes: the risk factors and the shifts. The CG engine computes the sensitivities from the graph, so the cost of each extra risk factor is small. Without the file the CG engine computes no sensitivities. For example, xvasensiconfig.xml. The file has the layout of the sensitivity configuration file.',
             'None. The CG engine computes no sensitivities.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgSensitivityConfigFile'
@@ -1454,7 +1454,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgBumpSensis'']',
             'analytic', 'simulation', 'xvaCgBumpSensis', 62, 'boolean', false,
             'CG bump and revalue sensitivities', 'A flag. Y bumps and revalues instead of using differentiation.',
-            'Decides how the CG engine computes the CVA sensitivities. When it is Y, the engine bumps each risk factor and revalues. When it is N, the engine uses algorithmic differentiation. Use Y to check the differentiated sensitivities.',
+            'Decides how the CG engine computes the CVA sensitivities. When it is Y, the engine bumps each risk factor and revalues, which is slow and easy to check. When it is N, the engine uses algorithmic differentiation, which is fast and gives all sensitivities in one pass. Use Y to check the differentiated sensitivities against bumped ones.',
             'No. The engine uses algorithmic differentiation.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgBumpSensis'
@@ -1477,7 +1477,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionCacheSize'']',
             'analytic', 'simulation', 'xvaCgRegressionCacheSize', 63, 'integer', false,
             'CG regression cache size', 'A whole number.',
-            'Sets the size of the cache of regression results that the CG engine uses. A larger cache can save repeated regressions and uses more memory.',
+            'Sets the size of the cache of regression results that the CG engine uses. A larger cache can save repeated regressions when many trades share the same regressors, and it uses more memory. The default is 512. Lower it on a machine with little memory, and raise it for a large portfolio with many similar trades.',
             '512', 'A whole number of one or more.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionCacheSize'
@@ -1546,7 +1546,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPathDataOutput'']',
             'analytic', 'simulation', 'amcPathDataOutput', 66, 'string', false,
             'AMC path data output file', 'A file name.',
-            'Names the file that receives the path data of the AMC run, that is the simulated states of the model. A later run can read the file with the AMC path data input parameter. For example, amcBuffer.dat.',
+            'Names the file that receives the path data of the AMC run, that is the simulated states of the model on each path and date. A later run can read the file with the AMC path data input parameter and so skip the simulation. Use it when you run the same simulation for several portfolios. For example, amcBuffer.dat writes the data to amcBuffer.dat in the output path.',
             'None. The run does not write the path data.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPathDataOutput'
@@ -1569,7 +1569,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcIndividualTrainingOutput'']',
             'analytic', 'simulation', 'amcIndividualTrainingOutput', 67, 'boolean', false,
             'AMC individual training output', 'A flag. Y writes the trained regression of each trade.',
-            'Decides whether the AMC run writes the trained regression of each trade to a file, so that a later run can reuse it. Switch it on to avoid the training step in repeat runs.',
+            'Decides whether the AMC run writes the trained regression of each trade to a file, so that a later run can reuse it. Training is the costly step of AMC, so reuse saves time when the same trades are valued again on the same paths. The files take disk space for each trade. Switch it on for a stable portfolio that runs every day.',
             'No. The run does not write the regressions.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcIndividualTrainingOutput'
@@ -1615,7 +1615,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''includeReferenceDateEvents'']',
             'analytic', 'simulation', 'includeReferenceDateEvents', 69, 'boolean', false,
             'Include reference date events in the simulation', 'A flag. Y counts the events of the valuation date.',
-            'Decides whether the simulation counts an event that falls on the valuation date, for example an exercise or a fixing. The Setup block has a parameter of the same name, and this one overrides it for the simulation.',
+            'Decides whether the simulation counts an event that falls on the valuation date, for example an exercise, a fixing or a payment. The Setup block has a parameter of the same name, and this one overrides it for the simulation. Use it when the exposure on the first date must agree with the NPV, because the two must treat the same-day cash flow in the same way.',
             'The choice of the Setup block. When that is missing too, No: an event of the valuation date is treated as matured.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.includeReferenceDateEvents'
@@ -1638,7 +1638,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionReportTimeStepsDynamicIM'']',
             'analytic', 'simulation', 'xvaCgRegressionReportTimeStepsDynamicIM', 70, 'string', false,
             'CG regression report time steps', 'A comma-separated list of time step numbers.',
-            'Lists the time steps for which the CG engine writes a report of the dynamic initial margin regression. Use it to check the quality of the fit on a few dates. For example, 1,2,3 writes the report for the first three steps.',
+            'Lists the time steps for which the CG engine writes a report of the dynamic initial margin regression. Use it to check the quality of the fit on a few dates, because a report on every date would be very large. For example, 1,2,3 writes the report for the first three steps. Without a value the engine writes no regression report.',
             'None. The engine writes no regression report.', 'A comma-separated list of whole numbers.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionReportTimeStepsDynamicIM'
@@ -1661,7 +1661,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegration'']',
             'analytic', 'simulation', 'xvaCgUsePythonIntegration', 71, 'boolean', false,
             'CG Python integration', 'A flag. Y uses the Python integration.',
-            'Decides whether the CG regression calls Python code for the conditional expectations, through the Python integration of ORE. Switch it on only when that integration is installed.',
+            'Decides whether the CG regression calls Python code for the conditional expectations, through the Python integration of ORE. Use it to try a regression method that you write in Python, for example a machine learning model. Switch it on only when that integration is installed, because a run without it fails.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegration'
@@ -1684,7 +1684,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegrationDynamicIm'']',
             'analytic', 'simulation', 'xvaCgUsePythonIntegrationDynamicIm', 72, 'boolean', false,
             'CG Python integration for dynamic IM', 'A flag. Y uses the Python integration for the margin.',
-            'Decides whether the CG engine calls Python code for the dynamic initial margin. It works like the CG Python integration parameter and applies to the margin only.',
+            'Decides whether the CG engine calls Python code for the dynamic initial margin. It works like the CG Python integration parameter and applies to the margin only. Switch it on only when that integration is installed, because a run without it fails.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegrationDynamicIm'
@@ -1730,7 +1730,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeExerciseValues'']',
             'analytic', 'simulation', 'storeExerciseValues', 74, 'boolean', false,
             'Store exercise values in the cube', 'A flag. Y stores the exercise values.',
-            'Decides whether the cube also stores the exercise value of each trade on each date. Switch it on when a later analytic needs the value of an option if it is exercised.',
+            'Decides whether the cube also stores the exercise value of each trade on each date. Switch it on when a later analytic needs the value of an option if it is exercised, for example to check the exercise decision of a Bermudan swaption. The cube gets larger when this is on.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeExerciseValues'
@@ -1753,7 +1753,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgEnableCgOptimization'']',
             'analytic', 'simulation', 'xvaCgEnableCgOptimization', 75, 'boolean', false,
             'CG graph optimisation', 'A flag. Y optimises the graph.',
-            'Decides whether the CG engine optimises the computation graph while it builds the graph. Switch it on to try the optimisation on a large portfolio.',
+            'Decides whether the CG engine optimises the computation graph while it builds the graph. The optimisation removes steps that do not change the result, so the graph is smaller and the evaluation is faster, at the cost of a longer build. Switch it on to try it on a large portfolio. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgEnableCgOptimization'
@@ -1776,7 +1776,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPathDataInput'']',
             'analytic', 'simulation', 'amcPathDataInput', 76, 'string', false,
             'AMC path data input file', 'A file name.',
-            'Names a file with the path data of an earlier AMC run, that is the simulated states of the model. The run reads the path data from the file. Use it together with the output parameter to repeat an AMC valuation on the same paths.',
+            'Names a file with the path data of an earlier AMC run, that is the simulated states of the model on each path and date. The run reads the path data from the file and does not simulate again. Use it together with the output parameter to repeat an AMC valuation on the same paths, for example for a second portfolio. The paths must come from the same model and the same grid.',
             'None. The run computes the path data.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPathDataInput'
@@ -1799,7 +1799,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcUseGpuRegression'']',
             'analytic', 'simulation', 'amcUseGpuRegression', 77, 'boolean', false,
             'Use the GPU for the AMC regression', 'A flag. Y runs the regression on the GPU.',
-            'Decides whether the AMC regression runs its QR step on a GPU through cuSOLVER. It is an opt-in for runs with a large portfolio on a machine with a supported GPU. The results do not change.',
+            'Decides whether the AMC regression runs its QR step on a GPU through cuSOLVER. It is an opt-in for runs with a large portfolio on a machine with a supported GPU, where the regression is the main cost. The results do not change, so you can compare a run with the GPU and a run without it. A machine without a supported GPU fails when this is on.',
             'No. The regression runs on the CPU.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcUseGpuRegression'
@@ -1914,7 +1914,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''writeScenarios'']',
             'analytic', 'simulation', 'writeScenarios', 82, 'boolean', false,
             'Write the scenarios', 'A flag. Y writes the scenario dump.',
-            'Decides whether the run writes the raw scenarios to a file with the standard name scenario.csv. A value in Scenario dump file switches the output on by itself and sets the name.',
+            'Decides whether the run writes the raw scenarios to a file with the standard name scenario.csv. A scenario file holds the value of each risk factor on each date and path, so it is large. Use it to check the simulation on a small test case. A value in Scenario dump file switches the output on by itself and sets the name.',
             'No. The run writes no scenarios unless Scenario dump file is set.', 'A flag, written Y or N, or true or false.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.writeScenarios'
@@ -1983,7 +1983,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionVarianceCutoffDynamicIm'']',
             'analytic', 'simulation', 'xvaCgRegressionVarianceCutoffDynamicIm', 85, 'double', false,
             'CG regression variance cutoff for dynamic IM', 'A number between 0 and 1.',
-            'Sets the variance cutoff of the regression that the CG engine uses for dynamic initial margin. It works like the CG regression variance cutoff and applies to the margin only.',
+            'Sets the variance cutoff of the regression that the CG engine uses for dynamic initial margin. It works like the CG regression variance cutoff and applies to the margin only. A regressor whose variance is below the cutoff adds noise and no information, so the regression drops it. Without a value the regression uses the regressors as they are.',
             'None. The regression uses the regressors as they are.', 'A number, written with a decimal point.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionVarianceCutoffDynamicIm'
@@ -2052,7 +2052,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPricingEnginesOverride'']',
             'analytic', 'simulation', 'amcPricingEnginesOverride', 88, 'string', false,
             'Pricing engines override for AMC', 'A file name.',
-            'Names an XML file with pricing engine settings that replace the matching settings of the AMC pricing engines file. Use it to change a few engines and keep the rest.',
+            'Names an XML file with pricing engine settings that replace the matching settings of the AMC pricing engines file. Use it to change a few engines for one run, for example the number of training paths of one product, and keep the rest of the file as it is. The file has the same layout as the pricing engines file, and it needs only the entries that change.',
             'None. The engines stay as the AMC pricing engines file sets them.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPricingEnginesOverride'
@@ -2075,7 +2075,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCgPricingEnginesOverride'']',
             'analytic', 'simulation', 'amcCgPricingEnginesOverride', 89, 'string', false,
             'Pricing engines override for the CG engine', 'A file name.',
-            'Names an XML file with pricing engine settings that replace the matching settings of the CG pricing engines file. Use it to change a few engines and keep the rest.',
+            'Names an XML file with pricing engine settings that replace the matching settings of the CG pricing engines file. Use it to change a few engines for one run and keep the rest of the file as it is. The file has the same layout as the pricing engines file, and it needs only the entries that change.',
             'None. The engines stay as the CG pricing engines file sets them.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCgPricingEnginesOverride'
@@ -2167,7 +2167,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''scenarioFile'']',
             'analytic', 'xva', 'scenarioFile', 93, 'string', false,
             'Scenario data file', 'A file name.',
-            'Names the file with the scenario data that the simulation wrote for the post-processing, such as simulated index fixings and FX rates. Variation margin and dynamic initial margin need it. For example, scenariodata.csv.gz.',
+            'Names the file with the scenario data that the simulation wrote for the post-processing, such as simulated index fixings and FX rates. Variation margin and dynamic initial margin need it, because they must recompute a margin amount on each path and date. Use it when the post-processing runs apart from the simulation, together with the cube file. For example, scenariodata.csv.gz.',
             'None. When the run has a simulation, the analytic uses its scenario data.', 'A file name. ORE looks for the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.scenarioFile'
@@ -2190,7 +2190,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''baseCurrency'']',
             'analytic', 'xva', 'baseCurrency', 94, 'string', false,
             'Base currency', 'A currency code, for example EUR.',
-            'Names the currency in which the analytic states all NPVs, exposures and value adjustments. ORE converts the amounts that are in another currency. For example, EUR states all values in euro.',
+            'Names the currency in which the analytic states every NPV, exposure and value adjustment. ORE converts an amount in another currency at the spot rate of the valuation date. Use the currency in which the desk or the capital report measures its risk. For example, EUR states all values in euro. The Setup block has a parameter of the same name, which this one overrides for this analytic.',
             'The base currency of the Setup block.', 'A currency code of three letters, for example EUR.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.baseCurrency'
@@ -2213,7 +2213,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exposureProfiles'']',
             'analytic', 'xva', 'exposureProfiles', 95, 'boolean', false,
             'Write exposure profiles', 'A flag. Y writes the profiles for each netting set.',
-            'Decides whether the analytic writes an exposure report for each netting set: the expected positive and negative exposure and the potential future exposure, for each date. The XVA analytic has the same parameter.',
+            'Decides whether the analytic writes an exposure report for each netting set: the expected positive and negative exposure and the potential future exposure, for each date. The profiles show how the exposure builds up and runs off over the life of the trades, so they are the main result to read for a credit limit or a capital check. The XVA analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.exposureProfiles'
@@ -2259,7 +2259,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''quantile'']',
             'analytic', 'xva', 'quantile', 97, 'double', false,
             'PFE confidence level', 'A number between 0 and 1.',
-            'Sets the confidence level of the potential future exposure (PFE) in the exposure reports. For example, 0.95 reports the 95th percentile of the exposure distribution. The XVA analytic has the same parameter.',
+            'Sets the confidence level of the potential future exposure (PFE) in the exposure reports. The PFE is the quantile of the positive exposure distribution on each date, so a higher level gives a larger number. For example, 0.95 reports the 95th percentile, and 0.99 reports the 99th, which a limit system often uses. The XVA analytic has the same parameter.',
             '0.95', 'A number, written with a decimal point.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.quantile'
@@ -2305,7 +2305,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cva'']',
             'analytic', 'xva', 'cva', 99, 'boolean', false,
             'Compute CVA', 'A flag. Y computes the credit value adjustment.',
-            'Switches the credit value adjustment (CVA) on or off. CVA prices the loss from the default of the counterparty on the positive exposure.',
+            'Switches the credit value adjustment (CVA) on or off. CVA prices the loss that the default of the counterparty causes on the positive exposure, so it is the main charge of the analytic. The analytic needs the default curve of each counterparty in the market data. Set it to N when the run is for another adjustment only, for example the funding value adjustment, because the CVA takes time to compute for a large portfolio.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cva'
@@ -2374,7 +2374,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dim'']',
             'analytic', 'xva', 'dim', 102, 'boolean', false,
             'Compute DIM', 'A flag. Y computes the dynamic initial margin.',
-            'Switches the dynamic initial margin (DIM) calculation on or off. DIM projects the initial margin of each netting set along each path. The parameter DIM model selects the method. MVA needs it.',
+            'Switches the dynamic initial margin (DIM) calculation on or off. DIM projects the initial margin of each netting set along each path, as a margin model such as the SIMM would compute it on that path. The parameter DIM model selects the method. The margin value adjustment needs the result. The calculation is costly, so switch it on only when the run needs the margin.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dim'
@@ -2420,7 +2420,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimQuantile'']',
             'analytic', 'xva', 'dimQuantile', 104, 'double', false,
             'DIM quantile', 'A number between 0 and 1.',
-            'Sets the quantile of the margin movement that the DIM covers. For example, 0.99 covers the 99th percentile. ORE uses it only when DIM is on.',
+            'Sets the quantile of the margin movement that the DIM covers. A higher quantile gives a larger margin. For example, 0.99 covers the 99th percentile, which is the usual level of a margin model. ORE uses it only when DIM is on. Change it to follow the margin model of the agreement, for example 0.995.',
             '0.99', 'A number, written with a decimal point.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimQuantile'
@@ -2443,7 +2443,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimHorizonCalendarDays'']',
             'analytic', 'xva', 'dimHorizonCalendarDays', 105, 'integer', false,
             'DIM horizon in calendar days', 'A whole number of days.',
-            'Sets the length of the margin period of risk that the DIM covers, in calendar days. For example, 14 is two weeks. ORE uses it only when DIM is on.',
+            'Sets the length of the margin period of risk that the DIM covers, in calendar days. The margin has to cover the movement of the portfolio over this period. The default is 14 calendar days, which is about ten business days, the period of the standard SIMM.',
             '14', 'A whole number of zero or more.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimHorizonCalendarDays'
@@ -2466,7 +2466,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionOrder'']',
             'analytic', 'xva', 'dimRegressionOrder', 106, 'integer', false,
             'DIM regression order', 'A whole number.',
-            'Sets the order of the regression polynomial of the DIM model Regression. The regression relates the clean change of the netting set value over the period to the value at the start of the period. ORE uses it only when DIM is on.',
+            'Sets the order of the regression polynomial of the DIM model Regression. The regression relates the clean change of the netting set value over the period to the value at the start of the period. A higher order follows a non-linear relation better and needs more paths to stay stable. ORE uses it only when DIM is on. For example, 2 fits a quadratic curve.',
             '0', 'A whole number of zero or more.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimRegressionOrder'
@@ -2535,7 +2535,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exerciseNextBreak'']',
             'analytic', 'xva', 'exerciseNextBreak', 109, 'boolean', false,
             'Exercise at the next break', 'A flag. Y ends each trade at its next break date.',
-            'Decides whether ORE ends all trades at their next break date before it aggregates them. Use it to model a counterparty relationship in which each party can end a trade at its break dates. The XVA analytic has the same parameter.',
+            'Decides whether ORE ends all trades at their next break date before it aggregates them. Use it to model a counterparty relationship in which each party can end a trade at its break dates. A trade that ends early adds no exposure after its break, so the profiles are lower than with the full maturity. The default is No, so every trade runs to maturity. The XVA analytic has the same parameter.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.exerciseNextBreak'
@@ -2558,7 +2558,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dva'']',
             'analytic', 'xva', 'dva', 110, 'boolean', false,
             'Compute DVA', 'A flag. Y computes the debit value adjustment.',
-            'Switches the debit value adjustment (DVA) on or off. DVA is the gain from our own default on the negative exposure. Set the DVA name too, so that ORE can find our own default curve.',
+            'Switches the debit value adjustment (DVA) on or off. DVA is the gain from our own default on the negative exposure: the counterparty may lose when we default. Many firms report it, and some leave it out of the price of a trade. Set the DVA name too, so that ORE can find our own default curve and recovery rate. The DVA calculation needs that name.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dva'
@@ -2581,7 +2581,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dvaName'']',
             'analytic', 'xva', 'dvaName', 111, 'string', false,
             'DVA name', 'A credit name.',
-            'Names the credit entity that ORE uses to look up our own default probability curve and recovery rate for the DVA. For example, BANK.',
+            'Names the credit entity that ORE uses to look up our own default probability curve and recovery rate for the DVA. The name must be in the market data, in the same form as the name of a counterparty. For example, BANK uses the default curve of the entity BANK. The DVA needs the name.',
             'None. A DVA calculation needs a name.', 'A credit name as it appears in the market data, for example BANK.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dvaName'
@@ -2604,7 +2604,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fva'']',
             'analytic', 'xva', 'fva', 112, 'boolean', false,
             'Compute FVA', 'A flag. Y computes the funding value adjustment.',
-            'Switches the funding value adjustment (FVA) on or off. FVA prices the cost of funding the uncollateralised exposure. It needs a borrowing curve and a lending curve.',
+            'Switches the funding value adjustment (FVA) on or off. FVA prices the cost of funding the part of the exposure that no collateral covers: we borrow to fund a positive exposure and we lend what a negative exposure releases. It needs a borrowing curve and a lending curve, and both come from the market data. The cost depends on the spread of these curves over the overnight rate, so a small spread gives a small FVA.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fva'
@@ -2627,7 +2627,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaBorrowingCurve'']',
             'analytic', 'xva', 'fvaBorrowingCurve', 113, 'string', false,
             'FVA borrowing curve', 'The name of a yield curve.',
-            'Names the yield curve at which we borrow, for the FVA. This spelling is the older one, and ORE reads it only when the parameter Borrowing curve is missing. For example, BANK_EUR_BORROW.',
+            'Names the yield curve at which we borrow, for the FVA. This spelling is the older one, and ORE reads it only when the parameter Borrowing curve is missing. The curve must be in the market data, and its spread over the overnight rate is what makes the funding cost. For example, BANK_EUR_BORROW. Use the newer parameter in a new document.',
             'None. An FVA calculation needs a curve.', 'The name of a yield curve in the market data.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaBorrowingCurve'
@@ -2650,7 +2650,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaLendingCurve'']',
             'analytic', 'xva', 'fvaLendingCurve', 114, 'string', false,
             'FVA lending curve', 'The name of a yield curve.',
-            'Names the yield curve at which we lend, for the FVA. This spelling is the older one, and ORE reads it only when the parameter Lending curve is missing. For example, BANK_EUR_LEND.',
+            'Names the yield curve at which we lend, for the FVA. This spelling is the older one, and ORE reads it only when the parameter Lending curve is missing. The curve must be in the market data. A negative exposure releases funding that we lend at this curve. For example, BANK_EUR_LEND. Use the newer parameter in a new document.',
             'None. An FVA calculation needs a curve.', 'The name of a yield curve in the market data.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.fvaLendingCurve'
@@ -2673,7 +2673,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''colva'']',
             'analytic', 'xva', 'colva', 115, 'boolean', false,
             'Compute COLVA', 'A flag. Y computes the collateral value adjustment.',
-            'Switches the collateral value adjustment (COLVA) on or off. COLVA prices the difference between the rate that the collateral earns and the overnight rate.',
+            'Switches the collateral value adjustment (COLVA) on or off. COLVA prices the difference between the rate that the collateral earns under the credit support annex and the overnight rate, on the expected collateral balance. It matters for netting sets with large collateral and a collateral rate that differs from the overnight rate. The collateral model of the netting set definitions sets the collateral rate.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.colva'
@@ -2719,7 +2719,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralFloor'']',
             'analytic', 'xva', 'collateralFloor', 117, 'boolean', false,
             'Compute the collateral floor', 'A flag. Y computes the collateral floor value.',
-            'Switches the calculation of the collateral floor on or off. The calculation values a floor on the collateral rate.',
+            'Switches the calculation of the collateral floor on or off. Some credit support annexes floor the rate that the collateral earns, for example at zero when the overnight rate is negative. The calculation values that floor as an option on the collateral rate, and ORE adds its value to the COLVA. Switch it on for netting sets whose agreement has a floor.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.collateralFloor'
@@ -2765,7 +2765,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimEvolutionFile'']',
             'analytic', 'xva', 'dimEvolutionFile', 119, 'string', false,
             'DIM evolution file', 'A file name.',
-            'Names the file for the evolution of the zero-order DIM and the average of the n-th order DIM over time. ORE uses it only when DIM is on.',
+            'Names the file for the evolution of the zero-order DIM and the average of the n-th order DIM over time. Use it to see how the margin runs off as the trades mature. For example, dim_evolution.csv. The analytic writes the file only when it has a name. ORE uses it only when DIM is on.',
             'None. The analytic does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimEvolutionFile'
@@ -2788,7 +2788,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionFiles'']',
             'analytic', 'xva', 'dimRegressionFiles', 120, 'string', false,
             'DIM regression snapshot files', 'A comma-separated list of file names.',
-            'Names the files for snapshots of the DIM regression. The files go with the grid points that DIM output grid points lists, one file for each point. ORE uses it only when DIM is on.',
+            'Names the files for snapshots of the DIM regression, one file for each grid point that DIM output grid points lists. A snapshot shows the data and the fit of the regression at a date, so you can check the quality of the fit. For example, dim_regression_1.csv,dim_regression_2.csv. ORE uses it only when DIM is on.',
             'None. The analytic does not write the files.', 'A comma-separated list of file names.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimRegressionFiles'
@@ -2811,7 +2811,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputNettingSet'']',
             'analytic', 'xva', 'dimOutputNettingSet', 121, 'string', false,
             'DIM snapshot netting set', 'A netting set id.',
-            'Names the netting set for which the analytic writes the DIM regression snapshot. For example, CPTY_A. ORE uses it only when DIM is on.',
+            'Names the netting set for which the analytic writes the DIM regression snapshot. The snapshot is large, so the analytic writes it for one netting set only. For example, CPTY_A writes the snapshot of the netting set CPTY_A. ORE uses it only when DIM is on and the regression files are named.',
             'None.', 'A netting set id.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimOutputNettingSet'
@@ -2834,7 +2834,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputGridPoints'']',
             'analytic', 'xva', 'dimOutputGridPoints', 122, 'integer', false,
             'DIM snapshot grid points', 'A comma-separated list of whole numbers.',
-            'Lists the points of the time grid for which the analytic writes a DIM regression snapshot. ORE uses it only when DIM is on.',
+            'Lists the points of the time grid for which the analytic writes a DIM regression snapshot. Each number is the index of a grid date, counted from zero. For example, 1,10 writes the snapshots of the second and the eleventh date. One file is written for each point. ORE uses it only when DIM is on.',
             'None.', 'A comma-separated list of whole numbers.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimOutputGridPoints'
@@ -2880,7 +2880,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimLocalRegressionBandwidth'']',
             'analytic', 'xva', 'dimLocalRegressionBandwidth', 124, 'double', false,
             'DIM local regression bandwidth', 'A number of standard deviations.',
-            'Sets the bandwidth of the local regression that validates the polynomial regression, in standard deviations of the NPV. ORE uses it only when DIM is on.',
+            'Sets the bandwidth of the local regression that validates the polynomial regression of the DIM, in standard deviations of the NPV. A wider band uses more paths for each local fit and gives a smoother check. The default is 0.25. ORE uses it only when DIM is on and the DIM model uses regression.',
             '0.25', 'A number, written with a decimal point.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimLocalRegressionBandwidth'
@@ -2903,7 +2903,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mva'']',
             'analytic', 'xva', 'mva', 125, 'boolean', false,
             'Compute MVA', 'A flag. Y computes the margin value adjustment.',
-            'Switches the margin value adjustment (MVA) on or off. MVA prices the funding cost of the initial margin. It takes the dynamic initial margin from the DIM model that the DIM model parameter selects.',
+            'Switches the margin value adjustment (MVA) on or off. MVA prices the funding cost of the initial margin that we post over the life of the trades. It takes the projected initial margin from the dynamic initial margin model that the DIM model parameter selects, so DIM must be on. The result depends on the margin model, so compare MVA only between runs that use the same model.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.mva'
@@ -3133,7 +3133,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigration'']',
             'analytic', 'xva', 'creditMigration', 135, 'boolean', false,
             'Credit migration', 'A flag. Y runs the credit migration analytic.',
-            'Switches the credit migration calculation on or off. It computes the distribution of the portfolio value under rating migrations of the counterparties. It needs a simulation that stores the NPVs for each credit state.',
+            'Switches the credit migration calculation on or off. It computes the distribution of the portfolio value under rating migrations of the counterparties, so it shows the loss that a downgrade causes before any default. It needs a simulation that stores the NPVs for each credit state, and the credit migration configuration file.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigration'
@@ -3156,7 +3156,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationDistributionGrid'']',
             'analytic', 'xva', 'creditMigrationDistributionGrid', 136, 'string', false,
             'Credit migration distribution grid', 'A comma-separated list of numbers.',
-            'Lists the points of the grid on which ORE reports the distribution of the portfolio value in the credit migration calculation. ORE uses it only when credit migration is on.',
+            'Sets the grid on which ORE reports the distribution of the portfolio value in the credit migration calculation. Write three numbers: the lowest value, the highest value and the number of points between them. For example, -2E7,1E7,300 reports the distribution from minus twenty million to ten million on 300 points. ORE uses it only when credit migration is on.',
             'None.', 'A comma-separated list of numbers.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationDistributionGrid'
@@ -3179,7 +3179,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationTimeSteps'']',
             'analytic', 'xva', 'creditMigrationTimeSteps', 137, 'string', false,
             'Credit migration time steps', 'A comma-separated list of whole numbers.',
-            'Lists the time steps of the simulation grid at which ORE reports the credit migration distribution. ORE uses it only when credit migration is on.',
+            'Lists the time steps of the simulation grid at which ORE reports the credit migration distribution. Each number is the index of a grid date. For example, 12,24 reports the distribution at the twelfth and the twenty-fourth step. ORE uses it only when credit migration is on.',
             'None.', 'A comma-separated list of whole numbers.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationTimeSteps'
@@ -3202,7 +3202,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationConfig'']',
             'analytic', 'xva', 'creditMigrationConfig', 138, 'string', false,
             'Credit migration configuration file', 'A file name.',
-            'Names the XML file with the credit simulation parameters: the rating states and the migration matrices. ORE uses it only when credit migration is on.',
+            'Names the XML file with the credit simulation parameters: the rating states and the migration matrices. The credit migration calculation reads the matrix that gives the chance of a move from one rating to another over a period. For example, creditmigration.xml. ORE uses it only when credit migration is on.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationConfig'
@@ -3225,7 +3225,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationOutputFiles'']',
             'analytic', 'xva', 'creditMigrationOutputFiles', 139, 'string', false,
             'Credit migration output files', 'A file name stem.',
-            'Sets the stem of the output files of the credit migration. ORE appends an underscore and the time step to the stem to name each file. ORE uses it only when credit migration is on.',
+            'Sets the stem of the output files of the credit migration. ORE appends an underscore and the time step to the stem to name each file. For example, migration gives migration_12.csv for the twelfth step. ORE uses it only when credit migration is on.',
             'None.', 'A file name stem without extension.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.creditMigrationOutputFiles'
@@ -3271,7 +3271,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewBorrowingCurvePostfix'']',
             'analytic', 'xva', 'flipViewBorrowingCurvePostfix', 141, 'string', false,
             'Flip view borrowing curve postfix', 'A text.',
-            'Sets the text that ORE appends to the name of the counterparty to find the borrowing curve when the view is flipped. For example, _BORROW looks for the curve CPTY_A_BORROW. ORE uses it only when Flip the view is on.',
+            'Sets the text that ORE appends to the name of the counterparty to find the borrowing curve when the view is flipped. A flipped view prices the XVA from the point of view of the counterparty, so it needs the curves of the counterparty. For example, _BORROW looks for the curve CPTY_A_BORROW. ORE uses it only when Flip the view is on.',
             '_BORROW', 'A text.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.flipViewBorrowingCurvePostfix'
@@ -3294,7 +3294,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewLendingCurvePostfix'']',
             'analytic', 'xva', 'flipViewLendingCurvePostfix', 142, 'string', false,
             'Flip view lending curve postfix', 'A text.',
-            'Sets the text that ORE appends to the name of the counterparty to find the lending curve when the view is flipped. For example, _LEND looks for the curve CPTY_A_LEND. ORE uses it only when Flip the view is on.',
+            'Sets the text that ORE appends to the name of the counterparty to find the lending curve when the view is flipped. A flipped view prices the XVA from the point of view of the counterparty, so it needs the curves of the counterparty. For example, _LEND looks for the curve CPTY_A_LEND. ORE uses it only when Flip the view is on.',
             '_LEND', 'A text.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.flipViewLendingCurvePostfix'
@@ -3317,7 +3317,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''timeAveragedNettedExposureOutputFile'']',
             'analytic', 'xva', 'timeAveragedNettedExposureOutputFile', 143, 'string', false,
             'Time averaged exposure report file', 'A file name.',
-            'Names the file for the time averaged netted exposure of each netting set. Setting it switches the report on.',
+            'Names the file for the time averaged netted exposure of each netting set. The report averages the expected exposure over time, which is the number that some capital rules use. For example, timeaveraged.csv. Setting the parameter switches the report on.',
             'None. The analytic does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.timeAveragedNettedExposureOutputFile'
@@ -3363,7 +3363,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''outputCrossAssetModelData'']',
             'analytic', 'xva', 'outputCrossAssetModelData', 145, 'boolean', false,
             'Write the cross asset model', 'A flag. Y writes the model data.',
-            'Decides whether the analytic writes the cross asset model data of the run to the file crossassetmodel_xva.xml in the output path. Use it to check the model that the run used.',
+            'Decides whether the analytic writes the cross asset model data of the run to the file crossassetmodel_xva.xml in the output path. The file holds the calibrated parameters of the model. Use it to check the model that the run used, or to reuse a calibration in another run.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.outputCrossAssetModelData'
@@ -3570,7 +3570,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''deterministicInitialMarginFile'']',
             'analytic', 'xva', 'deterministicInitialMarginFile', 154, 'string', false,
             'Deterministic initial margin file', 'A file name.',
-            'Names a file with the initial margin of each netting set as a time series. The analytic uses these amounts for the initial margin instead of a model. ORE looks for the file in the input path of the Setup block.',
+            'Names a file with the initial margin of each netting set as a time series. The analytic uses these amounts for the initial margin instead of a model, so the margin does not change with the paths. Use it when a clearing house or a risk system supplies the margin. ORE looks for the file in the input path of the Setup block.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.deterministicInitialMarginFile'
@@ -3616,7 +3616,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionCoveredStdDevs'']',
             'analytic', 'xva', 'dimDistributionCoveredStdDevs', 156, 'double', false,
             'DIM distribution range', 'A number of standard deviations, or inf.',
-            'Sets the range of the DIM distribution report: ORE covers this many standard deviations around the mean of the data. The value inf covers all of the data. ORE uses it only when DIM is on.',
+            'Sets the range of the DIM distribution report: ORE covers this many standard deviations around the mean of the data. A wider range shows more of the tails and spreads the grid over a larger interval. The default is 5.0. The value inf covers all of the data. ORE uses it only when DIM is on.',
             '5.0', 'A number, or the word inf.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimDistributionCoveredStdDevs'
@@ -3639,7 +3639,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionGridSize'']',
             'analytic', 'xva', 'dimDistributionGridSize', 157, 'integer', false,
             'DIM distribution grid size', 'A whole number.',
-            'Sets the number of points of the grid of the DIM distribution report. ORE uses it only when DIM is on.',
+            'Sets the number of points of the grid of the DIM distribution report. A larger grid gives a finer picture of the distribution of the margin and a larger file. The default is 50. ORE uses it only when DIM is on. For example, 100 doubles the resolution.',
             '50', 'A whole number of zero or more.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.dimDistributionGridSize'
@@ -3662,7 +3662,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''borrowingCurve'']',
             'analytic', 'xva', 'borrowingCurve', 158, 'string', false,
             'Borrowing curve', 'The name of a yield curve.',
-            'Names the yield curve at which we borrow, for the FVA. For example, BANK_EUR_BORROW.',
+            'Names the yield curve at which we borrow, for the FVA. The curve must be in the market data. The FVA charges the difference between this curve and the overnight rate on the positive uncollateralised exposure, so a wider spread gives a larger charge. For example, BANK_EUR_BORROW. The FVA needs both this curve and the lending curve.',
             'None. An FVA calculation needs a curve.', 'The name of a yield curve in the market data.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.borrowingCurve'
@@ -3685,7 +3685,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''lendingCurve'']',
             'analytic', 'xva', 'lendingCurve', 159, 'string', false,
             'Lending curve', 'The name of a yield curve.',
-            'Names the yield curve at which we lend, for the FVA. For example, BANK_EUR_LEND.',
+            'Names the yield curve at which we lend, for the FVA. The curve must be in the market data. The FVA credits the difference between this curve and the overnight rate on the negative uncollateralised exposure. For example, BANK_EUR_LEND. The FVA needs both this curve and the borrowing curve.',
             'None. An FVA calculation needs a curve.', 'The name of a yield curve in the market data.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.lendingCurve'
@@ -3708,7 +3708,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''generateCorrelations'']',
             'analytic', 'xva', 'generateCorrelations', 160, 'boolean', false,
             'Generate correlations', 'A flag. Y runs the correlation analytic.',
-            'Decides whether the XVA analytic first runs the correlation analytic and uses its result as the correlations of the simulation model. The correlation analytic reads its parameters from the xva block when it runs this way.',
+            'Decides whether the XVA analytic first runs the correlation analytic and uses its result as the correlations of the simulation model. Use it when the correlations should come from the data of the run and not from a file. The correlation analytic reads its parameters from the xva block when it runs this way. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.generateCorrelations'
@@ -3823,7 +3823,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kva'']',
             'analytic', 'xva', 'kva', 165, 'boolean', false,
             'Compute KVA', 'A flag. Y computes the capital value adjustment.',
-            'Switches the capital value adjustment (KVA) on or off. KVA prices the cost of the regulatory capital that the counterparty credit risk needs. The KVA parameters set the capital model.',
+            'Switches the capital value adjustment (KVA) on or off. KVA prices the cost of the regulatory capital that the counterparty credit risk needs over the life of the trades, as the capital hurdle times the capital discounted at the capital discount rate. The KVA parameters set the capital model. Switch it on when a price must carry the cost of capital as well as the cost of credit and funding.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.4.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kva'
@@ -3846,7 +3846,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaCapitalDiscountRate'']',
             'analytic', 'xva', 'kvaCapitalDiscountRate', 166, 'double', false,
             'KVA capital discount rate', 'A rate, for example 0.10.',
-            'Sets the rate at which ORE discounts the cost of capital in the KVA. ORE uses it only when KVA is on.',
+            'Sets the rate at which ORE discounts the cost of capital in the KVA. A higher rate gives a smaller KVA, because the future cost of capital counts for less. The default is 0.10, which is ten percent. ORE uses it only when KVA is on. For example, 0.08 discounts the cost of capital at eight percent.',
             '0.10', 'A number, written with a decimal point.',
             '1.8.4.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaCapitalDiscountRate'
@@ -3869,7 +3869,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaAlpha'']',
             'analytic', 'xva', 'kvaAlpha', 167, 'double', false,
             'KVA alpha', 'A number.',
-            'Sets the multiplier alpha of the regulatory exposure at default in the KVA calculation. ORE uses it only when KVA is on.',
+            'Sets the multiplier alpha of the regulatory exposure at default in the KVA calculation. The regulatory exposure at default is alpha times the expected positive exposure, and the Basel rules fix alpha at 1.4. Change it only to test a different rule. ORE uses it only when KVA is on.',
             '1.4', 'A number, written with a decimal point.',
             '1.8.4.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaAlpha'
@@ -3892,7 +3892,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaRegAdjustment'']',
             'analytic', 'xva', 'kvaRegAdjustment', 168, 'double', false,
             'KVA regulatory adjustment', 'A number.',
-            'Sets the regulatory adjustment factor that turns the capital requirement into risk weighted assets in the KVA calculation. ORE uses it only when KVA is on.',
+            'Sets the regulatory adjustment factor that turns the capital requirement into risk weighted assets in the KVA calculation. The default is 12.5, the inverse of the eight percent capital ratio. Change it only to follow a different capital ratio. ORE uses it only when KVA is on. For example, 10 follows a ratio of ten percent.',
             '12.5', 'A number, written with a decimal point.',
             '1.8.4.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaRegAdjustment'
@@ -3915,7 +3915,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaCapitalHurdle'']',
             'analytic', 'xva', 'kvaCapitalHurdle', 169, 'double', false,
             'KVA capital hurdle', 'A rate, for example 0.012.',
-            'Sets the return on capital that the KVA charges, the capital hurdle rate. ORE uses it only when KVA is on.',
+            'Sets the return on capital that the KVA charges, the capital hurdle rate. The default is 0.012, which is 1.2 percent. A higher hurdle gives a larger KVA, because each unit of capital must earn more. ORE uses it only when KVA is on. For example, 0.02 charges two percent.',
             '0.012', 'A number, written with a decimal point.',
             '1.8.4.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaCapitalHurdle'
@@ -3938,7 +3938,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaOurPdFloor'']',
             'analytic', 'xva', 'kvaOurPdFloor', 170, 'double', false,
             'KVA floor on our default probability', 'A probability.',
-            'Sets the lowest default probability that the KVA uses for us. ORE uses it only when KVA is on.',
+            'Sets the lowest default probability that the KVA uses for us. A very safe name has a default probability near zero, which would make the capital charge too low, so the floor lifts it. The default is 0.03. ORE uses it only when KVA is on. For example, 0.0003 sets a floor of three basis points.',
             '0.03', 'A number, written with a decimal point.',
             '1.8.4.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaOurPdFloor'
@@ -3961,7 +3961,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaTheirPdFloor'']',
             'analytic', 'xva', 'kvaTheirPdFloor', 171, 'double', false,
             'KVA floor on their default probability', 'A probability.',
-            'Sets the lowest default probability that the KVA uses for the counterparty. ORE uses it only when KVA is on.',
+            'Sets the lowest default probability that the KVA uses for the counterparty. A very safe counterparty has a default probability near zero, which would make the capital charge too low, so the floor lifts it. The default is 0.03. ORE uses it only when KVA is on. For example, 0.0003 sets a floor of three basis points.',
             '0.03', 'A number, written with a decimal point.',
             '1.8.4.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaTheirPdFloor'
@@ -3984,7 +3984,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaOurCvaRiskWeight'']',
             'analytic', 'xva', 'kvaOurCvaRiskWeight', 172, 'double', false,
             'KVA CVA risk weight for us', 'A number.',
-            'Sets the CVA risk weight that the KVA uses for us. ORE uses it only when KVA is on.',
+            'Sets the CVA risk weight that the KVA applies to our own credit in the capital part of the calculation. A higher weight gives a larger capital charge and so a larger KVA. The default is 0.05. ORE uses it only when KVA is on. For example, 0.03 lowers the charge.',
             '0.05', 'A number, written with a decimal point.',
             '1.8.4.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaOurCvaRiskWeight'
@@ -4007,7 +4007,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''kvaTheirCvaRiskWeight'']',
             'analytic', 'xva', 'kvaTheirCvaRiskWeight', 173, 'double', false,
             'KVA CVA risk weight for them', 'A number.',
-            'Sets the CVA risk weight that the KVA uses for the counterparty. ORE uses it only when KVA is on.',
+            'Sets the CVA risk weight that the KVA applies to the credit of the counterparty in the capital part of the calculation. A higher weight gives a larger capital charge and so a larger KVA. The default is 0.05. ORE uses it only when KVA is on. For example, 0.08 raises the charge for a counterparty of lower quality.',
             '0.05', 'A number, written with a decimal point.',
             '1.8.4.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.kvaTheirCvaRiskWeight'
@@ -4030,7 +4030,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cvaSensi'']',
             'analytic', 'xva', 'cvaSensi', 174, 'boolean', false,
             'CVA sensitivities', 'A flag. Y computes the CVA sensitivities.',
-            'Decides whether the analytic computes the sensitivity of the CVA to the credit spreads of the counterparties. The CVA sensitivity grid and the shift size set the points and the bump.',
+            'Decides whether the analytic computes the sensitivity of the CVA to the credit spreads of the counterparties, one number for each tenor of the grid. Use it to hedge the credit risk of the CVA with credit default swaps. The CVA sensitivity grid sets the tenors and the shift size sets the bump. The calculation bumps each spread and runs the CVA again, so the run takes longer.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cvaSensi'
@@ -4053,7 +4053,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cvaSensiGrid'']',
             'analytic', 'xva', 'cvaSensiGrid', 175, 'string', false,
             'CVA sensitivity grid', 'A comma-separated list of periods.',
-            'Lists the tenors of the credit spread curve for which the analytic computes the CVA sensitivity. For example, 6M,1Y,2Y,3Y,5Y,10Y. ORE uses it only when CVA sensitivities are on.',
+            'Lists the tenors of the credit spread curve for which the analytic computes the CVA sensitivity. The analytic bumps the spread at each tenor and reports the change of the CVA. For example, 6M,1Y,2Y,3Y,5Y,10Y gives six sensitivities for each counterparty. More tenors give a finer hedge and a longer run. ORE uses it only when CVA sensitivities are on.',
             'None.', 'A comma-separated list of periods such as 1Y,5Y.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cvaSensiGrid'
@@ -4076,7 +4076,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cvaSensiShiftSize'']',
             'analytic', 'xva', 'cvaSensiShiftSize', 176, 'double', false,
             'CVA sensitivity shift size', 'A number.',
-            'Sets the size of the bump of the credit spread in the CVA sensitivity calculation. The default is one basis point. ORE uses it only when CVA sensitivities are on.',
+            'Sets the size of the bump of the credit spread in the CVA sensitivity calculation. The default is 0.0001, which is one basis point. A smaller bump follows the slope of the CVA more closely, and a larger bump is steadier when the result is noisy. ORE uses it only when CVA sensitivities are on.',
             '0.0001', 'A number, written with a decimal point.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.cvaSensiShiftSize'
@@ -4099,7 +4099,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''rawCubeOutput'']',
             'analytic', 'xva', 'rawCubeOutput', 177, 'boolean', false,
             'Write the raw cube report', 'A flag. Y writes the report.',
-            'Decides whether the analytic writes the trade NPV cube as a text report. A value in Raw cube report file also switches the report on and sets its name. Without a name the file is rawcube.csv.',
+            'Decides whether the analytic writes the trade NPV cube as a text report. The cube holds the NPV of each trade on each date and path, so the file is very large for a real portfolio. Use it to check a small test case. A value in Raw cube report file also switches the report on and sets its name. Without a name the file is rawcube.csv.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.rawCubeOutput'
@@ -4122,7 +4122,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''netCubeOutput'']',
             'analytic', 'xva', 'netCubeOutput', 178, 'boolean', false,
             'Write the net cube report', 'A flag. Y writes the report.',
-            'Decides whether the analytic writes the aggregated NPV cube as a text report. A value in Net cube report file also switches the report on and sets its name. Without a name the file is netcube.csv.',
+            'Decides whether the analytic writes the aggregated NPV cube as a text report. The net cube holds the netted and collateralised exposure of each netting set on each date and path. It is smaller than the raw cube. A value in Net cube report file also switches the report on and sets its name. Without a name the file is netcube.csv.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.netCubeOutput'
@@ -4145,7 +4145,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''nettingSetCubeFile'']',
             'analytic', 'xva', 'nettingSetCubeFile', 179, 'string', false,
             'Netting set cube file', 'A file name.',
-            'Names the netting set cube file that the XVA analytic reads when the run has no simulation. It is the file that an earlier simulation wrote. For example, nettingSetCube.csv.gz.',
+            'Names the netting set cube file that the XVA analytic reads when the run has no simulation of its own. It is the file that an earlier simulation wrote, so the XVA step can run again without the cost of the simulation. Use it to try other XVA settings on the same exposures, for example another set of CVA flags or another DIM quantile. For example, nettingSetCube.csv.gz reads the cube from that file in the output path. The cube must come from the same portfolio and the same valuation date.',
             'None.', 'A file name. ORE looks for the file in the output path of the Setup block.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.nettingSetCubeFile'
@@ -4237,7 +4237,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'xvaSensitivity', 'sensitivityConfigFile', 183, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file that sets the sensitivity calculation: the risk factors, the shift types and sizes, and the par conversion. The analytic uses the same file format as the sensitivity analytic. For example, sensitivity.xml.',
+            'Names the XML file that sets the sensitivity calculation: the risk factors, the shift types and sizes, and the par conversion. The analytic uses the same file format as the sensitivity analytic, so a file can serve both. A risk factor that the file does not list gets no XVA sensitivity. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.sensitivityConfigFile'
@@ -4260,7 +4260,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputSensitivityThreshold'']',
             'analytic', 'xvaSensitivity', 'outputSensitivityThreshold', 184, 'double', false,
             'Sensitivity output threshold', 'A number.',
-            'Sets the smallest absolute value that the analytic writes. It drops every finite difference below the number from the output files. A larger value gives smaller files. For example, 0.000001.',
+            'Sets the smallest absolute value that the analytic writes. It drops every finite difference below the number from the output files. A larger value gives smaller files and hides the noise of the finite differences. The default is 0.000001. For example, 0.01 keeps only the sensitivities that change the XVA by one cent or more.',
             '0.000001', 'A number, written with a decimal point.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.outputSensitivityThreshold'
@@ -4283,7 +4283,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''parSensitivity'']',
             'analytic', 'xvaSensitivity', 'parSensitivity', 185, 'boolean', false,
             'Par sensitivities', 'A flag. Y also writes par sensitivities.',
-            'Decides whether the analytic converts the raw sensitivities into sensitivities to par rates and writes them in an extra report. The sensitivity configuration file must have par conversion sections.',
+            'Decides whether the analytic converts the raw sensitivities of the XVA into sensitivities to par rates and writes them in an extra report. Par sensitivities relate to the quotes that a desk hedges with, for example the par rate of a swap, so they are the numbers a trader uses. The sensitivity configuration file must have par conversion sections. The default is Yes.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.parSensitivity'
@@ -4306,7 +4306,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputJacobi'']',
             'analytic', 'xvaSensitivity', 'outputJacobi', 186, 'boolean', false,
             'Write the Jacobi matrices', 'A flag. Y writes the matrices.',
-            'Decides whether the analytic writes the Jacobi matrix and its inverse, which convert between raw and par sensitivities, to files. The two file name parameters set the names.',
+            'Decides whether the analytic writes the Jacobi matrix and its inverse, which convert between raw and par sensitivities, to files. Use the files to check the par conversion, or to convert other raw sensitivities yourself. The two file name parameters set the names. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.outputJacobi'
@@ -4329,7 +4329,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiOutputFile'']',
             'analytic', 'xvaSensitivity', 'jacobiOutputFile', 187, 'string', false,
             'Jacobi matrix file', 'A file name.',
-            'Names the file for the Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the Jacobi matrix, which converts a raw shift into the par shifts of the quotes. It has an effect only when Write the Jacobi matrices is on. The default is xva_sensi_jacobi.csv, written in the output path. Change it when one run writes more than one set of reports.',
             'xva_sensi_jacobi.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.jacobiOutputFile'
@@ -4352,7 +4352,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']',
             'analytic', 'xvaSensitivity', 'jacobiInverseOutputFile', 188, 'string', false,
             'Inverse Jacobi matrix file', 'A file name.',
-            'Names the file for the inverse Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the inverse Jacobi matrix, which converts a par shift into the raw shifts of the market. It has an effect only when Write the Jacobi matrices is on. The default is xva_sensi_jacobi_inverse.csv, written in the output path. Change it when one run writes more than one set of reports.',
             'xva_sensi_jacobi_inverse.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.jacobiInverseOutputFile'
@@ -4375,7 +4375,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputPrecision'']',
             'analytic', 'xvaSensitivity', 'outputPrecision', 189, 'integer', false,
             'Sensitivity output precision', 'A whole number of decimal places.',
-            'Sets the number of decimal places of the numbers in the XVA sensitivity reports. A higher number shows more of each value and makes the files larger.',
+            'Sets the number of decimal places of the numbers in the XVA sensitivity reports. A higher number shows more of each value and makes the files larger. The default is 4. For example, 8 shows small sensitivities such as 0.00001234 in full.',
             '4', 'A whole number of zero or more.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaSensitivity.outputPrecision'
@@ -4490,7 +4490,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''shiftThreshold'']',
             'analytic', 'xvaExplain', 'shiftThreshold', 194, 'double', false,
             'Par rate shift threshold', 'A number.',
-            'Sets the smallest par rate shift that the analytic uses. It ignores every shift below this number. For example, 1e-4 ignores shifts smaller than one basis point.',
+            'Sets the smallest par rate shift that the analytic uses. It ignores every shift below this number, so a small move of the market does not enter the explanation. The default is 0, so the analytic ignores no shift. For example, 1e-4 ignores shifts smaller than one basis point.',
             '0. The analytic ignores no shift.', 'A number, written with a decimal point.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.shiftThreshold'
@@ -4536,7 +4536,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporCalendar'']',
             'analytic', 'xvaExplain', 'mporCalendar', 196, 'string', false,
             'Calendar of the second date', 'A calendar name.',
-            'Names the calendar that ORE uses to make sure that the second evaluation date is a business day. For example, EUR.',
+            'Names the calendar that ORE uses to make sure that the second evaluation date is a business day. If the date falls on a holiday of the calendar, ORE moves it. Use the calendar of the market of the portfolio. For example, EUR. When it is missing, ORE takes the calendar of the base currency.',
             'The calendar of the base currency.', 'A calendar name such as TARGET, EUR or UK.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.mporCalendar'
@@ -4582,7 +4582,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporDate'']',
             'analytic', 'xvaExplain', 'mporDate', 198, 'date', false,
             'Second evaluation date', 'A date.',
-            'Sets the second evaluation date directly, instead of deriving it from the number of days. For example, 2026-03-02.',
+            'Sets the second evaluation date directly, instead of deriving it from the number of days. The analytic explains the change of the XVA between the valuation date and this date. For example, 2026-03-02. When it is missing, ORE derives the date from the number of days and the calendar.',
             'None. ORE derives the date from the number of days.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaExplain.mporDate'
@@ -4605,7 +4605,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''active'']',
             'analytic', 'bacva', 'active', 199, 'boolean', true,
             'Run the BA-CVA analytic', 'A flag. Y runs the analytic.',
-            'Switches the basic approach for the CVA capital (BA-CVA) on or off. The calculation uses the SA-CCR analytic under it to compute the exposures at default.',
+            'Switches the basic approach for the CVA capital (BA-CVA) on or off. The calculation uses the SA-CCR analytic under it to compute the exposures at default, and then applies the supervisory formula of the basic approach. It needs the netting set definitions and the collateral balances.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.active'
@@ -4628,7 +4628,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''simmVersion'']',
             'analytic', 'bacva', 'simmVersion', 200, 'double', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Names the version of the SIMM that the calculation uses for the name and bucket mapping of commodity hedging sets. The run stops if the version is empty.',
+            'Names the version of the SIMM that the calculation uses for the name and bucket mapping of commodity hedging sets. Use the version that the firm has adopted, for example 2.6. The run stops if the version is empty. The parameter is mandatory.',
             'None. The parameter is mandatory.', 'A SIMM version such as 2.4, 2.5A, 2.6 or 2.7.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.simmVersion'
@@ -4651,7 +4651,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''csaFile'']',
             'analytic', 'bacva', 'csaFile', 201, 'string', false,
             'Netting set definitions file', 'A file name.',
-            'Names the XML file with the netting set definitions, as in the XVA analytics. For example, netting.xml.',
+            'Names the XML file with the netting set definitions, as in the XVA analytics. The file holds the margin agreements, such as the threshold and the minimum transfer amount, that the exposure at default depends on. For example, netting.xml. The analytic needs this file here or in the Setup block.',
             'None. The analytic needs this file, here or in the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.csaFile'
@@ -4674,7 +4674,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''collateralBalancesFile'']',
             'analytic', 'bacva', 'collateralBalancesFile', 202, 'string', false,
             'Collateral balances file', 'A file name.',
-            'Names the XML file with the variation margin and initial margin balances of the valuation date. The SA-CCR analytic under the analytic reads the file. For example, collateralbalances.xml.',
+            'Names the XML file with the variation margin and initial margin balances of the valuation date. The SA-CCR analytic under the analytic reads the file. The balances reduce the exposure at default of each netting set. For example, collateralbalances.xml.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.collateralBalancesFile'
@@ -4697,7 +4697,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''nameMappingInputFile'']',
             'analytic', 'bacva', 'nameMappingInputFile', 203, 'string', false,
             'Name mapping file', 'A file name.',
-            'Names the file that maps the names in the portfolio to the SIMM names for the hedging sets. Without it ORE uses the names as they are.',
+            'Names the file that maps the names in the portfolio to the SIMM names for the hedging sets, for example a trade name to an issuer. Use it when the names of the portfolio differ from the names of the SIMM. Without it ORE uses the names as they are.',
             'None. ORE uses the names as they are.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.nameMappingInputFile'
@@ -4720,7 +4720,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''bucketMappingInputFile'']',
             'analytic', 'bacva', 'bucketMappingInputFile', 204, 'string', false,
             'Bucket mapping file', 'A file name.',
-            'Names the file that maps risk factors to the SIMM buckets for the hedging sets. Without it ORE uses the standard buckets.',
+            'Names the file that maps risk factors to the SIMM buckets for the hedging sets. The bucket decides the risk weight that the hedging set gets. Without it ORE uses the standard buckets.',
             'None. ORE uses the standard SIMM buckets.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: bacva.bucketMappingInputFile'
@@ -4789,7 +4789,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''stressConfigFile'']',
             'analytic', 'xvaStress', 'stressConfigFile', 207, 'string', false,
             'Stress configuration file', 'A file name.',
-            'Names the XML file with the stress scenarios in the format of the NPV stress test. For example, stresstest.xml.',
+            'Names the XML file with the stress scenarios in the format of the NPV stress test. The analytic runs the XVA calculation once for each scenario in the file and reports the XVA of each. For example, stresstest.xml. The analytic needs this file.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.stressConfigFile'
@@ -4812,7 +4812,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''writeCubes'']',
             'analytic', 'xvaStress', 'writeCubes', 208, 'boolean', false,
             'Write the cubes under each scenario', 'A flag. Y writes the cubes.',
-            'Decides whether the analytic writes the raw cube and the net cube for each stress scenario. The files can be very large.',
+            'Decides whether the analytic writes the raw cube and the net cube for each stress scenario. The files can be very large, because a cube is written for each scenario. Use it to inspect the exposures of one scenario. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.writeCubes'
@@ -4835,7 +4835,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'xvaStress', 'sensitivityConfigFile', 209, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file that sets the sensitivity calculation, in particular the par conversion that a par stress test needs. Without it, ORE supports no par stress test. For example, sensitivity_stress.xml.',
+            'Names the XML file that sets the sensitivity calculation, in particular the par conversion that a par stress test needs. The conversion turns a shift of par rates into the equivalent shift of the model. Without it, ORE supports no par stress test and the stress file must be in the raw domain. For example, sensitivity_stress.xml.',
             'None. Par stress tests are not supported.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.sensitivityConfigFile'
@@ -4858,7 +4858,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'xvaStress', 'scenarioOutputFile', 210, 'string', false,
             'Stress scenario output file', 'A file name.',
-            'Names the file for the report of the XVA stress scenarios.',
+            'Names the file for the report of the XVA stress scenarios: the XVA under the base market and under each stress scenario, and their differences. The default is xva_stress.csv, written in the output path.',
             'xva_stress.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: xvaStress.scenarioOutputFile'
@@ -4927,7 +4927,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''counterpartyFile'']',
             'analytic', 'sacva', 'counterpartyFile', 213, 'string', false,
             'Counterparty file', 'A file name.',
-            'Names the XML file with the counterparty information that the SA-CVA calculator needs. ORE looks for the file name in the sacva block, then in the bacva block and last in the Setup block.',
+            'Names the XML file with the counterparty information that the SA-CVA calculator needs, such as the credit quality and the sector of each counterparty. ORE looks for the file name in the sacva block, then in the bacva block and last in the Setup block. A value here replaces the others.',
             'The counterparty file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.counterpartyFile'
@@ -4950,7 +4950,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''simulationConfigFile'']',
             'analytic', 'sacva', 'simulationConfigFile', 214, 'string', false,
             'Simulation configuration file', 'A file name.',
-            'Names the XML file with the simulation configuration for the exposure simulation under the analytic. The SA-CVA analytic passes the value on to the simulation analytic that runs under it.',
+            'Names the XML file with the simulation configuration for the exposure simulation under the analytic. The SA-CVA analytic passes the value on to the simulation analytic that runs under it, so the file sets the model, the grid and the number of samples of that simulation.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.simulationConfigFile'
@@ -4996,7 +4996,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''crossAssetModelData'']',
             'analytic', 'sacva', 'crossAssetModelData', 216, 'string', false,
             'Cross asset model file', 'A file name.',
-            'Names the XML file with the cross asset model for the simulation under the analytic. The SA-CVA analytic passes the value on to the simulation analytic that runs under it.',
+            'Names the XML file with the cross asset model for the simulation under the analytic. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. Use it when the model sits in another file than the simulation configuration file.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.crossAssetModelData'
@@ -5019,7 +5019,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''dimModel'']',
             'analytic', 'sacva', 'dimModel', 217, 'string', false,
             'DIM model', 'A DIM model name, for example DeltaVaR.',
-            'Selects the dynamic initial margin model for the XVA analytic under the SA-CVA analytic, and switches DIM on. The names are those of the DIM model parameter of the XVA analytic.',
+            'Selects the dynamic initial margin model for the XVA analytic under the SA-CVA analytic, and switches DIM on. The names are those of the DIM model parameter of the XVA analytic. Without a value the XVA analytic under SA-CVA uses no DIM, and the run is faster.',
             'None. The XVA analytic under SA-CVA uses no DIM.', 'One of the DIM models of the XVA analytic.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.dimModel'
@@ -5042,7 +5042,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''dimScaling'']',
             'analytic', 'sacva', 'dimScaling', 218, 'double', false,
             'DIM scaling', 'A number.',
-            'Sets the scaling factor for the DIM values of the XVA analytic under the SA-CVA analytic. When it is missing, the XVA analytic derives the factor from the initial margin of the collateral balances file.',
+            'Sets the scaling factor for the DIM values of the XVA analytic under the SA-CVA analytic. The factor scales the projected margin so that it agrees with the margin that the firm posts today. When it is missing, the XVA analytic derives the factor from the initial margin of the collateral balances file.',
             'None.', 'A number, written with a decimal point.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.dimScaling'
@@ -5065,7 +5065,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''collateralBalancesFile'']',
             'analytic', 'sacva', 'collateralBalancesFile', 219, 'string', false,
             'Collateral balances file', 'A file name.',
-            'Names the XML file with the current variation margin and initial margin balances. ORE passes it on to the XVA analytic under the SA-CVA analytic, which derives the DIM scaling from it when DIM scaling is missing.',
+            'Names the XML file with the current variation margin and initial margin balances. ORE passes it on to the XVA analytic under the SA-CVA analytic, which derives the DIM scaling from it when DIM scaling is missing. For example, collateralbalances.xml.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.collateralBalancesFile'
@@ -5088,7 +5088,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''storeSensis'']',
             'analytic', 'sacva', 'storeSensis', 220, 'boolean', false,
             'Store sensitivities along the paths', 'A flag. Y stores the sensitivities.',
-            'Decides whether the simulation under the SA-CVA analytic stores sensitivities along the paths, which the DIM model needs. The SA-CVA analytic passes the value on to the simulation analytic that runs under it.',
+            'Decides whether the simulation under the SA-CVA analytic stores sensitivities along the paths, which the DIM model needs. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. Storing makes the cube larger and the run longer. Switch it on only when a DIM model is set.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.storeSensis'
@@ -5111,7 +5111,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''xvaSensiSimMarketParams'']',
             'analytic', 'sacva', 'xvaSensiSimMarketParams', 221, 'string', false,
             'XVA sensitivity simulation market', 'A file name.',
-            'Names the XML file with the simulation market for the XVA sensitivity analytic that runs under the SA-CVA analytic.',
+            'Names the XML file with the simulation market for the XVA sensitivity analytic that runs under the SA-CVA analytic. The file says which risk factors the market holds and on which tenors, so it decides the points of the CVA sensitivities.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.xvaSensiSimMarketParams'
@@ -5134,7 +5134,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''xvaSensiScenarioData'']',
             'analytic', 'sacva', 'xvaSensiScenarioData', 222, 'string', false,
             'XVA sensitivity scenario file', 'A file name.',
-            'Names the XML file with the sensitivity scenarios for the XVA sensitivity analytic that runs under the SA-CVA analytic.',
+            'Names the XML file with the sensitivity scenarios for the XVA sensitivity analytic that runs under the SA-CVA analytic. The file sets the shift of each risk factor, so it decides the size of the bumps behind the CVA sensitivities.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.xvaSensiScenarioData'
@@ -5157,7 +5157,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''saCvaNetSensitivitiesFile'']',
             'analytic', 'sacva', 'saCvaNetSensitivitiesFile', 223, 'string', false,
             'Net sensitivities file', 'A file name.',
-            'Names a file with net sensitivities that ORE passes directly to the SA-CVA calculator. When it is set, ORE computes no sensitivities. For example, sacva_sensitivity.csv.',
+            'Names a file with net sensitivities that ORE passes directly to the SA-CVA calculator. When it is set, ORE computes no sensitivities, so the run is fast. Use it when another system supplies the CVA sensitivities. For example, sacva_sensitivity.csv.',
             'None. ORE computes the sensitivities or reads the CVA sensitivities file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.saCvaNetSensitivitiesFile'
@@ -5203,7 +5203,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''nameMappingInputFile'']',
             'analytic', 'sacva', 'nameMappingInputFile', 225, 'string', false,
             'Name mapping file', 'A file name.',
-            'Names the file that maps the names in the portfolio to the names that the SA-CVA calculator uses. Without it ORE uses the names as they are.',
+            'Names the file that maps the names in the portfolio to the names that the SA-CVA calculator uses, for example the name of an issuer to its sector and bucket. Use it when the names of the portfolio differ from the names of the calculator. Without it ORE uses the names as they are.',
             'None. ORE uses the names as they are.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.nameMappingInputFile'
@@ -5226,7 +5226,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''curveSensiGrid'']',
             'analytic', 'sacva', 'curveSensiGrid', 226, 'string', false,
             'Curve sensitivity grid', 'A comma-separated list of numbers of years.',
-            'Lists the points on the yield curves for which the simulation stores sensitivities. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. For example, 1,2,3,5,7,10,15,20.',
+            'Lists the points on the yield curves for which the simulation stores sensitivities. Each number is a tenor in years. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. For example, 1,2,3,5,7,10,15,20 stores the sensitivity to eight points of each curve.',
             'None.', 'A comma-separated list of numbers of years.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.curveSensiGrid'
@@ -5249,7 +5249,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''vegaSensiGrid'']',
             'analytic', 'sacva', 'vegaSensiGrid', 227, 'string', false,
             'Vega sensitivity grid', 'A comma-separated list of numbers of years.',
-            'Lists the option expiries for which the simulation stores vega sensitivities. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. For example, 1,2,3,5,7,10,15,20.',
+            'Lists the option expiries for which the simulation stores vega sensitivities. The SA-CVA analytic passes the value on to the simulation analytic that runs under it. Each number is an expiry in years. For example, 1,2,3,5,7,10,15,20.',
             'None.', 'A comma-separated list of numbers of years.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sacva.vegaSensiGrid'
@@ -5295,7 +5295,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'zeroToParShift', 'marketConfigFile', 229, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.marketConfigFile'
@@ -5318,7 +5318,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''stressConfigFile'']',
             'analytic', 'zeroToParShift', 'stressConfigFile', 230, 'string', false,
             'Stress configuration file', 'A file name.',
-            'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain or in the par domain. For example, stresstest.xml.',
+            'Names the XML file with the stress scenarios. Each scenario lists the shifts of the risk factors, for example a parallel move of a yield curve by 100 basis points. The same file also decides whether the stress is in the raw domain, which shifts the zero rates, or in the par domain, which shifts the par rates. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.stressConfigFile'
@@ -5341,7 +5341,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'zeroToParShift', 'sensitivityConfigFile', 231, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the sensitivity setup, in particular the par conversion sections. For example, sensitivity.xml.',
+            'Names the XML file with the sensitivity setup, in particular the par conversion sections. The sections list the par instruments that define each curve, so the conversion can map a zero shift to par shifts. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.sensitivityConfigFile'
@@ -5364,7 +5364,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'zeroToParShift', 'pricingEnginesFile', 232, 'string', false,
             'Pricing engines file', 'A file name.',
-            'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the analytic. The file says which model and which engine price each product, so a change here changes the NPVs behind the results. When it is missing, ORE uses the pricing engines file of the Setup block. Use it to run the analytic with other engines than the rest of the run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.pricingEnginesFile'
@@ -5410,7 +5410,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''parShiftsFile'']',
             'analytic', 'zeroToParShift', 'parShiftsFile', 234, 'string', false,
             'Par shifts file', 'A file name.',
-            'Names the file that receives the par rate shifts that the conversion finds. For example, parshifts.csv.',
+            'Names the file that receives the par rate shifts that the conversion finds. Each row is a par instrument with its shift. The default is parshifts.csv, written in the output path. For example, parshifts.csv.',
             'parshifts.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParShift.parShiftsFile'
@@ -5502,7 +5502,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''active'']',
             'analytic', 'sensitivity', 'active', 238, 'boolean', true,
             'Run the sensitivity analytic', 'A flag. Y runs the analytic.',
-            'Switches the sensitivity analytic on or off. Use N to keep the entry in the document without running it.',
+            'Switches the sensitivity analytic on or off. When it is on, it shifts each risk factor of the sensitivity configuration file in turn, revalues the portfolio and writes the change of the NPV for each trade. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.active'
@@ -5525,7 +5525,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'sensitivity', 'marketConfigFile', 239, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.marketConfigFile'
@@ -5548,7 +5548,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'sensitivity', 'sensitivityConfigFile', 240, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file that sets the sensitivity calculation: which risk factors ORE bumps, the shift types and sizes, and the par conversion. For example, sensitivity.xml.',
+            'Names the XML file that sets the sensitivity calculation: which risk factors ORE bumps, the shift types and sizes, and the par conversion. A risk factor that the file does not list gets no sensitivity. The file is the main input of the analytic, and the shift sizes decide the finite differences. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.sensitivityConfigFile'
@@ -5571,7 +5571,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'sensitivity', 'pricingEnginesFile', 241, 'string', false,
             'Pricing engines file', 'A file name.',
-            'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the analytic. The file says which model and which engine price each product, so a change here changes the NPVs behind the results. When it is missing, ORE uses the pricing engines file of the Setup block. Use it to run the analytic with other engines than the rest of the run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.pricingEnginesFile'
@@ -5594,7 +5594,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'sensitivity', 'scenarioOutputFile', 242, 'string', false,
             'Scenario output file', 'A file name.',
-            'Names the file with the result of each scenario: the NPV of the base scenario, the NPV of the shifted scenario and their difference.',
+            'Names the file with the result of each scenario: the NPV of the base scenario, the NPV of the shifted scenario and their difference. Use it to check a sensitivity by hand, because each row is one bump of one risk factor. The default is sensitivity_scenario.csv, written in the output path.',
             'sensitivity_scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.scenarioOutputFile'
@@ -5663,7 +5663,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputSensitivityThreshold'']',
             'analytic', 'sensitivity', 'outputSensitivityThreshold', 245, 'double', false,
             'Sensitivity output threshold', 'A number.',
-            'Sets the smallest absolute value that the analytic writes. It drops every finite difference below the number from the output files. For example, 0.000001.',
+            'Sets the smallest absolute value that the analytic writes. It drops every finite difference below the number from the output files, so a bump that moves no trade leaves no row. A larger value gives smaller files and hides numerical noise. The default is 0.000001. For example, 0.01 keeps only the sensitivities of one cent or more.',
             '0.000001', 'A number, written with a decimal point.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputSensitivityThreshold'
@@ -5778,7 +5778,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivity'']',
             'analytic', 'sensitivity', 'parSensitivity', 250, 'boolean', false,
             'Par sensitivities', 'A flag. Y also computes par sensitivities.',
-            'Decides whether ORE converts the raw sensitivities into sensitivities to par rates after the raw sensitivity analysis. The sensitivity configuration file must have par conversion sections.',
+            'Decides whether ORE converts the raw sensitivities into sensitivities to par rates after the raw sensitivity analysis. Raw sensitivities are to the zero rates of the curves, and par sensitivities are to the quotes that a desk trades, such as the par rate of a swap, so they are the numbers a hedge uses. The sensitivity configuration file must have par conversion sections. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.parSensitivity'
@@ -5801,7 +5801,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivityOutputFile'']',
             'analytic', 'sensitivity', 'parSensitivityOutputFile', 251, 'string', false,
             'Par sensitivity output file', 'A file name.',
-            'Names the file with the par sensitivities. It has an effect only when Par sensitivities is on.',
+            'Names the file with the par sensitivities. It has an effect only when Par sensitivities is on. The default is par_sensitivity.csv, written in the output path. Change it when one run writes more than one set of reports.',
             'par_sensitivity.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.parSensitivityOutputFile'
@@ -5824,7 +5824,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputJacobi'']',
             'analytic', 'sensitivity', 'outputJacobi', 252, 'boolean', false,
             'Write the Jacobi matrices', 'A flag. Y writes the matrices.',
-            'Decides whether ORE writes the Jacobi matrix and its inverse, which convert between raw and par sensitivities, to files.',
+            'Decides whether ORE writes the Jacobi matrix and its inverse, which convert between raw and par sensitivities, to files. Use the files to check the par conversion, or to convert other raw sensitivities yourself. The two file name parameters set the names. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputJacobi'
@@ -5847,7 +5847,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiOutputFile'']',
             'analytic', 'sensitivity', 'jacobiOutputFile', 253, 'string', false,
             'Jacobi matrix file', 'A file name.',
-            'Names the file for the Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the Jacobi matrix, which converts a raw shift into the par shifts of the quotes. It has an effect only when Write the Jacobi matrices is on. The default is jacobi.csv, written in the output path.',
             'jacobi.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.jacobiOutputFile'
@@ -5870,7 +5870,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']',
             'analytic', 'sensitivity', 'jacobiInverseOutputFile', 254, 'string', false,
             'Inverse Jacobi matrix file', 'A file name.',
-            'Names the file for the inverse Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the inverse Jacobi matrix, which converts a par shift into the raw shifts of the market. It has an effect only when Write the Jacobi matrices is on. The default is jacobi_inverse.csv, written in the output path.',
             'jacobi_inverse.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.jacobiInverseOutputFile'
@@ -5985,7 +5985,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''alignPillars'']',
             'analytic', 'sensitivity', 'alignPillars', 259, 'boolean', false,
             'Align the pillars', 'A flag. Y aligns the pillars with the par instruments.',
-            'Decides whether ORE aligns the pillars of the simulation market with those of the par instruments, so that the raw and the par sensitivities refer to the same points.',
+            'Decides whether ORE aligns the pillars of the simulation market with those of the par instruments, so that the raw and the par sensitivities refer to the same points. Without alignment a par instrument can fall between two pillars, and the conversion then interpolates. The default follows Par sensitivities: ORE aligns the pillars when par sensitivities are on.',
             'The value of Par sensitivities. Pillars are aligned when par sensitivities are on.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.alignPillars'
@@ -6031,7 +6031,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''thetaPeriod'']',
             'analytic', 'sensitivity', 'thetaPeriod', 261, 'string', false,
             'Theta period', 'A period, for example 1D.',
-            'Sets the length of the time step for the theta. For example, 1D moves the valuation date by one day. ORE reads it only when Compute theta is on.',
+            'Sets the length of the time step for the theta. The theta is the change of the NPV when the valuation date moves by this period, with the market unchanged. For example, 1D moves the valuation date by one day, and 1W by one week. ORE reads it only when Compute theta is on. The default is 1D.',
             '1D', 'A period such as 1D or 1W.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.thetaPeriod'
@@ -6054,7 +6054,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputPrecision'']',
             'analytic', 'sensitivity', 'outputPrecision', 262, 'integer', false,
             'Sensitivity output precision', 'A whole number of decimal places.',
-            'Sets the number of decimal places of the sensitivities in the output files. A higher number shows more of each value and makes the files larger.',
+            'Sets the number of decimal places of the sensitivities in the output files. A higher number shows more of each value and makes the files larger. The default is 2. For example, 6 shows a small sensitivity such as 0.001234 in full. Raise it when you compare two runs to find a small difference.',
             '2', 'A whole number of zero or more.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.outputPrecision'
@@ -6192,7 +6192,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''foreignCurrencies'']',
             'analytic', 'calibration', 'foreignCurrencies', 268, 'string', false,
             'Foreign currencies', 'A comma-separated list of currency codes.',
-            'Lists the foreign currencies that the calibration covers, besides the base currency. For example, EUR,GBP calibrates the model for euro and sterling. ORE uses it only when the model is HW and the mode is historical.',
+            'Lists the foreign currencies that the calibration covers, besides the base currency. Each currency adds its own interest rate model and an FX model against the base currency. For example, EUR,GBP calibrates the model for euro and sterling. ORE uses it only when the model is HW and the mode is historical. Without a value the calibration covers the base currency only.',
             'None. The calibration covers the base currency only.', 'A comma-separated list of currency codes.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.foreignCurrencies'
@@ -6307,7 +6307,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''meanReversionCalibration'']',
             'analytic', 'calibration', 'meanReversionCalibration', 273, 'boolean', false,
             'Mean reversion calibration', 'A flag. Y calibrates the mean reversion.',
-            'Decides whether ORE calibrates the mean reversion of the principal components that it keeps. The components come from the PCA step or from the PCA input files. ORE uses it only when the model is HW and the mode is historical.',
+            'Decides whether ORE calibrates the mean reversion of the principal components that it keeps. The components come from the PCA step or from the PCA input files. When it is No, the mean reversion stays as the configuration gives it. The basis function number and the kappa bound steer the search. ORE uses it only when the model is HW and the mode is historical.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.meanReversionCalibration'
@@ -6330,7 +6330,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''basisFunctionNumber'']',
             'analytic', 'calibration', 'basisFunctionNumber', 274, 'integer', false,
             'Number of basis functions', 'A whole number.',
-            'Sets the number of basis functions in the mean reversion calibration. For example, 2. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            'Sets the number of basis functions in the mean reversion calibration. More functions let the mean reversion follow a richer shape over time and need more data to stay stable. For example, 2. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
             '0. A run with mean reversion calibration needs a value.', 'A whole number of zero or more.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.basisFunctionNumber'
@@ -6353,7 +6353,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''kappaUpperBound'']',
             'analytic', 'calibration', 'kappaUpperBound', 275, 'double', false,
             'Upper bound of kappa', 'A number.',
-            'Sets the upper bound of the mean reversion speed (kappa) in the mean reversion calibration. For example, 5.0. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            'Sets the upper bound of the mean reversion speed (kappa) in the mean reversion calibration. The search for kappa stays below this bound, so a value that is too low can stop the fit short of the best one. For example, 5.0. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
             '0. A run with mean reversion calibration needs a value.', 'A number, written with a decimal point.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.kappaUpperBound'
@@ -6445,7 +6445,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''startDate'']',
             'analytic', 'calibration', 'startDate', 279, 'date', false,
             'History start date', 'A date.',
-            'Sets the first date of the historical data that the calibration uses. For example, 2019-09-29. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
+            'Sets the first date of the historical data that the calibration uses. A longer history gives steadier parameters and includes older market regimes. For example, 2019-09-29. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
             'None. The parameter is mandatory.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.startDate'
@@ -6468,7 +6468,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''endDate'']',
             'analytic', 'calibration', 'endDate', 280, 'date', false,
             'History end date', 'A date.',
-            'Sets the last date of the historical data that the calibration uses. For example, 2022-09-27. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
+            'Sets the last date of the historical data that the calibration uses. It is usually the valuation date or the last date with market data. For example, 2022-09-27. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
             'None. The parameter is mandatory.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.endDate'
@@ -6560,7 +6560,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'calibration', 'pricingEnginesFile', 284, 'string', false,
             'Pricing engines file for the calibration', 'A file name.',
-            'Names the XML file that sets the pricing engines for the calibration instruments, for example the swaptions that the model is calibrated to. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the calibration instruments, for example the swaptions that the model is calibrated to. The calibration prices these instruments with the engines of the file and moves the model parameters until the prices match the market. Without the file ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pricingEnginesFile'
@@ -6583,7 +6583,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''crossAssetModelData'']',
             'analytic', 'calibration', 'crossAssetModelData', 285, 'string', false,
             'Cross asset model file', 'A file name.',
-            'Names the XML file with the cross asset model data, if it sits in another file than the model configuration file. When it is set, ORE reads the model data from this file and not from the configuration file.',
+            'Names the XML file with the cross asset model data, if it sits in another file than the model configuration file. When it is set, ORE reads the model data from this file and not from the configuration file. Use it to calibrate a model that you keep apart from the rest of the configuration.',
             'The model configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.crossAssetModelData'
@@ -6675,7 +6675,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'zeroToParSensiConversion', 'marketConfigFile', 289, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.marketConfigFile'
@@ -6698,7 +6698,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'zeroToParSensiConversion', 'sensitivityConfigFile', 290, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the sensitivity setup, in particular the par conversion sections. For example, sensitivity.xml.',
+            'Names the XML file with the sensitivity setup, in particular the par conversion sections. The sections list the par instruments that define each curve, so the conversion can map a raw sensitivity to par sensitivities. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.sensitivityConfigFile'
@@ -6721,7 +6721,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'zeroToParSensiConversion', 'pricingEnginesFile', 291, 'string', false,
             'Pricing engines file', 'A file name.',
-            'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the analytic. The file says which model and which engine price each product, so a change here changes the NPVs behind the results. When it is missing, ORE uses the pricing engines file of the Setup block. Use it to run the analytic with other engines than the rest of the run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.pricingEnginesFile'
@@ -6744,7 +6744,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityInputFile'']',
             'analytic', 'zeroToParSensiConversion', 'sensitivityInputFile', 292, 'string', false,
             'Raw sensitivities file', 'A file name.',
-            'Names the CSV file with the raw (zero) sensitivities to convert. The file needs six columns, and the column name parameters set their names. For example, sensitivity.csv.',
+            'Names the CSV file with the raw (zero) sensitivities to convert, for example the result of an earlier sensitivity run or the sensitivities of another system. The file needs six columns, and the column name parameters set their names. For example, sensitivity.csv. The analytic needs this file.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.sensitivityInputFile'
@@ -6767,7 +6767,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputThreshold'']',
             'analytic', 'zeroToParSensiConversion', 'outputThreshold', 293, 'double', false,
             'Output threshold', 'A number.',
-            'Sets the smallest absolute value that the analytic writes. It drops every par sensitivity below the number from the output. For example, 0.000001.',
+            'Sets the smallest absolute value that the analytic writes. It drops every par sensitivity below the number from the output. A larger value gives a smaller file and hides numerical noise. The default is 0.000001. For example, 0.01.',
             '0.000001', 'A number, written with a decimal point.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputThreshold'
@@ -6790,7 +6790,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputFile'']',
             'analytic', 'zeroToParSensiConversion', 'outputFile', 294, 'string', false,
             'Par sensitivities file', 'A file name.',
-            'Names the file that receives the par sensitivities. For example, parconversion_sensitivity.csv.',
+            'Names the file that receives the par sensitivities, one row for each trade, netting set or portfolio and each par instrument. The default is parConversionSensitivity.csv, written in the output path. For example, parconversion_sensitivity.csv.',
             'parConversionSensitivity.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputFile'
@@ -6813,7 +6813,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputJacobi'']',
             'analytic', 'zeroToParSensiConversion', 'outputJacobi', 295, 'boolean', false,
             'Write the Jacobi matrices', 'A flag. Y writes the matrices.',
-            'Decides whether the analytic writes the Jacobi matrix and its inverse to files.',
+            'Decides whether the analytic writes the Jacobi matrix and its inverse to files. The matrices convert between raw and par sensitivities, so you can check the conversion or use them elsewhere. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.outputJacobi'
@@ -6836,7 +6836,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiOutputFile'']',
             'analytic', 'zeroToParSensiConversion', 'jacobiOutputFile', 296, 'string', false,
             'Jacobi matrix file', 'A file name.',
-            'Names the file for the Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the Jacobi matrix, which converts a raw shift into the par shifts of the quotes. It has an effect only when Write the Jacobi matrices is on. The default is parConversionJacobi.csv, written in the output path.',
             'parConversionJacobi.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.jacobiOutputFile'
@@ -6859,7 +6859,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiInverseOutputFile'']',
             'analytic', 'zeroToParSensiConversion', 'jacobiInverseOutputFile', 297, 'string', false,
             'Inverse Jacobi matrix file', 'A file name.',
-            'Names the file for the inverse Jacobi matrix. It has an effect only when Write the Jacobi matrices is on.',
+            'Names the file for the inverse Jacobi matrix, which converts a par shift into the raw shifts of the market. It has an effect only when Write the Jacobi matrices is on. The default is parConversionJacobi_inverse.csv, written in the output path.',
             'parConversionJacobi_inverse.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.jacobiInverseOutputFile'
@@ -6882,7 +6882,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''idColumn'']',
             'analytic', 'zeroToParSensiConversion', 'idColumn', 298, 'string', false,
             'Id column', 'A column name.',
-            'Names the column of the input file with the unique identifier of the trade, netting set or portfolio.',
+            'Names the column of the input file with the unique identifier of the trade, netting set or portfolio. Change it when the file comes from a system that calls the column something else. The default is TradeId. For example, NettingSetId for a file of netting set sensitivities.',
             'TradeId', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.idColumn'
@@ -6905,7 +6905,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''riskFactorColumn'']',
             'analytic', 'zeroToParSensiConversion', 'riskFactorColumn', 299, 'string', false,
             'Risk factor column', 'A column name.',
-            'Names the column of the input file with the identifier of the raw sensitivity. The name must follow the ORE naming convention, for example DiscountCurve/EUR/5/1Y.',
+            'Names the column of the input file with the identifier of the raw sensitivity. The name must follow the ORE naming convention, for example DiscountCurve/EUR/5/1Y. Change the parameter when the file calls the column something else. The default is Factor_1.',
             'Factor_1', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.riskFactorColumn'
@@ -6928,7 +6928,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''deltaColumn'']',
             'analytic', 'zeroToParSensiConversion', 'deltaColumn', 300, 'string', false,
             'Sensitivity column', 'A column name.',
-            'Names the column of the input file with the raw sensitivity of the trade, netting set or portfolio to the risk factor.',
+            'Names the column of the input file with the raw sensitivity of the trade, netting set or portfolio to the risk factor. Change it when the file calls the column something else. The default is Delta.',
             'Delta', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.deltaColumn'
@@ -6951,7 +6951,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''currencyColumn'']',
             'analytic', 'zeroToParSensiConversion', 'currencyColumn', 301, 'string', false,
             'Currency column', 'A column name.',
-            'Names the column of the input file with the currency of the raw sensitivity. It must equal the base currency of the simulation settings.',
+            'Names the column of the input file with the currency of the raw sensitivity. The currency must equal the base currency of the simulation settings. Change the parameter when the file calls the column something else. The default is Currency.',
             'Currency', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.currencyColumn'
@@ -6974,7 +6974,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''baseNpvColumn'']',
             'analytic', 'zeroToParSensiConversion', 'baseNpvColumn', 302, 'string', false,
             'Base NPV column', 'A column name.',
-            'Names the column of the input file with the base NPV of the trade, netting set or portfolio.',
+            'Names the column of the input file with the base NPV of the trade, netting set or portfolio. Change it when the file calls the column something else. The default is Base NPV.',
             'Base NPV', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.baseNpvColumn'
@@ -6997,7 +6997,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''shiftSizeColumn'']',
             'analytic', 'zeroToParSensiConversion', 'shiftSizeColumn', 303, 'string', false,
             'Shift size column', 'A column name.',
-            'Names the column of the input file with the shift size that ORE applied to compute the raw sensitivity. It must agree with the sensitivity configuration.',
+            'Names the column of the input file with the shift size that ORE applied to compute the raw sensitivity. The value must agree with the sensitivity configuration, because the conversion rescales by it. Change the parameter when the file calls the column something else. The default is ShiftSize_1.',
             'ShiftSize_1', 'A column name.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: zeroToParSensiConversion.shiftSizeColumn'
@@ -7020,7 +7020,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''active'']',
             'analytic', 'saccr', 'active', 304, 'boolean', true,
             'Run the SA-CCR analytic', 'A flag. Y runs the analytic.',
-            'Switches the standardised approach for the counterparty credit risk capital (SA-CCR) on or off. The calculation needs the netting set definitions and the collateral balances.',
+            'Switches the standardised approach for the counterparty credit risk capital (SA-CCR) on or off. The calculation gives the exposure at default of each netting set, as the replacement cost plus the potential future exposure, times a factor. It needs the netting set definitions and the collateral balances.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.active'
@@ -7043,7 +7043,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''csaFile'']',
             'analytic', 'saccr', 'csaFile', 305, 'string', false,
             'Netting set definitions file', 'A file name.',
-            'Names the XML file with the netting set definitions, as in the XVA analytics. ORE looks for the file name in the saccr block, then in the bacva block. For example, netting.xml.',
+            'Names the XML file with the netting set definitions, as in the XVA analytics. The file holds the margin agreements, such as the threshold and the minimum transfer amount, that the exposure at default depends on. ORE looks for the file name in the saccr block, then in the bacva block. For example, netting.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.csaFile'
@@ -7066,7 +7066,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''collateralBalancesFile'']',
             'analytic', 'saccr', 'collateralBalancesFile', 306, 'string', false,
             'Collateral balances file', 'A file name.',
-            'Names the XML file with the variation margin and initial margin balances of the valuation date. ORE looks for the file name in the saccr block, then in the bacva block. For example, collateralbalances.xml.',
+            'Names the XML file with the variation margin and initial margin balances of the valuation date. The balances reduce the replacement cost and the exposure at default of each netting set. ORE looks for the file name in the saccr block, then in the bacva block. For example, collateralbalances.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.collateralBalancesFile'
@@ -7089,7 +7089,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''simmVersion'']',
             'analytic', 'saccr', 'simmVersion', 307, 'double', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Names the version of the SIMM that the calculation uses for the name and bucket mapping of commodity hedging sets. The run stops if the version is empty.',
+            'Names the version of the SIMM that the calculation uses for the name and bucket mapping of commodity hedging sets. Use the version that the firm has adopted, for example 2.6. The run stops if the version is empty. The parameter is mandatory.',
             'None. The parameter is mandatory.', 'A SIMM version such as 2.4, 2.5A, 2.6 or 2.7.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.simmVersion'
@@ -7112,7 +7112,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''counterpartyFile'']',
             'analytic', 'saccr', 'counterpartyFile', 308, 'string', false,
             'Counterparty file', 'A file name.',
-            'Names the XML file with the counterparty information for the SA-CCR calculation. A value here replaces the file of the Setup block.',
+            'Names the XML file with the counterparty information for the SA-CCR calculation, such as the credit quality and the sector of each counterparty. A value here replaces the file of the Setup block, so one run can use a different list of counterparties for the capital calculation.',
             'The counterparty file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.counterpartyFile'
@@ -7135,7 +7135,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''nameMappingInputFile'']',
             'analytic', 'saccr', 'nameMappingInputFile', 309, 'string', false,
             'Name mapping file', 'A file name.',
-            'Names the file that maps the names in the portfolio to the SIMM names for the commodity hedging sets. Without it ORE uses the names as they are.',
+            'Names the file that maps the names in the portfolio to the SIMM names for the commodity hedging sets. Use it when the names of the portfolio differ from the names of the SIMM. Without it ORE uses the names as they are.',
             'None. ORE uses the names as they are.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.nameMappingInputFile'
@@ -7158,7 +7158,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''bucketMappingInputFile'']',
             'analytic', 'saccr', 'bucketMappingInputFile', 310, 'string', false,
             'Bucket mapping file', 'A file name.',
-            'Names the file that maps risk factors to the SIMM buckets for the commodity hedging sets. Without it ORE uses the standard buckets.',
+            'Names the file that maps risk factors to the SIMM buckets for the commodity hedging sets. The bucket decides the supervisory factor that the hedging set gets. Without it ORE uses the standard buckets.',
             'None. ORE uses the standard SIMM buckets.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: saccr.bucketMappingInputFile'
@@ -7181,7 +7181,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''smrc'']/Parameter[@name=''active'']',
             'analytic', 'smrc', 'active', 311, 'boolean', true,
             'Run the SMRC analytic', 'A flag. Y runs the analytic.',
-            'Switches the basic standardised market risk capital calculation (SMRC) on or off. It needs no inputs besides the Setup block.',
+            'Switches the basic standardised market risk capital calculation (SMRC) on or off. The calculation applies the standardised formula to the sensitivities of the portfolio and gives the capital charge for market risk. It needs no inputs besides the Setup block.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: smrc.active'
@@ -7227,7 +7227,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''riskFactorFileName'']',
             'analytic', 'portfolioDetails', 'riskFactorFileName', 313, 'string', false,
             'Risk factor report file', 'A file name.',
-            'Names the file with the report of the risk factors of the portfolio.',
+            'Names the file with the report of the risk factors of the portfolio: one row for each risk factor that the trades depend on. Use it to find the market data that a run needs before you load it. The default is risk_factors.csv, written in the output path.',
             'risk_factors.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.riskFactorFileName'
@@ -7250,7 +7250,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''marketObjectFileName'']',
             'analytic', 'portfolioDetails', 'marketObjectFileName', 314, 'string', false,
             'Market object report file', 'A file name.',
-            'Names the file with the report of the market objects that the portfolio needs.',
+            'Names the file with the report of the market objects that the portfolio needs, for example the yield curves, the volatility surfaces and the FX spots. Use it to check that todays market holds everything the trades use. The default is market_objects.csv, written in the output path.',
             'market_objects.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.marketObjectFileName'
@@ -7273,7 +7273,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''version'']',
             'analytic', 'portfolioDetails', 'version', 315, 'string', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Names a SIMM version. The CRIF generation uses it as its last choice, when the crif block, the saccr block and the simm block have no version.',
+            'Names a SIMM version. The CRIF generation uses it as its last choice, when the crif block, the saccr block and the simm block have no version. The portfolio details analytic itself computes no margin. For example, 2.6.',
             'None.', 'A SIMM version such as 2.6.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.version'
@@ -7296,7 +7296,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''portfolio_details_configuration'']',
             'analytic', 'portfolioDetails', 'portfolio_details_configuration', 316, 'string', false,
             'Details configuration', 'A name.',
-            'Names the configuration of the portfolio details. ORE reads the value, and no analytic of release 1.8.17.0 uses it.',
+            'Names the configuration of the portfolio details. ORE reads the value, and no analytic of release 1.8.17.0 uses it. The default is BASIC. Leave it as it is.',
             'BASIC', 'A name such as BASIC.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.portfolio_details_configuration'
@@ -7319,7 +7319,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''active'']',
             'analytic', 'stress', 'active', 317, 'boolean', true,
             'Run the stress analytic', 'A flag. Y runs the analytic.',
-            'Switches the stress analytic on or off. Use N to keep the entry in the document without running it.',
+            'Switches the stress analytic on or off. When it is on, it revalues the portfolio under each scenario of the stress configuration file and writes the change of the NPV for each trade. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.active'
@@ -7342,7 +7342,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''precision'']',
             'analytic', 'stress', 'precision', 318, 'integer', false,
             'Output precision', 'A whole number of decimal places.',
-            'Sets the number of decimal places of the numbers in the stress result file. For example, 6.',
+            'Sets the number of decimal places of the numbers in the stress result file. A higher number shows more of each value and makes the file larger. The default is 2. For example, 6 shows a small change such as 0.001234 in full.',
             '2', 'A whole number of zero or more.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.precision'
@@ -7365,7 +7365,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'stress', 'marketConfigFile', 319, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml. The analytic replaces the market of the valuation date with this simulation market and applies the stress scenarios to it.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml. The analytic replaces the market of the valuation date with this simulation market and applies the stress scenarios to it.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.marketConfigFile'
@@ -7411,7 +7411,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'stress', 'pricingEnginesFile', 321, 'string', false,
             'Pricing engines file', 'A file name.',
-            'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the analytic. The file says which model and which engine price each product, so a change here changes the NPVs behind the results. When it is missing, ORE uses the pricing engines file of the Setup block. Use it to run the analytic with other engines than the rest of the run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.pricingEnginesFile'
@@ -7434,7 +7434,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'stress', 'scenarioOutputFile', 322, 'string', false,
             'Stress result file', 'A file name.',
-            'Names the file with the result of each stress scenario: the NPV of the base scenario, the NPV of the stressed scenario and their difference. For example, stresstest.csv.',
+            'Names the file with the result of each stress scenario: the NPV of the base scenario, the NPV of the stressed scenario and their difference. Each row is one trade under one scenario. The default is stress.csv, written in the output path. For example, stresstest.csv.',
             'stress.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioOutputFile'
@@ -7457,7 +7457,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''outputThreshold'']',
             'analytic', 'stress', 'outputThreshold', 323, 'double', false,
             'Output threshold', 'A number.',
-            'Sets the smallest absolute NPV change that the analytic writes. It drops every change below the number from the output. For example, 0.000001.',
+            'Sets the smallest absolute NPV change that the analytic writes. It drops every change below the number from the output, so a scenario that moves a trade by less than the number leaves no row. The default is 0, so the analytic writes every change. For example, 0.000001.',
             '0. The analytic writes every change.', 'A number, written with a decimal point.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.outputThreshold'
@@ -7480,7 +7480,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''generateCashflows'']',
             'analytic', 'stress', 'generateCashflows', 324, 'boolean', false,
             'Generate cash flows', 'A flag. Y writes the cash flows under each scenario.',
-            'Decides whether the analytic also writes the cash flows of the trades under each stress scenario, to the cash flow output file.',
+            'Decides whether the analytic also writes the cash flows of the trades under each stress scenario, to the cash flow output file. Use it to see how a scenario changes the amounts and the dates of the flows, for example when a floating rate fixes higher. The file is large for a big portfolio. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.generateCashflows'
@@ -7503,7 +7503,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioCashflowOutputFile'']',
             'analytic', 'stress', 'scenarioCashflowOutputFile', 325, 'string', false,
             'Stress cash flow file', 'A file name.',
-            'Names the file with the cash flows under each stress scenario. It has an effect only when Generate cash flows is on. For example, stresstest_flows.csv.',
+            'Names the file with the cash flows under each stress scenario. It has an effect only when Generate cash flows is on. The default is stress_cashflows.csv, written in the output path. For example, stresstest_flows.csv.',
             'stress_cashflows.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioCashflowOutputFile'
@@ -7526,7 +7526,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'stress', 'sensitivityConfigFile', 326, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the sensitivity setup, which a par stress test needs for the conversion of the par shifts. Without it ORE supports no par stress test.',
+            'Names the XML file with the sensitivity setup, which a par stress test needs for the conversion of the par shifts. The conversion turns a shift of par rates into the equivalent shift of the model rates. Without it ORE supports no par stress test and the stress file must be in the raw domain.',
             'None. Par stress tests are not supported.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.sensitivityConfigFile'
@@ -7549,7 +7549,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressZeroScenarioDataFile'']',
             'analytic', 'stress', 'stressZeroScenarioDataFile', 327, 'string', false,
             'Raw domain stress file', 'A file name.',
-            'Names the file that receives the stress test definition in the raw domain, when the stress test file is in the par domain. The converted file can be used again without a new conversion. For example, zeroStressScenarioData.xml.',
+            'Names the file that receives the stress test definition in the raw domain, when the stress test file is in the par domain. The converted file can be used again without a new conversion, which saves the cost of the par conversion. For example, zeroStressScenarioData.xml.',
             'stress_ZeroStressData.xml. The analytic writes the file only for a stress test in the par domain.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.stressZeroScenarioDataFile'
@@ -7572,7 +7572,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioFile'']',
             'analytic', 'stress', 'scenarioFile', 328, 'string', false,
             'Scenario input file', 'A file name.',
-            'Names a file with market scenarios that ORE reads as stress scenarios. For example, StressScenarios/stress_scenarios.csv.',
+            'Names a file with market scenarios that ORE reads as stress scenarios, for example scenarios that an earlier run wrote or a historical event that you saved. For example, StressScenarios/stress_scenarios.csv. The scenarios come in addition to those of the stress configuration file.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.2.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.scenarioFile'
@@ -7595,7 +7595,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''optimiseRiskFactors'']',
             'analytic', 'stress', 'optimiseRiskFactors', 329, 'boolean', false,
             'Optimise the risk factors', 'A flag. Y limits the par conversion to the risk factors that matter.',
-            'Decides whether the par stress conversion limits itself to the risk factors that the stress scenarios shift. It makes the conversion faster.',
+            'Decides whether the par stress conversion limits itself to the risk factors that the stress scenarios shift. A par stress test converts par shifts into raw shifts, and the conversion handles every risk factor of the market unless this is on. It makes the conversion faster. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stress.optimiseRiskFactors'
@@ -7779,7 +7779,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''active'']',
             'analytic', 'parametricVar', 'active', 337, 'boolean', true,
             'Run the parametric VaR analytic', 'A flag. Y runs the analytic.',
-            'Switches the parametric VaR analytic on or off. Use N to keep the entry in the document without running it.',
+            'Switches the parametric VaR analytic on or off. When it is on, the run computes the value at risk from the sensitivities and a covariance matrix of the risk factors, under the assumption that the returns follow a normal distribution. It is fast, because it revalues nothing. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.3.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.active'
@@ -7802,7 +7802,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''sensitivityInputFile'']',
             'analytic', 'parametricVar', 'sensitivityInputFile', 338, 'string', false,
             'Sensitivities file', 'A comma-separated list of file names.',
-            'Lists the files with the delta, vega and gamma sensitivities and the cross gamma, as ORE''s sensitivity analytic writes them. For example, ../Output/sensitivity.csv,../Output/crossgamma.csv.',
+            'Lists the files with the delta, vega and gamma sensitivities and the cross gamma, as the sensitivity analytic of ORE writes them. The analytic reads the sensitivities from these files and does not compute them, so run the sensitivity analytic first or supply the files from another system. Separate the names with a comma. For example, ../Output/sensitivity.csv,../Output/crossgamma.csv.',
             'None. The analytic needs the sensitivities.', 'A comma-separated list of file names.',
             '1.8.3.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.sensitivityInputFile'
@@ -7894,7 +7894,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''portfolioFilter'']',
             'analytic', 'parametricVar', 'portfolioFilter', 342, 'string', false,
             'Portfolio filter', 'A regular expression.',
-            'Limits the VaR to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio. For example, PF1|PF2 selects the portfolios PF1 and PF2. The historical simulation VaR analytic has the same parameter.',
+            'Limits the VaR to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio. Use it to compute the VaR of one desk or one book from a portfolio file that holds many. For example, PF1|PF2 selects the portfolios PF1 and PF2. The historical simulation VaR analytic has the same parameter.',
             'None. The analytic uses the whole portfolio.', 'A regular expression.',
             '1.8.3.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.portfolioFilter'
@@ -7940,7 +7940,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''outputFile'']',
             'analytic', 'parametricVar', 'outputFile', 344, 'string', false,
             'VaR report file', 'A file name.',
-            'Names the file with the main VaR report. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first. For example, var.csv.',
+            'Names the file with the main VaR report: one row for each portfolio, risk class and risk type with the VaR at each quantile. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first, so set it there when you run both. For example, var.csv.',
             'var.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.3.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.outputFile'
@@ -7963,7 +7963,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''SalvagingAlgorithm'']',
             'analytic', 'parametricVar', 'SalvagingAlgorithm', 345, 'string', false,
             'Salvaging algorithm', 'None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal.',
-            'Selects the algorithm that repairs a covariance matrix that is not positive semi-definite. None does not repair it. The other five names are repair methods.',
+            'Selects the algorithm that repairs a covariance matrix that is not positive semi-definite. Such a matrix arises when the correlations come from different sources or from too few observations, and the VaR needs a valid matrix. None does not repair it, and the run then stops on an invalid matrix. The other five names are repair methods. The default is Spectral, which replaces the negative eigenvalues by zero.',
             'Spectral', 'One of None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parametricVar.SalvagingAlgorithm'
@@ -8032,7 +8032,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''active'']',
             'analytic', 'simm', 'active', 348, 'boolean', true,
             'Run the SIMM analytic', 'A flag. Y runs the analytic.',
-            'Switches the ISDA Standard Initial Margin Model (SIMM) on or off. The analytic computes the initial margin from sensitivities in the Common Risk Interchange Format (CRIF).',
+            'Switches the ISDA Standard Initial Margin Model (SIMM) on or off. The analytic computes the initial margin from sensitivities in the Common Risk Interchange Format (CRIF): it applies the risk weights and the correlations of the chosen SIMM version to the sensitivities of each product class and adds the results. Use it to estimate the margin that a bilateral agreement asks for.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.active'
@@ -8055,7 +8055,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''version'']',
             'analytic', 'simm', 'version', 349, 'string', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Selects the version of the SIMM. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5. The run stops if no version is set.',
+            'Selects the version of the SIMM. ISDA publishes a new version about once a year, and the firm and its counterparties must use the same one. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5. For example, 2.6 applies the risk weights of that version. The run stops if no version is set.',
             'None. The parameter is mandatory.', 'A SIMM version such as 2.6.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.version'
@@ -8147,7 +8147,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''mporDays'']',
             'analytic', 'simm', 'mporDays', 353, 'integer', false,
             'Margin period of risk in days', '1 or 10.',
-            'Sets the margin period of risk of the SIMM. ORE supports 1 and 10 for the versions from 2.2 onwards and only 10 for the earlier versions.',
+            'Sets the margin period of risk of the SIMM, in days. The SIMM scales the risk weights to the period over which the portfolio can move before a defaulted counterparty is closed out. ORE supports 1 and 10 for the versions from 2.2 onwards and only 10 for the earlier versions. The default is 10, the period for bilateral margin.',
             '10', '1 or 10.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.mporDays'
@@ -8170,7 +8170,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''simmCalibration'']',
             'analytic', 'simm', 'simmCalibration', 354, 'string', false,
             'SIMM calibration file', 'A file name.',
-            'Names a file with the calibration of the SIMM, that is the risk weights and the correlations. When the file exists, it replaces the calibration of the SIMM version above.',
+            'Names a file with the calibration of the SIMM, that is the risk weights and the correlations. When the file exists, it replaces the calibration of the SIMM version above. Use it to test a calibration that ISDA has proposed but not yet released, or a calibration of your own. Without it ORE uses the calibration of the version.',
             'None. ORE uses the calibration of the version.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.simmCalibration'
@@ -8193,7 +8193,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''writeIntermediateReports'']',
             'analytic', 'simm', 'writeIntermediateReports', 355, 'boolean', false,
             'Write the intermediate reports', 'A flag. Y writes the reports.',
-            'Decides whether the SIMM analytic writes its intermediate reports, which show the steps from the CRIF to the margin.',
+            'Decides whether the SIMM analytic writes its intermediate reports, which show the steps from the CRIF to the margin: the sensitivities by risk class, the weighted sensitivities, and the margin of each bucket. Use them to follow how the margin builds up, or to find which bucket drives it. The default is Yes.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.writeIntermediateReports'
@@ -8216,7 +8216,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrencyCall'']',
             'analytic', 'simm', 'calculationCurrencyCall', 356, 'string', false,
             'Calculation currency to call', 'A currency code, for example USD.',
-            'Sets a separate calculation currency for the margin that we call. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets a separate calculation currency for the margin that we call. A credit support annex can set one currency for what we call and another for what we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrencyCall'
@@ -8239,7 +8239,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrencyPost'']',
             'analytic', 'simm', 'calculationCurrencyPost', 357, 'string', false,
             'Calculation currency to post', 'A currency code, for example USD.',
-            'Sets a separate calculation currency for the margin that we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets a separate calculation currency for the margin that we post. A credit support annex can set one currency for what we call and another for what we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrencyPost'
@@ -8262,7 +8262,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''resultCurrency'']',
             'analytic', 'simm', 'resultCurrency', 358, 'string', false,
             'Result currency', 'A currency code, for example USD.',
-            'Sets the currency of the SIMM amounts in the report. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets the currency of the SIMM amounts in the report. ORE converts the margin from the calculation currency into this currency at the spot rate of the valuation date. For example, EUR reports the margin in euro. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency to call.', 'A currency code of three letters, for example USD.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.resultCurrency'
@@ -8331,7 +8331,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''bucketMappingInputFile'']',
             'analytic', 'simm', 'bucketMappingInputFile', 361, 'string', false,
             'Bucket mapping file', 'A file name.',
-            'Names the file that maps risk factors to the SIMM buckets. Without it ORE uses the standard buckets. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
+            'Names the file that maps risk factors to the SIMM buckets. The bucket decides the risk weight and the correlation that a sensitivity gets. Without it ORE uses the standard buckets. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
             'None. ORE uses the standard SIMM buckets.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.bucketMappingInputFile'
@@ -8423,7 +8423,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrency'']',
             'analytic', 'imschedule', 'calculationCurrency', 365, 'string', false,
             'Calculation currency', 'A currency code, for example USD.',
-            'Sets the currency of the calculation. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops. For example, USD.',
+            'Sets the currency of the calculation. The schedule approach states the margin in this currency, and the credit support annex usually names it. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops. For example, USD.',
             'The base currency. The run stops if neither is set.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrency'
@@ -8446,7 +8446,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''version'']',
             'analytic', 'imschedule', 'version', 366, 'string', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Selects the version for the CRIF. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Selects the version for the CRIF. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops. Use the version that the firm has adopted. The default is the version of the simm block.',
             'The version of the simm block.', 'A SIMM version such as 2.6.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.version'
@@ -8469,7 +8469,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrencyCall'']',
             'analytic', 'imschedule', 'calculationCurrencyCall', 367, 'string', false,
             'Calculation currency to call', 'A currency code, for example USD.',
-            'Sets a separate calculation currency for the margin that we call. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets a separate calculation currency for the margin that we call. A credit support annex can set one currency for what we call and another for what we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrencyCall'
@@ -8492,7 +8492,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrencyPost'']',
             'analytic', 'imschedule', 'calculationCurrencyPost', 368, 'string', false,
             'Calculation currency to post', 'A currency code, for example USD.',
-            'Sets a separate calculation currency for the margin that we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets a separate calculation currency for the margin that we post. A credit support annex can set one currency for what we call and another for what we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrencyPost'
@@ -8515,7 +8515,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''resultCurrency'']',
             'analytic', 'imschedule', 'resultCurrency', 369, 'string', false,
             'Result currency', 'A currency code, for example USD.',
-            'Sets the currency of the amounts in the report. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Sets the currency of the amounts in the report. ORE converts the margin from the calculation currency into this currency at the spot rate of the valuation date. For example, EUR reports the margin in euro. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'The calculation currency to call.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.resultCurrency'
@@ -8538,7 +8538,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''reportingCurrency'']',
             'analytic', 'imschedule', 'reportingCurrency', 370, 'string', false,
             'Reporting currency', 'A currency code, for example USD.',
-            'Adds two columns to the report: the reporting currency and the amount converted into it. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'Adds two columns to the report: the reporting currency and the amount converted into it. Use it to see the margin in a second currency next to the calculation currency, for example the currency of the group accounts. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
             'None. The report has no extra columns.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.reportingCurrency'
@@ -8676,7 +8676,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''active'']',
             'analytic', 'scenario', 'active', 376, 'boolean', true,
             'Run the scenario analytic', 'A flag. Y runs the analytic.',
-            'Switches the scenario analytic on or off. It is a utility that exports the base scenario of the simulation market to a file. The P&L calculation uses it too.',
+            'Switches the scenario analytic on or off. It is a utility that exports the base scenario of the simulation market to a file: the value of every risk factor on the valuation date. The P&L calculation uses it too, to get the scenario of each date. Use it to check what the simulation market holds.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.active'
@@ -8699,7 +8699,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''simulationConfigFile'']',
             'analytic', 'scenario', 'simulationConfigFile', 377, 'string', false,
             'Simulation configuration file', 'A file name.',
-            'Names the XML file with the simulation market whose base scenario the analytic exports. For example, simulation.xml.',
+            'Names the XML file with the simulation market whose base scenario the analytic exports. The market lists the risk factors, so the file decides which values the scenario holds. For example, simulation.xml. The analytic needs this file.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.simulationConfigFile'
@@ -8722,7 +8722,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'scenario', 'scenarioOutputFile', 378, 'string', false,
             'Scenario output file', 'A file name.',
-            'Names the file that receives the base scenario. For example, scenario.csv.',
+            'Names the file that receives the base scenario: one row for each risk factor with its value on the valuation date. The default is scenario.csv, written in the output path. For example, scenario.csv.',
             'scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenario.scenarioOutputFile'
@@ -8745,7 +8745,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''active'']',
             'analytic', 'pnlExplain', 'active', 379, 'boolean', true,
             'Run the P&L explain analytic', 'A flag. Y runs the analytic.',
-            'Switches the P&L explain analytic on or off. When it is on, the run explains the P&L between two valuation dates by the raw or par sensitivities and the moves of the risk factors.',
+            'Switches the P&L explain analytic on or off. When it is on, the run explains the P&L between two valuation dates by the raw or par sensitivities and the moves of the risk factors: the delta effect, the gamma effect and what remains unexplained. Use it to check that the risk numbers account for the P&L.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.active'
@@ -8837,7 +8837,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''parSensitivity'']',
             'analytic', 'pnlExplain', 'parSensitivity', 383, 'boolean', false,
             'Use par sensitivities', 'A flag. Y explains the P&L with par sensitivities.',
-            'Decides whether the explanation uses par sensitivities. With N, it uses the raw sensitivities. Par rate shifts between the two dates come from the zero to par shift analytic.',
+            'Decides whether the explanation uses par sensitivities. With N, it uses the raw sensitivities and the moves of the zero rates. With Y, it uses the par sensitivities and the par rate shifts between the two dates, which come from the zero to par shift analytic. Use Y when the desk thinks in par rates. The default is No.',
             'No. The explanation uses raw sensitivities.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.parSensitivity'
@@ -8883,7 +8883,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsMporFile'']',
             'analytic', 'pnlExplain', 'conventionsMporFile', 385, 'string', false,
             'Conventions at the second date', 'A file name.',
-            'Names the XML file with the conventions for the second valuation date. The name conventionsPnlFile is another name for the same parameter. The P&L analytic has the same parameter.',
+            'Names the XML file with the conventions for the second valuation date. Use it when the market conventions changed between the two dates, for example after a move to a new reference rate. The name conventionsPnlFile is another name for the same parameter. Without it ORE uses the conventions of the Setup block. The P&L analytic has the same parameter.',
             'The conventions of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.conventionsMporFile'
@@ -8929,7 +8929,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''outputFileName'']',
             'analytic', 'pnlExplain', 'outputFileName', 387, 'string', false,
             'P&L explain report file', 'A file name.',
-            'Names the file with the P&L explain report. For example, pnl_explain.csv.',
+            'Names the file with the P&L explain report: one row for each trade, or for each risk factor when the risk factor level report is on, with the explained parts and the remainder. The default is pnl_explain.csv, written in the output path. For example, pnl_explain.csv.',
             'pnl_explain.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.outputFileName'
@@ -8998,7 +8998,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporOverlappingPeriods'']',
             'analytic', 'pnlExplain', 'mporOverlappingPeriods', 390, 'boolean', false,
             'Overlapping periods', 'A flag. Y uses overlapping periods.',
-            'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. The P&L analytic has the same parameter.',
+            'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. With overlapping periods each scenario starts one day after the one before, which gives many scenarios from a short history. The P&L analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.mporOverlappingPeriods'
@@ -9044,7 +9044,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsPnlOverride'']',
             'analytic', 'pnlExplain', 'conventionsPnlOverride', 392, 'string', false,
             'Conventions override at the second date', 'A file name.',
-            'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. The P&L analytic has the same parameter.',
+            'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. Use it to change only the conventions that differ between the two dates and keep the rest. The file needs only the entries that change. The P&L analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.conventionsPnlOverride'
@@ -9090,7 +9090,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''riskFactorLevelReporting'']',
             'analytic', 'pnlExplain', 'riskFactorLevelReporting', 394, 'boolean', false,
             'Report by risk factor', 'A flag. Y breaks the explanation down by risk factor.',
-            'Decides whether the explanation shows the P&L for each risk factor.',
+            'Decides whether the explanation shows the P&L for each risk factor. Use it to see which move of the market caused which part of the P&L. The report is larger, because it has a row for each trade and risk factor. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.riskFactorLevelReporting'
@@ -9113,7 +9113,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''portfolioFilter'']',
             'analytic', 'pnlExplain', 'portfolioFilter', 395, 'string', false,
             'Portfolio filter', 'A regular expression.',
-            'Limits the explanation to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio.',
+            'Limits the explanation to the trades whose portfolio id matches the regular expression. Use it to explain the P&L of one desk or one book from a portfolio file that holds many. Without it, the analytic uses the whole portfolio. For example, PF1 selects the portfolio PF1.',
             'None. The analytic uses the whole portfolio.', 'A regular expression.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.portfolioFilter'
@@ -9136,7 +9136,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''returnConfigFile'']',
             'analytic', 'pnlExplain', 'returnConfigFile', 396, 'string', false,
             'Return configuration file', 'A file name.',
-            'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor between the two dates.',
+            'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor between the two dates, for example as an absolute difference or as a relative or log return. Without the file ORE uses its standard return calculation.',
             'None. ORE uses its standard return calculation.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.returnConfigFile'
@@ -9159,7 +9159,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''historicalScenarioFile'']',
             'analytic', 'pnlExplain', 'historicalScenarioFile', 397, 'string', false,
             'Historical scenario file', 'A file name.',
-            'Names the CSV file with the market scenarios of the two dates, if the explanation reads them from a file.',
+            'Names the CSV file with the market scenarios of the two dates, if the explanation reads them from a file. The explanation then takes the moves of the risk factors from the file and does not build them from market data of the two dates. Without it the analytic uses the market data of the two dates.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnlExplain.historicalScenarioFile'
@@ -9182,7 +9182,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''active'']',
             'analytic', 'pnl', 'active', 398, 'boolean', true,
             'Run the P&L analytic', 'A flag. Y runs the analytic.',
-            'Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between the valuation date and a second valuation date. It needs market data for both dates.',
+            'Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between the valuation date and a second valuation date: the change of the NPV of each trade. It needs market data for both dates.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.active'
@@ -9274,7 +9274,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsMporFile'']',
             'analytic', 'pnl', 'conventionsMporFile', 402, 'string', false,
             'Conventions at the second date', 'A file name.',
-            'Names the XML file with the conventions for the second valuation date. The name conventionsPnlFile is another name for the same parameter. The P&L explain analytic has the same parameter.',
+            'Names the XML file with the conventions for the second valuation date. Use it when the market conventions changed between the two dates, for example after a move to a new reference rate. The name conventionsPnlFile is another name for the same parameter. Without it ORE uses the conventions of the Setup block. The P&L explain analytic has the same parameter.',
             'The conventions of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.conventionsMporFile'
@@ -9343,7 +9343,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''outputFileName'']',
             'analytic', 'pnl', 'outputFileName', 405, 'string', false,
             'P&L report file', 'A file name.',
-            'Names the file with the P&L report. For example, pnl.csv.',
+            'Names the file with the P&L report: one row for each trade with the NPV at both dates and the P&L. Change it when one run writes several reports and you need to tell the files apart. The default is pnl.csv, written in the output path. For example, pnl.csv.',
             'pnl.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.outputFileName'
@@ -9389,7 +9389,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporOverlappingPeriods'']',
             'analytic', 'pnl', 'mporOverlappingPeriods', 407, 'boolean', false,
             'Overlapping periods', 'A flag. Y uses overlapping periods.',
-            'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. The P&L explain analytic has the same parameter.',
+            'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. With overlapping periods each scenario starts one day after the one before, which gives many scenarios from a short history. The P&L explain analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.mporOverlappingPeriods'
@@ -9435,7 +9435,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsPnlOverride'']',
             'analytic', 'pnl', 'conventionsPnlOverride', 409, 'string', false,
             'Conventions override at the second date', 'A file name.',
-            'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. The P&L explain analytic has the same parameter.',
+            'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. Use it to change only the conventions that differ between the two dates and keep the rest. The file needs only the entries that change. The P&L explain analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.conventionsPnlOverride'
@@ -9481,7 +9481,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''active'']',
             'analytic', 'historicalSimulationVar', 'active', 411, 'boolean', true,
             'Run the historical simulation VaR analytic', 'A flag. Y runs the analytic.',
-            'Switches the historical simulation VaR analytic on or off. Use N to keep the entry in the document without running it.',
+            'Switches the historical simulation VaR analytic on or off. When it is on, the run revalues the portfolio under shifts of the risk factors taken from a history of market moves, and reads the VaR as a quantile of the resulting P&L. It needs a file of historical scenarios and the return configuration. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.active'
@@ -9573,7 +9573,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporDays'']',
             'analytic', 'historicalSimulationVar', 'mporDays', 415, 'integer', false,
             'Holding period in days', 'A whole number of days.',
-            'Sets the number of days between two scenarios that the analytic uses to compute a P&L. Typical values are 1 and 10. The name horizonDays is another name for the same parameter.',
+            'Sets the number of days between two scenarios that the analytic uses to compute a P&L. This is the holding period of the VaR: the time in which the portfolio cannot be changed. Typical values are 1 and 10. For example, 10 gives a ten-day VaR, which is the period of the Basel market risk rules. The name horizonDays is another name for the same parameter.',
             '10', 'A whole number of zero or more.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.mporDays'
@@ -9596,7 +9596,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporCalendar'']',
             'analytic', 'historicalSimulationVar', 'mporCalendar', 416, 'string', false,
             'Holding period calendar', 'A calendar name.',
-            'Names the calendar that ORE uses to compute the dates of the scenarios. The name horizonCalendar is another name for the same parameter.',
+            'Names the calendar that ORE uses to compute the dates of the scenarios. The holding period counts business days of this calendar, so a ten-day period over a holiday spans more calendar days. Use the calendar of the market of the portfolio. For example, TARGET. The name horizonCalendar is another name for the same parameter.',
             'The calendar of the base currency.', 'A calendar name such as TARGET, USD or UK.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.mporCalendar'
@@ -9665,7 +9665,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputFile'']',
             'analytic', 'historicalSimulationVar', 'outputFile', 419, 'string', false,
             'VaR report file', 'A file name.',
-            'Names the file with the main VaR report. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first. For example, var.csv.',
+            'Names the file with the main VaR report: one row for each portfolio, risk class and risk type with the VaR at each quantile. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first, so set it there when you run both. For example, var.csv.',
             'var.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.outputFile'
@@ -9688,7 +9688,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeExpectedShortfall'']',
             'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 420, 'boolean', false,
             'Include the expected shortfall', 'A flag. Y adds the expected shortfall columns.',
-            'Decides whether the report also shows the expected shortfall for each quantile, in extra columns. The expected shortfall at level p is the average P&L of all scenarios at or below the VaR for p.',
+            'Decides whether the report also shows the expected shortfall for each quantile, in extra columns. The expected shortfall at level p is the average P&L of all scenarios at or below the VaR for p, so it shows how bad the tail is beyond the VaR. The Basel market risk rules use the expected shortfall. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includeExpectedShortfall'
@@ -9734,7 +9734,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''tradePnl'']',
             'analytic', 'historicalSimulationVar', 'tradePnl', 422, 'boolean', false,
             'Report the P&L by trade', 'A flag. Y adds the report.',
-            'Decides whether the analytic writes a second report with the P&L for each trade, risk class and risk type.',
+            'Decides whether the analytic writes a second report with the P&L for each trade, risk class and risk type. Use it to find which trades drive the VaR. The report is large for a big portfolio and many scenarios. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.1', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.tradePnl'
@@ -9757,7 +9757,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskFactorBreakdown'']',
             'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 423, 'boolean', false,
             'Report the P&L by risk factor', 'A flag. Y adds the report.',
-            'Decides whether the analytic writes a third report with the P&L for each risk factor.',
+            'Decides whether the analytic writes a third report with the P&L for each risk factor. Use it to find which risk factors drive the VaR, for example a single curve or a single FX rate. The report is large for many risk factors and scenarios. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.riskFactorBreakdown'
@@ -9803,7 +9803,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputHistoricalScenarios'']',
             'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 425, 'boolean', false,
             'Write the historical scenarios', 'A flag. Y writes the scenarios.',
-            'Decides whether the analytic writes the historical scenarios that it used to a report.',
+            'Decides whether the analytic writes the historical scenarios that it used to a report. Use it to check which dates and which shifts went into the VaR, or to rerun the scenarios in another system. The report is large, because it holds every risk factor for every scenario. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.outputHistoricalScenarios'
@@ -9826,7 +9826,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeTheta'']',
             'analytic', 'historicalSimulationVar', 'includeTheta', 426, 'boolean', false,
             'Include the theta', 'A flag. Y includes the theta in the P&L.',
-            'Decides whether the P&L of each scenario also includes the change of the NPV that the passing of the holding period causes.',
+            'Decides whether the P&L of each scenario also includes the change of the NPV that the passing of the holding period causes, the theta. Without it the P&L shows the effect of the market move only. Switch it on when the VaR must cover the time decay too. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includeTheta'
@@ -9849,7 +9849,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includePeriodCashflow'']',
             'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 427, 'boolean', false,
             'Include the cash flows of the period', 'A flag. Y includes the cash flows.',
-            'Decides whether the P&L of each scenario also includes the cash flows that pay during the holding period.',
+            'Decides whether the P&L of each scenario also includes the cash flows that pay during the holding period. Without it a coupon that pays in the period is lost from the P&L. Switch it on for a VaR that measures the full change of wealth. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.includePeriodCashflow'
@@ -9941,7 +9941,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''returnConfigFile'']',
             'analytic', 'historicalSimulationVar', 'returnConfigFile', 431, 'string', false,
             'Return configuration file', 'A file name.',
-            'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor from the historical scenarios.',
+            'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor from the historical scenarios, for example as an absolute difference or as a relative or log return. Use it when a risk factor needs another return type than the standard one. Without the file ORE uses its standard return calculation.',
             'None. ORE uses its standard return calculation.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: historicalSimulationVar.returnConfigFile'
@@ -10079,7 +10079,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'scenarioGeneration', 'scenarioOutputFile', 437, 'string', false,
             'Scenario output file', 'A file name.',
-            'Names the file that holds all scenarios that the analytic generates through the simulation market. For example, scenariodump.csv.',
+            'Names the file that holds all scenarios that the analytic generates through the simulation market. Each row is a risk factor on a date and a sample. The file is large for a real simulation market, so use the risk factor filter to limit it. For example, scenariodump.csv writes the scenarios to scenariodump.csv in the output path.',
             'scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioOutputFile'
@@ -10102,7 +10102,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''amcPathDataOutput'']',
             'analytic', 'scenarioGeneration', 'amcPathDataOutput', 438, 'string', false,
             'AMC path data output file', 'A file name.',
-            'Names a file that receives the path data of the generated exposure scenarios, so that an AMC run can read it later with its path data input. ORE uses it only for the scenario type exposure.',
+            'Names a file that receives the path data of the generated exposure scenarios, so that an AMC run can read it later with its path data input. The path data is the state of the model on each path and date. For example, amcBuffer.dat. ORE uses it only for the scenario type exposure.',
             'None. The analytic does not write path data.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.amcPathDataOutput'
@@ -10125,7 +10125,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputStatistics'']',
             'analytic', 'scenarioGeneration', 'outputStatistics', 439, 'boolean', false,
             'Write the statistics report', 'A flag. Y writes the report.',
-            'Decides whether the analytic writes a report with statistics of the generated scenarios for each risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness and the kurtosis.',
+            'Decides whether the analytic writes a report with statistics of the generated scenarios for each risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness and the kurtosis. Use it to check that the simulated market has the mean and the spread that the model implies. The default is Yes.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputStatistics'
@@ -10148,7 +10148,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputDistributions'']',
             'analytic', 'scenarioGeneration', 'outputDistributions', 440, 'boolean', false,
             'Write the distribution report', 'A flag. Y writes the report.',
-            'Decides whether the analytic writes a report with the distribution histogram of the generated scenarios for each risk factor and date. The parameter Distribution buckets sets its resolution.',
+            'Decides whether the analytic writes a report with the distribution histogram of the generated scenarios for each risk factor and date. Use it to check that the simulated distribution has the shape that the model implies. The parameter Distribution buckets sets its resolution. The default is Yes.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputDistributions'
@@ -10194,7 +10194,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''stressConfigFile'']',
             'analytic', 'scenarioGeneration', 'stressConfigFile', 442, 'string', false,
             'Stress configuration file', 'A file name.',
-            'Names the XML file with the stress scenarios to generate. ORE uses it only when the scenario type is stress.',
+            'Names the XML file with the stress scenarios to generate. Each scenario in the file shifts the market, and the analytic writes the shifted market as a scenario. ORE uses the file only when the scenario type is stress. For example, stresstest.xml. The same file also decides whether the stress is in the raw domain or in the par domain.',
             'None. A stress run needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.stressConfigFile'
@@ -10217,7 +10217,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioPrecision'']',
             'analytic', 'scenarioGeneration', 'scenarioPrecision', 443, 'integer', false,
             'Scenario precision', 'A whole number of decimal places.',
-            'Sets the number of decimal places of the numbers in the scenario output. A higher number shows more of each value and makes the file larger.',
+            'Sets the number of decimal places of the numbers in the scenario output. A higher number shows more of each value and makes the file larger. The default is 8. Lower it to make the file smaller when the exact value does not matter, and raise it when you compare two runs to the last digit.',
             '8', 'A whole number of zero or more.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioPrecision'
@@ -10240,7 +10240,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''distributionBuckets'']',
             'analytic', 'scenarioGeneration', 'distributionBuckets', 444, 'integer', false,
             'Distribution buckets', 'A whole number.',
-            'Sets the number of buckets of the distribution histogram of the generated scenarios. A higher number gives a finer histogram and needs more scenarios to be stable. For example, 20.',
+            'Sets the number of buckets of the distribution histogram of the generated scenarios. A higher number gives a finer histogram and needs more scenarios to be stable, because each bucket must hold enough samples. The default is 20. For example, 50 gives a finer picture for a run of 10,000 samples.',
             '20', 'A whole number of zero or more.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.distributionBuckets'
@@ -10263,7 +10263,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputZeroRate'']',
             'analytic', 'scenarioGeneration', 'outputZeroRate', 445, 'boolean', false,
             'Report zero rates', 'A flag. Y reports zero rates, N reports discount factors.',
-            'Decides whether the statistics report and the distribution report show zero rates or discount factors for the yield curves. Zero rates are easier to compare between dates.',
+            'Decides whether the statistics report and the distribution report show zero rates or discount factors for the yield curves. Zero rates are easier to compare between dates, because a discount factor falls with time and a zero rate does not. The default is No, so the reports show discount factors.',
             'No. The reports show discount factors.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputZeroRate'
@@ -10286,7 +10286,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''filterRiskKeys'']',
             'analytic', 'scenarioGeneration', 'filterRiskKeys', 446, 'string', false,
             'Risk factor types in the output', 'A comma-separated list of risk factor types.',
-            'Limits the scenario output to the listed types of risk factor. Without it the output holds every risk factor of the simulation market and can be very large. For example, DiscountCurve.',
+            'Limits the scenario output to the listed types of risk factor. Without it the output holds every risk factor of the simulation market and can be very large. Write the types as a comma-separated list. For example, DiscountCurve writes the discount curves only, and DiscountCurve,FXSpot adds the spot rates of the currencies.',
             'None. The output holds all risk factors.', 'A comma-separated list of risk factor key types such as DiscountCurve.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.filterRiskKeys'
@@ -10309,7 +10309,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''crossAssetModelData'']',
             'analytic', 'scenarioGeneration', 'crossAssetModelData', 447, 'string', false,
             'Cross asset model file', 'A file name.',
-            'Names the XML file with the cross asset model, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
+            'Names the XML file with the cross asset model, if it sits in another file than the simulation configuration file. Use it to run one simulation setup with different models, for example a model from another calibration. ORE uses it only when the scenario type is exposure. Without the parameter ORE reads the model from the simulation configuration file.',
             'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.crossAssetModelData'
@@ -10332,7 +10332,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioGeneratorData'']',
             'analytic', 'scenarioGeneration', 'scenarioGeneratorData', 448, 'string', false,
             'Scenario generator file', 'A file name.',
-            'Names the XML file with the scenario generator, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
+            'Names the XML file with the scenario generator, if it sits in another file than the simulation configuration file. The generator sets the time grid, the number of samples and the sequence type. ORE uses it only when the scenario type is exposure. Without the parameter ORE reads the generator from the simulation configuration file.',
             'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.16.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioGeneratorData'
@@ -10378,7 +10378,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'parStressConversion', 'marketConfigFile', 450, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.marketConfigFile'
@@ -10401,7 +10401,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressConfigFile'']',
             'analytic', 'parStressConversion', 'stressConfigFile', 451, 'string', false,
             'Stress configuration file', 'A file name.',
-            'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain or in the par domain. For example, stresstest.xml.',
+            'Names the XML file with the stress scenarios. Each scenario lists the shifts of the risk factors, for example a parallel move of a yield curve by 100 basis points. The same file also decides whether the stress is in the raw domain, which shifts the zero rates, or in the par domain, which shifts the par rates. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.stressConfigFile'
@@ -10424,7 +10424,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'parStressConversion', 'sensitivityConfigFile', 452, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the sensitivity setup, in particular the par conversion sections that the conversion needs. For example, sensitivity.xml.',
+            'Names the XML file with the sensitivity setup, in particular the par conversion sections that the conversion needs. The sections list the par instruments that define each curve, so the conversion can map a par shift to the zero rates. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.sensitivityConfigFile'
@@ -10447,7 +10447,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'parStressConversion', 'pricingEnginesFile', 453, 'string', false,
             'Pricing engines file', 'A file name.',
-            'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
+            'Names the XML file that sets the pricing engines for the analytic. The file says which model and which engine price each product, so a change here changes the NPVs behind the results. When it is missing, ORE uses the pricing engines file of the Setup block. Use it to run the analytic with other engines than the rest of the run. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.pricingEnginesFile'
@@ -10516,7 +10516,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressZeroScenarioDataFile'']',
             'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 456, 'string', false,
             'Raw domain stress file', 'A file name.',
-            'Names the file that receives the stress test definition in the raw domain. For example, results.xml.',
+            'Names the file that receives the stress test definition in the raw domain, that is the result of the conversion. A later stress analytic can read the file and run the stress test in the zero domain. The default is parStress_ZeroStressData.xml, written in the output path. For example, results.xml.',
             'parStress_ZeroStressData.xml', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: parStressConversion.stressZeroScenarioDataFile'
@@ -10769,7 +10769,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''scenarioFile'']',
             'analytic', 'pfe', 'scenarioFile', 467, 'string', false,
             'Scenario data file', 'A file name.',
-            'Names the file with the scenario data that the simulation wrote for the post-processing, such as simulated index fixings and FX rates. Variation margin and dynamic initial margin need it. For example, scenariodata.csv.gz.',
+            'Names the file with the scenario data that the simulation wrote for the post-processing, such as simulated index fixings and FX rates. Variation margin and dynamic initial margin need it, because they must recompute a margin amount on each path and date. Use it when the post-processing runs apart from the simulation, together with the cube file. For example, scenariodata.csv.gz.',
             'None. When the run has a simulation, the analytic uses its scenario data.', 'A file name. ORE looks for the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.scenarioFile'
@@ -10792,7 +10792,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''baseCurrency'']',
             'analytic', 'pfe', 'baseCurrency', 468, 'string', false,
             'Base currency', 'A currency code, for example EUR.',
-            'Names the currency in which the analytic states all NPVs, exposures and value adjustments. ORE converts the amounts that are in another currency. For example, EUR states all values in euro.',
+            'Names the currency in which the analytic states every NPV, exposure and value adjustment. ORE converts an amount in another currency at the spot rate of the valuation date. Use the currency in which the desk or the capital report measures its risk. For example, EUR states all values in euro. The Setup block has a parameter of the same name, which this one overrides for this analytic.',
             'The base currency of the Setup block.', 'A currency code of three letters, for example EUR.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.baseCurrency'
@@ -10815,7 +10815,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfiles'']',
             'analytic', 'pfe', 'exposureProfiles', 469, 'boolean', false,
             'Write exposure profiles', 'A flag. Y writes the profiles for each netting set.',
-            'Decides whether the analytic writes an exposure report for each netting set: the expected positive and negative exposure and the potential future exposure, for each date. The XVA analytic has the same parameter.',
+            'Decides whether the analytic writes an exposure report for each netting set: the expected positive and negative exposure and the potential future exposure, for each date. The profiles show how the exposure builds up and runs off over the life of the trades, so they are the main result to read for a credit limit or a capital check. The XVA analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.exposureProfiles'
@@ -10861,7 +10861,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''quantile'']',
             'analytic', 'pfe', 'quantile', 471, 'double', false,
             'PFE confidence level', 'A number between 0 and 1.',
-            'Sets the confidence level of the potential future exposure (PFE) in the exposure reports. For example, 0.95 reports the 95th percentile of the exposure distribution. The XVA analytic has the same parameter.',
+            'Sets the confidence level of the potential future exposure (PFE) in the exposure reports. The PFE is the quantile of the positive exposure distribution on each date, so a higher level gives a larger number. For example, 0.95 reports the 95th percentile, and 0.99 reports the 99th, which a limit system often uses. The XVA analytic has the same parameter.',
             '0.95', 'A number, written with a decimal point.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.quantile'
@@ -10953,7 +10953,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exerciseNextBreak'']',
             'analytic', 'pfe', 'exerciseNextBreak', 475, 'boolean', false,
             'Exercise at the next break', 'A flag. Y ends each trade at its next break date.',
-            'Decides whether ORE ends all trades at their next break date before it aggregates them. Use it to model a counterparty relationship in which each party can end a trade at its break dates. The XVA analytic has the same parameter.',
+            'Decides whether ORE ends all trades at their next break date before it aggregates them. Use it to model a counterparty relationship in which each party can end a trade at its break dates. A trade that ends early adds no exposure after its break, so the profiles are lower than with the full maturity. The default is No, so every trade runs to maturity. The XVA analytic has the same parameter.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pfe.exerciseNextBreak'
@@ -11160,7 +11160,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'crif', 'sensitivityConfigFile', 484, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the SIMM sensitivity configuration. For example, sensitivity.xml.',
+            'Names the XML file with the SIMM sensitivity configuration: the risk factors, the shift types and sizes. The CRIF generation computes the sensitivities with this setup and then writes them in the CRIF format. For example, sensitivity.xml. The analytic needs this file.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.sensitivityConfigFile'
@@ -11298,7 +11298,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''applySimmExemptions'']',
             'analytic', 'crif', 'applySimmExemptions', 490, 'boolean', false,
             'Apply SIMM exemptions', 'A flag. Y applies the exemptions.',
-            'Decides whether the CRIF generation applies the SIMM exemptions and writes a report of what it exempted.',
+            'Decides whether the CRIF generation applies the SIMM exemptions and writes a report of what it exempted. Some products or risk factors are exempt from the SIMM under the rules of ISDA, for example certain FX products. With Yes, the CRIF leaves out the exempt sensitivities. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.applySimmExemptions'
@@ -11413,7 +11413,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''marketConfigFile'']',
             'analytic', 'sensitivityStress', 'marketConfigFile', 495, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml. For each stress scenario the analytic replaces the market of the valuation date with this simulation market, shifted by the scenario, and runs the sensitivity calculation on it.',
+            'Names the XML file with the simulation market under which the analytic computes its results. The simulation market lists the risk factors that ORE can shift, for example the discount curves, the FX spots and the volatility surfaces, and the tenors of each. The analytic needs only the part under Market and ignores the model and the scenario generator. A risk factor that this file leaves out cannot be shifted. For example, simulation.xml. For each stress scenario the analytic replaces the market of the valuation date with this simulation market, shifted by the scenario, and runs the sensitivity calculation on it.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.marketConfigFile'
@@ -11436,7 +11436,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''stressConfigFile'']',
             'analytic', 'sensitivityStress', 'stressConfigFile', 496, 'string', false,
             'Stress configuration file', 'A file name.',
-            'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain or in the par domain. For example, stresstest.xml.',
+            'Names the XML file with the stress scenarios. Each scenario lists the shifts of the risk factors, for example a parallel move of a yield curve by 100 basis points. The same file also decides whether the stress is in the raw domain, which shifts the zero rates, or in the par domain, which shifts the par rates. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.stressConfigFile'
@@ -11459,7 +11459,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'sensitivityStress', 'sensitivityConfigFile', 497, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file that sets the sensitivity calculation, as for the sensitivity analytic. The analytic runs the calculation once for each stress scenario.',
+            'Names the XML file that sets the sensitivity calculation, as for the sensitivity analytic. The analytic runs the calculation once for each stress scenario, so the cost is the cost of one sensitivity run times the number of scenarios. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.sensitivityConfigFile'
@@ -11482,7 +11482,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''calcBaseScenario'']',
             'analytic', 'sensitivityStress', 'calcBaseScenario', 498, 'boolean', false,
             'Compute the base scenario', 'A flag. Y also computes the unshifted scenario.',
-            'Decides whether the analytic also computes the sensitivities of the unshifted base scenario, next to those of the stress scenarios.',
+            'Decides whether the analytic also computes the sensitivities of the unshifted base scenario, next to those of the stress scenarios. Use it to compare the sensitivities before and after a stress in one file. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.calcBaseScenario'
@@ -11505,7 +11505,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''scenarioOutputFile'']',
             'analytic', 'sensitivityStress', 'scenarioOutputFile', 499, 'string', false,
             'Stressed sensitivity result file', 'A file name.',
-            'Names the file with the result of the stressed sensitivity calculation.',
+            'Names the file with the result of the stressed sensitivity calculation: the sensitivities of each trade under each stress scenario. The default is sensitivity_stress.csv, written in the output path.',
             'sensitivity_stress.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivityStress.scenarioOutputFile'
@@ -11528,7 +11528,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''active'']',
             'analytic', 'correlation', 'active', 500, 'boolean', true,
             'Run the correlation analytic', 'A flag. Y runs the analytic.',
-            'Switches the correlation analytic on or off. It computes a correlation matrix of the risk factors from historical scenarios. The XVA analytic can run it to get the correlations of its model.',
+            'Switches the correlation analytic on or off. It computes a correlation matrix of the risk factors from historical scenarios, as the correlation of the moves over the horizon. The XVA analytic can run it to get the correlations of its model. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.active'
@@ -11551,7 +11551,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''correlation_method'']',
             'analytic', 'correlation', 'correlation_method', 501, 'string', false,
             'Correlation method', 'Pearson or Kendall-Rank.',
-            'Selects the method for the correlation matrix. Pearson is the standard linear correlation. Kendall-Rank is a rank correlation. The name correlationMethod is another name for the same parameter.',
+            'Selects the method for the correlation matrix. Pearson is the standard linear correlation, which reacts strongly to outliers. Kendall-Rank is a rank correlation, which depends on the order of the moves and not on their size, so it is steadier when the data has outliers. The default is Pearson. The name correlationMethod is another name for the same parameter.',
             'Pearson', 'Pearson or Kendall-Rank.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.correlation_method'
@@ -11574,7 +11574,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''scenarioCorrSimulation'']',
             'analytic', 'correlation', 'scenarioCorrSimulation', 502, 'string', false,
             'Simulation market file', 'A file name.',
-            'Names the XML file with the simulation market for the correlation calculation. The name scenarioSimulationUri is another name for the same parameter. For example, simulation.xml.',
+            'Names the XML file with the simulation market for the correlation calculation. The market lists the risk factors, so the file decides which factors the matrix covers. The name scenarioSimulationUri is another name for the same parameter. For example, simulation.xml. The analytic needs this file.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.scenarioCorrSimulation'
@@ -11620,7 +11620,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''sensitivityConfigFile'']',
             'analytic', 'correlation', 'sensitivityConfigFile', 504, 'string', false,
             'Sensitivity configuration file', 'A file name.',
-            'Names the XML file with the sensitivity setup for the analysis at the valuation date. For example, sensitivity.xml.',
+            'Names the XML file with the sensitivity setup for the analysis at the valuation date. The file lists the risk factors and the shift sizes. For example, sensitivity.xml. It is optional, and the analytic uses it only for the analysis at the valuation date.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.sensitivityConfigFile'
@@ -11666,7 +11666,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporDays'']',
             'analytic', 'correlation', 'mporDays', 506, 'integer', false,
             'Horizon in days', 'A whole number of days.',
-            'Sets the length of the horizon over which the analytic measures the moves of the risk factors, in days on the calendar. The name horizonDays is another name for the same parameter.',
+            'Sets the length of the horizon over which the analytic measures the moves of the risk factors, in days on the calendar. The correlation is the correlation of the moves over this horizon, so a longer horizon smooths daily noise and gives fewer observations. The default is 10. The name horizonDays is another name for the same parameter.',
             '10', 'A whole number of zero or more.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.mporDays'
@@ -11689,7 +11689,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporCalendar'']',
             'analytic', 'correlation', 'mporCalendar', 507, 'string', false,
             'Horizon calendar', 'A calendar name.',
-            'Names the calendar that ORE uses to count the days of the horizon. The name horizonCalendar is another name for the same parameter.',
+            'Names the calendar that ORE uses to count the days of the horizon. Use the calendar of the market of the risk factors. For example, TARGET. The name horizonCalendar is another name for the same parameter. Without a value ORE takes the calendar of the base currency.',
             'The calendar of the base currency.', 'A calendar name such as TARGET, USD or UK.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.mporCalendar'
@@ -11758,7 +11758,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''outputFileName'']',
             'analytic', 'correlation', 'outputFileName', 510, 'string', false,
             'Correlation report file', 'A file name.',
-            'Names the file with the correlation matrix. For example, correlation.csv.',
+            'Names the file with the correlation matrix: one row for each pair of risk factors with their correlation. The default is correlation.csv, written in the output path. For example, correlation.csv.',
             'correlation.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.outputFileName'
@@ -11781,7 +11781,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporOverlappingPeriods'']',
             'analytic', 'correlation', 'mporOverlappingPeriods', 511, 'boolean', false,
             'Overlapping horizons', 'A flag. Y uses overlapping horizons.',
-            'Decides whether the horizons overlap. The name horizonOverlappingPeriods is another name for the same parameter.',
+            'Decides whether the horizons overlap. The name horizonOverlappingPeriods is another name for the same parameter. With overlapping horizons each observation starts one day after the one before, which gives many observations from a short history. The observations are then not independent. The default is Yes.',
             'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.mporOverlappingPeriods'
@@ -11804,7 +11804,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''allowPartialScenarios'']',
             'analytic', 'correlation', 'allowPartialScenarios', 512, 'boolean', false,
             'Allow partial scenarios', 'A flag. Y accepts scenarios that touch only part of the market.',
-            'Decides whether the simulated market accepts scenarios that do not set every risk factor.',
+            'Decides whether the simulated market accepts scenarios that do not set every risk factor. Historical data often lacks a few risk factors on some dates. With Yes, the market accepts such a scenario. With No, it accepts only scenarios that set every risk factor. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.allowPartialScenarios'
@@ -11827,7 +11827,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''active'']',
             'analytic', 'stressedSimm', 'active', 513, 'boolean', true,
             'Run the stressed SIMM analytic', 'A flag. Y runs the analytic.',
-            'Switches the stressed SIMM analytic on or off. It computes the SIMM under stress scenarios. It reads the other SIMM settings from the simm block.',
+            'Switches the stressed SIMM analytic on or off. It computes the SIMM under stress scenarios, as the margin that the firm would owe in a stressed market. It reads the other SIMM settings from the simm block, so the version and the calibration are those of the plain SIMM. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.active'
@@ -11850,7 +11850,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''stressedSimmScenarioData'']',
             'analytic', 'stressedSimm', 'stressedSimmScenarioData', 514, 'string', false,
             'Stress scenario file', 'A file name.',
-            'Names the XML file with the stress scenarios for the stressed SIMM. The run stops if the file is missing.',
+            'Names the XML file with the stress scenarios for the stressed SIMM. Each scenario shifts the market, and the analytic recomputes the sensitivities and the margin under it. The run stops if the file is missing. For example, stressedsimm.xml.',
             'None. The parameter is mandatory.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.stressedSimmScenarioData'
@@ -11873,7 +11873,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''version'']',
             'analytic', 'stressedSimm', 'version', 515, 'string', false,
             'SIMM version', 'A SIMM version, for example 2.6.',
-            'Selects the SIMM version for the stressed SIMM. The run stops if no version is set. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5.',
+            'Selects the SIMM version for the stressed SIMM. Use the same version as for the plain SIMM, so that the two margins are comparable. The run stops if no version is set. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5.',
             'None. The parameter is mandatory.', 'A SIMM version such as 2.6.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.version'
@@ -11919,7 +11919,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simmBacktest'']/Parameter[@name=''crif'']',
             'analytic', 'simmBacktest', 'crif', 517, 'string', false,
             'CRIF file', 'A file name.',
-            'Names the CRIF file for the SIMM backtest. ORE reads it, and the open source release has no analytic of this type.',
+            'Names the CRIF file for the SIMM backtest. ORE reads the parameter, and the open source release has no analytic of this type, so a value has no effect there. Another build can use the file to compare the margin that the SIMM implies with the realised moves.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simmBacktest.crif'

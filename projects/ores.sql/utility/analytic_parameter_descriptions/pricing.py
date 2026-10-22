@@ -111,9 +111,10 @@ ENTRIES = {
         "outputFileName": entry(
             "Cash flow report file",
             "A file name.",
-            "Names the file that holds the cash flow report. Change it when one run writes several reports and "
-            "you need to tell the files apart. For example, flows.csv writes the report to flows.csv in the "
-            "output path.",
+            "Names the file that holds the cash flow report: one row for each cash flow with the trade, the pay "
+            "date, the amount, the currency and the flow type. Change it when one run writes several reports "
+            "and you need to tell the files apart. For example, flows.csv writes the report to flows.csv in the "
+            "output path. The default is cashflow.csv.",
             "cashflow.csv",
             FILE),
         "includePastCashflows": entry(
@@ -167,16 +168,19 @@ ENTRIES = {
             "Run the curves analytic",
             "A flag. Y runs the analytic.",
             "Switches the curves analytic on or off. When it is on, the run exports the discount factors of the "
-            "yield curves that it builds from the market data, as set in the todaysmarket file. Use it to check "
-            "the curves behind an NPV.",
+            "yield curves that it builds from the market data, as set in the todaysmarket file, on the dates of "
+            "the grid. Use it to check the curves behind an NPV, or to hand the curves to another system. Use N "
+            "to keep the entry in the document without running it.",
             "No. The analytic does not run.",
             FLAG, required=True),
         "configuration": entry(
             "Market configuration",
             "The name of a market configuration.",
             "Selects the set of curves that the analytic exports. The todaysmarket file groups the curves in "
-            "named configurations, and this parameter picks one. For example, default exports the curves of the "
-            "default configuration.",
+            "named configurations, for example one for discounting with collateral in euro and one for "
+            "discounting in the local currency of each trade, and this parameter picks one. For example, "
+            "default exports the curves of the default configuration. The name must exist in the todaysmarket "
+            "file.",
             "default",
             "The name of a configuration in the todaysmarket file."),
         "grid": entry(
@@ -192,9 +196,9 @@ ENTRIES = {
         "outputFileName": entry(
             "Curves report file",
             "A file name.",
-            "Names the file that holds the exported discount factors. The file has one row for each date of "
-            "the grid and one column for each curve. For example, curves.csv writes the report to curves.csv "
-            "in the output path.",
+            "Names the file that holds the exported discount factors. The file has one row for each date of the "
+            "grid and one column for each curve. Change it when one run writes several reports and you need to "
+            "tell the files apart. For example, curves.csv writes the report to curves.csv in the output path.",
             "curves.csv",
             FILE),
         "outputTodaysMarketCalibration": entry(

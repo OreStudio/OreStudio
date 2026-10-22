@@ -54,16 +54,19 @@ ENTRIES = {
         "crossAssetModelData": entry(
             "Cross asset model file",
             "A file name.",
-            "Names the XML file with the cross asset model data, if it sits in another file than the "
-            "model configuration file. When it is set, ORE reads the model data from this file and not from "
-            "the configuration file.",
+            "Names the XML file with the cross asset model data, if it sits in another file than the model "
+            "configuration file. When it is set, ORE reads the model data from this file and not from the "
+            "configuration file. Use it to calibrate a model that you keep apart from the rest of the "
+            "configuration.",
             "The model configuration file.",
             INPUT_FILE),
         "pricingEnginesFile": entry(
             "Pricing engines file for the calibration",
             "A file name.",
-            "Names the XML file that sets the pricing engines for the calibration instruments, for example "
-            "the swaptions that the model is calibrated to. For example, pricingengine.xml.",
+            "Names the XML file that sets the pricing engines for the calibration instruments, for example the "
+            "swaptions that the model is calibrated to. The calibration prices these instruments with the "
+            "engines of the file and moves the model parameters until the prices match the market. Without the "
+            "file ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.",
             "The pricing engines file of the Setup block.",
             INPUT_FILE),
         "outputFile": entry(
@@ -86,8 +89,10 @@ ENTRIES = {
         "foreignCurrencies": entry(
             "Foreign currencies",
             "A comma-separated list of currency codes.",
-            "Lists the foreign currencies that the calibration covers, besides the base currency. For example, "
-            "EUR,GBP calibrates the model for euro and sterling. " + HW_ONLY,
+            "Lists the foreign currencies that the calibration covers, besides the base currency. Each currency "
+            "adds its own interest rate model and an FX model against the base currency. For example, EUR,GBP "
+            "calibrates the model for euro and sterling. ORE uses it only when the model is HW and the mode is "
+            "historical. Without a value the calibration covers the base currency only.",
             "None. The calibration covers the base currency only.",
             "A comma-separated list of currency codes."),
         "curveTenors": entry(
@@ -125,15 +130,18 @@ ENTRIES = {
         "startDate": entry(
             "History start date",
             "A date.",
-            "Sets the first date of the historical data that the calibration uses. For example, 2019-09-29. "
-            + PCA_ONLY + " The run stops if the date is missing.",
+            "Sets the first date of the historical data that the calibration uses. A longer history gives "
+            "steadier parameters and includes older market regimes. For example, 2019-09-29. ORE uses it only "
+            "for the HW model with historical mode and PCA calibration on. The run stops if the date is "
+            "missing.",
             "None. The parameter is mandatory.",
             DATE),
         "endDate": entry(
             "History end date",
             "A date.",
-            "Sets the last date of the historical data that the calibration uses. For example, 2022-09-27. "
-            + PCA_ONLY + " The run stops if the date is missing.",
+            "Sets the last date of the historical data that the calibration uses. It is usually the valuation "
+            "date or the last date with market data. For example, 2022-09-27. ORE uses it only for the HW model "
+            "with historical mode and PCA calibration on. The run stops if the date is missing.",
             "None. The parameter is mandatory.",
             DATE),
         "lambda": entry(
@@ -171,21 +179,27 @@ ENTRIES = {
         "meanReversionCalibration": entry(
             "Mean reversion calibration",
             "A flag. Y calibrates the mean reversion.",
-            "Decides whether ORE calibrates the mean reversion of the principal components that it keeps. "
-            "The components come from the PCA step or from the PCA input files. " + HW_ONLY,
+            "Decides whether ORE calibrates the mean reversion of the principal components that it keeps. The "
+            "components come from the PCA step or from the PCA input files. When it is No, the mean reversion "
+            "stays as the configuration gives it. The basis function number and the kappa bound steer the "
+            "search. ORE uses it only when the model is HW and the mode is historical.",
             "No.",
             FLAG),
         "basisFunctionNumber": entry(
             "Number of basis functions",
             "A whole number.",
-            "Sets the number of basis functions in the mean reversion calibration. For example, 2. " + MR_ONLY,
+            "Sets the number of basis functions in the mean reversion calibration. More functions let the mean "
+            "reversion follow a richer shape over time and need more data to stay stable. For example, 2. ORE "
+            "uses it only for the HW model with historical mode and mean reversion calibration on.",
             "0. A run with mean reversion calibration needs a value.",
             COUNT),
         "kappaUpperBound": entry(
             "Upper bound of kappa",
             "A number.",
-            "Sets the upper bound of the mean reversion speed (kappa) in the mean reversion calibration. For "
-            "example, 5.0. " + MR_ONLY,
+            "Sets the upper bound of the mean reversion speed (kappa) in the mean reversion calibration. The "
+            "search for kappa stays below this bound, so a value that is too low can stop the fit short of the "
+            "best one. For example, 5.0. ORE uses it only for the HW model with historical mode and mean "
+            "reversion calibration on.",
             "0. A run with mean reversion calibration needs a value.",
             REAL),
         "haltonMaxGuess": entry(
@@ -232,79 +246,98 @@ ENTRIES = {
         "stressConfigFile": entry(
             "Stress configuration file",
             "A file name.",
-            "Names the XML file with the stress scenarios to generate. ORE uses it only when the scenario "
-            "type is stress.",
+            "Names the XML file with the stress scenarios to generate. Each scenario in the file shifts the "
+            "market, and the analytic writes the shifted market as a scenario. ORE uses the file only when the "
+            "scenario type is stress. For example, stresstest.xml. The same file also decides whether the "
+            "stress is in the raw domain or in the par domain.",
             "None. A stress run needs this file.",
             INPUT_FILE),
         "crossAssetModelData": entry(
             "Cross asset model file",
             "A file name.",
             "Names the XML file with the cross asset model, if it sits in another file than the simulation "
-            "configuration file. ORE uses it only when the scenario type is exposure.",
+            "configuration file. Use it to run one simulation setup with different models, for example a model "
+            "from another calibration. ORE uses it only when the scenario type is exposure. Without the "
+            "parameter ORE reads the model from the simulation configuration file.",
             "The simulation configuration file.",
             INPUT_FILE),
         "scenarioGeneratorData": entry(
             "Scenario generator file",
             "A file name.",
             "Names the XML file with the scenario generator, if it sits in another file than the simulation "
-            "configuration file. ORE uses it only when the scenario type is exposure.",
+            "configuration file. The generator sets the time grid, the number of samples and the sequence type. "
+            "ORE uses it only when the scenario type is exposure. Without the parameter ORE reads the generator "
+            "from the simulation configuration file.",
             "The simulation configuration file.",
             INPUT_FILE),
         "scenarioOutputFile": entry(
             "Scenario output file",
             "A file name.",
-            "Names the file that holds all scenarios that the analytic generates through the simulation "
-            "market. For example, scenariodump.csv.",
+            "Names the file that holds all scenarios that the analytic generates through the simulation market. "
+            "Each row is a risk factor on a date and a sample. The file is large for a real simulation market, "
+            "so use the risk factor filter to limit it. For example, scenariodump.csv writes the scenarios to "
+            "scenariodump.csv in the output path.",
             "scenario.csv",
             FILE),
         "amcPathDataOutput": entry(
             "AMC path data output file",
             "A file name.",
             "Names a file that receives the path data of the generated exposure scenarios, so that an AMC run "
-            "can read it later with its path data input. ORE uses it only for the scenario type exposure.",
+            "can read it later with its path data input. The path data is the state of the model on each path "
+            "and date. For example, amcBuffer.dat. ORE uses it only for the scenario type exposure.",
             "None. The analytic does not write path data.",
             FILE),
         "filterRiskKeys": entry(
             "Risk factor types in the output",
             "A comma-separated list of risk factor types.",
             "Limits the scenario output to the listed types of risk factor. Without it the output holds every "
-            "risk factor of the simulation market and can be very large. For example, DiscountCurve.",
+            "risk factor of the simulation market and can be very large. Write the types as a comma-separated "
+            "list. For example, DiscountCurve writes the discount curves only, and DiscountCurve,FXSpot adds "
+            "the spot rates of the currencies.",
             "None. The output holds all risk factors.",
             "A comma-separated list of risk factor key types such as DiscountCurve."),
         "distributionBuckets": entry(
             "Distribution buckets",
             "A whole number.",
             "Sets the number of buckets of the distribution histogram of the generated scenarios. A higher "
-            "number gives a finer histogram and needs more scenarios to be stable. For example, 20.",
+            "number gives a finer histogram and needs more scenarios to be stable, because each bucket must "
+            "hold enough samples. The default is 20. For example, 50 gives a finer picture for a run of 10,000 "
+            "samples.",
             "20",
             COUNT),
         "outputZeroRate": entry(
             "Report zero rates",
             "A flag. Y reports zero rates, N reports discount factors.",
             "Decides whether the statistics report and the distribution report show zero rates or discount "
-            "factors for the yield curves. Zero rates are easier to compare between dates.",
+            "factors for the yield curves. Zero rates are easier to compare between dates, because a discount "
+            "factor falls with time and a zero rate does not. The default is No, so the reports show discount "
+            "factors.",
             "No. The reports show discount factors.",
             FLAG),
         "outputStatistics": entry(
             "Write the statistics report",
             "A flag. Y writes the report.",
             "Decides whether the analytic writes a report with statistics of the generated scenarios for each "
-            "risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness "
-            "and the kurtosis.",
+            "risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness and "
+            "the kurtosis. Use it to check that the simulated market has the mean and the spread that the model "
+            "implies. The default is Yes.",
             "Yes.",
             FLAG),
         "outputDistributions": entry(
             "Write the distribution report",
             "A flag. Y writes the report.",
             "Decides whether the analytic writes a report with the distribution histogram of the generated "
-            "scenarios for each risk factor and date. The parameter Distribution buckets sets its resolution.",
+            "scenarios for each risk factor and date. Use it to check that the simulated distribution has the "
+            "shape that the model implies. The parameter Distribution buckets sets its resolution. The default "
+            "is Yes.",
             "Yes.",
             FLAG),
         "scenarioPrecision": entry(
             "Scenario precision",
             "A whole number of decimal places.",
             "Sets the number of decimal places of the numbers in the scenario output. A higher number shows "
-            "more of each value and makes the file larger.",
+            "more of each value and makes the file larger. The default is 8. Lower it to make the file smaller "
+            "when the exact value does not matter, and raise it when you compare two runs to the last digit.",
             "8",
             COUNT),
     },

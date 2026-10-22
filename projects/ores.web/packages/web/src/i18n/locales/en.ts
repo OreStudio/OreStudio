@@ -1445,6 +1445,8 @@ export const en: SourceCatalogue = {
             abandonedCount: '{count} abandoned',
             scenario: 'Scenario',
             target: 'Target',
+            environment: 'Environment',
+            thisEnvironment: 'This environment',
             progress: 'Progress',
             state: 'State',
             completed: 'Completed',

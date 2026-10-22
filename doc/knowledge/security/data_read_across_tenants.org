@@ -68,6 +68,7 @@ The compute grid shows the rule at work. The fleet (hosts, nodes, node samples) 
 - The BFF builds the operator's breakdown. It lists the tenants, enters each one with =readInsideTenant=, reads the usage there, and totals it. The server records each entry and each exit.
 - A tenant that cannot be entered or read is listed as unavailable. It is never shown as empty.
 - The operator's usage is read when the tab opens and when the person asks. It is not polled, because every read enters every tenant.
+- The system tenant's load series takes the job counters from the work totals, a table of the installation that only the system tenant reads. The poller writes it by entering each tenant and summing the counters there. The table names no tenant, so a tenant session that reads it gets nothing.
 - The compute policies carry no system-tenant read, and the guard's exception list names none of them.
 
 An exception to the rule needs a stated reason, a review and a sign-off before it goes on the guard's list. The first change to the grid listed three read policies on the grid's behalf with a reason that had not been reviewed. It was withdrawn, because the documented way, entering each tenant, serves the need without a policy.

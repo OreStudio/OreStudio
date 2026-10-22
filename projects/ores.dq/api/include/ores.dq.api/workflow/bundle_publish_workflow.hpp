@@ -120,7 +120,8 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
                 return rfl::json::write(cmd);
             };
 
-            s.build_compensation = [](const std::string&, const std::string&) -> std::string {
+            s.build_compensation =
+                [](const std::string&, const std::string&, const std::string&) -> std::string {
                 return "{}";
             };
 

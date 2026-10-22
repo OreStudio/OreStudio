@@ -1452,6 +1452,8 @@ const pt: SourceCatalogue = {
             abandonedCount: '{count} abandonados',
             scenario: 'Cenário',
             target: 'Alvo',
+            environment: 'Ambiente',
+            thisEnvironment: 'Este ambiente',
             progress: 'Progresso',
             state: 'Estado',
             completed: 'Concluído em',

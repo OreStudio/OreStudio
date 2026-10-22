@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: E2353FE1-B66F-4A04-90D5-51978D618C02
+:END:
+#+title: See the engine settings a party holds prototype
+#+description: The engine settings list and one configuration page, drawn beside the pricing engines. A configuration holds groups of documented ORE settings, each group its own part, and reports bind it by name.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:see-the-engine-settings-a-party-holds/][the prototype]] |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Reporting prototypes]]                       |
+
+* Summary
+
+This prototype draws the list of engine settings configurations and the page of one. It answers to the design in the story
+[[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]]: the engine settings leave the run settings and become a named configuration
+that reports bind, as they bind the pricing engines.
+
+The list and the page are the ones the pricing engines use, so a person who knows one knows the other. The list has the
+standard bar and the four states. The page has six tabs: Details, one tab for each of the three groups, Used by and History.
+
+It is throwaway. It reads no service and writes nothing to one.
+
+To see the page without anything that belongs to the prototype, add =clean=1= to the address. That hides the banner, the
+bottom bar and the dashed notes.
+
+* Detail
+
+** The question the screen answers
+
+"Which settings does the engine run my reports with, and which reports share them?" The list finds the configuration. The
+page shows one group on each tab, and the Used by tab shows who is reached by a change.
+
+** Only documented settings
+
+The prototype describes a setting only when the ORE user guide describes it, and it holds every documented engine setting.
+A setting that appears in the sample files or in the source, and not in the guide, is left out. Where the guide and the
+source disagree, the source wins, so the defaults on the screen are the source's.
+
+Eleven of the 19 settings that the model stores today are in the guide. The other eight are not: =accrualDate=,
+=fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=, =csvCommentReportHeader= and
+=additionalResults= as a Setup parameter. Four documented settings are new: =useAtParCouponsCurves=,
+=useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=.
+
+The 15 settings fall into three groups. Fixings and cash flows holds six. Market and trade building holds six. Execution
+holds three. The groups Dates and Report output of the earlier design hold no documented setting, so they are gone.
+
+** Reading and changing
+
+A person uses the page in two ways, and the page serves both.
+
+*Reading.* The group tab lists each setting with its value. A setting that is not set shows the default that the engine
+uses, such as "Default: Yes", so the value in force is always visible. The documentation is collapsed under each setting. A
+button on the card opens or closes all of it.
+
+*Changing.* Edit turns the card into a form in place. There is no dialog, so nothing hides the documentation. Each setting
+becomes a control, and its first option is "Default (Yes)", which unsets it. Focusing a control opens the documentation of
+its setting. A setting that differs from the saved value is marked, with a count of the changes at the foot of the card. The
+foot says how many reports the group reaches and warns when the group changes the numbers, and asks for a change reason and
+a commentary. Save writes a new version of the group. Cancel leaves the card as it was.
+
+** The group tabs
+
+Each tab holds one group, as one card. The card says whether the group changes the numbers a run computes or is
+operational, and shows its own version. A setting that changes the numbers carries a label for it. A group with no row shows
+"not set", and the engine uses its default for every setting in it.
+
+** Simple and Advanced
+
+The switch is the one the feed screens use, and the choice is remembered for every screen that offers it. Simple shows the
+setting and its documentation. Advanced adds the documentation entry inside the expanded documentation: the ORE XML location,
+the release that introduced the setting, the release that removed it, and the format. The release that removed a setting is
+empty for a setting that ORE still reads.
+
+** The documentation entries
+
+The documentation of a setting is data of its own, apart from the settings. It is documentation only. The type, the range
+and the validation of a value stay with the data model. The screens look an entry up by the name of the setting. An entry
+relates to the ORE file it belongs to, such as =ore.xml=.
+
+The entries hold no table of values. A value that the model already knows as an entity, such as a calendar or a business day
+convention, is bound to that entity by the control, and the description gives examples. A closed list of values that belongs
+to one setting, such as the observation model, is explained in the description, and the control offers the list. Where the
+list needs an entity of its own is a question for the data model.
+
+The same entry shape serves every ORE document. The conventions, the pricing engines, today's market, the curve
+configuration and the analytics all have named elements and parameters that need the same facts. This prototype draws the
+Setup block only.
+
+** The engine build
+
+The prototype shows no engine build and no warning about one. A report does not state the ORE build it runs on. The
+compute submit handler picks the build with the highest engine version at the time of submission. A warning that a setting
+is newer than the build needs a build that the data model holds, so it waits for the data model. The Introduced in and Removed
+in entries are the whole of the version documentation.
+
+** History
+
+The History tab is the shared timeline. A change to a group is one entry that names the group and its part version. The
+entry also moves the version of the whole configuration, because a write to any part makes the next version of the central
+row. Revert is offered on every entry that is not current and writes the values the group had before as a new version.
+
+** States and switches
+
+- =?screen=list= and =?screen=record&id=e1|e2|e3&tab=details|fixings|building|execution|reports|history=. =e1= is the
+  standard settings that twenty HK reports share. =e2= has four threads and serves two reports. =e3= is a trial that no
+  report binds.
+- =?state=all|empty|error|loading= for the four list states.
+- =?actor=viewer|analyst|admin=. A viewer reads, an analyst adds and edits, and only the administrator deletes.
+- =?mode=simple|advanced= sets the switch. =?clean=1= hides the prototype furniture. =?edit=fixings|building|execution= opens
+  that group in edit mode.
+- Delete is refused while a report binds the configuration.
+
+** What is fake
+
+The report names are the real names of ACME Corporation HK Ltd, and the five values the standard settings set are the ones
+the seed writes today. The third configuration, every history entry and every count in the list are fixtures. No operation
+lists the reports bound to one configuration, and no operation returns a group count for a list row.
+
+** What the prototype does not draw
+
+- The import warning. The importer drops a Setup parameter that the model does not hold, such as =fixingCutoff=, and warns,
+  naming it, that the numbers may differ from the original run.
+- The Add, Revert and Delete dialogs keep the standard form, and the engine settings page is the only place that edits in place.
+
+** What it does not settle
+
+- The wording of the documentation is drawn from the ORE user guide, with the release numbers measured from the ORE source.
+  A reviewer who knows ORE should read the descriptions.
+- Where the target ORE build lives in the data model, so that the screen can warn about a setting the build does not read.
+- Who may change a group. The prototype lets an analyst edit all three. A change to a group that changes the numbers may
+  need an approval like a pricing engine change. That is decision 4 in the story.
+- The flags are drawn as Yes and No. ORE accepts every spelling, so the model can store booleans. Whether the projection
+  writes =true= or =Y= is still open in the story.
+- Whether the list should show the groups that are set, or only the count.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group.
+- [[file:see-the-pricing-engines-a-party-holds.org][See the pricing engines a party holds]] — the named configuration this page sits beside.
+- [[file:see-a-report-and-everything-it-runs.org][See a report and everything it runs]] — the page whose Analytics tab shows these settings today.

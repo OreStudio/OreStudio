@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 9D5C596D-788C-47B1-9752-7EAAFAC8F6D2
+:END:
+#+title: Story: Fix the macOS real parse
+#+description: libc++ deletes the floating-point from_chars, so the ORE XML binding and record readers fail to compile on macOS.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:09E905A2-4F48-4363-B379-A516B5F69388][Scaffold story: Fix the macOS real parse]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4D6D7C91-B5FB-4554-8898-E12714D9E9F8][Implement Fix the macOS real parse]] | DONE | | 2026-10-21 | Initial task for: Fix the macOS real parse |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The ORE XML readers parse reals through the portable helper, so the macOS build compiles.

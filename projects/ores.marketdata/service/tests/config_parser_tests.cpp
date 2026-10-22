@@ -85,3 +85,21 @@ TEST_CASE("parse_help_prints_usage_and_returns_nothing", tags) {
     CHECK_FALSE(result.has_value());
     CHECK(info.str().find("http-base-url") != std::string::npos);
 }
+
+TEST_CASE("parse_tick_writer_role", tags) {
+    const ores::testing::scoped_environment_override env_guard(
+        {},
+        {"ORES_MARKETDATA_SERVICE_WRITER_DB_USER", "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD"});
+
+    std::ostringstream info, err;
+    const auto none = parser{}.parse({}, info, err);
+    REQUIRE(none.has_value());
+    CHECK(none->tick_writer_user.empty());
+
+    const std::vector<std::string> args{
+        "--writer-db-user", "ores_x_marketdata_writer", "--writer-db-password", "secret"};
+    const auto given = parser{}.parse(args, info, err);
+    REQUIRE(given.has_value());
+    CHECK(given->tick_writer_user == "ores_x_marketdata_writer");
+    CHECK(given->tick_writer_password() == "secret");
+}

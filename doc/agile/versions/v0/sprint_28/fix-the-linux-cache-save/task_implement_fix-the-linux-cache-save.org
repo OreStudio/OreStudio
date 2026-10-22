@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 1B07684F-37DB-4B92-AD7A-BCC858F9FE6B
+:END:
+#+title: Task: Implement Hotfix: fix the Linux sccache save
+#+description: Initial task for: Hotfix: fix the Linux sccache save
+#+type: task
+#+level: s1
+#+filetags: :fix-the-linux-cache-save:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-fix-the-linux-cache-save
+#+pr: 3618
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4180C0D7-969A-4E78-94A0-C95BDEF2C0C0][Hotfix: fix the Linux sccache save]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4180C0D7-969A-4E78-94A0-C95BDEF2C0C0][Hotfix: fix the Linux sccache save]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3618][#3618]] | [ci] Wait for sccache to go quiet before the Linux cache save |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Stop step in =continuous-linux.yml= and =nightly-linux.yml= now waits for the
+sccache process to exit and for the cache directory to go quiet for three
+seconds before the save starts. The old step returned as soon as
+=--stop-server= returned, so tar read files that the server still wrote. A new
+step asks the service whether the key was stored. If it was not, the workflow
+waits again and saves once more. The old entry of the variant is still deleted
+before the save, because three variants do not fit in the 10 GB allowance.
+Only a CI run proves the fix. The hit rate of about 2% is a separate cause, and
+this change does not touch it.

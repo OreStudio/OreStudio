@@ -32,6 +32,8 @@ const std::string product_version("ores.marketdata.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 const std::string http_base_url_arg("http-base-url");
+const std::string writer_db_user_arg("writer-db-user");
+const std::string writer_db_password_arg("writer-db-password");
 
 using boost::program_options::value;
 using boost::program_options::options_description;
@@ -44,6 +46,12 @@ options_description make_options_description() {
     storage.add_options()(http_base_url_arg.c_str(),
                           value<std::string>()->default_value("http://localhost:8080"),
                           "Base URL of the storage HTTP API");
+    storage.add_options()(writer_db_user_arg.c_str(),
+                          value<std::string>()->default_value(""),
+                          "Role that copies ticks to the tick table; empty copies none");
+    storage.add_options()(writer_db_password_arg.c_str(),
+                          value<std::string>()->default_value(""),
+                          "Password of the tick writer role");
 
     using ores::service::config::standard_service_options;
     return standard_service_options::make_options_description("ores.marketdata.service.log",
@@ -95,6 +103,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = std_opts.nats;
     r.database = std_opts.database;
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
+    r.tick_writer_user = vm[writer_db_user_arg].as<std::string>();
+    r.tick_writer_password = vm[writer_db_password_arg].as<std::string>();
     return r;
 }
 

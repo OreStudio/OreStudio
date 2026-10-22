@@ -184,9 +184,13 @@ struct workflow_step_def {
      *
      * @param command_json  The original command payload sent for this step.
      * @param result_json   The result payload received from the domain service.
+     * @param failure       The error of the step that failed, which is the
+     *                      reason the workflow is rolling back.
      * @return Serialised JSON to be published as the compensation command body.
      */
-    std::function<std::string(const std::string& command_json, const std::string& result_json)>
+    std::function<std::string(const std::string& command_json,
+                              const std::string& result_json,
+                              const std::string& failure)>
         build_compensation;
 };
 

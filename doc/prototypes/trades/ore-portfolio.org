@@ -17,7 +17,7 @@
 
 * Summary
 
-[[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] and [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] are workflows: each has several steps and a write that a person must understand before it happens. The prototype draws both. =?mode=export= switches to the export.
+[[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] and [[id:65B02BD9-4633-490C-B8A3-F5680067054B][Export a portfolio to ORE]] are workflows: each has several steps and a write that a person must understand before it happens. The prototype draws both. =?mode=export= switches to the export. Each is listed once, in the Workflows menu of the trade list, so neither page carries a menu. A reader is told what the screen needs and offered a request for each role that gives it. =?fail=import= and =?fail=export= show a failed call, which names its operation, status and request id.
 
 * Detail
 
@@ -27,7 +27,7 @@ Five steps: directory, choices, preview, confirm, result. The first step finds e
 
 The real import has no choice of files. It brings in every file the scan finds, and takes only the folders to skip, the parent portfolio, the re-import mode and the trade defaults. The file list is the change this prototype argues for. The journey lists it as missing, with the missing operation that lists the files.
 
-The preview is the plan. It lists every trade of the chosen files, says which counterparty names match no alias and which trade types have no instrument table, and offers a default counterparty as the way out. The result says what was refused and why, and offers the rollback. A rollback removes the trades the import created, and the prototype keeps them in the browser so that they appear on the trade list.
+The preview is the plan. It lists every trade of the chosen files, says which counterparty names match no alias and which trade types have no instrument table, and offers a default counterparty as the way out. The preview and the export check are paged. The confirm step asks for a reason and commentary. The step is in the address, so Back returns to the earlier step. The result says what was refused and why, and offers the rollback, which asks for a reason in a dialog. A rollback removes the trades the import created, and the prototype keeps them in the browser so that they appear on the trade list.
 
 ** Export
 

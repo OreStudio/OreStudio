@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-13
-#+environment: bright_faraday
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ an internal encoding, and proceeds past "Build Portfolio".
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Implemented on =feature/export-the-trades-as-the-ore-portfolio-the-engine-reads=. |
-| Waiting on   | The hourly validation build, then a run, to confirm the engine prices. |
-| Next         | Validate, then close this task and the portfolio half of [[id:08E748D6-9C5C-4073-826A-6B95D250138E][Match the run configuration to the inputs the run produces]]. |
-| Last touched | 2026-10-08                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The live run belongs to Prove the run end to end and keep it repeatable. |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
 
 * Relationship to the redesign
 

@@ -1,0 +1,21 @@
+RESULT shape=observation_no_trigger writer=copy batch=100 transactions_per_batch=1 rows=100000 secs=9.58 rows_per_s=10440
+RESULT shape=observation_no_trigger writer=copy batch=1000 transactions_per_batch=1 rows=100000 secs=3.91 rows_per_s=25580
+RESULT shape=observation_no_trigger writer=copy batch=1000 transactions_per_batch=10 rows=100000 secs=9.17 rows_per_s=10909
+RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=1 rows=100000 secs=2.07 rows_per_s=48350
+RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=10 rows=100000 secs=3.78 rows_per_s=26447
+RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=100 rows=100000 secs=9.08 rows_per_s=11019
+RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=1 rows=100000 secs=2.01 rows_per_s=49629
+RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=10 rows=100000 secs=2.90 rows_per_s=34425
+RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=100 rows=100000 secs=4.03 rows_per_s=24800
+RESULT shape=append_only writer=copy batch=100 transactions_per_batch=1 rows=300000 secs=16.51 rows_per_s=18170
+RESULT shape=append_only writer=copy batch=1000 transactions_per_batch=1 rows=300000 secs=4.93 rows_per_s=60909
+RESULT shape=append_only writer=copy batch=1000 transactions_per_batch=10 rows=300000 secs=18.34 rows_per_s=16360
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=1 rows=300000 secs=2.13 rows_per_s=141154
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=10 rows=300000 secs=3.58 rows_per_s=83827
+RESULT shape=append_only writer=copy batch=10000 transactions_per_batch=100 rows=300000 secs=18.98 rows_per_s=15807
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=1 rows=300000 secs=2.17 rows_per_s=137992
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=10 rows=300000 secs=2.61 rows_per_s=114803
+RESULT shape=append_only writer=copy batch=50000 transactions_per_batch=100 rows=300000 secs=5.34 rows_per_s=56160
+All tests passed (1 assertion in 1 test case)
+
+[exited with code 0]

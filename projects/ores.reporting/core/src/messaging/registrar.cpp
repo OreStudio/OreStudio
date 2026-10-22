@@ -240,16 +240,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_report_instance_version_request::nats_subject, group, [rih](ores::nats::message msg) {
             rih->get_report_instance_version(std::move(msg));
         }));
+    subs.push_back(
+        nats.queue_subscribe(get_latest_report_instances_by_definition_request::nats_subject,
+                             group,
+                             [rih](ores::nats::message msg) {
+                                 rih->get_latest_report_instances_by_definition(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
-        get_latest_report_instances_by_definition_request::nats_subject,
-        group,
-        [rih](ores::nats::message msg) {
-            rih->get_latest_report_instances_by_definition(std::move(msg));
+        get_report_instance_health_request::nats_subject, group, [rih](ores::nats::message msg) {
+            rih->get_report_instance_health(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_instance_health_request::nats_subject,
-        group,
-        [rih](ores::nats::message msg) { rih->get_report_instance_health(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(count_report_definitions_by_health_request::nats_subject,
                                         group,
                                         [rih](ores::nats::message msg) {
@@ -263,9 +263,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto reeh = std::make_shared<report_error_event_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_report_error_counts_request::nats_subject,
-            group,
-            [reeh](ores::nats::message msg) { reeh->get_report_error_counts(std::move(msg)); }));
+            get_report_error_counts_request::nats_subject, group, [reeh](ores::nats::message msg) {
+                reeh->get_report_error_counts(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------

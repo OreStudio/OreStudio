@@ -193,12 +193,11 @@ case no longer claims it.
 
 ** What the charts ask of the data
 
-- *A time range, not the newest row.* Every chart above spans time, and the
-  grid's read serves one stored sample today. This is
-  [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]],
-  and the charts are the demand for that read, not a nice-to-have on top of it.
+- *A time range, not the newest row.* Every chart above spans time. The grid
+  serves it with =get_grid_series= and =get_node_series=, which return stored
+  samples in whole buckets over a range.
   [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
-  is the same gap on the telemetry logs' side rather than on the grid's.
+  is the same need on the telemetry logs' side rather than on the grid's.
 - *A range selector and one shared axis.* The poller keeps thirty days, so
   last hour, day and week are all answerable; the panels must share one time
   axis so a spike lines up across them.
@@ -266,8 +265,8 @@ not actor-segregated screens.
 
 | Use case | Journey today |
 |----------+---------------|
-| Watch the grid | [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the summary, the node table and the wrappers; the load and its history are absent |
-| The rest | None. [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]] records one of the gaps, and [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] searches the installation's logs rather than pulling one node's |
+| Watch the grid | [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the summary, the node table and the wrappers |
+| The rest | None. [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] searches the installation's logs rather than pulling one node's |
 
 ** The legacy surface agrees.** The retired =ores.qt/compute= client carried
 =HostMdiWindow=, =BatchMdiWindow=, =WorkunitMdiWindow=, =ResultMdiWindow=,

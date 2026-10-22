@@ -1,0 +1,67 @@
+\set ON_ERROR_STOP on
+set client_min_messages = notice;
+
+-- 100 million append-only rows spread over the 60 days that end one hour ago: 51,840 microseconds
+-- between rows, so the table holds about 60 chunks of one day.
+create or replace procedure write_ceiling.fill_ticks(chunks int, chunk_rows bigint) language plpgsql as $$
+declare
+    pool uuid[];
+    start_at timestamptz := now() - interval '1 hour' - interval '60 days';
+    i int;
+    t0 timestamptz;
+begin
+    select array_agg(gen_random_uuid()) into pool from generate_series(1, 2000);
+    for i in 0 .. chunks - 1 loop
+        t0 := clock_timestamp();
+        insert into write_ceiling.tick_append (series_id, ts, coord, value)
+        select pool[1 + (g % 2000)],
+               start_at + ((i * chunk_rows + g) * interval '51840 microseconds'),
+               0, 43.98966624067043
+        from generate_series(1, chunk_rows) g;
+        commit;
+        raise notice 'tick_append chunk % of % done in % s', i + 1, chunks,
+            round(extract(epoch from clock_timestamp() - t0)::numeric, 1);
+    end loop;
+end
+$$;
+
+-- 5 million rows of the observation shape, with its seven indexes, spread over 87 days.
+create or replace procedure write_ceiling.fill_observations(chunks int, chunk_rows bigint) language plpgsql as $$
+declare
+    pool uuid[];
+    start_at timestamptz := now() - interval '1 hour' - interval '90 days';
+    i int;
+    t0 timestamptz;
+begin
+    select array_agg(gen_random_uuid()) into pool from generate_series(1, 2000);
+    for i in 0 .. chunks - 1 loop
+        t0 := clock_timestamp();
+        insert into write_ceiling.obs_a1 (id, tenant_id, party_id, series_id, observation_datetime,
+                                          oresmd_uri, value, source, valid_from, valid_to)
+        select gen_random_uuid(),
+               '540caae1-5ccc-43c9-82a8-5a49c5136d58', 'e93025eb-c4bf-4df0-ba80-11574a8f3d67',
+               pool[1 + (g % 2000)],
+               start_at + ((i * chunk_rows + g) * interval '1.5 seconds'),
+               'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY',
+               '43.98966624067043', 'synthetic.bloomberg.usdtry', now(), 'infinity'
+        from generate_series(1, chunk_rows) g;
+        commit;
+        raise notice 'obs_a1 chunk % of % done in % s', i + 1, chunks,
+            round(extract(epoch from clock_timestamp() - t0)::numeric, 1);
+    end loop;
+end
+$$;
+
+call write_ceiling.fill_observations(5, 1000000);
+call write_ceiling.fill_ticks(20, 5000000);
+
+select 'obs_a1' as shape, count(*) as rows,
+       pg_size_pretty(hypertable_size('write_ceiling.obs_a1')) as size,
+       round(hypertable_size('write_ceiling.obs_a1')::numeric / count(*)) as bytes_per_row
+from write_ceiling.obs_a1;
+select 'tick_append' as shape, count(*) as rows,
+       pg_size_pretty(hypertable_size('write_ceiling.tick_append')) as size,
+       round(hypertable_size('write_ceiling.tick_append')::numeric / count(*)) as bytes_per_row
+from write_ceiling.tick_append;
+select hypertable_name, num_chunks from timescaledb_information.hypertables
+where hypertable_schema = 'write_ceiling';

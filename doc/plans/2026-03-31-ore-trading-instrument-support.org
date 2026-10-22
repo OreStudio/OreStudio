@@ -7,7 +7,7 @@
 * Overview
 
 This plan completes Layer 2 (=ores.trading=) instrument mapper coverage for all
-131 ORE XML instrument types. Layer 1 (=ores.ore= xsdcpp-generated types) is
+131 ORE XML instrument types. Layer 1 (the =ores.ore= codec tables) is
 100% complete — 131/131 golden roundtrip tests pass with zero field gaps.
 
 All SQL tables, C++ domain types, NATS messaging, service, and handler layers

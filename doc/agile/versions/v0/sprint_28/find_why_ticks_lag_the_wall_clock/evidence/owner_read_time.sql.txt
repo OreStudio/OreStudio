@@ -1,0 +1,9 @@
+\timing on
+\o /dev/null
+select count(*), sum(value) from write_ceiling.tick_owner where series_id = md5('s140')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where series_id = md5('s140')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where series_id = md5('s140')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where party_id = md5('p70')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where party_id = md5('p70')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where tenant_id = md5('t7')::uuid;
+select count(*), sum(value) from write_ceiling.tick_owner where tenant_id = md5('t7')::uuid;

@@ -21,6 +21,7 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/work_tenant_repository.hpp"
+#include "ores.compute.core/repository/work_total_repository.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/steady_timer.hpp>
@@ -58,6 +59,12 @@ void compute_grid_poller::poll_once() {
             tenants.push_back(id);
     }
 
+    // The totals of every tenant's work are summed from the counters read inside each tenant,
+    // so no read crosses a tenant. A tenant that cannot be read leaves the sum incomplete, and
+    // an incomplete sum is not written: it would show a tenant's work as empty.
+    repository::work_totals totals;
+    bool complete = true;
+
     std::size_t rows = 0;
     for (const auto& tenant : tenants) {
         try {
@@ -75,12 +82,27 @@ void compute_grid_poller::poll_once() {
                 sample.sampled_at = sampled_at;
                 sample.id = boost::uuids::random_generator()();
                 sample_repo.write(tenant_ctx, sample);
+                totals.add(sample);
                 ++rows;
             }
+            ++totals.tenants_counted;
         } catch (const std::exception& e) {
+            complete = false;
             BOOST_LOG_SEV(lg(), warn)
                 << "Could not sample the grid for tenant " << tenant << ": " << e.what();
         }
+    }
+
+    if (complete) {
+        totals.sampled_at = sampled_at;
+        try {
+            repository::work_total_repository().write(ctx_, totals);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Could not write the work totals: " << e.what();
+        }
+    } else {
+        BOOST_LOG_SEV(lg(), warn)
+            << "The work totals were not written: a tenant could not be read.";
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Grid sample: " << rows << " row(s) for " << tenants.size()

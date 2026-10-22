@@ -1,0 +1,11 @@
+# commit f92fac4827, measured before a formatting pass, 2026-10-21T21:47:35Z
+# 60,000 ticks over 200 datums, one binding, one tick writer connection, Timescale licence apache
+# each run starts a new loop for each mode and sends one burst through NATS, serial first
+# cpus: 8; the load is the one-minute load average at the end of each pair
+# ORES_BURST_REPETITIONS=6 ores.marketdata.service.tests burst_serial_against_pipelined_through_nats
+RESULT serial against pipelined run 1: serial 122609, pipelined 135618 rows per second, load 6.0
+RESULT serial against pipelined run 2: serial 95212, pipelined 146319 rows per second, load 6.5
+RESULT serial against pipelined run 3: serial 95958, pipelined 118124 rows per second, load 6.5
+RESULT serial against pipelined run 4: serial 107527, pipelined 134998 rows per second, load 7.1
+RESULT serial against pipelined run 5: serial 95310, pipelined 135483 rows per second, load 7.1
+RESULT serial against pipelined run 6: serial 93599, pipelined 127497 rows per second, load 7.5

@@ -1462,6 +1462,8 @@ const fr: SourceCatalogue = {
             abandonedCount: '{count} abandonnés',
             scenario: 'Scénario',
             target: 'Cible',
+            environment: 'Environnement',
+            thisEnvironment: 'Cet environnement',
             progress: 'Avancement',
             state: 'État',
             completed: 'Terminé le',

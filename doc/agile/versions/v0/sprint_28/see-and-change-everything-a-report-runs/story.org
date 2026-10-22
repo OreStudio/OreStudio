@@ -1,0 +1,327 @@
+:PROPERTIES:
+:ID: 3D27C8F8-317E-41BC-8F1B-6FBD12836820
+:END:
+#+title: Story: See and change everything a report runs
+#+description: A report page shows its definition, its configurations and its conventions on tabs, and a person can choose the conventions a report reads.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who opens a report sees, on one page, what the report is, what it runs with, and which conventions it reads, and can change each of them in the place that owns it. Today the page shows the definition and a list of bindings, and nothing can be changed except the definition's own fields: the configurations are read-only and the conventions binding is a header with no effect, because a run reads every convention document of the party.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The report page analysis is merged. The engine settings design and prototype are in PR 3619 and wait for the owner's sign-off. |
+| Waiting on    | Owner sign-off on the three groups, the 15 engine settings and the open questions under Design. |
+| Next          | Owner signs off the engine settings prototype, then the data model starts. |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- The report page has six tabs, Definition, Scope, Analytics, Market and pricing, Conventions and History, and each tab says what a change on it reaches.
+- A person can choose the convention set a report reads, and a run reads the documents of that set and no others.
+- The prototype is signed off by the owner before the screens are built.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
+| [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
+
+* Analysis
+
+Measured on the bright_faraday development database on 2026-10-21, and read from the code of the same date.
+
+** What the page shows today
+
+The report page is one scroll. A record card holds the definition's fields and offers Edit. A Latest run card follows. A Configurations card lists the bindings, each by kind and name, and each name opens a configuration page that is read-only. There are no tabs.
+
+The only thing a person can change on it is the nine fields of the definition itself.
+
+** What a report binds
+
+Each of the 22 definitions of ACME Corporation HK Ltd binds five configurations:
+
+| Kind | Name | Bound by |
+|------+------+----------|
+| Conventions | HK conventions | all 22 |
+| Pricing engines | HK pricing engines | all 22 |
+| Today's market | HK today's market | all 22 |
+| Curve configuration | HK curve configuration | all 22 |
+| Risk report configuration (the run settings) | one of 14 | 1 to 3 each; 8 of the 14 are shared |
+
+So four of the five belong to the party, and a change to one reaches every report of it. Only the run settings are close to the report, and even they are shared by two or three reports in eight cases. A page that offers a change must say who the change reaches.
+
+** Why the conventions cannot be changed
+
+Three facts, and each blocks the change on its own.
+
+1. *A convention set does not exist.* The conventions configuration a report binds is a name. It holds no document. The 26 convention kinds are 26 tables, and no table stores a set, a set's name or its purpose.
+2. *A run ignores the binding.* The packaging reads every convention row of the party's 26 kinds (=read_family= in =run_configuration_operations.cpp=). Binding another configuration would change nothing a run reads.
+3. *No document is marked as the one that counts.* The party holds 11,027 convention documents in 26 kinds. The largest kind, commodity futures, holds 3,950. A run reads all of them. The journey "See the conventions a party uses" states the same gap.
+
+A convention document can be changed on its own screen, =/refdata/conventions=, and that change reaches the whole party. What cannot be done is to choose, for one report, which documents it reads. The journeys already name the answer: named convention sets, one document of each kind, chosen by the report. The set, and a run that reads it, are the work. The tab is the small part.
+
+** What the prototype argues
+
+[[file:../../../../prototypes/reporting/see-a-report-and-everything-it-runs.org][See a report and everything it runs]] draws the page on tabs. The owner reviewed the first version on 2026-10-21 and decided the layout and four changes.
+
+| Decision | Content |
+|----------+---------|
+| Layout | Several tabs, not three and not one page. |
+| Run settings | Not a tab. The configuration is a bag: a currency, a market data kind, engine settings, and two children, the scope and the analytics. The scope and the analytics are tabs. The currency is the report's. The market choice goes with the market. The engine settings go with the analytics. |
+| Report currency | A report has a report currency, not a base currency. The column keeps the name =base_currency=. Only the screen changes the word. |
+| Currency flag | The currency is drawn with its flag, as the application draws a currency. |
+| History | The page has the shared timeline, as every record page has. Its rail also merges the versions of the configurations the report binds, because a changed figure may come from a configuration. |
+| Market data | The definition states end of day or intraday and never a date. Each run reads the market data of its own time point. The configuration draws no date. |
+| Engine settings | The engine settings page lists the documented settings in three groups, each with its documentation collapsed under it. |
+
+The tabs are Definition, Scope, Analytics, Market and pricing, Conventions and History. Each states what a change on it reaches.
+
+** What needs the owner's decision
+
+1. *The layout.* Decided on 2026-10-21: tabs, with the scope and the analytics apart. See the table above.
+2. *The conventions model.* Named sets chosen by the report, as the journeys say. The alternative is a per-kind override on the report, which the journeys retired. The prototype assumes sets.
+3. *A kind a set does not cover.* The run could fail with a message that names the kind, or fall back to every document of that kind. The prototype shows failure, which is the stricter choice.
+4. *Who changes a shared configuration.* A change to a configuration read by 22 reports is a change to a party. The choices are: allow it with the reach stated, require the approval a convention change already needs from Market Risk, or fork the configuration for the report on edit.
+5. *Where the scope is edited.* On the Scope tab, or on the configuration's own page. The prototype draws it on the tab, marked as proposed, because that is where the book type rule is read.
+
+** The work, once signed off
+
+| Step | Content | Needs |
+|------+---------+-------|
+| 1 | The tabs Definition, Scope, Analytics, Market and pricing and Conventions, read-only, each with its reach statement, and the report currency with its flag. | Web and BFF only. The scope and the analytics are read through the configuration page's own reads. |
+| 2 | The History tab: the standard history of the definition. | A server change first, see below. |
+| 3 | Scope and analytics edit on their tabs. | A BFF write for the scope tables and for the analytics, and the decision on who changes a shared configuration. |
+| 4 | Pricing engines, today's market and the curve configuration open from the Market and pricing tab. | The prototypes for the pricing engines exist. The other two need screens. |
+| 5 | Convention sets: the table of sets, the packaging that reads a set, and the choice on the tab. | Decisions 2 and 3. This is the largest step and a story of its own. |
+
+*Why the History tab needs the server first.* The report page has no history tab today, and its test says the versions cannot be read by id. That is true, for two reasons found in the code on 2026-10-21:
+
+1. The service has a history provider for report definitions, =register_report_definition_history_provider=, and nothing calls it. The reporting service does not answer the generic history read for a definition.
+2. The provider reads by the definition's name (=get_definition_history= sets =key.name=). A name is unique within a party only, so two parties that run a report of one name would read each other's history. The generic request names the entity by its own id, and the definition's id is what the page holds.
+
+So the step is: register the provider, key it by the definition's id, and test that two definitions of one name in two parties read their own versions. Then the BFF route and the shared history panel follow the pattern the other records use.
+
+*The word report currency.* The screen calls =base_currency= the report currency. The column keeps its name for now. Renaming it touches the model, the generated code, the seed and the shell, and is a separate change if the owner wants it.
+
+Step 1 can start at once and delivers the page the owner described, without the history. Step 5 is what makes "change the conventions" real.
+
+* Design: the engine settings as a named configuration
+
+Measured on the bright_faraday development database on 2026-10-21, and read from the code of the same date. The review
+applies [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+
+** What the run settings table holds today
+
+=ores_reporting_risk_report_configs_tbl= has 28 value columns in four groups, and four families of child rows.
+
+| Group | Columns | In the 46 rows |
+|-------+---------+----------------|
+| Report currency | =base_currency= | 3 distinct values |
+| Market time | =market_data_type=, =market_data_date= | always =eod=, never a date |
+| Package layout | =input_path=, =output_path=, =log_file=, =input_path_market=, =input_path_portfolio= | the three defaults everywhere, the other two never set |
+| Engine settings | 20 columns | 5 are set, and 15 are null in every row |
+| Child rows | scope, analytics (73 rows), analytic parameters (175 rows), market roles | where the rows differ |
+
+The 46 rows hold 7 distinct engine setting tuples. Three parties have 12 rows with one tuple and 2 rows that differ
+only in =n_threads= (4 instead of 1). The fourth party has 4 rows with one tuple. Each party's 14 rows hold 14
+different analytic sets. The rows differ in scope and analytics. The engine settings barely differ.
+
+** Findings
+
+| # | Finding | Severity | Criterion |
+|---+---------+----------+-----------|
+| 1 | One row mixes four field sets with different readers and change reasons. | Important | Access patterns drive layout. The rule for a part. |
+| 2 | The run document generator copies the stored row and overwrites its market fields with the resolved date (=run_document_generator.cpp=, =generate_run_document=). The instance table has no as-of column and no reference to the settings it used. | Important | Access patterns. Identity by key. |
+| 3 | Eleven flags are text with two spellings in the data (=false= and =N=). The table has no check on them. | Minor | Type discipline. |
+| 4 | The five package path columns describe the package layout, not a choice. | Minor | Access patterns. |
+| 5 | The name and description sit in the registry and in the header. They match in 46 of 46 run settings rows and 4 of 4 pricing engine rows. | Minor | Single source. |
+| 6 | The generic =parameter_definition= and =configuration_parameter= tables hold no Setup definition and no value. | Opportunity | No evidence of cost. |
+
+The regime 2 score is 3 of 5, and the debt is Medium.
+
+** What the ORE source says about the 19 settings
+
+Checked on 2026-10-21 against the ORE 1.8.17 source (=OREAnalytics/orea/app/inputparameters.cpp=, =oreapp.cpp=,
+=OREData/ored/marketdata/csvloader.cpp=) and the user guide (=Docs/UserGuide/parameterisation/ore.tex=). The version is the one
+the repository records in =external/ore/catalogue/ore_version.txt=.
+
+| # | Finding | Consequence |
+|---+---------+-------------|
+| 7 | Six stored settings are not read from the Setup block at all: =accrualDate=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics= and =additionalResults=. A seventh, =portfolioRecurseIntoSubDirectories=, is not read either. Shipped legacy examples set them, and they change nothing. | A person who edits one of them believes they changed a run. |
+| 8 | =csvCommentReportHeader= is the one character that marks a comment line in a CSV report, with the default =#=. It is not a Y or N flag. A value of =N= makes the letter N the comment character. | The model, the column comment and the two shipped examples that set =N= treat it as a flag. |
+| 9 | The model lists the observation model values as Disable, None, Move and Defer. ORE has None, Disable, Defer and Unregister. =Move= does not exist. | The model comment is wrong, and the prototype uses the real four. |
+| 10 | ORE accepts every spelling of a flag (=Y=, =YES=, =TRUE=, =true=, =1= and the negatives). The two spellings in the data do not matter to ORE. | Typed booleans are safe. The spelling question in the open list is settled for ORE. |
+| 11 | The ORE source defaults =continueOnError= and =buildFailedTrades= to true. The user guide says false for both. | An unset value is not safe. The platform must write both explicitly. |
+| 12 | ORE reads at least twelve Setup parameters that the model does not store, among them =allowModelBuilderFallbacks=, =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead=, =useMarketDataFixings=, =eomInflationFixings=, =entireMarket=, =allFixings=, =csvSeparator=, =reportBufferSize=, =gzipCompressionLevel= and =dryRun=. | The projection refuses a Setup parameter that is neither a choice nor a file, so a document that sets one is refused. |
+
+Finding 12 needs a decision before the model task starts: keep the 13 live settings, drop the 7 that ORE ignores, and add
+the live ones the owner wants to manage. Every setting now has a long description and a table of its values in the
+prototype, written from the source.
+
+** Where the run date comes from
+
+=as_of= in =run_document_generator.cpp= resolves the date for each run. =eod= gives the weekday before the run date, =live=
+gives the run date, and =date= gives the stored date. The =eod= rule does not consult holiday calendars. The definition
+states end of day or intraday and no date, so the =date= kind and the stored date belong to the run.
+
+** How the named configurations compare
+
+| Kind | Header | Content | Header holds content columns |
+|------+--------+---------+------------------------------|
+| Pricing engines | =pricing_model_config=: id, party, name, description, =configuration_id= | product rows and parameter rows | No |
+| Today's market | =todays_market_config= | collection, entry, configuration and binding rows | No |
+| Curve configuration | =curve_configuration= | section rows and curve definition rows | No |
+| Conventions | none | 26 tables read as a whole | not applicable |
+| Run settings | =risk_report_config= | 28 value columns and four child families | Yes, the only one |
+
+** The design
+
+The engine settings become a named configuration of type =engine_settings=. A report definition binds one in its own
+slot, as it binds the pricing engines. The configuration is an entity made of a central row and three parts, and it holds
+every engine setting that the official ORE documentation describes, 15 in all. The owner first confirmed five groups on
+2026-10-21. The documented-only rule, described below, leaves three.
+
+| Table | Role | Settings |
+|-------+------+----------|
+| =engine_settings= | central row, the named configuration reports bind | name, description, =configuration_id= |
+| =engine_settings_fixings= | part, changes the numbers | =implyTodaysFixings=, =includeTodaysCashFlows=, =includeReferenceDateEvents=, =enrichIndexFixings=, =ignoreFixingLag=, =ignoreFixingLead= |
+| =engine_settings_building= | part, changes the numbers | =observationModel=, =lazyMarketBuilding=, =buildFailedTrades=, =continueOnError=, =useAtParCouponsCurves=, =useAtParCouponsTrades= |
+| =engine_settings_execution= | part, operational | =nThreads=, =logMask=, =gzipCompressionLevel= |
+
+*Why parts.* The standard says a field set earns a part when it has its own multiplicity, change reason or reader. The two
+groups that change the numbers have a change reason that differs from the operational group. A person edits one group at a
+time, and the run reads all three. A group can be absent, and an absent part means the engine default for the whole group.
+The convention families already use this shape, for example =tenor_basis_swap_pay_receive=.
+
+*The composition rule.* A write to any part bumps the central row's version in the same transaction. The History tab shows
+one entry for each part changed.
+
+*What leaves the run settings.*
+
+- The report currency moves to the report definition.
+- The market data kind moves to the report definition, as end of day or intraday. The run carries its own time point.
+- The five package paths and =portfolio_recurse_into_sub_directories= are package layout. The platform sets them and no
+  configuration stores them.
+- The run settings configuration keeps the scope, the analytics and the market roles. These are the Scope and Analytics tabs.
+
+*Migration.* The 46 rows become 7 engine settings configurations, each with at most three part rows. Each name starts with
+its party's name. Only the five values that the rows set today migrate.
+
+** The documented-only rule
+
+Decided by the owner on 2026-10-21: the screens describe only the parameters that the official ORE documentation mentions, and
+the model holds all of them. Where the guide and the source disagree, the source wins.
+
+Checked against =Docs/UserGuide= of ORE 1.8.17.0. Eleven of the 19 stored settings are in the guide. Eight are not and leave
+the model: =accrualDate=, =fixingCutoff=, =dateCalendar=, =dateConvention=, =defaultMappingToIdentity=, =useAnalytics=,
+=csvCommentReportHeader= and =additionalResults= as a Setup parameter. Four documented settings were not stored and are
+added: =useAtParCouponsCurves=, =useAtParCouponsTrades=, =ignoreFixingLead= and =gzipCompressionLevel=.
+
+=ignoreFixingLag= moved to the fixings part, because it limits the fallback that Enrich index fixings fills. The groups Dates
+and Report output of the first design hold no documented setting.
+
+The documented Setup parameters that are not engine settings stay where they are: =asofDate= is the run's own time point,
+=baseCurrency= is the report currency, =inputPath=, =outputPath= and =logFile= are package layout, and the file parameters are
+documents. =includePastCashflows= is a parameter of the cashflow analytic in the guide, not of Setup.
+
+The defaults on the screen follow the source. The source defaults =continueOnError= and =buildFailedTrades= to Yes where the
+guide says No. The guide says =includeTodaysCashFlows= and =includeReferenceDateEvents= default to false.
+
+*Consequence for the importer.* A run document that sets a parameter the model does not hold is no longer refused. The
+importer drops the parameter and reports a warning that names it. This covers the eight settings that left the model and
+every other Setup parameter that the guide does not describe. =fixingCutoff= and =csvCommentReportHeader= are read by ORE, and
+=fixingCutoff= changes the numbers, so the warning says that the run will not read the parameter and that its numbers may
+differ from the original run. Decided by the owner on 2026-10-21.
+
+** Two more findings
+
+| # | Finding | Consequence |
+|---+---------+-------------|
+| 13 | A report does not state the ORE build it runs on. =report_submit_handler.cpp= picks the application version with the highest =engine_version= when it submits the job, and compares the versions as text, so 1.8.9.0 would rank above 1.8.17.0. The run instance records no application version. | A warning that a setting is newer than the build has no build to compare with. The target build needs a home in the data model, and the run needs to record the build it used. |
+| 14 | The model already holds the entities that the values of some parameters refer to, for example =business_day_convention_type=, =calendar_name= and =day_count_fraction_type=. | A table of values in the documentation would duplicate them. The documentation holds no value tables. |
+
+** The tasks this design implies
+
+| Task | Content |
+|------+---------|
+| Prototype the engine settings screen | Done on this branch: =see-the-engine-settings-a-party-holds=. |
+| Model the engine settings | The central row and its parts, the configuration type, the binding slot, and the migration from the run settings. |
+| Move the currency and the market kind to the definition | A column each on the report definition, and the run records its as-of time. |
+| Project the engine settings into the Setup block | The projection reads the parts instead of one row, the package layout stops being stored, and the importer drops a parameter the model does not hold and warns. |
+| Build the engine settings screens | The list and the page of the prototype. |
+| Record what a run used | The instance records its as-of time and the version of each configuration it read. |
+
+** The documentation system
+
+Decided by the owner on 2026-10-21, after the review of the ORE source.
+
+1. The documentation is data of its own, apart from the data model. The existing =parameter_definition= table is generalised
+   into a documentation system for every ORE parameter and every ORE document element. It serves the UI with text, versions
+   and formats. It does not validate values: validation stays with the data model.
+2. A documentation entry relates to the ORE file it belongs to. The screens are hard coded to look an entry up by the name
+   of the setting.
+3. The system covers the conventions, the configurations, the pricing engines, today's market, the curve configuration and
+   the analytics, not only the Setup block. The 365 analytic parameters and the 35 analytic types get the same columns.
+4. An entry carries the ORE XML name, the release that introduced the parameter (since), the release that removed it (empty
+   while ORE still reads it), the default, a long description, the format as text, and whether it changes the numbers, which
+   the screen shows as a label. The description explains what each value means. The entry holds no table of values: a value
+   that refers to an entity is bound to that entity, and the documentation does not copy it.
+5. A setting that the engine build does not read produces a warning, not a refusal. The application supports two builds,
+   ORE 1.8.17.0 and 1.8.16.0, and the documentation covers the parameters of those two only. The warning waits for a target
+   build in the data model, see finding 13.
+6. Only parameters that the official ORE documentation mentions are described. The undocumented legacy settings are removed
+   from the screens.
+7. The screens show a Simple and Advanced switch as on the feed screens. The documentation of a setting is collapsed under
+   it. Advanced adds the entry: the ORE XML location, introduced in, removed in and the format.
+
+The since and last version values are measured from the 20 ORE release tags (v1.8.0.7 to v1.8.17.0) by searching each tag for
+the Setup read. The two oldest settings are lower bounds. =useAnalytics= is read in 1.8.9.0 only. Six settings are never read
+in any tag. For those, the entry shows the first and the last release whose shipped examples carry the setting, and says so.
+
+** Open questions for the owner
+
+1. Who may change a group. The prototype lets an analyst edit all three. The two groups that change the numbers may need
+   an approval like a pricing engine change.
+2. The spelling of the flags. Every flag parses with =parseBool=, so the model can store booleans. The remaining choice is
+   whether the projection writes =true= and =false= or =Y= and =N=. The prototype draws Yes and No.
+3. Whether the currency and the market kind move in this story as separate tasks, or in a later one.
+4. Whether the scope and the analytics get names of their own later. The data says they are what differs between reports.
+5. Where the target ORE build lives, and how the run records the build it used. See finding 13.
+
+Settled on 2026-10-21: the model holds every documented engine setting, 15 in three groups. The source wins when it
+disagrees with the guide. The importer warns about parameters it drops.
+
+* Decisions
+
+- The page has six tabs and no Run settings tab. Decided by the owner on 2026-10-21.
+- A report has a report currency, drawn with its flag. The column keeps the name =base_currency=.
+- The definition states end of day or intraday and never a date. The run carries its own time point.
+- The History tab is the shared timeline, not the compare panel.
+- The engine settings become a named configuration of type =engine_settings=, bound by the report definition in its own slot. Decided by the owner on 2026-10-21.
+- The configuration is a central row with parts. The owner confirmed five groups on 2026-10-21. The documented-only rule leaves three: fixings and cash flows, market and trade building, and execution. The owner confirms the three.
+- Only parameters that the official ORE documentation mentions appear on the screens. Decided by the owner on 2026-10-21.
+- The documentation holds no table of values. A value that refers to an entity is bound to that entity.
+- The importer drops a Setup parameter that the model does not hold and warns, instead of refusing the document. Decided by the owner on 2026-10-21.
+- Open: who may change a group, the spelling of the flags, and when the currency and the market kind move. See the design.
+
+* Out of scope
+
+- Building the screens, which waits for the owner's sign-off.
+- Renaming the column =base_currency=.

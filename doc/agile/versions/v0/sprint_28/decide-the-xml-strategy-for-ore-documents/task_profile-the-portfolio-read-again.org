@@ -28,7 +28,7 @@ Profile the portfolio read test, remove the largest avoidable cost, and state th
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | The file read is fixed. The profile and the peak memory are recorded. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. Two later candidates are in the Notes. |
 | Last touched | 2026-10-20                               |

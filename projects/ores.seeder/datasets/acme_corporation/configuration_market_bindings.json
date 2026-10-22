@@ -51,16 +51,6 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "22434fbc-686f-52bc-a19d-8f3530cde6a5",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "d3afa1b2-c28d-59a6-833d-a652ea2d6075",
-    "role": "pricing",
-    "market_configuration_name": "default",
-    "position": 1
-  },
-  {
-    "company_code": "acme_uk",
     "id": "89119d7b-d99f-5fb3-a7f8-f8f733a34214",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -81,20 +71,20 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "d2b48857-5aa5-55d3-a195-2be41bcabcf4",
+    "id": "181f08a6-3fac-5f19-9686-10bea3b2ac31",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "c324ba5b-adbb-5857-97bb-4670ab679719",
+    "configuration_id": "7c7e550b-3eda-58b3-952c-58d754a800bd",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "48fd1f9e-afa2-51bf-8671-670c3e22e715",
+    "id": "3ab22c0c-4c54-5209-8e58-95aeaa359800",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "38ff0f66-de34-5e74-9da8-706f48074d9d",
+    "configuration_id": "dee3cde5-b92e-54ae-9ac4-fa7b222073c0",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -121,20 +111,20 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "8560c203-9f11-5527-953e-b75d08b82bcb",
+    "id": "a1caf730-71dc-558f-aed2-cc8e9b0022aa",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "34ecc8dd-0f04-50e0-b331-cbca40a5ce06",
+    "configuration_id": "24cab132-4ae1-53db-a825-0e25d4514bee",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "997b8bd8-2be9-544e-a881-b8138221fa53",
+    "id": "c23ff1e2-12d4-5718-8777-0281927293b6",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "0209b919-43ad-55b2-85a8-f09a52fb090f",
+    "configuration_id": "3b6021b0-2c55-500e-bed3-040a97fb33fc",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -151,40 +141,40 @@
   },
   {
     "company_code": "acme_uk",
-    "id": "bdd73443-97aa-571e-ab4e-a360175c2226",
+    "id": "841fe67f-6552-58e8-a232-d5ed6c88818c",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "980df085-f950-5e0d-a93d-7f35217729fb",
+    "configuration_id": "fc8a3a8f-9d0b-5cf8-a7ff-97e3ac8e5d15",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "970f8577-d58c-5e2b-ab8b-ae85e658139f",
+    "id": "420bfb58-1db4-5cac-95ca-7ffcd07e06a6",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "a1beac36-06d0-52c0-8f2b-a4e044602635",
+    "configuration_id": "a9e45107-f236-569c-a038-0a5340197767",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "1f230dff-16d6-5d3a-90d4-65998a0f19b0",
+    "id": "8400a6ac-3452-59cf-9238-518c7b107f05",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "a3530f75-ba02-5a41-8738-2a16e34cd767",
+    "configuration_id": "5cfa7a5b-d171-51d3-b507-4466f8a9709b",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "9f38b542-8b9f-5a67-b8bc-c6a43d235532",
+    "id": "73882255-882c-5ac3-a2fc-1d3abab5aa16",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "c26330fd-5419-5339-84dc-86a7018ebb21",
+    "configuration_id": "2c1abc17-4819-5570-9241-a92be09c7236",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -195,16 +185,6 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "8494aa1b-7346-545c-a39f-026a6722c26d",
-    "role": "pricing",
-    "market_configuration_name": "default",
-    "position": 1
-  },
-  {
-    "company_code": "acme_us",
-    "id": "08f0e6bd-cf91-54cc-b5ce-719747f7dbbd",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "1ad95938-a5c2-5864-b3b8-201ad457370e",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -231,20 +211,20 @@
   },
   {
     "company_code": "acme_us",
-    "id": "80f1b1c3-31a1-506f-bc7a-a3ec00ddbd4c",
+    "id": "0d884f3a-76a3-53cb-a47e-1e819fb5a419",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "f1f094e8-30fe-5378-a9ab-bd1cbb3761ff",
+    "configuration_id": "77dc5217-e68a-5f70-908c-585d359e9c3d",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_us",
-    "id": "d61bd8c0-7db7-5f3e-a199-3a227810c46e",
+    "id": "3de2ed1d-f005-51a1-9f61-023d1c1fa811",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "6f3453c6-3d09-5da2-b724-f094314530e2",
+    "configuration_id": "53fbc1fa-ea36-5f4c-b119-0275bc47cb2c",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -271,20 +251,20 @@
   },
   {
     "company_code": "acme_us",
-    "id": "0a09d121-ccec-510c-bf5b-019358848cb2",
+    "id": "87f70bf3-3027-595d-a6f2-3517d9b32e02",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "a89d8330-4221-52f9-8781-ea5c7f378d61",
+    "configuration_id": "ed1f41d5-3ea6-577e-b738-c31ff7b4c2ea",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_us",
-    "id": "4335d8e6-8c21-5383-bda4-427bc3cd03b3",
+    "id": "0dc4bf6b-c279-58d4-ab57-a7dc3170a35e",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "c02b9df9-d299-5b42-b8b2-f6bc2d63cf49",
+    "configuration_id": "ae999be2-cdf7-55b8-8321-249334097b9f",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -301,40 +281,40 @@
   },
   {
     "company_code": "acme_us",
-    "id": "52a6b4f8-ca1f-517c-b274-ab5caf7d5df2",
+    "id": "06ec5b94-c10c-53db-a2ac-1616db3b0427",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "43483816-680e-5107-b0b1-407caf8afc1f",
+    "configuration_id": "223ae85e-ed90-5f56-9c4c-99b7fa0e2cec",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_us",
-    "id": "096f0bbf-924b-5b2e-b3cf-fa3161473327",
+    "id": "094f9a30-d829-571a-9d22-55085d0303ee",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "e58894b9-ae4c-5039-9ea4-ee21a5e910cb",
+    "configuration_id": "16134383-5615-51f4-81fa-0d32226dca62",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_us",
-    "id": "b347c0ba-98c4-5be1-81a6-c054f295ae65",
+    "id": "67171e1a-60d8-52d0-9cea-e0d3dc032d88",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "29cdeb23-57cf-51f0-8558-99c21dc8f775",
+    "configuration_id": "06d7b40b-5c62-5e3a-8a1e-f9a0ed108366",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_us",
-    "id": "39b100a6-67c6-59e5-862d-6c4e839c800d",
+    "id": "05aac4cc-4f3e-51be-b1d6-ff29e00c591b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "765acac9-bd92-5026-9f36-c0507c001265",
+    "configuration_id": "441d3c7c-aba9-549b-af71-7b51ba427854",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -345,16 +325,6 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "beb4e88f-97e3-5db2-b9fc-80e9cc5731b6",
-    "role": "pricing",
-    "market_configuration_name": "default",
-    "position": 1
-  },
-  {
-    "company_code": "acme_hk",
-    "id": "3ecd410b-d55e-5990-829f-c56abfb912f7",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "fa56a48a-9d89-56e0-a4af-941469fd7a47",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -381,20 +351,20 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "74c3e984-ef46-5979-8301-536c550adb07",
+    "id": "ee20f6a2-71ba-53a8-9e6a-b0fefacc4daf",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "474027a8-8be0-5787-ac7a-55b849074f78",
+    "configuration_id": "b1f953d7-55c3-5212-86d0-96b4a8dfe4cd",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "b4933d7e-7b25-581e-ba36-36e6b86c7216",
+    "id": "1ba24901-75c1-5f4c-bfca-223fa04074a5",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "24d31c24-7f03-507a-9b6d-d78726830d38",
+    "configuration_id": "c0dc9810-0607-5560-a32e-2e47416812c7",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -421,20 +391,20 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "917b766a-ae01-512a-82c3-02c2b952fbdf",
+    "id": "5ee97ac9-6e7e-5c94-ba49-9284fe72a235",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "53108de8-27d9-5374-997c-47533bd38f65",
+    "configuration_id": "b9630f4c-9157-5d3b-a8e4-09e64792258c",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "cfe54deb-7bf3-505d-9571-8bb577ba3f5b",
+    "id": "f33c4c79-740a-5196-bcd3-684d2ee42e79",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "5412511f-8e31-5999-8956-537c241c1a87",
+    "configuration_id": "745fae4e-f27d-5c52-b1d6-9ae81b081355",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -451,40 +421,40 @@
   },
   {
     "company_code": "acme_hk",
-    "id": "697fa8a2-c45b-5274-908e-96567bc5a0eb",
+    "id": "04f4b634-8d43-5a2d-921c-0c735d59e509",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "3096edfd-4fee-5b67-a1e7-e70d7f832fc7",
+    "configuration_id": "1b477ff0-382e-5af6-bb21-492616e22915",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "a3ce96c8-587f-5aa9-924c-671521eafe1d",
+    "id": "cb58225e-3019-57ac-be12-ac5ab546924b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "e9f5d5b3-3a25-5058-8724-9bd1423497b5",
+    "configuration_id": "dd3133b7-981e-5168-be81-c3306ac6082c",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "9680bf9f-9c97-5b3b-ac23-84b4828e38be",
+    "id": "06b35f11-226a-5d1a-ac8d-e0dac7e8a181",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "10de689e-632a-5b67-b274-23caebcf3418",
+    "configuration_id": "de9bf174-b8b4-5de4-bf80-db41b5f28b71",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "5703c8e8-1e63-55c8-b1be-68c37976c281",
+    "id": "3971dc79-a05c-5640-9a9f-ea42c98818cb",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "configuration_id": "03a7a8ee-5467-545d-b3a5-694f9f94ab7f",
+    "configuration_id": "a43cf434-b482-5785-bd3e-686b2df9d00b",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1

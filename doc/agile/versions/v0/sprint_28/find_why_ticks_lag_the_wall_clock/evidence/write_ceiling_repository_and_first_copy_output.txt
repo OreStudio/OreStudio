@@ -1,0 +1,22 @@
+# Repository insert, observation table as built, test tenant
+RESULT shape=observation writer=repository batch=100 transactions_per_batch=1 rows=40000 secs=43.51 rows_per_s=919
+RESULT shape=observation writer=repository batch=1000 transactions_per_batch=1 rows=40000 secs=22.52 rows_per_s=1776
+RESULT shape=observation writer=repository batch=5000 transactions_per_batch=1 rows=40000 secs=18.22 rows_per_s=2195
+RESULT shape=observation writer=repository batch=20000 transactions_per_batch=1 rows=60000 secs=25.79 rows_per_s=2326
+
+# First COPY run, stopped by a 25 minute limit: cells with one row for each transaction are commit-bound
+ RESULT shape=observation_no_trigger writer=copy batch=100 transactions_per_batch=1 rows=120000 secs=6.93 rows_per_s=17313
+ RESULT shape=observation_no_trigger writer=copy batch=100 transactions_per_batch=10 rows=120000 secs=57.26 rows_per_s=2096
+ RESULT shape=observation_no_trigger writer=copy batch=100 transactions_per_batch=100 rows=120000 secs=536.30 rows_per_s=224
+ RESULT shape=observation_no_trigger writer=copy batch=1000 transactions_per_batch=1 rows=120000 secs=2.85 rows_per_s=42129
+ RESULT shape=observation_no_trigger writer=copy batch=1000 transactions_per_batch=10 rows=120000 secs=8.41 rows_per_s=14273
+ RESULT shape=observation_no_trigger writer=copy batch=1000 transactions_per_batch=100 rows=120000 secs=57.66 rows_per_s=2081
+ RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=1 rows=120000 secs=2.38 rows_per_s=50519
+ RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=10 rows=120000 secs=3.14 rows_per_s=38246
+ RESULT shape=observation_no_trigger writer=copy batch=10000 transactions_per_batch=100 rows=120000 secs=8.99 rows_per_s=13347
+ RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=1 rows=100000 secs=2.08 rows_per_s=48065
+ RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=10 rows=100000 secs=2.50 rows_per_s=39934
+ RESULT shape=observation_no_trigger writer=copy batch=50000 transactions_per_batch=100 rows=100000 secs=3.00 rows_per_s=33289
+ RESULT shape=append_only writer=copy batch=100 transactions_per_batch=1 rows=400000 secs=22.70 rows_per_s=17620
+ RESULT shape=append_only writer=copy batch=100 transactions_per_batch=10 rows=400000 secs=177.76 rows_per_s=2250
+ Terminated                 timeout 1500 ./build/output/linux-clang-release-ninja/publish/bin/ores.marketdata.core.tests "[.write_ceiling_copy]" 2>&1 | grep -E "RESULT|FAILED|rror|passed|failed"

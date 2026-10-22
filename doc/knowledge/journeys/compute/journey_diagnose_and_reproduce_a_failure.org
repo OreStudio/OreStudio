@@ -224,9 +224,6 @@ a compute screen yet.
    and the failures by app version are aggregates over a time range. A result
    carries =host_id= and =outcome=, and a workunit carries =app_version_id=, so
    the rows the charts need exist, and no subject returns them over a range.
-   The heatmap on failures needs the same range read as the load journey
-   ([[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage
-   history]]).
 5. *No package download verb.* The wrapper downloads the engine package from
    =package_uri= and verifies it against =sha256=, and a person reproducing a
    failure has no shell verb for either. The input has =compute download-input=
@@ -243,12 +240,6 @@ a compute screen yet.
    neither, so the failures by node chart cannot be driven from the summary read
    ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
    failure fields]]).
-8. *One tenant's work is dispatched to nobody.* A wrapper subscribes to the
-   system tenant's assignment subject while the dispatcher routes to the owning
-   tenant's, so a job can sit =Unsent= with no failure and no result. A failure
-   screen that only reads results would show nothing for it
-   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
-   tenant's work]]).
 
 * Related journeys
 

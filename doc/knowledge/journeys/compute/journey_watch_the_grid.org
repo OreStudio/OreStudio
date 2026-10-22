@@ -215,59 +215,36 @@ a compute screen yet.
 
 * What is missing
 
-1. *The grid has no usage history.* The read answers with the newest stored
-   sample alone, so no panel over time can be drawn, and every chart this
-   journey names is blocked on the same gap. The poller keeps writing samples
-   that no read returns; the data is already there, and a read over a time
-   range is the whole of the missing piece
-   ([[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage
-   history]]). These charts are the demand
-   [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats
-   surface]] records from the other side of the same problem: an aggregate the
-   database computes, and no subject to ask for it.
-2. *No read serves node-sample history either.* The heatmap, the ribbon and the
-   sparklines need one series per node over the range, and the only node read
-   is the newest row of each node inside =get_grid_stats=. The candidate is the
-   same range read over =node_sample=, indexed by (=host_id=, =sampled_at=
-   desc).
-3. *The grid read serves one tenant.* The grid belongs to the installation:
+1. *The grid read serves one tenant.* The grid belongs to the installation:
    every tenant's work runs on the same hosts. The read filters by the session
    tenant anyway, so an administrator reads one tenant's slice of a shared grid
    and cannot tell it is short
    ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the
    session tenant]]). The read must serve the fleet whole, and the permission
    gate decides who may see it.
-4. *The node summary drops the failure fields.* =node_sample= carries
+2. *The node summary drops the failure fields.* =node_sample= carries
    =tasks_failed= and =max_task_duration_ms=, and =node_stats_summary= carries
    neither, so a node failing every task reads as idle. The heatmap coloured by
    failures and the ribbon cannot state a node's failures until both fields
    reach the read
    ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
    failure fields]]).
-5. *A node has no state but its heartbeat age.* The ribbon wants to state
+3. *A node has no state but its heartbeat age.* The ribbon wants to state
    online, quiet or lost, and only the first two can be derived from the age
    of the node's newest sample. There is no draining state and no
    maintenance flag on =host=, so the deferred control of use case 6 has no row
    to set.
-6. *The installation's own ledger is not built.* The work counts come from the
+4. *The installation's own ledger is not built.* The work counts come from the
    stored grid sample, whose totals =ores_compute_grid_stats_fn= computes for
    one tenant, so the stored summary is that tenant's slice rather than the
-   installation's own accounting. The ledger the ownership study decides on
-   records the operation as an installation fact and is the missing piece
+   installation's own accounting. The work totals table now holds the sum of
+   every tenant's counters for a session of the system tenant, so the load
+   panels read the whole grid. The finished work and the outcomes sit in the
+   totals only as the last day's counts. The ledger the ownership study decides
+   on records the operation as an installation fact and is still the missing
+   piece
    ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
    information flow]]).
-7. *The newest-sample read is gated; the range read is not built.*
-   =compute.v1.telemetry.get_grid_stats= checks =compute::grid_samples:read=
-   before it serves, so the newest sample is not open to every signed-in
-   account. The range read this journey needs has no subject and therefore no
-   gate yet.
-8. *A wrapper consumes one tenant's work.* The dispatcher routes each workunit
-   to its own tenant's assignment subject, and a wrapper subscribes to the
-   system tenant's subject alone, so another tenant's work is dispatched and
-   never picked up. A load panel over a multi-tenant grid would show work in
-   flight that no node can start
-   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
-   tenant's work]]).
 
 * Related journeys
 

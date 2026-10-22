@@ -1,0 +1,21 @@
+Read timings, 5,000,000 rows, 30 one-day chunks, 100 tenants, 1,000 parties, 2,000 series.
+Reader: ores_brave_hopper_test_ddl_user with FORCE ROW LEVEL SECURITY. One run each, shared server.
+Times are psql \timing in milliseconds. The first run of each query is cold.
+Query A: one series, 2,500 rows (index on series and time). Query B: one party, 5,000 rows (no index on the party, a scan).
+Query C: one tenant, 50,000 rows (a scan).
+
+policy                                                    A (runs 1,2,3)      B (runs 1,2)     C (runs 1,2)
+no policy applied (owner, NO FORCE)                       17.0 3.4 3.6        257.6 212.3      202.6 210.7
+session functions, as the other tables define them        38.7 25.8 22.9      586.5 449.4      728.1 726.3
+inline current_setting, no function                       28.8 16.0 15.7      306.8 257.6      446.3 449.7
+subselect, tenant policy only (the party policy failed to create)
+                                                          14.0 3.1 3.1        266.1 219.7      191.9 190.4
+subselect for both (tenant = (select ...), party in (select unnest(...)))
+                                                          14.8 4.8 4.5        558.8 509.5      508.6 506.2
+
+Isolation checks with the final policies:
+- tenant 8 reading the series of tenant 7: 0 rows.
+- no session settings: 0 rows.
+- tenant 7 with only party 71 visible, reading party 70: 0 rows. Reading party 71: 5,000 rows.
+- the writer role (BYPASSRLS, INSERT only): "permission denied for table tick_owner" on SELECT.
+- the first attempt of the party policy as ANY((select ...)) failed to create (uuid = uuid[]), and the check that followed returned 5,000 rows for a party that was not visible.

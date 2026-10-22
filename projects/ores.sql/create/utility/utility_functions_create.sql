@@ -194,6 +194,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+DROP FUNCTION IF EXISTS ores_utility_generate_short_code_fn(text, text);
+
 /**
  * Generates a 3-8 character mnemonic short code from an entity name.
  *
@@ -202,7 +204,9 @@ $$ LANGUAGE plpgsql IMMUTABLE;
  *      unaccent(p_name) to strip diacritics.
  *   2. Strip corporate suffixes.
  *   3. Convert to UPPERCASE, remove non-alpha characters.
- *   4. If empty after cleanup, return 'UNKNWN'.
+ *   4. If empty after cleanup, return p_fallback when given, else 'UNKNWN'.
+ *      A name in a script with no Latin form, such as Cyrillic or Han, is
+ *      empty here, so a caller that holds a stable identifier passes it.
  *   5. Single word: consonant-heavy extraction (first letter + consonants,
  *      up to 6 chars).
  *   6. Multi-word:
@@ -220,7 +224,8 @@ $$ LANGUAGE plpgsql IMMUTABLE;
  */
 CREATE OR REPLACE FUNCTION ores_utility_generate_short_code_fn(
     p_name text,
-    p_transliterated_name text default null
+    p_transliterated_name text default null,
+    p_fallback text default null
 ) RETURNS text AS $$
 DECLARE
     v_input text;
@@ -247,7 +252,7 @@ BEGIN
 
     -- Step 4: empty check
     IF v_clean = '' THEN
-        RETURN 'UNKNWN';
+        RETURN coalesce(nullif(trim(p_fallback), ''), 'UNKNWN');
     END IF;
 
     -- Split into words

@@ -338,7 +338,12 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('offers the documents of one convention kind to a signed-in person', () => {
-        const html = render('/refdata/conventions/swap', ready, authenticated);
+        const html = render('/refdata/conventions/swap', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(
+                ['conventions', 'families'],
+                [{ key: 'swap', entity: 'swap_convention', writable: true, count: 320 }],
+            ),
+        );
 
         expect(html).toContain('the documents this kind holds');
     });

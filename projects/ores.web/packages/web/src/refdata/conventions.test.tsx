@@ -106,6 +106,18 @@ describe('the list of convention kinds', () => {
         expect(html).toContain('Clear');
     });
 
+    it('falls back to the kind column for a sort the screen does not know', () => {
+        const html = render('/refdata/conventions?sort=junk');
+
+        expect(html).toContain('aria-sort="ascending"');
+    });
+
+    it('links each kind to its documents', () => {
+        const html = render('/refdata/conventions');
+
+        expect(html).toContain('href="/refdata/conventions/swap"');
+    });
+
     it('puts Workflows beside Refresh in the header', () => {
         const html = render('/refdata/conventions');
 
@@ -125,6 +137,27 @@ describe('the documents of one kind', () => {
         expect(html).toContain('AED-EIBOR-6M-SWAP');
         expect(html).toContain('Fixed calendar');
         expect(html).toContain('1–1 of 320');
+    });
+
+    it('waits for the kinds before it reads a page', () => {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter initialEntries={['/refdata/conventions/foo']}>
+                        <Routes>
+                            <Route
+                                path="/refdata/conventions/:family"
+                                element={<ConventionDocumentsPage />}
+                            />
+                        </Routes>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+
+        expect(html).toContain('Loading');
+        expect(html).not.toContain('type="search"');
     });
 
     it('offers no search and no sort, because the server has neither for a convention', () => {

@@ -52,7 +52,12 @@ const TABS = ['party', 'shared'] as const;
 
 type Tab = (typeof TABS)[number];
 
-type KindColumn = 'kind' | 'documents' | 'terms';
+const SORT_COLUMNS = ['kind', 'documents'] as const;
+
+type KindColumn = (typeof SORT_COLUMNS)[number];
+
+/** How many terms a document list draws; the record page will show the rest. */
+const LISTED_TERMS = 4;
 
 /** The groups a list of kinds is drawn in, and the one that holds a kind the table does not know. */
 type Group = AssetClass | 'other';
@@ -77,6 +82,7 @@ export function ConventionKindsPage(): ReactNode {
     const news = useEntityChanges((families.data ?? []).map(watchOf), load);
     const [params, setParams] = useSearchParams();
     const cards = families.data ?? [];
+    const areaRoot = useAreaRoot('refdata');
     const countIn = (tab: Tab): number =>
         cards.filter((card) => isShared(card.key) === (tab === 'shared')).length;
     const { tab, bar } = useTabs({
@@ -87,7 +93,8 @@ export function ConventionKindsPage(): ReactNode {
     });
     const search = params.get('q') ?? '';
     const assetClass = params.get('class') ?? '';
-    const sort = (params.get('sort') ?? 'kind') as KindColumn;
+    const sortParam = params.get('sort');
+    const sort: KindColumn = SORT_COLUMNS.find((column) => column === sortParam) ?? 'kind';
     const descending = params.get('dir') === 'desc';
     const nameOf = (card: ConventionFamilyCard): string =>
         t(`journey.conventions.families.${card.key}`);
@@ -114,11 +121,7 @@ export function ConventionKindsPage(): ReactNode {
                 card.key.includes(needle)),
     );
     const valueOf = (card: ConventionFamilyCard): string | number =>
-        sort === 'documents'
-            ? (card.count ?? -1)
-            : sort === 'terms'
-              ? Number(card.writable)
-              : nameOf(card).toLocaleLowerCase();
+        sort === 'documents' ? (card.count ?? -1) : nameOf(card).toLocaleLowerCase();
     const ordered = [...shown].sort((left, right) => {
         const a = valueOf(left);
         const b = valueOf(right);
@@ -158,9 +161,7 @@ export function ConventionKindsPage(): ReactNode {
     return (
         <div className="space-y-4">
             <div>
-                <Crumbs
-                    parts={[...useAreaRoot('refdata'), { label: t('refdata.conventions.title') }]}
-                />
+                <Crumbs parts={[...areaRoot, { label: t('refdata.conventions.title') }]} />
                 <PageHeader
                     title={t('refdata.conventions.title')}
                     description={t('refdata.conventions.lead')}
@@ -247,7 +248,9 @@ export function ConventionKindsPage(): ReactNode {
                                     t('refdata.conventions.columns.documents'),
                                     true,
                                 )}
-                                {header('terms', t('refdata.conventions.columns.terms'))}
+                                <th className="px-4 py-2 font-medium">
+                                    {t('refdata.conventions.columns.terms')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody
@@ -338,7 +341,15 @@ function GroupRows({
                     onClick={() => onOpen(card)}
                     onKeyDown={(event) => onKey(event, card)}
                 >
-                    <td className="px-4 py-2">{nameOf(card)}</td>
+                    <td className="px-4 py-2">
+                        <Link
+                            to={conventionPath(card.key)}
+                            className="hover:text-accent"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            {nameOf(card)}
+                        </Link>
+                    </td>
                     <td className="px-4 py-2 text-right tabular-nums">
                         {card.count === null ? (
                             <span
@@ -369,7 +380,7 @@ function documentColumns(
     family: string,
     t: (key: string) => string,
 ): readonly ListColumn<ConventionRow>[] {
-    const terms = (TERM_SPECS[family] ?? []).slice(0, 4);
+    const terms = (TERM_SPECS[family] ?? []).slice(0, LISTED_TERMS);
     return [
         {
             id: 'id',
@@ -421,6 +432,27 @@ export function ConventionDocumentsPage(): ReactNode {
             </div>
         );
     }
+    if (card === undefined) {
+        return (
+            <div className="space-y-4">
+                <Crumbs parts={crumbs} />
+                {families.isError ? (
+                    <Notice tone="error">
+                        <span className="mr-3">
+                            {t('journey.conventions.instrument.readFailed', {
+                                message: families.error.message,
+                            })}
+                        </span>
+                        <Button size="sm" onClick={() => void families.refetch()}>
+                            {t('refdata.records.retry')}
+                        </Button>
+                    </Notice>
+                ) : (
+                    <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                )}
+            </div>
+        );
+    }
     const source: ListSource<ConventionRow> = {
         key: `conventions:${family}`,
         read: async (page) => {
@@ -433,7 +465,7 @@ export function ConventionDocumentsPage(): ReactNode {
         search: false,
         sortable: [],
         mayAdd: false,
-        ...(card === undefined ? {} : { watches: [watchOf(card)] }),
+        watches: [watchOf(card)],
         audit: (row, field) => row[field],
     };
     return (

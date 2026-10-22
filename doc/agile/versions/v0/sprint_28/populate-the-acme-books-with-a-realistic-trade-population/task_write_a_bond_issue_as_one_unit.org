@@ -116,6 +116,14 @@ via its "Verifies task" field.
 | 2 | Two blank lines before the new service method | trade_operations_service.cpp | accept | Fixed. |
 | 3 | The existence check uses the issue id only. A second issue id with the same security id fails at the unique index as =internal_error=. | trade_operations_service.cpp | decline | The synthetic planner derives the issue id from the security id. The page names the key as =issue_id=. A later caller can add the check. |
 | 4 | misspell-fixer reports hits | other files | decline | No hit is in a file this change touched. |
+| 5 | A parallel first write of one issue id fails at the store as =internal_error= | trade_operations_service.cpp | accept | Fixed: a failed write re-reads in a new transaction and answers from the comparison when the issue is stored. Not tested: a race needs two connections. |
+| 6 | =same_rows= is not a one-to-one match | trade_operations_service.cpp | accept | Fixed: each incoming row removes the stored row it matched. |
+| 7 | The existence check uses the issue id only | trade_operations_service.cpp | decline | Same as row 3. |
+| 8 | The create and the conflict answers log at debug only | trade_operations_service.cpp | accept | Fixed: one info line for each. |
+| 9 | =same_terms= depends on the audit member list | trade_operations_service.cpp | accept | Fixed: a comment names the contract. |
+| 10 | No test sends the optional child types | service_trade_operations_service_tests.cpp | accept | Fixed: three tests cover repeat, a change in each type, and a missing child. |
+| 11 | The branch holds the docs commits of #3612 | the PR | decline | Merge #3612 first. |
+| 12 | =from_double= is called twice for the face value | trading_trade_population_writer.cpp | accept | Fixed: one local. |
 
 * Result
 

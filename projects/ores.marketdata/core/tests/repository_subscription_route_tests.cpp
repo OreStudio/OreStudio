@@ -36,6 +36,7 @@
 namespace {
 
 const std::string tags("[repository][subscription]");
+const std::string route_tags("[repository][route]");
 
 constexpr auto unique_violation = "duplicate key value violates unique constraint";
 constexpr auto check_violation = "violates check constraint";
@@ -121,7 +122,7 @@ TEST_CASE("a_subscription_names_a_provider_in_the_catalogue", tags) {
                       Catch::Matchers::ContainsSubstring("Invalid provider"));
 }
 
-TEST_CASE("a_route_needs_a_subscription", tags) {
+TEST_CASE("a_route_needs_a_subscription", route_tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -133,7 +134,7 @@ TEST_CASE("a_route_needs_a_subscription", tags) {
                       Catch::Matchers::ContainsSubstring("holds no subscription"));
 }
 
-TEST_CASE("a_route_names_a_source_of_its_provider", tags) {
+TEST_CASE("a_route_names_a_source_of_its_provider", route_tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -149,7 +150,7 @@ TEST_CASE("a_route_names_a_source_of_its_provider", tags) {
                       Catch::Matchers::ContainsSubstring("is not a source of provider"));
 }
 
-TEST_CASE("a_party_has_one_route_for_a_provider", tags) {
+TEST_CASE("a_party_has_one_route_for_a_provider", route_tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -170,7 +171,7 @@ TEST_CASE("a_party_has_one_route_for_a_provider", tags) {
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_party_changes_its_route_and_keeps_the_history", tags) {
+TEST_CASE("a_party_changes_its_route_and_keeps_the_history", route_tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -195,4 +196,27 @@ TEST_CASE("a_party_changes_its_route_and_keeps_the_history", tags) {
     REQUIRE(latest.size() == 1);
     CHECK(latest.front().source_id == catalogue::ore_simulated_source_id());
     CHECK(routes.read_all(h.context(), id).size() == 2);
+}
+
+TEST_CASE("a_route_cannot_move_to_a_provider_without_a_subscription", route_tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    subscription_repository subscriptions;
+    route_repository routes;
+    auto s = subscribed(h, ctx, subscriptions, "ore");
+
+    auto r = generate_synthetic_route(ctx);
+    r.party_id = s.party_id;
+    r.provider_code = "ore";
+    r.source_id = catalogue::ore_import_source_id();
+    routes.write(h.context(), r);
+
+    const auto id = boost::uuids::to_string(r.id);
+    auto current = routes.read_latest(h.context(), id);
+    REQUIRE(current.size() == 1);
+    current.front().provider_code = "lseg";
+    current.front().change_reason_code = "system.test";
+    CHECK_THROWS_WITH(routes.write(h.context(), current.front()),
+                      Catch::Matchers::ContainsSubstring("holds no subscription"));
 }

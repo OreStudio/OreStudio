@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/write-a-bond-issue-as-one-unit
-#+pr: 3612
+#+pr: 3629
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -105,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3629][#3629]] | [trading] Write a bond issue as one unit |
 | [[https://github.com/OreStudio/OreStudio/pull/3612][#3612]] | [doc] Add the trade booking architecture and its tasks |
 
 * Review

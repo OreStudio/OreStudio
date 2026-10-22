@@ -404,6 +404,9 @@ run_configuration_import_execute_result import_run(nats_client& owners,
             r.not_stored.push_back(file);
     r.success = true;
     r.message = std::format("Stored {} files.", r.stored.size());
+    if (!r.warnings.empty())
+        r.message += std::format(" Dropped {} Setup parameter(s) the model does not hold.",
+                                 r.warnings.size());
     return r;
 }
 

@@ -35,6 +35,8 @@
 #include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/engine_settings_building_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_repository.hpp"
+#include "ores.reporting.core/service/run_document_service.hpp"
 #include "ores.reporting.core/repository/engine_settings_execution_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
@@ -237,6 +239,31 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     REQUIRE(execution.size() == 1);
     CHECK(execution.front().log_mask == std::optional<int>(31));
     CHECK_FALSE(execution.front().n_threads);
+}
+
+TEST_CASE("removing a run document removes its engine settings", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto parties = ores::ore::tests::make_two_parties(h);
+    const auto definition = make_definition(h, parties);
+    store::import_run(parties.a_context, definition, "Example_1", example_input());
+
+    const auto count = [&] {
+        const auto& ctx = parties.a_context;
+        return ores::reporting::repository::engine_settings_repository().read_latest(ctx).size() +
+               ores::reporting::repository::engine_settings_fixings_repository()
+                   .read_latest(ctx)
+                   .size() +
+               ores::reporting::repository::engine_settings_building_repository()
+                   .read_latest(ctx)
+                   .size() +
+               ores::reporting::repository::engine_settings_execution_repository()
+                   .read_latest(ctx)
+                   .size();
+    };
+    REQUIRE(count() == 4);
+
+    ores::reporting::service::run_document_service(parties.a_context).remove(definition);
+    CHECK(count() == 0);
 }
 
 TEST_CASE("a run import installs the conventions the sample names", tags) {

@@ -20,6 +20,10 @@
 
 -- Drop observations, fixings and the asset-class junction before series
 -- (they reference it).
+\ir ./marketdata_routes_notify_trigger_drop.sql
+\ir ./marketdata_routes_drop.sql
+\ir ./marketdata_subscriptions_notify_trigger_drop.sql
+\ir ./marketdata_subscriptions_drop.sql
 \ir ./marketdata_market_data_mappings_notify_trigger_drop.sql
 \ir ./marketdata_market_data_mappings_drop.sql
 \ir ./marketdata_market_data_vendor_instruments_notify_trigger_drop.sql

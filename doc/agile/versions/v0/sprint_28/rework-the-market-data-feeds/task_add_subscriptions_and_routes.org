@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-subscriptions-and-routes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A party takes a provider through a subscription with display, non_display and de
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,14 @@ A party takes a provider through a subscription with display, non_display and de
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Model the subscription (party, provider, display, non_display, derived) and the route (party, provider, source) as codegen entities with history and row-level security by party.
+2. Check in the route trigger that the party holds a subscription to the provider and that the source belongs to the provider.
+3. Seed the permissions marketdata::subscriptions and marketdata::routes (read, write, delete).
+4. Test the rights, the keys, the provider check and the route change in the repository.
+5. Fix the generated series generator, which emitted a provider code with a numeric suffix that the catalogue refuses.
+
+Two acceptance points depend on later tasks and are not built here: a source that is not ready needs the adapter state of the task that tracks adapters, and the not_entitled refusal of a demand needs the demand of that same task.
 
 * Measurements
 
@@ -85,3 +93,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A party holds a subscription to a provider with the rights display, non_display and derived, and a route names the one source that serves it. Both are codegen entities with history, row-level security by party and the permissions marketdata::subscriptions and marketdata::routes (read, write, delete). A subscription must hold at least one right and is unique for a party and a provider. A route is refused when the party holds no subscription to the provider or when the source belongs to another provider, and a party has one route for each provider. Eight repository tests cover these rules and the change of a route with its history. The build of the marketdata and shell test targets passes.
+
+The series generator of the previous task emitted a provider code with a numeric suffix, which the catalogue refuses. This task fixes it with =no_generator_suffix= and applies the same to the two new models.
+
+Left for later tasks:
+- The refusal of a source that is not ready needs the adapter state of the task Track adapter state and demand.
+- The not_entitled refusal of a demand needs the demand of the same task.
+- A new subscription does not create its route at the default source yet. The ingest task resolves a missing route.
+- The generated eventing test of the route is off, because a generated route cannot satisfy the checks of the trigger.
+- No database test has run, because the worktree =.env= is at version 32.

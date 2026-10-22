@@ -1725,3 +1725,11 @@ tangled into the runnable script library
 * Source Kinds
 
 - [[id:57381A9E-95A5-5F78-AE5F-02088FBDDE62][How do I run the source_kinds commands from the shell?]]
+
+* Routes
+
+- [[id:AFECC4E9-C27A-548E-A5CD-3DA09478C6B0][How do I run the routes commands from the shell?]]
+
+* Subscriptions
+
+- [[id:C5B268A3-BF5D-50EC-9A77-A81BB844F652][How do I run the subscriptions commands from the shell?]]

@@ -3305,6 +3305,9 @@ export const en: SourceCatalogue = {
                 currencyPairsBody: 'A pair with its quoting convention and settlement calendars.',
                 deskGroups: 'Desk groups',
                 deskGroupsBody: 'Groups of currencies such as G11 or Scandies.',
+                conventions: 'Conventions',
+                conventionsBody:
+                    'The market terms each instrument is built on, grouped by asset class.',
                 calendars: 'Holiday calendars',
                 calendarsBody: 'Rules, exceptions and events, and the business days they produce.',
                 tenors: 'Resolve a tenor',
@@ -3792,6 +3795,42 @@ export const en: SourceCatalogue = {
             empty: 'No desk groups yet.',
             removeWarning:
                 'Removing the group takes its members away from it first; the currencies themselves stay.',
+        },
+        conventions: {
+            title: 'Conventions',
+            lead: 'The market terms the instruments are built on, grouped by asset class.',
+            tabs: 'Convention scope',
+            tab: {
+                party: 'Party conventions',
+                shared: 'Shared conventions',
+            },
+            sharedWarning: 'Every party reads these conventions.',
+            sharedWarningBody:
+                'They are held once for the tenant, and a change applies to all parties.',
+            sharedDocuments: 'Every party reads these documents.',
+            search: 'Search kinds',
+            assetClass: 'Asset class',
+            allClasses: 'All asset classes',
+            classes: {
+                'interest-rates': 'Interest rates',
+                fx: 'FX',
+                inflation: 'Inflation',
+                credit: 'Credit',
+                commodity: 'Commodity',
+                bond: 'Bond',
+                other: 'Other',
+            },
+            summary: 'Documents {documents} · Kinds {kinds}',
+            groupSummary: 'Kinds {kinds} · Documents {documents}',
+            noMatch: 'No kinds match the search.',
+            columns: {
+                kind: 'Kind',
+                documents: 'Documents',
+                terms: 'Terms',
+            },
+            documentsLead: '{class} · the documents this kind holds.',
+            unknownKind: 'There is no convention kind named {kind}.',
+            backToKinds: 'Back to the conventions',
         },
         pairs: {
             title: 'Currency pairs',

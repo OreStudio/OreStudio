@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 9B4942EC-3F47-44D8-8305-8032230A7DD8
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.reporting.engine_settings_execution
+#+description: Codegen entity model for the reporting =engine_settings_execution= part. Execution of a named engine settings configuration.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: engine_settings_execution
+#+entity_plural: engine_settings_execution
+#+entity_title: Engine Settings Execution
+#+brief: Execution of a named engine settings configuration.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+The execution part of a named engine settings configuration. How the engine runs and logs. A change here does not change the numbers. A column that is null means the engine default,
+and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the
+central =engine_settings= row in the same transaction.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:profile:       fk-scoped-child
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** engine_settings_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The central engine settings row this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the configuration this part belongs to. Carried so row level security can isolate the part without a
+join, and stamped from the session that writes it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** n_threads
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of threads the engine may use. At least 1.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** log_mask
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The message kinds written to the log, as a bit set. Zero or more.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** gzip_compression_level
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Compression level of the zipped cube files, from 0 to 9.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_execution_tbl
+:index_prefix: engine_settings_execution
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal and nil-uuid checks.
+
+| expression |
+|------------|
+| "n_threads" is null or "n_threads" >= 1 |
+| "log_mask" is null or "log_mask" >= 0 |
+| "gzip_compression_level" is null or "gzip_compression_level" between 0 and 9 |
+
+
+** Indexes
+
+A configuration has at most one row of this part.
+
+| name | columns | unique | current_only | where_extra |
+|------------------+-------------------------------+--------+--------------+-------------|
+| one_per_settings | tenant_id, engine_settings_id | true | true | |
+
+* Foreign keys
+
+** engine_settings_id
+:PROPERTIES:
+:table:                ores_reporting_engine_settings_tbl
+:parent_entity:        engine_settings
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid engine_settings_id: %. No active engine settings found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: engine_settings_execution
+:entity_plural_short:   engine_settings_execution
+:entity_singular_words: engine settings execution
+:entity_plural_words:   engine settings execution
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.reporting.api/domain/engine_settings_execution.hpp
+:domain_class:            reporting::domain::engine_settings_execution
+:protocol_include:        ores.reporting.api/messaging/engine_settings_execution_protocol.hpp
+:collection_name:         engine_settings_execution
+:key_field:               id
+:save_request_item_field: engine_settings_execution
+:has_change_reason_cache: true
+:has_export_macro:        true
+:parent_entity_singular:  engine_settings
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|---+---+---+---+---+---+---|
+| id | Id | idEdit | line_edit | true | true | |
+| n_threads | N Threads | nThreadsEdit | line_edit |  |  | |
+| log_mask | Log Mask | logMaskEdit | line_edit |  |  | |
+| gzip_compression_level | Gzip Compression Level | gzipCompressionLevelEdit | line_edit |  |  | |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|------------------+-------------------------------+--------+--------------+-------------|
+| NThreads | n_threads | N Threads | int | 120 |
+| LogMask | log_mask | Log Mask | int | 120 |
+| GzipCompressionLevel | gzip_compression_level | Gzip Compression Level | int | 120 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* Physical space
+
+The messaging, eventing and history surface is not generated yet. This task models the data.
+
+| Address                          | Enabled |
+|----------------------------------+---------|
+| ores.cpp.service                 | false   |
+| ores.cpp.protocol                | false   |
+| ores.cpp.nats-handler            | false   |
+| ores.cpp.nats-sub-registrar      | false   |
+| ores.cpp.nats-event-registrar    | false   |
+| ores.cpp.nats-eventing           | false   |
+| ores.cpp.nats-event-cache        | false   |
+| ores.cpp.history-provider-registrar | false |
+| ores.cpp.presentation            | false   |
+| ores.cpp.eventing-integration-test | false |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:AD4E924C-932C-4C55-B57A-D07A441FE5AC][ores.reporting.engine_settings]] — the central row this part belongs to.

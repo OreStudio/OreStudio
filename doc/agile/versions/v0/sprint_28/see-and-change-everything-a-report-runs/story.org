@@ -41,6 +41,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
 | [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
+| [[id:EA01F699-420E-4889-95EF-E7FAFA2DD646][Model the engine settings]] | BACKLOG | | | Store the engine settings as a named configuration with a central row and three parts. |
 
 * Analysis
 

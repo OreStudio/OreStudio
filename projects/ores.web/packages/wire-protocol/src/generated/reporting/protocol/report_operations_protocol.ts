@@ -78,6 +78,15 @@ export interface PublishReportDefinitionsFromDqRequest {}
  */
 export interface PublishRiskReportConfigsFromDqRequest {}
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared engine settings bundle.
+ *
+ * The same trigger shape as publish_risk_report_configs_from_dq_request, and
+ * declared the same way: the SQL function name the handler derives from the
+ * subject depends on the spelling.
+ */
+export interface PublishEngineSettingsFromDqRequest {}
+
 export interface GatherTradesRequest {
     report_instance_id: string;
     definition_id: string;
@@ -261,6 +270,7 @@ export const subjects = {
         'reporting.v1.ops.publish_report_definitions_from_dq',
     publish_risk_report_configs_from_dq_request:
         'reporting.v1.ops.publish_risk_report_configs_from_dq',
+    publish_engine_settings_from_dq_request: 'reporting.v1.ops.publish_engine_settings_from_dq',
     gather_trades_request: 'reporting.v1.ops.gather_trades',
     gather_market_data_request: 'reporting.v1.ops.gather_market_data',
     assemble_bundle_request: 'reporting.v1.ops.assemble_bundle',
@@ -284,6 +294,7 @@ export const requiresSession = {
     unschedule_report_definitions_request: true,
     publish_report_definitions_from_dq_request: true,
     publish_risk_report_configs_from_dq_request: true,
+    publish_engine_settings_from_dq_request: true,
     gather_trades_request: true,
     gather_market_data_request: true,
     assemble_bundle_request: true,

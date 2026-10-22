@@ -3620,6 +3620,7 @@ export const en: SourceCatalogue = {
         },
         choices: {
             report_type: { risk: 'Risk report' },
+            regulatory_book_type: { Trading: 'Trading book', Banking: 'Banking book' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },
             post_processing: { execute: 'Execute', ignore: 'Ignore' },
             concurrency_policy: { skip: 'Skip', queue: 'Queue', fail: 'Fail' },
@@ -4663,12 +4664,20 @@ export const en: SourceCatalogue = {
             pre_processing: 'Pre-processing',
             post_processing: 'Post-processing',
             is_official: 'Official',
+            regulatory_book_type: 'Book type',
         },
         means: {
             name: 'What the report is called. It keys the report’s history and its address, so it is set when the report is made. To use another name, make a new report.',
             reportType: {
                 risk: 'A full risk run on the compute grid: NPV, cashflows, sensitivities, XVA, VaR and SIMM. The type decides the workflow that runs and the configurations the report can bind.',
                 other: 'The type decides the workflow that runs and the configurations the report can bind.',
+            },
+            regulatoryBookType: {
+                Trading:
+                    'The report reads trading books only. A scope that names a banking book is refused, and a portfolio in the scope is read for its trading books.',
+                Banking:
+                    'The report reads banking books only. A scope that names a trading book is refused, and a portfolio in the scope is read for its banking books.',
+                other: 'Empty means the report reads books of every type. A type limits it to the books of that regulatory book type.',
             },
             concurrencyPolicy: {
                 skip: 'If the last run is still going when the schedule fires, this run is not started. It is recorded as skipped.',

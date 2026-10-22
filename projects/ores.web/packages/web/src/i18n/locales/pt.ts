@@ -3647,6 +3647,10 @@ const pt: SourceCatalogue = {
         },
         choices: {
             report_type: { risk: 'Relatório de risco' },
+            regulatory_book_type: {
+                Trading: 'Carteira de negociação',
+                Banking: 'Carteira bancária',
+            },
             pre_processing: { execute: 'Executar', substitute: 'Substituir' },
             post_processing: { execute: 'Executar', ignore: 'Ignorar' },
             concurrency_policy: { skip: 'Ignorar', queue: 'Pôr em fila', fail: 'Falhar' },
@@ -4699,12 +4703,20 @@ const pt: SourceCatalogue = {
             pre_processing: 'Pré-processamento',
             post_processing: 'Pós-processamento',
             is_official: 'Oficial',
+            regulatory_book_type: 'Tipo de livro',
         },
         means: {
             name: 'O nome do relatório. É a chave do seu histórico e do seu endereço, por isso é fixado quando o relatório é criado. Para outro nome, crie um novo relatório.',
             reportType: {
                 risk: 'Um cálculo de risco completo na grelha: VAL, fluxos, sensibilidades, XVA, VaR e SIMM. O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
                 other: 'O tipo decide o fluxo de trabalho que corre e as configurações que o relatório pode ligar.',
+            },
+            regulatoryBookType: {
+                Trading:
+                    'O relatório lê apenas livros de negociação. Um âmbito que nomeia um livro bancário é recusado, e uma carteira do âmbito é lida pelos seus livros de negociação.',
+                Banking:
+                    'O relatório lê apenas livros bancários. Um âmbito que nomeia um livro de negociação é recusado, e uma carteira do âmbito é lida pelos seus livros bancários.',
+                other: 'Vazio: o relatório lê livros de todos os tipos. Um tipo limita-o aos livros desse tipo regulamentar.',
             },
             concurrencyPolicy: {
                 skip: 'Se a execução anterior ainda decorre quando o calendário dispara, esta execução não começa. Fica registada como ignorada.',

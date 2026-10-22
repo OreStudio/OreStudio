@@ -158,6 +158,7 @@ export const reportDefinitionViewSchema = z.object({
     schedule_expression: z.string(),
     concurrency_policy: z.string(),
     is_official: z.boolean(),
+    regulatory_book_type: z.string().nullable(),
     pre_processing: z.string(),
     prepared_input_key: z.string(),
     post_processing: z.string(),
@@ -290,6 +291,7 @@ export const configurationDetailSchema = z.object({
             id: z.string(),
             name: z.string(),
             partyName: z.string(),
+            regulatoryBookType: z.string().nullable(),
         }),
     ),
 });

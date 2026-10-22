@@ -67,6 +67,7 @@ begin
             where s.tenant_id = p_tenant_id
               and s.party_id = p_party_id
               and s.oresmd_uri = v_uri
+              and s.provider_code = 'ore'
               and s.valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             continue;
@@ -76,13 +77,13 @@ begin
 
         insert into ores_marketdata_market_series_tbl (
             id, tenant_id, version, party_id, oresmd_uri, series_subclass,
-            producer_kind, derivation_kind, derivation_config_id,
+            provider_code, derivation_kind, derivation_config_id,
             derivation_config_version, modified_by, performed_by,
             change_reason_code, change_commentary
         )
         values (
             v_id, p_tenant_id, 0, p_party_id, v_uri, 'yield',
-            'SYNTHETIC', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+            'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import',
             'Curve configuration of the party it belongs to'

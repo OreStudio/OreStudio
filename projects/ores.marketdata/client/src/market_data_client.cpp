@@ -256,6 +256,8 @@ messaging::feed_binding_write feed_binding_write_of(const domain::feed_binding& 
     write.party_id = binding.party_id;
     write.source_name = binding.source_name;
     write.producer_kind = binding.producer_kind;
+    write.provider_code = binding.provider_code;
+    write.source_id = binding.source_id;
     write.enabled = binding.enabled;
     return write;
 }

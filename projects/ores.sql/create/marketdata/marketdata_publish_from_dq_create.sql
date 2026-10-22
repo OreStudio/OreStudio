@@ -100,6 +100,7 @@ begin
                 and dq.tenant_id = ores_utility_system_tenant_id_fn()
                 and ms.tenant_id = p_target_tenant_id
                 and ms.party_id = v_target_party_id
+                and ms.provider_code = 'ore'
           );
 
         get diagnostics v_deleted = row_count;
@@ -140,6 +141,7 @@ begin
         where tenant_id = p_target_tenant_id
           and party_id = v_target_party_id
           and oresmd_uri = r.oresmd_uri
+          and provider_code = 'ore'
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         if v_series_id is null then
@@ -161,12 +163,12 @@ begin
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 oresmd_uri, series_subclass,
-                producer_kind, derivation_kind, derivation_config_id, derivation_config_version,
+                provider_code, derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
                 r.oresmd_uri, v_series_subclass,
-                'VENDOR', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+                'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             );
@@ -200,11 +202,14 @@ begin
 
         insert into ores_marketdata_market_observations_tbl (
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-            source,
+            source, source_id,
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,
             r.observation_date::timestamptz, r.datum_uri, r.value::text, r.source,
+            -- The source ore-import of the provider ore, installed by
+            -- marketdata_catalogue_populate.sql.
+            '26772cc0-57d6-4fac-be36-2ae75eb56b6b'::uuid,
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 

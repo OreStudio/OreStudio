@@ -60,6 +60,7 @@ domain::market_observation market_observation_mapper::map(const market_observati
 
     r.value = v.value;
     r.source = v.source.value_or("");
+    r.source_id = boost::lexical_cast<boost::uuids::uuid>(v.source_id);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -82,6 +83,7 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
 
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
+    r.source_id = boost::uuids::to_string(v.source_id);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

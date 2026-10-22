@@ -44,6 +44,8 @@ struct feed_binding_write {
     boost::uuids::uuid party_id;
     std::string source_name;
     std::string producer_kind;
+    std::string provider_code;
+    boost::uuids::uuid source_id;
     bool enabled;
 };
 
@@ -65,9 +67,13 @@ struct feed_binding_lookup {
 struct feed_bindings_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::string> producer_kind;
+    std::optional<std::string> provider_code;
+    std::optional<boost::uuids::uuid> source_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> producer_kind_one_of;
+    std::optional<std::vector<std::string>> provider_code_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> source_id_one_of;
     std::optional<std::string> search;
 };
 

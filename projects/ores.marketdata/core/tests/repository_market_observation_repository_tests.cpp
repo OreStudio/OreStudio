@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
@@ -113,6 +114,33 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
     CHECK(read.size() == written.size());
     for (const auto& r : read)
         CHECK(r.series_id == s.id);
+}
+
+TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto written = generate_synthetic_market_observations(2, ctx);
+    for (auto& o : written)
+        o.series_id = s.id;
+    written[0].source_id = ores::marketdata::domain::catalogue_ids::ore_import_source_id();
+    written[1].source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+    obs_repo.insert(h.context(), written);
+
+    const auto read = obs_repo.read_latest_for_series(h.context(), s.id);
+    REQUIRE(read.size() == 2);
+    CHECK(std::ranges::count_if(read, [](const auto& r) {
+              return r.source_id == ores::marketdata::domain::catalogue_ids::ore_import_source_id();
+          }) == 1);
+    CHECK(std::ranges::count_if(read, [](const auto& r) {
+              return r.source_id ==
+                     ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+          }) == 1);
 }
 
 namespace {

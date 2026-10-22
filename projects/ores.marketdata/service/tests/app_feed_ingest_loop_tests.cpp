@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
@@ -150,6 +151,8 @@ struct fixture {
         b.party_id = party_id;
         b.source_name = source;
         b.producer_kind = producer_kind;
+        b.provider_code = "ore";
+        b.source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
         b.enabled = true;
         b.modified_by = h.db_user();
         b.performed_by = h.db_user();
@@ -159,8 +162,8 @@ struct fixture {
     }
 
     std::vector<ores::marketdata::domain::market_series> series_for(const std::string& quote_uri) {
-        return market_series_repository{}.read_latest_by_uri(
-            h.context(), series_uri(quote_uri), boost::uuids::to_string(party_id));
+        return market_series_repository{}.read_latest_by_key(
+            h.context(), series_uri(quote_uri), "ore", boost::uuids::to_string(party_id));
     }
 };
 
@@ -256,7 +259,7 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_tick", tags) {
     const auto series = f.series_for(quote_uri);
     REQUIRE(series.size() == 1);
     CHECK(series.front().oresmd_uri == series_uri(quote_uri));
-    CHECK(series.front().producer_kind == "SYNTHETIC");
+    CHECK(series.front().provider_code == "ore");
     CHECK(series.front().series_subclass == "spot");
     CHECK(series.front().tenant_id.to_string() == f.h.tenant_id().to_string());
     CHECK(boost::uuids::to_string(series.front().party_id) == boost::uuids::to_string(f.party_id));

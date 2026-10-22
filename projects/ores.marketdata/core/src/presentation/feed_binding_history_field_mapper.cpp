@@ -41,6 +41,8 @@ render_feed_binding_fields(const domain::feed_binding& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Source Name", .value = v.source_name});
     fields.push_back({.name = "Producer Kind", .value = v.producer_kind});
+    fields.push_back({.name = "Provider Code", .value = v.provider_code});
+    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.source_id)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

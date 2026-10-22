@@ -51,6 +51,10 @@ import type { SyntheticResource } from './synthetic.js';
 /** The kind of a binding that names a generated producer. */
 const SYNTHETIC = 'SYNTHETIC';
 
+/** The provider and the source of the simulated stream, as the catalogue populate installs them. */
+const SIMULATED_PROVIDER = 'ore';
+const SIMULATED_SOURCE_ID = 'a94c20bb-09c4-48d3-b91a-d66322322d60';
+
 /** The party the session works in, or a refusal when it has not chosen one. */
 function partyOf(session: LiveSession): string {
     const party = session.party?.id;
@@ -93,6 +97,8 @@ async function complete(
         party_id: existing === undefined ? partyOf(session) : String(existing['party_id']),
         source_name: stated.source_name,
         producer_kind: SYNTHETIC,
+        provider_code: existing === undefined ? SIMULATED_PROVIDER : String(existing['provider_code']),
+        source_id: existing === undefined ? SIMULATED_SOURCE_ID : String(existing['source_id']),
         enabled: stated.enabled,
     } satisfies FeedBindingWrite;
 }
@@ -108,9 +114,13 @@ export const FEED_BINDINGS_RESOURCE: SyntheticResource = {
     filter: {
         party_id: null,
         producer_kind: null,
+        provider_code: null,
+        source_id: null,
         id_one_of: null,
         party_id_one_of: null,
         producer_kind_one_of: null,
+        provider_code_one_of: null,
+        source_id_one_of: null,
         search: null,
     } satisfies FeedBindingsFilter,
     filters: ['producer_kind'],

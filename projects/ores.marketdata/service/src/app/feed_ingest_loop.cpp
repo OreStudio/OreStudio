@@ -735,7 +735,7 @@ domain::market_series make_feed_series(const domain::feed_binding& binding,
     series.party_id = binding.party_id;
     series.oresmd_uri = series_uri;
     series.series_subclass = series_subclass;
-    series.producer_kind = binding.producer_kind;
+    series.provider_code = binding.provider_code;
     series.modified_by = service_account;
     series.performed_by = service_account;
     series.change_reason_code = "system.initial_load";
@@ -771,7 +771,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
             return std::nullopt;
         for (const auto& entry : found->second)
             if (entry.tenant_id == binding.tenant_id.to_uuid() &&
-                entry.party_id == binding.party_id)
+                entry.party_id == binding.party_id && entry.provider_code == binding.provider_code)
                 return entry.id;
         return std::nullopt;
     };
@@ -783,7 +783,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     const auto party = boost::uuids::to_string(binding.party_id);
 
     repository::market_series_repository series_repo;
-    auto existing = series_repo.read_latest_by_uri(tenant_ctx, series_uri, party);
+    auto existing =
+        series_repo.read_latest_by_key(tenant_ctx, series_uri, binding.provider_code, party);
     if (existing.empty()) {
         const auto ck = core::classification_key_of(named.datum);
         const auto cl =
@@ -813,7 +814,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
 
     const auto id = existing.front().id;
     std::lock_guard lock(mu_);
-    series_ids_[series_uri].push_back({binding.tenant_id.to_uuid(), binding.party_id, id});
+    series_ids_[series_uri].push_back(
+        {binding.tenant_id.to_uuid(), binding.party_id, binding.provider_code, id});
     return id;
 }
 

@@ -297,9 +297,10 @@ private:
     struct series_entry {
         boost::uuids::uuid tenant_id;
         boost::uuids::uuid party_id;
+        std::string provider_code;
         boost::uuids::uuid id;
     };
-    /// Series ids by series URI, then by tenant and party, cleared by refresh().
+    /// Series ids by series URI, then by tenant, party and provider, cleared by refresh().
     std::unordered_map<std::string, std::vector<series_entry>> series_ids_;
     std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
     /// When the activity of each binding was last recorded.

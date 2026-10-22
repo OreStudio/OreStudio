@@ -140,6 +140,7 @@ struct fixture {
         s.party_id = party_id;
         s.oresmd_uri = ores::marketdata::core::pillar_series_uri(key);
         s.series_subclass = "yield";
+        s.provider_code = "ore";
         s.derivation_kind = "OBSERVED";
         s.derivation_config_id = boost::uuids::nil_uuid();
         s.derivation_config_version = 0;

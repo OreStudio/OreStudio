@@ -71,6 +71,7 @@ ores::marketdata::domain::market_series series_at(const ores::utility::uuid::ten
     s.party_id = party;
     s.oresmd_uri = uri;
     s.series_subclass = "yield";
+    s.provider_code = "ore";
     s.derivation_kind = "OBSERVED";
     s.derivation_config_id = boost::uuids::nil_uuid();
     s.derivation_config_version = 0;

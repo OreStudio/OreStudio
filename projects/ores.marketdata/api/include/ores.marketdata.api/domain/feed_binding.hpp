@@ -58,6 +58,12 @@ namespace ores::marketdata::domain {
  * defaults to VENDOR, so every binding a real feed creates carries it without
  * setting anything.
  *
+ * A binding also says which provider's ids its producer publishes (provider_code)
+ * and which catalogue source it reads (source_id). The ingest loop creates the
+ * series it needs under that provider and records the source on every observation
+ * it stores, so a reader of a series learns where a value came from from the
+ * catalogue and not from the source string.
+ *
  * This model binds to no variability profile. Its features match
  * uuid-surrogate-lookup, but that profile also enables the shell command
  * facet, which feed bindings do not have today. Binding it is a decision about
@@ -101,6 +107,18 @@ struct feed_binding final {
      * feed creates changes nothing.
      */
     std::string producer_kind = "VENDOR";
+
+    /**
+     * @brief References provider.code -- the provider whose ids this binding's producer publishes.
+     * The ingest loop creates the series it needs under this provider.
+     */
+    std::string provider_code = "ore";
+
+    /**
+     * @brief References market_data_source.id -- the catalogue source this binding's producer is.
+     * The ingest loop records it on every observation it stores.
+     */
+    boost::uuids::uuid source_id;
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

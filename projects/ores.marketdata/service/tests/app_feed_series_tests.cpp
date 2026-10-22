@@ -46,28 +46,27 @@ feed_binding make_binding() {
 
 }
 
-TEST_CASE("the ingest creates the series under the producer kind of the binding it stores the "
+TEST_CASE("the ingest creates the series under the provider of the binding it stores the "
           "tick for",
           tags) {
     auto binding = make_binding();
-    binding.producer_kind = "SYNTHETIC";
+    binding.provider_code = "bloomberg";
 
     const auto series = make_feed_series(
         binding, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
 
-    CHECK(series.producer_kind == "SYNTHETIC");
+    CHECK(series.provider_code == "bloomberg");
     CHECK(series.oresmd_uri == eur_usd_spot);
     CHECK(series.series_subclass == "spot");
     CHECK(series.tenant_id == binding.tenant_id);
     CHECK(series.party_id == binding.party_id);
 }
 
-TEST_CASE("a binding that names no producer kind is a real feed, creating the series as VENDOR",
-          tags) {
+TEST_CASE("a binding that names no provider creates the series under the provider ore", tags) {
     const auto binding = make_binding();
 
     const auto series = make_feed_series(
         binding, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
 
-    CHECK(series.producer_kind == "VENDOR");
+    CHECK(series.provider_code == "ore");
 }

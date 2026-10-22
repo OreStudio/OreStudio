@@ -13,7 +13,7 @@
 #+entity_title: Feed Binding
 #+brief: Persisted mapping that binds one producer source (source_name) to the party that consumes it; enables/disables the ingest loop subscription.
 #+created: 2026-06-30
-#+updated: 2026-10-05
+#+updated: 2026-10-23
 
 A feed binding records that a party consumes one producer source. It is the
 one place a live tick finds its owners, for every feed and every asset class: a
@@ -35,6 +35,12 @@ the binding's =producer_kind=, so a reader of a series can tell generated data
 from observed data without guessing from the =source= string. The column
 defaults to =VENDOR=, so every binding a real feed creates carries it without
 setting anything.
+
+A binding also says which provider's ids its producer publishes (=provider_code=)
+and which catalogue source it reads (=source_id=). The ingest loop creates the
+series it needs under that provider and records the source on every observation
+it stores, so a reader of a series learns where a value came from from the
+catalogue and not from the =source= string.
 
 This model binds to no variability profile. Its features match
 =uuid-surrogate-lookup=, but that profile also enables the shell command
@@ -109,6 +115,37 @@ the series an observation lands in. A caller that sets nothing gets
 std::string("VENDOR")
 #+end_src
 
+** provider_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "ore"
+:filterable:    true
+:END:
+
+References =provider.code= -- the provider whose ids this binding's producer
+publishes. The ingest loop creates the series it needs under this provider.
+
+#+begin_src cpp :name generator
+std::string("ore")
+#+end_src
+
+** source_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      false
+:filterable:    true
+:END:
+
+References =market_data_source.id= -- the catalogue source this binding's
+producer is. The ingest loop records it on every observation it stores.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** enabled
 :PROPERTIES:
 :type:          boolean
@@ -142,6 +179,7 @@ binding. Setting to false suspends ingestion without removing the binding record
 | column        | validation_function                    |
 |---------------+----------------------------------------|
 | producer_kind | ores_refdata_validate_producer_kind_fn |
+| provider_code | ores_marketdata_validate_provider_fn |
 
 * C++
 

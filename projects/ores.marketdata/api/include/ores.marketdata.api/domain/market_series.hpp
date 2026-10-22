@@ -59,11 +59,11 @@ namespace ores::marketdata::domain {
  * specific derived point came from) is a separate concern, tracked by
  * observation_lineage, not this catalog-level marker.
  *
- * producer_kind answers a different question: not how the series was
- * produced but who produced it, a real feed (VENDOR) or a generated one
- * (SYNTHETIC). It is stamped once, from the feed_binding the first
- * observation arrived under, and is never revised -- a series a generated
- * producer created stays generated however it is later read.
+ * provider_code names the provider whose ids the series carries. A series is one
+ * item of one provider held by one party, so two providers that quote the same item
+ * keep two series, and a party that switches the source of a provider keeps one
+ * series and one history. The observations beneath it record the source that
+ * produced each one, for information; the source is never part of the key.
  */
 struct market_series final {
     /**
@@ -95,10 +95,10 @@ the row arrived under, and the identity the series is read by. The point belongs
 rows beneath this one, so a series with two points carries one identity rather than the identity of
 whichever point arrived first.
      *
-     * The natural key with party_id, and unique per party: one party holds one series per identity.
-It is the only name the row carries: the registry's series_type, metric and qualifier columns have
-gone, and a reader that wants the key's parts reads the identity through oresmd_uri_codec rather
-than off a series.
+     * The natural key with party_id and provider_code, and unique per party and provider: one party
+holds one series per identity and provider. It is the only name the row carries: the registry's
+series_type, metric and qualifier columns have gone, and a reader that wants the key's parts reads
+the identity through oresmd_uri_codec rather than off a series.
 
 Every writer supplies one. A caller that leaves it empty stores nothing, because the column is not
 null and the generated service copies the write's fields straight through -- so an update carries
@@ -111,21 +111,18 @@ and the party is part of the key.
     std::string oresmd_uri;
 
     /**
+     * @brief References provider.code: the provider whose ids the series carries. The natural key
+     * with party_id and oresmd_uri: one party holds one series of each provider for each item.
+     */
+    std::string provider_code;
+
+    /**
      * @brief Subclass within the asset class, as a code from refdata.series_subclass_code
      * (referenced series_subclass_code.code). Validated by
      * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism the
      * asset-class junction uses, and carried as the code itself: the taxonomy is runtime-managed.
      */
     std::string series_subclass;
-
-    /**
-     * @brief References producer_kind.code -- who produced this series: a real feed (VENDOR, the
-     * default) or a generated one (SYNTHETIC). Orthogonal to derivation_kind, which says whether
-     * the series was published or computed. The ingest loop stamps it from the binding the tick
-     * arrived under when it creates the series, and leaves an existing series' kind alone, so the
-     * axis records the producer that created the row rather than the last writer to touch it.
-     */
-    std::string producer_kind = "VENDOR";
 
     /**
      * @brief References derivation_kind.code -- whether this series is directly observed (the

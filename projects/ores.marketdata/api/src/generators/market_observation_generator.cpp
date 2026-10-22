@@ -50,6 +50,7 @@ generate_synthetic_market_observation(utility::generation::generation_context& c
     r.observation_datetime = ctx.past_timepoint();
     r.oresmd_uri = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.value = std::to_string(faker::number::decimal<double>(0.0, 100.0));
+    r.source_id = ctx.generate_uuid();
     return r;
 }
 

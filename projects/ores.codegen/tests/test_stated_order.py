@@ -33,7 +33,10 @@ def entity(**extra):
 def test_sortable_fields_are_the_columns_that_opt_in():
     e = entity()
     apply_stated_order(e)
-    assert e['sortable_fields'] == [{'name': 'code'}, {'name': 'name'}]
+    assert e['sortable_fields'] == [
+        {'name': 'code', 'column': 'code'},
+        {'name': 'name', 'column': 'name'},
+    ]
 
 
 def test_no_default_order_reads_in_key_order():
@@ -82,3 +85,37 @@ def test_a_scoped_read_with_no_default_takes_the_entity_default():
     apply_stated_order(e)
     assert fk['list_by_default_columns'] == '{"name"}'
     assert fk['list_by_default_desc'] == 'true'
+
+
+def test_the_recording_time_is_sortable_under_its_wire_name():
+    e = entity(sortable_recorded_at=True)
+    apply_stated_order(e)
+    assert {'name': 'recorded_at', 'column': 'valid_from'} in e['sortable_fields']
+
+
+def test_a_default_order_by_the_recording_time_reads_the_stored_column():
+    e = entity(sortable_recorded_at=True, default_order='recorded_at desc')
+    apply_stated_order(e)
+    assert e['default_order_columns'] == '{"valid_from"}'
+    assert e['default_order_desc'] == 'true'
+    assert e['order_key_columns'] == '{"id"}'
+
+
+def test_the_recording_time_is_not_sortable_unless_the_model_says_so():
+    e = entity()
+    apply_stated_order(e)
+    assert 'recorded_at' not in [f['name'] for f in e['sortable_fields']]
+    with pytest.raises(ValueError, match="names 'recorded_at'"):
+        apply_stated_order(entity(default_order='recorded_at'))
+
+
+def test_a_sortable_column_named_recorded_at_collides_with_the_flag():
+    e = entity(sortable_recorded_at=True,
+               columns=[{'name': 'recorded_at', 'sortable': True}])
+    with pytest.raises(ValueError, match="already has that name"):
+        apply_stated_order(e)
+
+
+def test_a_current_state_entity_has_no_recording_time_to_sort_by():
+    with pytest.raises(ValueError, match="sortable_recorded_at"):
+        apply_stated_order(entity(sortable_recorded_at=True, sql={'current_state': True}))

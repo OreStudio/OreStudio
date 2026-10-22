@@ -352,6 +352,14 @@ empty field and =descending= false orders by =name= descending. The same request
 with =descending= true orders by =name= ascending. In both, rows with the same
 name are in ascending key order.
 
+An entity that keeps its history may state =:sortable_recorded_at: true= in its
+flags. The list then accepts the field =recorded_at=, the time the current
+version of the row was recorded, and the entity may name it in
+=:default_order:=, as =recorded_at desc=. The model must index =valid_from=,
+the column that holds it. A row that changes is recorded again, so it moves in
+a list ordered by this field. The field gives the order of the latest change
+and not the order of creation.
+
 The allow-list is the model's and not the caller's, because an order by a
 column with no index is a full sort of the table on every page. A model makes a
 column sortable when it is prepared to index it.

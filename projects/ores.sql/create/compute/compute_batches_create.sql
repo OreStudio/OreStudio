@@ -70,6 +70,10 @@ create index if not exists batches_tenant_idx
 on "ores_compute_batches_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists batches_recorded_at_idx
+on "ores_compute_batches_tbl" (tenant_id, valid_from desc)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_compute_batches_insert_fn()
 returns trigger as $$
 declare

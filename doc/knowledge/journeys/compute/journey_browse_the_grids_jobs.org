@@ -143,6 +143,11 @@ that a party member is refused the workunit and result reads with =forbidden=, s
 the member sees the batches and cannot open one. The seed must give the Member
 role the workunit and result read codes.
 
+The batch list reads newest first. The batch model declares =recorded_at=
+sortable and orders by it, descending, and the workunit and result lists accept
+the same field. The time is that of the current version of the row, so a batch
+whose =status= changes is recorded again and moves to the top of the list.
+
 * What is missing
 
 1. *No filters on the batch list.* The list pages by offset and limit. Status,

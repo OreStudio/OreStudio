@@ -70,11 +70,28 @@ std::string result_repository::sql() {
 }
 
 bool result_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "recorded_at",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
 namespace {
+
+/*
+ * The stored column behind a sortable field. A field is named as the wire
+ * names it, which is the column itself except for the recording time.
+ */
+std::string sort_column(std::string_view field) {
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
+        {"recorded_at", "valid_from"},
+    };
+    for (const auto& [name, column] : columns) {
+        if (name == field)
+            return std::string(column);
+    }
+    return std::string(field);
+}
 
 /*
  * The order a page is read in. An empty field is the default order, which
@@ -89,7 +106,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     if (!result_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of compute results cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return make_order({sort_column(order.field)}, order.descending, {"id"});
 }
 
 /*

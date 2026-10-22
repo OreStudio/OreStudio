@@ -1645,6 +1645,12 @@ def apply_stated_order(domain_entity):
     column. An entity with no default order reads in key order. Every order
     ends in the key columns, so the rows that tie still page reproducibly.
 
+    An entity that keeps its history may also state :sortable_recorded_at:
+    true. The recording time then joins the sortable fields under its
+    wire name, recorded_at, and is stored in the valid_from column. The model
+    must index that column, because the allow-list admits only what the model
+    is prepared to index.
+
     A scoped read keeps its own :list_by_order_by: default when the model
     states one, and otherwise takes the entity's default order. That default
     need not be sortable: it is the order the model chose, not a field a
@@ -1665,18 +1671,30 @@ def apply_stated_order(domain_entity):
     columns = ((pk.get('columns') or [])
                + (domain_entity.get('natural_keys') or [])
                + (domain_entity.get('columns') or []))
-    sortable = [c.get('column') or c.get('name') for c in columns
-                if c.get('sortable') is True]
-    domain_entity['sortable_fields'] = [{'name': n} for n in sortable]
+    sortable = [{'name': c.get('column') or c.get('name'),
+                 'column': c.get('column') or c.get('name')}
+                for c in columns if c.get('sortable') is True]
+    if domain_entity.get('sortable_recorded_at') is True:
+        if (domain_entity.get('sql') or {}).get('current_state'):
+            raise ValueError(
+                f"{name}: :sortable_recorded_at: needs an entity that keeps "
+                "its history, and a current-state entity has no valid_from")
+        if any(f['name'] == 'recorded_at' for f in sortable):
+            raise ValueError(
+                f"{name}: :sortable_recorded_at: adds the field recorded_at, "
+                "and a :sortable: column already has that name")
+        sortable.append({'name': 'recorded_at', 'column': 'valid_from'})
+    columns_by_name = {f['name']: f['column'] for f in sortable}
+    domain_entity['sortable_fields'] = sortable
     domain_entity['order_key_columns'] = _cpp_string_list(key)
     spec = domain_entity.get('default_order')
     if spec:
         column, desc = _parse_order_spec(name, ':default_order:', spec)
-        if column not in sortable:
+        if column not in columns_by_name:
             raise ValueError(
                 f"{name}: :default_order: names '{column}', which is not a "
                 ":sortable: column")
-        default_columns = [column]
+        default_columns = [columns_by_name[column]]
     else:
         default_columns, desc = key, False
     domain_entity['default_order_columns'] = _cpp_string_list(default_columns)

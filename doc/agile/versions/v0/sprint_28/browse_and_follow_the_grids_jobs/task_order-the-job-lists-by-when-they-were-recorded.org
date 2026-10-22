@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 75489199-9605-4135-AFA9-7F03CBAAFD5F
+:END:
+#+title: Task: Order the job lists by when they were recorded
+#+description: The batch, workunit and result lists order by their key alone, and the key is a random identifier. A page cannot read newest first. Make the recording time sortable.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/order-the-job-lists-by-when-they-were-recorded
+#+pr: 3643
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The batch list reads newest first, and the workunit and result lists can be ordered by their recording time, through the generated order field.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The batch, workunit and result models declare the recording time sortable and the batch model declares a default order of newest first.
+- A list request that names the recording time returns pages in that order, and any other unsorted field is still refused.
+- The Jobs routes read the batches newest first and a live check shows the order against the recording times.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. The recording time is not a model column. It is the audit column
+   =valid_from=, and the domain calls it =recorded_at=. A list names a field
+   as the wire names it, so the generator needs a field whose wire name and
+   stored column differ.
+2. Add the flag =:sortable_recorded_at: true= to the entity flags. The
+   generator then adds the sortable field =recorded_at=, stored in
+   =valid_from=. The default order may name it, as =recorded_at desc=. The
+   flag is refused on a current-state entity, which has no =valid_from=.
+3. Emit the column lookup in the repository only for an entity that sets the
+   flag, so no other component's generated code changes.
+4. Set the flag on the batch, workunit and result models. The batch model also
+   sets =:default_order: recorded_at desc=. Index the column, because a model
+   makes a column sortable only when it is prepared to index it.
+5. Regenerate the three repositories and the three table scripts. Test the
+   order against the store.
+6. Read the batches through the BFF and compare the page with the database.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Codegen tests | 1573 passed | =python3 -m pytest projects/ores.codegen/tests= in the compass venv | e79bf1d3f7 plus the working tree |
+| Batch order tests | 4 cases passed | =compass test run -- -R ores.compute.core.tests=, cases tagged =[stated_order]= | e79bf1d3f7 plus the working tree |
+| Batches read through the BFF | order-f, order-e, order-d, order-c, jobs-check-b, jobs-check-a | =GET /api/operations/grid/jobs/batches= as the Acme tenant administrator | e79bf1d3f7 plus the working tree |
+| Batches by =valid_from= descending | the same six, in the same order | =select external_ref from ores_compute_batches_tbl where tenant_id = '4b51978a-993f-400c-85cc-98ce639772c3' and valid_to > now() order by valid_from desc, id= | e79bf1d3f7 plus the working tree |
+| Generated repositories changed | 3 of 3 flagged entities, and no other entity of =compute-cpp= or the two =iam-cpp= entities tried | =compass codegen regenerate --component compute-cpp --address ores.cpp.repository=, then =git status= | e79bf1d3f7 plus the working tree |
+
+* Notes
+
+- The key stays the last tie-break. Four batches written in one second show
+  the same =recorded_at= on the wire, which has a resolution of one second, and
+  the service still orders them by the stored microsecond time.
+- The stored time is that of the current version of the row. A batch whose
+  status changes is recorded again and moves to the top. The list is therefore
+  ordered by the latest change, not by creation. A page that is open while a
+  batch changes can show that batch twice or skip one. The story accepts this
+  in a decision. A creation time needs a column that the models do not hold.
+- A running BFF that still sent =descending: true= read the batches oldest
+  first after the service changed. The default order is now descending, so the
+  stated direction reverses it. The BFF now sends no direction, and the web
+  service was restarted to run that code.
+- The workunit and result lists accept =recorded_at=. Neither has a default
+  order yet, so they read in key order. A screen that wants the runs in the
+  order they were started can state =recorded_at=.
+- The result index on =workunit_id= gained =valid_from=, which replaces the
+  old index with a longer one. The workunit model gained an index on
+  =batch_id=, which it did not have. The three index definitions were built
+  inside a rolled-back transaction on the live database. A full database
+  recreate was not run for them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #3643 | [codegen] Order the job lists by when they were recorded |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A sortable column named recorded_at collides with the flag | core.py | Fixed | The generator raises a ValueError. A test covers it. |
+| 2 | The batch index lacks the id tie-break | ores.compute.batch.org | Declined | The index serves the first key and Postgres sorts the ties. |
+| 3 | The unscoped result and workunit lists have no index | ores.compute.result.org | Declined | The Jobs routes always scope these reads. |
+| 4 | Include order in the template | repository_impl.org | Declined | Clang-format sorts the generated files. |
+| 5 | Changed index needs an upgrade path | ores.compute.result.org | Noted | The repo has create scripts only. A recreate builds the index. |
+| 6 | Offset paging can show a moved batch twice | story.org | Noted | The story records the decision. |
+
+* Result
+
+The recording time is sortable through the model flag =:sortable_recorded_at:=.
+The batch model orders by it, newest first, and the workunit and result lists
+accept it. A live check read the batches newest first through the BFF, and the
+order matched the database order by =valid_from=. The order is that of the
+latest change of a batch, not of its creation. The new indexes were proven in a
+rolled-back transaction and not by a full recreate.

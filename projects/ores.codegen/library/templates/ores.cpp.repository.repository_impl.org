@@ -66,6 +66,9 @@ The full template source. Edit here and re-tangle with
 {{#repository_uses_uuid_io}}
 #include <boost/uuid/uuid_io.hpp>
 {{/repository_uses_uuid_io}}
+{{#domain_entity.sortable_recorded_at}}
+#include <utility>
+{{/domain_entity.sortable_recorded_at}}
 #include <boost/log/sources/severity_feature.hpp>
 #include <sqlgen/delete_from.hpp>
 {{#domain_entity.has_filter_record}}
@@ -130,6 +133,25 @@ bool {{entity_singular}}_repository::is_sortable(std::string_view field) {
 
 namespace {
 
+{{#domain_entity.sortable_recorded_at}}
+/*
+ * The stored column behind a sortable field. A field is named as the wire
+ * names it, which is the column itself except for the recording time.
+ */
+std::string sort_column(std::string_view field) {
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
+{{#domain_entity.sortable_fields}}
+        {"{{name}}", "{{column}}"},
+{{/domain_entity.sortable_fields}}
+    };
+    for (const auto& [name, column] : columns) {
+        if (name == field)
+            return std::string(column);
+    }
+    return std::string(field);
+}
+
+{{/domain_entity.sortable_recorded_at}}
 /*
  * The order a page is read in. An empty field is the default order, which
  * the stated direction reverses; any other field must be sortable, because
@@ -144,7 +166,13 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     if (!{{entity_singular}}_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
+{{#domain_entity.sortable_recorded_at}}
+    return make_order({sort_column(order.field)}, order.descending,
+                      {{{domain_entity.order_key_columns}}});
+{{/domain_entity.sortable_recorded_at}}
+{{^domain_entity.sortable_recorded_at}}
     return make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
+{{/domain_entity.sortable_recorded_at}}
 }
 {{#domain_entity.has_filter_record}}
 

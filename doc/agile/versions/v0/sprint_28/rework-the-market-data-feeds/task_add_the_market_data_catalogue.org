@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-the-market-data-catalogue
-#+pr:
+#+pr: 3640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3640][#3640]] | [marketdata] Add the market data catalogue |
 
 * Review
 

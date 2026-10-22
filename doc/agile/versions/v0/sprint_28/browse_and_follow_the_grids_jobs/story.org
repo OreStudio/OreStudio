@@ -43,7 +43,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D6CA4B25-D1E0-4E11-AFB7-58D80A9C4116][Scaffold story: Browse and follow the grid's jobs]] | DONE | 2026-10-22 | 2026-10-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | BACKLOG | | | Initial task for: Browse and follow the grid's jobs |
+| [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | STARTED | 2026-10-22 | | Initial task for: Browse and follow the grid's jobs |
 | [[id:78C4D328-EA8E-46D3-B25B-8B09CE6930C3][Filter the batch list by status, party and reference]] | BACKLOG | | | The batch list pages by offset and limit only. A person cannot find one batch among thousands. |
 | [[id:26625549-D4D9-47F3-B978-2C240F85CC5A][Find a result by its outcome]] | BACKLOG | | | Which of the failed results ran? Today read_by_state filters on server_state, and every stored result is Done, so a failed result cannot be separated from a successful one. |
 | [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | BACKLOG | | | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
@@ -53,12 +53,14 @@ A person sees the batches, workunits and results that the session may see, as a 
 | [[id:AD0E1F28-52B5-4138-BAFB-83548B676D08][Draw the prototypes for the jobs screens]] | DONE | 2026-10-22 | 2026-10-22 | Redraw the Jobs tab and draw the job page and the app version page before any screen is built, so the build tasks follow an agreed design. |
 | [[id:A2D86110-9343-487F-990E-C8AA4A491575][Store a release note with the app version]] | BACKLOG | | | The app version model has no release note. A job pins a version and a person cannot read what changed in it. Add the note to the version, and publish it with the bundle. |
 | [[id:B5C3CA59-67B9-4826-9191-0AB40C6B80CE][Build the app version page]] | BACKLOG | | | One app version of the compute catalogue: the build, its release note, its packages and the other versions of its app, drawn in the prototype and not yet in the web client. |
+| [[id:97AA0C61-915C-4650-B717-3F4416AF9610][Let a party member read workunits and results]] | BACKLOG | | | A party member may read batches and is refused the workunit and result reads with forbidden. The Browse the grid's jobs journey gives the party member the whole tree. |
 
 * Decisions
 
 - 2026-10-22: The story builds what the journeys Browse the grid's jobs and Follow a job already specify. It adds no screen they do not draw. The reads for batches, workunits and results exist as generated subjects, so the first slice is the BFF route and the screen, not new compute code.
 - 2026-10-22: The job page links to a page for the app version, and the page shows a release note stored on the version. The model has no such column, so the story adds one, =release_note=, to =app_version=, not to the package. A release is one engine build and one wrapper build, packaged for several platforms, and one note describes the release. The shell's =compute publish-package= writes the note with the bundle.
 - 2026-10-22: The prototypes come before the build. The Jobs tab prototype was compared with the acceptance and redrawn, and the job page and the app version page were drawn. The screens use the model's own field names and add no other term. The glossary defines target redundancy and canonical result.
+- 2026-10-22: A live check of the jobs routes found two gaps in the compute service, and each has a task. The batch key is a random identifier, so a list cannot read newest first until the recording time is sortable. The Member role is refused the workunit and result reads, so a party member cannot open a batch.
 - 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the Run statistics panel when those fields exist, and show no such panel until then.
 
 * Out of scope

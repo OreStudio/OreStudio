@@ -138,8 +138,10 @@ filters, the open rows, the page and the selection.
 Each read checks its entity's read code (=compute::batches:read=,
 =compute::workunits:read=, =compute::results:read=) and serves the session's
 tenant. The row-level policy narrows a party member to their own party. The
-Member role holds the batch read in the seed. The workunit and result reads for
-the Member role need the same check as the grid sample read did.
+Member role holds the batch read in the seed. A live check on 2026-10-22 showed
+that a party member is refused the workunit and result reads with =forbidden=, so
+the member sees the batches and cannot open one. The seed must give the Member
+role the workunit and result read codes.
 
 * What is missing
 

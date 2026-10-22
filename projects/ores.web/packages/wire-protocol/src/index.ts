@@ -144,6 +144,33 @@ export type {
 export { readPartiesPage } from './party-page.js';
 export { readGridUsage } from './grid-usage.js';
 export {
+    batchPageSchema,
+    batchViewSchema,
+    GridJobsRefusedError,
+    readBatch,
+    readBatches,
+    readResult,
+    readResultsOfWorkunit,
+    readWorkunit,
+    readWorkunitsOfBatch,
+    resultPageSchema,
+    resultViewSchema,
+    toBatchView,
+    toResultView,
+    toWorkunitView,
+    workunitPageSchema,
+    workunitViewSchema,
+} from './grid-jobs.js';
+export type {
+    BatchPage,
+    BatchView,
+    JobPageRequest,
+    ResultPage,
+    ResultView,
+    WorkunitPage,
+    WorkunitView,
+} from './grid-jobs.js';
+export {
     ACCESS_SUBJECTS,
     deleteRole,
     giveRole,

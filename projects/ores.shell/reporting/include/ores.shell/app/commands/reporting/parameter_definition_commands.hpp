@@ -88,7 +88,8 @@ public:
 
     /**
      * @brief add <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required>
-     * <reason> <commentary>
+     * <label> <help> <description> <default_text> <format> <introduced_in> <removed_in> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +97,8 @@ public:
 
     /**
      * @brief set <id> <scope> <subtype> <name> <position> <parameter_value_domain_code>
-     * <is_required> <reason> <commentary> [--version <n>]
+     * <is_required> <label> <help> <description> <default_text> <format> <introduced_in>
+     * <removed_in> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <scope> <subtype> <name> <position>
-     * <parameter_value_domain_code> <is_required> <reason> <commentary>
+     * <parameter_value_domain_code> <is_required> <label> <help> <description> <default_text>
+     * <format> <introduced_in> <removed_in> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

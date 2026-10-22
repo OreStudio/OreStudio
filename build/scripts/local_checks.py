@@ -558,6 +558,18 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seed.",
     ),
     Check(
+        id="setup-parameters-seed",
+        title="The seeded Setup parameter definitions match their texts",
+        argv=("python3", "projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_setup_parameter_definitions_populate.sql",
+            "projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py",
+            "projects/ores.sql/utility/setup_parameter_descriptions.py",
+        ),
+        fix="Run projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py and commit the seed.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

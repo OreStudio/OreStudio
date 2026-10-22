@@ -47,6 +47,13 @@ struct parameter_definition_write {
     int position;
     std::string parameter_value_domain_code;
     bool is_required;
+    std::string label;
+    std::string help;
+    std::string description;
+    std::string default_text;
+    std::string format;
+    std::string introduced_in;
+    std::string removed_in;
 };
 
 struct parameter_definition_change {

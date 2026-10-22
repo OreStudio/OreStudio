@@ -36,6 +36,7 @@
 \ir ./reporting_file_types_populate.sql
 \ir ./reporting_parameter_value_domains_populate.sql
 \ir ./reporting_parameter_definitions_populate.sql
+\ir ./reporting_setup_parameter_definitions_populate.sql
 \ir ./reporting_concurrency_policies_populate.sql
 \ir ./reporting_report_error_scopes_populate.sql
 \ir ./reporting_report_instance_kinds_populate.sql

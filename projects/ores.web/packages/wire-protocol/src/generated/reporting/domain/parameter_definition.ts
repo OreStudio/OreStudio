@@ -40,6 +40,13 @@ export interface ParameterDefinition {
     position: number;
     parameter_value_domain_code: string;
     is_required: boolean;
+    label: string;
+    help: string;
+    description: string;
+    default_text: string;
+    format: string;
+    introduced_in: string;
+    removed_in: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

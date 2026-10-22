@@ -142,6 +142,7 @@ void parameter_definition_commands::register_commands(cli::Menu& root_menu, nats
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required> "
+        "<label> <help> <description> <default_text> <format> <introduced_in> <removed_in> "
         "<reason> <commentary>");
 
     menu->Insert(
@@ -150,6 +151,7 @@ void parameter_definition_commands::register_commands(cli::Menu& root_menu, nats
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required> "
+        "<label> <help> <description> <default_text> <format> <introduced_in> <removed_in> "
         "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -158,7 +160,8 @@ void parameter_definition_commands::register_commands(cli::Menu& root_menu, nats
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <scope> <subtype> <name> <position> "
-        "<parameter_value_domain_code> <is_required> <reason> <commentary>");
+        "<parameter_value_domain_code> <is_required> <label> <help> <description> <default_text> "
+        "<format> <introduced_in> <removed_in> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -362,8 +365,8 @@ void parameter_definition_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -376,6 +379,13 @@ void parameter_definition_commands::process_add(std::ostream& out,
                    parsed->positionals[next++],
                    "parameter_value_domain_code");
         read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
+        read_token(req.change.write.label, parsed->positionals[next++], "label");
+        read_token(req.change.write.help, parsed->positionals[next++], "help");
+        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.default_text, parsed->positionals[next++], "default_text");
+        read_token(req.change.write.format, parsed->positionals[next++], "format");
+        read_token(req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+        read_token(req.change.write.removed_in, parsed->positionals[next++], "removed_in");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -418,8 +428,8 @@ void parameter_definition_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,6 +442,13 @@ void parameter_definition_commands::process_set(std::ostream& out,
                    parsed->positionals[next++],
                    "parameter_value_domain_code");
         read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
+        read_token(req.change.write.label, parsed->positionals[next++], "label");
+        read_token(req.change.write.help, parsed->positionals[next++], "help");
+        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.default_text, parsed->positionals[next++], "default_text");
+        read_token(req.change.write.format, parsed->positionals[next++], "format");
+        read_token(req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+        read_token(req.change.write.removed_in, parsed->positionals[next++], "removed_in");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -486,8 +503,8 @@ void parameter_definition_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -502,6 +519,13 @@ void parameter_definition_commands::process_put_many(std::ostream& out,
                        parsed->positionals[next++],
                        "parameter_value_domain_code");
             read_token(change.write.is_required, parsed->positionals[next++], "is_required");
+            read_token(change.write.label, parsed->positionals[next++], "label");
+            read_token(change.write.help, parsed->positionals[next++], "help");
+            read_token(change.write.description, parsed->positionals[next++], "description");
+            read_token(change.write.default_text, parsed->positionals[next++], "default_text");
+            read_token(change.write.format, parsed->positionals[next++], "format");
+            read_token(change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+            read_token(change.write.removed_in, parsed->positionals[next++], "removed_in");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

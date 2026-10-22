@@ -92,6 +92,47 @@ struct parameter_definition final {
     bool is_required = false;
 
     /**
+     * @brief The name a screen shows for the parameter, for example Imply today’s fixings. Null
+     * when no screen presents the parameter yet.
+     */
+    std::string label;
+
+    /**
+     * @brief One line a screen shows next to the control. It says what kind of value the parameter
+     * takes.
+     */
+    std::string help;
+
+    /**
+     * @brief The full text a screen shows for the parameter. It says what the parameter decides,
+     * what each value does and when to change it. Null when the parameter has no text yet.
+     */
+    std::string description;
+
+    /**
+     * @brief The default as a person reads it, with what it means, for example No. Today’s fixing
+     * is loaded.
+     */
+    std::string default_text;
+
+    /**
+     * @brief How a value is written in the document, for example a flag written Y or N, or a whole
+     * number from 0 to 9.
+     */
+    std::string format;
+
+    /**
+     * @brief The ORE release that introduced the parameter. When the project could not measure an
+     * earlier release, the text says so, for example 1.8.0.7 or earlier.
+     */
+    std::string introduced_in;
+
+    /**
+     * @brief The ORE release that removed the parameter. Null while the parameter still exists.
+     */
+    std::string removed_in;
+
+    /**
      * @brief Username of the person who last modified this parameter definition.
      */
     std::string modified_by;

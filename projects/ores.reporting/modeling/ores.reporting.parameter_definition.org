@@ -11,7 +11,7 @@
 #+entity_plural: parameter_definitions
 #+entity_title: Parameter Definition
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-22
 
 The vocabulary of the run document. ORE writes parameters as a name and a
 value inside a block; =scope= names the block (Setup, Markets, an analytic)
@@ -97,6 +97,97 @@ What a value of this parameter is.
 :END:
 
 Whether the document must carry the parameter.
+
+** label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The name a screen shows for the parameter, for example Imply today’s fixings. Null when no screen presents the parameter yet.
+
+#+begin_src cpp :name generator
+std::string("Parameter")
+#+end_src
+
+** help
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+One line a screen shows next to the control. It says what kind of value the parameter takes.
+
+#+begin_src cpp :name generator
+std::string("A flag.")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The full text a screen shows for the parameter. It says what the parameter decides, what each value does and when to change it. Null when the parameter has no text yet.
+
+#+begin_src cpp :name generator
+std::string("What the parameter decides.")
+#+end_src
+
+** default_text
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The default as a person reads it, with what it means, for example =No. Today’s fixing is loaded.=
+
+#+begin_src cpp :name generator
+std::string("No.")
+#+end_src
+
+** format
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+How a value is written in the document, for example a flag written Y or N, or a whole number from 0 to 9.
+
+#+begin_src cpp :name generator
+std::string("A flag.")
+#+end_src
+
+** introduced_in
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE release that introduced the parameter. When the project could not measure an earlier release, the text says so, for example =1.8.0.7 or earlier=.
+
+#+begin_src cpp :name generator
+std::string("1.8.13.0")
+#+end_src
+
+** removed_in
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE release that removed the parameter. Null while the parameter still exists.
+
+#+begin_src cpp :name generator
+std::string("1.9.0.0")
+#+end_src
 
 * SQL
 
@@ -196,6 +287,8 @@ Whether the document must carry the parameter.
 | subtype | Subtype | line_edit | true | true | Enter subtype |
 | name | Name | line_edit | true | true | Enter parameter name |
 | parameter_value_domain_code | Value Is | line_edit | | true | Enter value domain code |
+| label | Label | line_edit | | | Enter label |
+| description | Description | line_edit | | | Enter description |
 
 *** Columns
 

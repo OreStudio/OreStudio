@@ -49,6 +49,13 @@ generate_synthetic_parameter_definition(utility::generation::generation_context&
     r.subtype = std::string(faker::word::noun());
     r.name = std::string(faker::word::noun());
     r.parameter_value_domain_code = std::string(faker::word::noun());
+    r.label = std::string("Parameter");
+    r.help = std::string("A flag.");
+    r.description = std::string("What the parameter decides.");
+    r.default_text = std::string("No.");
+    r.format = std::string("A flag.");
+    r.introduced_in = std::string("1.8.13.0");
+    r.removed_in = std::string("1.9.0.0");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

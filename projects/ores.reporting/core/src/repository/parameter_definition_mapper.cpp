@@ -32,6 +32,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -53,6 +54,13 @@ parameter_definition_mapper::map(const parameter_definition_entity& v) {
     r.position = v.position;
     r.parameter_value_domain_code = v.parameter_value_domain_code;
     r.is_required = v.is_required;
+    r.label = v.label.value_or("");
+    r.help = v.help.value_or("");
+    r.description = v.description.value_or("");
+    r.default_text = v.default_text.value_or("");
+    r.format = v.format.value_or("");
+    r.introduced_in = v.introduced_in.value_or("");
+    r.removed_in = v.removed_in.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -77,6 +85,13 @@ parameter_definition_mapper::map(const domain::parameter_definition& v) {
     r.position = v.position;
     r.parameter_value_domain_code = v.parameter_value_domain_code;
     r.is_required = v.is_required;
+    r.label = v.label.empty() ? std::nullopt : std::optional(v.label);
+    r.help = v.help.empty() ? std::nullopt : std::optional(v.help);
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.default_text = v.default_text.empty() ? std::nullopt : std::optional(v.default_text);
+    r.format = v.format.empty() ? std::nullopt : std::optional(v.format);
+    r.introduced_in = v.introduced_in.empty() ? std::nullopt : std::optional(v.introduced_in);
+    r.removed_in = v.removed_in.empty() ? std::nullopt : std::optional(v.removed_in);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

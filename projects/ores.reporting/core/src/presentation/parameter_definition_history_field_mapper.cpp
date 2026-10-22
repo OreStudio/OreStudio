@@ -46,6 +46,13 @@ render_parameter_definition_fields(const domain::parameter_definition& v) {
     fields.push_back(
         {.name = "Parameter Value Domain Code", .value = v.parameter_value_domain_code});
     fields.push_back({.name = "Is Required", .value = v.is_required ? "true" : "false"});
+    fields.push_back({.name = "Label", .value = v.label});
+    fields.push_back({.name = "Help", .value = v.help});
+    fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Default Text", .value = v.default_text});
+    fields.push_back({.name = "Format", .value = v.format});
+    fields.push_back({.name = "Introduced In", .value = v.introduced_in});
+    fields.push_back({.name = "Removed In", .value = v.removed_in});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

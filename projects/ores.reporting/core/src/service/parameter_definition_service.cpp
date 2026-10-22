@@ -108,6 +108,13 @@ domain::parameter_definition to_domain(const messaging::parameter_definition_wri
     v.position = write.position;
     v.parameter_value_domain_code = write.parameter_value_domain_code;
     v.is_required = write.is_required;
+    v.label = write.label;
+    v.help = write.help;
+    v.description = write.description;
+    v.default_text = write.default_text;
+    v.format = write.format;
+    v.introduced_in = write.introduced_in;
+    v.removed_in = write.removed_in;
     return v;
 }
 

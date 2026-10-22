@@ -640,8 +640,11 @@ BEGIN
 
     -- Producer kinds permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:read',                      'View producer kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::source_kinds:read',                      'View source kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:write',                     'Create and modify producer kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::source_kinds:write',                     'Create and modify source kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:delete',                    'Delete producer kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::source_kinds:delete',                    'Delete source kinds');
 
     -- Diary entry types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:read',                   'View diary entry types');

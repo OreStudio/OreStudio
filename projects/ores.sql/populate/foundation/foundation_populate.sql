@@ -170,6 +170,7 @@ select ores_utility_allow_version_replace_fn();
 -- marketdata's market_series (FK via validation function).
 \ir ../refdata/refdata_derivation_kinds_populate.sql
 \ir ../refdata/refdata_producer_kinds_populate.sql
+\ir ../refdata/refdata_source_kinds_populate.sql
 \ir ../refdata/refdata_series_subclass_codes_populate.sql
 
 \ir ../refdata/refdata_business_unit_types_populate.sql

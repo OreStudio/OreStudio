@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 57381A9E-95A5-5F78-AE5F-02088FBDDE62
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the source_kinds commands from the shell?
+#+description: Every command the source_kinds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:source_kinds:
+
+This file documents the source_kinds resource at the shell, one section per command. Every command is a subcommand of =source_kinds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5CE14175-9DEF-5CC4-8324-CF10B3E5FC01
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.list=.
+
+#+name: source_kinds-list
+#+begin_src ores-shell :tangle source_kinds-list.ores :exports none
+source_kinds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D085328D-A19C-5348-963F-5912DEB5D6FD
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds get <code>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.get=.
+
+#+name: source_kinds-get
+#+begin_src ores-shell :tangle source_kinds-get.ores :exports none
+source_kinds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0A86FA40-FC03-570F-9910-CEA787048533
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.get_many=.
+
+#+name: source_kinds-get-many
+#+begin_src ores-shell :tangle source_kinds-get-many.ores :exports none
+source_kinds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 87D8EAE2-33A2-5EB7-B56C-8F51EBF9CA19
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.put=.
+
+#+name: source_kinds-add
+#+begin_src ores-shell :tangle source_kinds-add.ores :exports none
+source_kinds add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 03188863-56C4-5BB6-81EE-34B2193F81EF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.put=.
+
+#+name: source_kinds-set
+#+begin_src ores-shell :tangle source_kinds-set.ores :exports none
+source_kinds set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0F35151A-DF6F-593C-9554-16FE9F9FF1E4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.put_many=.
+
+#+name: source_kinds-put-many
+#+begin_src ores-shell :tangle source_kinds-put-many.ores :exports none
+source_kinds put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C6FAED0B-C009-5BA7-AEC7-C94417884390
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.delete=.
+
+#+name: source_kinds-delete
+#+begin_src ores-shell :tangle source_kinds-delete.ores :exports none
+source_kinds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 76B41E9B-F7BD-5733-AD1E-F1C0ACC5016B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds.delete_many=.
+
+#+name: source_kinds-delete-many
+#+begin_src ores-shell :tangle source_kinds-delete-many.ores :exports none
+source_kinds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 620DD443-D5CA-53D2-B7E3-80F4675BB5BD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds_versions.list=.
+
+#+name: source_kinds-versions
+#+begin_src ores-shell :tangle source_kinds-versions.ores :exports none
+source_kinds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A2CA223B-076D-5F35-8F0D-5CCFB775F1F7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+source_kinds version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.source_kinds_versions.get=.
+
+#+name: source_kinds-version
+#+begin_src ores-shell :tangle source_kinds-version.ores :exports none
+source_kinds version __none__ --version 1
+#+end_src
+

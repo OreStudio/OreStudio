@@ -41,7 +41,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4A204157-3172-4C7C-BEEB-E065059DB454][Add the market data catalogue]] | BACKLOG | | | Add providers, sources with a kind, vendor instruments with the minted flag, and mappings to ores.marketdata, with the source_kind vocabulary. |
+| [[id:4A204157-3172-4C7C-BEEB-E065059DB454][Add the market data catalogue]] | STARTED | 2026-10-22 | | Add providers, sources with a kind, vendor instruments with the minted flag, and mappings to ores.marketdata, with the source_kind vocabulary. |
 | [[id:588E506E-B400-4A34-A5CF-5CDBEB787BFC][Key the series by item, provider and party]] | BACKLOG | | | Add the provider to the series key, and record the source id on each observation. |
 | [[id:28A8B07C-9162-4F31-BF56-2526B6592E67][Define the adapter contract]] | BACKLOG | | | Add the announce, demand, tick and heartbeat messages and the ingress subjects. |
 | [[id:31720152-8E45-4E9B-9D9A-3E77CD9A4B9D][Ingest by mapping and route]] | BACKLOG | | | Make the ingest loop map vendor ids, check quality, resolve the routed parties and store one observation for each. |

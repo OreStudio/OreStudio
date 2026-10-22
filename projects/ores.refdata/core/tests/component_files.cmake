@@ -190,6 +190,7 @@ set(files
     "service_counterparty_gate_tests.cpp"
     "service_counterparty_proposal_tests.cpp"
     "service_tenor_resolution_service_tests.cpp"
+    "source_kind_eventing_integration_tests.cpp"
     "sub_periods_coupon_type_eventing_integration_tests.cpp"
     "supervisory_body_eventing_integration_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"

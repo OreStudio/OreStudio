@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
-#+updated: 2026-10-21
-#+environment: bright_faraday
+#+updated: 2026-10-22
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,10 +28,10 @@ A report that is a regulatory trading book measure reads trading books only, and
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D][Scope a report by regulatory book type]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Now          | Answered the review of the pull request. |
+| Waiting on   | A decision to merge.                   |
+| Next         | Merge, then the browser check.         |
+| Last touched | 2026-10-22                               |
 
 * Acceptance
 
@@ -69,7 +69,7 @@ task and name that file in the Command column.
 - The seed types FRTB SA Capital, Stressed VaR and P&L Attribution as =Trading=. The ACME populate scripts and the platform dataset are regenerated.
 - The rule follows the precedent of the official report rule. The helper functions are in =reporting_resolve_book_ids_fn_create.sql=. The resolver takes the definition and returns only the books of its type. A typed definition refuses an explicit book of another type at three points: the definition itself, the binding of a configuration to it, and the books of a scope.
 - =gather_trades= passes the definition to the resolver and says, when no book is left, that the report reads books of its type only.
-- The pgTAP suite =reporting_regulatory_book_type_test.sql= has 12 tests and passes. The official report suites and the publish suite still pass. The reporting C++ suites pass.
+- The pgTAP suite =reporting_regulatory_book_type_test.sql= has 16 tests and passes. Four were added in review: a portfolio of banking books only, a definition that cannot be found, and an omitted definition. With the guard removed from the resolver, the test for a missing definition fails. With the type filter removed from the portfolio branch, three tests fail. The official report suites and the publish suite still pass. The reporting C++ suites pass.
 
 ** Done (stage two: the screens)
 
@@ -78,6 +78,12 @@ task and name that file in the Command column.
 - The report page shows the type in words and explains what the report reads. An empty type reads as "every type".
 - The configuration page tags each report that binds it with its type.
 - The English, French and Portuguese words are added. The suites pass: 1,776 web tests and 837 BFF tests, and the typecheck is clean.
+
+** Review of the pull request
+
+- The model of =risk_report_config= did not hold the hand-written repository changes that this PR made to the generated files: =resolve_book_ids= with the definition, and =regulatory_book_type_of=. The drift gate would have failed on main after the merge, as it did for marketdata. The model now holds both, and the regenerated files differ from the committed ones in formatting only.
+- The binding trigger of =report_configuration= is regenerated from the model, not edited in the SQL.
+- The environment field named =bright_faraday=. That environment works on another branch now, and nothing of this task was in its tree, so it moved to =brave_hopper=.
 
 ** Not done
 
@@ -106,6 +112,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A book's type can change after binding, and the resolver then drops it silently | =reporting_resolve_book_ids_fn_create.sql= | Raised as a task | A trigger on the book table crosses into the refdata component, so the choice between a refusal and a stated gap is its own task: [[file:task_refuse_a_book_type_change_under_a_typed_report.org][Refuse a book type change under a typed report]]. |
+| 2 | An unknown definition id widens the scope silently, and the =default null= invites an omitted definition | =reporting_resolve_book_ids_fn_create.sql= | Fixed | A definition that is named and cannot be found is refused with P0002. The header and the function comment say that omitting the definition reads the untyped scope. Two pgTAP cases. |
+| 3 | The suite should cover a portfolio that holds only books of another type | =reporting_regulatory_book_type_test.sql= | Fixed | The fixture already had a banking-only portfolio that no test used. A Trading report scoped to it resolves no book. |
+| 4 | The binding trigger calls the type function twice | =reporting_report_configurations_create.sql= | Fixed | The model holds the check as a fragment, so a local variable is not possible. A one-row subquery calls the function once. The SQL is regenerated from the model. |
+| 5 | Error wording names ids, not names | Trigger messages | Accepted | Stated in the PR already. |
+| 6 | The choices route hides every failure of the book type read | =reporting.ts= | Fixed | Only a 403 gives an empty list. Any other failure now fails the route. The test that stood for the refusal used the outcome =forbidden=, which is a 400, and passed only because the catch swallowed it. It uses =denied=, and a new test shows that an outage gives 502. |
+| 7 | A form loaded before the field existed could clear the type | =store.tsx= | Fixed | =editOf= states no type when the row has no such field, so the server keeps the type. Three tests, and the one for the old row fails with the old code. |
+| 8 | A run in which every trade fails still completes | Execution handler | Not in this PR | Issue 8 of the end to end run, as the notes say. It has no task of its own yet. |
+| 9 | French and Portuguese words need a native speaker | Locale files | Open | Before release. |
+| 10 | The screens were not seen in a browser | Web | Open | See the notes. |
 
 * Result

@@ -41,6 +41,7 @@ A report that is a regulatory trading book measure reads trading books only, and
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:760C022D-FAB5-4223-B8F3-60075C6FE45E][Define the report book scope rule]] | STARTED | 2026-10-21 | | Initial task for: Scope a report by regulatory book type |
+| [[id:15BEF777-543D-453C-847F-0A50E8719BE6][Refuse a book type change under a typed report]] | BACKLOG | | | A book whose regulatory book type changes after a typed report binds it is dropped from that report without a word, so the report reads fewer books or none. |
 
 * Decisions
 

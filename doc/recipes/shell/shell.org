@@ -1685,3 +1685,23 @@ tangled into the runnable script library
 * Trade Authorisation Requests
 
 - [[id:C39A3FBB-8625-538F-87DF-E780CBAE34B1][How do I run the trade_authorisation_requests commands from the shell?]]
+
+* Pricing Methods
+
+- [[id:FC4F033E-9672-5CB9-A439-327F2816AA76][How do I run the pricing_methods commands from the shell?]]
+
+* Pricing Model Engine Pairs
+
+- [[id:496100E1-7D92-5E71-9401-8ED19F7E8721][How do I run the pricing_model_engine_pairs commands from the shell?]]
+
+* Pricing Models
+
+- [[id:23CBB411-6419-5A63-A401-C788A4D07D5E][How do I run the pricing_models commands from the shell?]]
+
+* Pricing Pair Settings
+
+- [[id:8BC2BE27-A822-531E-A344-418627A29891][How do I run the pricing_pair_settings commands from the shell?]]
+
+* Sensitivity Templates
+
+- [[id:08C2B365-7E21-5D7E-A5E0-C40C41E2B963][How do I run the sensitivity_templates commands from the shell?]]

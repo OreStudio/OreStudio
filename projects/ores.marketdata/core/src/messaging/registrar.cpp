@@ -26,6 +26,14 @@
 #include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
+#include "ores.marketdata.core/messaging/provider_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_source_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_source_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_vendor_instrument_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_vendor_instrument_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_mapping_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_mapping_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
@@ -88,6 +96,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
     fold(register_feed_binding_handlers(nats, ctx, verifier));
+    fold(register_provider_handlers(nats, ctx, verifier));
+    fold(register_market_data_source_handlers(nats, ctx, verifier));
+    fold(register_market_data_vendor_instrument_handlers(nats, ctx, verifier));
+    fold(register_market_data_mapping_handlers(nats, ctx, verifier));
     fold(register_observation_lineage_handlers(nats, ctx, verifier));
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
     fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
@@ -244,6 +256,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_market_series_history_provider(hist_registry);
         register_market_series_asset_class_history_provider(hist_registry);
         register_feed_binding_history_provider(hist_registry);
+        register_provider_history_provider(hist_registry);
+        register_market_data_source_history_provider(hist_registry);
+        register_market_data_vendor_instrument_history_provider(hist_registry);
+        register_market_data_mapping_history_provider(hist_registry);
         register_observation_lineage_history_provider(hist_registry);
         register_series_classification_rule_history_provider(hist_registry);
 

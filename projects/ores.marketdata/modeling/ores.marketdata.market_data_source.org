@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 4F0B8C1E-6A27-4D39-9E5A-2C71D8B3A604
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.market_data_source
+#+description: Codegen entity model for the marketdata sources table; one adapter instance of a provider, with a readable kind.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_data_source
+#+entity_plural: market_data_sources
+#+entity_title: Market Data Source
+#+brief: One adapter instance of a provider, with a name and a kind (live, replay, test, simulated or derived).
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+A source is one adapter instance of a provider: =bloomberg-live= and
+=bloomberg-sim= are two sources of the provider =bloomberg=. Its =kind= says how the
+adapter gets its values and is data a person can read. No code in the pipeline
+branches on it. The =name= is a label and no code parses it.
+
+A provider can have several sources at once. A party reaches one of them through a
+route, never through the provider. One source of each provider is the default, and a
+new subscription routes to it.
+
+The system tenant and the system party own the rows. Every tenant reads them and
+only the system tenant writes them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this source.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:sortable:    true
+:searchable:  true
+:END:
+
+The source's readable label, such as =bloomberg-live=. Unique within the system
+tenant. It is a label and no code parses it.
+
+#+begin_src cpp :name generator
+std::string("source-") + std::to_string(faker::number::integer(1, 999999))
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:END:
+
+References =market_data_provider.code=: the provider whose ids this source publishes.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:filterable:    true
+:END:
+
+References =source_kind.code=: =live=, =replay=, =test=, =simulated= or =derived=.
+
+#+begin_src cpp :name generator
+std::string("live")
+#+end_src
+
+** is_default
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:sortable:      true
+:END:
+
+True for the one source of the provider that a new subscription routes to. At most
+one source of a provider is the default.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the source is: which environment, session or generator set it reads.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_market_data_sources_tbl
+:rls_tenant_isolation:      true
+:rls_system_tenant_visible: true
+:END:
+
+** Checks
+
+| expression                                                      |
+|-----------------------------------------------------------------|
+| "name" ~ '^[a-z][a-z0-9_-]*$'                                   |
+| "provider_code" <> ''                                           |
+
+** Indexes
+
+| name     | columns                  | unique | current_only | where_extra               |
+|----------+--------------------------+--------+--------------+---------------------------|
+| provider | tenant_id, provider_code | false  | true         |                           |
+| default  | tenant_id, provider_code | true   | true         | "is_default" = true       |
+
+The default index keeps one default source for each provider.
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| kind          | ores_refdata_validate_source_kind_fn   |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: source
+:entity_plural_short:   sources
+:entity_singular_words: market data source
+:entity_plural_words:   market data sources
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mds
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/market_data_source.hpp
+:domain_class:            ores::marketdata::domain::market_data_source
+:protocol_include:        ores.marketdata.api/messaging/market_data_source_protocol.hpp
+:collection_name:         market_data_sources
+:key_field:               name
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder              |
+|---------------+---------------+-----------------+-----------+--------+-------------+--------------------------|
+| name          | Name          | nameEdit        | line_edit | true   | true        | Enter source name        |
+| provider_code | Provider      | providerEdit    | line_edit |        | true        | Enter provider code      |
+| kind          | Kind          | kindEdit        | line_edit |        | true        | live, replay, test, simulated or derived |
+| is_default    | Default       | defaultEdit     | check_box |        |             |                          |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description      |
+
+*** Columns
+
+| enum_name    | field         | header      | type    | width |
+|--------------+---------------+-------------+---------+-------|
+| Name         | name          | Name        | string  | 200   |
+| ProviderCode | provider_code | Provider    | string  | 120   |
+| Kind         | kind          | Kind        | string  | 100   |
+| IsDefault    | is_default    | Default     | boolean | 80    |
+| Version      | version       | Version     | int     | 80    |
+| ModifiedBy   | modified_by   | Modified By | string  | 120   |
+
+* See also
+
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] -- the vocabulary of the =kind= column.
+- [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] -- the catalogue the source belongs to.

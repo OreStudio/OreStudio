@@ -33,9 +33,13 @@ set(files
     "curve_republish_resolver.cpp"
     "main.cpp"
     "messaging/feed_binding_event_registrar.cpp"
+    "messaging/market_data_mapping_event_registrar.cpp"
+    "messaging/market_data_source_event_registrar.cpp"
+    "messaging/market_data_vendor_instrument_event_registrar.cpp"
     "messaging/market_fixing_event_registrar.cpp"
     "messaging/market_series_event_registrar.cpp"
     "messaging/observation_lineage_event_registrar.cpp"
+    "messaging/provider_event_registrar.cpp"
     "messaging/series_classification_rule_event_registrar.cpp"
 )
 
@@ -61,9 +65,13 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/crm_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/curve_republish_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_series_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/provider_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/ores.marketdata.service.hpp"
 )

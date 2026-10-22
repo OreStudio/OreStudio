@@ -45,5 +45,13 @@
 \ir ./marketdata_feed_bindings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_create.sql
+\ir ./marketdata_providers_create.sql
+\ir ./marketdata_providers_notify_trigger_create.sql
+\ir ./marketdata_market_data_sources_create.sql
+\ir ./marketdata_market_data_sources_notify_trigger_create.sql
+\ir ./marketdata_market_data_vendor_instruments_create.sql
+\ir ./marketdata_market_data_vendor_instruments_notify_trigger_create.sql
+\ir ./marketdata_market_data_mappings_create.sql
+\ir ./marketdata_market_data_mappings_notify_trigger_create.sql
 
 \ir ./marketdata_publish_from_dq_create.sql

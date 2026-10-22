@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 9709DEFB-9C32-5E00-8CA0-6B926ED00ED6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_data_mappings commands from the shell?
+#+description: Every command the market_data_mappings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_data_mappings:
+
+This file documents the market_data_mappings resource at the shell, one section per command. Every command is a subcommand of =market_data_mappings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 794479CC-9E7C-5B4A-8836-489A0BA928A3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.list=.
+
+#+name: market_data_mappings-list
+#+begin_src ores-shell :tangle market_data_mappings-list.ores :exports none
+market_data_mappings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6B15F919-B809-5B1D-9C7B-607520040D92
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings get <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.get=.
+
+#+name: market_data_mappings-get
+#+begin_src ores-shell :tangle market_data_mappings-get.ores :exports none
+market_data_mappings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B95EED72-C270-57BE-B80B-C3733FC3A794
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings get-many <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.get_many=.
+
+#+name: market_data_mappings-get-many
+#+begin_src ores-shell :tangle market_data_mappings-get-many.ores :exports none
+market_data_mappings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 2C3767D7-3438-5EFB-848A-BBFD727F4235
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings add <vendor_instrument_id> <effective_from> <oresmd_uri> <effective_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.put=.
+
+#+name: market_data_mappings-add
+#+begin_src ores-shell :tangle market_data_mappings-add.ores :exports none
+market_data_mappings add 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: CF9AA816-8E84-578C-85D5-BB6425F84C35
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings set <id> <vendor_instrument_id> <effective_from> <oresmd_uri> <effective_to> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.put=.
+
+#+name: market_data_mappings-set
+#+begin_src ores-shell :tangle market_data_mappings-set.ores :exports none
+market_data_mappings set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B5BC2AF3-C6F3-535B-AEA9-48BCF5DE3966
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings put-many --count <n> <id> <vendor_instrument_id> <effective_from> <oresmd_uri> <effective_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.put_many=.
+
+#+name: market_data_mappings-put-many
+#+begin_src ores-shell :tangle market_data_mappings-put-many.ores :exports none
+market_data_mappings put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 57FB575D-2E71-5DF0-BBE5-EB8DC703E3B0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings delete <oresmd_uri> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.delete=.
+
+#+name: market_data_mappings-delete
+#+begin_src ores-shell :tangle market_data_mappings-delete.ores :exports none
+market_data_mappings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: ED5789D2-81D8-5BEC-9479-30A239D2E93C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings delete-many <oresmd_uri> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings.delete_many=.
+
+#+name: market_data_mappings-delete-many
+#+begin_src ores-shell :tangle market_data_mappings-delete-many.ores :exports none
+market_data_mappings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1F0B1709-5000-5682-A33F-05BF159ECEB5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings versions <oresmd_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings_versions.list=.
+
+#+name: market_data_mappings-versions
+#+begin_src ores-shell :tangle market_data_mappings-versions.ores :exports none
+market_data_mappings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A0D14703-14BD-5AF6-8748-0CC299007FCD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_mappings version <oresmd_uri> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_mappings_versions.get=.
+
+#+name: market_data_mappings-version
+#+begin_src ores-shell :tangle market_data_mappings-version.ores :exports none
+market_data_mappings version __none__ --version 1
+#+end_src
+

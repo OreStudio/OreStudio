@@ -39,6 +39,8 @@ The test of a failed copy does not fail on a loaded machine. It waits for the st
 - The burst of the test is smaller than the queue of ticks, so the count of the republish cannot fall short because the queue dropped a tick.
 - The counts of the test do not change with the number of probe ticks.
 - The test passes ten times in a row at a load of 20 on 8 CPUs.
+- A test that waits for a count of republished ticks does not wait out its deadline when a tick is dropped as stale or by the queue. It reads the drop counters of the loop, or it states the drop in its failure message, so the cause shows.
+- The tests =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits= and =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= both follow this rule.
 
 * Plan
 
@@ -61,6 +63,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Observed while reviewing the quiet loop (PR #3628): at a load of 16 to 43 on 8 CPUs, the failed copy test failed in 3 of 10 runs with the quiet path turned off and in about 3 of 9 runs with it on. The failing check is the wait for =republished == sent= after the burst of 20,000 ticks. The cause is a guess: a tick older than =max_tick_age= (5 s) is dropped when the machine is slow, so the count falls short. No run read the drop counters to confirm it. The failure is therefore not new with the quiet path.
 
 * Test Scenarios
 

@@ -25,6 +25,15 @@
 #ifndef ORES_TRADING_API_MESSAGING_TRADE_OPERATIONS_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_TRADE_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
@@ -84,6 +93,76 @@ struct book_trade_response {
      * refused.
      */
     std::optional<boost::uuids::uuid> activity_id;
+};
+
+/**
+ * @brief Creates a bond issue with its legs, in one transaction.
+ *
+ * The issue is the security master. It is whole or absent: a refused child
+ * write leaves no issue row. The issue is create-only. An issue that already
+ * exists is answered with a conflict and the stored issue stays as it is:
+ * already_exists when its terms equal the request, content_differs when they
+ * do not. Each child row names its issue and leg, and the caller states them
+ * once on the row.
+ */
+struct put_bond_issue_composite_request {
+    using response_type = struct put_bond_issue_composite_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.put_bond_issue_composite";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The security's terms.
+     */
+    ores::trading::domain::bond_issue issue;
+    /**
+     * @brief The issue's legs.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg> legs;
+    /**
+     * @brief The amounts of the legs: notionals, coupons and the like.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg_amount> amounts;
+    /**
+     * @brief The rate terms of the legs.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg_rate> rates;
+    /**
+     * @brief The schedules of the legs.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg_schedule> schedules;
+    /**
+     * @brief The dates of the schedules that state a date list.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg_schedule_date> schedule_dates;
+    /**
+     * @brief The amortisation terms of the legs.
+     */
+    std::vector<ores::trading::domain::bond_issue_leg_amortization> amortizations;
+    /**
+     * @brief The dates on which the issuer may call the issue.
+     */
+    std::vector<ores::trading::domain::bond_issue_call_date> call_dates;
+    /**
+     * @brief The securities a convertible issue converts into.
+     */
+    std::vector<ores::trading::domain::bond_issue_conversion_target> conversion_targets;
+};
+
+/**
+ * @brief The outcome of creating a bond issue.
+ */
+struct put_bond_issue_composite_response {
+    /**
+     * @brief Outcome of the operation: conflict with code already_exists when
+     * the same issue is stored, and conflict with code content_differs when an
+     * issue with this id or security id is stored with other terms.
+     */
+    ores::utility::domain::result result;
 };
 
 /**

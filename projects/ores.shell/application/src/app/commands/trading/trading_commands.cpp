@@ -89,6 +89,7 @@
 #include "ores.shell/app/commands/trading/swap_leg_commands.hpp"
 #include "ores.shell/app/commands/trading/swaption_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/synthetic_cdo_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/trade_authorisation_request_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_booking_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_id_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_identifier_commands.hpp"
@@ -172,6 +173,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     swap_leg_commands::register_commands(root_menu, session);
     swaption_instrument_commands::register_commands(root_menu, session);
     synthetic_cdo_instrument_commands::register_commands(root_menu, session);
+    trade_authorisation_request_commands::register_commands(root_menu, session);
     trade_booking_commands::register_commands(root_menu, session);
     trade_id_type_commands::register_commands(root_menu, session);
     trade_identifier_commands::register_commands(root_menu, session);

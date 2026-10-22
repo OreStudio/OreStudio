@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/seed-the-operational-authorisation-kind
+#+pr: 3624
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Join the operational authorisation control to the inbox. Seed the approval kind,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Join the operational authorisation control to the inbox. Seed the approval kind,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Seed the kind. Add a trading detail table that names the trade and the trade
+version a request covers. Raise one request in the booking write when an actual
+trade is live. Test the raise.
+
+Decisions for the open points, taken with the user:
+
+- Decider permission: =inbox::approvals:decide_operations=, as the two refdata
+  kinds.
+- The system raises one request for each new live trade. An amendment does not
+  raise one yet.
+- The kind allows a hold. It has no hold reasons yet.
+- The kind needs a comment on every decision.
+- Auto-authorisation is out. Every request waits for a person.
+- A refusal is final. The inbox enforces this for every kind.
 
 * Measurements
 
@@ -61,6 +72,35 @@ task and name that file in the Command column.
 
 * Notes
 
+The request joins the booking transaction, so a trade is never live without one.
+The check reads the trade and its state through that transaction. A helper that
+opens its own connection cannot see the uncommitted rows.
+
+A request is read by its tenant alone. It holds a trade id and a version, no
+economics, so it has no party isolation of its own. The trade it names keeps
+that. I first added a party policy, and the generated event test could not read
+the row back through an unscoped context. The generated event test also cannot
+seed a trade through its enum columns, and the profile fixes that test on. The
+model now states the seeding in a =parent_seed= block under the foreign key.
+
+The new table needs the inbox and IAM libraries in the trading core tests, and
+the inbox libraries in the trading core. The trading service now writes the
+inbox request and notice tables, so the service registry and the generated grants
+changed.
+
+=./compass.sh check= ends with two failures that this change does not touch:
+
+- =xml-benchmark-recorded=: an earlier commit changed the XML code and recorded
+  no benchmark row. This task changes no XML code.
+- =ctest=: =range_bound_reads_back_in_the_document_order= in the trading core
+  refuses an empty =modified_by=, and a marketdata service test about repeated
+  ticks fails on a value. Each passes three times when run alone, so they fail
+  only in a full run, which points at test order and not at this change. I did
+  not build main to compare.
+
+The first gate run found drift on main in the trade operations protocol: its
+header was newer than its model. I brought the model in line with the header.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +116,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3624][#3624]] | [trading] Raise an operational authorisation request when a live trade is booked |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A throw in the post-commit announce can fail a committed booking. | trade_operations_service.cpp | Accept | The announce call is in a try/catch that logs a warning. |
+| 2 | No test that an amendment does not match an older request. | operational_authorisation_service.cpp | Decline | Amendments are out of scope. It is in the acceptance of the Execute task. |
+| 3 | The reason text and change reason are literals. | operational_authorisation_service.cpp | Decline | Cosmetic. |
+| 4 | The live check fails silently if the state or machine is renamed. | trading_trade_components_test.sql | Accept | Two pgTAP assertions state the lookup. |
+| 5 | A draft executed to live never passes through book_trade. | trade_operations_service.cpp | Accept | New task: raise an authorisation request when a draft is executed. |
+| 6 | Confirm the failing tests also fail on main. | | Accept | Both pass alone and fail only in a full run. See Notes. I did not build main. |
+| 7 | Merge the design PR first. | | Accept | Planned. |
 
 * Result
+
+The operational authorisation kind is seeded and a live trade raises a request.
+
+- The kind =trading.operational_authorisation= is seeded. It names
+  =inbox::approvals:decide_operations=, allows a hold, needs a comment, and does
+  not expire.
+- The model =trade_authorisation_request= is new, with its table, repository,
+  service, handlers, events and shell commands. It names the trade and the trade
+  version a request covers. A policy limits reads to the parties a reader sees.
+- =book_trade= raises one request in its own transaction when an actual trade is
+  live, and tells the deciders after the commit. A test or draft trade raises
+  none.
+- The trading service may write the inbox request and notice tables.
+- Two tests cover the raise. The generated event test passes. The inbox already
+  tests that a refusal is final.
+
+Left open: no request for an amendment, no Execute path, and the failures
+listed in the notes.

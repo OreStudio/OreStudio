@@ -271,6 +271,8 @@
 -- Trades (depends on reference data, drop after junction tables)
 
 -- Trade components (drop before the anchor they reference)
+\ir ./trading_trade_authorisation_requests_notify_trigger_drop.sql
+\ir ./trading_trade_authorisation_requests_drop.sql
 \ir ./trading_trade_states_notify_trigger_drop.sql
 \ir ./trading_trade_states_drop.sql
 \ir ./trading_trade_bookings_notify_trigger_drop.sql

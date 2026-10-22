@@ -46,6 +46,7 @@ Keys this group states reach into:
 - ores_refdata_counterparty_changes_tbl (refdata)
 - ores_refdata_counterparty_identifier_changes_tbl (refdata)
 - ores_refdata_party_counterparty_changes_tbl (refdata)
+- ores_trading_trade_authorisation_requests_tbl (trading)
 end note
 
 '

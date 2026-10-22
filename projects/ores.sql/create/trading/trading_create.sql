@@ -389,6 +389,8 @@
 \ir ./trading_trade_bookings_notify_trigger_create.sql
 \ir ./trading_trade_states_create.sql
 \ir ./trading_trade_states_notify_trigger_create.sql
+\ir ./trading_trade_authorisation_requests_create.sql
+\ir ./trading_trade_authorisation_requests_notify_trigger_create.sql
 
 -- Trade identifiers, party roles and additional fields (depend on the trade)
 \ir ./trading_trade_identifiers_create.sql

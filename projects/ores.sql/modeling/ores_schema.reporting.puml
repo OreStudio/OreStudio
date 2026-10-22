@@ -492,12 +492,12 @@ package "reporting" #E0F7FA {
         * position : integer
         * ore_parameter_value_domain_code : text <<FK>>
         * is_required : boolean
-          label : text
-          help : text
-          description : text
-          default_text : text
-          format : text
-          introduced_in : text
+        * label : text
+        * help : text
+        * description : text
+        * default_text : text
+        * format : text
+        * introduced_in : text
           removed_in : text
         * modified_by : text
         * performed_by : text

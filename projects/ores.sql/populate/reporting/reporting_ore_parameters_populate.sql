@@ -6605,9 +6605,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''active'']',
             'analytic', 'initialMargin', 'active', 286, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Initial margin block', 'ORE ignores this block.',
+            'ORE does not read analytics of this type, and the block has no effect. Example files of an older layout carry it. To compute an initial margin, use the simm analytic or the imschedule analytic.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: initialMargin.active'
         );
@@ -6628,9 +6628,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''method'']',
             'analytic', 'initialMargin', 'method', 287, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Initial margin method', 'A name. ORE ignores it.',
+            'ORE does not read analytics of the type initialMargin, so this parameter has no effect. Use the simm analytic or the imschedule analytic.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A name.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: initialMargin.method'
         );
@@ -7202,10 +7202,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''active'']',
-            'analytic', 'portfolioDetails', 'active', 312, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'portfolioDetails', 'active', 312, 'boolean', true,
+            'Run the portfolio details analytic', 'A flag. Y runs the analytic.',
+            'Switches the portfolio details analytic on or off. It analyses the portfolio and writes reports of its risk factors, its market objects, its swap indices, the number of trades for each counterparty, netting set and trade type, and its underlying indices.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.active'
         );
@@ -7226,9 +7226,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''riskFactorFileName'']',
             'analytic', 'portfolioDetails', 'riskFactorFileName', 313, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Risk factor report file', 'A file name.',
+            'Names the file with the report of the risk factors of the portfolio.',
+            'risk_factors.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.riskFactorFileName'
         );
@@ -7249,11 +7249,57 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''marketObjectFileName'']',
             'analytic', 'portfolioDetails', 'marketObjectFileName', 314, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Market object report file', 'A file name.',
+            'Names the file with the report of the market objects that the portfolio needs.',
+            'market_objects.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.marketObjectFileName'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'portfolioDetails' and name = 'version'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''version'']',
+            'analytic', 'portfolioDetails', 'version', 315, 'string', false,
+            'SIMM version', 'A SIMM version, for example 2.6.',
+            'Names a SIMM version. The CRIF generation uses it as its last choice, when the crif block, the saccr block and the simm block have no version.',
+            'None.', 'A SIMM version such as 2.6.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.version'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'portfolioDetails' and name = 'portfolio_details_configuration'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''portfolio_details_configuration'']',
+            'analytic', 'portfolioDetails', 'portfolio_details_configuration', 316, 'string', false,
+            'Details configuration', 'A name.',
+            'Names the configuration of the portfolio details. ORE reads the value, and no analytic of release 1.8.17.0 uses it.',
+            'BASIC', 'A name such as BASIC.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: portfolioDetails.portfolio_details_configuration'
         );
     end if;
 
@@ -7271,7 +7317,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''active'']',
-            'analytic', 'stress', 'active', 315, 'boolean', true,
+            'analytic', 'stress', 'active', 317, 'boolean', true,
             'Run the stress analytic', 'A flag. Y runs the analytic.',
             'Switches the stress analytic on or off. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -7294,7 +7340,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''precision'']',
-            'analytic', 'stress', 'precision', 316, 'integer', false,
+            'analytic', 'stress', 'precision', 318, 'integer', false,
             'Output precision', 'A whole number of decimal places.',
             'Sets the number of decimal places of the numbers in the stress result file. For example, 6.',
             '2', 'A whole number of zero or more.',
@@ -7317,7 +7363,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'stress', 'marketConfigFile', 317, 'string', false,
+            'analytic', 'stress', 'marketConfigFile', 319, 'string', false,
             'Simulation market file', 'A file name.',
             'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml. The analytic replaces the market of the valuation date with this simulation market and applies the stress scenarios to it.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7340,7 +7386,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'stress', 'stressConfigFile', 318, 'string', false,
+            'analytic', 'stress', 'stressConfigFile', 320, 'string', false,
             'Stress configuration file', 'A file name.',
             'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain, as shifts of the zero rates, or in the par domain, as shifts of the par rates. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7363,7 +7409,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'stress', 'pricingEnginesFile', 319, 'string', false,
+            'analytic', 'stress', 'pricingEnginesFile', 321, 'string', false,
             'Pricing engines file', 'A file name.',
             'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7386,7 +7432,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'stress', 'scenarioOutputFile', 320, 'string', false,
+            'analytic', 'stress', 'scenarioOutputFile', 322, 'string', false,
             'Stress result file', 'A file name.',
             'Names the file with the result of each stress scenario: the NPV of the base scenario, the NPV of the stressed scenario and their difference. For example, stresstest.csv.',
             'stress.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -7409,7 +7455,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''outputThreshold'']',
-            'analytic', 'stress', 'outputThreshold', 321, 'double', false,
+            'analytic', 'stress', 'outputThreshold', 323, 'double', false,
             'Output threshold', 'A number.',
             'Sets the smallest absolute NPV change that the analytic writes. It drops every change below the number from the output. For example, 0.000001.',
             '0. The analytic writes every change.', 'A number, written with a decimal point.',
@@ -7432,7 +7478,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''generateCashflows'']',
-            'analytic', 'stress', 'generateCashflows', 322, 'boolean', false,
+            'analytic', 'stress', 'generateCashflows', 324, 'boolean', false,
             'Generate cash flows', 'A flag. Y writes the cash flows under each scenario.',
             'Decides whether the analytic also writes the cash flows of the trades under each stress scenario, to the cash flow output file.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -7455,7 +7501,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioCashflowOutputFile'']',
-            'analytic', 'stress', 'scenarioCashflowOutputFile', 323, 'string', false,
+            'analytic', 'stress', 'scenarioCashflowOutputFile', 325, 'string', false,
             'Stress cash flow file', 'A file name.',
             'Names the file with the cash flows under each stress scenario. It has an effect only when Generate cash flows is on. For example, stresstest_flows.csv.',
             'stress_cashflows.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -7478,7 +7524,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'stress', 'sensitivityConfigFile', 324, 'string', false,
+            'analytic', 'stress', 'sensitivityConfigFile', 326, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file with the sensitivity setup, which a par stress test needs for the conversion of the par shifts. Without it ORE supports no par stress test.',
             'None. Par stress tests are not supported.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7501,7 +7547,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressZeroScenarioDataFile'']',
-            'analytic', 'stress', 'stressZeroScenarioDataFile', 325, 'string', false,
+            'analytic', 'stress', 'stressZeroScenarioDataFile', 327, 'string', false,
             'Raw domain stress file', 'A file name.',
             'Names the file that receives the stress test definition in the raw domain, when the stress test file is in the par domain. The converted file can be used again without a new conversion. For example, zeroStressScenarioData.xml.',
             'stress_ZeroStressData.xml. The analytic writes the file only for a stress test in the par domain.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -7524,7 +7570,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioFile'']',
-            'analytic', 'stress', 'scenarioFile', 326, 'string', false,
+            'analytic', 'stress', 'scenarioFile', 328, 'string', false,
             'Scenario input file', 'A file name.',
             'Names a file with market scenarios that ORE reads as stress scenarios. For example, StressScenarios/stress_scenarios.csv.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7547,7 +7593,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''optimiseRiskFactors'']',
-            'analytic', 'stress', 'optimiseRiskFactors', 327, 'boolean', false,
+            'analytic', 'stress', 'optimiseRiskFactors', 329, 'boolean', false,
             'Optimise the risk factors', 'A flag. Y limits the par conversion to the risk factors that matter.',
             'Decides whether the par stress conversion limits itself to the risk factors that the stress scenarios shift. It makes the conversion faster.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -7570,7 +7616,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''lowerBoundCapVols'']',
-            'analytic', 'stress', 'lowerBoundCapVols', 328, 'double', false,
+            'analytic', 'stress', 'lowerBoundCapVols', 330, 'double', false,
             'Lower bound of cap volatilities', 'A number.',
             'Is meant to set the lowest cap and floor volatility that the par to raw conversion tries. The conversion uses the bound 1e-8. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -7593,7 +7639,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''upperBoundCapVols'']',
-            'analytic', 'stress', 'upperBoundCapVols', 329, 'double', false,
+            'analytic', 'stress', 'upperBoundCapVols', 331, 'double', false,
             'Upper bound of cap volatilities', 'A number.',
             'Is meant to set the highest cap and floor volatility that the par to raw conversion tries, as a multiple of the base volatility. The conversion uses the bound 10. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -7616,7 +7662,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''lowerBoundDiscountFactors'']',
-            'analytic', 'stress', 'lowerBoundDiscountFactors', 330, 'double', false,
+            'analytic', 'stress', 'lowerBoundDiscountFactors', 332, 'double', false,
             'Lower bound of discount factors', 'A number.',
             'Is meant to set the lowest discount factor that the par to raw conversion tries. The conversion uses the bound 1e-8. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -7639,7 +7685,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''upperBoundDiscountFactors'']',
-            'analytic', 'stress', 'upperBoundDiscountFactors', 331, 'double', false,
+            'analytic', 'stress', 'upperBoundDiscountFactors', 333, 'double', false,
             'Upper bound of discount factors', 'A number.',
             'Is meant to set the highest discount factor that the par to raw conversion tries. The conversion uses the bound 10. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -7662,7 +7708,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''lowerBoundSurvivalProb'']',
-            'analytic', 'stress', 'lowerBoundSurvivalProb', 332, 'double', false,
+            'analytic', 'stress', 'lowerBoundSurvivalProb', 334, 'double', false,
             'Lower bound of survival probabilities', 'A number.',
             'Is meant to set the lowest survival probability that the par to raw conversion tries. The conversion treats survival probabilities like discount factors and uses the bound 1e-8. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -7685,7 +7731,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''upperBoundSurvivalProb'']',
-            'analytic', 'stress', 'upperBoundSurvivalProb', 333, 'double', false,
+            'analytic', 'stress', 'upperBoundSurvivalProb', 335, 'double', false,
             'Upper bound of survival probabilities', 'A number.',
             'Is meant to set the highest survival probability that the par to raw conversion tries. The conversion treats survival probabilities like discount factors and uses the bound 10. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -7708,7 +7754,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''accuracy'']',
-            'analytic', 'stress', 'accuracy', 334, 'double', false,
+            'analytic', 'stress', 'accuracy', 336, 'double', false,
             'Accuracy of the conversion', 'A number.',
             'Is meant to set the accuracy of the root search that turns a par shift into a raw shift. The conversion uses the accuracy 1e-8. ORE reads the value for the stress analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -7731,7 +7777,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''active'']',
-            'analytic', 'parametricVar', 'active', 335, 'boolean', true,
+            'analytic', 'parametricVar', 'active', 337, 'boolean', true,
             'Run the parametric VaR analytic', 'A flag. Y runs the analytic.',
             'Switches the parametric VaR analytic on or off. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -7754,7 +7800,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''sensitivityInputFile'']',
-            'analytic', 'parametricVar', 'sensitivityInputFile', 336, 'string', false,
+            'analytic', 'parametricVar', 'sensitivityInputFile', 338, 'string', false,
             'Sensitivities file', 'A comma-separated list of file names.',
             'Lists the files with the delta, vega and gamma sensitivities and the cross gamma, as ORE''s sensitivity analytic writes them. For example, ../Output/sensitivity.csv,../Output/crossgamma.csv.',
             'None. The analytic needs the sensitivities.', 'A comma-separated list of file names.',
@@ -7777,7 +7823,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''covarianceInputFile'']',
-            'analytic', 'parametricVar', 'covarianceInputFile', 337, 'string', false,
+            'analytic', 'parametricVar', 'covarianceInputFile', 339, 'string', false,
             'Covariance file', 'A file name.',
             'Names the file with the covariances of the risk factors. ORE does not compute them, so you must supply them. The file has three columns: the first factor, the second factor and the covariance. The factor names follow the naming in the sensitivity and cross gamma files, and the covariances must agree with the sensitivities: if a sensitivity is for an absolute shift in basis points, the covariances are for absolute shifts in basis points. The covariances must include the holding period, because ORE does not scale them with the square root of time. For example, covariance.csv.',
             'None. The analytic needs the covariances.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -7800,7 +7846,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''quantiles'']',
-            'analytic', 'parametricVar', 'quantiles', 338, 'string', false,
+            'analytic', 'parametricVar', 'quantiles', 340, 'string', false,
             'Quantiles', 'A comma-separated list of quantiles.',
             'Lists the quantiles of the profit and loss distribution that the report shows. Each quantile gives one column in the output file. The 1 percent quantile is the lower tail of the P&L distribution, which is the VaR, and the 99 percent quantile is the upper tail. For example, 0.01,0.05,0.95,0.99. The historical simulation VaR analytic has the same parameter.',
             'None. The analytic needs the list.', 'A comma-separated list of numbers between 0 and 1, for example 0.01,0.05,0.95,0.99.',
@@ -7823,7 +7869,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''breakdown'']',
-            'analytic', 'parametricVar', 'breakdown', 339, 'boolean', false,
+            'analytic', 'parametricVar', 'breakdown', 341, 'boolean', false,
             'Break down the VaR', 'A flag. Y breaks down the VaR.',
             'Decides whether the analytic computes the VaR for each portfolio, risk class (all, interest rate, FX, inflation, equity, credit) and risk type (all, delta and gamma, vega), and not only for the whole portfolio. The historical simulation VaR analytic has the same parameter.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -7846,7 +7892,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''portfolioFilter'']',
-            'analytic', 'parametricVar', 'portfolioFilter', 340, 'string', false,
+            'analytic', 'parametricVar', 'portfolioFilter', 342, 'string', false,
             'Portfolio filter', 'A regular expression.',
             'Limits the VaR to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio. For example, PF1|PF2 selects the portfolios PF1 and PF2. The historical simulation VaR analytic has the same parameter.',
             'None. The analytic uses the whole portfolio.', 'A regular expression.',
@@ -7869,7 +7915,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''method'']',
-            'analytic', 'parametricVar', 'method', 341, 'string', false,
+            'analytic', 'parametricVar', 'method', 343, 'string', false,
             'VaR method', 'Delta, DeltaGammaNormal, MonteCarlo, Cornish-Fisher or Saddlepoint.',
             'Selects the method for the VaR. Delta uses the delta sensitivities only. DeltaGammaNormal adds the gamma and uses a normal approximation. MonteCarlo simulates the risk factors. Cornish-Fisher and Saddlepoint are two other approximations of the distribution. The name varMethod is another name for the same parameter.',
             'DeltaGammaNormal', 'One of Delta, DeltaGammaNormal, MonteCarlo, Cornish-Fisher or Saddlepoint.',
@@ -7892,7 +7938,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''outputFile'']',
-            'analytic', 'parametricVar', 'outputFile', 342, 'string', false,
+            'analytic', 'parametricVar', 'outputFile', 344, 'string', false,
             'VaR report file', 'A file name.',
             'Names the file with the main VaR report. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first. For example, var.csv.',
             'var.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -7915,7 +7961,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''SalvagingAlgorithm'']',
-            'analytic', 'parametricVar', 'SalvagingAlgorithm', 343, 'string', false,
+            'analytic', 'parametricVar', 'SalvagingAlgorithm', 345, 'string', false,
             'Salvaging algorithm', 'None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal.',
             'Selects the algorithm that repairs a covariance matrix that is not positive semi-definite. None does not repair it. The other five names are repair methods.',
             'Spectral', 'One of None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal.',
@@ -7938,7 +7984,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''mcSamples'']',
-            'analytic', 'parametricVar', 'mcSamples', 344, 'integer', false,
+            'analytic', 'parametricVar', 'mcSamples', 346, 'integer', false,
             'Monte Carlo samples', 'A whole number.',
             'Sets the number of samples of the Monte Carlo method. A higher number gives a steadier result and takes longer. The name varMcSamples is another name for the same parameter. ORE uses it only when the method is MonteCarlo.',
             '1000000', 'A whole number of zero or more.',
@@ -7961,7 +8007,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''mcSeed'']',
-            'analytic', 'parametricVar', 'mcSeed', 345, 'integer', false,
+            'analytic', 'parametricVar', 'mcSeed', 347, 'integer', false,
             'Monte Carlo seed', 'A whole number.',
             'Sets the seed of the random number generator of the Monte Carlo method. The same seed gives the same result. The name varMcSeed is another name for the same parameter. ORE uses it only when the method is MonteCarlo.',
             '42', 'A whole number of zero or more.',
@@ -7984,10 +8030,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''active'']',
-            'analytic', 'simm', 'active', 346, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'active', 348, 'boolean', true,
+            'Run the SIMM analytic', 'A flag. Y runs the analytic.',
+            'Switches the ISDA Standard Initial Margin Model (SIMM) on or off. The analytic computes the initial margin from sensitivities in the Common Risk Interchange Format (CRIF).',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.active'
         );
@@ -8007,10 +8053,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''version'']',
-            'analytic', 'simm', 'version', 347, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'version', 349, 'string', false,
+            'SIMM version', 'A SIMM version, for example 2.6.',
+            'Selects the version of the SIMM. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5. The run stops if no version is set.',
+            'None. The parameter is mandatory.', 'A SIMM version such as 2.6.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.version'
         );
@@ -8030,10 +8076,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''crif'']',
-            'analytic', 'simm', 'crif', 348, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'crif', 350, 'string', false,
+            'CRIF file', 'A file name.',
+            'Names the CRIF file with the sensitivities. The SIMM analytic can process a full CRIF with interest rate, FX, inflation, equity, credit and commodity risk. When the parameter is missing, ORE uses the CRIF analytic to generate the CRIF, and that generation covers interest rate and FX risk only. For example, crif.csv.',
+            'None. ORE generates the CRIF with the CRIF analytic.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.crif'
         );
@@ -8053,10 +8099,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrency'']',
-            'analytic', 'simm', 'calculationCurrency', 349, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'calculationCurrency', 351, 'string', false,
+            'Calculation currency', 'A currency code, for example USD.',
+            'Sets the currency of the calculation. The SIMM ignores the Risk_FX entries of the CRIF in this currency. It is also the currency to call and to post, unless the next two parameters override it. For example, USD. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The base currency. The run stops if neither is set.', 'A currency code of three letters, for example USD.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrency'
         );
@@ -8076,10 +8122,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''enforceIMRegulations'']',
-            'analytic', 'simm', 'enforceIMRegulations', 350, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'enforceIMRegulations', 352, 'boolean', false,
+            'Enforce the IM regulations', 'A flag. Y calculates the SIMM for each regulation.',
+            'Decides whether ORE calculates the SIMM for each post and collect regulation that the records of the CRIF name, and then reports the worst case. When it is N, ORE ignores the regulations of the CRIF. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'No. ORE ignores the post and collect regulations of the CRIF.', 'A flag, written Y or N, or true or false.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.enforceIMRegulations'
         );
@@ -8099,10 +8145,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''mporDays'']',
-            'analytic', 'simm', 'mporDays', 351, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'mporDays', 353, 'integer', false,
+            'Margin period of risk in days', '1 or 10.',
+            'Sets the margin period of risk of the SIMM. ORE supports 1 and 10 for the versions from 2.2 onwards and only 10 for the earlier versions.',
+            '10', '1 or 10.',
             '1.8.11.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.mporDays'
         );
@@ -8122,10 +8168,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''simmCalibration'']',
-            'analytic', 'simm', 'simmCalibration', 352, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'simmCalibration', 354, 'string', false,
+            'SIMM calibration file', 'A file name.',
+            'Names a file with the calibration of the SIMM, that is the risk weights and the correlations. When the file exists, it replaces the calibration of the SIMM version above.',
+            'None. ORE uses the calibration of the version.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.simmCalibration'
         );
@@ -8145,12 +8191,173 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''writeIntermediateReports'']',
-            'analytic', 'simm', 'writeIntermediateReports', 353, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simm', 'writeIntermediateReports', 355, 'boolean', false,
+            'Write the intermediate reports', 'A flag. Y writes the reports.',
+            'Decides whether the SIMM analytic writes its intermediate reports, which show the steps from the CRIF to the margin.',
+            'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simm.writeIntermediateReports'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'calculationCurrencyCall'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrencyCall'']',
+            'analytic', 'simm', 'calculationCurrencyCall', 356, 'string', false,
+            'Calculation currency to call', 'A currency code, for example USD.',
+            'Sets a separate calculation currency for the margin that we call. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrencyCall'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'calculationCurrencyPost'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrencyPost'']',
+            'analytic', 'simm', 'calculationCurrencyPost', 357, 'string', false,
+            'Calculation currency to post', 'A currency code, for example USD.',
+            'Sets a separate calculation currency for the margin that we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.calculationCurrencyPost'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'resultCurrency'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''resultCurrency'']',
+            'analytic', 'simm', 'resultCurrency', 358, 'string', false,
+            'Result currency', 'A currency code, for example USD.',
+            'Sets the currency of the SIMM amounts in the report. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency to call.', 'A currency code of three letters, for example USD.',
+            '1.8.10.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.resultCurrency'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'reportingCurrency'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''reportingCurrency'']',
+            'analytic', 'simm', 'reportingCurrency', 359, 'string', false,
+            'Reporting currency', 'A currency code, for example USD.',
+            'Adds two columns to the SIMM report: the reporting currency and the SIMM amount converted into it. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'None. The report has no extra columns.', 'A currency code of three letters, for example USD.',
+            '1.8.10.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.reportingCurrency'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'nameMappingInputFile'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''nameMappingInputFile'']',
+            'analytic', 'simm', 'nameMappingInputFile', 360, 'string', false,
+            'Name mapping file', 'A file name.',
+            'Names the file that maps the names in the portfolio to the SIMM names. Without it ORE uses the names as they are. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
+            'None. ORE uses the names as they are.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.nameMappingInputFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'bucketMappingInputFile'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''bucketMappingInputFile'']',
+            'analytic', 'simm', 'bucketMappingInputFile', 361, 'string', false,
+            'Bucket mapping file', 'A file name.',
+            'Names the file that maps risk factors to the SIMM buckets. Without it ORE uses the standard buckets. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
+            'None. ORE uses the standard SIMM buckets.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.bucketMappingInputFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simm' and name = 'computeTheta'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''computeTheta'']',
+            'analytic', 'simm', 'computeTheta', 362, 'boolean', false,
+            'Compute theta', 'A flag. Y computes the theta.',
+            'Decides whether the sensitivity calculation behind the CRIF also computes the theta. ORE reads the parameter from the sensitivity block, the simm block or the crif block, in this order, and one value serves all three analytics.',
+            'No.', 'A flag, written Y or N, or true or false.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simm.computeTheta'
         );
     end if;
 
@@ -8168,10 +8375,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''active'']',
-            'analytic', 'imschedule', 'active', 354, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'imschedule', 'active', 363, 'boolean', true,
+            'Run the IM schedule analytic', 'A flag. Y runs the analytic.',
+            'Switches the IM schedule analytic on or off. It computes the basic initial margin with the IM schedule method from minimal trade information: the NPV, the notional and the end date. The CRIF file gives the information.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.active'
         );
@@ -8191,10 +8398,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''crif'']',
-            'analytic', 'imschedule', 'crif', 355, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'imschedule', 'crif', 364, 'string', false,
+            'CRIF file', 'A file name.',
+            'Names the CRIF file for the IM schedule. It needs two lines for each trade, one with the risk class PV and one with the risk class Notional, which ORE reads as the NPV and the notional. It also needs the product class and the end date. The product class must be one of Rates, FX, Equity, Credit and Commodity: the SIMM uses the combined class RatesFX, but the IM schedule does not. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops. For example, crif_schedule.csv.',
+            'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.crif'
         );
@@ -8214,10 +8421,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrency'']',
-            'analytic', 'imschedule', 'calculationCurrency', 356, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'imschedule', 'calculationCurrency', 365, 'string', false,
+            'Calculation currency', 'A currency code, for example USD.',
+            'Sets the currency of the calculation. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops. For example, USD.',
+            'The base currency. The run stops if neither is set.', 'A currency code of three letters, for example USD.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrency'
         );
@@ -8237,12 +8444,127 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''version'']',
-            'analytic', 'imschedule', 'version', 357, 'double', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'imschedule', 'version', 366, 'string', false,
+            'SIMM version', 'A SIMM version, for example 2.6.',
+            'Selects the version for the CRIF. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The version of the simm block.', 'A SIMM version such as 2.6.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.version'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imschedule' and name = 'calculationCurrencyCall'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrencyCall'']',
+            'analytic', 'imschedule', 'calculationCurrencyCall', 367, 'string', false,
+            'Calculation currency to call', 'A currency code, for example USD.',
+            'Sets a separate calculation currency for the margin that we call. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrencyCall'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imschedule' and name = 'calculationCurrencyPost'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrencyPost'']',
+            'analytic', 'imschedule', 'calculationCurrencyPost', 368, 'string', false,
+            'Calculation currency to post', 'A currency code, for example USD.',
+            'Sets a separate calculation currency for the margin that we post. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency, or the base currency when that is missing too.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.calculationCurrencyPost'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imschedule' and name = 'resultCurrency'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''resultCurrency'']',
+            'analytic', 'imschedule', 'resultCurrency', 369, 'string', false,
+            'Result currency', 'A currency code, for example USD.',
+            'Sets the currency of the amounts in the report. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'The calculation currency to call.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.resultCurrency'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imschedule' and name = 'reportingCurrency'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''reportingCurrency'']',
+            'analytic', 'imschedule', 'reportingCurrency', 370, 'string', false,
+            'Reporting currency', 'A currency code, for example USD.',
+            'Adds two columns to the report: the reporting currency and the amount converted into it. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'None. The report has no extra columns.', 'A currency code of three letters, for example USD.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.reportingCurrency'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imschedule' and name = 'enforceIMRegulations'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''enforceIMRegulations'']',
+            'analytic', 'imschedule', 'enforceIMRegulations', 371, 'boolean', false,
+            'Enforce the IM regulations', 'A flag. Y calculates for each regulation.',
+            'Decides whether ORE calculates the margin for each post and collect regulation that the records of the CRIF name, and then reports the worst case. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or the run stops.',
+            'No.', 'A flag, written Y or N, or true or false.',
+            '1.8.12.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imschedule.enforceIMRegulations'
         );
     end if;
 
@@ -8260,10 +8582,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''active'']',
-            'analytic', 'creditcurves', 'active', 358, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'creditcurves', 'active', 372, 'boolean', false,
+            'Credit curves block', 'ORE ignores this block.',
+            'ORE does not read analytics of this type, and the block has no effect. Example files of an older layout carry it. To export curves, use the curves analytic.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.active'
         );
@@ -8283,10 +8605,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''configuration'']',
-            'analytic', 'creditcurves', 'configuration', 359, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'creditcurves', 'configuration', 373, 'string', false,
+            'Market configuration', 'A name. ORE ignores it.',
+            'ORE does not read analytics of the type creditcurves, so this parameter has no effect. The curves analytic exports the curves of a market configuration.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A name.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.configuration'
         );
@@ -8306,10 +8628,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''grid'']',
-            'analytic', 'creditcurves', 'grid', 360, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'creditcurves', 'grid', 374, 'string', false,
+            'Time grid', 'A time grid. ORE ignores it.',
+            'ORE does not read analytics of the type creditcurves, so this parameter has no effect.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A time grid.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.grid'
         );
@@ -8329,10 +8651,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'creditcurves', 'outputFileName', 361, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'creditcurves', 'outputFileName', 375, 'string', false,
+            'Output file', 'A file name. ORE ignores it.',
+            'ORE does not read analytics of the type creditcurves, so this parameter has no effect.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: creditcurves.outputFileName'
         );
@@ -8352,7 +8674,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''active'']',
-            'analytic', 'scenario', 'active', 362, 'boolean', true,
+            'analytic', 'scenario', 'active', 376, 'boolean', true,
             'Run the scenario analytic', 'A flag. Y runs the analytic.',
             'Switches the scenario analytic on or off. It is a utility that exports the base scenario of the simulation market to a file. The P&L calculation uses it too.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -8375,7 +8697,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'scenario', 'simulationConfigFile', 363, 'string', false,
+            'analytic', 'scenario', 'simulationConfigFile', 377, 'string', false,
             'Simulation configuration file', 'A file name.',
             'Names the XML file with the simulation market whose base scenario the analytic exports. For example, simulation.xml.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8398,7 +8720,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'scenario', 'scenarioOutputFile', 364, 'string', false,
+            'analytic', 'scenario', 'scenarioOutputFile', 378, 'string', false,
             'Scenario output file', 'A file name.',
             'Names the file that receives the base scenario. For example, scenario.csv.',
             'scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -8421,7 +8743,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''active'']',
-            'analytic', 'pnlExplain', 'active', 365, 'boolean', true,
+            'analytic', 'pnlExplain', 'active', 379, 'boolean', true,
             'Run the P&L explain analytic', 'A flag. Y runs the analytic.',
             'Switches the P&L explain analytic on or off. When it is on, the run explains the P&L between two valuation dates by the raw or par sensitivities and the moves of the risk factors.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -8444,7 +8766,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporDate'']',
-            'analytic', 'pnlExplain', 'mporDate', 366, 'date', false,
+            'analytic', 'pnlExplain', 'mporDate', 380, 'date', false,
             'Second valuation date', 'A date.',
             'Sets the later of the two valuation dates of the P&L calculation. The first date is the valuation date of the Setup block. The market data must be available for both dates. The name pnlDate is another name for the same parameter. The P&L analytic has the same parameter. For example, 2023-02-14.',
             'None. ORE derives the date from the number of days.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
@@ -8467,7 +8789,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'pnlExplain', 'simulationConfigFile', 367, 'string', false,
+            'analytic', 'pnlExplain', 'simulationConfigFile', 381, 'string', false,
             'Simulation configuration file', 'A file name.',
             'Names the XML file with the simulation market. It decides which market factors ORE moves from the first to the second valuation date to compute the P&L. When it is missing, ORE uses the simulation market of the scenario analytic. For example, simulation.xml. The P&L analytic has the same parameter.',
             'The simulation market of the scenario analytic.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8490,7 +8812,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'pnlExplain', 'sensitivityConfigFile', 368, 'string', false,
+            'analytic', 'pnlExplain', 'sensitivityConfigFile', 382, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file with the sensitivity setup for the sensitivity analysis at the valuation date. When it is missing, ORE uses the sensitivity setup of the sensitivity analytic. For example, sensitivity.xml.',
             'The sensitivity setup of the sensitivity analytic.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8513,7 +8835,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''parSensitivity'']',
-            'analytic', 'pnlExplain', 'parSensitivity', 369, 'boolean', false,
+            'analytic', 'pnlExplain', 'parSensitivity', 383, 'boolean', false,
             'Use par sensitivities', 'A flag. Y explains the P&L with par sensitivities.',
             'Decides whether the explanation uses par sensitivities. With N, it uses the raw sensitivities. Par rate shifts between the two dates come from the zero to par shift analytic.',
             'No. The explanation uses raw sensitivities.', 'A flag, written Y or N, or true or false.',
@@ -8536,7 +8858,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''curveConfigMporFile'']',
-            'analytic', 'pnlExplain', 'curveConfigMporFile', 370, 'string', false,
+            'analytic', 'pnlExplain', 'curveConfigMporFile', 384, 'string', false,
             'Curve configuration at the second date', 'A file name.',
             'Names the XML file with the curve configuration for the second valuation date. It can differ from the configuration of the first date, which the Setup block gives. The name curveConfigPnlFile is another name for the same parameter. The P&L analytic has the same parameter.',
             'The curve configuration of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8559,7 +8881,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsMporFile'']',
-            'analytic', 'pnlExplain', 'conventionsMporFile', 371, 'string', false,
+            'analytic', 'pnlExplain', 'conventionsMporFile', 385, 'string', false,
             'Conventions at the second date', 'A file name.',
             'Names the XML file with the conventions for the second valuation date. The name conventionsPnlFile is another name for the same parameter. The P&L analytic has the same parameter.',
             'The conventions of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8582,7 +8904,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''portfolioMporFile'']',
-            'analytic', 'pnlExplain', 'portfolioMporFile', 372, 'string', false,
+            'analytic', 'pnlExplain', 'portfolioMporFile', 386, 'string', false,
             'Portfolio at the second date', 'A file name.',
             'Names the XML file with the portfolio at the second valuation date. It is usually different from the portfolio of the first date. The name portfolioPnlFile is another name for the same parameter. The P&L analytic has the same parameter.',
             'None. The analytic values the portfolio of the valuation date at the second date too.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8605,7 +8927,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'pnlExplain', 'outputFileName', 373, 'string', false,
+            'analytic', 'pnlExplain', 'outputFileName', 387, 'string', false,
             'P&L explain report file', 'A file name.',
             'Names the file with the P&L explain report. For example, pnl_explain.csv.',
             'pnl_explain.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -8628,7 +8950,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporDays'']',
-            'analytic', 'pnlExplain', 'mporDays', 374, 'integer', false,
+            'analytic', 'pnlExplain', 'mporDays', 388, 'integer', false,
             'Days to the second date', 'A whole number of days.',
             'Sets the second valuation date as a number of days after the valuation date, counted on the calendar. ORE uses it when the second date is missing. The name horizonDays is another name for the same parameter. The P&L analytic has the same parameter. For example, 10.',
             '10', 'A whole number of zero or more.',
@@ -8651,7 +8973,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'pnlExplain', 'mporCalendar', 375, 'string', false,
+            'analytic', 'pnlExplain', 'mporCalendar', 389, 'string', false,
             'Calendar of the second date', 'A calendar name.',
             'Names the calendar that ORE uses to compute the second valuation date from the valuation date and the number of days. The name horizonCalendar is another name for the same parameter. The P&L analytic has the same parameter.',
             'None. The analytic needs a calendar when it derives the date from the days.', 'A calendar name such as TARGET, US or UK.',
@@ -8674,7 +8996,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporOverlappingPeriods'']',
-            'analytic', 'pnlExplain', 'mporOverlappingPeriods', 376, 'boolean', false,
+            'analytic', 'pnlExplain', 'mporOverlappingPeriods', 390, 'boolean', false,
             'Overlapping periods', 'A flag. Y uses overlapping periods.',
             'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. The P&L analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -8697,7 +9019,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''dateAdjustedRiskFactors'']',
-            'analytic', 'pnlExplain', 'dateAdjustedRiskFactors', 377, 'string', false,
+            'analytic', 'pnlExplain', 'dateAdjustedRiskFactors', 391, 'string', false,
             'Date adjusted risk factors', 'A comma-separated list of risk factor types.',
             'Lists the types of risk factor for which ORE adjusts the scenario dates at the second valuation date relative to the first, when it computes the P&L explain. The adjustment matters for commodity curves, so that the dates refer to the same future contracts at both dates. For example, CommodityCurve. The P&L analytic has the same parameter.',
             'None. ORE makes no adjustment.', 'A comma-separated list of risk factor key types such as CommodityCurve.',
@@ -8720,7 +9042,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsPnlOverride'']',
-            'analytic', 'pnlExplain', 'conventionsPnlOverride', 378, 'string', false,
+            'analytic', 'pnlExplain', 'conventionsPnlOverride', 392, 'string', false,
             'Conventions override at the second date', 'A file name.',
             'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. The P&L analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8743,7 +9065,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''curveConfigMporOverride'']',
-            'analytic', 'pnlExplain', 'curveConfigMporOverride', 379, 'string', false,
+            'analytic', 'pnlExplain', 'curveConfigMporOverride', 393, 'string', false,
             'Curve configuration override at the second date', 'A file name.',
             'Names an XML file with curve settings that replace the matching settings of the curve configuration at the second date. The name curveConfigPnlOverride is another name for the same parameter. The P&L analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8766,7 +9088,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''riskFactorLevelReporting'']',
-            'analytic', 'pnlExplain', 'riskFactorLevelReporting', 380, 'boolean', false,
+            'analytic', 'pnlExplain', 'riskFactorLevelReporting', 394, 'boolean', false,
             'Report by risk factor', 'A flag. Y breaks the explanation down by risk factor.',
             'Decides whether the explanation shows the P&L for each risk factor.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -8789,7 +9111,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''portfolioFilter'']',
-            'analytic', 'pnlExplain', 'portfolioFilter', 381, 'string', false,
+            'analytic', 'pnlExplain', 'portfolioFilter', 395, 'string', false,
             'Portfolio filter', 'A regular expression.',
             'Limits the explanation to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio.',
             'None. The analytic uses the whole portfolio.', 'A regular expression.',
@@ -8812,7 +9134,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''returnConfigFile'']',
-            'analytic', 'pnlExplain', 'returnConfigFile', 382, 'string', false,
+            'analytic', 'pnlExplain', 'returnConfigFile', 396, 'string', false,
             'Return configuration file', 'A file name.',
             'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor between the two dates.',
             'None. ORE uses its standard return calculation.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8835,7 +9157,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'pnlExplain', 'historicalScenarioFile', 383, 'string', false,
+            'analytic', 'pnlExplain', 'historicalScenarioFile', 397, 'string', false,
             'Historical scenario file', 'A file name.',
             'Names the CSV file with the market scenarios of the two dates, if the explanation reads them from a file.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8858,7 +9180,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''active'']',
-            'analytic', 'pnl', 'active', 384, 'boolean', true,
+            'analytic', 'pnl', 'active', 398, 'boolean', true,
             'Run the P&L analytic', 'A flag. Y runs the analytic.',
             'Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between the valuation date and a second valuation date. It needs market data for both dates.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -8881,7 +9203,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporDays'']',
-            'analytic', 'pnl', 'mporDays', 385, 'integer', false,
+            'analytic', 'pnl', 'mporDays', 399, 'integer', false,
             'Days to the second date', 'A whole number of days.',
             'Sets the second valuation date as a number of days after the valuation date, counted on the calendar. ORE uses it when the second date is missing. The name horizonDays is another name for the same parameter. The P&L explain analytic has the same parameter. For example, 10.',
             '10', 'A whole number of zero or more.',
@@ -8904,7 +9226,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'pnl', 'mporCalendar', 386, 'string', false,
+            'analytic', 'pnl', 'mporCalendar', 400, 'string', false,
             'Calendar of the second date', 'A calendar name.',
             'Names the calendar that ORE uses to compute the second valuation date from the valuation date and the number of days. The name horizonCalendar is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'None. The analytic needs a calendar when it derives the date from the days.', 'A calendar name such as TARGET, US or UK.',
@@ -8927,7 +9249,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''curveConfigMporFile'']',
-            'analytic', 'pnl', 'curveConfigMporFile', 387, 'string', false,
+            'analytic', 'pnl', 'curveConfigMporFile', 401, 'string', false,
             'Curve configuration at the second date', 'A file name.',
             'Names the XML file with the curve configuration for the second valuation date. It can differ from the configuration of the first date, which the Setup block gives. The name curveConfigPnlFile is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'The curve configuration of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8950,7 +9272,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsMporFile'']',
-            'analytic', 'pnl', 'conventionsMporFile', 388, 'string', false,
+            'analytic', 'pnl', 'conventionsMporFile', 402, 'string', false,
             'Conventions at the second date', 'A file name.',
             'Names the XML file with the conventions for the second valuation date. The name conventionsPnlFile is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'The conventions of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8973,7 +9295,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''portfolioMporFile'']',
-            'analytic', 'pnl', 'portfolioMporFile', 389, 'string', false,
+            'analytic', 'pnl', 'portfolioMporFile', 403, 'string', false,
             'Portfolio at the second date', 'A file name.',
             'Names the XML file with the portfolio at the second valuation date. It is usually different from the portfolio of the first date. The name portfolioPnlFile is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'None. The analytic values the portfolio of the valuation date at the second date too.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -8996,7 +9318,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'pnl', 'simulationConfigFile', 390, 'string', false,
+            'analytic', 'pnl', 'simulationConfigFile', 404, 'string', false,
             'Simulation configuration file', 'A file name.',
             'Names the XML file with the simulation market. It decides which market factors ORE moves from the first to the second valuation date to compute the P&L. When it is missing, ORE uses the simulation market of the scenario analytic. For example, simulation.xml. The P&L explain analytic has the same parameter.',
             'The simulation market of the scenario analytic.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9019,7 +9341,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'pnl', 'outputFileName', 391, 'string', false,
+            'analytic', 'pnl', 'outputFileName', 405, 'string', false,
             'P&L report file', 'A file name.',
             'Names the file with the P&L report. For example, pnl.csv.',
             'pnl.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -9042,7 +9364,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporDate'']',
-            'analytic', 'pnl', 'mporDate', 392, 'date', false,
+            'analytic', 'pnl', 'mporDate', 406, 'date', false,
             'Second valuation date', 'A date.',
             'Sets the later of the two valuation dates of the P&L calculation. The first date is the valuation date of the Setup block. The market data must be available for both dates. The name pnlDate is another name for the same parameter. The P&L explain analytic has the same parameter. For example, 2023-02-14.',
             'None. ORE derives the date from the number of days.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
@@ -9065,7 +9387,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporOverlappingPeriods'']',
-            'analytic', 'pnl', 'mporOverlappingPeriods', 393, 'boolean', false,
+            'analytic', 'pnl', 'mporOverlappingPeriods', 407, 'boolean', false,
             'Overlapping periods', 'A flag. Y uses overlapping periods.',
             'Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -9088,7 +9410,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''dateAdjustedRiskFactors'']',
-            'analytic', 'pnl', 'dateAdjustedRiskFactors', 394, 'string', false,
+            'analytic', 'pnl', 'dateAdjustedRiskFactors', 408, 'string', false,
             'Date adjusted risk factors', 'A comma-separated list of risk factor types.',
             'Lists the types of risk factor for which ORE adjusts the scenario dates at the second valuation date relative to the first, when it computes the P&L explain. The adjustment matters for commodity curves, so that the dates refer to the same future contracts at both dates. For example, CommodityCurve. The P&L explain analytic has the same parameter.',
             'None. ORE makes no adjustment.', 'A comma-separated list of risk factor key types such as CommodityCurve.',
@@ -9111,7 +9433,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsPnlOverride'']',
-            'analytic', 'pnl', 'conventionsPnlOverride', 395, 'string', false,
+            'analytic', 'pnl', 'conventionsPnlOverride', 409, 'string', false,
             'Conventions override at the second date', 'A file name.',
             'Names an XML file with convention settings that replace the matching settings of the conventions at the second date. The P&L explain analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9134,7 +9456,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''curveConfigMporOverride'']',
-            'analytic', 'pnl', 'curveConfigMporOverride', 396, 'string', false,
+            'analytic', 'pnl', 'curveConfigMporOverride', 410, 'string', false,
             'Curve configuration override at the second date', 'A file name.',
             'Names an XML file with curve settings that replace the matching settings of the curve configuration at the second date. The name curveConfigPnlOverride is another name for the same parameter. The P&L explain analytic has the same parameter.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9157,7 +9479,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''active'']',
-            'analytic', 'historicalSimulationVar', 'active', 397, 'boolean', true,
+            'analytic', 'historicalSimulationVar', 'active', 411, 'boolean', true,
             'Run the historical simulation VaR analytic', 'A flag. Y runs the analytic.',
             'Switches the historical simulation VaR analytic on or off. Use N to keep the entry in the document without running it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -9180,7 +9502,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 398, 'string', false,
+            'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 412, 'string', false,
             'Historical scenario file', 'A file name.',
             'Names the CSV file with the market scenarios for every date of the observation periods. The granularity of the scenarios must match the simulation market. The name scenarioFile is another name for the same parameter. For example, scenarios.csv.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9203,7 +9525,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'historicalSimulationVar', 'simulationConfigFile', 399, 'string', false,
+            'analytic', 'historicalSimulationVar', 'simulationConfigFile', 413, 'string', false,
             'Simulation configuration file', 'A file name.',
             'Names the XML file that defines the structure of the simulation market for the P&L calculation: the discount and index curves, the tenor points of the yield curves, the FX pairs and so on. For example, simulation.xml.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9226,7 +9548,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalPeriod'']',
-            'analytic', 'historicalSimulationVar', 'historicalPeriod', 400, 'string', false,
+            'analytic', 'historicalSimulationVar', 'historicalPeriod', 414, 'string', false,
             'Historical period', 'An even number of dates.',
             'Sets the observation periods of the history. A comma-separated list of dates with an even number of entries, for example 2017-01-17,2019-12-30. Each pair of dates is the start and the end of one observation period. The name lookbackPeriod is another name for the same parameter. The run needs a period that is one contiguous part.',
             'None. The analytic needs the period.', 'A comma-separated list of dates with an even number of entries.',
@@ -9249,7 +9571,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporDays'']',
-            'analytic', 'historicalSimulationVar', 'mporDays', 401, 'integer', false,
+            'analytic', 'historicalSimulationVar', 'mporDays', 415, 'integer', false,
             'Holding period in days', 'A whole number of days.',
             'Sets the number of days between two scenarios that the analytic uses to compute a P&L. Typical values are 1 and 10. The name horizonDays is another name for the same parameter.',
             '10', 'A whole number of zero or more.',
@@ -9272,7 +9594,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'historicalSimulationVar', 'mporCalendar', 402, 'string', false,
+            'analytic', 'historicalSimulationVar', 'mporCalendar', 416, 'string', false,
             'Holding period calendar', 'A calendar name.',
             'Names the calendar that ORE uses to compute the dates of the scenarios. The name horizonCalendar is another name for the same parameter.',
             'The calendar of the base currency.', 'A calendar name such as TARGET, USD or UK.',
@@ -9295,7 +9617,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporOverlappingPeriods'']',
-            'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 403, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 417, 'boolean', false,
             'Overlapping holding periods', 'A flag. Y uses overlapping periods.',
             'Decides whether the holding periods overlap. With Y, a period of 10 days runs from t to t+10, the next from t+1 to t+11, and so on. With N, the periods follow each other without overlap. The name horizonOverlappingPeriods is another name for the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -9318,7 +9640,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''quantiles'']',
-            'analytic', 'historicalSimulationVar', 'quantiles', 404, 'string', false,
+            'analytic', 'historicalSimulationVar', 'quantiles', 418, 'string', false,
             'Quantiles', 'A comma-separated list of quantiles.',
             'Lists the quantiles of the profit and loss distribution that the report shows. Each quantile gives one column in the output file. The 1 percent quantile is the lower tail of the P&L distribution, which is the VaR, and the 99 percent quantile is the upper tail. For example, 0.01,0.05,0.95,0.99. The parametric VaR analytic has the same parameter.',
             'None. The analytic needs the list.', 'A comma-separated list of numbers between 0 and 1, for example 0.01,0.05,0.95,0.99.',
@@ -9341,7 +9663,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputFile'']',
-            'analytic', 'historicalSimulationVar', 'outputFile', 405, 'string', false,
+            'analytic', 'historicalSimulationVar', 'outputFile', 419, 'string', false,
             'VaR report file', 'A file name.',
             'Names the file with the main VaR report. The parametric and the historical simulation analytic share this name: ORE reads it from the parametric block first. For example, var.csv.',
             'var.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -9364,7 +9686,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeExpectedShortfall'']',
-            'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 406, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 420, 'boolean', false,
             'Include the expected shortfall', 'A flag. Y adds the expected shortfall columns.',
             'Decides whether the report also shows the expected shortfall for each quantile, in extra columns. The expected shortfall at level p is the average P&L of all scenarios at or below the VaR for p.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9387,7 +9709,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''breakdown'']',
-            'analytic', 'historicalSimulationVar', 'breakdown', 407, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'breakdown', 421, 'boolean', false,
             'Break down the VaR', 'A flag. Y breaks down the VaR.',
             'Decides whether the analytic computes the VaR for each portfolio, risk class (all, interest rate, FX, inflation, equity, credit) and risk type (all, delta and gamma, vega), and not only for the whole portfolio. The parametric VaR analytic has the same parameter.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9410,7 +9732,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''tradePnl'']',
-            'analytic', 'historicalSimulationVar', 'tradePnl', 408, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'tradePnl', 422, 'boolean', false,
             'Report the P&L by trade', 'A flag. Y adds the report.',
             'Decides whether the analytic writes a second report with the P&L for each trade, risk class and risk type.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9433,7 +9755,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskFactorBreakdown'']',
-            'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 409, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 423, 'boolean', false,
             'Report the P&L by risk factor', 'A flag. Y adds the report.',
             'Decides whether the analytic writes a third report with the P&L for each risk factor.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9456,7 +9778,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskClassBreakdown'']',
-            'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 410, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 424, 'boolean', false,
             'Break down by risk class', 'A flag. Y computes the VaR for each risk class.',
             'Decides whether the analytic computes the VaR for each risk class and risk type (interest rate, FX, inflation, equity, credit, commodity) besides the row for the whole portfolio. Set it to N to compute only the row for the whole portfolio, which cuts the run time a lot.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -9479,7 +9801,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputHistoricalScenarios'']',
-            'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 411, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 425, 'boolean', false,
             'Write the historical scenarios', 'A flag. Y writes the scenarios.',
             'Decides whether the analytic writes the historical scenarios that it used to a report.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9502,7 +9824,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeTheta'']',
-            'analytic', 'historicalSimulationVar', 'includeTheta', 412, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includeTheta', 426, 'boolean', false,
             'Include the theta', 'A flag. Y includes the theta in the P&L.',
             'Decides whether the P&L of each scenario also includes the change of the NPV that the passing of the holding period causes.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9525,7 +9847,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includePeriodCashflow'']',
-            'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 413, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 427, 'boolean', false,
             'Include the cash flows of the period', 'A flag. Y includes the cash flows.',
             'Decides whether the P&L of each scenario also includes the cash flows that pay during the holding period.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -9548,7 +9870,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''portfolioFilter'']',
-            'analytic', 'historicalSimulationVar', 'portfolioFilter', 414, 'string', false,
+            'analytic', 'historicalSimulationVar', 'portfolioFilter', 428, 'string', false,
             'Portfolio filter', 'A regular expression.',
             'Limits the VaR to the trades whose portfolio id matches the regular expression. Without it, the analytic uses the whole portfolio. For example, PF1 selects the portfolio PF1.',
             'None. The analytic uses the whole portfolio.', 'A regular expression.',
@@ -9571,7 +9893,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''sensitivityInputFile'']',
-            'analytic', 'historicalSimulationVar', 'sensitivityInputFile', 415, 'string', false,
+            'analytic', 'historicalSimulationVar', 'sensitivityInputFile', 429, 'string', false,
             'Sensitivities file', 'A file name.',
             'Names a CSV file with the delta, gamma and cross gamma sensitivities, in the same format as for the parametric VaR analytic. When this and the sensitivity configuration file are both set, ORE computes the historical P&Ls from the sensitivities and the historical scenario shifts and not by full revaluation.',
             'None. The analytic revalues in full.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9594,7 +9916,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'historicalSimulationVar', 'sensitivityConfigFile', 416, 'string', false,
+            'analytic', 'historicalSimulationVar', 'sensitivityConfigFile', 430, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file with the sensitivity scenario setup that maps the historical moves to the risk factors of the sensitivities file. If either of the two sensitivity parameters is missing, the analytic revalues in full.',
             'None. The analytic revalues in full.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9617,7 +9939,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''returnConfigFile'']',
-            'analytic', 'historicalSimulationVar', 'returnConfigFile', 417, 'string', false,
+            'analytic', 'historicalSimulationVar', 'returnConfigFile', 431, 'string', false,
             'Return configuration file', 'A file name.',
             'Names the XML file with the return configuration, which sets how ORE derives the shift of each risk factor from the historical scenarios.',
             'None. ORE uses its standard return calculation.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9640,7 +9962,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''active'']',
-            'analytic', 'amc', 'active', 418, 'boolean', false,
+            'analytic', 'amc', 'active', 432, 'boolean', false,
             'AMC block active', 'A flag. ORE ignores the amc block.',
             'ORE has no analytic of the type amc and does not read this block. Example files of an older layout carry it. The switch for American Monte Carlo is the parameter AMC in the simulation analytic.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
@@ -9663,7 +9985,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'amc', 'pricingEnginesFile', 419, 'string', false,
+            'analytic', 'amc', 'pricingEnginesFile', 433, 'string', false,
             'Pricing engines file in the amc block', 'A file name. ORE ignores the amc block.',
             'ORE has no analytic of the type amc and does not read this block. The pricing engines for American Monte Carlo are set in the simulation analytic, with the parameter Pricing engines file for AMC.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9686,7 +10008,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''amcTradeTypes'']',
-            'analytic', 'amc', 'amcTradeTypes', 420, 'string', false,
+            'analytic', 'amc', 'amcTradeTypes', 434, 'string', false,
             'Trade types in the amc block', 'A comma-separated list of trade types. ORE ignores the amc block.',
             'ORE has no analytic of the type amc and does not read this block. The trade types that American Monte Carlo covers are set in the simulation analytic, with the parameter AMC trade types.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A comma-separated list of trade type names.',
@@ -9709,7 +10031,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''active'']',
-            'analytic', 'scenarioGeneration', 'active', 421, 'boolean', true,
+            'analytic', 'scenarioGeneration', 'active', 435, 'boolean', true,
             'Run scenario generation', 'A flag. Y runs the analytic.',
             'Switches the scenario generation on or off. When it is on, the run generates market scenarios and writes statistics and distributions of them. Use it to check the scenarios of a simulation market, a stress test or a sensitivity run.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -9732,7 +10054,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'scenarioGeneration', 'simulationConfigFile', 422, 'string', false,
+            'analytic', 'scenarioGeneration', 'simulationConfigFile', 436, 'string', false,
             'Simulation configuration file', 'A file name.',
             'Names the XML file with the simulation market that the scenarios are for. For an exposure run the file also supplies the model and the scenario generator, unless the parameters Cross asset model file and Scenario generator file name another file. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9755,7 +10077,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'scenarioGeneration', 'scenarioOutputFile', 423, 'string', false,
+            'analytic', 'scenarioGeneration', 'scenarioOutputFile', 437, 'string', false,
             'Scenario output file', 'A file name.',
             'Names the file that holds all scenarios that the analytic generates through the simulation market. For example, scenariodump.csv.',
             'scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -9778,7 +10100,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''amcPathDataOutput'']',
-            'analytic', 'scenarioGeneration', 'amcPathDataOutput', 424, 'string', false,
+            'analytic', 'scenarioGeneration', 'amcPathDataOutput', 438, 'string', false,
             'AMC path data output file', 'A file name.',
             'Names a file that receives the path data of the generated exposure scenarios, so that an AMC run can read it later with its path data input. ORE uses it only for the scenario type exposure.',
             'None. The analytic does not write path data.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -9801,7 +10123,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputStatistics'']',
-            'analytic', 'scenarioGeneration', 'outputStatistics', 425, 'boolean', false,
+            'analytic', 'scenarioGeneration', 'outputStatistics', 439, 'boolean', false,
             'Write the statistics report', 'A flag. Y writes the report.',
             'Decides whether the analytic writes a report with statistics of the generated scenarios for each risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness and the kurtosis.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -9824,7 +10146,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputDistributions'']',
-            'analytic', 'scenarioGeneration', 'outputDistributions', 426, 'boolean', false,
+            'analytic', 'scenarioGeneration', 'outputDistributions', 440, 'boolean', false,
             'Write the distribution report', 'A flag. Y writes the report.',
             'Decides whether the analytic writes a report with the distribution histogram of the generated scenarios for each risk factor and date. The parameter Distribution buckets sets its resolution.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -9847,7 +10169,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioType'']',
-            'analytic', 'scenarioGeneration', 'scenarioType', 427, 'string', false,
+            'analytic', 'scenarioGeneration', 'scenarioType', 441, 'string', false,
             'Scenario type', 'stress, sensitivity or exposure.',
             'Selects which scenarios the analytic generates. exposure takes them from the simulation model. stress takes them from a stress test configuration. sensitivity is accepted, but release 1.8.17.0 has no scenario generation for it. The run stops if the value is none of the three.',
             'exposure', 'stress, sensitivity or exposure.',
@@ -9870,7 +10192,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'scenarioGeneration', 'stressConfigFile', 428, 'string', false,
+            'analytic', 'scenarioGeneration', 'stressConfigFile', 442, 'string', false,
             'Stress configuration file', 'A file name.',
             'Names the XML file with the stress scenarios to generate. ORE uses it only when the scenario type is stress.',
             'None. A stress run needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -9893,7 +10215,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioPrecision'']',
-            'analytic', 'scenarioGeneration', 'scenarioPrecision', 429, 'integer', false,
+            'analytic', 'scenarioGeneration', 'scenarioPrecision', 443, 'integer', false,
             'Scenario precision', 'A whole number of decimal places.',
             'Sets the number of decimal places of the numbers in the scenario output. A higher number shows more of each value and makes the file larger.',
             '8', 'A whole number of zero or more.',
@@ -9916,7 +10238,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''distributionBuckets'']',
-            'analytic', 'scenarioGeneration', 'distributionBuckets', 430, 'integer', false,
+            'analytic', 'scenarioGeneration', 'distributionBuckets', 444, 'integer', false,
             'Distribution buckets', 'A whole number.',
             'Sets the number of buckets of the distribution histogram of the generated scenarios. A higher number gives a finer histogram and needs more scenarios to be stable. For example, 20.',
             '20', 'A whole number of zero or more.',
@@ -9939,7 +10261,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputZeroRate'']',
-            'analytic', 'scenarioGeneration', 'outputZeroRate', 431, 'boolean', false,
+            'analytic', 'scenarioGeneration', 'outputZeroRate', 445, 'boolean', false,
             'Report zero rates', 'A flag. Y reports zero rates, N reports discount factors.',
             'Decides whether the statistics report and the distribution report show zero rates or discount factors for the yield curves. Zero rates are easier to compare between dates.',
             'No. The reports show discount factors.', 'A flag, written Y or N, or true or false.',
@@ -9962,7 +10284,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''filterRiskKeys'']',
-            'analytic', 'scenarioGeneration', 'filterRiskKeys', 432, 'string', false,
+            'analytic', 'scenarioGeneration', 'filterRiskKeys', 446, 'string', false,
             'Risk factor types in the output', 'A comma-separated list of risk factor types.',
             'Limits the scenario output to the listed types of risk factor. Without it the output holds every risk factor of the simulation market and can be very large. For example, DiscountCurve.',
             'None. The output holds all risk factors.', 'A comma-separated list of risk factor key types such as DiscountCurve.',
@@ -9985,7 +10307,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''crossAssetModelData'']',
-            'analytic', 'scenarioGeneration', 'crossAssetModelData', 433, 'string', false,
+            'analytic', 'scenarioGeneration', 'crossAssetModelData', 447, 'string', false,
             'Cross asset model file', 'A file name.',
             'Names the XML file with the cross asset model, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
             'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10008,7 +10330,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioGeneratorData'']',
-            'analytic', 'scenarioGeneration', 'scenarioGeneratorData', 434, 'string', false,
+            'analytic', 'scenarioGeneration', 'scenarioGeneratorData', 448, 'string', false,
             'Scenario generator file', 'A file name.',
             'Names the XML file with the scenario generator, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
             'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10031,7 +10353,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''active'']',
-            'analytic', 'parStressConversion', 'active', 435, 'boolean', true,
+            'analytic', 'parStressConversion', 'active', 449, 'boolean', true,
             'Run the par stress conversion', 'A flag. Y runs the analytic.',
             'Switches the par stress conversion on or off. The analytic does not run a stress test. It turns a stress test definition in the par domain into one in the raw domain, so that you can apply the result again and again.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -10054,7 +10376,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'parStressConversion', 'marketConfigFile', 436, 'string', false,
+            'analytic', 'parStressConversion', 'marketConfigFile', 450, 'string', false,
             'Simulation market file', 'A file name.',
             'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10077,7 +10399,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'parStressConversion', 'stressConfigFile', 437, 'string', false,
+            'analytic', 'parStressConversion', 'stressConfigFile', 451, 'string', false,
             'Stress configuration file', 'A file name.',
             'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain or in the par domain. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10100,7 +10422,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'parStressConversion', 'sensitivityConfigFile', 438, 'string', false,
+            'analytic', 'parStressConversion', 'sensitivityConfigFile', 452, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file with the sensitivity setup, in particular the par conversion sections that the conversion needs. For example, sensitivity.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10123,7 +10445,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'parStressConversion', 'pricingEnginesFile', 439, 'string', false,
+            'analytic', 'parStressConversion', 'pricingEnginesFile', 453, 'string', false,
             'Pricing engines file', 'A file name.',
             'Names the XML file that sets the pricing engines for the analytic. When it is missing, ORE uses the pricing engines file of the Setup block. For example, pricingengine.xml.',
             'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10146,7 +10468,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'parStressConversion', 'scenarioOutputFile', 440, 'string', false,
+            'analytic', 'parStressConversion', 'scenarioOutputFile', 454, 'string', false,
             'Scenario output file', 'A file name. ORE ignores it.',
             'ORE does not read this parameter for the par stress conversion. Example files carry it.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -10169,7 +10491,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''outputThreshold'']',
-            'analytic', 'parStressConversion', 'outputThreshold', 441, 'double', false,
+            'analytic', 'parStressConversion', 'outputThreshold', 455, 'double', false,
             'Output threshold', 'A number. ORE ignores it.',
             'ORE does not read this parameter for the par stress conversion. Example files carry it.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A number, written with a decimal point.',
@@ -10192,7 +10514,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressZeroScenarioDataFile'']',
-            'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 442, 'string', false,
+            'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 456, 'string', false,
             'Raw domain stress file', 'A file name.',
             'Names the file that receives the stress test definition in the raw domain. For example, results.xml.',
             'parStress_ZeroStressData.xml', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -10215,7 +10537,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''lowerBoundCapVols'']',
-            'analytic', 'parStressConversion', 'lowerBoundCapVols', 443, 'double', false,
+            'analytic', 'parStressConversion', 'lowerBoundCapVols', 457, 'double', false,
             'Lower bound of cap volatilities', 'A number.',
             'Is meant to set the lowest cap and floor volatility that the par to raw conversion tries. The conversion uses the bound 1e-8. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -10238,7 +10560,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''upperBoundCapVols'']',
-            'analytic', 'parStressConversion', 'upperBoundCapVols', 444, 'double', false,
+            'analytic', 'parStressConversion', 'upperBoundCapVols', 458, 'double', false,
             'Upper bound of cap volatilities', 'A number.',
             'Is meant to set the highest cap and floor volatility that the par to raw conversion tries, as a multiple of the base volatility. The conversion uses the bound 10. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -10261,7 +10583,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''lowerBoundDiscountFactors'']',
-            'analytic', 'parStressConversion', 'lowerBoundDiscountFactors', 445, 'double', false,
+            'analytic', 'parStressConversion', 'lowerBoundDiscountFactors', 459, 'double', false,
             'Lower bound of discount factors', 'A number.',
             'Is meant to set the lowest discount factor that the par to raw conversion tries. The conversion uses the bound 1e-8. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -10284,7 +10606,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''upperBoundDiscountFactors'']',
-            'analytic', 'parStressConversion', 'upperBoundDiscountFactors', 446, 'double', false,
+            'analytic', 'parStressConversion', 'upperBoundDiscountFactors', 460, 'double', false,
             'Upper bound of discount factors', 'A number.',
             'Is meant to set the highest discount factor that the par to raw conversion tries. The conversion uses the bound 10. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -10307,7 +10629,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''lowerBoundSurvivalProb'']',
-            'analytic', 'parStressConversion', 'lowerBoundSurvivalProb', 447, 'double', false,
+            'analytic', 'parStressConversion', 'lowerBoundSurvivalProb', 461, 'double', false,
             'Lower bound of survival probabilities', 'A number.',
             'Is meant to set the lowest survival probability that the par to raw conversion tries. The conversion treats survival probabilities like discount factors and uses the bound 1e-8. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -10330,7 +10652,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''upperBoundSurvivalProb'']',
-            'analytic', 'parStressConversion', 'upperBoundSurvivalProb', 448, 'double', false,
+            'analytic', 'parStressConversion', 'upperBoundSurvivalProb', 462, 'double', false,
             'Upper bound of survival probabilities', 'A number.',
             'Is meant to set the highest survival probability that the par to raw conversion tries. The conversion treats survival probabilities like discount factors and uses the bound 10. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '10', 'A number, written with a decimal point.',
@@ -10353,7 +10675,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''accuracy'']',
-            'analytic', 'parStressConversion', 'accuracy', 449, 'double', false,
+            'analytic', 'parStressConversion', 'accuracy', 463, 'double', false,
             'Accuracy of the conversion', 'A number.',
             'Is meant to set the accuracy of the root search that turns a par shift into a raw shift. The conversion uses the accuracy 1e-8. ORE reads the value for the par stress conversion analytic. The conversion of release 1.8.17.0 uses its own fixed bounds and does not take the value.',
             '1e-8', 'A number, written with a decimal point.',
@@ -10376,7 +10698,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''active'']',
-            'analytic', 'pfe', 'active', 450, 'boolean', true,
+            'analytic', 'pfe', 'active', 464, 'boolean', true,
             'Run the PFE analytic', 'A flag. Y runs the analytic.',
             'Switches the PFE analytic on or off. When it is on, the run post-processes an NPV cube: it nets the trades, applies the collateral agreement and computes the exposure profiles and the potential future exposure. The cube comes from the simulation analytic of the same run or from a file.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -10399,7 +10721,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''csaFile'']',
-            'analytic', 'pfe', 'csaFile', 451, 'string', false,
+            'analytic', 'pfe', 'csaFile', 465, 'string', false,
             'Netting set definitions file', 'A file name.',
             'Names the XML file with the netting set definitions: the CSA details such as the margining frequency, the thresholds, the minimum transfer amounts and the margin period of risk. The post-processing reads the file, so you can change the CSA terms and see their effect on the results without a new simulation. ORE looks for the file name in the xva block, then in the pfe block and last in the Setup block. For example, netting.xml.',
             'The netting set definitions file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10422,7 +10744,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''cubeFile'']',
-            'analytic', 'pfe', 'cubeFile', 452, 'string', false,
+            'analytic', 'pfe', 'cubeFile', 466, 'string', false,
             'Cube file', 'A file name.',
             'Names the NPV cube file that the PFE analytic reads, if the run has no simulation. The file is usually the cube that an earlier simulation wrote, so you can run the post-processing again without a new simulation. ORE looks for the file in the output path of the Setup block. For example, cube.csv.gz.',
             'None. When the run has a simulation, the analytic uses its cube.', 'A file name. ORE looks for the file in the output path of the Setup block.',
@@ -10445,7 +10767,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''scenarioFile'']',
-            'analytic', 'pfe', 'scenarioFile', 453, 'string', false,
+            'analytic', 'pfe', 'scenarioFile', 467, 'string', false,
             'Scenario data file', 'A file name.',
             'Names the file with the scenario data that the simulation wrote for the post-processing, such as simulated index fixings and FX rates. Variation margin and dynamic initial margin need it. For example, scenariodata.csv.gz.',
             'None. When the run has a simulation, the analytic uses its scenario data.', 'A file name. ORE looks for the file in the output path of the Setup block.',
@@ -10468,7 +10790,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''baseCurrency'']',
-            'analytic', 'pfe', 'baseCurrency', 454, 'string', false,
+            'analytic', 'pfe', 'baseCurrency', 468, 'string', false,
             'Base currency', 'A currency code, for example EUR.',
             'Names the currency in which the analytic states all NPVs, exposures and value adjustments. ORE converts the amounts that are in another currency. For example, EUR states all values in euro.',
             'The base currency of the Setup block.', 'A currency code of three letters, for example EUR.',
@@ -10491,7 +10813,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfiles'']',
-            'analytic', 'pfe', 'exposureProfiles', 455, 'boolean', false,
+            'analytic', 'pfe', 'exposureProfiles', 469, 'boolean', false,
             'Write exposure profiles', 'A flag. Y writes the profiles for each netting set.',
             'Decides whether the analytic writes an exposure report for each netting set: the expected positive and negative exposure and the potential future exposure, for each date. The XVA analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -10514,7 +10836,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfilesByTrade'']',
-            'analytic', 'pfe', 'exposureProfilesByTrade', 456, 'boolean', false,
+            'analytic', 'pfe', 'exposureProfilesByTrade', 470, 'boolean', false,
             'Write exposure profiles by trade', 'A flag. Y writes the stand-alone profiles for each trade.',
             'Decides whether the analytic writes an exposure report for each trade on its own, without the netting. With many trades this makes many files, unless Write individual exposure reports is off. The XVA analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -10537,7 +10859,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''quantile'']',
-            'analytic', 'pfe', 'quantile', 457, 'double', false,
+            'analytic', 'pfe', 'quantile', 471, 'double', false,
             'PFE confidence level', 'A number between 0 and 1.',
             'Sets the confidence level of the potential future exposure (PFE) in the exposure reports. For example, 0.95 reports the 95th percentile of the exposure distribution. The XVA analytic has the same parameter.',
             '0.95', 'A number, written with a decimal point.',
@@ -10560,7 +10882,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''calculationType'']',
-            'analytic', 'pfe', 'calculationType', 458, 'string', false,
+            'analytic', 'pfe', 'calculationType', 472, 'string', false,
             'Margin settlement type', 'NoLag, Symmetric, AsymmetricCVA or AsymmetricDVA.',
             'Decides how ORE settles margin calls. Symmetric settles the margin of both parties after the margin period of risk. AsymmetricCVA settles the margin that we request from the counterparty with the delay and the margin that the counterparty requests from us at once. AsymmetricDVA is the reverse. NoLag turns the delay off and works together with a close-out grid in the simulation. Without a close-out grid, use one of the three others. With one, use NoLag. When there is no close-out grid, the results are correct only if the simulation grid is equally spaced with steps equal to the margin period of risk. The XVA analytic has the same parameter.',
             'NoLag', 'One of NoLag, Symmetric, AsymmetricCVA or AsymmetricDVA.',
@@ -10583,7 +10905,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''allocationMethod'']',
-            'analytic', 'pfe', 'allocationMethod', 459, 'string', false,
+            'analytic', 'pfe', 'allocationMethod', 473, 'string', false,
             'Exposure allocation method', 'None, Marginal, RelativeXVA, RelativeFairValueGross or RelativeFairValueNet.',
             'Selects how ORE allocates the netting set exposure and the value adjustments to the trades in the netting set. None gives no allocation. Marginal uses the marginal method of Pykhtin and Rosen. The other three split the amount in proportion to the XVA of the trade, to its gross fair value or to its net fair value. The XVA analytic has the same parameter.',
             'None', 'One of None, Marginal, RelativeXVA, RelativeFairValueGross or RelativeFairValueNet.',
@@ -10606,7 +10928,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''marginalAllocationLimit'']',
-            'analytic', 'pfe', 'marginalAllocationLimit', 460, 'double', false,
+            'analytic', 'pfe', 'marginalAllocationLimit', 474, 'double', false,
             'Marginal allocation limit', 'A number.',
             'Sets a cutoff for the marginal allocation. The marginal method breaks down when the value of the netting set is close to zero while its exposure is not. Below this absolute value, ORE splits the exposure equally among the trades. The parameter has an effect only when the allocation method is Marginal. The XVA analytic has the same parameter.',
             '1.0', 'A number, written with a decimal point.',
@@ -10629,7 +10951,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exerciseNextBreak'']',
-            'analytic', 'pfe', 'exerciseNextBreak', 461, 'boolean', false,
+            'analytic', 'pfe', 'exerciseNextBreak', 475, 'boolean', false,
             'Exercise at the next break', 'A flag. Y ends each trade at its next break date.',
             'Decides whether ORE ends all trades at their next break date before it aggregates them. Use it to model a counterparty relationship in which each party can end a trade at its break dates. The XVA analytic has the same parameter.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -10652,7 +10974,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''rawCubeOutputFile'']',
-            'analytic', 'pfe', 'rawCubeOutputFile', 462, 'string', false,
+            'analytic', 'pfe', 'rawCubeOutputFile', 476, 'string', false,
             'Raw cube report file', 'A file name.',
             'Names the file for the trade NPV cube as a text file with one row for each trade, date and sample. Setting it switches the report on. Leave it out to skip the file. The file is for further analysis and can be very large. The XVA analytic has the same parameter.',
             'None. The analytic does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -10675,7 +10997,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''netCubeOutputFile'']',
-            'analytic', 'pfe', 'netCubeOutputFile', 463, 'string', false,
+            'analytic', 'pfe', 'netCubeOutputFile', 477, 'string', false,
             'Net cube report file', 'A file name.',
             'Names the file for the aggregated NPV cube as a text file with one row for each netting set, date and sample, after the collateral. Setting it switches the report on. Leave it out to skip the file. The XVA analytic has the same parameter.',
             'None. The analytic does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -10698,7 +11020,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''useDoublePrecisionCubes'']',
-            'analytic', 'pfe', 'useDoublePrecisionCubes', 464, 'boolean', false,
+            'analytic', 'pfe', 'useDoublePrecisionCubes', 478, 'boolean', false,
             'Double precision cubes', 'A flag. ORE ignores it in the pfe block.',
             'The user guide shows this parameter in the pfe block, but ORE reads it only from the xva block. A value in the pfe block has no effect in release 1.8.17.0.',
             'No. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
@@ -10721,7 +11043,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfilesUseCloseOutValues'']',
-            'analytic', 'pfe', 'exposureProfilesUseCloseOutValues', 465, 'boolean', false,
+            'analytic', 'pfe', 'exposureProfilesUseCloseOutValues', 479, 'boolean', false,
             'Exposure profiles use close-out values', 'A flag. Y uses the close-out values.',
             'Decides whether the exposure profiles use the close-out value of a trade, which is its value at the end of the margin period of risk, instead of its value at the default date. It needs a simulation with a close-out grid. The XVA analytic has the same parameter.',
             'No. The profiles use the values at the default date.', 'A flag, written Y or N, or true or false.',
@@ -10744,7 +11066,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''writeIndividualExposureReports'']',
-            'analytic', 'pfe', 'writeIndividualExposureReports', 466, 'boolean', false,
+            'analytic', 'pfe', 'writeIndividualExposureReports', 480, 'boolean', false,
             'Write individual exposure reports', 'A flag. Y writes one report for each trade and netting set.',
             'Decides whether the analytic writes one exposure report for each trade and for each netting set. When it is N, the analytic writes one report for all trades and one for all netting sets. Switch it off for a large portfolio to avoid a very large number of files. The XVA analytic has the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -10767,7 +11089,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''collateralBalancesFile'']',
-            'analytic', 'pfe', 'collateralBalancesFile', 467, 'string', false,
+            'analytic', 'pfe', 'collateralBalancesFile', 481, 'string', false,
             'Collateral balances file', 'A file name.',
             'Names the XML file with the current variation margin and initial margin balances for each netting set. The analytic uses them as the margin at the valuation date. ORE looks for the file name in the xva block, then in the pfe block and last in the Setup block. For example, collateralbalances.xml.',
             'The collateral balances file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -10790,10 +11112,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''active'']',
-            'analytic', 'crif', 'active', 468, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'active', 482, 'boolean', true,
+            'Run the CRIF generation', 'A flag. Y runs the analytic.',
+            'Switches the CRIF generation on or off. The analytic writes a CRIF file, the input for the SIMM. It is based on a par sensitivity analysis with a SIMM-specific sensitivity configuration, and then labels the sensitivities so that the file has the CRIF format of ISDA. The generation covers interest rate and FX risk only.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.active'
         );
@@ -10813,10 +11135,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'crif', 'marketConfigFile', 469, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'marketConfigFile', 483, 'string', false,
+            'Simulation market file', 'A file name.',
+            'Names the XML file with the simulation market for the sensitivity analysis. The analytic uses the same market and sensitivity settings as the sensitivity analytic and overwrites its settings. For example, crifmarket.xml.',
+            'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.marketConfigFile'
         );
@@ -10836,10 +11158,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'crif', 'sensitivityConfigFile', 470, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'sensitivityConfigFile', 484, 'string', false,
+            'Sensitivity configuration file', 'A file name.',
+            'Names the XML file with the SIMM sensitivity configuration. For example, sensitivity.xml.',
+            'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.sensitivityConfigFile'
         );
@@ -10859,10 +11181,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''baseCurrency'']',
-            'analytic', 'crif', 'baseCurrency', 471, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'baseCurrency', 485, 'string', false,
+            'Base currency', 'A currency code. ORE ignores it in the crif block.',
+            'ORE does not read this parameter in the crif block. The base currency of the Setup block applies.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A currency code of three letters, for example EUR.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.baseCurrency'
         );
@@ -10882,10 +11204,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''simmVersion'']',
-            'analytic', 'crif', 'simmVersion', 472, 'double', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'simmVersion', 486, 'string', false,
+            'SIMM version', 'A SIMM version, for example 2.7.',
+            'Selects the SIMM version for the CRIF. ORE reads it from the first of the blocks crif, saccr, simm (parameter version) and portfolioDetails (parameter version) that has a value. The run stops if none of them has one.',
+            'None. The parameter is mandatory.', 'A SIMM version such as 2.6.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.simmVersion'
         );
@@ -10905,12 +11227,104 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''crifOutputFile'']',
-            'analytic', 'crif', 'crifOutputFile', 473, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'crif', 'crifOutputFile', 487, 'string', false,
+            'CRIF output file', 'A file name. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files carry it. The CRIF analytic writes its result as a report with a fixed name.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: crif.crifOutputFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'crif' and name = 'nameMappingInputFile'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''nameMappingInputFile'']',
+            'analytic', 'crif', 'nameMappingInputFile', 488, 'string', false,
+            'Name mapping file', 'A file name.',
+            'Names the file that maps the names in the portfolio to the names of the CRIF. Without it ORE uses the names as they are. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
+            'None. ORE uses the names as they are.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: crif.nameMappingInputFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'crif' and name = 'bucketMappingInputFile'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''bucketMappingInputFile'']',
+            'analytic', 'crif', 'bucketMappingInputFile', 489, 'string', false,
+            'Bucket mapping file', 'A file name.',
+            'Names the file that maps risk factors to the SIMM buckets of the CRIF. Without it ORE uses the standard buckets. ORE reads it from the first of the blocks crif, saccr, simm, npv and Setup that has a value.',
+            'None. ORE uses the standard SIMM buckets.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: crif.bucketMappingInputFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'crif' and name = 'applySimmExemptions'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''applySimmExemptions'']',
+            'analytic', 'crif', 'applySimmExemptions', 490, 'boolean', false,
+            'Apply SIMM exemptions', 'A flag. Y applies the exemptions.',
+            'Decides whether the CRIF generation applies the SIMM exemptions and writes a report of what it exempted.',
+            'No.', 'A flag, written Y or N, or true or false.',
+            '1.8.10.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: crif.applySimmExemptions'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'crif' and name = 'computeTheta'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''computeTheta'']',
+            'analytic', 'crif', 'computeTheta', 491, 'boolean', false,
+            'Compute theta', 'A flag. Y computes the theta.',
+            'Decides whether the sensitivity calculation behind the CRIF also computes the theta. ORE reads the parameter from the sensitivity block, the simm block or the crif block, in this order, and one value serves all three analytics.',
+            'No.', 'A flag, written Y or N, or true or false.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: crif.computeTheta'
         );
     end if;
 
@@ -10928,7 +11342,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflownpv'']/Parameter[@name=''active'']',
-            'analytic', 'cashflownpv', 'active', 474, 'boolean', true,
+            'analytic', 'cashflownpv', 'active', 492, 'boolean', true,
             'Run the cash flow NPV analytic', 'A flag. Y runs the analytic.',
             'Switches the cash flow NPV analytic on or off. When it is on, the run builds the cash flow report and adds up, for each trade, the present value of the cash flows up to the horizon. The result is one row for each trade with its NPV in the base currency.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -10951,7 +11365,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflownpv'']/Parameter[@name=''cashFlowHorizon'']',
-            'analytic', 'cashflownpv', 'cashFlowHorizon', 475, 'date', false,
+            'analytic', 'cashflownpv', 'cashFlowHorizon', 493, 'date', false,
             'Cash flow horizon', 'A date.',
             'Sets the last pay date that the report counts. ORE adds up the present value of the cash flows of each trade that pay after the valuation date and on or before this date. For example, 2027-12-31 counts the cash flows up to the end of 2027. The cash flow analytic has a parameter of the same name.',
             'None. Without a horizon the report counts no cash flow, so every present value is 0.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
@@ -10974,7 +11388,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''active'']',
-            'analytic', 'sensitivityStress', 'active', 476, 'boolean', true,
+            'analytic', 'sensitivityStress', 'active', 494, 'boolean', true,
             'Run the stressed sensitivity analytic', 'A flag. Y runs the analytic.',
             'Switches the stressed sensitivity analytic on or off. It combines the stress test and the sensitivity analysis. For each stress scenario, it replaces the market of the valuation date with the simulation market shifted by the scenario, and runs the sensitivity calculation on it.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -10997,7 +11411,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'sensitivityStress', 'marketConfigFile', 477, 'string', false,
+            'analytic', 'sensitivityStress', 'marketConfigFile', 495, 'string', false,
             'Simulation market file', 'A file name.',
             'Names the XML file with the simulation market under which the analytic computes its results. The analytic needs only the part under Market. For example, simulation.xml. For each stress scenario the analytic replaces the market of the valuation date with this simulation market, shifted by the scenario, and runs the sensitivity calculation on it.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11020,7 +11434,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'sensitivityStress', 'stressConfigFile', 478, 'string', false,
+            'analytic', 'sensitivityStress', 'stressConfigFile', 496, 'string', false,
             'Stress configuration file', 'A file name.',
             'Names the XML file with the stress scenarios. The same file also decides whether the stress is in the raw domain or in the par domain. For example, stresstest.xml.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11043,7 +11457,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'sensitivityStress', 'sensitivityConfigFile', 479, 'string', false,
+            'analytic', 'sensitivityStress', 'sensitivityConfigFile', 497, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file that sets the sensitivity calculation, as for the sensitivity analytic. The analytic runs the calculation once for each stress scenario.',
             'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11066,7 +11480,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''calcBaseScenario'']',
-            'analytic', 'sensitivityStress', 'calcBaseScenario', 480, 'boolean', false,
+            'analytic', 'sensitivityStress', 'calcBaseScenario', 498, 'boolean', false,
             'Compute the base scenario', 'A flag. Y also computes the unshifted scenario.',
             'Decides whether the analytic also computes the sensitivities of the unshifted base scenario, next to those of the stress scenarios.',
             'No.', 'A flag, written Y or N, or true or false.',
@@ -11089,7 +11503,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'sensitivityStress', 'scenarioOutputFile', 481, 'string', false,
+            'analytic', 'sensitivityStress', 'scenarioOutputFile', 499, 'string', false,
             'Stressed sensitivity result file', 'A file name.',
             'Names the file with the result of the stressed sensitivity calculation.',
             'sensitivity_stress.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -11112,7 +11526,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''active'']',
-            'analytic', 'correlation', 'active', 482, 'boolean', true,
+            'analytic', 'correlation', 'active', 500, 'boolean', true,
             'Run the correlation analytic', 'A flag. Y runs the analytic.',
             'Switches the correlation analytic on or off. It computes a correlation matrix of the risk factors from historical scenarios. The XVA analytic can run it to get the correlations of its model.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -11135,7 +11549,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''correlation_method'']',
-            'analytic', 'correlation', 'correlation_method', 483, 'string', false,
+            'analytic', 'correlation', 'correlation_method', 501, 'string', false,
             'Correlation method', 'Pearson or Kendall-Rank.',
             'Selects the method for the correlation matrix. Pearson is the standard linear correlation. Kendall-Rank is a rank correlation. The name correlationMethod is another name for the same parameter.',
             'Pearson', 'Pearson or Kendall-Rank.',
@@ -11158,7 +11572,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''scenarioCorrSimulation'']',
-            'analytic', 'correlation', 'scenarioCorrSimulation', 484, 'string', false,
+            'analytic', 'correlation', 'scenarioCorrSimulation', 502, 'string', false,
             'Simulation market file', 'A file name.',
             'Names the XML file with the simulation market for the correlation calculation. The name scenarioSimulationUri is another name for the same parameter. For example, simulation.xml.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11181,7 +11595,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'correlation', 'historicalScenarioFile', 485, 'string', false,
+            'analytic', 'correlation', 'historicalScenarioFile', 503, 'string', false,
             'Historical scenario file', 'A file name.',
             'Names the CSV file with the market scenarios for every date of the observation period. The granularity of the scenarios must match the simulation market, and each yield curve tenor is a discount factor. The name scenarioFile is another name for the same parameter. For example, scenarios.csv.',
             'None. The analytic needs the file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11204,7 +11618,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'correlation', 'sensitivityConfigFile', 486, 'string', false,
+            'analytic', 'correlation', 'sensitivityConfigFile', 504, 'string', false,
             'Sensitivity configuration file', 'A file name.',
             'Names the XML file with the sensitivity setup for the analysis at the valuation date. For example, sensitivity.xml.',
             'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
@@ -11227,7 +11641,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalPeriod'']',
-            'analytic', 'correlation', 'historicalPeriod', 487, 'string', false,
+            'analytic', 'correlation', 'historicalPeriod', 505, 'string', false,
             'Historical period', 'Two dates.',
             'A comma-separated list of dates with an even number of entries, for example 2017-01-17,2019-12-30. Each pair of dates is the start and the end of one observation period. The correlation analytic needs one contiguous period. The names lookbackPeriod, benchmarkVarPeriod and benchmarkPeriod are other names for the same parameter. The run stops if the period is missing.',
             'None. The parameter is mandatory.', 'A comma-separated list of dates.',
@@ -11250,7 +11664,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporDays'']',
-            'analytic', 'correlation', 'mporDays', 488, 'integer', false,
+            'analytic', 'correlation', 'mporDays', 506, 'integer', false,
             'Horizon in days', 'A whole number of days.',
             'Sets the length of the horizon over which the analytic measures the moves of the risk factors, in days on the calendar. The name horizonDays is another name for the same parameter.',
             '10', 'A whole number of zero or more.',
@@ -11273,7 +11687,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'correlation', 'mporCalendar', 489, 'string', false,
+            'analytic', 'correlation', 'mporCalendar', 507, 'string', false,
             'Horizon calendar', 'A calendar name.',
             'Names the calendar that ORE uses to count the days of the horizon. The name horizonCalendar is another name for the same parameter.',
             'The calendar of the base currency.', 'A calendar name such as TARGET, USD or UK.',
@@ -11296,7 +11710,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''filterCamCorrelationScenarioTenor'']',
-            'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 490, 'string', false,
+            'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 508, 'string', false,
             'Tenor filter for the output', 'A JSON object.',
             'Limits the tenors of the correlation output. The value is a JSON object that maps regular expressions to tenors. ORE matches the expressions against the risk factor keys, written as KeyType/Name, in reverse order, so the last entry has the highest priority. A risk factor without a match keeps all tenors. For example, {"DiscountCurve/.*":"5Y", "DiscountCurve/USD/.*":"3Y", "IndexCurve/USD-FedFunds":"10Y"}.',
             'None. All tenors are included.', 'A JSON object of regular expressions and tenors.',
@@ -11319,7 +11733,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''outputFile'']',
-            'analytic', 'correlation', 'outputFile', 491, 'string', false,
+            'analytic', 'correlation', 'outputFile', 509, 'string', false,
             'Correlation report file (older name)', 'A file name. ORE ignores it.',
             'ORE reads the file name from the parameter outputFileName and does not read this one. The user guide and the examples use this name, so a document with this name still writes correlation.csv.',
             'None. ORE ignores the parameter, so a value has no effect.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -11342,7 +11756,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'correlation', 'outputFileName', 492, 'string', false,
+            'analytic', 'correlation', 'outputFileName', 510, 'string', false,
             'Correlation report file', 'A file name.',
             'Names the file with the correlation matrix. For example, correlation.csv.',
             'correlation.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -11365,7 +11779,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporOverlappingPeriods'']',
-            'analytic', 'correlation', 'mporOverlappingPeriods', 493, 'boolean', false,
+            'analytic', 'correlation', 'mporOverlappingPeriods', 511, 'boolean', false,
             'Overlapping horizons', 'A flag. Y uses overlapping horizons.',
             'Decides whether the horizons overlap. The name horizonOverlappingPeriods is another name for the same parameter.',
             'Yes.', 'A flag, written Y or N, or true or false.',
@@ -11388,12 +11802,311 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''allowPartialScenarios'']',
-            'analytic', 'correlation', 'allowPartialScenarios', 494, 'boolean', false,
+            'analytic', 'correlation', 'allowPartialScenarios', 512, 'boolean', false,
             'Allow partial scenarios', 'A flag. Y accepts scenarios that touch only part of the market.',
             'Decides whether the simulated market accepts scenarios that do not set every risk factor.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.allowPartialScenarios'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'stressedSimm' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''active'']',
+            'analytic', 'stressedSimm', 'active', 513, 'boolean', true,
+            'Run the stressed SIMM analytic', 'A flag. Y runs the analytic.',
+            'Switches the stressed SIMM analytic on or off. It computes the SIMM under stress scenarios. It reads the other SIMM settings from the simm block.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'stressedSimm' and name = 'stressedSimmScenarioData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''stressedSimmScenarioData'']',
+            'analytic', 'stressedSimm', 'stressedSimmScenarioData', 514, 'string', false,
+            'Stress scenario file', 'A file name.',
+            'Names the XML file with the stress scenarios for the stressed SIMM. The run stops if the file is missing.',
+            'None. The parameter is mandatory.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.stressedSimmScenarioData'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'stressedSimm' and name = 'version'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''stressedSimm'']/Parameter[@name=''version'']',
+            'analytic', 'stressedSimm', 'version', 515, 'string', false,
+            'SIMM version', 'A SIMM version, for example 2.6.',
+            'Selects the SIMM version for the stressed SIMM. The run stops if no version is set. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5.',
+            'None. The parameter is mandatory.', 'A SIMM version such as 2.6.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: stressedSimm.version'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simmBacktest' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simmBacktest'']/Parameter[@name=''active'']',
+            'analytic', 'simmBacktest', 'active', 516, 'boolean', true,
+            'Run the SIMM backtest', 'A flag. Y runs the analytic.',
+            'Switches the SIMM backtest on or off. In release 1.8.17.0 ORE reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simmBacktest.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simmBacktest' and name = 'crif'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simmBacktest'']/Parameter[@name=''crif'']',
+            'analytic', 'simmBacktest', 'crif', 517, 'string', false,
+            'CRIF file', 'A file name.',
+            'Names the CRIF file for the SIMM backtest. ORE reads it, and the open source release has no analytic of this type.',
+            'None.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simmBacktest.crif'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simmOptimization' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simmOptimization'']/Parameter[@name=''active'']',
+            'analytic', 'simmOptimization', 'active', 518, 'boolean', true,
+            'Run the SIMM optimisation analytic', 'A flag. Y runs the analytic.',
+            'Switches the SIMM optimisation analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simmOptimization.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'totalIM' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''totalIM'']/Parameter[@name=''active'']',
+            'analytic', 'totalIM', 'active', 519, 'boolean', true,
+            'Run the total initial margin analytic', 'A flag. Y runs the analytic.',
+            'Switches the total initial margin analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: totalIM.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'imImpact' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''imImpact'']/Parameter[@name=''active'']',
+            'analytic', 'imImpact', 'active', 520, 'boolean', true,
+            'Run the initial margin impact analytic', 'A flag. Y runs the analytic.',
+            'Switches the initial margin impact analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: imImpact.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'crifToTrade' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''crifToTrade'']/Parameter[@name=''active'']',
+            'analytic', 'crifToTrade', 'active', 521, 'boolean', true,
+            'Run the CRIF to trade analytic', 'A flag. Y runs the analytic.',
+            'Switches the CRIF to trade analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: crifToTrade.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'frtb' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''frtb'']/Parameter[@name=''active'']',
+            'analytic', 'frtb', 'active', 522, 'boolean', true,
+            'Run the FRTB analytic', 'A flag. Y runs the analytic.',
+            'Switches the FRTB analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: frtb.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'frtbCrif' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''frtbCrif'']/Parameter[@name=''active'']',
+            'analytic', 'frtbCrif', 'active', 523, 'boolean', true,
+            'Run the FRTB CRIF analytic', 'A flag. Y runs the analytic.',
+            'Switches the FRTB CRIF analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: frtbCrif.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'npvLagged' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''npvLagged'']/Parameter[@name=''active'']',
+            'analytic', 'npvLagged', 'active', 524, 'boolean', true,
+            'Run the lagged NPV analytic', 'A flag. Y runs the analytic.',
+            'Switches the lagged NPV analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: npvLagged.active'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'fixingEstimate' and name = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''fixingEstimate'']/Parameter[@name=''active'']',
+            'analytic', 'fixingEstimate', 'active', 525, 'boolean', true,
+            'Run the fixing estimate analytic', 'A flag. Y runs the analytic.',
+            'Switches the fixing estimate analytic on or off. ORE 1.8.17.0 reads the switch, but the open source release has no analytic of this name, so a run with Y fails with the error Invalid analytic name, unless an extension library provides the analytic.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: fixingEstimate.active'
         );
     end if;
 

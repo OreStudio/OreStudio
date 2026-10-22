@@ -53,12 +53,12 @@ struct ore_parameter_entity {
     int position = 0;
     std::string ore_parameter_value_domain_code;
     bool is_required = false;
-    std::optional<std::string> label;
-    std::optional<std::string> help;
-    std::optional<std::string> description;
-    std::optional<std::string> default_text;
-    std::optional<std::string> format;
-    std::optional<std::string> introduced_in;
+    std::string label;
+    std::string help;
+    std::string description;
+    std::string default_text;
+    std::string format;
+    std::string introduced_in;
     std::optional<std::string> removed_in;
     std::string modified_by;
     std::string performed_by;

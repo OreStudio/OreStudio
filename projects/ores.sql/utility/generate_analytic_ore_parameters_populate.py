@@ -21,9 +21,10 @@ The catalogue lists the parameters of the analytics in the order the run documen
 writes them. The text of each one is in the analytic_parameter_descriptions
 package, and the release that introduced it is in analytic_parameter_releases.py.
 
-    generate_analytic_ore_parameters_populate.py                     write the seed
-    generate_analytic_ore_parameters_populate.py --check             fail if the seed differs
-    generate_analytic_ore_parameters_populate.py --require-complete  fail if a parameter has no text
+    generate_analytic_ore_parameters_populate.py          write the seed
+    generate_analytic_ore_parameters_populate.py --check  fail if the seed differs
+
+Every parameter of the catalogue needs a complete text. The generator fails when one has none.
 """
 
 import argparse
@@ -80,13 +81,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true",
                         help="fail if the committed seed differs from the texts")
-    parser.add_argument("--require-complete", action="store_true",
-                        help="fail if a parameter has no text")
     args = parser.parse_args()
     all_rows = rows()
     undocumented = missing(all_rows)
-    documented = len(all_rows) - len(undocumented)
-    if args.require_complete and undocumented:
+    if undocumented:
         print(f"{len(undocumented)} analytic parameters have no text, for example "
               f"{', '.join(undocumented[:5])}.", file=sys.stderr)
         return 1
@@ -96,11 +94,11 @@ def main():
         if current != content:
             print(f"{SEED} no longer matches the texts; regenerate it.", file=sys.stderr)
             return 1
-        print(f"{documented} of {len(all_rows)} analytic parameters have text and match the seed.")
+        print(f"{len(all_rows)} analytic parameters have text and match the seed.")
         return 0
     with open(SEED, "w") as f:
         f.write(content)
-    print(f"Wrote {SEED}: {documented} of {len(all_rows)} analytic parameters have text")
+    print(f"Wrote {SEED}: {len(all_rows)} analytic parameters")
     return 0
 
 

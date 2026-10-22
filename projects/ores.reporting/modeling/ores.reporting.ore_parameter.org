@@ -125,10 +125,10 @@ Whether the document must carry the parameter.
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
-The name a screen shows for the parameter, for example Imply today’s fixings. Null when no screen presents the parameter yet.
+The name a screen shows for the parameter, for example Imply today’s fixings.
 
 #+begin_src cpp :name generator
 std::string("Parameter")
@@ -138,7 +138,7 @@ std::string("Parameter")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 One line a screen shows next to the control. It says what kind of value the parameter takes.
@@ -151,10 +151,10 @@ std::string("A flag.")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
-The full text a screen shows for the parameter. It says what the parameter decides, what each value does and when to change it. Null when the parameter has no text yet.
+The full text a screen shows for the parameter. It says what the parameter decides, what each value does and when to change it.
 
 #+begin_src cpp :name generator
 std::string("What the parameter decides.")
@@ -164,7 +164,7 @@ std::string("What the parameter decides.")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 The default as a person reads it, with what it means, for example =No. Today’s fixing is loaded.=
@@ -177,7 +177,7 @@ std::string("No.")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 How a value is written in the document, for example a flag written Y or N, or a whole number from 0 to 9.
@@ -190,7 +190,7 @@ std::string("A flag.")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 The ORE release that introduced the parameter. When the project could not measure an earlier release, the text says so, for example =1.8.0.7 or earlier=.
@@ -314,8 +314,13 @@ std::string("1.9.0.0")
 | subtype | Subtype | line_edit | true | true | Enter subtype |
 | name | Name | line_edit | true | true | Enter parameter name |
 | ore_parameter_value_domain_code | Value Is | line_edit | | true | Enter value domain code |
-| label | Label | line_edit | | | Enter label |
-| description | Description | line_edit | | | Enter description |
+| label | Label | line_edit | | true | Enter label |
+| help | Help | line_edit | | true | Enter help |
+| description | Description | line_edit | | true | Enter description |
+| default_text | Default | line_edit | | true | Enter default |
+| format | Format | line_edit | | true | Enter format |
+| introduced_in | Introduced in | line_edit | | true | Enter release |
+| removed_in | Removed in | line_edit | | | Enter release |
 
 *** Columns
 

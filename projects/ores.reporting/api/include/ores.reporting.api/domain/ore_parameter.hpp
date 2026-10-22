@@ -110,8 +110,7 @@ struct ore_parameter final {
     bool is_required = false;
 
     /**
-     * @brief The name a screen shows for the parameter, for example Imply today’s fixings. Null
-     * when no screen presents the parameter yet.
+     * @brief The name a screen shows for the parameter, for example Imply today’s fixings.
      */
     std::string label;
 
@@ -123,7 +122,7 @@ struct ore_parameter final {
 
     /**
      * @brief The full text a screen shows for the parameter. It says what the parameter decides,
-     * what each value does and when to change it. Null when the parameter has no text yet.
+     * what each value does and when to change it.
      */
     std::string description;
 

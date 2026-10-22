@@ -127,7 +127,7 @@ Concretely, inside =ores.iam.core='s =registrar::register_handlers=:
    and subscribe to =ores.refdata.party_changed= for future reloads.
 
 A non-IAM service calling *another* service (e.g. =ores.reporting=
-minting a token to call into IAM, or =ores.synthetic= the same) has no
+minting a token to call into IAM, or =ores.marketdata.synthetic= the same) has no
 self-reference to worry about — the target service is a separate,
 already-running process, so there is no ordering constraint relative
 to its *own* Phase 1. The two-phase discipline still applies for the

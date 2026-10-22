@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:compute:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-10-22
 
 | Item          | Where                                      |
 |---------------+--------------------------------------------|
@@ -29,8 +29,7 @@ It is throwaway. It reads no service. Open the [[file:browse-the-grids-jobs/][Jo
 
 ** The verdict
 
-Signed off on 2026-10-13. The layout, the three roles, the four states and the
-dashed run-statistics block stand as drawn. The statistics need three tasks:
+Signed off on 2026-10-13. The layout, the three roles and the four states stand as drawn. The statistics need three tasks:
 the result fields, the wrapper's measurements and the aggregate read.
 
 ** What it argues
@@ -49,6 +48,21 @@ the result fields, the wrapper's measurements and the aggregate read.
   files, so a person can take them away. A result has no input of its own: its
   Workunit ID link leads to it.
 
+** Changes on 2026-10-22
+
+The story Browse and follow the grid's jobs compared this prototype with its
+acceptance and changed six things.
+
+- An Outcome filter finds a failed result. It narrows the tree to the
+  workunits that hold a run with that outcome.
+- A /Follow this job/ link on a workunit or a result opens the job page. The
+  App Version ID links to the app version page.
+- The run statistics are an ordinary panel, not a dashed block.
+- The tabs are the ones the grid screen has: Overview, Usage, Machines, Nodes,
+  Heatmap and Jobs.
+- A failed workunit has a canonical result, as the job lifecycle states.
+- The filters, the open rows, the page and the selection live in the address.
+
 ** Variants and states
 
 =?role=operator|tenant|member= and =?state=loaded|loading|empty|error|refused=.
@@ -62,13 +76,13 @@ stored =server_state= and =outcome= (all Done and Success) come from the
 development database as it stood on 2026-10-13. The ids, the =app_version_id=,
 the failed and in-flight results and the batches in =processing= are invented.
 
-The dashed /Run statistics/ block is the one exception to the fields-only rule,
-and it says so on the screen. A result shows its start and end time, its input
-and output bytes and its peak memory. A workunit and a batch show the aggregate
-of the results below them (earliest start, latest finish, summed bytes, largest
-peak memory). None of these is stored: the wrapper measures the duration and the
-bytes and sums them per node, and the engine's peak memory is a log line. The
-journey lists the fields as a gap.
+The /Run statistics/ panel is the one exception to the fields-only rule. A
+result shows its start and end time, its input and output bytes and its peak
+memory. A workunit and a batch show the aggregate of the results below them
+(earliest start, latest finish, summed bytes, largest peak memory). The result
+stores none of them: the wrapper measures the duration and the bytes and sums
+them per node, and the engine's peak memory is a log line. The story that adds
+the run statistics adds the fields, and the panel waits for it.
 
 No server behind the screen exists yet for the filters, the failed-result read
 or the download route. The journey lists them as gaps.

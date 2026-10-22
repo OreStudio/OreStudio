@@ -77,7 +77,7 @@ describe('the Reference data cards', () => {
             'Holiday calendars',
             'Classifications',
             'Shape the book structure',
-            'Define instrument conventions',
+            'Conventions',
         ]) {
             expect(words, name).toContain(name);
         }
@@ -88,6 +88,12 @@ describe('the Reference data cards', () => {
 
         expect(words).not.toContain('Onboard a party');
         expect(words).not.toContain('Onboard a counterparty');
+    });
+
+    it('leave Define instrument conventions to the Conventions screen', () => {
+        const words = textOf(render(['*'], 'area'));
+
+        expect(words).not.toContain('Define instrument conventions');
     });
 
     it('lead to the screens by their addresses under Reference data', () => {

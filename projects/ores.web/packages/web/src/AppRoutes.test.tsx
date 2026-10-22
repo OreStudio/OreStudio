@@ -331,8 +331,25 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Book structure');
     });
 
-    it('offers the convention screen to a signed-in person', () => {
+    it('offers the list of conventions to a signed-in person', () => {
         const html = render('/refdata/conventions', ready, authenticated);
+
+        expect(html).toContain('Party conventions');
+    });
+
+    it('offers the documents of one convention kind to a signed-in person', () => {
+        const html = render('/refdata/conventions/swap', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(
+                ['conventions', 'families'],
+                [{ key: 'swap', entity: 'swap_convention', writable: true, count: 320 }],
+            ),
+        );
+
+        expect(html).toContain('the documents this kind holds');
+    });
+
+    it('offers the convention journey to a signed-in person', () => {
+        const html = render('/refdata/conventions/define', ready, authenticated);
 
         expect(html).toContain('Instrument conventions');
     });
@@ -357,6 +374,12 @@ describe('the route table once the flag is clear', () => {
 
     it('sends a visitor to sign in rather than to the convention screen', () => {
         const html = render('/refdata/conventions', readyAnonymous, anonymous);
+
+        expect(html).not.toContain('Party conventions');
+    });
+
+    it('sends a visitor to sign in rather than to the convention journey', () => {
+        const html = render('/refdata/conventions/define', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Instrument conventions');
     });

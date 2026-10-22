@@ -34,6 +34,7 @@ export const PATHS = {
     onboardCounterparty: '/refdata/counterparties/onboard',
     bookStructure: '/refdata/books/structure',
     conventions: '/refdata/conventions',
+    conventionAuthoring: '/refdata/conventions/define',
     tenors: '/refdata/tenors',
     tenorAuthoring: '/refdata/tenors/author',
     organisation: '/organisation',
@@ -53,6 +54,11 @@ export const PATHS = {
     pricingEngines: '/reporting/pricing-engines',
     pricingEngineAuthoring: '/reporting/pricing-engines/author',
 } as const;
+
+/** The address of the documents of one convention kind. */
+export function conventionPath(family: string): string {
+    return `${PATHS.conventions}/${encodeURIComponent(family)}`;
+}
 
 /** The address of one person's page. */
 export function personPath(username: string): string {

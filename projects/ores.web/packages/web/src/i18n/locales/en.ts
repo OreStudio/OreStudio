@@ -3305,6 +3305,9 @@ export const en: SourceCatalogue = {
                 currencyPairsBody: 'A pair with its quoting convention and settlement calendars.',
                 deskGroups: 'Desk groups',
                 deskGroupsBody: 'Groups of currencies such as G11 or Scandies.',
+                conventions: 'Conventions',
+                conventionsBody:
+                    'The market terms each instrument is built on, grouped by asset class.',
                 calendars: 'Holiday calendars',
                 calendarsBody: 'Rules, exceptions and events, and the business days they produce.',
                 tenors: 'Resolve a tenor',
@@ -3617,6 +3620,7 @@ export const en: SourceCatalogue = {
         },
         choices: {
             report_type: { risk: 'Risk report' },
+            regulatory_book_type: { Trading: 'Trading book', Banking: 'Banking book' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },
             post_processing: { execute: 'Execute', ignore: 'Ignore' },
             concurrency_policy: { skip: 'Skip', queue: 'Queue', fail: 'Fail' },
@@ -3792,6 +3796,42 @@ export const en: SourceCatalogue = {
             empty: 'No desk groups yet.',
             removeWarning:
                 'Removing the group takes its members away from it first; the currencies themselves stay.',
+        },
+        conventions: {
+            title: 'Conventions',
+            lead: 'The market terms the instruments are built on, grouped by asset class.',
+            tabs: 'Convention scope',
+            tab: {
+                party: 'Party conventions',
+                shared: 'Shared conventions',
+            },
+            sharedWarning: 'Every party reads these conventions.',
+            sharedWarningBody:
+                'They are held once for the tenant, and a change applies to all parties.',
+            sharedDocuments: 'Every party reads these documents.',
+            search: 'Search kinds',
+            assetClass: 'Asset class',
+            allClasses: 'All asset classes',
+            classes: {
+                'interest-rates': 'Interest rates',
+                fx: 'FX',
+                inflation: 'Inflation',
+                credit: 'Credit',
+                commodity: 'Commodity',
+                bond: 'Bond',
+                other: 'Other',
+            },
+            summary: 'Documents {documents} · Kinds {kinds}',
+            groupSummary: 'Kinds {kinds} · Documents {documents}',
+            noMatch: 'No kinds match the search.',
+            columns: {
+                kind: 'Kind',
+                documents: 'Documents',
+                terms: 'Terms',
+            },
+            documentsLead: '{class} · the documents this kind holds.',
+            unknownKind: 'There is no convention kind named {kind}.',
+            backToKinds: 'Back to the conventions',
         },
         pairs: {
             title: 'Currency pairs',
@@ -4624,12 +4664,20 @@ export const en: SourceCatalogue = {
             pre_processing: 'Pre-processing',
             post_processing: 'Post-processing',
             is_official: 'Official',
+            regulatory_book_type: 'Book type',
         },
         means: {
             name: 'What the report is called. It keys the report’s history and its address, so it is set when the report is made. To use another name, make a new report.',
             reportType: {
                 risk: 'A full risk run on the compute grid: NPV, cashflows, sensitivities, XVA, VaR and SIMM. The type decides the workflow that runs and the configurations the report can bind.',
                 other: 'The type decides the workflow that runs and the configurations the report can bind.',
+            },
+            regulatoryBookType: {
+                Trading:
+                    'The report reads trading books only. A scope that names a banking book is refused, and a portfolio in the scope is read for its trading books.',
+                Banking:
+                    'The report reads banking books only. A scope that names a trading book is refused, and a portfolio in the scope is read for its banking books.',
+                other: 'Empty means the report reads books of every type. A type limits it to the books of that regulatory book type.',
             },
             concurrencyPolicy: {
                 skip: 'If the last run is still going when the schedule fires, this run is not started. It is recorded as skipped.',

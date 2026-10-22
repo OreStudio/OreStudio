@@ -3346,6 +3346,9 @@ const fr: SourceCatalogue = {
                     'Une paire avec sa convention de cotation et ses calendriers de règlement.',
                 deskGroups: 'Groupes de devises',
                 deskGroupsBody: 'Des groupes de devises comme G11 ou Scandies.',
+                conventions: 'Conventions',
+                conventionsBody:
+                    'Les termes de marché sur lesquels chaque instrument est construit, regroupés par classe d’actifs.',
                 calendars: 'Calendriers de jours fériés',
                 tenors: 'Résoudre un ténor',
                 tenorsBody: 'Quelle date un ténor donne sur un calendrier, sous une convention.',
@@ -3666,6 +3669,10 @@ const fr: SourceCatalogue = {
         },
         choices: {
             report_type: { risk: 'Rapport de risque' },
+            regulatory_book_type: {
+                Trading: 'Portefeuille de négociation',
+                Banking: 'Portefeuille bancaire',
+            },
             pre_processing: { execute: 'Exécuter', substitute: 'Substituer' },
             post_processing: { execute: 'Exécuter', ignore: 'Ignorer' },
             concurrency_policy: { skip: 'Ignorer', queue: 'Mettre en file', fail: 'Échouer' },
@@ -3843,6 +3850,42 @@ const fr: SourceCatalogue = {
             empty: 'Aucun groupe pour le moment.',
             removeWarning:
                 "Supprimer le groupe en retire d'abord ses membres ; les devises restent.",
+        },
+        conventions: {
+            title: 'Conventions',
+            lead: 'Les termes de marché sur lesquels les instruments sont construits, regroupés par classe d’actifs.',
+            tabs: 'Portée des conventions',
+            tab: {
+                party: 'Conventions de la partie',
+                shared: 'Conventions partagées',
+            },
+            sharedWarning: 'Toutes les parties lisent ces conventions.',
+            sharedWarningBody:
+                'Elles sont conservées une seule fois pour le locataire, et une modification s’applique à toutes les parties.',
+            sharedDocuments: 'Toutes les parties lisent ces documents.',
+            search: 'Rechercher un type',
+            assetClass: 'Classe d’actifs',
+            allClasses: 'Toutes les classes d’actifs',
+            classes: {
+                'interest-rates': 'Taux d’intérêt',
+                fx: 'Change',
+                inflation: 'Inflation',
+                credit: 'Crédit',
+                commodity: 'Matières premières',
+                bond: 'Obligations',
+                other: 'Autres',
+            },
+            summary: 'Documents {documents} · Types {kinds}',
+            groupSummary: 'Types {kinds} · Documents {documents}',
+            noMatch: 'Aucun type ne correspond à la recherche.',
+            columns: {
+                kind: 'Type',
+                documents: 'Documents',
+                terms: 'Termes',
+            },
+            documentsLead: '{class} · les documents que contient ce type.',
+            unknownKind: 'Il n’existe aucun type de convention nommé {kind}.',
+            backToKinds: 'Retour aux conventions',
         },
         pairs: {
             title: 'Paires de devises',
@@ -4690,12 +4733,20 @@ const fr: SourceCatalogue = {
             pre_processing: 'Prétraitement',
             post_processing: 'Post-traitement',
             is_official: 'Officielle',
+            regulatory_book_type: 'Type de livre',
         },
         means: {
             name: 'Le nom du rapport. Il sert de clé à son historique et à son adresse : il est fixé à la création du rapport. Pour un autre nom, créez un nouveau rapport.',
             reportType: {
                 risk: 'Un calcul de risque complet sur la grille : VAN, flux, sensibilités, XVA, VaR et SIMM. Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
                 other: 'Le type décide du flux de travail exécuté et des configurations que le rapport peut lier.',
+            },
+            regulatoryBookType: {
+                Trading:
+                    'Le rapport lit les livres de négociation seulement. Un périmètre qui nomme un livre bancaire est refusé, et un portefeuille du périmètre est lu pour ses livres de négociation.',
+                Banking:
+                    'Le rapport lit les livres bancaires seulement. Un périmètre qui nomme un livre de négociation est refusé, et un portefeuille du périmètre est lu pour ses livres bancaires.',
+                other: 'Vide : le rapport lit les livres de tous les types. Un type le limite aux livres de ce type réglementaire.',
             },
             concurrencyPolicy: {
                 skip: 'Si l’exécution précédente tourne encore quand le calendrier se déclenche, cette exécution ne démarre pas. Elle est enregistrée comme ignorée.',

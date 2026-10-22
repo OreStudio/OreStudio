@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One tick, from the demand to the party's stream
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+participant "Party" as p
+participant "Routing" as r
+participant "Adapter\n(live or simulated)" as a
+participant "Mapping" as m
+participant "Quality" as q
+database "Store" as s
+participant "Fan-out" as f
+participant "Metering" as mt
+
+p -> r : subscribe to provider (rights)
+r -> r : check entitlement, resolve source
+r -> mt : subscription interval opens
+r -> a : demand(set of external ids)\nrequest/reply
+a --> r : accepted, rejected ids
+r -> mt : demand interval opens
+
+loop every vendor update
+    a -> m : tick(external id, field, value, vendor time)\nmarketdata.v1.ingress.<adapter>.>
+    m -> m : (provider, scheme, id, field) to item
+    m -> q : item, value
+    q -> q : range check, staleness, conflation
+    q -> s : write (item, provider, party)\nfor each party routed to the source
+    s -> f : stored
+    f -> p : market_tick on the party stream
+    f -> mt : delivery counted per party
+end
+
+@enduml

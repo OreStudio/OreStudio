@@ -256,7 +256,7 @@ plausible, arbitrage-free future surface paths, non-parametrically, without
 committing to a specific smile-model functional form. Two places this is
 directly relevant to ORE Studio:
 
-- *Synthetic market data generation* (=ores.synthetic=, cf. the GMM
+- *Synthetic market data generation* (=ores.marketdata.synthetic=, cf. the GMM
   (Gaussian Mixture Model) components already in the codebase): a
   generative, arbitrage-free-by-construction path model is a natural fit for
   producing realistic, internally-consistent synthetic vol surface time

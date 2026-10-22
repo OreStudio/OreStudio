@@ -44,10 +44,10 @@ the resolution is not stored today, the journey carries no server state; see
 * Steps
 
 1. *Choose a scope.* The person opens *Market data*, then *Market watch*, and
-   chooses a scope: a producer source, named by a =feed_binding=, or one series.
+   chooses a scope: a source, a provider, or one series.
    The system shows the raw observations of that scope, newest first, with the
    observation time, the oresmd URI, the value, the source and the age. The
-   scope is not typed: the person picks a source from the bindings list or a
+   scope is not typed: the person picks a source from the sources list or a
    series from the series list.
 2. *Read the raw points.* The person reads the values, the source channel and
    the age of each point. The system marks a point fresh, or over the age
@@ -103,7 +103,7 @@ no build step and no session. It argues that the market's exceptions are cleared
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
 | =market_observation= | The raw points: time, oresmd URI, value, source and party; the only identity is the URI | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
-| =feed_binding= | The source scope: which producer channel the party consumes | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
+| =market_data_source= | The source scope: which adapter produced the points, and its kind | |
 | =market_series= | What each point belongs to, and whether the series is observed or derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
 | =market_fixing= | The fixings a scope watches alongside the quotes | [[id:C3D4E5F6-A7B8-9012-C3D4-E5F6A7B89012][ores.marketdata.market_fixing]] |
 | =observation_lineage= | The provenance of a derived point, which the person reads when a value looks wrong | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
@@ -117,7 +117,7 @@ say who cleared what do not exist yet.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Choose a scope | List the producer sources | =marketdata.v1.feed_bindings.list= | exists |
+| Choose a scope | List the sources | =marketdata.v1.sources.list= | planned |
 | Choose a scope | List the series | =marketdata.v1.market_series.list= | exists |
 | Read the raw points | List one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
 | Read the raw points | List observations with an as-of | =marketdata.v1.market_observations.list= | exists |
@@ -156,7 +156,7 @@ ask it about every feed.
    feed's points" as a scope the server resolves. The candidate is a typed
    scope, or a filter over asset class, currency, instrument and curve family.
    Until then the person picks a series from the series list or a source from
-   the bindings list.
+   the sources list.
 4. *A resolution is not recorded.* A fallback choice has no subject and no
    fields. A carried-forward value can be written, but the write carries no
    actor, no reason and no link to the exception it answers, so the record of
@@ -167,10 +167,9 @@ ask it about every feed.
    which a point is stale, or what counts as crossed for a given series. The
    candidate is an exception policy, per series or per blueprint. Until then
    the screen holds one threshold for every scope.
-6. *The source tag is free text.* =market_observation.source= is a text tag,
-   and the feed binding joins to it by string match. The candidate is a typed
-   producer reference. Until then the screen joins the tag to the binding's
-   =source_name= and shows an unmatched tag as unknown.
+6. *A point carries a source id.* =market_observation.source_id= is a typed
+   reference. The screen joins it to the sources list to show the name and the
+   kind. A point whose source is missing from the list shows as unknown.
 7. *No screen exists.* No web page, HTTP route or shell verb reaches any curve
    or watch operation. The candidate is a page and a route. Until then the
    journey runs only from the shell.

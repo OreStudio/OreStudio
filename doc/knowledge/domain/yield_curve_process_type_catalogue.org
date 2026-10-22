@@ -25,7 +25,7 @@ and an IR curve config's =process_type= column is a foreign key to its =code=.
 The column was once constrained by an inline check listing three strings. The
 catalogue replaces that with one row per engine, so an engine is describable,
 validatable as a foreign key, and orderable for display. It is scoped to
-=ores.synthetic= rather than =ores.refdata=, because selecting an
+=ores.marketdata.synthetic= rather than =ores.refdata=, because selecting an
 =IYieldCurveProcess= engine is specific to synthetic curve generation and has
 no other consumer yet. The system tenant manages the rows.
 

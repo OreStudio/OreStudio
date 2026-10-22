@@ -43,11 +43,19 @@ using namespace ores::logging;
  * levels and the digits that document states. They are written out of order to
  * prove the read orders them by the ordinal and not by the write order.
  */
-range_bound make_bound(boost::uuids::uuid trade_id, boost::uuids::uuid activity_id, int sequence) {
+range_bound make_bound(database_helper& h,
+                       boost::uuids::uuid trade_id,
+                       boost::uuids::uuid activity_id,
+                       int sequence) {
     range_bound r;
     r.trade_id = trade_id;
     r.trade_activity_id = activity_id;
     r.sequence_number = sequence;
+    r.tenant_id = h.tenant_id();
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
+    r.change_reason_code = "system.external_data_import";
+    r.change_commentary = "Range bound read order proof";
     if (sequence == 1) {
         r.range_to = ores::utility::decimal::decimal::from_string("122.123456789012").value();
         r.leverage = 2.0;
@@ -72,8 +80,8 @@ TEST_CASE("range_bound_reads_back_in_the_document_order", tags) {
     // The second entry is written first, so an unordered read would return it
     // first and the assertion below would fail.
     range_bound_repository repo;
-    CHECK_NOTHROW(repo.write(ctx, make_bound(trade_id, activity_id, 2)));
-    CHECK_NOTHROW(repo.write(ctx, make_bound(trade_id, activity_id, 1)));
+    CHECK_NOTHROW(repo.write(ctx, make_bound(h, trade_id, activity_id, 2)));
+    CHECK_NOTHROW(repo.write(ctx, make_bound(h, trade_id, activity_id, 1)));
 
     const auto read = repo.read_latest_by_trade_id(ctx, boost::uuids::to_string(trade_id), 0, 10);
     REQUIRE(read.size() == 2);

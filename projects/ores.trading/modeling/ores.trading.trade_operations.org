@@ -32,6 +32,15 @@ generates no service handler.
 #include <optional>
 #include <string>
 #include <vector>
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
@@ -124,6 +133,147 @@ generates no service handler.
 /**
  * @brief The activity that booked the trade; absent when the booking was
  * refused.
+ */
+#+end_src
+
+** put_bond_issue_composite_request
+:PROPERTIES:
+:subject:  trading.v1.ops.put_bond_issue_composite
+:response: put_bond_issue_composite_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Creates a bond issue with its legs, in one transaction.
+ *
+ * The issue is the security master. It is whole or absent: a refused child
+ * write leaves no issue row. The issue is create-only. An issue that already
+ * exists is answered with a conflict and the stored issue stays as it is:
+ * already_exists when its terms equal the request, content_differs when they
+ * do not. Each child row names its issue and leg, and the caller states them
+ * once on the row.
+ */
+#+end_src
+
+*** issue
+:PROPERTIES:
+:cpp_type: ores::trading::domain::bond_issue
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The security's terms.
+ */
+#+end_src
+
+*** legs
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The issue's legs.
+ */
+#+end_src
+
+*** amounts
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg_amount>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The amounts of the legs: notionals, coupons and the like.
+ */
+#+end_src
+
+*** rates
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg_rate>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rate terms of the legs.
+ */
+#+end_src
+
+*** schedules
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg_schedule>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The schedules of the legs.
+ */
+#+end_src
+
+*** schedule_dates
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg_schedule_date>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dates of the schedules that state a date list.
+ */
+#+end_src
+
+*** amortizations
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_leg_amortization>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The amortisation terms of the legs.
+ */
+#+end_src
+
+*** call_dates
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_call_date>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dates on which the issuer may call the issue.
+ */
+#+end_src
+
+*** conversion_targets
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::bond_issue_conversion_target>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The securities a convertible issue converts into.
+ */
+#+end_src
+
+** put_bond_issue_composite_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of creating a bond issue.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Outcome of the operation: conflict with code already_exists when
+ * the same issue is stored, and conflict with code content_differs when an
+ * issue with this id or security id is stored with other terms.
  */
 #+end_src
 

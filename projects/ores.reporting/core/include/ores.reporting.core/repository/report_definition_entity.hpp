@@ -61,6 +61,7 @@ struct report_definition_entity {
     std::optional<std::string> prepared_input_key;
     std::string post_processing;
     bool is_official = true;
+    std::optional<std::string> regulatory_book_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

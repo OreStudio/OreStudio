@@ -142,13 +142,6 @@ TENANT_002 ores_marketdata_series_axes_tbl
 TENANT_002 ores_marketdata_series_axis_values_tbl
 
 # =============================================================================
-# Tick coordinates - one row for each datum of a series, keyed on the series and
-# the coordinate number, because a tick row refers to the series. tenant_id is
-# present for the tenant policy, not for uniqueness.
-# =============================================================================
-TENANT_002 ores_marketdata_tick_coords_tbl
-
-# =============================================================================
 # TimescaleDB hypertable tables - tenant_id is present for RLS but excluded
 # from the primary key by design. Hypertable PKs must include the partition
 # column (a timestamp) and typically a UUID; adding tenant_id would add
@@ -164,7 +157,6 @@ TENANT_002 ores_compute_node_samples_tbl
 TENANT_002 ores_compute_work_ledger_tbl
 TENANT_002 ores_compute_work_tenants_tbl
 TENANT_002 ores_compute_work_totals_tbl
-TENANT_002 ores_marketdata_ticks_tbl
 
 # =============================================================================
 # Workflow batch links - the batch id is a UUID and one workflow step waits for
@@ -283,6 +275,14 @@ TEMPORAL_006 ores_marketdata_market_observations_tbl
 TEMPORAL_006 ores_marketdata_market_fixings_tbl
 TENANT_002 ores_marketdata_market_observations_tbl
 TENANT_002 ores_marketdata_market_fixings_tbl
+
+# Tick tables. ores_marketdata_ticks_tbl is an append-only hypertable with no
+# primary key: an index on every row would cost the bulk copy, and a correction
+# is a new row that the reader orders by time. ores_marketdata_tick_coords_tbl
+# is keyed by its series, a UUID that is unique across tenants, so tenant_id
+# would only widen the key.
+TENANT_002 ores_marketdata_ticks_tbl
+TENANT_002 ores_marketdata_tick_coords_tbl
 
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.
@@ -431,11 +431,12 @@ RLS_002 ores_marketdata_market_fixings_tbl
 RLS_002 ores_marketdata_market_observations_tbl
 RLS_002 ores_marketdata_market_series_tbl
 
-# Tick ingest tables — the ingest context names no party, so these tables have
-# the tenant policy only, as the observation table has, and a reader states the
-# party in its query. They share the stopgap of the tables above.
-RLS_002 ores_marketdata_tick_coords_tbl
+# Tables the feed ingest writes. The ingest context names no party, so a
+# restrictive party policy would refuse every row it writes. They have the
+# tenant policy, as the observation table has, and a reader states the party in
+# its query.
 RLS_002 ores_marketdata_feed_binding_activity_tbl
+RLS_002 ores_marketdata_tick_coords_tbl
 
 # CRM config tables — new, party_id-scoped from the start (Cross-rates
 # matrix story), but sharing the same stopgap as the four tables above:

@@ -131,7 +131,7 @@ build and reads mock data only. The page marks each server gap this journey name
 | Read the result | Announce the close | =refdata.v1.<kind>_conventions_events.deleted= | exists |
 | Read the record | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
 | Read the record | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = =ores.refdata.<kind>_convention=) | exists |
-| The screen itself | Retire a convention from the browser | (no BFF route) | missing |
+| The screen itself | Retire a convention from the browser | (no delete route; =GET= and =PUT /api/conventions/<family>= exist) | missing |
 
 The per-kind delete is generated and takes =ids=. This journey needs a reason on
 the close. Whether the delete request carries a change intent is not checked
@@ -165,8 +165,8 @@ here, and the first task of the implementation reads the request shape.
 7. *A close does not travel.* A re-publish from the curated dataset inserts the
    row again where it is absent, for 25 of the 26 kinds. A document retired in a
    tenant can come back with the next publish.
-8. *No BFF route serves conventions.* The journey adds one, for example
-   =DELETE /api/refdata/parties/<party-id>/conventions/<kind>/<key>=.
+8. *No BFF route deletes a convention.* =GET= and =PUT /api/conventions/<family>=
+   exist. The journey adds =DELETE /api/conventions/<family>/<key>=.
 
 * Related journeys
 

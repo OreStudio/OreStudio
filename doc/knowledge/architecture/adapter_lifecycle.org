@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: B4729C76-4D88-4F3C-B3D3-5FC7BD62D158
+:END:
+#+title: The adapter lifecycle
+#+description: The states an adapter passes through as the service sees it, and what causes each change.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:adapters:lifecycle:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+The service tracks each adapter in one of five states: =announced=, =ready=,
+=serving=, =stale= and =rejected=. The messages of
+[[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] cause every change. The service needs no other knowledge
+of how the adapter runs.
+
+* Detail
+
+#+caption: The states of an adapter as the service sees it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/market_data_adapter_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/market_data_adapter_states.puml][=market_data_adapter_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/market_data_adapter_states.puml=.
+
+| State | Meaning | Entered by |
+|-------+---------+------------|
+| =announced= | The adapter has sent its provider and universe. | Announce |
+| =ready= | The universe agrees with the catalogue and no demand is set. | Universe check |
+| =serving= | The adapter holds a non-empty demand set. | An accepted demand reply |
+| =stale= | The adapter missed its heartbeat. | Heartbeat timeout |
+| =rejected= | The provider is unknown to the catalogue. | Universe check |
+
+A =stale= adapter keeps its routes. The service shows the gap in the source's
+screen and in quality counters. When the heartbeat returns, the service sends the
+demand set again.
+
+** What the adapter does inside these states
+
+A live adapter manages its vendor session: connect, authenticate, resubscribe
+and reconnect. The simulator starts and stops generators. Both are private to
+the adapter. See [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the messages that cause the changes.
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: the set sent on the move to =serving=.

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 3E51B0BD-D22B-4790-821F-E2FED44D152C
+:END:
+#+title: Usage is recorded as events and priced later
+#+description: The usage events the service records for each party, why they carry no prices, and how they support audit of vendor spend.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:metering:usage:governance:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The system pays vendors for market data, so it must know which party uses which
+feed. The service records usage as events. An event holds no price. A rating step
+applies a rate card later, so a price change or a new contract can be applied to
+old events.
+
+* Detail
+
+** The events
+
+| Event | Fields | Recorded when |
+|-------+--------+---------------|
+| Subscription interval | party, provider, source, rights, from, to | A subscription or route opens or closes |
+| Demand interval | party, instrument, from, to | An instrument enters or leaves a party's demand |
+| Delivery count | party, instrument, period, count | The fan-out delivers ticks (batched) |
+| Access record | party, user, provider, period | A person views the data (later) |
+
+** Why events and not amounts
+
+The cost depends on contracts that change. Events are facts. The same events
+price under today's card, a new card, or a what-if card.
+
+** Where the events come from
+
+Demand intervals and subscription intervals are by-products of control actions,
+so they cost nothing at tick time. Delivery counts are the only per-tick cost.
+The loop batches them with the store write.
+
+** Who reads them
+
+A party administrator reads the party's own usage. The system tenant reads all.
+The usage screen shows usage by provider, instrument and period. See
+[[id:1FC08F40-A345-4F8A-821C-008ED4030AF9][Four areas of the Market data menu cover the service]].
+
+** Same for every source
+
+A simulated source produces the same events. The usage of a development party
+shows what the same use would cost on a live source. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] — completes: how events become money.
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: the source of demand intervals.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the source of subscription intervals.

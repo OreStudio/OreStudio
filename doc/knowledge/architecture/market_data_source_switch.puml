@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Switching a party from the simulated source to the live source
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+actor "Party administrator" as u
+participant "Routing" as r
+participant "bloomberg-sim" as sim
+participant "bloomberg-live" as live
+participant "Store" as s
+participant "Metering" as mt
+
+u -> r : route party to bloomberg-live\neffective now, with a reason
+r -> r : check subscription and rights\nwrite audited change
+r -> mt : close interval on bloomberg-sim,\nopen interval on bloomberg-live
+r -> sim : demand set without this party's ids
+r -> live : demand set with this party's ids
+live -> s : ticks for the party's items
+note right of s
+  The series key (item, provider, party)
+  does not change. Each observation
+  records the source it came from.
+end note
+
+@enduml

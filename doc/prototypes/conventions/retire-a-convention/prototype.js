@@ -64,7 +64,7 @@
         var details = '<dl class="fields">' + (M.COLUMNS[S.kind] || []).map(function (c) {
             return '<div><dt>' + M.esc(c.h) + '</dt><dd>' + M.dash(d.terms[c.id]) + '</dd></div>';
         }).join('') + '</dl><div class="lastchanged">Last changed: version ' + (gone ? d.version + 1 : d.version) + ' · ' +
-            M.esc(gone ? 'm.okafor' : d.modifiedBy) + ' · ' + M.relTime(gone ? '2026-10-19T11:42:00Z' : d.recordedAt) + '</div>';
+            M.person(gone ? 'm.okafor' : d.modifiedBy) + ' · ' + M.relTime(gone ? '2026-10-19T11:42:00Z' : d.recordedAt) + '</div>';
         return M.pagehead(d.key, d.key + ' · version ' + (gone ? d.version + 1 : d.version),
             (gone ? M.badge('inactive', 'Deleted') : '') + M.accessMark(canWrite() && !gone) + acts).replace('<h1>', '<h1 class="mono">') +
             '<div class="tabs"><button class="on">Details</button><button data-act="goto" data-arg="3">History</button></div>' + details +
@@ -124,7 +124,7 @@
         var st = S.withdrawn ? ['inactive', 'Withdrawn'] : S.outcome === 'approved' ? ['ok', 'Approved'] : S.outcome === 'declined' ? ['bad', 'Declined'] : ['pending', 'Pending'];
         var h = '<h2>Your request</h2><p class="lede">A change that touches a convention needs a second person.</p>' +
             '<dl class="plain"><dt>Request</dt><dd>Delete <span class="mono">' + M.esc(d.key) + '</span></dd>' +
-            '<dt>State</dt><dd>' + M.badge(st[0], st[1]) + '</dd><dt>Asked by</dt><dd>' + M.esc(S.person.name) + '</dd>' +
+            '<dt>State</dt><dd>' + M.badge(st[0], st[1]) + '</dd><dt>Asked by</dt><dd>' + M.person(S.person.id) + '</dd>' +
             '<dt>Decides</dt><dd>Market Risk</dd><dt>Reason</dt><dd>' + M.esc(S.form.reason ? (M.CHANGE_REASONS.delete.filter(function (r) { return r.v === S.form.reason; })[0] || {}).t : 'Obsolete') + '</dd>' +
             '<dt>Asked</dt><dd>' + M.relTime('2026-10-19T11:42:00Z') + '</dd></dl><div style="height:16px"></div>';
         if (S.withdrawn) { h += M.notice('info', '<b>You withdrew this request.</b> The document is unchanged.'); }
@@ -143,8 +143,8 @@
         var h = '<h2>History</h2><p class="lede">Every version of <span class="mono">' + M.esc(d.key) + '</span>, newest first.</p><ol class="timeline">' +
             vs.map(function (v, i) {
                 var cur = i === 0;
-                return '<li><div class="when">' + M.relTime(v.at) + '</div><div><div class="head"><b>' + (v.del ? 'Deleted' : (v.n === 1 ? 'Created' : 'Changed')) +
-                    '</b><span class="mono">' + M.esc(d.key) + ' v' + v.n + '</span><span class="mono dim">' + M.esc(v.code) + '</span><span class="dim">' + M.esc(v.by) + '</span>' +
+                return '<li class="ph">' + M.avatar(v.by) + '<div class="when">' + M.relTime(v.at) + '</div><div><div class="head"><b>' + (v.del ? 'Deleted' : (v.n === 1 ? 'Created' : 'Changed')) +
+                    '</b><span class="mono">' + M.esc(d.key) + ' v' + v.n + '</span><span class="dim">' + M.esc(M.reasonName(v.code)) + '</span><span class="dim">' + M.esc(M.PEOPLE[v.by] ? M.PEOPLE[v.by].name : v.by) + '</span>' +
                     (cur ? '<span class="cur" title="Current version">Current version</span>' : '') +
                     (!cur && canWrite() && !isDeleted() ? M.btn('revert', 'Revert to this version', { cls: 'small ghost', icon: 'arrow_rotate_counterclockwise', arg: v.n }) : '') +
                     '</div><p class="note">' + M.esc(v.note) + '</p>' +

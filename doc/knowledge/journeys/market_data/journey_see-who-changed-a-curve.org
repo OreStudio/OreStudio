@@ -60,9 +60,8 @@ is missing/.
    series it read. Only a derived point has a lineage row; an observed point has
    none, and that absence is the observed marker.
 5. *Read the manual adjustments.* The person asks which points a person wrote
-   rather than a feed. The system shows the points whose source names no
-   producer channel, beside the change reason on the record. No column marks a
-   point as manual; see /What is missing/.
+   rather than a feed. The system shows the points whose source is the internal
+   manual adjustment source, beside the change reason on the record.
 6. *Read the approvals.* The person opens the approval requests and their
    decisions for the object: who asked, when and why, and who decided what and
    when. The generic approval record exists; no market-data approval kind does;
@@ -111,14 +110,14 @@ no build step and no session. It argues that the trail of a curve: blueprint cha
 | =market_series= | The curve's identity and its derivation marker; its versions carry the blueprint changes | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
 | =market_observation= | The built and manually adjusted points, with observation time, value and source; the row carries no actor | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
 | =observation_lineage= | The per-point provenance: the config and version, the source as-of, and the source series a derived point read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
-| =feed_binding= | The producer behind a source tag, so a build's feed can be named | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
+| =market_data_source= | The source behind a point, with its provider and kind, so a build's input can be named | |
 | =approval_request= | Who asked for an approval, when and why, and where the request is | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
 | =approval_decision= | Who decided what and when, and the comment they left | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
 | =approval_kind= | The rules of a kind: the decide permission, whether a comment is needed, how many approvals close it; no market-data kind exists | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
 | =approval_decision_type= | What a decision does: approve, refuse, hold, resume, withdraw or reverse | [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] |
 | =approval_request_state= | Where a request is in its life, and whether that state is final | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
 
-The series, the lineage and the binding are versioned, so each has a history
+The series, the lineage and the source are versioned, so each has a history
 and an actor per version. The observation rows are not: they are the tick-level
 table, and they carry no actor. The approval records are versioned and each
 decision is a row of its own.
@@ -134,7 +133,7 @@ decision is a row of its own.
 | Read the builds | List a series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
 | Read the builds | Read one observation | =marketdata.v1.market_observations.get= | exists |
 | Read the per-point provenance | Read the lineage of a point | =marketdata.v1.observation_lineages.get= | partial |
-| Read the per-point provenance | Name the feed of a source | =marketdata.v1.feed_bindings.list= | exists |
+| Read the per-point provenance | Name the source of a point | =marketdata.v1.sources.list= | planned |
 | Read the manual adjustments | Read the change reasons | =dq.v1.change_reasons.list= | exists |
 | Read the approvals | List the requests of a kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
 | Read the approvals | List a request's decisions | =inbox.v1.approval_decisions.list_by_request_id= | exists |
@@ -145,7 +144,7 @@ decision is a row of its own.
 The history request is the generic one, addressed at the owning component's
 subject, so the market data one is =marketdata.v1.history.get= with
 =entity_type= =ores.marketdata.market_series=,
-=ores.marketdata.observation_lineage=, =ores.marketdata.feed_binding= or
+=ores.marketdata.observation_lineage=, =ores.marketdata.market_data_subscription= or
 =ores.marketdata.series_classification_rule=. Those four register a history
 provider. =ores.marketdata.market_observation= does not, because it has no
 audit columns and a version must carry an actor as well as a time; see

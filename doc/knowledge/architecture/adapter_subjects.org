@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 97208391-AE4B-4032-9744-8F8B228FD567
+:END:
+#+title: The adapter subjects
+#+description: The ingress, control and heartbeat subject grammar, the token rule for vendor ids, and the per-party stream a tick leaves on.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:subjects:nats:adapters:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+Adapter traffic uses one subject family under =marketdata.v1=. Ticks arrive on
+=marketdata.v1.ingress.<adapter>.<id token>=. Control messages use
+=marketdata.v1.adapters.*=. After the service stores a tick it delivers it on
+the per-party stream =marketdata.v1.ops.market_tick.<tenant>.<party>.<token>=.
+No subject contains the word synthetic or any other mark of the source kind.
+
+* Detail
+
+** The ingress subject
+
+The service subscribes once to =marketdata.v1.ingress.>=. The =<adapter>= token
+is the opaque adapter id, for example =bloomberg-sim=. Code never parses the
+token to learn what the adapter is. The registered source says that.
+
+** The token rule
+
+A vendor id can hold characters that NATS does not allow in a token: a RIC such
+as =EUR== holds an equals sign, and a Bloomberg ticker such as
+=EURUSD Curncy= holds a space. The builder percent-encodes every byte outside
+letters, digits, hyphen and underscore, so the token holds no dot, space or
+wildcard. The tick payload carries the exact id, so nothing depends on
+decoding the token.
+
+** The control subjects
+
+Announce, demand and heartbeat are in [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]]. They are the only
+subjects an adapter publishes or answers besides ingress.
+
+** The party stream
+
+=market_tick_subject(tenant, party, oresmd_uri)= builds the subject that a party
+reads. The token is the canonical oresmd URI as one token. A party reads all its
+data with a wildcard that ends in =.>=. The payload is described in [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the messages these subjects carry.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — completes: the payload of the party stream.

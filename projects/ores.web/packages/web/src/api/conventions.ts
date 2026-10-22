@@ -138,13 +138,20 @@ export const conventions = {
             .parse(await request('/api/conventions/families', { method: 'GET' })).families;
     },
 
-    /** The conventions of one family. */
-    async page(family: string): Promise<ConventionPage> {
-        return z
-            .object({ rows: z.array(rowSchema), total: z.int().nonnegative() })
-            .parse(
-                await request(`/api/conventions/${encodeURIComponent(family)}`, { method: 'GET' }),
-            );
+    /** The conventions of one family: the first rows the server holds, or the page asked for. */
+    async page(
+        family: string,
+        window?: { readonly offset: number; readonly limit: number },
+    ): Promise<ConventionPage> {
+        const query =
+            window === undefined
+                ? ''
+                : `?offset=${String(window.offset)}&limit=${String(window.limit)}`;
+        return z.object({ rows: z.array(rowSchema), total: z.int().nonnegative() }).parse(
+            await request(`/api/conventions/${encodeURIComponent(family)}${query}`, {
+                method: 'GET',
+            }),
+        );
     },
 
     /** Every list a term picker draws from. */

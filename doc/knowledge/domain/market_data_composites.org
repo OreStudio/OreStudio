@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 41D84AD1-0058-4135-9B9D-BDE08BE8169A
+:END:
+#+title: A composite attributes its use to the providers of its inputs
+#+description: How the system derives an item such as a blended FX spot from several quote series, how it is licensed, and how its cost flows back to the input providers.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:composites:blending:rights:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+A composite is an internal item that the service derives from several quote
+series by a rule. A blended EUR/USD spot from Bloomberg and LSEG is the first
+case. The composite is published by an internal source of kind =derived=. A
+party that uses it needs the =derived= right on every input provider, and its use
+is metered against those providers.
+
+* Detail
+
+** The model
+
+A composite has an output item, a list of inputs, and a rule. Each input is a
+quote series of one provider. The rule is pluggable: an average, a median, a
+governed waterfall or a custom method.
+
+** The flow
+
+The ingest loop recomputes a composite when an input series stores a new value.
+The result is stored in the series (output item, composite provider, party). The
+composite provider is an internal provider with one =derived= source. The
+composite follows the same routing and delivery path as any other item. See
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
+
+** Licensing
+
+Each input provider's licence limits derived use. The system checks that the
+party holds =derived= on every input provider. A composite with a missing right
+gets no values and shows the reason. See [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]].
+
+** Cost attribution
+
+A composite has no rate card. Its use is metered as demand on its inputs, so each
+input provider's charge components see it. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
+
+** Rule governance
+
+The rule that blends spot rates is a governance decision. See
+[[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] for the methods and [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] for the approval.
+
+** What is deferred
+
+The first release can ship without any rule. The model exists so a later rule
+needs no schema change.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the licence a composite needs.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the inputs and the output are quote series.
+- [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — completes: the business reason and the methods.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — completes: who approves the rule.

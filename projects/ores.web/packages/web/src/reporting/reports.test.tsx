@@ -37,6 +37,7 @@ import { enFlat } from '../i18n/locales/en.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { reportKey } from './ReportPage.js';
+import { editOf } from './store.js';
 import { ConfigurationPage, bindingsKey, configurationKey } from './ConfigurationPage.js';
 import { MY_PARTIES_QUERY_KEY, ReportsPage as ReportsScreen, unreadNotes } from './ReportsPage.js';
 import { HealthSummary } from './shared.js';
@@ -131,6 +132,7 @@ const DETAIL: ReportDetail = {
         schedule_expression: '0 0 9 L * ?',
         concurrency_policy: 'forbid',
         is_official: true,
+        regulatory_book_type: null,
         pre_processing: 'none',
         prepared_input_key: 'acme/audit',
         post_processing: 'none',
@@ -509,6 +511,31 @@ describe('one report definition', () => {
         expect(page).toContain('A run records only that the engine produced results');
     });
 
+    it('says a report with no book type reads books of every type', () => {
+        const page = textOf(detail());
+
+        expect(page).toContain('Book type');
+        expect(page).toContain('Empty means the report reads books of every type.');
+    });
+
+    it('states a typed report by its book type and explains what it reads', () => {
+        const page = textOf(
+            openedBy(AUDIT_ELSEWHERE, (client) => {
+                client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                    kind: 'record',
+                    detail: {
+                        ...DETAIL,
+                        definition: { ...DETAIL.definition, regulatory_book_type: 'Trading' },
+                    },
+                } satisfies ReportOpen);
+            }),
+        );
+
+        expect(page).toContain('Trading book');
+        expect(page).toContain('The report reads trading books only.');
+        expect(page).not.toContain('Empty means the report reads books of every type.');
+    });
+
     it('states the fields the record holds', () => {
         const page = textOf(detail());
 
@@ -710,8 +737,37 @@ const CONFIGURATION: ConfigurationDetail = {
         { code: 'npv', name: 'Net present value', active: true },
         { code: 'sensitivity', name: 'Sensitivity analysis', active: false },
     ],
-    reports: [{ id: AUDIT_ELSEWHERE, name: AUDIT_NAME, partyName: 'ACME Hong Kong' }],
+    reports: [
+        {
+            id: AUDIT_ELSEWHERE,
+            name: AUDIT_NAME,
+            partyName: 'ACME Hong Kong',
+            regulatoryBookType: null,
+        },
+    ],
 };
+
+describe('the book type on a configuration page', () => {
+    it('tags a report that reads one book type, and none that reads every type', () => {
+        const typed = textOf(
+            configurationPage({
+                ...CONFIGURATION,
+                reports: [
+                    {
+                        id: AUDIT_ELSEWHERE,
+                        name: AUDIT_NAME,
+                        partyName: 'ACME Hong Kong',
+                        regulatoryBookType: 'Trading',
+                    },
+                ],
+            }),
+        );
+        const untyped = textOf(configurationPage(CONFIGURATION));
+
+        expect(typed).toContain('Trading book');
+        expect(untyped).not.toContain('Trading book');
+    });
+});
 
 function configurationPage(detail: ConfigurationDetail): string {
     return renderRecords(
@@ -756,5 +812,25 @@ describe('one configuration', () => {
         const page = textOf(configurationPage({ ...CONFIGURATION, reports: [] }));
 
         expect(page).toContain('No report that you may see uses this configuration.');
+    });
+});
+
+describe('the write an edit of a report makes', () => {
+    const row = { ...DETAIL.definition } as unknown as Record<string, unknown>;
+
+    it('carries the book type the report holds', () => {
+        expect(editOf({ ...row, regulatory_book_type: 'Trading' }).regulatory_book_type).toBe(
+            'Trading',
+        );
+    });
+
+    it('clears the book type when the row states none', () => {
+        expect(editOf({ ...row, regulatory_book_type: null }).regulatory_book_type).toBeNull();
+    });
+
+    it('states nothing when the row was read before the field existed', () => {
+        const { regulatory_book_type: _unread, ...older } = row;
+
+        expect('regulatory_book_type' in editOf(older)).toBe(false);
     });
 });

@@ -31,9 +31,13 @@
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -136,6 +140,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // with a mapping no one registered, so nothing they wrote reached NATS.
     auto feed_binding_sub =
         mdsm::register_feed_binding_event_mapping(event_source, event_bus, nats);
+    auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
+    auto market_data_source_sub =
+        mdsm::register_market_data_source_event_mapping(event_source, event_bus, nats);
+    auto market_data_vendor_instrument_sub =
+        mdsm::register_market_data_vendor_instrument_event_mapping(event_source, event_bus, nats);
+    auto market_data_mapping_sub =
+        mdsm::register_market_data_mapping_event_mapping(event_source, event_bus, nats);
     auto market_series_sub =
         mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
     auto market_fixing_sub =

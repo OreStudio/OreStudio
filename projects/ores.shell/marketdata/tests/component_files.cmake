@@ -22,10 +22,14 @@
 set(files
     "feed_binding_commands_tests.cpp"
     "main.cpp"
+    "market_data_mapping_commands_tests.cpp"
+    "market_data_source_commands_tests.cpp"
+    "market_data_vendor_instrument_commands_tests.cpp"
     "market_fixing_commands_tests.cpp"
     "market_observation_commands_tests.cpp"
     "market_series_asset_class_commands_tests.cpp"
     "market_series_commands_tests.cpp"
     "observation_lineage_commands_tests.cpp"
+    "provider_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"
 )

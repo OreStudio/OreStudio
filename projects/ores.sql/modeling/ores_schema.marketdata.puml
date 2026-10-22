@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 13
+Tables: 17
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -104,6 +104,106 @@ package "marketdata" #E3F2FD {
     uuid-surrogate-lookup, but that profile also enables the shell command
     facet, which feed bindings do not have today. Binding it is a decision about
     the shell surface, not about the model.
+    end note
+
+    entity ores_marketdata_market_data_mappings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * vendor_instrument_id : uuid <<FK>>
+        * effective_from : timestamp
+        * oresmd_uri : text
+          effective_to : timestamp
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_mappings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Mapping Table
+    A mapping links a vendor instrument (provider, id scheme, external id, field) to an
+    internal item, which is an oresmd datum. It belongs to the provider and not to a
+    source, so the live and the simulated sources of one provider share it and a party
+    that changes its source keeps its series. The mapping is many to one: several vendor
+    instruments, of different providers, can map to one item.
+    A mapping holds for a period. A vendor instrument has at most one mapping that starts
+    at a given instant. The system tenant and the system party own the rows. Every
+    tenant reads them and only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_market_data_sources_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * provider_code : text
+        * kind : text
+        * is_default : boolean
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_sources_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Source Table
+    A source is one adapter instance of a provider: bloomberg-live and
+    bloomberg-sim are two sources of the provider bloomberg. Its kind says how the
+    adapter gets its values and is data a person can read. No code in the pipeline
+    branches on it. The name is a label and no code parses it.
+    A provider can have several sources at once. A party reaches one of them through a
+    route, never through the provider. One source of each provider is the default, and a
+    new subscription routes to it.
+    The system tenant and the system party own the rows. Every tenant reads them and
+    only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_market_data_vendor_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * provider_code : text
+        * id_scheme : text
+        * external_id : text <<FK>>
+        * field : text
+        * minted : boolean
+          deviation_note : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_vendor_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Vendor Instrument Table
+    A vendor instrument names one value that a provider publishes. It has an id scheme,
+    an external id and a field, all in the vendor's own notation, so a live adapter and
+    the simulator publish the same names. Where the vendor has no single id for what the
+    system needs, the system mints an id in the vendor's style, sets minted and writes
+    the reason in deviation_note.
+    A mapping links a vendor instrument to an internal item. The system tenant and the
+    system party own the rows. Every tenant reads them and only the system tenant
+    writes them.
     end note
 
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
@@ -393,6 +493,38 @@ package "marketdata" #E3F2FD {
     convention every other bitemporal entity in this codebase already
     gets, mirroring (not literally reusing) how market_observations
     itself handles a rerun.
+    end note
+
+    entity ores_marketdata_providers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_providers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Provider Table
+    The catalogue of market data providers: data vendors such as Bloomberg and LSEG,
+    exchanges such as CME, brokers, and reference sets such as the ORE examples. A
+    provider owns a namespace of vendor ids. Every source belongs to one provider, and
+    every vendor instrument and mapping belongs to a provider, so a live and a
+    simulated source of one provider share their ids and their mapping. The name
+    carries no mark of any source kind.
+    The system tenant and the system party own the rows. Every tenant reads them and
+    only the system tenant writes them.
     end note
 
     entity ores_marketdata_series_axes_tbl  #F7E5FF {

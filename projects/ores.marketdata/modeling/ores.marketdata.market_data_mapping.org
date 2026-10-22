@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: 1B6E4D93-8A52-4C07-B3F9-6D0A7E15C8B2
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.market_data_mapping
+#+description: Codegen entity model for the mappings table; links a vendor instrument to an internal item, on the provider.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_data_mapping
+#+entity_plural: market_data_mappings
+#+entity_title: Market Data Mapping
+#+brief: Links one vendor instrument to one internal item (oresmd datum) for a period. It belongs to the provider, so every source of the provider shares it.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+A mapping links a vendor instrument (provider, id scheme, external id, field) to an
+internal item, which is an oresmd datum. It belongs to the provider and not to a
+source, so the live and the simulated sources of one provider share it and a party
+that changes its source keeps its series. The mapping is many to one: several vendor
+instruments, of different providers, can map to one item.
+
+A mapping holds for a period. A vendor instrument has at most one mapping that starts
+at a given instant. The system tenant and the system party own the rows. Every
+tenant reads them and only the system tenant writes them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this market data mapping.
+
+** vendor_instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+References =market_data_vendor_instrument.id=: the vendor instrument that this mapping resolves.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** oresmd_uri
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:searchable: true
+:filterable: true
+:END:
+
+The internal item: the oresmd quote URI of the datum that the vendor instrument stands for.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
+#+end_src
+
+** effective_from
+:PROPERTIES:
+:type:        timestamp
+:cpp_type:    std::chrono::system_clock::time_point
+:nullable: false
+:natural_key: true
+:END:
+
+The first instant at which the mapping holds.
+
+** effective_to
+:PROPERTIES:
+:type:        timestamp
+:cpp_type:    std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The first instant at which the mapping no longer holds. Empty while it holds.
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_market_data_mappings_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                              |
+|-------------------------------------------------------------------------|
+| "oresmd_uri" <> ''                                                      |
+| "effective_to" is null or "effective_to" > "effective_from"             |
+
+** Indexes
+
+| name        | columns                                  | unique | current_only | where_extra |
+|-------------+------------------------------------------+--------+--------------+-------------|
+| item        | tenant_id, oresmd_uri                    | false  | true         |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: mapping
+:entity_plural_short:   mappings
+:entity_singular_words: market data mapping
+:entity_plural_words:   market data mappings
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <chrono>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <chrono>
+#include <optional>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mm
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/market_data_mapping.hpp
+:domain_class:            ores::marketdata::domain::market_data_mapping
+:protocol_include:        ores.marketdata.api/messaging/market_data_mapping_protocol.hpp
+:collection_name:         market_data_mappings
+:key_field:               oresmd_uri
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field          | label          | widget            | type      | is_key | is_required | placeholder          |
+|----------------+----------------+-------------------+-----------+--------+-------------+----------------------|
+| oresmd_uri     | Item           | oresmdUriEdit     | line_edit | true   | true        | Enter the oresmd URI |
+| effective_from | Effective From | effectiveFromEdit | line_edit |        | true        | First instant        |
+| effective_to   | Effective To   | effectiveToEdit   | line_edit |        |             | Empty while it holds |
+
+*** Columns
+
+| enum_name     | field          | header         | type      | width |
+|---------------+----------------+----------------+-----------+-------|
+| OresmdUri     | oresmd_uri     | Item           | string    | 300   |
+| EffectiveFrom | effective_from | Effective From | timestamp | 160   |
+| EffectiveTo   | effective_to   | Effective To   | timestamp | 160   |
+| Version       | version        | Version        | int       | 80    |
+| ModifiedBy    | modified_by    | Modified By    | string    | 120   |
+
+* See also
+
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] -- the knowledge page.

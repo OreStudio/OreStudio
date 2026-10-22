@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-601 tables in 21 groups.
+606 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -215,6 +215,7 @@ entity "refdata" as refdata {
   ores_refdata_sandbox_members_tbl
   ores_refdata_sandboxes_tbl
   ores_refdata_series_subclass_codes_tbl
+  ores_refdata_source_kinds_tbl
   ores_refdata_sub_periods_coupon_types_tbl
   ores_refdata_supervisory_bodies_tbl
   ores_refdata_swap_conventions_tbl
@@ -239,7 +240,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-164 tables — ores_schema.refdata.puml
+165 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -686,12 +687,16 @@ end note
 entity "marketdata" as marketdata {
   ores_marketdata_feed_binding_activity_tbl
   ores_marketdata_feed_bindings_tbl
+  ores_marketdata_market_data_mappings_tbl
+  ores_marketdata_market_data_sources_tbl
+  ores_marketdata_market_data_vendor_instruments_tbl
   ores_marketdata_market_fixings_tbl
   ores_marketdata_market_observations_tbl
   ores_marketdata_market_series_asset_classes_tbl
   ores_marketdata_market_series_identity_tbl
   ores_marketdata_market_series_tbl
   ores_marketdata_observation_lineages_tbl
+  ores_marketdata_providers_tbl
   ores_marketdata_series_axes_tbl
   ores_marketdata_series_axis_values_tbl
   ores_marketdata_series_classification_rules_tbl
@@ -700,7 +705,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-13 tables — ores_schema.marketdata.puml
+17 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

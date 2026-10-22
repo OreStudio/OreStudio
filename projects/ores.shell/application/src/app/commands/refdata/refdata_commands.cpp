@@ -139,6 +139,7 @@
 #include "ores.shell/app/commands/refdata/sandbox_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_member_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/source_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/sub_periods_coupon_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/supervisory_body_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
@@ -306,6 +307,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     sandbox_commands::register_commands(root_menu, session);
     sandbox_member_commands::register_commands(root_menu, session);
     series_subclass_code_commands::register_commands(root_menu, session);
+    source_kind_commands::register_commands(root_menu, session);
     sub_periods_coupon_type_commands::register_commands(root_menu, session);
     supervisory_body_commands::register_commands(root_menu, session);
     swap_convention_commands::register_commands(root_menu, session);

@@ -1705,3 +1705,23 @@ tangled into the runnable script library
 * Ore Parameters
 
 - [[id:30745220-F498-5666-A6BB-F586CDEE8F3E][How do I run the ore_parameters commands from the shell?]]
+
+* Market Data Mappings
+
+- [[id:9709DEFB-9C32-5E00-8CA0-6B926ED00ED6][How do I run the market_data_mappings commands from the shell?]]
+
+* Market Data Sources
+
+- [[id:AA656F86-F1EE-5EAE-B25A-759568DC3081][How do I run the market_data_sources commands from the shell?]]
+
+* Market Data Vendor Instruments
+
+- [[id:97318D73-729E-5159-B52B-09CD37F9921D][How do I run the market_data_vendor_instruments commands from the shell?]]
+
+* Providers
+
+- [[id:1FC395AE-BCAE-5164-902D-5B9618D91368][How do I run the providers commands from the shell?]]
+
+* Source Kinds
+
+- [[id:57381A9E-95A5-5F78-AE5F-02088FBDDE62][How do I run the source_kinds commands from the shell?]]

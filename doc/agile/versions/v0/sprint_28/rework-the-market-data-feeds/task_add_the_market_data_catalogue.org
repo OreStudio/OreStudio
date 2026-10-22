@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-market-data-catalogue
+#+pr: 3640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.marketdata holds the catalogue described in the architecture: providers, so
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,12 @@ ores.marketdata holds the catalogue described in the architecture: providers, so
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Add the =source_kind= code table to ores.refdata with the five kinds.
+2. Model provider, source, vendor instrument and mapping as codegen entities in ores.marketdata.
+3. Generate the SQL, C++, shell and wire types, and wire the registrars.
+4. Make the system tenant own the rows and let every tenant read them.
+5. Test the constraints in the repository.
 
 * Measurements
 
@@ -76,12 +82,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3640][#3640]] | [marketdata] Add the market data catalogue |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tenants cannot read system-tenant rows; the policy widens the system session instead | the four marketdata models | Accept | Switched to =:rls_own_or_system_tenant_rows:=, dropped the four widening exceptions, regenerated. Two tests added: a tenant reads a system provider, a tenant cannot write one for the system tenant. |
+| 2 | Mapping periods can overlap | market_data_mapping | Defer | Needs a trigger or a range exclusion that ignores =valid_to=. Listed as a known gap in the Result. |
+| 3 | Duplicate unique index on mappings | market_data_mapping | Accept | Removed the =instrument= index from the model. |
+| 4 | Tests use bare CHECK_THROWS | catalogue tests | Accept | Each failing write now matches the Postgres message. |
+| 5 | Local review pass not recorded | this task | Accept | This table records it. |
 
 * Result
+
+ores.marketdata holds the catalogue: providers, sources with a kind, vendor instruments with the minted flag and a deviation note, and mappings. ores.refdata holds the =source_kind= table with live, replay, test, simulated and derived. The system tenant owns the rows and every tenant reads them. Seven repository tests cover the constraints. The build and the tests pass.
+
+Known gaps:
+- A range exclusion does not stop mapping overlap. Only the unique pair of instrument and start does.
+- No role holds the new permissions yet.
+- No catalogue rows are installed yet.

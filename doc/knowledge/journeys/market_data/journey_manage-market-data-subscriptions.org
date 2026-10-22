@@ -100,7 +100,7 @@ change source. The wireframe and the prototype are still to be drawn.
 | =market_data_subscription= | The party, the provider, the rights and the period |
 | =market_data_route= | The source that serves the subscription, with its period |
 | =market_data_source= | The source's name, kind, state and rate card |
-| =market_data_provider= | The provider and its default source |
+| =provider= | The provider and its default source |
 | =market_data_usage= | Demand, delivery and cost events |
 
 * Operations and messages

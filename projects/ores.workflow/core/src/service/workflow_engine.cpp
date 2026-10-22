@@ -1319,14 +1319,14 @@ std::string workflow_engine::deadline_failure_text(const domain::workflow_step& 
 }
 
 void workflow_engine::start_deadline_watch() {
-    deadline_watch_ = ores::platform::concurrency::stoppable_thread(
-        [this](ores::platform::concurrency::stop_source stop) {
+    deadline_watch_ =
+        ores::platform::concurrency::jthread([this](ores::platform::concurrency::stop_token stop) {
             BOOST_LOG_SEV(lg(), info)
                 << "Deadline watch started: a step that outlives the deadline its run states is "
                    "failed every "
                 << expiry_pass_interval.count() << "s.";
             while (!stop.stop_requested()) {
-                if (stop.wait_for(expiry_pass_interval))
+                if (ores::platform::concurrency::wait_for(stop, expiry_pass_interval))
                     break;
                 try {
                     expire_overdue_steps();

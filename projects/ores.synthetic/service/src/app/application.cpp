@@ -288,18 +288,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
 
-    ores::platform::concurrency::stoppable_thread restore_retries;
+    ores::platform::concurrency::jthread restore_retries;
     if (const auto left = pending_total(*pending); left > 0) {
         BOOST_LOG_SEV(lg(), warn) << left << " feed(s) did not start; trying again for up to "
                                   << std::chrono::duration_cast<std::chrono::minutes>(
                                          restore_retry_policy{}.budget)
                                          .count()
                                   << " minutes";
-        restore_retries = ores::platform::concurrency::stoppable_thread(
-            [restorer, pending, retry_ctx = db_ctx](
-                const ores::platform::concurrency::stop_source& stop) {
+        restore_retries = ores::platform::concurrency::jthread(
+            [restorer, pending, retry_ctx = db_ctx](ores::platform::concurrency::stop_token stop) {
                 const auto sleep = [&](std::chrono::milliseconds span) {
-                    stop.wait_for(span);
+                    ores::platform::concurrency::wait_for(stop, span);
                 };
                 const auto left = retry_restore(
                     restore_retry_policy{},

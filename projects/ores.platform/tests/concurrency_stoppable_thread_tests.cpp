@@ -9,15 +9,16 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+ * Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 #include "ores.platform/concurrency/stoppable_thread.hpp"
 #include <atomic>
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <future>
@@ -28,39 +29,67 @@ namespace {
 
 const std::string tags("[concurrency][stoppable_thread]");
 
-using ores::platform::concurrency::stop_source;
-using ores::platform::concurrency::stoppable_thread;
 using namespace std::chrono_literals;
 
 // A wait this long that returns in a fraction of it was woken.
 constexpr auto long_wait = 30s;
 constexpr auto woken_within = 2s;
 
+namespace concurrency = ores::platform::concurrency;
+
+/// The portable types, which every platform compiles and only some select.
+struct portable_kit {
+    using source = concurrency::portable::stop_source;
+    using token = concurrency::portable::stop_token;
+    using thread = concurrency::portable::jthread;
+
+    static bool wait_for(const token& stop, std::chrono::milliseconds span) {
+        return concurrency::portable::wait_for(stop, span);
+    }
+};
+
+/// The types the platform selects: the standard ones where the library has them.
+struct selected_kit {
+    using source = concurrency::stop_source;
+    using token = concurrency::stop_token;
+    using thread = concurrency::jthread;
+
+    static bool wait_for(const token& stop, std::chrono::milliseconds span) {
+        return concurrency::wait_for(stop, span);
+    }
+};
+
 }
 
-TEST_CASE("a_wait_returns_false_when_the_span_passes_with_no_stop", tags) {
-    const stop_source source;
+TEMPLATE_TEST_CASE("a_wait_returns_false_when_the_span_passes_with_no_stop",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
+    typename TestType::source source;
 
     const auto started = std::chrono::steady_clock::now();
-    CHECK_FALSE(source.wait_for(50ms));
+    CHECK_FALSE(TestType::wait_for(source.get_token(), 50ms));
     CHECK(std::chrono::steady_clock::now() - started >= 50ms);
     CHECK_FALSE(source.stop_requested());
 }
 
-TEST_CASE("a_wait_returns_at_once_when_a_stop_was_requested_before_it", tags) {
-    const stop_source source;
+TEMPLATE_TEST_CASE("a_wait_returns_at_once_when_a_stop_was_requested_before_it",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
+    typename TestType::source source;
     source.request_stop();
 
     const auto started = std::chrono::steady_clock::now();
-    CHECK(source.wait_for(long_wait));
+    CHECK(TestType::wait_for(source.get_token(), long_wait));
     CHECK(std::chrono::steady_clock::now() - started < woken_within);
 }
 
-TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", tags) {
-    const stop_source source;
-    auto waiter = std::async(std::launch::async, [source] {
+TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", tags, portable_kit, selected_kit) {
+    typename TestType::source source;
+    auto waiter = std::async(std::launch::async, [token = source.get_token()] {
         const auto started = std::chrono::steady_clock::now();
-        const bool stopped = source.wait_for(long_wait);
+        const bool stopped = TestType::wait_for(token, long_wait);
         return std::pair{stopped, std::chrono::steady_clock::now() - started};
     });
 
@@ -73,32 +102,50 @@ TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", tags) {
     CHECK(waited < woken_within);
 }
 
-TEST_CASE("copies_of_a_stop_source_share_one_state", tags) {
-    const stop_source source;
-    const stop_source copy = source;
+TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state", tags, portable_kit, selected_kit) {
+    typename TestType::source source;
+    const auto first = source.get_token();
+    const auto second = source.get_token();
 
-    copy.request_stop();
+    CHECK_FALSE(first.stop_requested());
+    CHECK(source.request_stop());
+    CHECK_FALSE(source.request_stop());
 
-    CHECK(source.stop_requested());
+    CHECK(first.stop_requested());
+    CHECK(second.stop_requested());
 }
 
-TEST_CASE("a_moved_from_source_is_inert_and_does_not_wait", tags) {
-    stop_source source;
-    const stop_source taken = std::move(source);
+TEMPLATE_TEST_CASE("a_token_with_no_state_is_never_stopped_and_waits_the_span",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
+    const typename TestType::token none;
 
-    // Neither call dereferences the empty state, and the wait does not block.
-    source.request_stop();
-    CHECK(source.stop_requested());
-    CHECK(source.wait_for(long_wait));
+    const auto started = std::chrono::steady_clock::now();
+    CHECK_FALSE(TestType::wait_for(none, 50ms));
+    CHECK(std::chrono::steady_clock::now() - started >= 50ms);
+    CHECK_FALSE(none.stop_requested());
+    CHECK_FALSE(none.stop_possible());
+}
+
+TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing", tags, portable_kit, selected_kit) {
+    typename TestType::source source;
+    const typename TestType::source taken = std::move(source);
+
+    CHECK_FALSE(source.request_stop());
+    CHECK_FALSE(source.stop_requested());
     CHECK_FALSE(taken.stop_requested());
 }
 
-TEST_CASE("the_destructor_stops_a_waiting_thread_and_joins_it", tags) {
+TEMPLATE_TEST_CASE("the_destructor_stops_a_waiting_thread_and_joins_it",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
     std::atomic<bool> left_the_wait = false;
     const auto started = std::chrono::steady_clock::now();
     {
-        stoppable_thread thread([&left_the_wait](const stop_source& stop) {
-            stop.wait_for(long_wait);
+        typename TestType::thread thread([&left_the_wait](typename TestType::token stop) {
+            TestType::wait_for(stop, long_wait);
             left_the_wait = true;
         });
         std::this_thread::sleep_for(50ms);
@@ -108,30 +155,49 @@ TEST_CASE("the_destructor_stops_a_waiting_thread_and_joins_it", tags) {
     CHECK(std::chrono::steady_clock::now() - started < woken_within);
 }
 
-TEST_CASE("request_stop_on_the_thread_reaches_the_callable", tags) {
+TEMPLATE_TEST_CASE("request_stop_on_the_thread_reaches_the_callable",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
     std::promise<bool> answer;
     auto answered = answer.get_future();
-    stoppable_thread thread(
-        [&answer](const stop_source& stop) { answer.set_value(stop.wait_for(long_wait)); });
+    typename TestType::thread thread([&answer](typename TestType::token stop) {
+        answer.set_value(TestType::wait_for(stop, long_wait));
+    });
 
     thread.request_stop();
 
     REQUIRE(answered.wait_for(woken_within) == std::future_status::ready);
     CHECK(answered.get());
-    CHECK(thread.stop_requested());
+    CHECK(thread.get_stop_token().stop_requested());
 }
 
-TEST_CASE("assigning_over_a_running_thread_stops_and_joins_it_first", tags) {
+TEMPLATE_TEST_CASE("a_callable_that_takes_no_token_runs_and_joins",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
+    std::atomic<bool> ran = false;
+    {
+        typename TestType::thread thread([&ran] { ran = true; });
+    }
+
+    CHECK(ran);
+}
+
+TEMPLATE_TEST_CASE("assigning_over_a_running_thread_stops_and_joins_it_first",
+                   tags,
+                   portable_kit,
+                   selected_kit) {
     std::atomic<int> finished = 0;
     const auto make = [&finished] {
-        return stoppable_thread([&finished](const stop_source& stop) {
-            stop.wait_for(long_wait);
+        return typename TestType::thread([&finished](typename TestType::token stop) {
+            TestType::wait_for(stop, long_wait);
             ++finished;
         });
     };
 
     const auto started = std::chrono::steady_clock::now();
-    stoppable_thread thread = make();
+    typename TestType::thread thread = make();
     std::this_thread::sleep_for(50ms);
     thread = make();
 

@@ -465,7 +465,7 @@ private:
     std::mutex service_last_seen_mutex_;
 
     /// The clock that calls the expiry pass, and nothing until it is started.
-    ores::platform::concurrency::stoppable_thread deadline_watch_;
+    ores::platform::concurrency::jthread deadline_watch_;
 
     /**
      * @brief The steps the engine is waiting on, by step id.

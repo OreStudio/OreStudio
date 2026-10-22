@@ -2442,6 +2442,7 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
         * tier : text
           applicable_jurisdiction : text
+          regulatory_book_type : text
     }
 
     note right of ores_dq_report_definitions_artefact_tbl

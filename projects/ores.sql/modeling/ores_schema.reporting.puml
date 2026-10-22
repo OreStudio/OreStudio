@@ -39,6 +39,7 @@ end note
 
 note as OtherGroups
 Keys this group states reach into:
+- ores_refdata_regulatory_book_types_tbl (refdata)
 - ores_scheduler_job_definitions_tbl (scheduler)
 - ores_scheduler_job_instances_tbl (scheduler)
 end note
@@ -571,6 +572,7 @@ package "reporting" #E0F7FA {
           prepared_input_key : text
         * post_processing : text
         * is_official : boolean
+          regulatory_book_type : text <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

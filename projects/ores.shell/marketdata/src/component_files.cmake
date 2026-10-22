@@ -31,7 +31,9 @@ set(files
     "app/commands/marketdata/observation_lineage_commands.cpp"
     "app/commands/marketdata/oresmd_index_commands.cpp"
     "app/commands/marketdata/provider_commands.cpp"
+    "app/commands/marketdata/route_commands.cpp"
     "app/commands/marketdata/series_classification_rule_commands.cpp"
+    "app/commands/marketdata/subscription_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -47,6 +49,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/oresmd_index_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/provider_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/route_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/subscription_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.marketdata.hpp"
 )

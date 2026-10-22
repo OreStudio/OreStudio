@@ -38,7 +38,9 @@
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_event.hpp"
@@ -147,6 +149,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         mdsm::register_market_data_vendor_instrument_event_mapping(event_source, event_bus, nats);
     auto market_data_mapping_sub =
         mdsm::register_market_data_mapping_event_mapping(event_source, event_bus, nats);
+    auto subscription_sub =
+        mdsm::register_subscription_event_mapping(event_source, event_bus, nats);
+    auto route_sub = mdsm::register_route_event_mapping(event_source, event_bus, nats);
     auto market_series_sub =
         mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
     auto market_fixing_sub =

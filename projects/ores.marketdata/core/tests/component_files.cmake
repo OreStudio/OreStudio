@@ -42,6 +42,7 @@ set(files
     "repository_market_series_repository_tests.cpp"
     "repository_market_write_ceiling_tests.cpp"
     "repository_series_identity_backfill_tests.cpp"
+    "repository_subscription_route_tests.cpp"
     "repository_tick_reads_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
     "service_corpus_import_tests.cpp"
@@ -57,4 +58,5 @@ set(files
     "service_series_shape_tests.cpp"
     "service_series_slice_reader_tests.cpp"
     "service_series_snapshot_reader_tests.cpp"
+    "subscription_eventing_integration_tests.cpp"
 )

@@ -138,6 +138,7 @@ carried as the code itself: the taxonomy is runtime-managed.
 :nullable:      false
 :natural_key:   true
 :filterable:    true
+:no_generator_suffix: true
 :END:
 
 References =provider.code=: the provider whose ids the series carries. The natural

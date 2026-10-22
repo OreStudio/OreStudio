@@ -40,7 +40,9 @@ set(files
     "messaging/market_series_event_registrar.cpp"
     "messaging/observation_lineage_event_registrar.cpp"
     "messaging/provider_event_registrar.cpp"
+    "messaging/route_event_registrar.cpp"
     "messaging/series_classification_rule_event_registrar.cpp"
+    "messaging/subscription_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -72,6 +74,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_series_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/provider_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/route_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/subscription_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/ores.marketdata.service.hpp"
 )

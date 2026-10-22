@@ -28,6 +28,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <exception>
 #include <optional>
 #include <string>
 
@@ -107,9 +108,15 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     uow.commit();
 
     // The request stands whether or not anybody is told, so the telling
-    // happens after the commit.
-    if (raised)
-        operational_authorisation_service(ctx_).announce(*raised);
+    // happens after the commit and a failure there never fails the booking.
+    if (raised) {
+        try {
+            operational_authorisation_service(ctx_).announce(*raised);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Trade " << anchor.id
+                                      << " was booked but its deciders were not told: " << e.what();
+        }
+    }
 
     response.activity_id = activity.id;
     return response;

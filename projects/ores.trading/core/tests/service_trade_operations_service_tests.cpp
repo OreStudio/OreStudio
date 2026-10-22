@@ -40,6 +40,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -163,6 +164,25 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
               .empty());
 }
 
+namespace {
+
+/**
+ * @brief The requests that cover one trade. Tests share a tenant, so the tenant's
+ * whole list holds the requests of other tests too.
+ */
+std::vector<ores::trading::domain::trade_authorisation_request>
+requests_for(const ores::database::context& ctx, const boost::uuids::uuid& trade_id) {
+    std::vector<ores::trading::domain::trade_authorisation_request> out;
+    for (auto& r :
+         ores::trading::repository::trade_authorisation_request_repository().read_latest(ctx)) {
+        if (r.trade_id == trade_id)
+            out.push_back(std::move(r));
+    }
+    return out;
+}
+
+}
+
 TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) {
     fixture f;
     auto req = f.request();
@@ -170,10 +190,8 @@ TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) 
 
     REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
 
-    const auto raised =
-        ores::trading::repository::trade_authorisation_request_repository().read_latest(f.ctx);
+    const auto raised = requests_for(f.ctx, req.anchor.id);
     REQUIRE(raised.size() == 1);
-    CHECK(raised.front().trade_id == req.anchor.id);
     CHECK(raised.front().trade_version >= 1);
 }
 
@@ -184,7 +202,5 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
 
     REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
 
-    CHECK(ores::trading::repository::trade_authorisation_request_repository()
-              .read_latest(f.ctx)
-              .empty());
+    CHECK(requests_for(f.ctx, req.anchor.id).empty());
 }

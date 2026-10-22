@@ -94,7 +94,9 @@ changed.
   no benchmark row. This task changes no XML code.
 - =ctest=: =range_bound_reads_back_in_the_document_order= in the trading core
   refuses an empty =modified_by=, and a marketdata service test about repeated
-  ticks fails on a value. I did not check either against main.
+  ticks fails on a value. Each passes three times when run alone, so they fail
+  only in a full run, which points at test order and not at this change. I did
+  not build main to compare.
 
 The first gate run found drift on main in the trade operations protocol: its
 header was newer than its model. I brought the model in line with the header.
@@ -120,7 +122,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A throw in the post-commit announce can fail a committed booking. | trade_operations_service.cpp | Accept | The announce call is in a try/catch that logs a warning. |
+| 2 | No test that an amendment does not match an older request. | operational_authorisation_service.cpp | Decline | Amendments are out of scope. It is in the acceptance of the Execute task. |
+| 3 | The reason text and change reason are literals. | operational_authorisation_service.cpp | Decline | Cosmetic. |
+| 4 | The live check fails silently if the state or machine is renamed. | trading_trade_components_test.sql | Accept | Two pgTAP assertions state the lookup. |
+| 5 | A draft executed to live never passes through book_trade. | trade_operations_service.cpp | Accept | New task: raise an authorisation request when a draft is executed. |
+| 6 | Confirm the failing tests also fail on main. | | Accept | Both pass alone and fail only in a full run. See Notes. I did not build main. |
+| 7 | Merge the design PR first. | | Accept | Planned. |
 
 * Result
 

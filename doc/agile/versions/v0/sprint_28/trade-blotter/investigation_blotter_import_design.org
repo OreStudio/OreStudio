@@ -5,7 +5,7 @@
 #+description: Re-check of the May 2026 import plan against the code and the sandbox model: what still holds, what the sandbox replaced, and the design the blotter and the import now rest on.
 #+type: investigation
 #+level: s1
-#+filetags: :trade_blotter:sprint_28:v0:analysis:trade-blotter:
+#+filetags: :trade-blotter:sprint_28:v0:analysis:
 #+created: 2026-10-21
 #+updated: 2026-10-21
 

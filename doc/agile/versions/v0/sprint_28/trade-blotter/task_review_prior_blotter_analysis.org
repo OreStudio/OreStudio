@@ -107,6 +107,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The commit removed the Status, Acceptance, Tasks and Decisions sections of the story. A bad edit broke the Goal paragraph. | story.org | Accept | Restored all sections with the new task rows. |
 | 2 | The workspace plan gave the supersede date as 2026-10-05. | doc/plans/2026-05-17-workspace-design.org | Accept | Changed to 2026-10-21. |
+| 3 | The sandbox page change, a failed row is reported and not stored, had no owner. | investigation_blotter_import_design.org | Accept | Added to the import task's acceptance. |
+| 4 | The investigation mixed two spellings of the trade blotter filetag. | investigation_blotter_import_design.org | Accept | Kept the hyphen form. |
+| 5 | The double-book check should be a gate in the import task. | task_import_real_deals_through_the_authorisation_queue.org | Accept | Stated first in its acceptance. |
+| 6 | The plan STATUS lines were long. | doc/plans | Accept | Shortened to a pointer. |
+| 7 | Uneven padding in a scaffolded table. | task_build_book_a_trade.org | Decline | Generator output. |
 
 * Result
 

@@ -1,0 +1,11 @@
+RESULT drain through nats and the worker run 1: 60000 rows in 0.456 s = 131592 rows per second
+RESULT drain through nats and the worker run 2: 60000 rows in 0.473 s = 126977 rows per second
+RESULT drain through nats and the worker run 3: 60000 rows in 0.392 s = 153218 rows per second
+RESULT drain through nats and the worker run 4: 60000 rows in 0.443 s = 135500 rows per second
+RESULT drain through nats and the worker run 5: 60000 rows in 0.624 s = 96112 rows per second
+RESULT drain through nats and the worker run 6: 60000 rows in 0.442 s = 135667 rows per second
+RESULT drain through nats and the worker run 7: 60000 rows in 0.436 s = 137507 rows per second
+RESULT drain through nats and the worker run 8: 60000 rows in 0.445 s = 134889 rows per second
+RESULT drain through nats and the worker run 9: 60000 rows in 0.457 s = 131347 rows per second
+RESULT drain through nats and the worker run 10: 60000 rows in 0.415 s = 144509 rows per second
+All tests passed (1734 assertions in 1 test case)

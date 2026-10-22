@@ -310,6 +310,45 @@ struct preview_tenor_resolution_request {
 };
 
 /**
+ * @brief What one tenor of a convention resolved to.
+ *
+ * The same answer @c resolve_tenor_response gives for one tenor, named by the
+ * tenor it is about. A refusal is in @c result and the dates counted before
+ * it stay on the entry, so one tenor that cannot resolve costs only its own
+ * row.
+ */
+struct convention_tenor_resolution {
+    std::string tenor_code;
+    ores::utility::domain::result result;
+    std::chrono::year_month_day anchor_date;
+    std::chrono::year_month_day date_before_roll;
+    std::chrono::year_month_day adjusted_date;
+};
+
+struct resolve_convention_request {
+    using response_type = struct resolve_convention_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.resolve_convention";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string convention_code;
+    std::string calendar_code;
+    std::chrono::year_month_day horizon;
+    std::optional<std::chrono::year_month_day> spot;
+};
+
+struct resolve_convention_response {
+    ores::utility::domain::result result;
+    std::string roll_rule;
+    std::string calendar;
+    std::vector<convention_tenor_resolution> tenors;
+};
+
+/**
  * @brief The subjects this resource's changes are announced on.
  *
  * An event reports what happened and no caller asked for it, so its last

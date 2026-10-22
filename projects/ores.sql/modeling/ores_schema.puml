@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-585 tables in 21 groups.
+601 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -309,6 +309,10 @@ entity "dq_staging" as dq_staging {
   ores_dq_default_curve_configs_artefact_tbl
   ores_dq_default_curve_configurations_artefact_tbl
   ores_dq_deposit_conventions_artefact_tbl
+  ores_dq_engine_settings_artefact_tbl
+  ores_dq_engine_settings_building_artefact_tbl
+  ores_dq_engine_settings_execution_artefact_tbl
+  ores_dq_engine_settings_fixings_artefact_tbl
   ores_dq_entity_classifications_artefact_tbl
   ores_dq_equity_curve_configs_artefact_tbl
   ores_dq_equity_volatility_configs_artefact_tbl
@@ -379,7 +383,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-133 tables — ores_schema.dq_staging.puml
+137 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -610,6 +614,10 @@ entity "reporting" as reporting {
   ores_reporting_configuration_parameters_tbl
   ores_reporting_configuration_types_tbl
   ores_reporting_configurations_tbl
+  ores_reporting_engine_settings_building_tbl
+  ores_reporting_engine_settings_execution_tbl
+  ores_reporting_engine_settings_fixings_tbl
+  ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
   ores_reporting_parameter_definitions_tbl
   ores_reporting_parameter_value_domains_tbl
@@ -630,7 +638,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-25 tables — ores_schema.reporting.puml
+29 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -676,6 +684,7 @@ Database Infrastructure
 end note
 
 entity "marketdata" as marketdata {
+  ores_marketdata_feed_binding_activity_tbl
   ores_marketdata_feed_bindings_tbl
   ores_marketdata_market_fixings_tbl
   ores_marketdata_market_observations_tbl
@@ -686,10 +695,12 @@ entity "marketdata" as marketdata {
   ores_marketdata_series_axes_tbl
   ores_marketdata_series_axis_values_tbl
   ores_marketdata_series_classification_rules_tbl
+  ores_marketdata_tick_coords_tbl
+  ores_marketdata_ticks_tbl
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-10 tables — ores_schema.marketdata.puml
+13 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {
@@ -699,9 +710,14 @@ entity "analytics" as analytics {
   ores_analytics_credit_simulation_matrix_rows_tbl
   ores_analytics_credit_simulation_netting_sets_tbl
   ores_analytics_pricing_engine_types_tbl
+  ores_analytics_pricing_methods_tbl
   ores_analytics_pricing_model_configs_tbl
+  ores_analytics_pricing_model_engine_pairs_tbl
   ores_analytics_pricing_model_product_parameters_tbl
   ores_analytics_pricing_model_products_tbl
+  ores_analytics_pricing_models_tbl
+  ores_analytics_pricing_pair_settings_tbl
+  ores_analytics_sensitivity_templates_tbl
   ores_analytics_shift_types_tbl
   ores_analytics_stress_shift_families_tbl
   ores_analytics_stress_test_libraries_tbl
@@ -716,7 +732,7 @@ entity "analytics" as analytics {
 }
 note bottom of analytics
 Analytics & Pricing Configuration
-20 tables — ores_schema.analytics.puml
+25 tables — ores_schema.analytics.puml
 end note
 
 entity "synthetic" as synthetic {

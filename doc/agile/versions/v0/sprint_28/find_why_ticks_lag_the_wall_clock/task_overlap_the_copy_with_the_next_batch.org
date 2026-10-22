@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/overlap-the-copy-with-the-next-batch
-#+pr:
+#+pr: 3623
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3623][#3623]] | [marketdata] Overlap the copy with the next batch |
 
 * Review
 

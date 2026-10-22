@@ -28,9 +28,9 @@ Store the engine settings of a report as a named configuration: a central row an
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | The models, schema, generated code and publish function are written. The database is rebuilt to test them. |
+| Now          | Schema, models, generated code and publish are committed (191b124478). Seed, column removal and the projection are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the publish test, then seed the ACME engine settings and bind them in the report definitions. |
+| Next         | Map where the engine columns are read and written, then seed, decommission and project. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -39,6 +39,8 @@ Store the engine settings of a report as a named configuration: a central row an
 - A write to a part bumps the central version in the same transaction.
 - A report definition binds an engine settings configuration in its own slot.
 - The ACME seed holds the engine settings configurations in place of the twenty run settings columns.
+- The engine setting columns are gone from =risk_report_config=. The export reads the Setup block from the bound engine settings, and the import writes it to them.
+- The importer drops a Setup parameter that the model does not hold and warns, naming it.
 
 * Plan
 
@@ -56,8 +58,16 @@ component and binds the profile =uuid-identified-lookup=. Each part follows =boo
 4. Seed the configuration type =engine_settings=. A report type does not require it, because absent settings mean the defaults.
 5. Add the publish function, the artefact type row, the operation and its subject, so a dataset can stage a document.
 6. Test the publish with pgTAP.
-7. Seed the ACME engine settings and bind them in the report definitions. This is the next task.
-8. Messaging, service and screens are not generated here. They come with the screens task.
+7. Seed the ACME engine settings (7 configurations, only the five values the rows set today) and bind them in the report
+   definitions by name.
+8. Decommission the engine columns of =risk_report_config=: the model, the generated code, the staging table, the publish
+   and the seed. The currency, the market data kind and the package layout columns stay. They have their own tasks.
+9. Project the Setup block from the bound engine settings (export), and write it to them (import). The importer drops a
+   parameter the model does not hold and warns.
+10. Update the tests that name the old columns.
+
+Not in this task: moving the currency and the market kind to the report definition, recording what a run used, and the
+engine settings messaging, service and screens.
 
 * Measurements
 

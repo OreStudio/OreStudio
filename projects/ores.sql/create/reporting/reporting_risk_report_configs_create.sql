@@ -24,7 +24,7 @@
  *
  * Risk Report Config Table
  *
- * The ORE-level run settings that risk report definitions of a party share: base currency, observation model, analytics flags, XVA, VaR and SIMM settings and threading. A report definition binds the configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
+ * The ORE-level run settings that risk report definitions of a party share: the base currency, the market data of the run and the folders and log file of the package. The engine settings are not here. They are a named configuration of their own, engine_settings, that the definition binds in its own slot. A report definition binds this configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
  */
 
 create table if not exists "ores_reporting_risk_report_configs_tbl" (
@@ -36,33 +36,14 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     "description" text null,
     "configuration_id" uuid not null,
     "base_currency" text null,
-    "observation_model" text null,
-    "n_threads" integer null,
     "market_data_type" text not null default 'eod',
     "market_data_date" date null,
-    "accrual_date" text null,
-    "fixing_cutoff" text null,
     "input_path" text not null default 'Input',
     "input_path_market" text null,
     "input_path_portfolio" text null,
     "output_path" text not null default 'Output',
     "log_file" text not null default 'log.txt',
-    "date_calendar" text null,
-    "date_convention" text null,
-    "continue_on_error" text null,
-    "build_failed_trades" text null,
-    "imply_todays_fixings" text null,
-    "include_todays_cash_flows" text null,
-    "include_reference_date_events" text null,
-    "lazy_market_building" text null,
-    "enrich_index_fixings" text null,
-    "use_analytics" text null,
-    "csv_comment_report_header" text null,
-    "default_mapping_to_identity" text null,
     "portfolio_recurse_into_sub_directories" text null,
-    "log_mask" integer null,
-    "ignore_fixing_lag" integer null,
-    "additional_results" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -78,8 +59,6 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("base_currency" is null or "base_currency" <> ''),
-    check ("n_threads" is null or "n_threads" >= 1),
-    check ("log_mask" is null or "log_mask" >= 0),
     check ("market_data_type" in ('live', 'eod', 'date')),
     check ((market_data_type = 'date') = (market_data_date is not null))
 );

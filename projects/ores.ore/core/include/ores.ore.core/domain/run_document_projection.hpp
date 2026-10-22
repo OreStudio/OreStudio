@@ -24,6 +24,7 @@
 #include "ores.reporting.api/domain/configuration_market_binding.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -40,7 +41,15 @@ namespace ores::ore::domain {
  */
 struct mapped_setup final {
     reporting::domain::risk_report_config settings;
+    std::optional<ores::reporting::messaging::run_engine_settings> engine_settings;
     std::vector<ores::reporting::messaging::run_file> files;
+
+    /**
+     * @brief The Setup parameters the model holds nowhere, by name.
+     *
+     * The projection drops them and the import reports each one.
+     */
+    std::vector<std::string> dropped;
 };
 
 /**
@@ -48,14 +57,12 @@ struct mapped_setup final {
  * and back.
  *
  * The Setup block is the first half. Each parameter that is a choice of the run
- * is read into its column of risk_report_config. Each parameter that names a file
- * is read into a run_file. The projection writes both back as the named
- * parameters ORE expects.
+ * is read into its column of risk_report_config, or into a setting of the engine
+ * settings parts. Each parameter that names a file is read into a run_file. The
+ * projection writes them back as the named parameters ORE expects.
  *
- * Values are carried as ORE spells them. The flags are not all booleans -- the
- * fixing and cashflow flags are Y or N, the model flags are true or false, and
- * accrualDate may be the literal ASOF -- so the columns are text and the mapping
- * is a rename, not a conversion.
+ * The engine settings are typed: a flag is a boolean, read from any spelling ORE's
+ * parseBool accepts and written as true or false, and a count is an integer.
  *
  * The as-of date is the one parameter with a column pair: asofDate is the
  * market_data_type 'date' together with market_data_date.
@@ -67,9 +74,9 @@ public:
     /**
      * @brief Projects a run document onto the entities.
      *
-     * A Setup parameter that is neither a choice nor a file is refused rather
-     * than dropped, and a value that cannot be read as the column's type is
-     * refused too.
+     * A Setup parameter that is neither a choice nor a file is dropped, and
+     * dropped_parameters names it. A value that cannot be read as the type of
+     * its setting is refused.
      */
     static ores::reporting::messaging::run_document map(const document& v);
 
@@ -84,6 +91,15 @@ public:
     static document reverse(const ores::reporting::messaging::run_document& v);
 
     static mapped_setup map_setup(const document& v);
+
+    /**
+     * @brief The warnings an import reports for the Setup parameters it drops.
+     *
+     * Each warning names its parameter. A parameter that ORE reads and that
+     * changes the numbers, such as fixingCutoff, also says that the run will not
+     * read it and that its numbers may differ from the original run.
+     */
+    static std::vector<std::string> dropped_parameter_warnings(const document& v);
     static std::vector<ores::reporting::messaging::run_analytic> map_analytics(const document& v);
     static std::vector<reporting::domain::configuration_market_binding>
     map_market_bindings(const document& v);

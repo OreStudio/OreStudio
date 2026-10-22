@@ -23,6 +23,8 @@
 #include <array>
 #include <charconv>
 #include <format>
+#include <functional>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::ore::domain {
@@ -47,32 +49,11 @@ struct required_binding {
     std::string settings_t::*member;
 };
 
-struct int_binding {
-    std::string_view parameter;
-    std::optional<int> settings_t::*member;
-};
-
-const std::array<text_binding, 20> text_bindings = {{
-    {"accrualDate", &settings_t::accrual_date},
+const std::array<text_binding, 4> text_bindings = {{
     {"inputPathMarket", &settings_t::input_path_market},
     {"inputPathPortfolio", &settings_t::input_path_portfolio},
-    {"observationModel", &settings_t::observation_model},
     {"baseCurrency", &settings_t::base_currency},
-    {"dateCalendar", &settings_t::date_calendar},
-    {"dateConvention", &settings_t::date_convention},
-    {"fixingCutoff", &settings_t::fixing_cutoff},
-    {"continueOnError", &settings_t::continue_on_error},
-    {"buildFailedTrades", &settings_t::build_failed_trades},
-    {"implyTodaysFixings", &settings_t::imply_todays_fixings},
-    {"includeTodaysCashFlows", &settings_t::include_todays_cash_flows},
-    {"includeReferenceDateEvents", &settings_t::include_reference_date_events},
-    {"lazyMarketBuilding", &settings_t::lazy_market_building},
-    {"enrichIndexFixings", &settings_t::enrich_index_fixings},
-    {"useAnalytics", &settings_t::use_analytics},
-    {"csvCommentReportHeader", &settings_t::csv_comment_report_header},
-    {"defaultMappingToIdentity", &settings_t::default_mapping_to_identity},
     {"portfolioRecurseIntoSubDirectories", &settings_t::portfolio_recurse_into_sub_directories},
-    {"additionalResults", &settings_t::additional_results},
 }};
 
 const std::array<required_binding, 3> required_bindings = {{
@@ -81,11 +62,119 @@ const std::array<required_binding, 3> required_bindings = {{
     {"logFile", &settings_t::log_file},
 }};
 
-const std::array<int_binding, 3> int_bindings = {{
-    {"logMask", &settings_t::log_mask},
-    {"nThreads", &settings_t::n_threads},
-    {"ignoreFixingLag", &settings_t::ignore_fixing_lag},
-}};
+using engine_t = reporting::messaging::run_engine_settings;
+
+// An engine setting: the ORE parameter, and how to read it into a part and write
+// it back. The parts are created when their first setting is read, so a document
+// that sets none of a group leaves the group absent and the engine default holds.
+struct engine_binding {
+    std::string_view parameter;
+    std::function<void(engine_t&, const std::string&)> read;
+    std::function<std::optional<std::string>(const engine_t&)> write;
+};
+
+// ORE's parseBool spellings.
+bool parse_flag(const std::string& name, const std::string& value) {
+    static constexpr std::array<std::string_view, 6> yes = {"Y", "YES", "TRUE", "True", "true", "1"};
+    static constexpr std::array<std::string_view, 6> no = {"N", "NO", "FALSE", "False", "false", "0"};
+    if (std::ranges::find(yes, value) != yes.end())
+        return true;
+    if (std::ranges::find(no, value) != no.end())
+        return false;
+    throw std::runtime_error("run_document_projection: Setup parameter '" + name +
+                             "' is not a flag: '" + value + "'");
+}
+
+int parse_int(const std::string& name, const std::string& value);
+
+constexpr std::array<std::string_view, 4> observation_models = {
+    "None", "Disable", "Defer", "Unregister"};
+
+template <typename Part>
+engine_binding flag_binding(std::string_view parameter,
+                            std::optional<Part> engine_t::*part,
+                            std::optional<bool> Part::*member) {
+    return {parameter,
+            [=](engine_t& e, const std::string& v) {
+                auto& p = e.*part;
+                if (!p)
+                    p.emplace();
+                (*p).*member = parse_flag(std::string(parameter), v);
+            },
+            [=](const engine_t& e) -> std::optional<std::string> {
+                if (!(e.*part) || !((*(e.*part)).*member))
+                    return std::nullopt;
+                return *((*(e.*part)).*member) ? "true" : "false";
+            }};
+}
+
+template <typename Part>
+engine_binding int_binding(std::string_view parameter,
+                           std::optional<Part> engine_t::*part,
+                           std::optional<int> Part::*member) {
+    return {parameter,
+            [=](engine_t& e, const std::string& v) {
+                auto& p = e.*part;
+                if (!p)
+                    p.emplace();
+                (*p).*member = parse_int(std::string(parameter), v);
+            },
+            [=](const engine_t& e) -> std::optional<std::string> {
+                if (!(e.*part) || !((*(e.*part)).*member))
+                    return std::nullopt;
+                return std::to_string(*((*(e.*part)).*member));
+            }};
+}
+
+using fixings_t = reporting::domain::engine_settings_fixings;
+using building_t = reporting::domain::engine_settings_building;
+using execution_t = reporting::domain::engine_settings_execution;
+
+const std::vector<engine_binding>& engine_bindings() {
+    static const std::vector<engine_binding> bindings = {
+        flag_binding(
+            "implyTodaysFixings", &engine_t::fixings, &fixings_t::imply_todays_fixings),
+        flag_binding(
+            "includeTodaysCashFlows", &engine_t::fixings, &fixings_t::include_todays_cash_flows),
+        flag_binding("includeReferenceDateEvents",
+                     &engine_t::fixings,
+                     &fixings_t::include_reference_date_events),
+        flag_binding(
+            "enrichIndexFixings", &engine_t::fixings, &fixings_t::enrich_index_fixings),
+        int_binding("ignoreFixingLag", &engine_t::fixings, &fixings_t::ignore_fixing_lag),
+        int_binding("ignoreFixingLead", &engine_t::fixings, &fixings_t::ignore_fixing_lead),
+        {"observationModel",
+         [](engine_t& e, const std::string& v) {
+             if (std::ranges::find(observation_models, v) == observation_models.end())
+                 throw std::runtime_error(
+                     "run_document_projection: Setup parameter 'observationModel' is not one of "
+                     "None, Disable, Defer or Unregister: '" + v + "'");
+             if (!e.building)
+                 e.building.emplace();
+             e.building->observation_model = v;
+         },
+         [](const engine_t& e) -> std::optional<std::string> {
+             if (!e.building)
+                 return std::nullopt;
+             return e.building->observation_model;
+         }},
+        flag_binding(
+            "lazyMarketBuilding", &engine_t::building, &building_t::lazy_market_building),
+        flag_binding("buildFailedTrades", &engine_t::building, &building_t::build_failed_trades),
+        flag_binding("continueOnError", &engine_t::building, &building_t::continue_on_error),
+        flag_binding("useAtParCouponsCurves",
+                     &engine_t::building,
+                     &building_t::use_at_par_coupons_curves),
+        flag_binding("useAtParCouponsTrades",
+                     &engine_t::building,
+                     &building_t::use_at_par_coupons_trades),
+        int_binding("nThreads", &engine_t::execution, &execution_t::n_threads),
+        int_binding("logMask", &engine_t::execution, &execution_t::log_mask),
+        int_binding(
+            "gzipCompressionLevel", &engine_t::execution, &execution_t::gzip_compression_level),
+    };
+    return bindings;
+}
 
 // The Setup parameters that name a file: data, not choices, carried beside the
 // configuration and never stored on it.
@@ -138,6 +227,7 @@ ores::reporting::messaging::run_document run_document_projection::map(const docu
     ores::reporting::messaging::run_document r;
     auto setup = map_setup(v);
     r.settings = std::move(setup.settings);
+    r.engine_settings = std::move(setup.engine_settings);
     r.files = std::move(setup.files);
     r.analytics = map_analytics(v);
     r.market_bindings = map_market_bindings(v);
@@ -148,7 +238,7 @@ run_document_projection::document
 run_document_projection::reverse(const ores::reporting::messaging::run_document& v) {
     document out{};
     auto written = record_writer(*xg::ore_document().root, &out);
-    reverse_setup(written.child("Setup"), {v.settings, v.files});
+    reverse_setup(written.child("Setup"), {v.settings, v.engine_settings, v.files, {}});
     reverse_analytics(written.child("Analytics"), v.analytics);
     if (!v.market_bindings.empty())
         reverse_market_bindings(written.child("Markets"), v.market_bindings);
@@ -194,9 +284,11 @@ mapped_setup run_document_projection::map_setup(const document& v) {
         }
         if (matched)
             continue;
-        for (const auto& binding : int_bindings) {
+        for (const auto& binding : engine_bindings()) {
             if (binding.parameter == name) {
-                settings.*(binding.member) = parse_int(name, value);
+                if (!r.engine_settings)
+                    r.engine_settings.emplace();
+                binding.read(*r.engine_settings, value);
                 matched = true;
                 break;
             }
@@ -204,9 +296,13 @@ mapped_setup run_document_projection::map_setup(const document& v) {
         if (matched)
             continue;
 
+        // A parameter the model does not hold is dropped, and the import reports it.
         if (std::find(file_parameters.begin(), file_parameters.end(), name) ==
-            file_parameters.end())
-            throw refusal("no column holds Setup parameter '" + name + "'");
+            file_parameters.end()) {
+            if (std::ranges::find(r.dropped, name) == r.dropped.end())
+                r.dropped.push_back(name);
+            continue;
+        }
         const auto existing = std::find_if(
             r.files.begin(), r.files.end(), [&name](const auto& f) { return f.parameter == name; });
         if (existing != r.files.end())
@@ -216,6 +312,20 @@ mapped_setup run_document_projection::map_setup(const document& v) {
     }
 
     return r;
+}
+
+std::vector<std::string> run_document_projection::dropped_parameter_warnings(const document& v) {
+    std::vector<std::string> warnings;
+    for (const auto& name : map_setup(v).dropped) {
+        auto text = std::format("Setup parameter '{}' is not held by the model and was dropped.", name);
+        if (name == "fixingCutoff")
+            text += " ORE reads it and the run will not, so its numbers may differ from the "
+                    "original run.";
+        else if (name == "csvCommentReportHeader")
+            text += " ORE reads it and the run will not.";
+        warnings.push_back(std::move(text));
+    }
+    return warnings;
 }
 
 std::vector<ores::reporting::messaging::run_analytic>
@@ -279,9 +389,11 @@ void run_document_projection::reverse_setup(record_writer out, const mapped_setu
         if (const auto& value = settings.*(binding.member))
             append_parameter(out, binding.parameter, *value);
     }
-    for (const auto& binding : int_bindings) {
-        if (const auto& value = settings.*(binding.member))
-            append_parameter(out, binding.parameter, std::to_string(*value));
+    if (v.engine_settings) {
+        for (const auto& binding : engine_bindings()) {
+            if (const auto value = binding.write(*v.engine_settings))
+                append_parameter(out, binding.parameter, *value);
+        }
     }
     for (const auto& file : v.files)
         append_parameter(out, file.parameter, file.name);

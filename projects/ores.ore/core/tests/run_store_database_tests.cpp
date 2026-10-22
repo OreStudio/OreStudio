@@ -34,6 +34,9 @@
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.reporting.core/repository/engine_settings_building_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_execution_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.testing/project_root.hpp"
@@ -166,7 +169,11 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     // named none would leave them out of the package. The names come from the
     // file type catalogue rather than from the document, which is why the
     // example's names come back as the catalogue spells them.
-    CHECK(parameters_of(exported_run.setup) == parameters_of(run.setup));
+    // An engine flag is written as true or false whatever the document used.
+    auto expected_setup = parameters_of(run.setup);
+    expected_setup["implyTodaysFixings"] = "true";
+    CHECK(parameters_of(exported_run.setup) == expected_setup);
+    CHECK(imported.warnings.empty());
     REQUIRE(xml::is_present(*xml::generated::ore::ore_document().root, &exported_run, "Markets"));
     CHECK(parameters_of(exported_run.markets) == parameters_of(run.markets));
     REQUIRE(exported_run.analytics.analytic.size() == run.analytics.analytic.size());
@@ -207,9 +214,29 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
             slots.insert(b.configuration_type_code);
     CHECK(slots == std::set<std::string>{"conventions",
                                          "curve_configuration",
+                                         "engine_settings",
                                          "pricing_engines",
                                          "risk_report_config",
                                          "todays_market"});
+
+    // The Setup block's engine settings are stored in their parts, typed.
+    const auto fixings =
+        ores::reporting::repository::engine_settings_fixings_repository().read_latest(
+            parties.a_context);
+    REQUIRE(fixings.size() == 1);
+    CHECK(fixings.front().imply_todays_fixings == std::optional<bool>(true));
+    CHECK_FALSE(fixings.front().enrich_index_fixings);
+    const auto building =
+        ores::reporting::repository::engine_settings_building_repository().read_latest(
+            parties.a_context);
+    REQUIRE(building.size() == 1);
+    CHECK(building.front().observation_model == std::optional<std::string>("None"));
+    const auto execution =
+        ores::reporting::repository::engine_settings_execution_repository().read_latest(
+            parties.a_context);
+    REQUIRE(execution.size() == 1);
+    CHECK(execution.front().log_mask == std::optional<int>(31));
+    CHECK_FALSE(execution.front().n_threads);
 }
 
 TEST_CASE("a run import installs the conventions the sample names", tags) {

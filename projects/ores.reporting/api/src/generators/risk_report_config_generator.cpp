@@ -52,8 +52,6 @@ generate_synthetic_risk_report_config(utility::generation::generation_context& c
     r.description = std::string("Run settings");
     r.configuration_id = ctx.generate_uuid();
     r.base_currency = std::string(faker::finance::currencyCode());
-    r.observation_model = std::string("Disable");
-    r.n_threads = faker::number::integer(1, 8);
     r.market_data_type = std::string("eod");
     r.market_data_date = std::string("");
     r.input_path = std::string("Input");

@@ -217,6 +217,24 @@ TEST_CASE("the run carries the choices of the configuration as they are", tags) 
     CHECK(s.base_currency == std::optional<std::string>("GBP"));
 }
 
+TEST_CASE("the run carries the engine settings the definition binds", tags) {
+    auto in = inputs();
+    ores::reporting::messaging::run_engine_settings engine;
+    engine.execution.emplace();
+    engine.execution->n_threads = 4;
+    in.engine = engine;
+
+    const auto& r = generate_run_document(in);
+    REQUIRE(r.engine_settings);
+    REQUIRE(r.engine_settings->execution);
+    CHECK(r.engine_settings->execution->n_threads == std::optional<int>(4));
+    CHECK_FALSE(r.engine_settings->fixings);
+}
+
+TEST_CASE("a run with no engine settings carries none and the engine defaults hold", tags) {
+    CHECK_FALSE(generate_run_document(inputs()).engine_settings);
+}
+
 TEST_CASE("the run carries the market bindings of the configuration", tags) {
     auto in = inputs();
     in.market_bindings[0].market_configuration_name = "overnight";
@@ -273,6 +291,14 @@ TEST_CASE("a bound type that no file type names is refused", tags) {
 TEST_CASE("the risk configuration binding names no file", tags) {
     auto in = inputs();
     in.bound_types = {"risk_report_config", "conventions"};
+    const auto& files = generate_run_document(in).files;
+    REQUIRE(files.size() == 1);
+    CHECK(files[0].parameter == "conventionsFile");
+}
+
+TEST_CASE("the engine settings binding names no file", tags) {
+    auto in = inputs();
+    in.bound_types = {"engine_settings", "conventions"};
     const auto& files = generate_run_document(in).files;
     REQUIRE(files.size() == 1);
     CHECK(files[0].parameter == "conventionsFile");

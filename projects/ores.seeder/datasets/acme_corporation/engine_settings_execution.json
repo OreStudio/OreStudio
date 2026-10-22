@@ -1,0 +1,65 @@
+[
+  {
+    "company_code": "acme_group",
+    "id": "0ddf82b9-ff9f-58b5-a952-89b0dbfafb94",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "722b3002-e413-5615-833c-60abec22aeab",
+    "log_mask": 31,
+    "n_threads": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a967292c-d614-5f19-83a6-d073555876c2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "5a3c772c-c6d3-5931-ae15-0cfbb226065b",
+    "log_mask": 31,
+    "n_threads": 4
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "04ab67ff-1e76-53ee-ab5b-53324f44143a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "7f4516d2-96c8-50eb-bce8-4f74908f3500",
+    "log_mask": 31,
+    "n_threads": 1
+  },
+  {
+    "company_code": "acme_us",
+    "id": "ab389fbd-1292-5e3f-b51e-d51a6d158d9c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "2d1c4d30-e0d8-52e3-83fc-397d7314763e",
+    "log_mask": 31,
+    "n_threads": 4
+  },
+  {
+    "company_code": "acme_us",
+    "id": "9d570b66-965c-5c94-b3e9-207086268194",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "cc979142-bcbe-5e4f-a077-db4dfbabc02a",
+    "log_mask": 31,
+    "n_threads": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f83ed309-0a17-5e4e-9667-4ad5488711d3",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "c0b0f980-86e9-5bba-ad0c-e0c656562c17",
+    "log_mask": 31,
+    "n_threads": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "b61c0cba-1834-5532-b906-dc219d23fb1e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "engine_settings_id": "af61c06a-866e-53bc-a38b-084a749b8618",
+    "log_mask": 31,
+    "n_threads": 1
+  }
+]

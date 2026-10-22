@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { ReactNode } from 'react';
 import { textOf } from '../textOf.js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -420,5 +421,30 @@ describe('the extra details of a record', () => {
         const html = draw([['Target', 'x']]);
         expect(html).not.toContain('role="tooltip"');
         expect(html).not.toContain('cursor-help');
+    });
+});
+
+describe('a field the screen draws itself', () => {
+    const iso = CURRENCY_FIELDS.find((spec) => spec.field === 'name') as FieldSpec;
+    const draw = (drawn?: Readonly<Record<string, ReactNode>>): string =>
+        renderToStaticMarkup(
+            <TranslationProvider>
+                <RecordDetails
+                    specs={[iso]}
+                    row={euro}
+                    {...(drawn === undefined ? {} : { drawn })}
+                />
+            </TranslationProvider>,
+        );
+
+    it('draws what the screen gives in place of the plain value', () => {
+        const html = draw({ name: <a href="/feed">Euro feed</a> });
+        expect(html).toContain('<a href="/feed">Euro feed</a>');
+    });
+
+    it('draws the plain value when the screen gives nothing for the field', () => {
+        expect(draw({})).toContain('Euro');
+        expect(draw()).toContain('Euro');
+        expect(draw({})).not.toContain('<a ');
     });
 });

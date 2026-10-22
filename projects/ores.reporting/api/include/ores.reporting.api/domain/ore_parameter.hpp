@@ -61,7 +61,7 @@ struct ore_parameter final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Surrogate key for the definition.
+     * @brief Surrogate key for the ORE parameter.
      */
     boost::uuids::uuid id;
 
@@ -89,7 +89,7 @@ struct ore_parameter final {
 
     /**
      * @brief The XPath of the leaf in a document of the schema, for example
-     * /ORE/Setup/Parameter[@name'implyTodaysFixings']=. The schema name and the XPath together say
+     * /ORE/Setup/Parameter[@name='implyTodaysFixings']. The schema name and the XPath together say
      * which leaf this is. For ore.xsd, scope, subtype and name give the same path.
      */
     std::string xpath;

@@ -54,15 +54,16 @@ def rows():
         out.append({"scope": "analytic", "subtype": analytic, "name": name,
                     "position": position, "domain": domain,
                     "required": text.get("required", False),
-                    "introduced_in": INTRODUCED_IN[f"{analytic}|{name}"],
+                    "introduced_in": INTRODUCED_IN.get(f"{analytic}|{name}"),
                     "removed_in": REMOVED_IN.get(f"{analytic}|{name}"),
                     **{k: text.get(k) for k in TEXT_KEYS if k != "introduced_in"}})
     return out
 
 
 def missing(all_rows):
+    """The parameters with a text that is absent or blank, and the release that is not measured."""
     return [f"{r['subtype']}.{r['name']}" for r in all_rows
-            if any(r.get(k) is None for k in TEXT_KEYS)]
+            if any(not str(r.get(k) or "").strip() for k in TEXT_KEYS)]
 
 
 def render(all_rows):

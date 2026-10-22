@@ -46,7 +46,7 @@ exactly one analytic kind, which is why the name alone is not the key.
 :primary_key:  true
 :END:
 
-Surrogate key for the definition.
+Surrogate key for the ORE parameter.
 
 ** scope
 :PROPERTIES:
@@ -92,7 +92,7 @@ The XML schema the leaf belongs to, named by the file name of the schema, for ex
 :nullable: false
 :END:
 
-The XPath of the leaf in a document of the schema, for example =/ORE/Setup/Parameter[@name='implyTodaysFixings']=. The schema name and the XPath together say which leaf this is. For =ore.xsd=, scope, subtype and name give the same path.
+The XPath of the leaf in a document of the schema, for example /ORE/Setup/Parameter[@name='implyTodaysFixings']. The schema name and the XPath together say which leaf this is. For ore.xsd, scope, subtype and name give the same path.
 
 ** position
 :PROPERTIES:

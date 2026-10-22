@@ -658,6 +658,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("cpp", "modeling", "codegen"),
     ),
     Check(
+        id="portable-stop",
+        title="No code outside ores.platform names a C++20 stop type",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_portable_stop_types.py"),
+        classes=("cpp",),
+        fix="Use ores.platform/concurrency/stoppable_thread.hpp: Apple's libc++ has no"
+            " std::jthread or std::stop_token.",
+    ),
+    Check(
         id="event-registrars",
         title="Every generated event registrar is composed",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_event_registrar_composition.py"),

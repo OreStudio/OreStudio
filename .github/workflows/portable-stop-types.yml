@@ -1,0 +1,55 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Portable stop types
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/**/*.cpp"
+      - "projects/**/*.hpp"
+      - "projects/**/*.h"
+      - "projects/ores.codegen/scripts/check_portable_stop_types.py"
+      - ".github/workflows/portable-stop-types.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Apple's libc++ has no std::jthread, std::stop_token, std::stop_source or
+  # std::stop_callback. A file that names one compiles on Linux and breaks the
+  # macOS build, which runs at night, so the break reached main three times
+  # before anything reported it. ores.platform holds the portable counterparts
+  # and may name the standard types; anything else fails here. The scan reads
+  # the C++ sources only, needs no toolchain and takes a fraction of a second.
+  portable-stop:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Prove the check fails on a planted defect
+        run: |
+          python3 projects/ores.codegen/scripts/check_portable_stop_types.py --self-test
+      - name: Check no stop type outside ores.platform
+        run: |
+          python3 projects/ores.codegen/scripts/check_portable_stop_types.py

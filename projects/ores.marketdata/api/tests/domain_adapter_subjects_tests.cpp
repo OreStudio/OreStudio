@@ -1,0 +1,95 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.marketdata.api/domain/adapter_subjects.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+
+namespace {
+
+const std::string tags("[domain][adapter_subjects]");
+
+}
+
+using namespace ores::marketdata::domain;
+
+TEST_CASE("the_control_subjects_name_the_adapter", tags) {
+    CHECK(adapter_announce_subject() == "marketdata.v1.adapters.announce");
+    CHECK(adapter_demand_subject("bloomberg-sim") == "marketdata.v1.adapters.bloomberg-sim.demand");
+    CHECK(adapter_heartbeat_subject("bloomberg-sim") ==
+          "marketdata.v1.adapters.bloomberg-sim.heartbeat");
+}
+
+TEST_CASE("an_ingress_subject_holds_one_token_for_the_adapter_and_one_for_the_id", tags) {
+    const auto subject = adapter_ingress_subject("bloomberg-sim", "EURUSD Curncy");
+    CHECK(subject == "marketdata.v1.ingress.bloomberg-sim.EURUSD%20Curncy");
+}
+
+TEST_CASE("an_ingress_subject_encodes_spaces_equals_signs_and_dots", tags) {
+    const auto bloomberg = adapter_ingress_subject("a", "EURUSD Curncy");
+    const auto lseg = adapter_ingress_subject("a", "EUR=");
+    const auto dotted = adapter_ingress_subject("a", "GBP.USD");
+    CHECK(lseg == "marketdata.v1.ingress.a.EUR%3D");
+    for (const auto& subject : {bloomberg, lseg, dotted}) {
+        CAPTURE(subject);
+        const auto prefix = std::string("marketdata.v1.ingress.a.");
+        const auto token = subject.substr(prefix.size());
+        CHECK(token.find(' ') == std::string::npos);
+        CHECK(token.find('=') == std::string::npos);
+        CHECK(token.find('.') == std::string::npos);
+    }
+}
+
+TEST_CASE("an_ingress_subject_gives_its_adapter_and_id_back", tags) {
+    for (const auto& id : {std::string("EURUSD Curncy"),
+                           std::string("EUR="),
+                           std::string("GBP.USD"),
+                           std::string("FX/RATE/EUR/USD"),
+                           std::string("a.b c*d>e%f")}) {
+        CAPTURE(id);
+        const auto parts = adapter_ingress_subject_parts(adapter_ingress_subject("ore sim.1", id));
+        REQUIRE(parts.has_value());
+        CHECK(parts->adapter_id == "ore sim.1");
+        CHECK(parts->external_id == id);
+    }
+}
+
+TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back", tags) {
+    CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.adapters.announce").has_value());
+    CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.only").has_value());
+    CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.a.b.c").has_value());
+    CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.a.EUR=").has_value());
+}
+
+TEST_CASE("the_wildcards_cover_every_adapter_or_one", tags) {
+    CHECK(adapter_ingress_subject_all() == "marketdata.v1.ingress.>");
+    CHECK(adapter_ingress_subject_for("ore-sim") == "marketdata.v1.ingress.ore-sim.>");
+}
+
+TEST_CASE("no_adapter_subject_carries_a_mark_of_the_source_kind", tags) {
+    for (const auto& subject : {adapter_announce_subject(),
+                                adapter_demand_subject("a"),
+                                adapter_heartbeat_subject("a"),
+                                adapter_ingress_subject("a", "x"),
+                                adapter_ingress_subject_all()}) {
+        CAPTURE(subject);
+        for (const auto* mark : {"synthetic", "simulated", "live", "replay"})
+            CHECK(subject.find(mark) == std::string::npos);
+    }
+}

@@ -31,88 +31,24 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ore_parameter_seed import SQL_FOOTER, header, insert_block  # noqa: E402
 from setup_parameter_descriptions import SETUP_PARAMETERS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                     "reporting_setup_ore_parameters_populate.sql")
 
-HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
- *
- * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- */
-
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Generator: projects/ores.sql/utility/generate_setup_ore_parameters_populate.py
- *
- * Setup Ore Parameters Population Script
- *
- * Seeds one definition for each Setup parameter of the engine settings, with
- * the text a screen shows for it. This script is idempotent.
- */
-
-\\echo '--- Setup Ore Parameters ---'
-
-do $$
-declare
-    v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
-begin
-"""
-
-FOOTER = """end $$;
-"""
-
-
-def sql_text(value):
-    if value is None:
-        return "null"
-    return "'" + value.replace("'", "''") + "'"
-
 
 def render():
-    parts = [HEADER]
+    parts = [header(
+        "generate_setup_ore_parameters_populate.py", "Setup Ore Parameters",
+        "Seeds one definition for each Setup parameter of the engine settings, "
+        "with the text a screen shows for it.")]
     for position, p in enumerate(SETUP_PARAMETERS, start=1):
-        parts.append(f"""    if not exists (
-        select 1 from ores_reporting_ore_parameters_tbl
-        where tenant_id = v_sys_tenant and scope = 'Setup'
-          and subtype = '' and name = {sql_text(p["name"])}
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        insert into ores_reporting_ore_parameters_tbl (
-            id, tenant_id, version,
-            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
-            label, help, description, default_text, format, introduced_in, removed_in,
-            modified_by, change_reason_code, change_commentary
-        ) values (
-            gen_random_uuid(), v_sys_tenant, 0,
-            'ore.xsd', {sql_text("/ORE/Setup/Parameter[@name='" + p["name"] + "']")},
-            'Setup', '', {sql_text(p["name"])}, {position}, {sql_text(p["domain"])}, false,
-            {sql_text(p["label"])}, {sql_text(p["help"])},
-            {sql_text(p["description"])},
-            {sql_text(p["default_text"])}, {sql_text(p["format"])},
-            {sql_text(p["introduced_in"])}, {sql_text(p["removed_in"])},
-            current_user, 'system.initial_load', {sql_text("Seed Setup parameter: " + p["name"])}
-        );
-    end if;
-
-""")
-    parts.append(FOOTER)
+        row = {**p, "scope": "Setup", "subtype": "", "position": position,
+               "required": False}
+        parts.append(insert_block(row, "Seed Setup parameter: " + p["name"]))
+    parts.append(SQL_FOOTER)
     return "".join(parts)
 
 

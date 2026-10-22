@@ -53,10 +53,6 @@ EXCEPTIONS = {
     "workflow_instances_tenant_isolation_policy": AUDIT,
     "workflow_batch_links_tbl_tenant_isolation_policy": AUDIT,
     "feed_bindings_tbl_tenant_isolation_policy": AUDIT,
-    "providers_tbl_tenant_isolation_policy": AUDIT,
-    "market_data_sources_tbl_tenant_isolation_policy": AUDIT,
-    "market_data_vendor_instruments_tbl_tenant_isolation_policy": AUDIT,
-    "market_data_mappings_tbl_tenant_isolation_policy": AUDIT,
 }
 
 POLICY_RE = re.compile(r"create\s+policy\s+(\w+)\s+on\s+(\w+)(.*?);", re.I | re.S)

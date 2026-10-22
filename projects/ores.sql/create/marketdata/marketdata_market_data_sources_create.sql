@@ -182,7 +182,8 @@ on delete to "ores_marketdata_market_data_sources_tbl" do instead (
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Market Data Source
--- System-tenant sessions may also read every tenant's rows.
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
 -- =============================================================================
 alter table ores_marketdata_market_data_sources_tbl enable row level security;
 
@@ -193,9 +194,8 @@ create policy market_data_sources_tbl_tenant_isolation_policy
 on ores_marketdata_market_data_sources_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

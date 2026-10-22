@@ -132,7 +132,7 @@ Why the id differs from the vendor's own, when =minted= is true. Empty otherwise
 :PROPERTIES:
 :tablename:                 ores_marketdata_market_data_vendor_instruments_tbl
 :rls_tenant_isolation:      true
-:rls_system_tenant_visible: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks

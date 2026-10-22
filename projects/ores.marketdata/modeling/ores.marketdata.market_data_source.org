@@ -121,7 +121,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename:                 ores_marketdata_market_data_sources_tbl
 :rls_tenant_isolation:      true
-:rls_system_tenant_visible: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks

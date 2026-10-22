@@ -212,7 +212,8 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Provider
--- System-tenant sessions may also read every tenant's rows.
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
 -- =============================================================================
 alter table ores_marketdata_providers_tbl enable row level security;
 
@@ -223,9 +224,8 @@ create policy providers_tbl_tenant_isolation_policy
 on ores_marketdata_providers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

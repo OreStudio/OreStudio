@@ -109,7 +109,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_marketdata_providers_tbl
 :rls_tenant_isolation: true
-:rls_system_tenant_visible: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks

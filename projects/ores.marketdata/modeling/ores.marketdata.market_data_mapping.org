@@ -99,7 +99,7 @@ The first instant at which the mapping no longer holds. Empty while it holds.
 :PROPERTIES:
 :tablename:                 ores_marketdata_market_data_mappings_tbl
 :rls_tenant_isolation:      true
-:rls_system_tenant_visible: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -113,7 +113,6 @@ The first instant at which the mapping no longer holds. Empty while it holds.
 
 | name        | columns                                  | unique | current_only | where_extra |
 |-------------+------------------------------------------+--------+--------------+-------------|
-| instrument  | tenant_id, vendor_instrument_id, effective_from | true   | true         |             |
 | item        | tenant_id, oresmd_uri                    | false  | true         |             |
 
 * C++

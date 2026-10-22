@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_source.hpp"
@@ -32,14 +33,20 @@
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 
 namespace {
 
 const std::string tags("[repository][catalogue]");
+
+constexpr auto unique_violation = "duplicate key value violates unique constraint";
+constexpr auto check_violation = "violates check constraint";
 
 }
 
@@ -50,6 +57,8 @@ using ores::marketdata::repository::market_data_mapping_repository;
 using ores::marketdata::repository::provider_repository;
 using ores::marketdata::repository::market_data_source_repository;
 using ores::marketdata::repository::market_data_vendor_instrument_repository;
+
+using ores::database::service::tenant_context;
 
 TEST_CASE("write_and_read_a_provider", tags) {
     database_helper h;
@@ -86,7 +95,8 @@ TEST_CASE("a_provider_has_at_most_one_default_source", tags) {
     rival.provider_code = "bloomberg";
     rival.kind = "simulated";
     rival.is_default = true;
-    CHECK_THROWS(repo.write(h.context(), rival));
+    CHECK_THROWS_WITH(repo.write(h.context(), rival),
+                      Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
 TEST_CASE("a_source_kind_must_be_in_the_vocabulary", tags) {
@@ -96,7 +106,8 @@ TEST_CASE("a_source_kind_must_be_in_the_vocabulary", tags) {
     market_data_source_repository repo;
     auto s = generate_synthetic_market_data_source(ctx);
     s.kind = "not_a_kind";
-    CHECK_THROWS(repo.write(h.context(), s));
+    CHECK_THROWS_WITH(repo.write(h.context(), s),
+                      Catch::Matchers::ContainsSubstring("Invalid source_kind"));
 }
 
 TEST_CASE("a_vendor_instrument_identity_is_unique", tags) {
@@ -119,7 +130,8 @@ TEST_CASE("a_vendor_instrument_identity_is_unique", tags) {
 
     auto duplicate = a;
     duplicate.id = ctx.generate_uuid();
-    CHECK_THROWS(repo.write(h.context(), duplicate));
+    CHECK_THROWS_WITH(repo.write(h.context(), duplicate),
+                      Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
 TEST_CASE("a_minted_vendor_instrument_needs_a_deviation_note", tags) {
@@ -130,7 +142,8 @@ TEST_CASE("a_minted_vendor_instrument_needs_a_deviation_note", tags) {
     auto v = generate_synthetic_market_data_vendor_instrument(ctx);
     v.minted = true;
     v.deviation_note = "";
-    CHECK_THROWS(repo.write(h.context(), v));
+    CHECK_THROWS_WITH(repo.write(h.context(), v),
+                      Catch::Matchers::ContainsSubstring(check_violation));
 
     v.deviation_note = "The vendor publishes this pillar only as a chain.";
     CHECK_NOTHROW(repo.write(h.context(), v));
@@ -151,7 +164,8 @@ TEST_CASE("a_mapping_is_unique_for_an_instrument_and_a_start", tags) {
 
     auto duplicate = m;
     duplicate.id = ctx.generate_uuid();
-    CHECK_THROWS(repo.write(h.context(), duplicate));
+    CHECK_THROWS_WITH(repo.write(h.context(), duplicate),
+                      Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
 TEST_CASE("a_mapping_cannot_end_before_it_starts", tags) {
@@ -161,5 +175,41 @@ TEST_CASE("a_mapping_cannot_end_before_it_starts", tags) {
     market_data_mapping_repository repo;
     auto m = generate_synthetic_market_data_mapping(ctx);
     m.effective_to = m.effective_from - std::chrono::hours(1);
-    CHECK_THROWS(repo.write(h.context(), m));
+    CHECK_THROWS_WITH(repo.write(h.context(), m),
+                      Catch::Matchers::ContainsSubstring(check_violation));
+}
+
+TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
+    ores::testing::scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto& tenant_ctx = h.context();
+    const auto system_ctx = tenant_context::with_system_tenant(tenant_ctx);
+    REQUIRE(tenant_ctx.tenant_id().to_string() != tenant_context::system_tenant_id);
+
+    auto p = generate_synthetic_provider(ctx);
+    p.tenant_id =
+        ores::utility::uuid::tenant_id::from_string(tenant_context::system_tenant_id).value();
+    p.change_reason_code = "system.test";
+
+    provider_repository repo;
+    repo.write(system_ctx, p);
+
+    const auto read = repo.read_latest(tenant_ctx, p.code);
+    REQUIRE(read.size() == 1);
+    CHECK(read.front().code == p.code);
+}
+
+TEST_CASE("a_tenant_cannot_write_a_provider_for_the_system_tenant", tags) {
+    ores::testing::scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto& tenant_ctx = h.context();
+    REQUIRE(tenant_ctx.tenant_id().to_string() != tenant_context::system_tenant_id);
+
+    auto p = generate_synthetic_provider(ctx);
+    p.tenant_id =
+        ores::utility::uuid::tenant_id::from_string(tenant_context::system_tenant_id).value();
+
+    provider_repository repo;
+    CHECK_THROWS_WITH(repo.write(tenant_ctx, p),
+                      Catch::Matchers::ContainsSubstring("row-level security"));
 }

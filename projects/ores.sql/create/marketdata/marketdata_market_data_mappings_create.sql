@@ -79,10 +79,6 @@ create index if not exists market_data_mappings_tenant_idx
 on "ores_marketdata_market_data_mappings_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists market_data_mappings_instrument_idx
-on "ores_marketdata_market_data_mappings_tbl" (tenant_id, vendor_instrument_id, effective_from)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create index if not exists market_data_mappings_item_idx
 on "ores_marketdata_market_data_mappings_tbl" (tenant_id, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -175,7 +171,8 @@ on delete to "ores_marketdata_market_data_mappings_tbl" do instead (
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Market Data Mapping
--- System-tenant sessions may also read every tenant's rows.
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
 -- =============================================================================
 alter table ores_marketdata_market_data_mappings_tbl enable row level security;
 
@@ -186,9 +183,8 @@ create policy market_data_mappings_tbl_tenant_isolation_policy
 on ores_marketdata_market_data_mappings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

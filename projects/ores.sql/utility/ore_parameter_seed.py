@@ -27,6 +27,8 @@ import textwrap
 
 SCHEMA_NAME = "ore.xsd"
 
+BLOCK_SCOPES = ("Setup", "Logging", "Markets")
+
 TEXT_KEYS = ("label", "help", "description", "default_text", "format", "introduced_in")
 
 SQL_HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
@@ -84,8 +86,8 @@ def sql_text(value):
 
 
 def xpath(row):
-    if row["scope"] == "Setup":
-        return f"/ORE/Setup/Parameter[@name='{row['name']}']"
+    if row["scope"] in BLOCK_SCOPES:
+        return f"/ORE/{row['scope']}/Parameter[@name='{row['name']}']"
     return (f"/ORE/Analytics/Analytic[@type='{row['subtype']}']"
             f"/Parameter[@name='{row['name']}']")
 

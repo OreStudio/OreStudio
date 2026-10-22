@@ -37,6 +37,7 @@
 \ir ./reporting_ore_parameter_value_domains_populate.sql
 \ir ./reporting_ore_parameters_populate.sql
 \ir ./reporting_setup_ore_parameters_populate.sql
+\ir ./reporting_block_ore_parameters_populate.sql
 \ir ./reporting_concurrency_policies_populate.sql
 \ir ./reporting_report_error_scopes_populate.sql
 \ir ./reporting_report_instance_kinds_populate.sql

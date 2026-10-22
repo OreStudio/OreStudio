@@ -47,12 +47,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from analytic_parameter_catalogue import CATALOGUE  # noqa: E402
+from block_parameter_catalogue import BLOCK_CATALOGUE  # noqa: E402
 
 OLDEST = "1.8.0.7"
 UNTAGGED = {"1.8.12.0": "8f30524c4"}
 
 BLOCK = re.compile(r'<Analytic\s+type="([A-Za-z0-9_]+)"\s*>(.*?)</Analytic>', re.S)
 PARAMETER = re.compile(r'<Parameter\s+name="([A-Za-z0-9_]+)"')
+BLOCK_OF_PARAMETERS = re.compile(r'<(Setup|Logging|Markets)>(.*?)</\1>', re.S)
 LITERAL = re.compile(r'"([A-Za-z][A-Za-z0-9_]*)"')
 
 
@@ -130,17 +132,57 @@ def measure(source):
     return out, order, removed, never_read
 
 
+def measure_blocks(source):
+    """The same measurement for the parameters of the Setup, Logging and Markets blocks.
+
+    A block has existed in every release, so only the name decides: the first release in which a
+    string literal of the C++ sources, or a Parameter of that block in an example or the guide,
+    has the name.
+    """
+    pairs = [(b, n) for b, n, _ in BLOCK_CATALOGUE]
+    wanted = set(pairs)
+    names = {n for _, n in pairs}
+    order = releases(source)
+    first, read_in = {}, {n: [] for n in names}
+    last = list(order)[-1]
+    for version, ref in order.items():
+        literals = set(LITERAL.findall(
+            git(source, "grep", "-h", "-o", "-E", '"[A-Za-z][A-Za-z0-9_]*"',
+                ref, "--", "*.cpp", "*.hpp")))
+        for n in names & literals:
+            read_in[n].append(version)
+        files = git(source, "grep", "-l", "-E", "<(Setup|Logging|Markets)>", ref, "--").split("\n")
+        for f in files:
+            if not f.endswith((".xml", ".tex", ".md", ".txt")):
+                continue
+            for block, body in BLOCK_OF_PARAMETERS.findall(git(source, "show", f)):
+                for n in PARAMETER.findall(body):
+                    if (block, n) in wanted:
+                        first.setdefault((block, n), version)
+    out, removed, never_read = {}, {}, []
+    for b, n in pairs:
+        seen = read_in[n]
+        known = [v for v in (seen[0] if seen else None, first.get((b, n))) if v]
+        out[f"{b}|{n}"] = min(known, key=version_key) if known else last
+        if not seen:
+            never_read.append(f"{b}|{n}")
+        elif seen[-1] != last:
+            versions = list(order)
+            removed[f"{b}|{n}"] = versions[versions.index(seen[-1]) + 1]
+    return out, order, removed, never_read
+
+
 def display(version):
     return f"{version} or earlier" if version == OLDEST else version
 
 
-def write_module(path, dates, removed, never_read):
+def write_module(path, dates, removed, never_read, what="analytic parameter"):
     licence = Path(__file__).read_text(encoding="utf-8").split('"""')[0].split("\n", 1)[1]
     lines = [licence.rstrip(),
-             '"""The ORE release that introduced each analytic parameter.',
+             f'"""The ORE release that introduced each {what}.',
              "",
-             "Written by measure_ore_parameter_releases.py. The key is the analytic type and",
-             "the parameter name. The oldest tag of the checkout is 1.8.0.7, so a date equal",
+             "Written by measure_ore_parameter_releases.py. The key is the analytic type or the block",
+             "and the parameter name. The oldest tag of the checkout is 1.8.0.7, so a date equal",
              'to it reads "1.8.0.7 or earlier".',
              '"""',
              "",
@@ -164,19 +206,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--ore-source", required=True, type=Path)
     parser.add_argument("--json", type=Path)
+    parser.add_argument("--blocks", action="store_true",
+                        help="measure the Setup, Logging and Markets parameters and not the analytics")
     parser.add_argument("--write-module", type=Path,
                         help="write the dates as the Python module the seed generator reads")
     args = parser.parse_args()
-    out, order, removed, never_read = measure(args.ore_source)
+    out, order, removed, never_read = (measure_blocks if args.blocks else measure)(args.ore_source)
     counts = collections.Counter(out.values())
     for version in order:
         if counts[version]:
             print(f"{display(version):>20}  {counts[version]}")
-    print(f"{len(out)} analytic parameters")
+    print(f"{len(out)} {'block' if args.blocks else 'analytic'} parameters")
     print(f"{len(never_read)} never read by the C++ sources: {', '.join(never_read)}")
     print(f"{len(removed)} no longer read: {', '.join(f'{k} from {v}' for k, v in removed.items())}")
     if args.write_module:
-        write_module(args.write_module, out, removed, never_read)
+        write_module(args.write_module, out, removed, never_read,
+                     "parameter of the Setup, Logging and Markets blocks" if args.blocks else "analytic parameter")
     if args.json:
         args.json.write_text(json.dumps(out, indent=1, sort_keys=True))
     return 0

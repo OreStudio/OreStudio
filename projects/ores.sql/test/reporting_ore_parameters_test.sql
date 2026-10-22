@@ -57,6 +57,8 @@ select is_empty(
       where schema_name = 'ore.xsd'
         and xpath is distinct from case scope
               when 'Setup' then format('/ORE/Setup/Parameter[@name=''%s'']', name)
+              when 'Logging' then format('/ORE/Logging/Parameter[@name=''%s'']', name)
+              when 'Markets' then format('/ORE/Markets/Parameter[@name=''%s'']', name)
               when 'analytic' then format(
                   '/ORE/Analytics/Analytic[@type=''%s'']/Parameter[@name=''%s'']',
                   subtype, name)

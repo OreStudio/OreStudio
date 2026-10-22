@@ -45,6 +45,9 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:B722E327-40BE-472B-8868-1D08F4B50583][Describe the engine setting parameters]] | DONE | 2026-10-22 | 2026-10-22 | Give the parameter definition the fields a screen presents, and seed the 15 engine settings with their full text. |
 | [[id:EC556A9D-3EC6-4AA6-A3C9-1C78B1167E77][Rename the parameter definition to ore parameter]] | DONE | 2026-10-22 | 2026-10-22 | Rename the entity to ore_parameter and key it by schema name and XPath, so it documents any leaf of any ORE XML schema. |
 | [[id:78AB66E8-2D4D-4CCE-910B-15175F722B82][Document the analytic ORE parameters]] | DONE | 2026-10-22 | 2026-10-22 | Write the full documentation of every analytic parameter of ore.xml, in batches of analytics, and make the documentation fields NOT NULL. |
+| [[id:DEFBF8D2-03CC-4ED3-BE6E-71D62816DBE7][Document the Setup, Markets and Logging ORE parameters]] | DONE | 2026-10-23 | 2026-10-23 | Write the full documentation of every Setup, Markets and Logging parameter of ore.xml that the 15 engine settings and the analytics do not cover. |
+| [[id:BE4DEA1D-4796-4C7B-8F4B-F24519D20DFD][Deepen the analytic parameter texts]] | BACKLOG | | | Give the analytic parameters that the screens show first the depth of the prototype text: what each value does, when to change it, and a worked example. |
+| [[id:4F8E9B3F-8742-46D3-B273-DC265CA60A0E][Build the engine settings screens]] | BACKLOG | | | Build the engine settings list and configuration page from the agreed prototype, reading the documentation from ore_parameter. |
 
 * Analysis
 

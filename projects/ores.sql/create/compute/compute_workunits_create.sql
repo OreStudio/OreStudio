@@ -70,6 +70,10 @@ create index if not exists workunits_tenant_idx
 on "ores_compute_workunits_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists workunits_batch_id_idx
+on "ores_compute_workunits_tbl" (tenant_id, batch_id, valid_from)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_compute_workunits_insert_fn()
 returns trigger as $$
 declare

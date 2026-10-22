@@ -81,7 +81,7 @@ on "ores_compute_results_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists results_workunit_id_idx
-on "ores_compute_results_tbl" (tenant_id, workunit_id)
+on "ores_compute_results_tbl" (tenant_id, workunit_id, valid_from)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists results_host_id_idx

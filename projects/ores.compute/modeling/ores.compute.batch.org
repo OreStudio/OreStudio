@@ -24,6 +24,8 @@ batch completion to trigger downstream report generation.
 :component: compute
 :profile:   uuid-identified-lookup
 :key_field: external_ref
+:sortable_recorded_at: true
+:default_order: recorded_at desc
 :END:
 
 * Columns
@@ -70,6 +72,17 @@ Lifecycle status: open, processing, assimilating, or closed.
 ** Flags
 :PROPERTIES:
 :tablename: ores_compute_batches_tbl
+:END:
+
+* Indexes
+
+A page of batches reads newest first, so the tenant's current batches are
+indexed by their recording time.
+
+** recorded_at
+:PROPERTIES:
+:columns:      tenant_id, valid_from desc
+:current_only: true
 :END:
 
 * C++

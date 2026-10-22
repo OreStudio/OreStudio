@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Store the engine settings of a report as a named configuration: a central row an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Schema, models, generated code and publish are committed (191b124478). Seed, column removal and the projection are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Map where the engine columns are read and written, then seed, decommission and project. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -107,5 +107,13 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+| 1 | The import dropped Setup parameters with no log line and no mention in the message. | =run_configuration_handler.cpp= | Fixed | The handler logs each warning and the message gives the count. |
+| 2 | Removing the engine settings of an imported definition had no test. | =run_store_database_tests.cpp= | Fixed | A database test imports, removes and checks that all four tables are empty. |
 
 * Result
+
+PR 3630 merged as =1fe6abd775=. The engine settings are a central row with three parts: fixings, building and execution. They hold the 15 documented settings. The 19 engine columns are gone from =risk_report_config=. The Setup projection reads and writes the bound engine settings, and the import drops a parameter the model does not hold and warns. The ACME seed stages seven configurations.
+
+The PR was squash merged by mistake. The process asks for a merge commit. The owner chose to leave it.
+
+Left for other tasks: the descriptions of the settings in the SQL, the currency and the market kind on the report definition, recording what a run used, and the engine settings messaging, service and screens.

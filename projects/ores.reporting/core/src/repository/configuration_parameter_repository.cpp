@@ -103,9 +103,8 @@ filter_condition(const std::optional<messaging::configuration_parameters_filter>
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->configuration_id)
         r.push_back(equals("configuration_id", filter_value(*filter->configuration_id)));
-    if (filter->parameter_definition_id)
-        r.push_back(
-            equals("parameter_definition_id", filter_value(*filter->parameter_definition_id)));
+    if (filter->ore_parameter_id)
+        r.push_back(equals("ore_parameter_id", filter_value(*filter->ore_parameter_id)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -118,11 +117,11 @@ filter_condition(const std::optional<messaging::configuration_parameters_filter>
             values.push_back(filter_value(v));
         r.push_back(one_of("configuration_id", std::move(values)));
     }
-    if (filter->parameter_definition_id_one_of) {
+    if (filter->ore_parameter_id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
-        for (const auto& v : *filter->parameter_definition_id_one_of)
+        for (const auto& v : *filter->ore_parameter_id_one_of)
             values.push_back(filter_value(v));
-        r.push_back(one_of("parameter_definition_id", std::move(values)));
+        r.push_back(one_of("ore_parameter_id", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -382,23 +381,21 @@ configuration_parameter_repository::get_total_parameter_value_count_by_configura
 
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_latest_by_parameter_definition_id(
+configuration_parameter_repository::read_latest_by_ore_parameter_id(
     context ctx,
-    const std::string& parameter_definition_id,
+    const std::string& ore_parameter_id,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading latest configuration parameters. parameter_definition_id: "
-        << parameter_definition_id << " offset: " << offset << " limit: " << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters. ore_parameter_id: "
+                               << ore_parameter_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "parameter_definition_id"_c == parameter_definition_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "ore_parameter_id"_c == ore_parameter_id &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<configuration_parameter_entity,
                                       domain::configuration_parameter>(
@@ -408,31 +405,30 @@ configuration_parameter_repository::read_latest_by_parameter_definition_id(
         filter_condition(filter),
         [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
         lg(),
-        "Reading latest configuration parameters by parameter_definition_id.");
+        "Reading latest configuration parameters by ore_parameter_id.");
 }
 
 std::uint32_t
-configuration_parameter_repository::get_total_parameter_value_count_by_parameter_definition_id(
+configuration_parameter_repository::get_total_parameter_value_count_by_ore_parameter_id(
     context ctx,
-    const std::string& parameter_definition_id,
+    const std::string& ore_parameter_id,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
-        << "Retrieving total active configuration parameters count. parameter_definition_id: "
-        << parameter_definition_id;
+        << "Retrieving total active configuration parameters count. ore_parameter_id: "
+        << ore_parameter_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "parameter_definition_id"_c == parameter_definition_id &&
-              "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "ore_parameter_id"_c == ore_parameter_id &&
+                             "valid_to"_c == max.value());
 
     return execute_count_query<configuration_parameter_entity>(
         ctx,
         query,
         filter_condition(filter),
         lg(),
-        "Counting configuration parameters by parameter_definition_id");
+        "Counting configuration parameters by ore_parameter_id");
 }
 
 

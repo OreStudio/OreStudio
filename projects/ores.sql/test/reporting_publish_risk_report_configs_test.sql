@@ -200,9 +200,9 @@ select results_eq(
 select results_eq(
     $$select d.subtype, d.name, p.value
       from ores_reporting_configuration_analytic_parameters_tbl p
-      join ores_reporting_parameter_definitions_tbl d
+      join ores_reporting_ore_parameters_tbl d
         on d.tenant_id = ores_utility_system_tenant_id_fn()
-       and d.id = p.parameter_definition_id
+       and d.id = p.ore_parameter_id
        and d.valid_to = ores_utility_infinity_timestamp_fn()
       join ores_reporting_configuration_analytics_tbl a
         on a.tenant_id = p.tenant_id and a.id = p.configuration_analytic_id

@@ -117,7 +117,7 @@ package "reporting" #E0F7FA {
         * version : integer
         * party_id : uuid <<FK>>
         * configuration_analytic_id : uuid <<FK>>
-        * parameter_definition_id : uuid <<FK>>
+        * ore_parameter_id : uuid <<FK>>
         * value : text
         * position : integer
         * modified_by : text
@@ -133,7 +133,7 @@ package "reporting" #E0F7FA {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Configuration Analytic Parameter Table
-    One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column.
+    One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in ore_parameter whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column.
     end note
 
     entity ores_reporting_configuration_analytics_tbl <<temporal>> #C6F0D8 {
@@ -195,7 +195,7 @@ package "reporting" #E0F7FA {
         * version : integer
         * party_id : uuid <<FK>>
         * configuration_id : uuid <<FK>>
-        * parameter_definition_id : uuid <<FK>>
+        * ore_parameter_id : uuid <<FK>>
         * value : text
         * position : integer
         * modified_by : text
@@ -212,7 +212,7 @@ package "reporting" #E0F7FA {
     To modify, update the template and regenerate.
     Configuration Parameter Table
     One value. The value is text because the definition says what it is: the
-    value domain on parameter_definition decides whether this is a currency, a
+    value domain on ore_parameter decides whether this is a currency, a
     date, a boolean, a tenor or a reference, and the mapper writes it into the
     document accordingly. Storing it as text is not the same as storing an
     untyped blob, because the meaning comes from a foreign key rather than from
@@ -446,40 +446,7 @@ package "reporting" #E0F7FA {
     The table lists names and patterns. It does not hold the content of a file.
     end note
 
-    entity ores_reporting_parameter_definitions_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * scope : text
-        * subtype : text
-        * name : text
-        * position : integer
-        * parameter_value_domain_code : text <<FK>>
-        * is_required : boolean
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_reporting_parameter_definitions_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Parameter Definition Table
-    The vocabulary of the run document. ORE writes parameters as a name and a
-    value inside a block; scope names the block (Setup, Markets, an analytic)
-    and subtype narrows it, so a pair of them plus name says which parameter
-    this is. position keeps the order the document wrote, because a document
-    that is not reproducible in order is not reproducible.
-    165 of the 218 parameter names observed in the shipped corpus belong to
-    exactly one analytic kind, which is why the name alone is not the key.
-    end note
-
-    entity ores_reporting_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
+    entity ores_reporting_ore_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
         --
@@ -495,11 +462,11 @@ package "reporting" #E0F7FA {
         * valid_to : timestamptz
     }
 
-    note right of ores_reporting_parameter_value_domains_tbl
+    note right of ores_reporting_ore_parameter_value_domains_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Parameter Value Domain Table
+    Ore Parameter Value Domain Table
     Every configuration parameter holds one value, and this says what that value
     is: a currency, a date, a boolean, an integer, a tenor, a document reference,
     or a list. Where the value names something in the model, referenced_entity
@@ -510,6 +477,52 @@ package "reporting" #E0F7FA {
     leaves the entity type unresolved and the generator writes files called
     unknown_* rather than reporting the bad line. Check the header first when a
     model generates unknown.
+    end note
+
+    entity ores_reporting_ore_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * scope : text
+        * subtype : text
+        * name : text
+        * schema_name : text
+        * xpath : text
+        * position : integer
+        * ore_parameter_value_domain_code : text <<FK>>
+        * is_required : boolean
+        * label : text
+        * help : text
+        * description : text
+        * default_text : text
+        * format : text
+        * introduced_in : text
+          removed_in : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Table
+    The vocabulary of ORE XML. A row documents one leaf of one ORE document: an
+    attribute or an element that holds a value. schema_name names the XML schema
+    of the document, for example ore.xsd, and xpath is the path to the leaf in
+    a document of that schema. The two together say which leaf this is.
+    ORE writes the parameters of ore.xml as a name and a value inside a block.
+    For them scope names the block (Setup, Markets, an analytic), subtype
+    narrows it, and name is the parameter, so the three give the same path as
+    xpath. position keeps the order the document wrote, because a document that
+    is not reproducible in order is not reproducible.
+    165 of the 218 parameter names observed in the shipped corpus belong to
+    exactly one analytic kind, which is why the name alone is not the key.
     end note
 
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {
@@ -975,12 +988,12 @@ package "reporting" #E0F7FA {
 ' ==================== Relationships ====================
 '
 ores_reporting_configuration_analytics_tbl ||--o{ ores_reporting_configuration_analytic_parameters_tbl : "has"
-ores_reporting_parameter_definitions_tbl ||--o{ ores_reporting_configuration_analytic_parameters_tbl : "has"
+ores_reporting_ore_parameters_tbl ||--o{ ores_reporting_configuration_analytic_parameters_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_analytics_tbl : "has"
 ores_reporting_analytic_types_tbl ||--o{ ores_reporting_configuration_analytics_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_market_bindings_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
-ores_reporting_parameter_definitions_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
+ores_reporting_ore_parameters_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_building_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_engine_settings_tbl : "has"
@@ -988,7 +1001,7 @@ ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_executi
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_fixings_tbl : "has"
 ores_reporting_analytic_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_file_types_tbl : "has"
-ores_reporting_parameter_value_domains_tbl ||--o{ ores_reporting_parameter_definitions_tbl : "has"
+ores_reporting_ore_parameter_value_domains_tbl ||--o{ ores_reporting_ore_parameters_tbl : "has"
 ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"

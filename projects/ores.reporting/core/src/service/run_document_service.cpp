@@ -29,7 +29,7 @@
 #include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
-#include "ores.reporting.core/repository/parameter_definition_repository.hpp"
+#include "ores.reporting.core/repository/ore_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
@@ -66,12 +66,12 @@ constexpr const char* run_settings_type = "risk_report_config";
 // The slot a named set of engine settings fills in a definition.
 constexpr const char* engine_settings_type = "engine_settings";
 
-// The parameter definitions of the analytics, by id.
+// The ore parameters of the analytics, by id.
 std::map<boost::uuids::uuid, std::string>
 analytic_parameter_names(const ores::database::context& ctx) {
     std::map<boost::uuids::uuid, std::string> names;
     for (const auto& d : read_where(system_scope(ctx),
-                                    parameter_definition_repository(),
+                                    ore_parameter_repository(),
                                     [](const auto& d) { return d.scope == "analytic"; }))
         names[d.id] = d.name;
     return names;
@@ -104,13 +104,13 @@ std::vector<messaging::run_analytic> analytics_of(const ores::database::context&
         for (const auto& p : parameters) {
             if (p.configuration_analytic_id != a.id)
                 continue;
-            const auto name = names.find(p.parameter_definition_id);
+            const auto name = names.find(p.ore_parameter_id);
             if (name == names.end())
                 throw std::runtime_error(std::format(
                     "The {} analytic holds a parameter whose definition {} is not an analytic "
-                    "parameter definition.",
+                    "ore parameter.",
                     a.analytic_type_code,
-                    boost::uuids::to_string(p.parameter_definition_id)));
+                    boost::uuids::to_string(p.ore_parameter_id)));
             ra.parameters.push_back({name->second, p.value, p.position});
         }
         out.push_back(std::move(ra));
@@ -162,9 +162,8 @@ engine_settings_of(const ores::database::context& ctx, const boost::uuids::uuid&
     messaging::run_engine_settings out;
     out.settings = central.front();
     const auto first = [&](auto repository) {
-        auto rows = read_where(ctx, repository, [&](const auto& p) {
-            return p.engine_settings_id == id;
-        });
+        auto rows =
+            read_where(ctx, repository, [&](const auto& p) { return p.engine_settings_id == id; });
         using row = typename decltype(rows)::value_type;
         return rows.empty() ? std::optional<row>{} : std::optional<row>{rows.front()};
     };
@@ -214,9 +213,8 @@ void remove_engine_settings(const ores::database::context& ctx,
     });
     for (const auto& c : central) {
         const auto remove_parts = [&](auto repository) {
-            const auto rows = read_where(ctx, repository, [&](const auto& p) {
-                return p.engine_settings_id == c.id;
-            });
+            const auto rows = read_where(
+                ctx, repository, [&](const auto& p) { return p.engine_settings_id == c.id; });
             if (!rows.empty())
                 repository.remove(ctx, ids_of(rows));
         };
@@ -260,14 +258,14 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
 
     std::map<std::pair<std::string, std::string>, boost::uuids::uuid> definition_ids;
     for (const auto& d : read_where(system_scope(ctx_),
-                                    parameter_definition_repository(),
+                                    ore_parameter_repository(),
                                     [](const auto& d) { return d.scope == "analytic"; }))
         definition_ids[{d.subtype, d.name}] = d.id;
     for (const auto& a : v.analytics)
         for (const auto& p : a.parameters)
             if (!definition_ids.contains({a.analytic.analytic_type_code, p.name}))
                 throw std::invalid_argument(
-                    std::format("The {} analytic sets {}, which no parameter definition describes.",
+                    std::format("The {} analytic sets {}, which no ore parameter describes.",
                                 a.analytic.analytic_type_code,
                                 p.name));
 
@@ -304,8 +302,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
             domain::configuration_analytic_parameter row;
             row.id = next_id();
             row.configuration_analytic_id = a.analytic.id;
-            row.parameter_definition_id =
-                definition_ids.at({a.analytic.analytic_type_code, p.name});
+            row.ore_parameter_id = definition_ids.at({a.analytic.analytic_type_code, p.name});
             row.value = p.value;
             row.position = p.position;
             parameters.push_back(std::move(row));

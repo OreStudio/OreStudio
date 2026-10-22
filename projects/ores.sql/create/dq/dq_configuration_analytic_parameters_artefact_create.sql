@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column. - Artefact Table
+-- One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in ore_parameter whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_configuration_analytic_parameters_artefact_tbl" (

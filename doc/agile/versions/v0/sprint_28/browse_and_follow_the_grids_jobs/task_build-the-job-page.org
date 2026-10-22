@@ -37,7 +37,10 @@ One page states where a job is, what ran it, and what it produced, and leads to 
 
 - The page shows the job state with the outcome beside it, and says the node is not yet known while a run is in flight.
 - The page links to the report run that the batch names.
-- The timing and size fields appear when the run statistics exist.
+- The Run statistics panel appears when the run statistics exist, with one row per run.
+- The fields carry the model's own names: Host ID, External Ref, Batch Recorded At and Received At.
+- The App Version ID links to the app version page.
+- The build follows =doc/prototypes/compute/follow-a-job/=.
 
 * Plan
 

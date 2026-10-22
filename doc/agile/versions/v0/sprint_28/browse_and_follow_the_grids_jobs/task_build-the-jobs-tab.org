@@ -38,6 +38,9 @@ The Jobs tab of the grid screen shows the paged tree and the details panel for t
 - The tree opens a batch, then a workunit, and reads one page of children at a time.
 - The details panel shows the entity's own fields under the model's headers, with state and outcome as badges and references as links.
 - The screen shows loading, empty, error and refused states in words, and the filters, open rows and pages live in the URL.
+- An Outcome filter narrows the tree to the workunits that hold a run with that outcome.
+- A Follow this job link on a workunit or a result opens the job page.
+- The tabs are the ones the grid screen has, and the build follows =doc/prototypes/compute/browse-the-grids-jobs/=.
 
 * Plan
 

@@ -25,7 +25,7 @@
  * Configuration Parameter Table
  *
  * One value. The value is text because the definition says what it is: the
- * value domain on parameter_definition decides whether this is a currency, a
+ * value domain on ore_parameter decides whether this is a currency, a
  * date, a boolean, a tenor or a reference, and the mapper writes it into the
  * document accordingly. Storing it as text is not the same as storing an
  * untyped blob, because the meaning comes from a foreign key rather than from
@@ -40,7 +40,7 @@ create table if not exists "ores_reporting_configuration_parameters_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "configuration_id" uuid not null,
-    "parameter_definition_id" uuid not null,
+    "ore_parameter_id" uuid not null,
     "value" text not null,
     "position" integer not null,
     "modified_by" text not null,
@@ -91,14 +91,14 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate parameter_definition_id (soft FK to ores_reporting_parameter_definitions_tbl)
+    -- Validate ore_parameter_id (soft FK to ores_reporting_ore_parameters_tbl)
     if not exists (
-        select 1 from ores_reporting_parameter_definitions_tbl
+        select 1 from ores_reporting_ore_parameters_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and id = NEW.parameter_definition_id
+          and id = NEW.ore_parameter_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid parameter_definition_id: %. No active parameter definition found with this id.', NEW.parameter_definition_id
+        raise exception 'Invalid ore_parameter_id: %. No active ore parameter found with this id.', NEW.ore_parameter_id
             using errcode = '23503';
     end if;
 

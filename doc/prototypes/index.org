@@ -39,7 +39,7 @@ This page is the top of the tree and the only inventory.
 | [[file:tenancy/][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things | 2 |
 | [[file:data_exchange/][Data exchange]] | Importing and exporting a party, a dataset or a whole environment, and what a run leaves behind | 5 |
 | [[file:operations/][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them | 6 |
-| [[file:compute/][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run | 1 |
+| [[file:compute/][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run | 4 |
 | [[file:../knowledge/journeys/currencies/currencies.org][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | none yet |
 | [[file:../knowledge/journeys/calendars/calendars.org][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | none yet |
 | [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |

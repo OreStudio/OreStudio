@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: B722E327-40BE-472B-8868-1D08F4B50583
+:END:
+#+title: Task: Describe the engine setting parameters
+#+description: Give the parameter definition the fields a screen presents, and seed the 15 engine settings with their full text.
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/describe-the-engine-setting-parameters
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend the parameter definition with a label, a help line, a full description, a default, a format, the release that introduced the parameter and the release that removed it. Seed the 15 Setup parameters of the engine settings with the text of the prototype, and link each engine settings column to its definition, so the screens, the importer and the checks read one source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The parameter definition holds label, help, description, default, format, introduced_in and removed_in, and the model, the generated SQL and the C++ carry them.
+- The 15 engine settings are rows of the definition in the Setup scope, each with the full description, default, format and release range of the prototype.
+- Each engine settings column names its parameter definition, and a test fails when a column has none.
+- The analytic parameters keep working while the new fields are empty. The analytics task later filled the fields and made them required.
+
+* Plan
+
+1. Add seven nullable columns to the model =ores.reporting.parameter_definition=: =label=, =help=, =description=, =default_text=, =format=, =introduced_in= and =removed_in=. Regenerate the SQL, C++ and TypeScript. A null =removed_in= means the parameter still exists.
+2. Keep the 15 texts in one Python module in =projects/ores.sql/utility=, as =file_type_descriptions.py= does for the file types. The words come from the prototype =see-the-engine-settings-a-party-holds=. A generator writes =reporting_setup_parameter_definitions_populate.sql= and has a =--check= mode. The existing seed has no generator and covers only analytic parameters, so the new script owns the Setup scope only.
+3. The link between a column and its definition is the name. The column =n_threads= matches the Setup parameter =nThreads=. A pgTAP test fails when a value column of an engine settings part has no definition, or when a definition has no column.
+4. The importer keeps its =engine_binding= table. Reading it from the definitions is a later change.
+5. Keep the prototype and the seed in step: a check compares the texts of both.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Setup parameters seeded with full text | 15 | =python3 projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py --check= | see PR |
+| pgTAP checks on the definitions | 4 of 4 pass | =./compass.sh sql -- -f projects/ores.sql/test/reporting_setup_parameter_definitions_test.sql= | see PR |
+| Shell reporting tests | 1052 assertions in 380 test cases pass | =ores.shell.reporting.tests= | see PR |
+| Reporting core tests | pass | =./compass.sh test run -- -R ores.reporting.core.tests= | see PR |
+
+* Notes
+
+- The link between an engine settings column and its definition is the name. The column =n_threads= is the Setup parameter =nThreads=. A pgTAP test checks both directions. A foreign key would need a column on each part table for no gain.
+- The texts are those of the prototype =see-the-engine-settings-a-party-holds=. Most describe the effect and when to change the setting. Only =log_mask= and =observation_model= give worked values. The owner may ask for examples on the others.
+- =introduced_in= holds the text a screen shows, for example =1.8.0.7 or earlier=, so a bound the project could not measure stays visible.
+- The seed of the analytic parameters had no generator. The task that documents the analytic parameters added one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The parameter definition gained the fields a screen shows: label, help, description, default, format, introduced_in and removed_in. The 15 Setup parameters of the engine settings are seeded with the full text of the prototype by =generate_setup_parameter_definitions_populate.py=, and a pgTAP test ties each setting column to its definition by name.
+
+The entity was renamed to =ore_parameter= by the next task, and the generator and test names follow it. This task ships in the PR of that task, because the branches are stacked.

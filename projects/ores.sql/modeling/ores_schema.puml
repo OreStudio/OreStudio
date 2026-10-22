@@ -620,8 +620,8 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_fixings_tbl
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
-  ores_reporting_parameter_definitions_tbl
-  ores_reporting_parameter_value_domains_tbl
+  ores_reporting_ore_parameter_value_domains_tbl
+  ores_reporting_ore_parameters_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
   ores_reporting_report_error_events_tbl

@@ -14,7 +14,7 @@
 #+updated: 2026-09-27
 
 One value. The value is text because the definition says what it is: the
-value domain on =parameter_definition= decides whether this is a currency, a
+value domain on =ore_parameter= decides whether this is a currency, a
 date, a boolean, a tenor or a reference, and the mapper writes it into the
 document accordingly. Storing it as text is not the same as storing an
 untyped blob, because the meaning comes from a foreign key rather than from
@@ -67,7 +67,7 @@ ctx.generate_uuid()
 
 The configuration the value belongs to.
 
-** parameter_definition_id
+** ore_parameter_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
@@ -115,14 +115,14 @@ The order the document wrote the parameter in.
 :list_by:       true
 :END:
 
-** parameter_definition_id
+** ore_parameter_id
 :PROPERTIES:
-:table:         ores_reporting_parameter_definitions_tbl
+:table:         ores_reporting_ore_parameters_tbl
 :target_column: id
 :use_system_tenant: true
-:parent_entity: parameter_definition
+:parent_entity: ore_parameter
 :nullable:      false
-:error_message: Invalid parameter_definition_id: %. No active parameter definition found with this id.
+:error_message: Invalid ore_parameter_id: %. No active ore parameter found with this id.
 :list_by:       true
 :END:
 

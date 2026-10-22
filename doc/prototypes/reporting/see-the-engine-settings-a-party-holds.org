@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-22
 
 | Item          | Where                                                |
 |---------------+------------------------------------------------------|
 | Prototype     | [[file:see-the-engine-settings-a-party-holds/][the prototype]] |
-| Gemini review | none                                                 |
+| Gemini review | [[file:see-the-engine-settings-a-party-holds/review/gemini-dashboard.html][the review]] |
 | Group         | [[file:index.org][Reporting prototypes]]                       |
 
 * Summary
@@ -138,6 +138,35 @@ lists the reports bound to one configuration, and no operation returns a group c
 - The flags are drawn as Yes and No. ORE accepts every spelling, so the model can store booleans. Whether the projection
   writes =true= or =Y= is still open in the story.
 - Whether the list should show the groups that are set, or only the count.
+
+* The Gemini review
+
+The review is the generated Gemini file, kept as it was produced in
+[[file:see-the-engine-settings-a-party-holds/review/gemini-dashboard.html][gemini-dashboard.html]]. It loads Tailwind, Lucide and Chart.js from
+public CDNs without a pinned version, so it needs a network to draw.
+
+It draws one page for one configuration: a sidebar of categories, a bar of filter chips, and one table of settings. Each
+row has an inline control and a drawer with the documentation and a schema panel. A Simple and Advanced switch hides the
+ORE XML column.
+
+What the prototype takes up from it:
+
+1. *The schema panel.* The drawer shows the ORE XML path, the release that introduced the setting, the release that
+   removed it and the format, in one block. The prototype shows the same four entries inside the expanded documentation.
+2. *The two filter chips.* "Changed from default" and "Numbers impact" answer the question a reader asks of a long list.
+3. *A count of the changes not yet saved,* kept in view while a person edits.
+
+What it does not take up:
+
+1. *Settings that ORE does not have.* The review adds =inflationLagMonths= and =intradayFallbackMode= to the Setup block,
+   and a category named Sensor Management. No ORE release reads them. The prototype holds only settings that the guide
+   documents and the source reads.
+2. *Counts that do not agree.* The sidebar says 5, 12, 8 and 4 settings, and the table holds five in all.
+3. *Release numbers that were not measured.* The review gives =v1.8.0.1= as the release of =includeTodaysCashFlows=. The
+   measured release is 1.8.13.0.
+4. *A sidebar next to a tab bar.* Both name the same groups, and the tab bar does not switch anything.
+5. *Invented figures.* A "±0.042% variance" chart and an engine named =Intraday-v2.8.4= are fixtures with no source.
+6. *The word "intraday".* The file name and the title use it, and nothing in an ORE engine setting is intraday.
 
 * See also
 

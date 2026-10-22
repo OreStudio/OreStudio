@@ -712,6 +712,18 @@ public:
         }
     }
 
+    /// The value of each republished tick, in the order the ticks arrived.
+    std::vector<double> values() const {
+        std::vector<double> out;
+        std::lock_guard lock(mu_);
+        for (const auto& entry : seen_) {
+            const auto tick = ores::nats::default_wire_codec().decode<market_tick>(entry.second);
+            if (tick.has_value())
+                out.push_back(std::stod(tick->value));
+        }
+        return out;
+    }
+
     /// The age of each tick observed at or after @p since, in milliseconds, at the time it arrived.
     std::vector<double> ages_ms(std::chrono::system_clock::time_point since) const {
         std::vector<double> ages;
@@ -1078,4 +1090,45 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     CHECK(reader.count_since(base) == stored_before + part);
     CHECK(writer->written() == stored_before + part);
     CHECK(republished.load() == sent);
+}
+
+TEST_CASE("ticks_keep_their_order_when_bursts_and_slow_streams_alternate", tags) {
+    fixture f;
+    const auto source = bound_prefix + run_tag();
+    f.bind(source, "SYNTHETIC");
+    f.connect();
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+
+    // A burst makes batches that go through the stages, and a slow stream makes batches that
+    // the worker works through itself. Each tick carries its number as its value, so the
+    // republish shows whether any tick passed another.
+    republish_tap tap(f, tenant, party);
+    feed_ingest_loop loop(f.nats, f.h.context());
+    loop.start();
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
+    const auto uris = burst_uris();
+    std::size_t sent = 0;
+    const auto send = [&](std::size_t count, std::chrono::milliseconds pause) {
+        for (std::size_t i = 0; i < count; ++i) {
+            auto tick = tick_from(source, uris[sent % uris.size()]);
+            tick.value = std::to_string(++sent);
+            f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
+            if (pause.count() > 0)
+                std::this_thread::sleep_for(pause);
+        }
+    };
+
+    for (int round = 0; round < 4; ++round) {
+        send(3000, std::chrono::milliseconds(0));
+        send(40, std::chrono::milliseconds(3));
+    }
+
+    const auto deadline = burst_clock::now() + std::chrono::seconds(60);
+    while (tap.count() < sent && burst_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+    const auto values = tap.values();
+    CHECK(values.size() == sent);
+    CHECK(std::adjacent_find(values.begin(), values.end(), std::greater_equal<>{}) == values.end());
 }

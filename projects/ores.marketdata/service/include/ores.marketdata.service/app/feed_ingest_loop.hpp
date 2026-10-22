@@ -316,6 +316,10 @@ private:
     static constexpr std::size_t batch_limit = 20000;
     static constexpr std::size_t initial_batch_ticks = 500;
     static constexpr std::size_t min_batch_ticks = 50;
+    /// A batch of this many ticks or fewer, taken while no batch is in the stages, is worked
+    /// through by the worker itself. A handoff wakes a thread, which waits for a free CPU, so
+    /// a slow stream is faster without the stages. A burst makes larger batches at once.
+    static constexpr std::size_t inline_batch_ticks = 64;
     static constexpr std::int64_t target_batch_ms = 1000;
     /// A live tick older than this is dropped when the worker takes it.
     static constexpr std::chrono::milliseconds max_tick_age{5000};
@@ -344,6 +348,9 @@ private:
     batch_handoff<std::unique_ptr<prepared_batch>> handoff_{1};
     /// The copied batches that wait for their republish, one at most.
     batch_handoff<std::unique_ptr<prepared_batch>> announce_handoff_{1};
+    /// The batches that the worker handed to the stages and the third stage has not finished.
+    /// Only the worker adds to it, so a zero that the worker reads stays zero until it adds.
+    std::atomic<std::size_t> in_flight_{0};
     std::thread worker_;
     std::thread commit_thread_;
     std::thread announce_thread_;

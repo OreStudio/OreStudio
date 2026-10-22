@@ -25,6 +25,8 @@
 #include "ores.nats/config/nats_options.hpp"
 #include <iosfwd>
 #include <optional>
+#include <rfl.hpp>
+#include <string>
 
 namespace ores::marketdata::service::config {
 
@@ -48,6 +50,15 @@ struct options final {
      * @brief Base URL of the storage HTTP API, e.g. "http://localhost:8080".
      */
     std::string http_base_url;
+    /**
+     * @brief The role that copies ticks to the tick table. It connects to the database of
+     * @c database. Empty means that ticks are not copied.
+     */
+    std::string tick_writer_user;
+    /**
+     * @brief Password of the tick writer role.
+     */
+    rfl::Skip<std::string> tick_writer_password;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

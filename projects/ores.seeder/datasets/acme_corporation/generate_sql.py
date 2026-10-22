@@ -109,6 +109,9 @@ CONFIGURATION_DOCUMENTS = [
     ("risk_report_configs", "Risk Report Configurations",
      ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters",
       "configuration_market_bindings"]),
+    ("engine_settings", "Engine Settings",
+     ["engine_settings", "engine_settings_fixings", "engine_settings_building",
+      "engine_settings_execution"]),
 ]
 
 NETTING_COMPANIES = ["acme_group"] + COMPANIES

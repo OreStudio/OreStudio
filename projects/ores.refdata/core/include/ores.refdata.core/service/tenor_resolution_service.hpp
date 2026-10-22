@@ -83,9 +83,28 @@ public:
     [[nodiscard]] messaging::resolve_tenor_response
     preview(const messaging::preview_tenor_resolution_request& request) const;
 
+    /**
+     * @brief Resolves every tenor of a convention in one batch.
+     *
+     * The same question as @c resolve, asked once for each row the convention
+     * holds, so a screen that lays out the whole term structure makes one call.
+     * The calendar and each schedule are read once, and one engine call
+     * answers every row. The entries follow the catalogue's tenor order.
+     *
+     * A tenor that cannot be resolved is a refusal in its own entry and the
+     * others still carry their dates. A convention or a calendar that cannot
+     * be read at all is a refusal on the response and no entries.
+     *
+     * @param request The convention and calendar to resolve under, the
+     * horizon to count from, and the spot date when an anchor needs one.
+     */
+    [[nodiscard]] messaging::resolve_convention_response
+    resolve_convention(const messaging::resolve_convention_request& request) const;
+
 private:
     /// The whole of the resolution, once the three rows are in hand, whatever
-    /// put them there. Both entry points above are ways of arriving here.
+    /// put them there. Both single-tenor entry points above are ways of
+    /// arriving here.
     [[nodiscard]] messaging::resolve_tenor_response
     resolve_rows(const domain::tenor& tenor,
                  const domain::tenor_convention& convention,

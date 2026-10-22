@@ -25,6 +25,7 @@
     --accent-dim: #21262d;
     --ok: #22c55e;
     --warn: #eab308;
+    --stale: #e3b341;
     --bad: #ef4444;
     --info: #3b82f6;
     --violet: #a855f7;
@@ -491,3 +492,32 @@ a.btn.danger { color: var(--bad); }
     padding: 16px 0 6px; border-bottom: 1px solid var(--line);
 }
 .rows.grouped tr.grp th .dim { font-weight: 400; }
+
+/* Refresh, with the load time under it; gold means changed on the server */
+.refresh { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.loaded { font: 12px/16px var(--mono); color: var(--ink-faint); opacity: 0.5; }
+.btn.stale { border-color: var(--stale); color: var(--stale); }
+.btn.stale.pulse { animation: pulse 1.2s ease-out 4; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(227, 179, 65, 0.5); } 100% { box-shadow: 0 0 0 8px rgba(227, 179, 65, 0); } }
+@media (prefers-reduced-motion: reduce) { .btn.stale.pulse { animation: none; } }
+.rows tr.row-news td:first-child { box-shadow: inset 4px 0 0 var(--stale); }
+.strip { border: 1px solid #5a4a17; background: #201c10; color: var(--stale); padding: 8px 12px; border-radius: var(--radius); margin: 0 0 8px; font-size: 13px; }
+
+/* A person: avatar then name */
+.person { display: inline-flex; align-items: center; gap: 8px; }
+.avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px;
+    width: 24px; height: 24px; border-radius: 50%; background: var(--panel-2);
+    border: 1px solid var(--line); font-size: 10px; color: var(--ink-dim);
+}
+.timeline li.ph { grid-template-columns: 24px 96px 1fr; }
+
+/* A card holds one group of fields and the Edit that changes them */
+.card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 24px; }
+.card .cardhead { display: flex; align-items: center; justify-content: space-between; margin: 0 0 16px; }
+.card .cardhead h2 { margin: 0; font-size: 16px; }
+.cardgap { margin: 0 0 16px; }
+.loadedline { margin-left: 8px; font-size: 12px; color: var(--ink-faint); }
+
+.pagehead .actions { align-items: flex-start; }
+.pagehead .actions .access { margin-top: 8px; }

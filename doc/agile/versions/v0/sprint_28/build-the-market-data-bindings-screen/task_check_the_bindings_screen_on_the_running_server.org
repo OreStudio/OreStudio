@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/check-the-bindings-screen-on-the-running-server
-#+pr: 3601
+#+pr: 3627
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ It also checks the window control on the series page, because no component test 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -79,12 +79,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3627][#3627]] | [web] Check the bindings screen and polish its list and record page |
 | [[https://github.com/OreStudio/OreStudio/pull/3601][#3601]] | [web] Read a binding's history by its source name |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The source name and Feed links draw only when the page finds the feed. A party admin cannot read the System Party's Bloomberg feeds, so the links stay plain there. | BindingPage.tsx | Accept | Known and not a defect of the change. The bindings design is under review. |
 
 * Result
+
+The user ran the 15-step scenario on 2026-10-21 against the running server. Fourteen steps passed: the menu card, the list columns and rows, search, the kind filter, paging, the record page, the series link, the observation window, the oresmd URI column, the vendor step, edit, history with Revert, feed status, and add and delete.
+
+Step 2 failed. The site has no language control, so nobody can change the language to French or Portuguese. The translation catalogues exist, and the language provider has a setter, but no screen calls it. This is a gap of the site, not of the bindings screen.

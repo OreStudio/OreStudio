@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 0913264D-CBED-4995-A91D-10F42A60EC57
+:END:
+#+title: Task: Run a quiet loop in one thread
+#+description: At a slow rate the three stages add about 8 ms to the median wait of a tick and about 25 ms to the p99, because each handoff wakes another thread.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch: feature/run-a-quiet-loop-in-one-thread
+#+pr: 3628
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+When ticks arrive slowly, the loop prepares, copies and republishes each batch in the worker, as the serial loop did. When ticks arrive fast, the three stages run as they do now. A slow stream gets the wait of the serial loop and a burst keeps its throughput.
+
+Measured in the parent task (evidence file =overlap_age_at_republish_output.txt=, 5 runs at a load of about 6 on 8 CPUs): a stream of 500 ticks, one every 2 ms, was republished with a median age of 6.0 ms by the serial loop and 13.9 ms by the pipelined one, and a p99 of 16.9 ms against 42.1 ms. The cause is a guess: each handoff wakes a thread that waits for a free CPU. A burst shows the opposite, with a p99 age of 373 ms against 478 ms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Built and measured. Awaiting review.   |
+| Waiting on   | Nothing.                               |
+| Next         | Review.                                |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- When the loop is idle, the worker runs the three stages of a batch itself, in order, and the stream test shows a median age within 2 ms of the serial loop.
+- The order of the batches stays the one of arrival. A batch is not republished before a batch that came before it, and a test says so while a burst and a slow stream alternate.
+- The burst keeps a median above 110,000 rows per second through NATS over ten runs.
+- A failed copy still loses no tick and stores none twice, and the existing test passes.
+
+* Plan
+
+1. The worker counts the batches it handed to the stages that the third stage has not finished.
+2. A batch of 64 ticks or fewer, taken when that count is zero, is prepared, copied and republished
+   by the worker. Only the worker adds to the count, so a zero stays zero until the worker adds.
+3. Any other batch goes through the stages, as before.
+4. A test sends bursts and slow streams in turn, with the number of each tick as its value, and
+   checks that the republish keeps the order.
+5. The age test of the parent task measures the result.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Age at republish of a stream of 500 ticks, one every 2 ms, median of the 5 medians | 5.6 ms serial, 5.6 ms pipelined (13.9 ms before this task) | =evidence/quiet_serial_against_pipelined_output.txt=, =ORES_BURST_REPETITIONS=5 ... burst_serial_against_pipelined_through_nats= | 504cf5da69 |
+| Age of the stream, median of the 5 p99 values | 20.2 ms serial, 19.0 ms pipelined (42.1 ms before) | same | same |
+| Rows per second, serial against pipelined, median of 5 pairs | 113,374 against 128,239 | same | same |
+| Age at republish of a burst of 60,000 ticks, median of the 5 medians | 338.0 ms serial, 297.6 ms pipelined | same | same |
+| Age of the burst, median of the 5 p99 values | 491.5 ms serial, 417.2 ms pipelined | same | same |
+| Drain through NATS, 10 runs | median 135,200 rows per second (96,100 to 153,200) | =evidence/quiet_nats_10_runs_output.txt=, =ORES_BURST_REPETITIONS=10 ... burst_through_nats_and_the_worker_of_the_loop= | same |
+| Load of the machine | 4.3 to 7.3 on 8 CPUs | the =load= field of the output, =/proc/loadavg= | same |
+|      |       |         |        |
+
+* Notes
+
+- In one of the five pairs the pipelined loop gave fewer rows per second than the serial loop
+  (108,081 against 116,142 at a load of 6.4). One of the ten runs through NATS gave 96,100.
+- The limit of 64 ticks is a first value. A batch above it goes through the stages. No run here
+  tried another limit.
+- The order test is =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages=. A writer
+  holds the copy of a large batch at a gate, and the test sends one tick. It checks that the tick
+  is not republished while the large batch is held, and that the order holds after the gate
+  opens. The writer records the thread of each copy, so the test also shows that the small
+  batches were written by the worker and the large batch by the copy stage. With the check of
+  =in_flight_= removed, the test failed in 10 of 10 runs. With it, the test passed in 10 of 10.
+- The first version of the test, which sent bursts and slow streams in turn, failed in 3 of 5
+  runs with the check removed, so it was not a reliable guard. The gate replaced it.
+- At a load of 16 to 43 the test of a failed copy from #3623 failed in 3 of 10 runs with the quiet
+  path turned off and in about 3 of 9 with it on. That is not caused by this task. The task
+  =Wait on the backoff in the failed copy test= holds it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3628][#3628]] | [marketdata] Run a quiet loop in one thread |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The order test caught the removal of the =in_flight_= check in 3 of 5 runs | =app_feed_ingest_loop_tests.cpp= | Fixed | A gated writer holds a large batch in the copy stage, so the overlap is certain. 10 of 10 runs catch the removal. |
+| 2 | The class doc and the batch size comment did not mention the small batch | =feed_ingest_loop.hpp=, =feed_ingest_loop.cpp= | Fixed | Both now say it. |
+| 3 | A test waits 60 s when a tick is dropped | =app_feed_ingest_loop_tests.cpp= | Task | Added to =Wait on the backoff in the failed copy test=. |
+| 4 | The limit of 64 had no stated reason | =feed_ingest_loop.hpp= | Fixed | The constant is public and its comment says it is a tuning value, and why. |
+
+* Result
+
+A slow stream waits as long as in the serial loop again. The median age of a tick at republish is 5.6 ms in both loops, against 13.9 ms in the pipelined loop before. A burst keeps its gain: the median through NATS is 135,200 rows per second over ten runs, and the age of a burst at republish is lower than in the serial loop. A batch that the worker takes while the stages are idle and that has 64 ticks or fewer skips the handoffs. The republish keeps the order of the ticks.

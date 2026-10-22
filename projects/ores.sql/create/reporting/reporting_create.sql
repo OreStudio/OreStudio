@@ -71,6 +71,14 @@
 \ir ./reporting_risk_report_configs_notify_trigger_create.sql
 \ir ./reporting_risk_report_config_portfolios_create.sql
 \ir ./reporting_risk_report_config_books_create.sql
+\ir ./reporting_engine_settings_create.sql
+\ir ./reporting_engine_settings_notify_trigger_create.sql
+\ir ./reporting_engine_settings_fixings_create.sql
+\ir ./reporting_engine_settings_fixings_notify_trigger_create.sql
+\ir ./reporting_engine_settings_building_create.sql
+\ir ./reporting_engine_settings_building_notify_trigger_create.sql
+\ir ./reporting_engine_settings_execution_create.sql
+\ir ./reporting_engine_settings_execution_notify_trigger_create.sql
 \ir ./reporting_report_trigger_events_create.sql
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_fsm_guard_create.sql

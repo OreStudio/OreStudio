@@ -19,7 +19,7 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api } from '../../api/client.js';
@@ -42,14 +42,19 @@ import {
 } from '../../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
+import { useEntityChanges } from '../../events/useEntityChanges.js';
+import { useLoadState } from '../../events/useLoadState.js';
 import { Notice } from '../../ui/Primitives.js';
+import { RefreshButton } from '../../ui/RefreshButton.js';
 import { RelativeTime } from '../../ui/Time.js';
 import { BindingHistory } from './BindingHistory.js';
 import { heldBy, isSynthetic } from './bindingView.js';
-import { BINDINGS, VENDOR, bindingPath } from './bindingPaths.js';
+import { BINDINGS, BINDING_ENTITY, VENDOR, bindingPath } from './bindingPaths.js';
 import { BINDABLE, bindableSourcesStore } from './bindableSourcesStore.js';
 import { StatusTag } from './StatusTag.js';
 import { useBindingFacts } from './useBindings.js';
+import { oresmdQueries } from '../../oresmd/queries.js';
+import { useActingPartyId } from '../../session/SessionProvider.js';
 import { feedPageOf, folderChain } from '../synthetic/feedTree.js';
 
 /** The fields of the record, as the details tab and the history draw them. */
@@ -152,6 +157,29 @@ function BindingBody({
     const none = <span className="text-ink-faint">{'\u2014'}</span>;
     // The page is named for what the binding writes, not the source it consumes.
     const target = listed === undefined ? sourceName : titled(listed.identity);
+    // The page never reloads by itself. A change to the binding makes Refresh stale, and one
+    // Refresh reads the binding, its feed, its folders, its series and its history again. The
+    // activity behind Status and Last tick is polled and not listed, so each poll would
+    // otherwise make the page look freshly loaded.
+    const queries = useQueryClient();
+    const partyId = useActingPartyId();
+    const shown: readonly (readonly string[])[] = [
+        ['records', BINDINGS, 'key', show(binding['id'])],
+        ['bindings', 'feed', sourceName],
+        ['records', 'folders'],
+        ['history', BINDING_ENTITY, sourceName],
+        ...(partyId === undefined ? [] : [oresmdQueries.seriesList(partyId).queryKey]),
+    ];
+    const load = useLoadState(shown);
+    const news = useEntityChanges(
+        [{ component: 'marketdata', entity: 'feed_bindings', record: { source_name: sourceName } }],
+        load,
+    );
+    const refreshPage = (): void => {
+        for (const key of [...shown, ['bindings', 'activity']]) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
     const { tab, bar } = useRecordTabs({
         label: target,
         tabs: ['details', 'history'],
@@ -169,6 +197,7 @@ function BindingBody({
                 recordKey={sourceName}
                 version={binding.version}
                 subdued
+                own={<RefreshButton onClick={refreshPage} load={load} news={news} />}
                 onEdit={may.write && isSynthetic(kind) ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
@@ -177,6 +206,20 @@ function BindingBody({
                 <RecordDetails
                     specs={BINDING_FIELDS}
                     row={binding as never}
+                    drawn={
+                        feed === undefined
+                            ? {}
+                            : {
+                                  source_name: (
+                                      <Link
+                                          className="font-mono text-accent hover:underline"
+                                          to={feedPageOf(feed)}
+                                      >
+                                          {sourceName}
+                                      </Link>
+                                  ),
+                              }
+                    }
                     extra={[
                         [t('marketdata.bindings.status'), <StatusTag status={status} />],
                         [

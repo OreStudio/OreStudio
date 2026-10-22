@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-13
-#+environment: bright_faraday
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,12 +32,12 @@ that produced no analytics is a failed result carrying the engine's error.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Implemented. The verdict is a pure function in =ores.ore.core=, the wrapper judges every zero-exit run by it, and seven cases cover it. |
-| Waiting on   | The hourly validation build, then a run that fails, so the refusal is seen live. |
-| Next         | The hourly validation, then a run that fails so the refusal is seen live. |
-| Last touched | 2026-10-08                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The live run belongs to Prove the run end to end and keep it repeatable. |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

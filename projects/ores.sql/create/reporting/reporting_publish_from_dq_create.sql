@@ -309,3 +309,47 @@ comment on function ores_reporting_publish_risk_report_configs_from_dq_fn(uuid, 
 'Publishes the risk report configurations a dataset stages for the target party,
  each registered as a reporting configuration, with the portfolio scope a staged
  row names. A publish only inserts, so the mode has no effect.';
+
+-- Engine Settings: reporting.v1.ops.publish_engine_settings_from_dq
+--
+-- Publishes the engine settings a dataset stages for the target party. A
+-- document is the central row and the parts it stages, each part a row that
+-- names the central row by engine_settings_id. The central row is registered as
+-- a reporting configuration of type engine_settings, so a report definition
+-- binds it by name. A part that is not staged leaves the engine default for
+-- every setting in it.
+create or replace function ores_reporting_publish_engine_settings_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_party_id uuid;
+    r          record;
+begin
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    for r in
+        select * from ores_dq_publish_configuration_document_fn(
+            p_dataset_id, p_target_tenant_id, v_party_id,
+            'engine_settings', 'ores.reporting', 'ores_reporting_',
+            array['engine_settings', 'engine_settings_fixings',
+                  'engine_settings_building', 'engine_settings_execution'])
+    loop
+        action := r.action;
+        record_count := r.record_count;
+        return next;
+    end loop;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_reporting_publish_engine_settings_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the engine settings a dataset stages for the target party, each
+ registered as a reporting configuration. A publish only inserts, so the mode
+ has no effect.';

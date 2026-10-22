@@ -4469,11 +4469,173 @@ const fr: SourceCatalogue = {
         },
     },
 
+    // pricingEngines:begin
+    pricingEngines: {
+        author: {
+            next: 'Suivant',
+            steps: {
+                name: 'La nommer',
+                products: 'Choisir les produits',
+                engines: 'Choisir modèle et moteur',
+                settings: 'Régler les paramètres',
+                check: 'La contrôler',
+                save: 'Relire et enregistrer',
+            },
+            name: {
+                lead: 'Nommez la configuration, dites à quoi elle sert et choisissez le point de départ.',
+                start: 'Partir de',
+                startEmpty: 'Une configuration vide',
+                startCopy: 'Une copie de {name}',
+                copyOf: 'Copie de {name}',
+                inUse: 'Une configuration porte déjà ce nom.',
+            },
+            products: {
+                lead: 'Cochez chaque type de produit que cette configuration valorise. Chacun part de la paire que les exemples d’ORE utilisent le plus.',
+                search: 'Chercher un type de produit',
+                selected: '{count} sélectionné(s)',
+            },
+            engines: {
+                lead: 'Choisissez le modèle et le moteur qui valorisent chaque produit.',
+                unknown: 'Non connu comme valide',
+                usual: 'Utiliser la paire habituelle, {pair}',
+            },
+            settings: {
+                lead: 'Chaque paramètre appartient à un produit. Les paramètres habituels de la paire sont déjà là. Ajoutez les vôtres quand le moteur en accepte d’autres.',
+                none: 'Aucun paramètre. Le moteur utilise ses valeurs par défaut.',
+                remove: 'Retirer {name}',
+                addUsual: 'Ajouter les paramètres habituels : {names}',
+                scope: 'Portée',
+                name: 'Paramètre',
+                value: 'Valeur',
+                add: 'Ajouter un paramètre',
+            },
+            check: {
+                lead: 'Une erreur bloque l’enregistrement. Un avertissement et une note ne le bloquent pas.',
+                next: 'Relire',
+            },
+            save: {
+                lead: 'L’enregistrement écrit une configuration. Rien n’est écrit avant.',
+                summary: '{name} : {products} produits et {parameters} paramètres.',
+                next: 'Enregistrer la configuration',
+            },
+        },
+        workflows: {
+            author: 'Définir une configuration de moteur de valorisation',
+            authorBody:
+                'Choisissez les produits, le modèle et le moteur de chacun et les paramètres, puis enregistrez une configuration.',
+        },
+        title: 'Moteurs de valorisation',
+        lead: 'Les configurations de moteur de valorisation de la partie dans laquelle vous travaillez, avec les produits et les paramètres de chacune.',
+        columns: {
+            name: 'Configuration',
+            party: 'Partie',
+            variant: 'Variante',
+            products: 'Produits',
+            parameters: 'Paramètres',
+            modifiedBy: 'Modifié par',
+            changed: 'Modifié',
+        },
+        cell: {
+            noVariant: 'Aucune variante',
+            noDescription: 'Aucune description',
+        },
+        actions: {
+            addProduct: 'Ajouter un produit',
+            change: 'Modifier',
+            remove: 'Retirer',
+            delete: 'Supprimer la configuration',
+        },
+        source: {
+            ore_guide: 'Issu du guide ORE',
+            ore_code: 'Issu du code ORE',
+            authored: 'Rédigé pour ORE Studio, à relire',
+            unknown: 'Source non indiquée',
+        },
+        describe: {
+            none: 'Aucune description n’est conservée pour ce choix.',
+            pair: 'Comment ORE construit le moteur pour {type} :',
+        },
+        fields: {
+            required: 'obligatoire',
+            name: 'Nom',
+            party: 'Partie',
+            description: 'Description',
+            variant: 'Variante',
+            modifiedBy: 'Modifié par',
+            changed: 'Modifié',
+            model: 'Modèle',
+            engine: 'Moteur',
+            type: 'Type de produit',
+        },
+        record: {
+            details: 'Détails',
+            products: 'Produits ({count})',
+            noProducts: 'Cette configuration ne valorise aucun produit.',
+            noSettings: 'Aucun paramètre. Le moteur utilise ses valeurs par défaut.',
+            reachUnknown:
+                'Les rapports qui utilisent cette configuration ne peuvent pas encore être listés. Un changement touche la prochaine exécution de chaque rapport qui la lie.',
+            vocabularyUnread:
+                'Les modèles et les moteurs n’ont pas pu être lus, donc les produits ne peuvent pas être modifiés : {message}',
+        },
+        change: {
+            detailsTitle: 'Modifier {name}',
+            productTitle: 'Modifier la valorisation de {type}',
+            addTitle: 'Ajouter un produit à {name}',
+            removeTitle: 'Retirer {type}',
+            deleteTitle: 'Supprimer {name}',
+            unknownPair:
+                'Ce modèle et ce moteur ne sont pas connus pour valoriser ce produit. Vous pouvez les garder, mais l’exécution peut échouer.',
+            dropHeading: 'Paramètres que la nouvelle paire n’accepte pas',
+            dropHint: 'Cochez un paramètre pour le retirer. Un paramètre non coché est conservé.',
+            addHeading: 'Paramètres dont la nouvelle paire a habituellement besoin',
+            addHint: 'Cochez un paramètre pour l’ajouter avec sa valeur habituelle.',
+            valuesHeading: 'Paramètres',
+            everyTypeHeld: 'Cette configuration valorise déjà tous les types de produit.',
+            removeHint:
+                'Le produit et ses paramètres sont retirés. Le changement touche la prochaine exécution de chaque rapport qui lie cette configuration.',
+            deleteHint:
+                'Cela supprime la configuration, ses {products} produits et ses {parameters} paramètres. Un rapport qui la lie ne peut plus s’exécuter.',
+        },
+        diff: {
+            heading: 'Ce qui change',
+            none: 'Rien n’a encore changé.',
+            added: 'Ajouté',
+            removed: 'Retiré',
+            changed: 'Modifié',
+            configuration: 'configuration',
+            product: 'produit',
+            parameter: 'paramètre',
+        },
+        findings: {
+            heading: 'Contrôles',
+            clean: 'Tous les contrôles sont réussis.',
+            nameMissing: 'La configuration a besoin d’un nom.',
+            noProducts: 'La configuration a besoin d’au moins un produit.',
+            modelMissing: '{type} a besoin d’un modèle.',
+            engineMissing: '{type} a besoin d’un moteur.',
+            pairUnknown: '{detail} n’est pas connu pour valoriser {type}.',
+            typeRepeated: '{type} apparaît {detail} fois. Seul le premier est normalement utilisé.',
+            parameterRepeated: 'Le paramètre {detail} de {type} apparaît plusieurs fois.',
+            parameterMissingValue: 'Le paramètre {detail} de {type} n’a pas de valeur.',
+            settingUsual:
+                'ORE indique {detail} comme obligatoire pour {type}. Il n’est pas défini ici.',
+        },
+        save: {
+            save: 'Enregistrer',
+            conflict:
+                'Quelqu’un a modifié cette configuration après son ouverture. Relisez-la avant d’enregistrer.',
+            reload: 'Relire',
+        },
+    },
+    // pricingEngines:end
     reporting: {
         area: {
             title: 'Rapports',
             lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
             screens: {
+                pricingEngines: 'Moteurs de valorisation',
+                pricingEnginesBody:
+                    'Quel modèle et quel moteur valorisent chaque produit, pour la partie dans laquelle vous travaillez.',
                 reports: 'Rapports',
                 reportsBody:
                     "Les définitions qu'exécutent les parties où vous travaillez, et l'état de leur dernière exécution.",
@@ -4683,6 +4845,9 @@ const fr: SourceCatalogue = {
         feedsRun: 'démarrer et arrêter les flux synthétiques',
         reportDefinitionsRead: 'voir les définitions de rapport de vos parties',
         reportDefinitionsWrite: 'changer les définitions de rapport',
+        pricingEnginesRead: 'voir les configurations de moteur de valorisation',
+        pricingEnginesWrite: 'changer les configurations de moteur de valorisation',
+        pricingEnginesDelete: 'supprimer les configurations de moteur de valorisation',
     },
 
     unavailable: {

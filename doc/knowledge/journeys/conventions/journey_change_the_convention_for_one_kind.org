@@ -224,7 +224,7 @@ request.
 | Retire a document | Close a document a run should stop reading | =refdata.v1.<kind>_conventions.delete= | exists, not offered by this journey |
 | Choose which document a run takes | Mark one document of a kind as the one in use | (no default column, no default row) | missing |
 | Search the kind by a term | Filter the list by anything but the key | (the filter is =id_one_of= and nothing else) | missing |
-| The screen itself | Change a convention from the browser | (no BFF route) | missing |
+| The screen itself | Change a convention from the browser | =PUT /api/conventions/<family>=, open for the deposit and swap families only | partial |
 
 The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.put=,
 =refdata.v1.deposit_conventions.put=, =refdata.v1.ibor_index_conventions.put=
@@ -235,11 +235,11 @@ The =delete= exists and this journey does not send it. Retiring a document a run
 reads is a different decision from correcting it, and nothing checks that a
 document is unreferenced before it is closed.
 
-No BFF route serves conventions. This journey adds the write behind the route the
-reading journey adds, for example =PUT
-/api/refdata/parties/<party-id>/conventions/<kind>/<key>=, which reads the row's
-current version, sends the =put= with =must_match_version=, and returns the new
-version.
+=PUT /api/conventions/<family>= exists and sends the =put= with
+=must_match_version= when the body carries the version that was read. The BFF
+opens it for the deposit and swap families only. No route reads one document by
+its key, so the journey takes the current version from the page it read. This
+journey opens the other kinds.
 
 * What is missing
 

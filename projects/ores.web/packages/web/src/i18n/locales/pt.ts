@@ -4439,11 +4439,173 @@ const pt: SourceCatalogue = {
         },
     },
 
+    // pricingEngines:begin
+    pricingEngines: {
+        author: {
+            next: 'Seguinte',
+            steps: {
+                name: 'Dar-lhe um nome',
+                products: 'Escolher os produtos',
+                engines: 'Escolher modelo e motor',
+                settings: 'Definir os parâmetros',
+                check: 'Verificar',
+                save: 'Rever e guardar',
+            },
+            name: {
+                lead: 'Dê um nome à configuração, diga para que serve e escolha o ponto de partida.',
+                start: 'Partir de',
+                startEmpty: 'Uma configuração vazia',
+                startCopy: 'Uma cópia de {name}',
+                copyOf: 'Cópia de {name}',
+                inUse: 'Já existe uma configuração com este nome.',
+            },
+            products: {
+                lead: 'Marque cada tipo de produto que esta configuração avalia. Cada um parte do par que os exemplos do ORE mais usam.',
+                search: 'Procurar um tipo de produto',
+                selected: '{count} selecionado(s)',
+            },
+            engines: {
+                lead: 'Escolha o modelo e o motor que avaliam cada produto.',
+                unknown: 'Não conhecido como válido',
+                usual: 'Usar o par habitual, {pair}',
+            },
+            settings: {
+                lead: 'Cada definição pertence a um produto. As definições habituais do par já lá estão. Adicione as suas quando o motor aceitar outras.',
+                none: 'Sem definições. O motor usa os seus valores por omissão.',
+                remove: 'Remover {name}',
+                addUsual: 'Adicionar as definições habituais: {names}',
+                scope: 'Âmbito',
+                name: 'Definição',
+                value: 'Valor',
+                add: 'Adicionar definição',
+            },
+            check: {
+                lead: 'Um erro impede o registo. Um aviso e uma nota não impedem.',
+                next: 'Rever',
+            },
+            save: {
+                lead: 'O registo escreve uma configuração. Nada é escrito antes.',
+                summary: '{name}: {products} produtos e {parameters} definições.',
+                next: 'Guardar configuração',
+            },
+        },
+        workflows: {
+            author: 'Definir uma configuração de motor de avaliação',
+            authorBody:
+                'Escolha os produtos, o modelo e o motor de cada um e as definições, e guarde uma configuração.',
+        },
+        title: 'Motores de avaliação',
+        lead: 'As configurações de motor de avaliação da parte em que trabalha, com os produtos e as definições de cada uma.',
+        columns: {
+            name: 'Configuração',
+            party: 'Parte',
+            variant: 'Variante',
+            products: 'Produtos',
+            parameters: 'Definições',
+            modifiedBy: 'Alterado por',
+            changed: 'Alterado',
+        },
+        cell: {
+            noVariant: 'Sem variante',
+            noDescription: 'Sem descrição',
+        },
+        actions: {
+            addProduct: 'Adicionar produto',
+            change: 'Alterar',
+            remove: 'Remover',
+            delete: 'Eliminar configuração',
+        },
+        source: {
+            ore_guide: 'Do guia do ORE',
+            ore_code: 'Do código do ORE',
+            authored: 'Escrito para o ORE Studio, a rever',
+            unknown: 'Fonte não indicada',
+        },
+        describe: {
+            none: 'Não há descrição guardada para esta escolha.',
+            pair: 'Como o ORE constrói o motor para {type}:',
+        },
+        fields: {
+            required: 'obrigatório',
+            name: 'Nome',
+            party: 'Parte',
+            description: 'Descrição',
+            variant: 'Variante',
+            modifiedBy: 'Alterado por',
+            changed: 'Alterado',
+            model: 'Modelo',
+            engine: 'Motor',
+            type: 'Tipo de produto',
+        },
+        record: {
+            details: 'Detalhes',
+            products: 'Produtos ({count})',
+            noProducts: 'Esta configuração não avalia nenhum produto.',
+            noSettings: 'Sem definições. O motor usa os seus valores por omissão.',
+            reachUnknown:
+                'Os relatórios que usam esta configuração ainda não podem ser listados. Uma alteração chega à próxima execução de cada relatório que a liga.',
+            vocabularyUnread:
+                'Os modelos e os motores não puderam ser lidos, por isso os produtos não podem ser alterados: {message}',
+        },
+        change: {
+            detailsTitle: 'Alterar {name}',
+            productTitle: 'Alterar a avaliação de {type}',
+            addTitle: 'Adicionar um produto a {name}',
+            removeTitle: 'Remover {type}',
+            deleteTitle: 'Eliminar {name}',
+            unknownPair:
+                'Este modelo e este motor não são conhecidos por avaliar este produto. Pode mantê-los, mas a execução pode falhar.',
+            dropHeading: 'Definições que o novo par não aceita',
+            dropHint: 'Marque uma definição para a retirar. Uma definição não marcada é mantida.',
+            addHeading: 'Definições de que o novo par costuma precisar',
+            addHint: 'Marque uma definição para a adicionar com o seu valor habitual.',
+            valuesHeading: 'Definições',
+            everyTypeHeld: 'Esta configuração já avalia todos os tipos de produto.',
+            removeHint:
+                'O produto e as suas definições são removidos. A alteração chega à próxima execução de cada relatório que liga esta configuração.',
+            deleteHint:
+                'Isto elimina a configuração, os seus {products} produtos e as suas {parameters} definições. Um relatório que a liga deixa de poder correr.',
+        },
+        diff: {
+            heading: 'O que muda',
+            none: 'Ainda nada mudou.',
+            added: 'Adicionado',
+            removed: 'Removido',
+            changed: 'Alterado',
+            configuration: 'configuração',
+            product: 'produto',
+            parameter: 'definição',
+        },
+        findings: {
+            heading: 'Verificações',
+            clean: 'Todas as verificações passaram.',
+            nameMissing: 'A configuração precisa de um nome.',
+            noProducts: 'A configuração precisa de pelo menos um produto.',
+            modelMissing: '{type} precisa de um modelo.',
+            engineMissing: '{type} precisa de um motor.',
+            pairUnknown: '{detail} não é conhecido por avaliar {type}.',
+            typeRepeated: '{type} aparece {detail} vezes. Normalmente só o primeiro é usado.',
+            parameterRepeated: 'A definição {detail} de {type} aparece mais de uma vez.',
+            parameterMissingValue: 'A definição {detail} de {type} não tem valor.',
+            settingUsual:
+                'O ORE indica {detail} como obrigatório para {type}. Não está definido aqui.',
+        },
+        save: {
+            save: 'Guardar',
+            conflict:
+                'Alguém alterou esta configuração depois de a abrir. Leia-a de novo antes de guardar.',
+            reload: 'Ler de novo',
+        },
+    },
+    // pricingEngines:end
     reporting: {
         area: {
             title: 'Relatórios',
             lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
             screens: {
+                pricingEngines: 'Motores de avaliação',
+                pricingEnginesBody:
+                    'Que modelo e que motor avaliam cada produto, para a parte em que trabalha.',
                 reports: 'Relatórios',
                 reportsBody:
                     'As definições que as partes onde trabalha executam, e o estado da última execução de cada uma.',
@@ -4653,6 +4815,9 @@ const pt: SourceCatalogue = {
         feedsRun: 'iniciar e parar os feeds sintéticos',
         reportDefinitionsRead: 'ver as definições de relatório das suas partes',
         reportDefinitionsWrite: 'alterar definições de relatório',
+        pricingEnginesRead: 'ver as configurações de motor de avaliação',
+        pricingEnginesWrite: 'alterar as configurações de motor de avaliação',
+        pricingEnginesDelete: 'remover as configurações de motor de avaliação',
     },
 
     unavailable: {

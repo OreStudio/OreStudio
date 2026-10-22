@@ -113,7 +113,7 @@ build and reads mock data only. The page marks each server gap this journey name
 | Read what a match is | Read one document | =refdata.v1.<kind>_conventions.get= | exists |
 | Read what a match is | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
 | Read what a match is | Read the sets that name it | (a configuration has no children) | missing |
-| The screen itself | Search conventions from the browser | (no BFF route) | missing |
+| The screen itself | Search conventions from the browser | =GET /api/conventions/<family>= pages by offset and limit, with no filter | partial |
 
 * What is missing
 
@@ -135,8 +135,9 @@ build and reads mock data only. The page marks each server gap this journey name
    empty.
 5. *A tenant kind is searched across every party.* =currency_pair=, =ibor_index=,
    =overnight_index= and =tenor= carry no =party_id=. The screen states the scope.
-6. *No BFF route serves conventions.* The journey adds a read, for example
-   =GET /api/refdata/parties/<party-id>/conventions/<kind>?terms=...=.
+6. *The page route has no filter, no order and no search.*
+   =GET /api/conventions/<family>= sends an empty filter and no order. The journey
+   adds a terms argument, for example =GET /api/conventions/<family>?terms=...=.
 
 * Related journeys
 

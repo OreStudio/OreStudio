@@ -95,6 +95,8 @@ export interface RunConfigurationImportExecuteResult {
     world_conventions_kept: string[];
     /** FX conventions, which have no store yet. */
     fx_conventions_skipped: string[];
+    /** Setup parameters the model does not hold and the import dropped, one warning each. */
+    warnings: string[];
     report_definition_id: string;
     /** Whether reporting stored the run document, which the undo deletes. */
     run_document_saved: boolean;

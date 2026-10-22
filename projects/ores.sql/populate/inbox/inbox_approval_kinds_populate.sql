@@ -29,6 +29,10 @@
  * answers asks the member to wait forever. The inbox closes it when a decider
  * reaches for it, and again on its own sweep, so a queue nobody opens does not
  * rot either.
+ *
+ * An operational authorisation request does not expire: an unreleased trade is
+ * a risk that a timeout must not hide. It allows a hold and asks for a comment
+ * on every decision, as the operational authorisation queue does.
  */
 
 \echo '--- Approval Kinds ---'
@@ -51,6 +55,11 @@ insert into ores_inbox_approval_kinds_tbl (
      'A person proposes changes to counterparties, their identifiers and the parties that may trade with them',
      'inbox::approvals:decide_operations',
      false, false, 14, 'counterparty_apply_workflow', 24, 1, 30,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'trading.operational_authorisation', 0, 'Operational authorisation',
+     'Operations is asked to release a live trade',
+     'inbox::approvals:decide_operations',
+     true, true, null, null, null, 1, 40,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

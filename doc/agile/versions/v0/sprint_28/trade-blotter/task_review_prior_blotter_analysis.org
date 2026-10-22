@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade_blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/design-the-blotter-import
+#+pr: 3617
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-10-19
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,12 +47,12 @@ implementation is scoped:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                             |
 
 * Acceptance
 
@@ -67,11 +67,22 @@ implementation is scoped:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Check each claim of the May plans against the code. Write the result
+as an investigation under the story. Take the decisions into the
+story. Scaffold the implementation tasks.
 
 * Notes
+
+The design is in [[id:04CE05B4-CA42-4C40-A119-61C36C69A953][Investigation: the blotter and import design]].
+
+The task asked for a design that connects the Pending Book to the
+workspaces. The workspaces no longer exist, so the design answers a
+different question: what does a real import use in place of the Pending
+Book. The answer is the authorisation queue.
+
+I checked each statement about the code with a search of the tree. I
+did not run the import. I did not check that a second ORE import of the
+same files books no trade twice. The import task starts with that check.
 
 * Test Scenarios
 
@@ -88,12 +99,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3617][#3617]] | [agile] Design the blotter and import on the sandbox model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The commit removed the Status, Acceptance, Tasks and Decisions sections of the story. A bad edit broke the Goal paragraph. | story.org | Accept | Restored all sections with the new task rows. |
+| 2 | The workspace plan gave the supersede date as 2026-10-05. | doc/plans/2026-05-17-workspace-design.org | Accept | Changed to 2026-10-21. |
+| 3 | The sandbox page change, a failed row is reported and not stored, had no owner. | investigation_blotter_import_design.org | Accept | Added to the import task's acceptance. |
+| 4 | The investigation mixed two spellings of the trade blotter filetag. | investigation_blotter_import_design.org | Accept | Kept the hyphen form. |
+| 5 | The double-book check should be a gate in the import task. | task_import_real_deals_through_the_authorisation_queue.org | Accept | Stated first in its acceptance. |
+| 6 | The plan STATUS lines were long. | doc/plans | Accept | Shortened to a pointer. |
+| 7 | Uneven padding in a scaffolded table. | task_build_book_a_trade.org | Decline | Generator output. |
 
 * Result
+
+The design is written. It is the investigation
+[[id:04CE05B4-CA42-4C40-A119-61C36C69A953][the blotter and import design]].
+
+- The Pending Book and the =is_live= marker are retired. The sandbox,
+  the =draft= state and the operational authorisation status replace
+  them.
+- The workspace dependency is gone. The story no longer waits.
+- The partial-success part of the May plan is built.
+- The open part is narrow: a real import must raise authorisation
+  requests, and a row that fails must be reported and not stored.
+- The three backlog captures each have a call. Positions and the
+  trade-expiry workflow stay out. The dialog split is answered by the
+  trade page.
+- Seven implementation tasks are in the story, from the authorisation
+  kind to the queue screen.

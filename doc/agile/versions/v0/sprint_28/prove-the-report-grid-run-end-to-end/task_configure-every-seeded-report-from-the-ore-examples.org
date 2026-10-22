@@ -40,12 +40,12 @@ carry none.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-08                               |
+| Now          | The seed carries a risk report configuration for every party and switches an analytic on in each. Fidelity to the ORE examples and the root portfolio scope are not checked.                       |
+| Waiting on   | A read of the seeded configurations against =external/ore= examples.                               |
+| Next         | Compare the seeded configurations with the examples, then close or list the gaps.                  |
+| Last touched | 2026-10-21                               |
 
 - Every report definition =acme_demo= seeds for ACME either carries a
   configuration that resolves to at least one book, or is recorded as

@@ -355,6 +355,7 @@ def cmd_setup(project_root, env, args):
         "-v", f"compute_wrapper_user={env.get('ORES_DB_COMPUTE_WRAPPER_USER', '')}",
         "-v", f"test_ddl_user={env.get('ORES_TEST_DB_DDL_USER', '')}",
         "-v", f"test_dml_user={env.get('ORES_TEST_DB_USER', '')}",
+        "-v", f"marketdata_writer_user={env.get('ORES_MARKETDATA_SERVICE_WRITER_DB_USER', '')}",
     ] + _svc_psql_args(env, names, with_passwords=False) + [
         "-f", "setup_schema.sql",
     ]
@@ -415,7 +416,9 @@ def cmd_recreate(project_root, env, args):
                 "ORES_TEST_DB_USER", "ORES_DB_DDL_PASSWORD",
                 "ORES_DB_SHELL_PASSWORD", "ORES_DB_HTTP_PASSWORD",
                 "ORES_TEST_DB_DDL_PASSWORD", "ORES_TEST_DB_PASSWORD",
-                "ORES_DB_READONLY_PASSWORD"]
+                "ORES_DB_READONLY_PASSWORD",
+                "ORES_MARKETDATA_SERVICE_WRITER_DB_USER",
+                "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD"]
     for svc in names:
         upper = svc.upper() + "_SERVICE"
         required += [f"ORES_{upper}_DB_USER", f"ORES_{upper}_DB_PASSWORD"]
@@ -475,6 +478,8 @@ def cmd_recreate(project_root, env, args):
         "-v", f"test_ddl_password={env['ORES_TEST_DB_DDL_PASSWORD']}",
         "-v", f"test_dml_password={env['ORES_TEST_DB_PASSWORD']}",
         "-v", f"ro_password={env['ORES_DB_READONLY_PASSWORD']}",
+        "-v", f"marketdata_writer_user={env['ORES_MARKETDATA_SERVICE_WRITER_DB_USER']}",
+        "-v", f"marketdata_writer_password={env['ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD']}",
     ] + _svc_psql_args(env, names, with_passwords=True) + [
         "-v", f"db_name={db_name}",
     ]

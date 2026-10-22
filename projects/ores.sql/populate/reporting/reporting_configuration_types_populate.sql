@@ -22,12 +22,13 @@
  * Configuration Types Population Script
  *
  * Seeds the configuration_types lookup for the system tenant with the
- * seventeen kinds of ORE configuration document a report can bind. This
+ * nineteen kinds of ORE configuration document a report can bind. This
  * script is idempotent.
  *
  * The kinds are the global elements of ORE's configuration schemas under
  * external/ore/xsd. The run document is the one kind a report does not read as a
- * file: risk_report_config holds the run settings the run document is generated
+ * file: engine_settings holds the Setup parameters that choose how the engine runs,
+ * in three parts, and risk_report_config holds the run settings the run document is generated
  * from, shared by the definitions that bind it. Trades, portfolios, collateral
  * balances, the script library
  * and shared type fragments are not configuration. run_parameter is the
@@ -62,7 +63,8 @@ begin
             (15, 'ibor_fallback',            'IBOR fallback',            'IborFallbackConfig',      'ores.refdata',   'iborFallbackConfig'),
             (16, 'counterparty_information', 'Counterparty information', 'CounterpartyInformation', 'ores.refdata',   'counterpartyFile'),
             (17, 'netting_set_definitions',  'Netting set definitions',  'NettingSetDefinitions',   'ores.trading',   'csaFile'),
-            (18, 'risk_report_config',       'Risk report configuration', 'ORE',                    'ores.reporting', null)
+            (18, 'risk_report_config',       'Risk report configuration', 'ORE',                    'ores.reporting', null),
+            (19, 'engine_settings',          'Engine settings',          'ORE',                     'ores.reporting', null)
         ) as k(display_order, code, name, ore_root_element, owning_component, run_parameter)
     loop
         -- Every version of a kind that predates the mapping columns, current or

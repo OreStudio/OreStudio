@@ -30,6 +30,8 @@ const std::string tags("[app][tick_plan]");
 
 using ores::marketdata::domain::feed_binding;
 using ores::marketdata::messaging::market_tick;
+using ores::marketdata::service::app::make_targets;
+using ores::marketdata::service::app::name_datum;
 using ores::marketdata::service::app::plan_tick;
 using ores::marketdata::service::app::tick_drop;
 
@@ -103,16 +105,58 @@ TEST_CASE("a_tick_from_a_source_with_several_bindings_has_one_target_each", tags
 
     REQUIRE(plan.has_value());
     CHECK(plan->value == 1.0845);
-    REQUIRE(plan->targets.size() == 2);
-    CHECK(plan->targets[0].binding == bindings[0]);
-    CHECK(plan->targets[1].binding == bindings[1]);
+    REQUIRE(plan->targets->size() == 2);
+    CHECK((*plan->targets)[0].binding == bindings[0]);
+    CHECK((*plan->targets)[1].binding == bindings[1]);
     const auto token = ores::marketdata::domain::subject_token(eur_usd_spot);
-    CHECK(plan->targets[0].subject ==
+    CHECK((*plan->targets)[0].subject ==
           "marketdata.v1.ops.market_tick.11111111-1111-1111-1111-111111111111."
           "22222222-2222-2222-2222-222222222222." +
               token);
-    CHECK(plan->targets[1].subject ==
+    CHECK((*plan->targets)[1].subject ==
           "marketdata.v1.ops.market_tick.33333333-3333-3333-3333-333333333333."
           "44444444-4444-4444-4444-444444444444." +
               token);
+}
+
+TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series", tags) {
+    const auto named = name_datum(eur_usd_spot);
+
+    REQUIRE(named.has_value());
+    CHECK((*named)->uri == eur_usd_spot);
+    CHECK((*named)->series_uri ==
+          "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
+}
+
+TEST_CASE("a_uri_that_names_no_datum_is_not_named", tags) {
+    const auto named = name_datum("oresmd://fx/EUR?type=quote");
+
+    REQUIRE_FALSE(named.has_value());
+    CHECK(named.error() == tick_drop::unnameable_datum);
+}
+
+TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", tags) {
+    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
+                                                          "22222222-2222-2222-2222-222222222222")};
+    const auto named = name_datum(eur_usd_spot).value();
+    const auto targets = make_targets(bindings, *named);
+
+    const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), bindings, named, targets);
+
+    REQUIRE(plan.has_value());
+    CHECK(plan->named == named);
+    CHECK(plan->targets == targets);
+    CHECK((*targets)[0].tenant_text == "11111111-1111-1111-1111-111111111111");
+    CHECK((*targets)[0].party_text == "22222222-2222-2222-2222-222222222222");
+}
+
+TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number", tags) {
+    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
+                                                          "22222222-2222-2222-2222-222222222222")};
+
+    const auto plan = plan_tick(
+        make_tick(eur_usd_spot, "one point oh"), bindings, name_datum(eur_usd_spot).value());
+
+    REQUIRE_FALSE(plan.has_value());
+    CHECK(plan.error() == tick_drop::not_a_number);
 }

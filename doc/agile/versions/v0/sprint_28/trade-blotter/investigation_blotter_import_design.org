@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 04CE05B4-CA42-4C40-A119-61C36C69A953
+:END:
+#+title: Investigation: the blotter and import design
+#+description: Re-check of the May 2026 import plan against the code and the sandbox model: what still holds, what the sandbox replaced, and the design the blotter and the import now rest on.
+#+type: investigation
+#+level: s1
+#+filetags: :trade-blotter:sprint_28:v0:analysis:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the May 2026 import plan, checked against the code and the sandbox model.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The Trade Blotter story rests on a May 2026 design. The design has two plans: [[proj:doc/plans/2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] and [[proj:doc/plans/2026-05-17-workspace-design.org][Workspace: Isolated Data Context Design]]. The story says that the Pending Book mechanism was designed and never built, and that the blotter waits on the workspace story.
+
+Much changed after May. Sprint 26 added sandboxes and virtual books. Sprint 27 removed the workspaces. The trade became an anchor with components. The trade lifecycle gained a draft state. The inbox gained approval requests. The question of this task is how much of the May design still stands.
+
+* Methodology
+
+I read both plans in full. I read the [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]], [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]], [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] and [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade blotter]] pages and the three backlog captures. I then checked each claim of the plans against the code:
+
+- the trade, trade booking and trade state tables in =projects/ores.sql/create/trading=;
+- the =trade_status= machine in =projects/ores.sql/populate/dq/dq_fsm_trade_status_populate.sql=;
+- the approval kinds in =projects/ores.sql/populate/inbox=;
+- the ORE import planner and the execute handler in =projects/ores.ore=;
+- the workflow step outcomes in =projects/ores.workflow=;
+- the state of the workspace stories in sprints 26 and 27.
+
+I searched the code for the names the May plan introduced: =is_live=, =import_session=, a pending book and a pending state. None exists.
+
+* Paths taken
+
+** The Pending Book
+
+The plan holds imported trades in a system book, in a new =pending= state, with a nullable counterparty and a nullable book. I checked whether the new model can hold that.
+
+- The trade anchor has no nullable book. A booking names a book, and the book column is not null.
+- The anchor allows no counterparty only for an intra-entity trade.
+- The =trade_status= machine has four states: =draft=, =live=, =expired= and =cancelled=. It has no =pending= state.
+- The sandbox page states the rule that replaces the Pending Book. A real deal is never imported into a sandbox. It is booked into a real book at once. Operations holds it as unauthorised until the queue releases it.
+
+So the Pending Book answers a real risk with a mechanism that no longer fits. The risk is that dirty data reaches risk and P&L at once. The new model meets the risk with the operational authorisation status. That status is not a state of the trade. A trade contributes to risk when it is live and authorised.
+
+** The authorisation control
+
+The control exists as knowledge and as inbox machinery. The inbox holds approval kinds, requests, decisions and policies. The code does not yet join the two. The seed file holds three kinds: =iam.role_grant=, =refdata.book_change= and =refdata.counterparty_change=. It holds no =trading.operational_authorisation= kind, and no trade write raises a request.
+
+** The is_live marker
+
+The plan adds an =is_live= flag to every reference table that an import touches. The sandbox model does the same work with sources. Imported market data enters the universe under its own source. The official configuration does not resolve to that source. A configuration that an import brings has its own name. Nothing in the code carries =is_live=. Nothing needs it.
+
+** The workspace link
+
+The plan copies from a workspace to the live workspace through the Pending Book. The workspace feature is gone. The story "Workspaces: finish the feature" is abandoned and "Remove workspaces from every component" is done. The blotter story still lists the first as its blocker. The blocker is dead.
+
+** Partial success
+
+The plan asks for a =completed_with_warnings= outcome and a list of failed items. The workflow has both. The step outcome has the value =completed_with_warnings=. The import result carries =item_errors=, and the execute handler sets the outcome from them. This part of the plan is complete.
+
+** The Data Import Session window
+
+The window has a batch selector, a unit selector and one tab for each data type. The code has no such window. The ORE import already runs into a sandbox. The execute handler books a trade as =test= when it imports into a sandbox, and as =actual= otherwise. The ORE portfolio prototype now chooses the sandbox and the functional currency of the new books. The sandbox page says an import is a run of a process with an identity, and refers to trade sets and trade groups. Another environment works on tracing a process run and the trade groups it creates.
+
+** The blotter vision
+
+The blotter page is a May domain reference. It predates the entity screen specification and the trade shape. The prototypes of this story now answer most of it.
+
+| Blotter element | Where it is now |
+|-----------------+-----------------|
+| Deal grid | The trade list. A row is a trade or a structure. |
+| New | Book a trade, with a structure card for a leg. |
+| Clone | A hypothetical copy in a sandbox, joined by a what-if copy link. |
+| Amend | The Edit pattern with a change reason. |
+| Cancel and expire | Transitions of the =trade_status= machine. |
+| Link and unlink | The Links tab, and the Members tab of the structure page. |
+| Structure view | The structure page, with a Price tab. |
+| STP panel | The operational authorisation queue. It is a screen for Operations, not part of the blotter. |
+| Expiry, Fixing, Barrier, Delta and Spike screens | Separate lifecycle screens. Out of scope here. |
+| Allocate, roll forward and aggregate | Not drawn. The knowledge pages on allocation, merge and compression describe them. |
+
+** The list read model
+
+Each trade component has its own list operation: trades, bookings, states and so on. The code has no operation that returns one row for a trade with its book, status, counterparty and authorisation status. The prototype list needs that row. It also needs structures as rows of the same level. A row that joins components in the client costs one call for each component. A row that the service joins costs one query.
+
+The web client has no trade screen yet. The packages hold the generated wire types and the BFF only.
+
+* Conclusions
+
+1. The Pending Book does not get built. The sandbox, the draft state and the authorisation status replace it. A design that builds it would give the trade a second holding area beside the authorisation queue.
+2. The =is_live= marker does not get built. Sources and named configurations replace it.
+3. The workspace dependency is gone. The story can start its implementation tasks now.
+4. The partial-success part of the plan is built. No task remains for it.
+5. The part of the plan that is still open is narrow. A real import must raise authorisation requests. The ORE importer must report a row that it cannot book, and the user must be able to correct it. The old plan covered this with staged rows. The new model has no staging row, so a failed row is reported and nothing is stored.
+6. The blotter is a trade list and a trade page. The prototypes specify both. The first missing piece is the read model under the list.
+7. The authorisation queue is a second screen. It belongs to Operations and it uses the inbox.
+
+* Recommendations
+
+** Decisions
+
+- *Pending Book:* retire it. Record the retirement on the plan page and on the sandbox page.
+- *Real imports:* book into a real book at once. Raise an operational authorisation request for each new live trade. Use the inbox. Do not add a trade state.
+- *Rows that cannot be booked:* report them with the source file, the trade id and the message. Store nothing. The user corrects the source or the counterparty mapping and runs the import again. This needs a check that a second run does not double-book. Treat that check as the first step of the import task.
+- *Read model:* build one service query that returns the list rows. A row holds the trade or the structure, the book, the status, the counterparty, the authorisation status and the instrument type. The service pages, sorts and filters. The client does no joining.
+- *Blocker:* remove the workspace dependency from the story.
+
+** The three backlog captures
+
+| Capture | Call | Reason |
+|---------+------+--------|
+| Positions domain model | Out | The capture predates the trade shape. A position derives from live and authorised trades, so it needs its own design. The blotter does not need it. |
+| Separate trade and instrument dialogs | In, answered | The trade page has a Details tab and an Instrument tab, so the question is settled by the prototype. Close the capture when the trade page ships. |
+| Trade-expiry workflow | Out | The =expire= transition exists in the machine. The workflow cascades to positions and P&L, so it waits for the positions work. |
+
+** Implementation tasks
+
+Create these under the story, in this order.
+
+1. *Seed the operational authorisation kind.* Add the =trading.operational_authorisation= approval kind. Raise a request when an actual trade goes live. Decide who may decide it.
+2. *Read the trade list rows.* Build the list query from the decision above.
+3. *Build the trade list and the trade page* in the web client, from the two prototypes.
+4. *Build Book a trade* from its prototype. Include the structure card.
+5. *Build the structure page* from its prototype.
+6. *Import real deals through the authorisation queue.* Make the ORE import raise requests. Report the rows that fail. Prove a second run is safe.
+7. *Build the authorisation queue screen* for Operations.
+
+The prototype task left four items open. Each needs a decision before its screen: the enforcement of a change reason that requires commentary, a screen to add a Hedge or UserDefined link, the links that Exercise, CloseOut, Roll and MisbookingCorrection events write, and the permission that shows each trade tab. Settle them in tasks 3 and 4.
+
+** Pages to update when the tasks land
+
+- The two May plans: mark the Pending Book and the workspace import as superseded.
+- The sandbox page: state that a failed import row is reported and not stored.
+- The story: drop the workspace blocker and add the tasks above.
+
+* See also
+
+- [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Story: Trade Blotter]] — the story this record belongs to.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — the model that replaced the workspace and the Pending Book.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]] — the staging area for real deals.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] — the =draft= state and the Execute transition.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade blotter]] — the May domain reference.
+- [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]] — the anchor and its components.

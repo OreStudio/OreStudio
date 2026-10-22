@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 7311A270-A180-4BE0-8583-2498D6BAB99D
+:END:
+#+title: Task: Write a bond issue as one unit
+#+description: One trading operation writes a bond issue with its leg, amounts, rate and schedule in one unit of work, so a security is whole or absent.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+owner: marco
+#+branch: feature/write-a-bond-issue-as-one-unit
+#+pr: 3629
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bond issue is written by one operation in one transaction. The synthetic writer calls it, and the completeness check and the write-order logic are gone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- One operation writes an issue with its leg, amounts, rate and schedule, or none of them.
+- The issue is create-only. A second write of the same issue answers =already_exists= when the terms are equal and =content_differs= when they are not. Either answer leaves the first whole.
+- A refused child write leaves no issue row.
+- The synthetic writer calls the operation. issue_complete and write_issue_leg are deleted. ensure_issue stays as the one call to the operation, and treats =already_exists= as present.
+- A database-backed test proves the rollback.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Model =put_bond_issue_composite= in =ores.trading.trade_operations.org=: the issue and eight child lists in, one =result= out. Regenerate the protocol header and the TS twin.
+2. Add the service method. It opens a =unit_of_work=, reads the issue by =issue_id= through the transaction, and answers a conflict when the issue is stored. Otherwise it writes every row with =must_not_exist= and commits once.
+3. Compare a stored issue by terms: copy the stored audit members onto the incoming row and use =operator===. Compare the child lists as sets.
+4. Add the handler and the registrar entry. The permission is =trading::bond_issues:write=.
+5. Rewrite the synthetic writer to send one request for each issue.
+6. Prove it with database-backed tests, then with a provisioned Acme tenant.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Full suite | 96 of 96 passed | =./compass.sh test run= | 86340bf7ca |
+| Trading core suite after the review edits | passed | =./compass.sh test run -- -R ores.trading.core.tests= | the review commit |
+| Bond issues on a provisioned Acme tenant | 16 issues, 16 legs, 32 amounts, 16 rates, 16 schedules, none incomplete | =./compass.sh db sql= with a count of each table | 86340bf7ca |
+| Second generation run | wrote 0, already present 8 for each of 4 configs; row counts unchanged | =synthetic generate-trades= for the 4 configs | 86340bf7ca |
+
+* Notes
+
+Rule, set by the owner on 2026-10-21: booking has nothing specific to
+synthetic. The synthetic component generates trades. It builds the same
+requests a regular booking sends and sends them through the same
+operations. The UX uses the same operations to book.
+
+What makes this the only booking interface:
+
+- Synthetic uses the operations (this task and the next).
+- The ORE import moves onto them, in a separate story. It then only parses
+  the ORE document into the same requests, as synthetic only generates
+  them. Until then it keeps its N calls and its =close_bookings=
+  compensation.
+- The entity puts stop creating the parts of a new trade and stay only for
+  editing an existing trade. Not sized yet. A check should enforce it.
+
+Today no UX code calls =book_trade=. Only synthetic and the ORE import do.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3629][#3629]] | [trading] Write a bond issue as one unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3612][#3612]] | [doc] Add the trade booking architecture and its tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The doc comment of =export_portfolio= sat on the new handler | trade_operations_handler.hpp | accept | Fixed: each handler has its own comment. |
+| 2 | Two blank lines before the new service method | trade_operations_service.cpp | accept | Fixed. |
+| 3 | The existence check uses the issue id only. A second issue id with the same security id fails at the unique index as =internal_error=. | trade_operations_service.cpp | decline | The synthetic planner derives the issue id from the security id. The page names the key as =issue_id=. A later caller can add the check. |
+| 4 | misspell-fixer reports hits | other files | decline | No hit is in a file this change touched. |
+| 5 | A parallel first write of one issue id fails at the store as =internal_error= | trade_operations_service.cpp | accept | Fixed: a failed write re-reads in a new transaction and answers from the comparison when the issue is stored. Not tested: a race needs two connections. |
+| 6 | =same_rows= is not a one-to-one match | trade_operations_service.cpp | accept | Fixed: each incoming row removes the stored row it matched. |
+| 7 | The existence check uses the issue id only | trade_operations_service.cpp | decline | Same as row 3. |
+| 8 | The create and the conflict answers log at debug only | trade_operations_service.cpp | accept | Fixed: one info line for each. |
+| 9 | =same_terms= depends on the audit member list | trade_operations_service.cpp | accept | Fixed: a comment names the contract. |
+| 10 | No test sends the optional child types | service_trade_operations_service_tests.cpp | accept | Fixed: three tests cover repeat, a change in each type, and a missing child. |
+| 11 | The branch holds the docs commits of #3612 | the PR | decline | Merge #3612 first. |
+| 12 | =from_double= is called twice for the face value | trading_trade_population_writer.cpp | accept | Fixed: one local. |
+
+* Result
+
+One operation, =trading.v1.ops.put_bond_issue_composite=, writes a bond issue with its legs, amounts, rates, schedules, schedule dates, amortisations, call dates and conversion targets in one unit of work. A refused child row leaves no issue. A second write of the same issue answers =already_exists= when the terms are equal and =content_differs= when they are not. Neither writes.
+
+The synthetic writer sends one request for each issue. =issue_complete= and =write_issue_leg= are deleted. A provisioned Acme tenant holds 16 whole issues, and a second generation run writes nothing.
+
+Not done: the existence check does not look at the security id. See review row 3.

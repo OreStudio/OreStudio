@@ -1,0 +1,26 @@
+RESULT serial against pipelined run 1: serial 113523, pipelined 150563 rows per second, load 4.3
+RESULT age at republish, serial burst run 1: 60000 of 60000 republished, median 280.1 ms, p99 416.1 ms, max 416.6 ms
+RESULT age at republish, pipelined burst run 1: 60000 of 60000 republished, median 222.4 ms, p99 343.4 ms, max 344.4 ms
+RESULT age at republish, serial stream run 1: 500 of 500 republished, median 5.6 ms, p99 16.6 ms, max 22.9 ms
+RESULT age at republish, pipelined stream run 1: 499 of 500 republished, median 5.9 ms, p99 18.1 ms, max 23.1 ms
+RESULT serial against pipelined run 2: serial 113374, pipelined 128239 rows per second, load 6.5
+RESULT age at republish, serial burst run 2: 60000 of 60000 republished, median 339.4 ms, p99 491.5 ms, max 492.1 ms
+RESULT age at republish, pipelined burst run 2: 60000 of 60000 republished, median 282.3 ms, p99 453.3 ms, max 453.7 ms
+RESULT age at republish, serial stream run 2: 499 of 500 republished, median 5.6 ms, p99 12.3 ms, max 13.9 ms
+RESULT age at republish, pipelined stream run 2: 499 of 500 republished, median 5.8 ms, p99 22.3 ms, max 25.6 ms
+RESULT serial against pipelined run 3: serial 116142, pipelined 108081 rows per second, load 6.4
+RESULT age at republish, serial burst run 3: 59999 of 60000 republished, median 338.0 ms, p99 478.4 ms, max 479.5 ms
+RESULT age at republish, pipelined burst run 3: 60000 of 60000 republished, median 412.2 ms, p99 494.2 ms, max 495.2 ms
+RESULT age at republish, serial stream run 3: 499 of 500 republished, median 5.4 ms, p99 20.2 ms, max 21.0 ms
+RESULT age at republish, pipelined stream run 3: 500 of 500 republished, median 5.5 ms, p99 22.3 ms, max 27.4 ms
+RESULT serial against pipelined run 4: serial 92730, pipelined 129403 rows per second, load 6.1
+RESULT age at republish, serial burst run 4: 59999 of 60000 republished, median 432.5 ms, p99 687.9 ms, max 688.6 ms
+RESULT age at republish, pipelined burst run 4: 60000 of 60000 republished, median 297.6 ms, p99 386.7 ms, max 387.4 ms
+RESULT age at republish, serial stream run 4: 500 of 500 republished, median 6.1 ms, p99 20.2 ms, max 24.4 ms
+RESULT age at republish, pipelined stream run 4: 500 of 500 republished, median 5.6 ms, p99 14.4 ms, max 21.7 ms
+RESULT serial against pipelined run 5: serial 110037, pipelined 117659 rows per second, load 6.0
+RESULT age at republish, serial burst run 5: 59999 of 60000 republished, median 354.5 ms, p99 495.5 ms, max 496.2 ms
+RESULT age at republish, pipelined burst run 5: 59999 of 60000 republished, median 318.9 ms, p99 417.2 ms, max 418.2 ms
+RESULT age at republish, serial stream run 5: 500 of 500 republished, median 5.8 ms, p99 26.3 ms, max 32.5 ms
+RESULT age at republish, pipelined stream run 5: 500 of 500 republished, median 5.6 ms, p99 19.0 ms, max 23.4 ms
+All tests passed (3969 assertions in 1 test case)

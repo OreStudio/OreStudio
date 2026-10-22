@@ -41,11 +41,21 @@ what the screen needs.
    twelve kinds. The party is never a column: a person reads one party.
 2. *One kind's documents.* The key first, then the main term columns and the
    source. It has a search on the key, a filter on the source, sort and a pager.
-   Refresh, Workflows and Add stand at the right of the header. The states are
-   loading, no records, no match and a read error with Retry.
-3. *One document.* A record page with the Details, Requests and History tabs.
-   Edit opens a dialog that asks for a reason and a commentary. The Requests tab
-   lists the requests that wait on the document and links to the decision.
+   Refresh, Workflows and Add stand at the right of the header. Page, page size,
+   search, filter and order live in the address. The states are loading, loading
+   again with dimmed rows, no records, no match, a refusal in words and a read
+   error with Retry. After a Refresh that follows a change on the server, the
+   changed row carries a gold mark for a few seconds.
+3. *One document.* A record page with the Details and History tabs, and a
+   Requests tab only while a request waits on the document. The tab lives in the
+   address. Edit stands on the Terms card, not in the header. It opens a dialog
+   that says when the record was loaded, and asks for a reason and a commentary.
+   Propose waits until a field differs. A reason that needs a commentary says so.
+   An optional field has a Clear control. A newer version that arrives while the
+   dialog is open shows who saved it and what moved, with Keep my edit and Take
+   the new values. A save made against an old version is refused in the dialog.
+   Closing a dialog that holds changes asks first. The Requests tab lists the
+   requests and links to the decision.
 
 ** The workflows on top
 
@@ -65,19 +75,41 @@ The screens follow [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen stan
 [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. The access mark
 says Editable or Read only, and an action a person may not take is not drawn.
 Keys are monospace, an empty value is a muted dash, and a time is relative with
-the exact time on hover. The strings are English only.
+the exact time on hover. A person is drawn with an avatar and a name. A change
+reason shows its name and not its code. The Refresh control carries the load time
+under it and turns gold when the data changed on the server. The strings are
+English only.
+
+The prototype was checked line by line against the
+[[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]]. The task that
+did it records each line. Four exceptions stand, each with its reason:
+
+- The list of kinds has no pager. It is a grouped list of at most 22 rows, and a
+  page break would cut across the asset class sections.
+- Edit stands on the card, as the entity screen specification says, and not in
+  the header, as the record screen standard says. A convention document is one
+  card of terms.
+- A new document does not open its record page after Propose. The document does
+  not exist until Market Risk approves, so the screen links to Requests.
+- The Propose, Clear, Retry, Keep my edit, Take the new values and Close anyway
+  actions are not in the icon table. The prototype draws Propose and the dialog
+  actions as the standard words and leaves Clear without an icon, because the
+  table gives the dismiss icon to Cancel.
 
 ** States, by query string
 
 =?view=kinds|list|record=, =?kind=, =?key=, =?tab=details|requests|history=, =?q=,
 =?source=curated|authored=, =?scope=party|shared=, =?class=, =?actor=m.okafor|k.mori=,
-=?dialog=add|edit=, =?menu=1=, =?state=loading|error=, =?empty=1=.
+=?dialog=add|edit=, =?menu=1=, =?state=loading|reloading|error|refused=, =?empty=1=,
+=?page=, =?size=, =?sort=, =?dir=desc=, =?stale=1= (Refresh turns gold), =?news=1= (a row carries the
+changed mark), =?dialog=edit&newer=1= (a newer version arrived) and
+=?dialog=edit&newer=1&refused=1= (the save was refused).
 
 ** What is fake
 
 Three of the 26 kinds carry mock documents: swap, deposit and the IBOR index. The
-other 23 list three documents with no terms. The server holds no count of the
-documents or of the term sets of a kind, so the screen reads each list to count.
+other 23 list three documents with no terms. The families route returns a
+count of documents for each kind and no count of term sets, so the screen reads each list to count them.
 The requests that wait are fixtures.
 
 ** Where the code lives

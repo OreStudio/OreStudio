@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>See the engine settings a party holds prototype — Reporting prototypes</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+@media(max-width:820px){.hist{grid-template-columns:1fr}}
+.hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
+.warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
+.okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
+.badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+.journey{margin-top:6px}.stepcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:14px}
+.stepcard>h2{font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink)}.stepcard .lead{color:var(--ink-dim)}
+.railentry{cursor:pointer}.railtag{margin-left:auto;font-size:.7rem;color:var(--ink-faint)}
+.mark{background:#201a0e}.chk{width:auto;min-width:0}
+td .sel{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
+.btn.small{padding:3px 9px;font-size:.8rem}.diffrow td{font-family:var(--mono);font-size:.82rem}
+.rm{background:#2a1517;color:#ffb3ad}.ad{background:#10261a;color:#9be9a8}
+.statline{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim)}.statline b{color:var(--ink)}
+.btn{white-space:nowrap;display:inline-block;text-decoration:none}a.btn{color:var(--ink)}a.btn.primary{color:#0d1117}
+details.menu{position:relative;display:inline-block}details.menu>summary{list-style:none;cursor:pointer}details.menu>summary::-webkit-details-marker{display:none}
+details.menu .items{position:absolute;right:0;top:110%;z-index:20;min-width:16rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid;padding:4px}
+details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}details.menu .items a:hover{background:var(--panel-2)}
+.field label.plain,label.plain{text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);display:block}
+label.plain{white-space:nowrap}
+.tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
+
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px;border-bottom:1px solid var(--line-soft)}
+.tl .item{display:grid;grid-template-columns:96px 14px 1fr;gap:0 8px;scroll-margin-top:16px}.tl .item.mark{background:#1d2530}
+.tl .gut{display:flex;justify-content:flex-end;gap:6px;padding-top:9px;font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)}
+.tl .rail{position:relative;display:flex;justify-content:center}.tl .rail:before{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.tl .dot{position:relative;margin-top:13px;width:9px;height:9px;border-radius:50%;border:1px solid var(--ink-faint);background:var(--bg)}
+.tl .dot.ok{border-color:var(--ok)}.tl .dot.info{border-color:var(--accent)}.tl .dot.warn{border-color:var(--warn)}.tl .dot.bad{border-color:var(--bad)}
+.tl .body{display:grid;gap:5px;padding:8px 0 12px;min-width:0}
+.tl .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl .who{font-weight:600}.tl .did{color:var(--ink-dim)}
+.tl .note{color:var(--ink-dim);font-style:italic;font-size:.85rem}
+.tl details summary{cursor:pointer;color:var(--ink-faint);font-size:.8rem;width:fit-content}.tl details>div{margin-top:6px}
+.evchart{border:1px solid var(--line-soft);border-radius:var(--radius);padding:8px 12px;display:grid;gap:6px;margin:8px 0}
+.evchart .bars{display:flex;align-items:flex-end;gap:2px;height:96px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.evchart .bar{flex:none;width:14px;height:100%;display:flex;flex-direction:column-reverse;padding:0;border:0;background:none;cursor:pointer}.evchart .bar:hover{background:var(--panel-2)}
+.evchart .span{display:flex;justify-content:space-between;font-size:.7rem;color:var(--ink-faint)}
+.evchart .leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.75rem;color:var(--ink-dim)}.evchart .leg i,.evchart .bar i{display:block;border-radius:2px}.evchart .leg i{display:inline-block;width:10px;height:10px;margin-right:6px}
+.k-ok{background:var(--ok)}.k-info{background:var(--accent)}.k-warn{background:var(--warn)}.k-bad{background:var(--bad)}.k-off{background:var(--ink-faint)}
+.gh{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line-soft)}
+.pn{border:1px dashed #4a3a17;border-radius:var(--radius);padding:8px 12px;color:var(--warn);background:#161208;font-size:.8rem}
+.card table td:first-child,.card table th:first-child{padding-left:16px}
+.setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
+.shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
+.adv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px;border:1px solid var(--line-soft);border-radius:6px;padding:10px 12px;background:#161619}@media(max-width:820px){.adv{grid-template-columns:1fr}}
+.setting details.doc>summary{cursor:pointer;color:var(--ink-faint);font-size:.85rem;width:fit-content}.setting details.doc>summary:hover{color:var(--ink)}
+.docbody{display:grid;gap:8px;margin-top:8px}
+.sval select,.sval input{min-width:15rem;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.setting .help{color:var(--ink-faint);font-size:.8rem}
+.setting.chg{box-shadow:inset 3px 0 var(--accent);background:#1a2029}
+.card.editing{border-color:var(--accent)}
+.editfoot{border-top:1px solid var(--line-soft);padding:14px 16px;display:grid;gap:12px;background:#17171b}
+.editfoot .field{max-width:42rem}
+.sdesc{color:var(--ink-dim);max-width:78ch;line-height:1.55}
+table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}table.vals td,table.vals th{padding:5px 10px}table.vals tr.curv td{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The engine settings list and one configuration's page, drawn as the Record screen
+  standard (doc/knowledge/ui/record_screen_standard.org) draws a record screen, and
+  beside the pricing engines prototype: breadcrumb, plural title, one sentence, Refresh
+  and Add, search, a filter, the table, the pager and the four states; then the record
+  page with the access mark and the tabs Details, the five groups, Used by and History.
+
+  Each group has a tab of its own, and each group is one part table with its own version.
+  A write to any group makes the next version of the whole, and History shows one
+  entry for each group changed.
+
+  Addresses: ?screen=list | record&id=e1|e2|e3&tab=details|dates|fixings|building|execution|output|reports|history
+  Switches in the bottom bar (they reload and reset the mock data):
+    ?state=all|empty|error|loading
+    ?edit=fixings|building|execution   opens that group of the record in edit mode
+    ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
+  The Simple and Advanced switch is in the page, as on the feed screens. ?mode=simple or advanced sets it, and it is remembered.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<div id="layer"></div>
+
+<script>
+// Every setting that the ORE user guide (Docs/UserGuide/parameterisation/ore.tex and the examples chapter) describes as an engine
+// choice appears here. A setting seen in sample files or in the source, but not in the guide, is left out. Where the guide and the
+// source disagree, the default is the one in the source. dv is the default as a person reads it.
+const GROUPS = [
+  { id: 'fixings', title: 'Fixings and cash flows', table: 'engine_settings_fixings', changes: true, what: 'Which fixings and cash flows count.', fields: [
+    { key: 'imply_todays_fixings', ore: 'implyTodaysFixings', label: 'Imply today’s fixings', kind: 'bool', dv: 'No', help: 'Whether today’s fixings are implied.',
+      desc: 'Decides what the run does about the fixing of the valuation date. When it is No, the fixing for the valuation date is loaded from the fixing file like any earlier fixing. When it is Yes, that fixing is not loaded and the engine implies it from the curves. Use Yes when the run prices off hypothetical market data, as in scenario analysis and stress testing, because a fixing from the real market would not match the hypothetical curves.',
+      dflt: 'No. Today’s fixing is loaded.' },
+    { key: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', label: 'Include today’s cash flows', kind: 'bool', dv: 'No', help: 'Whether cash flows that pay today count.',
+      desc: 'Decides whether a cash flow that pays on the valuation date is part of the NPV or is treated as matured and excluded. It is one of two QuantLib flags that ORE exposes. A choice here applies to every analytic of the run. The simulation analytic has its own parameter of the same name, which applies to the XVA, XVA sensitivity and XVA stress analytics. Change it only when the NPV must agree with a system that treats payments on the valuation date the other way.',
+      dflt: 'No. A cash flow that pays on the valuation date is treated as matured.' },
+    { key: 'include_reference_date_events', ore: 'includeReferenceDateEvents', label: 'Include reference date events', kind: 'bool', dv: 'No', help: 'Whether events on the reference date count.',
+      desc: 'Decides whether an event that falls on the valuation date is still counted in the NPV or is treated as matured and excluded. It is the companion of Include today’s cash flows, and the two together decide how a trade is valued on the day of its payment or event. A choice here applies to every analytic of the run, and the simulation analytic has its own parameter of the same name.',
+      dflt: 'No. An event on the valuation date is treated as matured.' },
+    { key: 'enrich_index_fixings', ore: 'enrichIndexFixings', label: 'Enrich index fixings', kind: 'bool', dv: 'No', help: 'Whether gaps in index fixings are filled.',
+      desc: 'Fills gaps in the history of an index. When it is Yes, a missing fixing is replaced by a fallback: the previous fixing first, and the next fixing when there is no previous one. Ignore fixing lag and Ignore fixing lead limit how far the fallback may be from the gap. Use it when the fixing file has gaps. It changes the numbers, because a trade that reads a filled fixing is valued with it.',
+      dflt: 'No. A gap stays a gap.' },
+    { key: 'ignore_fixing_lag', ore: 'ignoreFixingLag', label: 'Ignore fixing lag', kind: 'number', dv: '0', help: 'A number of days. Zero turns the check off.',
+      desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the previous fixing, this setting limits how old that previous fixing may be. If the previous fixing is more days older than the gap than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any age can fill the gap.',
+      dflt: '0. The check is off.' },
+    { key: 'ignore_fixing_lead', ore: 'ignoreFixingLead', label: 'Ignore fixing lead', kind: 'number', dv: '0', help: 'A number of days. Zero turns the check off.',
+      desc: 'Works with Enrich index fixings. When the engine fills a gap in an index’s fixings with the next fixing, this setting limits how far ahead that next fixing may be. If the next fixing date leads the gap by more days than this number, the engine does not use it as the fallback. A value of zero turns the check off, so a fixing of any distance can fill the gap.',
+      dflt: '0. The check is off.' }] },
+  { id: 'building', title: 'Market and trade building', table: 'engine_settings_building', changes: true, what: 'How the engine builds the market and the trades, and what it does when that fails.', fields: [
+    { key: 'observation_model', ore: 'observationModel', label: 'Observation model', kind: 'select', opts: ['None', 'Disable', 'Defer', 'Unregister'], dv: 'None', help: 'How the engine handles QuantLib notifications.',
+      desc: 'Controls how many QuantLib observer notifications the engine uses when market data and fixings are updated and when the evaluation date moves. Notifications keep every dependent object up to date, and they cost time in a simulation. None is the normal QuantLib behaviour, where every update notifies every dependent object. The other three choices cut that cost in different ways and give a similar speed up. Disable switches all notifications off during market and fixing updates and when the evaluation date moves along a path, and the engine triggers the needed recalculations itself. Defer switches notifications off during market and fixing updates and runs the updates when notifications are on again. Unregister keeps notifications on but unregisters floating rate coupons from their indices, which removes most of them. The ORE user guide describes the setting as a control of performance during simulation.',
+      dflt: 'None.' },
+    { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', dv: 'Yes', help: 'Whether the market is built on demand.',
+      desc: 'Decides when the engine builds the curves listed in today’s market. When it is Yes, a curve is built only when a trade or analytic asks for it, which saves time when the configuration lists curves that the portfolio never uses. When it is No, every curve in today’s market is built at the start.',
+      dflt: 'Yes. Curves are built on demand.' },
+    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', dv: 'Yes', help: 'Whether a failed trade is replaced by a dummy.',
+      desc: 'Decides what happens to a trade that cannot be loaded or built. When it is Yes, the engine builds a dummy trade of type Failed, with zero notional and zero NPV, so the trade still appears in the portfolio. When it is No, the failed trade is left out. Yes keeps the trade count honest, but a reader must know that a Failed trade has no value.',
+      dflt: 'Yes. A failed trade becomes a dummy trade.' },
+    { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', dv: 'Yes', help: 'Whether the run goes on after an error.',
+      desc: 'Decides whether the engine stops at the first error or goes on. When it is Yes, the engine does not exit on an error but tries to continue the processing, so one bad curve or trade does not lose the whole run, and the reports may be incomplete. When it is No, the run exits at the error.',
+      dflt: 'Yes. The run goes on after an error.' },
+    { key: 'use_at_par_coupons_curves', ore: 'useAtParCouponsCurves', label: 'At par coupons for curves', kind: 'bool', dv: 'Yes', help: 'Par approximation or indexed ibor coupons for curves.',
+      desc: 'Decides how the engine models a floating rate coupon when it builds the curves. When it is Yes, it uses the par approximation of the coupon. When it is No, it uses indexed ibor coupons. The choice goes back to the QuantLib flag QL_USE_INDEXED_COUPON and its run time setting. Yes is also the default of a QuantLib build.',
+      dflt: 'Yes. The par approximation.' },
+    { key: 'use_at_par_coupons_trades', ore: 'useAtParCouponsTrades', label: 'At par coupons for trades', kind: 'bool', dv: 'Yes', help: 'Par approximation or indexed ibor coupons for trades.',
+      desc: 'Decides how the engine models a floating rate coupon when it builds the trades. When it is Yes, it uses the par approximation of the coupon. When it is No, it uses indexed ibor coupons. It is the companion of At par coupons for curves, and the two can differ. The choice goes back to the QuantLib flag QL_USE_INDEXED_COUPON and its run time setting.',
+      dflt: 'Yes. The par approximation.' }] },
+  { id: 'execution', title: 'Execution', table: 'engine_settings_execution', changes: false, what: 'How the engine runs, logs and writes its files.', fields: [
+    { key: 'n_threads', ore: 'nThreads', label: 'Threads', kind: 'number', dv: '1', help: 'A whole number of at least 1.',
+      desc: 'The number of threads the engine may use. More than one thread speeds up the analytics that spread their work over scenarios or paths: the sensitivity analytic, the classic exposure simulation and the AMC exposure simulation. These are the three analytics that the ORE user guide names.',
+      dflt: '1.' },
+    { key: 'log_mask', ore: 'logMask', label: 'Log mask', kind: 'number', dv: '15', help: 'A bit set, such as 31.',
+      desc: 'Decides which messages the engine writes to its log file. Each kind of message has a bit: 1 alert, 2 critical, 4 error, 8 warning, 16 notice, 32 debug and 64 data. Add the bits of the kinds you want. Common totals are 15 for alert to warning, 31 for the same and notice, 63 for the same and debug, and 127 for the same and data. A higher total writes more and makes a larger log. The value 255 gives the most detail.',
+      dflt: '15. Alert, critical, error and warning.' },
+    { key: 'gzip_compression_level', ore: 'gzipCompressionLevel', label: 'Gzip compression level', kind: 'number', dv: '6', help: 'A whole number from 0 to 9.',
+      desc: 'Sets how strongly the engine compresses the zipped cube files it writes. The value is a whole number from 0 to 9. A value of 0 means no compression, which gives the fastest write and the largest file. A value of 9 means the strongest compression, which gives the slowest write and the smallest file. A value outside 0 to 9 is an error. The default of 6 balances speed and size.',
+      dflt: '6. A balance of speed and size.' }] }
+];
+const groupOf = id => GROUPS.find(g => g.id === id);
+
+// The documentation entry of each setting, apart from the setting itself. since is the release that introduced the setting and
+// removed is the release that removed it, or null. Both are measured from the release tags of the ORE source.
+const FLAG_FMT = 'A flag, written Y or N, or true or false.';
+const META = {
+  implyTodaysFixings: { since: '1.8.0.7', sinceBound: true, removed: null, format: FLAG_FMT, affects: true },
+  includeTodaysCashFlows: { since: '1.8.13.0', removed: null, format: FLAG_FMT, affects: true },
+  includeReferenceDateEvents: { since: '1.8.13.0', removed: null, format: FLAG_FMT, affects: true },
+  enrichIndexFixings: { since: '1.8.13.0', removed: null, format: FLAG_FMT, affects: true },
+  ignoreFixingLag: { since: '1.8.13.0', removed: null, format: 'A whole number of days, zero or more.', affects: true },
+  ignoreFixingLead: { since: '1.8.13.0', removed: null, format: 'A whole number of days, zero or more.', affects: true },
+  observationModel: { since: '1.8.0.7', sinceBound: true, removed: null, format: 'One of None, Disable, Defer, Unregister.', affects: false },
+  lazyMarketBuilding: { since: '1.8.6.0', removed: null, format: FLAG_FMT, affects: false },
+  buildFailedTrades: { since: '1.8.7.0', removed: null, format: FLAG_FMT, affects: true },
+  continueOnError: { since: '1.8.4.0', removed: null, format: FLAG_FMT, affects: true },
+  useAtParCouponsCurves: { since: '1.8.15.0', removed: null, format: FLAG_FMT, affects: true },
+  useAtParCouponsTrades: { since: '1.8.15.0', removed: null, format: FLAG_FMT, affects: true },
+  nThreads: { since: '1.8.9.0', removed: null, format: 'A whole number, at least 1.', affects: false },
+  logMask: { since: '1.8.2.0', removed: null, format: 'A whole number. A bit set of the message kinds.', affects: false },
+  gzipCompressionLevel: { since: '1.8.17.0', removed: null, format: 'A whole number from 0 to 9.', affects: false }
+};
+GROUPS.forEach(g => g.fields.forEach(f => { f.meta = META[f.ore]; f.xml = 'ore.xml › Setup › ' + f.ore; }));
+
+// FIXTURE. The reports and their run settings are the real names of ACME Corporation HK Ltd.
+// The engine setting values are the five the seed sets today. The third configuration, its
+// values and every history entry are this prototype's own.
+const HK_STANDARD = [
+  ['Audit Trail Summary', 'Portfolio details'], ['Bucketed DV01', 'Sensitivities'], ['Cashflows', 'Cashflows'],
+  ['Credit Curves', 'Credit curves'], ['Data Quality Completeness', 'Portfolio details'], ['Delta and Gamma', 'Sensitivities'],
+  ['FRTB SA Capital', 'Sensitivities'], ['FX Spot Rates', 'Curves'], ['Headline Position', 'Valuation and sensitivities'],
+  ['HKMA Trade Repository', 'Portfolio details'], ['Intraday Risk Monitor', 'Intraday risk'], ['Large Exposures', 'Standardised counterparty exposure'],
+  ['Leverage Ratio', 'Standardised counterparty exposure'], ['Liquidity Coverage', 'Cashflows'], ['Model Calibration', 'Model calibration'],
+  ['NPV', 'Valuation'], ['P&L Attribution', 'Profit and loss explain'], ['SA-CCR Exposure', 'Standardised counterparty exposure'],
+  ['Stressed VaR', 'Stressed VaR'], ['Yield Curves', 'Curves']
+].map(([name, rs]) => ({ name, runSettings: rs + ' - Global Portfolio' }));
+const HK_SIMULATION = [['CVA/DVA/FVA', 'Valuation adjustments'], ['Exposure', 'Exposure simulation']]
+  .map(([name, rs]) => ({ name, runSettings: rs + ' - Global Portfolio' }));
+
+const NOW = Date.parse('2026-10-21T19:00:00Z');
+const SEEDER = 'tenant provisioning service';
+const clone = x => JSON.parse(JSON.stringify(x));
+
+const std = () => ({
+  building: { v: 1, vals: { observation_model: 'Disable', continue_on_error: 'no' } },
+  fixings: { v: 1, vals: { imply_todays_fixings: 'no' } },
+  execution: { v: 1, vals: { n_threads: '1', log_mask: '31' } }
+});
+const seedParts = g => Object.keys(g).map(k => ({ group: k, gver: 1, before: null, after: clone(g[k].vals) }));
+
+const CONFIGS = [
+  { id: 'e1', name: 'Standard engine settings', desc: 'The engine settings of every HK report that runs on one thread.', cfgRow: 'configuration 4c21e9b0',
+    groups: std(), reports: HK_STANDARD, versions: [] },
+  { id: 'e2', name: 'Simulation engine settings', desc: 'The standard settings with four threads, for the two reports that simulate.', cfgRow: 'configuration 9d03a7f2',
+    groups: (() => { const g = std(); g.execution.v = 2; g.execution.vals.n_threads = '4'; return g; })(), reports: HK_SIMULATION, versions: [] },
+  { id: 'e3', name: 'Intraday engine settings', desc: 'A trial for the intraday monitor: the market is built on demand.', cfgRow: 'configuration b7e5106d',
+    groups: { building: { v: 1, vals: { observation_model: 'Disable', lazy_market_building: 'yes' } }, execution: { v: 1, vals: { n_threads: '2', log_mask: '31' } } }, reports: [], versions: [] }
+];
+const e1 = CONFIGS[0], e2 = CONFIGS[1], e3 = CONFIGS[2];
+e1.versions = [
+  { v: 1, at: '2026-09-01T09:00:00Z', by: SEEDER, reason: 'New record', note: 'Seeded at provisioning', parts: seedParts(std()) },
+  { v: 2, at: '2026-10-14T15:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Do not imply today’s fixings, to match the vendor valuation',
+    parts: [{ group: 'fixings', gver: 2, before: { imply_todays_fixings: 'yes' }, after: { imply_todays_fixings: 'no' } }] }
+];
+e1.groups.fixings.v = 2;
+e2.versions = [
+  { v: 1, at: '2026-09-01T09:05:00Z', by: SEEDER, reason: 'New record', note: 'Seeded at provisioning', parts: seedParts(std()) },
+  { v: 2, at: '2026-10-09T11:40:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'The exposure run is too slow on one thread',
+    parts: [{ group: 'execution', gver: 2, before: { n_threads: '1', log_mask: '31' }, after: { n_threads: '4', log_mask: '31' } }] }
+];
+e3.versions = [{ v: 1, at: '2026-10-20T10:15:00Z', by: 'market risk owner', reason: 'New record', note: 'A trial for the intraday monitor', parts: seedParts(e3.groups) }];
+CONFIGS.forEach(c => { const l = c.versions[c.versions.length - 1]; c.ver = l.v; c.changed = l.at; });
+
+const valText = (f, v) => v == null || v === '' ? null : f.kind === 'bool' ? (v === 'yes' ? 'Yes' : 'No') : String(v);
+// The rows of one part as a document of flat fields, so two states can be compared.
+const diffParts = parts => { const out = []; parts.forEach(p => { const g = groupOf(p.group); g.fields.forEach(f => { const a = valText(f, (p.before || {})[f.key]), b = valText(f, (p.after || {})[f.key]); if (a !== b) out.push({ k: g.title + ' › ' + f.label, from: a, to: b }); }); }); return out; };
+
+const P0 = new URLSearchParams(location.search);
+
+const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const dash = '<span class="faint">—</span>';
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '✓', copy: '⧉' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+let KEEP = [];
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => { const a = e.target.closest('a[data-nav]'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render(); });
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const kv = (l, v, wide) => `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`;
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
+function closeDlg() { document.getElementById('layer').innerHTML = ''; }
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const reasonField = changed => { const offered = REASON_AMEND.filter(x => changed ? x.name !== 'Non-material update' : x.name === 'Non-material update');
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div><div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`; };
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
+function chrome(label, bars) {
+  if (clean) { document.getElementById('note').hidden = true; document.getElementById('bar').hidden = true; document.body.style.paddingTop = '1.5rem'; document.body.style.paddingBottom = '2rem'; return; }
+  document.getElementById('note').textContent = 'Prototype · ' + label + ' · mock data, nothing is written to a server';
+  const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
+  document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+}
+const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
+let hideSystem = false;
+const KIND_TONE = { Created: 'ok', Changed: 'info', Reverted: 'warn' };
+const pad2 = n => String(n).padStart(2, '0');
+const clock = ms => { const d = new Date(ms); return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':' + pad2(d.getUTCSeconds()); };
+const dayName = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const isSvc = who => /service/.test(who);
+function timeline(entries) {
+  const rows = entries.filter(x => !(hideSystem && isSvc(x.who))).map(x => Object.assign({ ms: Date.parse(x.at) }, x)).sort((a, b) => b.ms - a.ms);
+  const toggle = `<div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div>`;
+  if (!rows.length) return toggle + '<div class="muted">No entries.</div>';
+  const first = rows[rows.length - 1].ms, last = rows[0].ms, daily = last - first > 2 * 86400000, step = daily ? 86400000 : 3600000;
+  const startOf = ms => Math.floor(ms / step) * step, from = startOf(first), n = Math.floor((startOf(last) - from) / step) + 1;
+  const buckets = Array.from({ length: n }, () => ({})), kinds = {};
+  rows.forEach(x => { const b = buckets[Math.floor((startOf(x.ms) - from) / step)]; b[x.kind] = (b[x.kind] || 0) + 1; kinds[x.kind] = (kinds[x.kind] || 0) + 1; });
+  const tallest = Math.max(1, ...buckets.map(b => Object.values(b).reduce((a, v) => a + v, 0)));
+  const when = ms => daily ? dayName(ms).replace(/^\w+, /, '') : clock(ms).slice(0, 5);
+  const chart = `<div class="evchart"><div class="bars">${buckets.map((b, i) => { const t = from + i * step, tot = Object.values(b).reduce((a, v) => a + v, 0);
+    return `<button class="bar" data-bar="${t}" data-step="${step}" title="${daily ? dayName(t) : dayName(t) + ' ' + clock(t).slice(0, 5)}: ${tot}">${Object.keys(kinds).filter(k => b[k]).map(k => `<i class="k-${KIND_TONE[k] || 'off'}" style="height:${b[k] / tallest * 100}%" title="${k}: ${b[k]}"></i>`).join('')}</button>`; }).join('')}</div>
+    <div class="span"><span>${esc(daily ? dayName(first) : dayName(first) + ' ' + clock(first).slice(0, 5))}</span><span>${esc(daily ? dayName(last) : dayName(last) + ' ' + clock(last).slice(0, 5))}</span></div>
+    <div class="leg">${Object.keys(kinds).map(k => `<span><i class="k-${KIND_TONE[k] || 'off'}"></i>${k} ${kinds[k]}</span>`).join('')}</div></div>`;
+  let day = '';
+  const rail = rows.map(x => { const dn = dayName(x.ms), div = dn !== day ? `<div class="daydiv">${dn}</div>` : ''; day = dn; const tone = KIND_TONE[x.kind] || 'off';
+    return div + `<div class="item" data-ms="${x.ms}"><div class="gut"><span title="${exact(x.at)}">${clock(x.ms)}</span>${x.current ? '<span class="emblem" title="Current version">✓</span>' : ''}</div><div class="rail"><span class="dot ${tone}"></span></div>
+      <div class="body"><div class="head">${tag(x.kind, tone)}<span class="mono faint">${esc(x.rec)}${x.ver ? ' v' + x.ver : ''}</span>${x.reason ? `<span class="tag warn mono">${esc(x.reason)}</span>` : ''}<span class="who">${esc(x.who)}</span><span class="did">${x.did || ''}</span>${x.actions || ''}<span class="faint" style="margin-left:auto">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}${x.extra || ''}
+      ${x.detail === undefined ? '' : x.detail === null ? '<div class="faint">No changes</div>' : `<details><summary>Details</summary><div>${x.detail}</div></details>`}</div></div>`; }).join('');
+  return toggle + chart + `<div class="tl">${rail}</div>`;
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-bar]'); if (!b) return; const t = +b.dataset.bar, items = [...document.querySelectorAll('.tl .item')]; if (!items.length) return;
+  const hit = items.map(i => [Math.abs(+i.dataset.ms - (t + (+b.dataset.step) / 2)), i]).sort((a, c) => a[0] - c[0])[0][1]; hit.scrollIntoView({ block: 'center', behavior: 'smooth' }); hit.classList.add('mark'); setTimeout(() => hit.classList.remove('mark'), 1200); });
+const state = P0.get('state') || 'all', actor = P0.get('actor') || 'analyst';
+KEEP = ['state', 'actor', 'clean'];
+// The final look hides everything that belongs to the prototype: the banner, the bottom bar and the notes.
+const clean = P0.get('clean') === '1';
+// Simple or Advanced, remembered for every screen that offers both, as the application remembers it.
+let mode = (() => { const q = P0.get('mode'); if (q === 'advanced' || q === 'simple') return q; try { return window.localStorage.getItem('ores.editingMode') === 'advanced' ? 'advanced' : 'simple'; } catch (e) { return 'simple'; } })();
+const setMode = m => { mode = m; try { window.localStorage.setItem('ores.editingMode', m); } catch (e) { /* the choice holds for this visit */ } const p = new URLSearchParams(location.search); p.set('mode', m); window.history.replaceState({}, '', '?' + p.toString()); render(); };
+const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
+const may = a => !!(MAY[actor] || {})[a];
+const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
+let search = '', usedF = 'any', sortKey = 'name', sortDir = 1;
+const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details' }; };
+const byId = id => CONFIGS.find(c => c.id === id);
+const LIST = () => href({ screen: 'list' });
+const protoNote = t => clean ? '' : `<div class="pn"><b>Prototype note.</b> ${t}</div>`;
+const setCount = c => GROUPS.filter(g => c.groups[g.id]).length;
+const threadsOf = c => { const e = c.groups.execution; return e && e.vals.n_threads ? e.vals.n_threads : null; };
+const cell = (f, v) => { const t = valText(f, v); return t == null ? `<span class="faint">Default: ${esc(f.dv)}</span>` : f.kind === 'select' ? `<span class="mono">${esc(t)}</span>` : esc(t); };
+// Editing happens in place. editing holds the draft of one group, and openDocs holds the settings whose documentation is open.
+let editing = null;
+const openDocs = new Set();
+const isEditing = (c, g) => !!editing && editing.cid === c.id && editing.gid === g.id;
+const same = (a, b) => (a == null || a === '' ? '' : String(a)) === (b == null || b === '' ? '' : String(b));
+const changesTag = g => g.changes ? tag('Changes the numbers', 'warn') : tag('Operational', 'off');
+
+function visible() {
+  const rows = CONFIGS.filter(c => (!search || (c.name + ' ' + c.desc).toLowerCase().includes(search.toLowerCase())) && (usedF === 'any' || (usedF === 'yes') === (c.reports.length > 0)));
+  const val = c => ({ name: c.name, sets: setCount(c), threads: Number(threadsOf(c) || 0), reports: c.reports.length, changed: c.changed })[sortKey];
+  return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
+}
+
+function listScreen() {
+  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings']])}
+  <div class="titlebar"><div><h1>Engine settings</h1><div class="sub">The named settings the risk engine runs with. A report binds one, and several reports can share it.</div></div>
+    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<button class="btn primary" id="add">${G.add} Add</button>` : ''}</div></div>`;
+  if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
+  if (state === 'error') return head + '<div class="badbox">The engine settings could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
+  const list = state === 'empty' ? [] : visible();
+  const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const tr = c => `<tr class="rec" tabindex="0" data-open="${c.id}"><td><a data-nav class="link" href="${href({ screen: 'record', id: c.id })}">${esc(c.name)}</a></td><td class="num">${setCount(c)} of ${GROUPS.length}</td><td class="num">${threadsOf(c) || '<span class="faint">default</span>'}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
+  let body;
+  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no engine settings yet.${may('add') ? ` <button class="btn primary" id="add">${G.add} Add</button>` : ''}</div></div></div>`;
+  else if (!list.length) body = '<div class="notice">No engine settings match the search. <button class="btn" id="clear">Clear</button></div>';
+  else body = `<table><thead><tr>${th('name', 'Name')}${th('sets', 'Groups set')}${th('threads', 'Threads')}${th('reports', 'Reports')}${th('changed', 'Last changed')}</tr></thead><tbody>${list.map(tr).join('')}</tbody></table>`;
+  return head + `<div class="card"><div class="listbar"><input id="search" placeholder="Search the name and description" value="${esc(search)}"><select id="usedf"><option value="any">Used by reports: any</option><option value="yes" ${usedF === 'yes' ? 'selected' : ''}>Bound by a report</option><option value="no" ${usedF === 'no' ? 'selected' : ''}>Bound by none</option></select></div>${body}
+  <div class="pager"><span>${list.length ? '1–' + list.length + ' of ' + list.length : '0 of 0'}</span><span><button class="btn" disabled>« First</button> <button class="btn" disabled>‹ Previous</button> <button class="btn" disabled>Next ›</button> <button class="btn" disabled>Last »</button></span><span>Page size <select><option>15</option><option>25</option><option>50</option></select></span></div></div>
+  ${protoNote('The group count, the thread count and the report count are fixtures. No operation returns them for a list row.')}`;
+}
+
+function detailsTab(c) {
+  const l = c.versions[c.versions.length - 1];
+  const set = GROUPS.filter(g => c.groups[g.id]).map(g => g.title);
+  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
+  <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
+}
+
+const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+function advancedStrip(f) {
+  const m = f.meta;
+  const since = m.since + (m.sinceBound ? ' or earlier' : '');
+  const removed = m.removed || '—';
+  return `<div class="adv">${metaLine('ORE XML', `<span class="mono">${esc(f.xml)}</span>`)}${metaLine('Introduced in', esc(since))}${metaLine('Removed in', esc(removed))}${metaLine('Format', esc(m.format))}</div>`;
+}
+function docBody(f) {
+  return `<div class="docbody"><p class="sdesc">${esc(f.desc)}</p><div class="faint">Default: ${esc(f.dflt)}</div>${mode === 'advanced' ? advancedStrip(f) : ''}</div>`;
+}
+function control(f, v) {
+  const id = 'f-' + f.key, unset = `<option value="">Default (${esc(f.dv)})</option>`;
+  if (f.kind === 'bool') return `<select id="${id}" data-fld="${f.key}">${unset}<option value="yes" ${v === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${v === 'no' ? 'selected' : ''}>No</option></select>`;
+  if (f.kind === 'select') return `<select id="${id}" data-fld="${f.key}">${unset}${f.opts.map(o => `<option ${v === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+  return `<input type="text" id="${id}" data-fld="${f.key}" placeholder="Default (${esc(f.dv)})" value="${esc(v || '')}" inputmode="numeric">`;
+}
+function settingRow(c, g, f) {
+  const part = c.groups[g.id], cur = part ? part.vals[f.key] : undefined, edit = isEditing(c, g);
+  const key = c.id + ':' + f.key, changed = edit && !same(editing.draft[f.key], cur);
+  return `<div class="setting ${changed ? 'chg' : ''}" data-row="${f.key}"><div class="shead"><div><b>${esc(f.label)}</b> ${f.meta && f.meta.affects ? tag('Changes the numbers', 'warn') : ''}</div>
+    <div class="sval">${edit ? control(f, editing.draft[f.key]) : cell(f, cur)}</div></div>
+    ${edit ? `<div class="help">${esc(f.help)}</div>` : ''}
+    <details class="doc" data-doc="${key}" ${openDocs.has(key) ? 'open' : ''}><summary>Documentation</summary>${docBody(f)}</details></div>`;
+}
+function editFooter(c, g) {
+  const n = diffParts([{ group: g.id, before: (c.groups[g.id] || { vals: {} }).vals, after: editing.draft }]).length;
+  const reach = c.reports.length ? `This group reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine settings, so this change reaches no run.';
+  return `<div class="editfoot"><div class="${g.changes ? 'warnbox' : 'notice'}">${g.changes ? 'These settings change the numbers a run computes. ' : ''}${reach}</div>
+    <div id="d-err"></div>${reasonField(true)}
+    <div class="actions"><button class="btn primary" id="e-save">${G.save} Save</button><button class="btn" id="e-cancel">${G.cancel} Cancel</button><span class="faint" id="e-count">${n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes')}</span></div></div>`;
+}
+function groupCard(c, g) {
+  const part = c.groups[g.id], edit = isEditing(c, g);
+  const keys = g.fields.map(f => c.id + ':' + f.key), allOpen = keys.every(k => openDocs.has(k));
+  return `<div class="card ${edit ? 'editing' : ''}"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
+    <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}<button class="btn small ghost" data-alldocs="${g.id}">${allOpen ? 'Hide documentation' : 'Show documentation'}</button>${may('edit') && !edit ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}${edit ? tag('Editing', 'info') : ''}</div></div>
+    ${g.fields.map(f => settingRow(c, g, f)).join('')}
+    ${edit ? editFooter(c, g) : `<div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its default for every setting here.`}</div>`}</div>`;
+}
+const modeToggle = () => `<div class="seg" role="radiogroup" aria-label="Editing mode"><button role="radio" aria-checked="${mode === 'simple'}" data-mode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button role="radio" aria-checked="${mode === 'advanced'}" data-mode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>`;
+function reportsTab(c) {
+  const rows = c.reports.map(r => `<tr><td><span class="link">${esc(r.name)}</span></td><td>${esc(r.runSettings)}</td><td class="mono">version ${c.ver}</td></tr>`).join('');
+  return `<div class="notice">A change reaches the next run of each report below. A run already produced keeps what it ran with.</div>
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Run settings</th><th>Runs with</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="body"><div class="muted">No report binds these engine settings. A change here reaches no run.</div></div>'}</div>
+  ${protoNote('The read that lists the reports bound to one configuration does not exist, so the names are fixtures. They are the real names of ACME Corporation HK Ltd. A run does not record which version it used, so the Runs with column shows the version in force.')}`;
+}
+
+function historyTab(c) {
+  const cur = c.versions[c.versions.length - 1];
+  const ent = c.versions.map(x => {
+    const d = diffParts(x.parts), titles = x.parts.map(p => groupOf(p.group).title);
+    const kind = x.v === 1 ? 'Created' : x.reverted ? 'Reverted' : 'Changed';
+    const rec = x.parts.length === 1 ? groupOf(x.parts[0].group).table : 'engine_settings';
+    return { at: x.at, kind, rec, ver: x.v, reason: x.reason, who: x.by, did: x.v === 1 ? 'created the engine settings with ' + (titles.length ? titles.join(', ') : 'no groups set') : (x.reverted ? 'reverted ' : 'changed ') + titles.join(', ') + (x.parts.length === 1 ? ' to part version ' + x.parts[0].gver : ''),
+      note: x.note, current: x.v === cur.v, detail: d.length ? diffTable(d) : null,
+      actions: x.v !== cur.v && x.v > 1 && x.parts.length === 1 && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : '' };
+  });
+  return `<div class="muted">Every version of these engine settings and of its five groups, in one stream, newest first. A change to a group is one entry, and it makes the next version of the whole. Revert writes the values a group had before as a new version.</div>${timeline(ent)}`;
+}
+
+function recordScreen(c) {
+  const r = route();
+  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], ['Not found']]) + '<div class="notice">These engine settings do not exist.</div>';
+  const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
+  const tabs = [['details', 'Details']].concat(GROUPS.map(g => [g.id, g.title]), [['reports', 'Used by'], ['history', 'History']]);
+  const body = groupOf(r.tab) ? groupCard(c, groupOf(r.tab)) : { details: detailsTab, reports: reportsTab, history: historyTab }[r.tab](c);
+  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], [esc(c.name)]])}
+  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports</div></div>
+    <div class="actions">${groupOf(r.tab) ? modeToggle() : ''}<span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
+  <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the release that introduced it, the release that removed it, its default and its format. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
+}
+
+const RULES = { n_threads: [1, null], gzip_compression_level: [0, 9], log_mask: [0, null], ignore_fixing_lag: [0, null], ignore_fixing_lead: [0, null] };
+function problem(g, draft) {
+  for (const f of g.fields) {
+    const v = draft[f.key]; if (v === undefined || v === '') continue;
+    if (f.kind === 'number') {
+      if (!/^\d+$/.test(v)) return `${f.label} must be a whole number.`;
+      const r = RULES[f.key] || [0, null];
+      if (Number(v) < r[0]) return `${f.label} must be at least ${r[0]}.`;
+      if (r[1] !== null && Number(v) > r[1]) return `${f.label} must be at most ${r[1]}.`;
+    }
+  }
+  return null;
+}
+function startEdit(c, gid) { const part = c.groups[gid]; editing = { cid: c.id, gid, draft: clone(part ? part.vals : {}), reason: null, note: '' }; render(); }
+// A control change updates the draft and the count without a new render, so the focus and the typed commentary stay.
+function refreshEdit(c) {
+  const g = groupOf(editing.gid), part = c.groups[g.id], cur = part ? part.vals : {};
+  g.fields.forEach(f => { const row = document.querySelector(`#app [data-row="${f.key}"]`); if (row) row.classList.toggle('chg', !same(editing.draft[f.key], cur[f.key])); });
+  const n = diffParts([{ group: g.id, before: cur, after: editing.draft }]).length, cnt = document.getElementById('e-count');
+  if (cnt) cnt.textContent = n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes');
+}
+function saveEdit(c) {
+  const g = groupOf(editing.gid), part = c.groups[g.id], before = clone(part ? part.vals : {}), after = {};
+  g.fields.forEach(f => { const v = editing.draft[f.key]; if (v !== undefined && v !== '') after[f.key] = String(v).trim(); });
+  const err = problem(g, after), box = document.getElementById('d-err');
+  if (err) { box.innerHTML = `<div class="badbox">${esc(err)}</div>`; return; }
+  const parts = [{ group: g.id, gver: (part ? part.v : 0) + 1, before: part ? before : null, after }];
+  if (!diffParts(parts).length) { box.innerHTML = '<div class="notice">Nothing changed.</div>'; return; }
+  apply(c, parts, document.getElementById('f-reason').value, document.getElementById('f-note').value, false);
+  editing = null; render();
+}
+function apply(c, parts, reason, note, reverted) {
+  if (editing && editing.cid === c.id) editing = null;
+  parts.forEach(p => { c.groups[p.group] = { v: p.gver, vals: clone(p.after) }; });
+  c.ver++; const at = new Date(NOW + c.ver * 60000).toISOString();
+  c.versions.push({ v: c.ver, at, by: actorName, reason, note, parts: clone(parts), reverted });
+  c.changed = at;
+}
+function revertDialog(c, v) {
+  const x = c.versions.find(y => y.v === v), p = x.parts[0], g = groupOf(p.group), now = c.groups[p.group];
+  const back = [{ group: p.group, gver: now.v + 1, before: clone(now.vals), after: p.before || {} }];
+  dialog('Revert ' + g.title + '?', `<div>Are you sure you want to revert '${esc(g.title)}' to the values it had before version ${v}? This creates a new version of '${esc(c.name)}'. No version is lost.</div>${diffTable(diffParts(back))}${c.reports.length ? `<div class="warnbox">${c.reports.length} reports run with this group.</div>` : ''}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => { apply(c, back, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted version ' + v, true); closeDlg(); render(); };
+}
+function addDialog() {
+  dialog('Add engine settings', `<div class="field"><label>Name</label><input type="text" id="f-name"></div><div class="field"><label>Description</label><textarea id="f-desc"></textarea></div><div class="help faint">A new configuration sets no group. Every setting uses the engine default until a group is edited.</div><div id="d-err"></div>`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${G.save} Save</button>`);
+  document.getElementById('d-save').onclick = () => {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) { document.getElementById('d-err').innerHTML = '<div class="badbox">A name is required.</div>'; return; }
+    if (CONFIGS.some(c => c.name.toLowerCase() === name.toLowerCase())) { document.getElementById('d-err').innerHTML = '<div class="badbox">Engine settings with this name exist.</div>'; return; }
+    const at = new Date(NOW).toISOString();
+    const c = { id: 'e' + (CONFIGS.length + 1), name, desc: document.getElementById('f-desc').value.trim(), cfgRow: 'configuration new', groups: {}, reports: [], ver: 1, changed: at, versions: [{ v: 1, at, by: actorName, reason: 'New record', note: '', parts: [] }] };
+    CONFIGS.push(c); closeDlg(); nav({ screen: 'record', id: c.id, tab: 'details' });
+  };
+}
+function deleteDialog(c) {
+  const blocked = c.reports.length > 0;
+  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind these engine settings. Their next run would have no engine settings. Rebind them first.</div>${protoNote('No service refuses this delete today. The screen refuses it because the server would not.')}` : `<div>The engine settings and their groups are deleted. Their history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
+  if (!blocked) ready('d-save');
+  document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
+}
+function wire() {
+  const r = route(), c = byId(r.id);
+  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
+  document.querySelectorAll('#app [data-sort]').forEach(x => x.onclick = () => { sortDir = sortKey === x.dataset.sort ? -sortDir : 1; sortKey = x.dataset.sort; render(); });
+  const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  const uf = document.getElementById('usedf'); if (uf) uf.onchange = () => { usedF = uf.value; render(); };
+  const cl = document.getElementById('clear'); if (cl) cl.onclick = () => { search = ''; usedF = 'any'; render(); };
+  const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
+  const ad = document.getElementById('add'); if (ad) ad.onclick = addDialog;
+  const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
+  document.querySelectorAll('#app [data-mode]').forEach(x => x.onclick = () => setMode(x.dataset.mode));
+  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => startEdit(c, x.dataset.edit));
+  document.querySelectorAll('#app [data-alldocs]').forEach(x => x.onclick = () => { const g = groupOf(x.dataset.alldocs), keys = g.fields.map(f => c.id + ':' + f.key); const open = !keys.every(k => openDocs.has(k)); keys.forEach(k => open ? openDocs.add(k) : openDocs.delete(k)); render(); });
+  if (editing && c && editing.cid === c.id && document.getElementById('e-save')) {
+    const g = groupOf(editing.gid);
+    document.querySelectorAll('#app [data-fld]').forEach(x => x.onchange = () => { editing.draft[x.dataset.fld] = x.value; refreshEdit(c); });
+    // Focusing a control opens the documentation of its setting, so a person reads it while changing the value.
+    document.querySelectorAll('#app [data-fld]').forEach(x => x.addEventListener('focus', () => { const d = document.querySelector(`#app [data-doc="${c.id}:${x.dataset.fld}"]`); if (d && !d.open) { d.open = true; openDocs.add(c.id + ':' + x.dataset.fld); } }));
+    document.getElementById('e-cancel').onclick = () => { editing = null; render(); };
+    document.getElementById('e-save').onclick = () => saveEdit(c);
+    const reason = document.getElementById('f-reason'), note = document.getElementById('f-note');
+    if (editing.reason) reason.value = editing.reason; note.value = editing.note || '';
+    ready('e-save');
+    reason.addEventListener('change', () => { editing.reason = reason.value; }); note.addEventListener('input', () => { editing.note = note.value; });
+  }
+  document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
+  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
+}
+function render() {
+  const r = route();
+  // A draft belongs to the group tab it was opened on, so leaving that tab or record ends the edit.
+  if (editing && (r.screen !== 'record' || r.id !== editing.cid || r.tab !== editing.gid)) editing = null;
+  document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
+  chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  wire();
+}
+{ const r0 = route(), eg = P0.get('edit'), c0 = byId(r0.id); if (eg && c0 && groupOf(eg) && may('edit')) { const part0 = c0.groups[eg]; editing = { cid: c0.id, gid: eg, draft: clone(part0 ? part0.vals : {}), reason: null, note: '' }; } }
+document.getElementById('app').addEventListener('toggle', e => { const k = e.target && e.target.dataset && e.target.dataset.doc; if (k) { e.target.open ? openDocs.add(k) : openDocs.delete(k); } }, true);
+render();
+
+</script>
+</body>
+</html>

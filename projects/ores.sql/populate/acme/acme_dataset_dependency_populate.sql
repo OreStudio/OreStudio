@@ -153,7 +153,7 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.risk_report_configs', 'acme.acme_hk.portfolios', 'scope_source');
 
-    -- The definitions bind the configuration documents and the risk report configurations, so each document is published first.
+    -- The definitions bind the configuration documents, the risk report configurations and the engine settings, so each document is published first.
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_group.report_definitions', 'acme.acme_group.pricing_engines', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -163,6 +163,8 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_group.report_definitions', 'acme.acme_group.risk_report_configs', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.report_definitions', 'acme.acme_group.engine_settings', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.report_definitions', 'acme.acme_uk.pricing_engines', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.report_definitions', 'acme.acme_uk.todays_market', 'configuration_source');
@@ -170,6 +172,8 @@ BEGIN
         'acme.acme_uk.report_definitions', 'acme.acme_uk.curve_configuration', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.report_definitions', 'acme.acme_uk.risk_report_configs', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.report_definitions', 'acme.acme_uk.engine_settings', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_us.report_definitions', 'acme.acme_us.pricing_engines', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -179,6 +183,8 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_us.report_definitions', 'acme.acme_us.risk_report_configs', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.report_definitions', 'acme.acme_us.engine_settings', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.report_definitions', 'acme.acme_hk.pricing_engines', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.report_definitions', 'acme.acme_hk.todays_market', 'configuration_source');
@@ -186,4 +192,6 @@ BEGIN
         'acme.acme_hk.report_definitions', 'acme.acme_hk.curve_configuration', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.report_definitions', 'acme.acme_hk.risk_report_configs', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.report_definitions', 'acme.acme_hk.engine_settings', 'configuration_source');
 END $$;

@@ -134,8 +134,8 @@
             '<a class="btn danger" href="../retire-a-convention/?kind=' + S.kind + '&key=' + encodeURIComponent(d.key) + '">' + M.icon('delete') + 'Delete</a>' : '';
         var details = '<dl class="fields">' + M.COLUMNS[S.kind].map(function (c) {
             return '<div><dt>' + M.esc(c.h) + '</dt><dd>' + M.dash(d.terms[c.id]) + '</dd></div>';
-        }).join('') + '</dl><div class="lastchanged">Last changed: version ' + d.version + ' · ' + M.esc(d.modifiedBy) + ' · ' +
-            M.relTime(d.recordedAt) + ' · ' + M.esc(d.reason) + ' · “' + M.esc(d.commentary) + '”</div>';
+        }).join('') + '</dl><div class="lastchanged">Last changed: version ' + d.version + ' · ' + M.person(d.modifiedBy) + ' · ' +
+            M.relTime(d.recordedAt) + ' · ' + M.esc(M.reasonName(d.reason)) + ' · “' + M.esc(d.commentary) + '”</div>';
         var twinTab = twins.length === 0 ? '<p class="dim">None yet.</p>' :
             '<p class="dim">' + twins.length + ' other documents state the same terms.</p><ul>' + twins.slice(0, 8).map(function (t) {
                 return '<li class="key mono">' + M.esc(t.key) + '</li>';

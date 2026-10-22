@@ -32,13 +32,14 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 117
+Tables: 118
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
 note as OtherGroups
 Keys this group states reach into:
+- ores_inbox_approval_requests_tbl (inbox)
 - ores_refdata_books_tbl (refdata)
 - ores_refdata_counterparties_tbl (refdata)
 - ores_refdata_counterparty_identifiers_tbl (refdata)
@@ -4113,6 +4114,35 @@ package "trading" #E8F5E9 {
     ORE import moves off in its own task.
     end note
 
+    entity ores_trading_trade_authorisation_requests_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * trade_id : uuid <<FK>>
+        * trade_version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_authorisation_requests_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Authorisation Request Table
+    The trading detail of a trading.operational_authorisation approval request.
+    The request itself, who asked, when, why and where it stands, is the inbox's
+    record. This row names the trade and the trade version that Operations is asked
+    to release, keyed by the request it details.
+    Authorisation is metadata about a version, not a state of the trade and not a new
+    version. The row never changes the trade. A system raises the request when an
+    actual trade goes live in a real book.
+    end note
+
     entity ores_trading_trade_bookings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4605,6 +4635,7 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_synthetic_cdo_instruments_
 ores_trading_activity_types_tbl ||--o{ ores_trading_trade_activities_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_trade_additional_fields_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_additional_fields_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_trade_authorisation_requests_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_trade_bookings_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_bookings_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_trade_identifiers_tbl : "has"

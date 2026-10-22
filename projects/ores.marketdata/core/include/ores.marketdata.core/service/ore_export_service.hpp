@@ -23,6 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <chrono>
+#include <optional>
 #include <string>
 
 namespace ores::marketdata::service {
@@ -43,6 +45,10 @@ struct ore_export_result final {
     int series_count = 0;
     int observation_count = 0;
     int fixing_count = 0;
+    /// The datums whose line at the valuation date carries a value from an earlier day.
+    int carried_forward_count = 0;
+    /// The datums left out of the valuation date because their latest value is too old.
+    int stale_count = 0;
 };
 
 /**
@@ -85,7 +91,34 @@ public:
 
     explicit ore_export_service(context ctx);
 
-    [[nodiscard]] ore_export_result write_all() const;
+    /**
+     * @brief Writes the market data and the fixings.
+     *
+     * Every stored observation of the observation table is one line, dated at its own time. The
+     * ticks of a live feed are not among them, because they have no such row.
+     *
+     * With a date, each datum also has one line dated at @p valuation_date, with the value it
+     * had at the close of that day, from the observation table or the tick table, whichever
+     * holds the later value. That line replaces any observation line of the same date. The close
+     * is the end of the day in UTC. The history of other dates stays, because an analytic can
+     * read more than one date.
+     *
+     * A line at the date may carry a value forward from an earlier day, but not one older than
+     * @p max_age_days before the date. A datum whose latest value is older has no line at the
+     * date, so the run does not take a stale quote for a current one. The result counts both
+     * kinds of datum. A datum with no value at or before the close has no line either.
+     *
+     * @param max_age_days The limit above, or the default of default_max_age_days.
+     *
+     * @throws std::invalid_argument if the date is not an ISO 8601 date, or the limit is
+     * negative.
+     */
+    [[nodiscard]] ore_export_result
+    write_all(const std::optional<std::string>& valuation_date = std::nullopt,
+              const std::optional<int>& max_age_days = std::nullopt) const;
+
+    /// The limit in days when a caller states none. It covers a weekend and a holiday.
+    static constexpr int default_max_age_days = 5;
 
 private:
     context ctx_;

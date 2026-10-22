@@ -572,7 +572,7 @@ public:
             }
 
             service::ore_export_service svc(ctx);
-            const auto written = svc.write_all();
+            const auto written = svc.write_all(req->valuation_date, req->max_age_days);
 
             ores::storage::net::storage_transfer transfer(http_base_url,
                                                           ores::nats::service::extract_bearer(msg));
@@ -581,6 +581,8 @@ public:
 
             resp.success = true;
             resp.series_count = written.series_count;
+            resp.carried_forward_count = written.carried_forward_count;
+            resp.stale_count = written.stale_count;
             resp.storage_key = req->storage_key;
             resp.fixings_storage_key = req->fixings_storage_key;
             resp.message = "Exported " + std::to_string(written.series_count) +

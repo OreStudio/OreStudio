@@ -59,6 +59,18 @@ public:
      */
     messaging::book_trade_response book_trade(const messaging::book_trade_request& request);
 
+    /**
+     * @brief Creates a bond issue with its legs and their child rows, in one
+     * transaction.
+     *
+     * The issue is create-only and whole or absent. An issue id that is
+     * stored with equal terms is answered with a conflict coded
+     * already_exists. One stored with other terms is answered with a conflict
+     * coded content_differs. Neither writes anything.
+     */
+    messaging::put_bond_issue_composite_response
+    put_bond_issue_composite(const messaging::put_bond_issue_composite_request& request);
+
 private:
     context ctx_;
 };

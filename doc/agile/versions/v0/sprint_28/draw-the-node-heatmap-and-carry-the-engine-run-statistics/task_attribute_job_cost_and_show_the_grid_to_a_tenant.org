@@ -26,12 +26,12 @@ Show what the work costs for every role, and let a tenant administrator see the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] |
-| Now          | Not yet started.                       |
+| Now          | Half built. A tenant and a party see the grid views (0d64a9e959, 7caa4701e3). No cost rate exists on a host or a result.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-12                               |
+| Next         | Add the cost rate, the result cost and the party breakdown.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

@@ -18,6 +18,7 @@
  */
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/lexical.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include <charconv>
 #include <format>
 #include <stdexcept>
@@ -453,11 +454,11 @@ void record_writer::set_own_text(std::string_view value) {
         case field_kind::real: {
             const auto digits = trim_space(value);
             auto* slot = static_cast<double*>(slot_of(f));
-            const auto [stop, ec] =
-                std::from_chars(digits.data(), digits.data() + digits.size(), *slot);
-            if (ec != std::errc{} || stop != digits.data() + digits.size())
+            const auto parsed = ores::platform::numeric::parse_double(digits);
+            if (!parsed)
                 throw std::runtime_error(
                     std::format("'{}' is not a real number for the {} table", value, type_->name));
+            *slot = *parsed;
             break;
         }
         case field_kind::enumeration: {

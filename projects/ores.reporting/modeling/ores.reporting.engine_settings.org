@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: AD4E924C-932C-4C55-B57A-D07A441FE5AC
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.reporting.engine_settings
+#+description: Codegen entity model for the reporting =engine_settings= table. The central row of a named engine settings configuration that reports bind.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: engine_settings
+#+entity_plural: engine_settings
+#+entity_title: Engine Settings
+#+brief: A named set of ORE engine settings that report definitions bind.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+The central row of a named engine settings configuration. A report definition binds the configuration through
+=report_configuration=, in the slot of configuration type =engine_settings=, as it binds its pricing engines. The row holds
+only the identity. The settings live in three parts, each its own table keyed by this row: =engine_settings_fixings=,
+=engine_settings_building= and =engine_settings_execution=. A part that has no row means the engine default for every
+setting in it. A write to any part bumps the version of this row in the same transaction.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:profile:       uuid-identified-lookup
+:generate_touch_function: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+The party that owns this configuration. Set from the session that writes it, and enforced by row level security, so a
+party sees only its own configurations.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Human-readable name of this configuration, unique per party. It is also the name of the reporting configuration this row
+is registered as, which is how a report definition binds it.
+
+#+begin_src cpp :name generator
+std::string("Standard engine settings")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the settings are for and which reports share them.
+
+#+begin_src cpp :name generator
+std::string("Engine settings")
+#+end_src
+
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The reporting configuration this row is registered as. A report definition binds that configuration, and so reaches these
+settings.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:    ores_reporting_engine_settings_tbl
+:index_prefix: engine_settings
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+
+* Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      false
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: settings
+:entity_plural_short:   settings
+:entity_singular_words: engine settings
+:entity_plural_words:   engine settings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <ostream>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: es
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.reporting.api/domain/engine_settings.hpp
+:domain_class:            reporting::domain::engine_settings
+:protocol_include:        ores.reporting.api/messaging/engine_settings_protocol.hpp
+:collection_name:         engine_settings
+:key_field:               name
+:save_request_item_field: engine_settings
+:has_change_reason_cache: true
+:has_pagination:          true
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|---+---+---+---+---+---+---|
+| id | Id | idEdit | line_edit | true | true | |
+| name | Name | nameEdit | line_edit |  | true | |
+| description | Description | descriptionEdit | line_edit |  |  | |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|---+---+---+---+---|
+| Name | name | Name | string | 120 |
+| Description | description | Description | string | 120 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* Physical space
+
+The messaging, eventing and history surface is not generated yet. This task models the data. The screens, the endpoint and
+the service come with the task that builds the screens.
+
+| Address                          | Enabled |
+|----------------------------------+---------|
+| ores.cpp.service                 | false   |
+| ores.cpp.protocol                | false   |
+| ores.cpp.nats-handler            | false   |
+| ores.cpp.nats-sub-registrar      | false   |
+| ores.cpp.nats-event-registrar    | false   |
+| ores.cpp.nats-eventing           | false   |
+| ores.cpp.nats-event-cache        | false   |
+| ores.cpp.history-provider-registrar | false |
+| ores.cpp.presentation            | false   |
+| ores.cpp.eventing-integration-test | false |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:32FCDE76-1C5A-4AFC-8671-7468C0F024DB][ores.reporting.risk_report_config]] — the run settings this row's engine settings leave.

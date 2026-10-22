@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -83,3 +83,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story page, seven task pages and the sprint row exist. The tasks follow the
+journeys Browse the grid's jobs and Follow a job: the BFF routes, the batch
+filter, the outcome read, the Jobs tab, the download route, the job page, and
+the decision on who sees a node's name.

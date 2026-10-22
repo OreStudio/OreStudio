@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 39057B64-8F85-4882-9B66-D2D4FC7468E4
+:END:
+#+title: The synthetic runner
+#+description: Why one object in the simulator owns the running generators, how demand starts and stops them, and what happens when two generators overlap.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:runner:lifecycle:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+The synthetic runner, in =ores.marketdata.synthetic=, owns every running
+generator. The demand set starts and stops generators. A person never starts a
+feed for a party. The runner runs one tick thread for each generator and one
+status thread. One class serves every asset class, because every generator
+enters through the generator interface.
+
+* Detail
+
+** Demand starts a generator
+
+When the service sends a demand set, the runner finds the generators whose
+universe covers the ids. It starts the ones that are not running and stops the
+ones whose ids left the set. A generator for an instrument that nobody demands
+does not run.
+
+** One owner
+
+The map of running generators is keyed by generator id. Two generators that
+cover one vendor instrument conflict, because both would publish values for one
+id. The runner refuses the second and names the holder, so an author can fix it.
+The check compares the vendor instruments and not the internal series, because
+the adapter knows only vendor ids.
+
+** Start results
+
+A start reports =started=, =already_running=, =id_conflict= or
+=vintage_data_missing=. The last value covers a curve generator that resolves its
+vintage price at construction and finds none.
+
+** Three facts the code shape does not show
+
+- A generator that fails keeps the adapter running. The demand reply rejects its
+  ids with a reason.
+- A stop is asynchronous. The generator finishes its current tick.
+- Restarting the adapter loses no stored state. The service sends the demand set
+  again. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] — completes: how the runner builds a generator.
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: what starts the generators.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the component the runner belongs to.

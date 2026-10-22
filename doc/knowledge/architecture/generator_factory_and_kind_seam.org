@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: D67C930B-261F-480B-B5EF-020C6D617333
+:END:
+#+title: The generator factory and the kind seam
+#+description: How a kind string selects a generator builder, why the build input is a variant, and how the runner stays unchanged as kinds are added.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:generators:factory:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+The generator factory, in =ores.marketdata.synthetic.api=, maps a kind string to
+the builder that constructs a generator from persisted configuration. The runner
+and the control plane request a generator by kind and never name a concrete class.
+That one lookup is the seam.
+
+* Detail
+
+** The lookup
+
+=make(kind, ctx, input)= finds the builder registered for =kind=, calls it with the
+shared context and the build input, and returns the generator as a
+=std::shared_ptr<i_generator>=. It throws =std::invalid_argument= when the kind has
+no builder, and when the input is not the kind's own member. =register_kind=
+replaces a builder. =kinds()= returns the sorted kind strings.
+=make_default_generator_factory()= registers =fx_spot= and =ir_curve=.
+
+** Why the input is a variant
+
+=generator_build_input= is a =std::variant= with one struct for each kind. Each
+struct holds the persisted config and the child rows that the kind needs. The IR
+input also holds a resolved refdata context. The variant lets one =make=
+signature serve every kind and puts the input check inside =make=.
+
+** The context
+
+=generator_build_context= holds the raw NATS client and the service client. The
+client reads vintage prices from the market data service as the system. See
+[[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+
+** The registry beside the factory
+
+Construction is one of the things a kind needs. The config read permission, the
+config rows, the loader, the vintage anchor and the simulate payload also vary by
+kind. =generator_kind_registry= holds them. A registration there refuses a kind the
+factory cannot build, so the two cannot drift.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]] — completes: the edits a new kind needs.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]] — completes: the caller of the factory.

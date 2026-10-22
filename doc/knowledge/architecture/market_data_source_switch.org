@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: FA280E9B-7E00-4747-8D29-42B3D4258873
+:END:
+#+title: A source switch changes one route and nothing else
+#+description: What happens when a party moves from one source of a provider to another, and why the series, the ids and the consumers are unaffected.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:routing:source_switch:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+A party changes its source by changing one route. The service writes an audited,
+effective-dated change, sends new demand sets to the two adapters, and closes and
+opens the metering intervals. The party's series, its mapping and its consumers
+do not change.
+
+* Detail
+
+#+caption: Switching a party from the simulated source to the live source.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/market_data_source_switch.png]]
+
+Source: [[proj:doc/knowledge/architecture/market_data_source_switch.puml][=market_data_source_switch.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/market_data_source_switch.puml=.
+
+** The steps
+
+1. The party administrator writes a new route with an effective date and a
+   reason.
+2. The service checks the subscription, the rights and the state of the new
+   source.
+3. The service closes the old metering interval and opens the new one.
+4. The service sends the old adapter a demand set without the party's ids and the
+   new adapter a demand set with them.
+5. Ticks of the new source reach the same series. Each observation records its
+   source.
+
+** What does not change
+
+- The series key (item, provider, party).
+- The mapping.
+- Every consumer.
+
+** What a reader sees
+
+The series page shows the source of each value. The history of the route shows
+who changed it, when and why. Prices from the two sources can differ at the
+switch. That is a market fact.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: the entity that changes.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: why one series survives the switch.
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: the demand sets that move.

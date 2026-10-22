@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: C6D75337-0EA6-40F0-8E8B-52737558851D
+:END:
+#+title: The source kind
+#+description: The reference vocabulary that says whether a source is live, replayed, a test, simulated or derived, where it is stored, and what it may affect.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:sources:refdata:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+A source is one adapter instance of a provider. Its =kind= is a reference data
+code: =live=, =replay=, =test=, =simulated= or =derived=. The kind lives on the
+source and nowhere else. A person can read it. The pipeline never branches on
+it. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+
+* Detail
+
+** The vocabulary
+
+| Code | Meaning |
+|------+---------|
+| =live= | The adapter reads the real vendor. |
+| =replay= | The adapter replays recorded vendor ticks. |
+| =test= | The adapter is a vendor-supplied test environment or a harness. |
+| =simulated= | The adapter generates values. |
+| =derived= | The service computes the values from other series. A composite is an internal source of this kind. |
+
+The model is =projects/ores.refdata/modeling/ores.refdata.source_kind.org=. The
+column on the source is validated against the table. A new code is a data
+change and not a code change.
+
+** What a source row holds
+
+A source has an id, a readable name such as =bloomberg-sim=, a provider, a kind,
+and an optional rate card. The name is a label. No code parses it.
+
+** How the kind reaches a reader
+
+- A source screen shows the kind as a badge.
+- An observation records its =source_id=, so the series page can show where each
+  value came from.
+- A series does not carry the kind. A series is keyed by provider and not by
+  source, so one series can hold values from more than one source over time. See
+  [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]].
+
+** How it differs from derivation_kind
+
+=source_kind= says what kind of adapter produced a value. =derivation_kind= says
+whether a stored series is observed or computed by a mechanism such as
+=IR_CURVE_BOOTSTRAP=. The two are independent. A curve that a bootstrap computed
+from simulated quotes is =derived= by one axis and =simulated= by the other.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — completes: the rule for how the kind may be used.
+- [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] — completes: the provider that owns the source.
+- [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][Derivation Kind]] — completes: the sibling axis of observed against computed.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — the component the vocabulary lives in.

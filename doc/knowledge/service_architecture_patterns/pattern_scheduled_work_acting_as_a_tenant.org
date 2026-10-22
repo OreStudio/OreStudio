@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:identity:scheduling:multi_tenancy:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-22
 #+pattern_group: identity
 #+startup: inlineimages
 
@@ -142,10 +142,9 @@ both appear in every audit row the run writes.
 - *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
   applies the composite: the =ReportRun= role, the audience of reporting, ORE
   and compute, and the moments reporting creates and revokes a grant.
-- *Synthetic feeds.* [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]]
-  applies the composite: a feed that a restart starts acts as its collection's
-  tenant and party, under the =SyntheticFeedRun= role, with a standing grant that
-  a person gives by the first Start.
+- *Market data adapters.* [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]]
+  is the counterexample: an adapter acts as no tenant and no party, so it needs
+  no grant and no token exchange.
 - *The expiry sweep.* [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval
   request expiry]] applies it: the job belongs to no tenant, its close reads
   every tenant's overdue requests in one statement, and the notice that follows
@@ -170,5 +169,7 @@ The composite has no single source. Each part cites its own:
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.
 - [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]] — the boundary between the firing and the run.

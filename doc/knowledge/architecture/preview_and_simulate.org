@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:operations:preview:simulate:
 #+created: 2026-10-06
-#+updated: 2026-10-07
+#+updated: 2026-10-22
 
 * Summary
 
@@ -46,13 +46,13 @@ The three handlers are stateless. =simulate_handler= and
 =ir_curve_preview_handler= build a real process, step it, and reply. Nothing
 reaches the database and nothing is published on NATS.
 
-A started feed is the opposite. It publishes its own ticks from inside the
-producer, and [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
-writes the observation and republishes onto the per-party stream. The tick
-type itself is [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. The divide
+A running generator is the opposite. The simulator publishes its ticks from
+inside the generator, and [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
+maps them, writes the observation and delivers it on the per-party stream. The
+tick type itself is [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. The divide
 matters because a preview is asked for a batch and answers it in one reply,
-while the feed is owned by the controller and keeps publishing until it is
-stopped.
+while the synthetic runner owns the generator and keeps publishing while demand
+holds it.
 
 ** How the counts are bounded
 

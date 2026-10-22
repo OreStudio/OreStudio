@@ -2,12 +2,12 @@
 :ID: 49943F4F-D4E4-4A69-9A90-82AA1080818D
 :END:
 #+title: The generation config collection and folders
-#+description: The named party-scoped container that owns the typed generation configs, and the self-referencing folder tree the Market Simulator browses.
+#+description: The named system-owned container that owns the typed generation configs, and the self-referencing folder tree the Market Simulator browses.
 #+type: knowledge
 #+level: cross
 #+filetags: :synthetic:config:collection:folders:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
@@ -24,29 +24,22 @@ feeds occupy in the hierarchy the Market Simulator browses.
 
 The collection carries three things a reader has to hold apart.
 
-- Its identity, which is a surrogate =id= plus a =name= that is unique per
-  tenant and party. =party_id= is not a natural key. One party may own
-  several containers at once, for example a "Basic" set and a "Realistic"
-  set, and the optional =dataset_id= records which DQ dataset a
-  publish-from-dq call produced each one. A container made by hand has no
-  dataset of origin, and that absence is how the two are told apart.
-- Its =scope=, which is =system=, =tenant= or =party=, and which decides who
-  consumes the generated data. See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]].
-- Its =binding_mode=, which is =bound= or =sandboxed=, and which decides
-  whether the generated data is ever stored. See
-  [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]].
-
-Both axes default to the narrower end, =party= and =bound=, and they are
-orthogonal. The collection also carries =enabled= and a free-text
-description, and the usual audit block with =modified_by=, =performed_by=, a
-change reason code and a change commentary.
+- Its identity, which is a surrogate =id= plus a =name= that is unique in the
+  system tenant. The system may hold several containers at once, for example a
+  "Basic" set and a "Realistic" set, and the optional =dataset_id= records which
+  bundle dataset produced each one. A container made by hand has no dataset of
+  origin, and that absence is how the two are told apart.
+- Its owner. Every collection belongs to the system tenant and the system party.
+  See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
+- Its =enabled= flag and a free-text description, and the usual audit block with
+  =modified_by=, =performed_by=, a change reason code and a change commentary.
 
 ** The folder tree
 
 =folder= is a generic self-referencing node. Its =kind= is one of ="root"=,
 ="collection"=, ="asset_class"= or ="instrument_type"=, and =parent_id= is
-null for the root only. One root folder per party carries the name
-"Synthetic". A collection folder hangs under the root, the asset-class folder
+null for the root only. One root folder carries the name
+"Simulator". A collection folder hangs under the root, the asset-class folder
 hangs under the collection, and the instrument-type folder hangs under that.
 
 A =collection= row is the only kind with =collection_id= populated. That
@@ -61,24 +54,23 @@ alike.
 
 ** The fact the code shape does not show
 
-The tree is rows and never a parsed string. =source_name= stays a display
-string and a NATS subject suffix, so the hierarchy position and the subject
-can disagree, and neither is derived from the other. The read path is
+The tree is rows and never a parsed string. A generator's vendor instrument is
+data on the config and never a path, so the hierarchy position and the id can
+differ, and neither is derived from the other. The read path is
 =folder_repository::get_hierarchy=, backed by
 =ores.utility/domain/hierarchy.hpp=, so the shell and any future screen walk
 the same function rather than each reimplementing a tree walk over
 =source_name=.
 
-=folder_id= is optional and only the publish-from-dq path fills it. An FX
-rate or a curve made by hand in the editor has no folder until the follow-up
-work resolves one, so a container can hold a feed the tree does not show.
+=folder_id= is optional and only the bundle path fills it. An FX rate or a
+curve made by hand in the editor has no folder until someone places it, so a
+container can hold a generator the tree does not show.
 
 * See also
 
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], which draws the tree and the editors behind it.
-- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]], one of the two orthogonal axes on the collection.
-- [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], the other one.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: who owns the collection.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the first kind of child.
 - [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], the second kind of child.

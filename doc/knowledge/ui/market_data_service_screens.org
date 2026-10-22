@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 1FC08F40-A345-4F8A-821C-008ED4030AF9
+:END:
+#+title: Four areas of the Market data menu cover the service
+#+description: The screens of the market data service: the catalogue, subscriptions and routes, usage and cost, and the simulator.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ui:screens:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The *Market data* menu holds four areas. The catalogue shows what providers
+offer. Subscriptions and routes show what a party takes and from which source.
+Usage and cost show what a party used and what it costs. The simulator holds the
+authoring tools. The first three are the same for live and simulated sources.
+
+* Detail
+
+| Area | Shows | Who |
+|------+-------+-----|
+| Catalogue | Providers, their sources with kind badges, vendor instruments, mappings, minted ids | Everyone reads. The system administrator writes. |
+| Subscriptions | A party's subscriptions, rights, and the route of each | Party administrator |
+| Usage and cost | Demand, delivery, bills and shadow bills, by provider and period | Party administrator reads own. System reads all. |
+| Simulator | Collections, folders, generators, preview, fault injection | Simulator author |
+
+** Rules for the screens
+
+- A source's kind is a badge and a filter, and it changes no other behaviour. See
+  [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+- A source screen shows the adapter state, the demand set and the rejected ids.
+  See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]].
+- A route change goes through a dialog that asks for a reason.
+- The simulator area is the only one with authoring controls.
+
+** Standards
+
+All screens follow the record screen standard and the feed screen standard. The
+simulator screens are described in [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the data behind the second area.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the data behind the third area.

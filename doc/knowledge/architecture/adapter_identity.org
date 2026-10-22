@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: A7D1927B-CB42-49A9-94EF-DBB40225274C
+:END:
+#+title: The identity an adapter runs as
+#+description: Why an adapter runs as a system service with no tenant and no party, how the service identifies it, and how a restart restores its work.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:adapters:identity:iam:
+#+created: 2026-10-19
+#+updated: 2026-10-22
+
+* Summary
+
+An adapter runs as a system service. It has a service identity, and that
+identity holds no tenant and no party. The market data service authenticates
+the adapter by its service token, and the adapter learns nothing about the
+parties it serves. A person never starts an adapter on behalf of a party.
+
+* Detail
+
+** Three questions, three owners
+
+| Question | Owner | When it is asked |
+|----------+-------+------------------|
+| May this process be an adapter? | IAM, from the service identity | At announce |
+| Which ids must it publish? | The market data service | At each demand request |
+| Which party gets a value? | The market data service | At ingest, from the routes |
+
+The adapter answers none of the last two. This is what keeps a tick free of
+tenant and party.
+
+** What a restart restores
+
+The state of an adapter is its connection and its demand set. Neither is stored
+in the adapter. After a restart the adapter announces again. The service then
+sends the current demand set, and the adapter serves it. A restart needs no
+person and no stored consent.
+
+** The simulator
+
+The simulator reads vintage prices from the market data service to anchor its
+generators. It reads them as the system tenant, with a service identity. No
+per-collection grant exists. Authoring a generator is a separate act of a person
+with the permission of the system tenant. See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
+
+** Why no run grant
+
+A run grant records that a person agreed that something acts in a tenant and
+party. An adapter acts in none, so there is nothing to agree.
+
+* Patterns used
+
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — contradicts: scheduled work needs a grant to act as a tenant, and an adapter acts as no tenant.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the messages the identity is checked for.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — contradicts: the grant model that an adapter does not use.

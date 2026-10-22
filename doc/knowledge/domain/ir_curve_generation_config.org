@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:config:ir:
 #+created: 2026-10-06
-#+updated: 2026-10-11
+#+updated: 2026-10-22
 
 * Summary
 
@@ -31,9 +31,8 @@ and its short-rate parameters are two separate sets of child rows.
 - =role=, which is =discount=, =projection= or =self_discounting=, with
   =self_discounting= as the default. The vocabulary is intrinsic to this
   record, so it is a plain check constraint and not a lookup table.
-- =source_name=, the provenance string and the publish subject suffix. It is
-  namespaced by collection only, so two collections never collide on the same
-  currency and index.
+- =provider_code=, the provider whose curve this config simulates. The vendor
+  instrument of each pillar comes from the catalogue under that provider.
 
 The =FOMC= tenor is the meeting-dated variant of one currency and index pair.
 Its pillars start on meeting dates, so each of them has its own start in the
@@ -82,13 +81,12 @@ short rate can legitimately be zero or negative and an FX spot price cannot.
 ** The collision rule
 
 =enabled= and =auto_start= carry the same meaning as they do on the FX spot
-config. Starting a curve feed is refused when another feed already runs that
-publishes into one of the same series. A curve is a series, and the pillars of
-the feed are built from =currency_code= and the index tenor, so two configs of
-one currency and index tenor publish into the same series whatever their
-=index_family= or their =role=. The
+config. Starting a curve generator is refused when another generator already runs
+that serves one of the same vendor instruments. The pillars of the curve are built
+from =currency_code= and the index tenor, so two configs of one currency and index
+tenor serve the same instruments whatever their =index_family= or their =role=. The
 role says how a consumer uses the curve, and the oresmd grammar does not hold
-it; see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. Switching a running feed is a Stop followed by a Start.
+it; see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. Switching a running generator is a Stop followed by a Start.
 
 ** The fact the code shape does not show
 
@@ -116,4 +114,4 @@ the curve is historical and why it is still offered.
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how a curve is a series, and what the grammar leaves to the consumer.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — what a curve is.
 - [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family of curves, one series for each index tenor.
-- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — the rule that two feeds with overlapping series cannot run together.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]] — the rule that two generators serving one vendor instrument cannot run together.

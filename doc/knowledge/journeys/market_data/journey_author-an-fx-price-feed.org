@@ -133,10 +133,10 @@ two numbers.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =fx_spot_generation_config= | The feed row: the pair, the derived oresmd URI, the source name, the tick rate, the engine, the initial price and where it comes from, the enabled and auto-start flags, and the folder it sits under | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
+| =fx_spot_generation_config= | The generator row: the pair, the derived oresmd URI, the vendor instrument, the tick rate, the engine, the initial price and where it comes from, the enabled and auto-start flags, and the folder it sits under | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
 | =gmm_component= | The mixture the process draws from: one weighted Gaussian per row, with its index, description, mean, standard deviation and weight | [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] |
 | =market_data_generation_config= | The named container the feed belongs to, which supplies the collection the tree groups the feed under | [[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][ores.synthetic.market_data_generation_config]] |
-| =folder= | The hierarchy node the feed hangs from, so a person finds it in the tree rather than by its source name | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
+| =folder= | The hierarchy node the feed hangs from, so a person finds it in the tree rather than by its vendor id | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
 
 The pair is two soft references: =base_currency_code= and
 =quote_currency_code= are text and point at =ores.refdata.currency= without a

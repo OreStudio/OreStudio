@@ -35,8 +35,8 @@ call, which is what makes a published curve a slice of a single curve rather
 than a set of separately noised quotes. Mapping a calendar tenor to a tick
 count is the caller's job, not the process's.
 
-The library sits outside =ores.synthetic= on purpose, and the header records
-why. A calibration service, =ores.marketdata= or =ores.synthetic= can all
+The library sits outside =ores.marketdata.synthetic= on purpose, and the header records
+why. A calibration service, =ores.marketdata= or =ores.marketdata.synthetic= can all
 instantiate a process without linking the synthetic service binary. The
 library also carries no logging dependency, so a caller that wants to diagnose
 an unknown process name has to log around the call rather than inside it.

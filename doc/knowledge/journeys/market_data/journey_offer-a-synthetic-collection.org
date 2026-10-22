@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: A829B804-23A5-493C-BDC6-A3B513EBDFEF
+:END:
+#+title: User Journey: Offer a synthetic collection
+#+description: A simulator author reads what a named synthetic collection owns and covers, checks that its generators can start, and offers the collection to the market data service by enabling it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:
+#+created: 2026-10-09
+#+updated: 2026-10-22
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A simulator author reads what a named synthetic collection owns and covers, checks that its generators can start, and offers the collection to the market data service by enabling it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this collection to supply the market data my parties need, and I want to
+know what it covers before I offer it." The journey is done when the collection
+is enabled, the simulator's universe includes its vendor instruments, and the
+screen reads back which generators can start and which cannot, and why. A
+collection is offered and withdrawn. It is never started for a party. The demand
+of the parties starts its generators. See [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
+
+* Actor and trigger
+
+The actor is the simulator author: a person in the system tenant who holds the
+generator permissions. Collections belong to the system tenant and the system
+party. See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]]. The trigger is a new provider to simulate, a currency pair or
+curve that the desk needs and that no source covers, or a revision of a
+collection. The journey starts at the collections list and ends when the person
+leaves it with the collection enabled or disabled. A second journey covers the
+authoring of the generators; this one begins after they exist.
+
+* Steps
+
+1. *Find the collection.* The person opens *Market data*, then *Simulator*, then
+   *Collections*. The system lists the collections: the name and version, the
+   description, the enabled flag, the generator count split into FX and IR, the
+   providers covered, the bundle of origin, and who changed it and when.
+2. *Open the collection.* The person selects a row. The system shows the name, the
+   description and the enabled flag, then read-only provenance, then the
+   generators it owns and its version history.
+3. *Read what the collection owns.* The system shows one row per generator with its
+   vendor instrument (provider, id scheme, id and field), its process, its state
+   and the count of parties whose demand it serves. The FX rows and the IR rows are
+   listed apart.
+4. *Check the coverage.* The person reads what the collection covers: the asset
+   class by instrument type with the generator count per cell, the providers and
+   currencies covered, and every gap. An empty cell is a gap, not a zero. The
+   person also reads which catalogue ids have no generator.
+5. *Check the generators.* The person chooses *Validate*. The system checks each
+   generator: that its vendor instrument exists in the catalogue, that no other
+   generator serves it, and for a vintage-priced generator that the vintage data is
+   available. The summary says how many pass and which fail, with the reason. See
+   [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]].
+6. *Offer the collection.* The person enables it. The simulator adds the
+   collection's instruments to the universe it announces. The service checks the
+   universe against the catalogue. See [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]].
+7. *Withdraw the collection.* The person disables it. The simulator removes the
+   instruments from its universe, and parties that routed to them see rejected
+   ids until the person routes elsewhere.
+8. *Preview.* At any step the person runs a preview of a generator, which shows
+   sample paths and the curve shape without publishing a tick.
+
+* Screens and wireframes
+
+One screen. The collection's identity and its counts sit at the top, its
+generators and their coverage sit in the middle, and the validation and the enable
+switch sit at the bottom, so the person reads the set above the act. The
+wireframe is still to be drawn.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes |
+|--------+---------------------|
+| =market_data_generation_config= | The collection row: name, description, enabled, dataset of origin |
+| =folder= | The tree node of the collection and of its asset classes |
+| =fx_spot_generation_config= | One FX generator: pair, vendor instrument, price source, cadence, GMM starting price, vintage, folder |
+| =gmm_component= | The weighted Gaussian components of an FX generator's price process |
+| =ir_curve_generation_config= | One IR curve generator: currency, index family, tenor, role, provider, process type, cadence, vintage, folder |
+| =ir_curve_generation_config_process_parameter_value= | The process parameters of an IR curve |
+| =yield_curve_process_type= | The short-rate model an IR curve generator names |
+| =ir_curve_template_entry= | The tenor and instrument grid of an IR curve, each entry with its vendor instrument |
+| =market_data_vendor_instrument= | The catalogue row a generator serves |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find, open | List and read collections | =marketdata.v1.synthetic.market_data_generation_configs.list=, =.get= | planned |
+| Open | Read the tree | =marketdata.v1.synthetic.folders.list=, =.get= | planned |
+| Read what it owns | List FX and IR generators | =marketdata.v1.synthetic.fx_spot_generation_configs.list=, =.ir_curve_generation_configs.list= | planned |
+| Read what it owns | Read the running state | =marketdata.v1.synthetic.ops.list_generators= | planned |
+| Check the coverage | List catalogue ids with no generator | =marketdata.v1.synthetic.ops.get_coverage= | planned |
+| Check the generators | Validate every generator | =marketdata.v1.synthetic.ops.validate_generators= | planned |
+| Offer, withdraw | Write the collection | =marketdata.v1.synthetic.market_data_generation_configs.put= | planned |
+| Preview | Simulate paths and preview a curve | =marketdata.v1.synthetic.ops.simulate_fx_spot_paths=, =.preview_ir_curve_shape= | planned |
+
+* Related journeys
+
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — write the FX generator a collection owns, before this journey can offer it.
+- [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — the same for a curve.
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — how a party takes the data a collection supplies.
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]] — the system's view of the simulated source.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the observations a running generator produces.
+
+* Related knowledge
+
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]]
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]]
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]]
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]]

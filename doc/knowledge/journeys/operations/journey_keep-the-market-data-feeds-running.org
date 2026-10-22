@@ -1,16 +1,16 @@
 :PROPERTIES:
 :ID: 986CED57-341F-49DE-8F5D-F186771F10D8
 :END:
-#+title: User Journey: Keep the market data feeds running
-#+description: A system administrator keeps the installation's market data feeds running: the bindings it holds, whether each source is running and when it last ticked, and how to start or stop one.
+#+title: User Journey: Keep the market data sources running
+#+description: A system administrator keeps the installation's market data sources running: the state of each adapter, the ids it serves and rejects, when it last ticked, the quality drops, and how to bring a stale source back.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:operations:
 #+created: 2026-10-06
-#+updated: 2026-10-18
+#+updated: 2026-10-22
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator keeps the installation's market data feeds running: the bindings it holds, whether each source is running and when it last ticked, and how to start or stop one.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator keeps the installation's market data sources running: the state of each adapter, the ids it serves and rejects, when it last ticked, the quality drops, and how to bring a stale source back.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -19,267 +19,101 @@ each step needs.
 
 * Goal
 
-"I want every market data feed this installation runs to be up, and to know the
-moment one goes quiet." The journey is done when each feed binding is shown
-with its source, the series its ticks land in, whether it is enabled, whether
-the feed is running and when it last ticked, and the operator has started or
-stopped what needed it.
+"I want every market data source this installation runs to be up, and to know the
+moment one goes quiet." The journey is done when each source is shown with its
+kind, its adapter state, the ids it serves, the ids it rejects and when it last
+ticked, and the operator has brought back what needed it.
 
 * Actor and trigger
 
 The actor is the system administrator: an account with the =SuperAdmin= role,
 acting from the system tenant in system administration mode, as the
-[[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] group sets
-out. Changing a binding needs =marketdata::feed_bindings:write= or
-=marketdata::feed_bindings:delete=; starting and stopping a feed needs the
-permission of the feed's kind and the run permission. The feed then acts under
-the run grant of its collection, as [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]] states. The trigger
-is a service restart, a feed the desk says is silent, a new source to bring up,
-or a routine check. The journey starts at *Operations*, then *Market data
-feeds*, and ends when the operator leaves the screen.
+[[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] group sets out.
+Reading needs =marketdata::sources:read=. The same screen serves live and
+simulated sources and shows the kind as a badge. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
 
-Two facts shape the screen. A binding is stored and versioned; the running set
-is live and not stored, and a restart of the producer service rebuilds it from
-the =enabled= and =auto_start= flags of every tenant's feed configs. And a binding names a producer source, not a series:
-the series a source writes is resolved per tick from the datum's =oresmd_uri=.
-The screen must therefore join a stored row to a live set, and infer the series
-from what has been written; see /What is missing/.
+The trigger is a service restart, a source the desk says is silent, a new
+adapter to bring up, or a routine check. The journey starts at *Operations*, then
+*Market data sources*, and ends when the operator leaves the screen.
 
 * Steps
 
-1. *List the feed bindings.* The person opens *Operations* and then *Market
-   data feeds*. The system lists the bindings the installation holds: the
-   source name, the owning party, the workspace, whether it is enabled, and the
-   row's version and who last changed it.
-2. *Read one binding.* The person selects a row. The system shows the binding's
-   fields and its versions, so the person can see when it was enabled or
-   disabled, and by whom.
-3. *Read the feed behind the source.* The person opens the producer
-   configuration whose =source_name= matches the binding. The system shows the
-   generation config: the source name, the folder it sits under, the enabled
-   and auto-start flags, the tick rate, and, for an IR curve, the currency,
-   index family and tenor. Today only the FX configurations list; see /What is
-   missing/.
-4. *Read whether the source is running.* The person asks the installation which
-   feeds are running. The system lists the running source names, every kind.
-   This is the live set the producer factory holds, not the stored bindings.
-5. *Read the last tick.* The person reads when each source last ticked. The
-   system answers from the newest observation of each binding's source, through
-   =marketdata.v1.ops.list_feed_binding_activity=, which returns one row per
-   binding of the caller's party with the source, the series and the last tick.
-   That is what the source has written, not what the ingest loop has received;
-   the loop's own counters are in memory only; see /What is missing/.
-6. *Start a feed.* The person chooses *Start*, on one binding or on a folder
-   subtree. The system resolves the folder subtree, starts every feed under it,
-   of every kind, and reports the counts: started, already running and skipped,
-   with a per-kind breakdown. The first Start of a collection gives the consent
-   that lets its feeds act in its tenant and party. The subject exists; the web
-   client does not call it today; see /What is missing/.
-7. *Stop a feed.* The person chooses *Stop*, on one binding or on a folder
-   subtree. The system stops every running feed under it and reports how many
-   stopped, by kind.
-8. *Enable or disable a binding.* The person changes the enabled flag and states
-   a change reason. The system writes the binding against the version it read.
-   Disabling suspends ingestion without deleting the binding; it does not stop
-   the producer, so the running set and the binding can disagree.
-9. *See a feed that has gone quiet.* The person sorts the rows by last tick and
-   reads the ones that have not ticked within the interval their tick rate
-   implies. The screen needs the last-tick read from step 5 and the tick rate
-   from step 3; see /What is missing/.
-10. *Bring a quiet feed back.* The person starts the feed behind the quiet
-    binding, from the feed's own screen or from the shell, and reads the row
-    again after a tick interval. A feed that comes back is quiet no longer. A
-    feed the person cannot start is where the journey stops today; see /When a
-    feed goes quiet/.
-11. *Leave.* The person goes back to the *Operations* area.
+1. *List the sources.* The person opens *Operations* and then *Market data
+   sources*. The system lists every source: name, provider, kind badge, adapter
+   state, heartbeat age, the count of ids in demand, the count rejected, the
+   last tick and the drop count of the last hour.
+2. *Read one source.* The person selects a row. The system shows the source's
+   fields, its rate card, the parties routed to it, and the history of its state.
+   See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]].
+3. *Read the demand.* The person opens the demand set. The system lists the
+   ids the source serves, and the ids it rejected with the reason. See [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
+4. *Read the quality drops.* The system shows drops by reason for the source:
+   unmapped, not a number, out of range, stale, out of order. See [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]].
+5. *See a source that has gone quiet.* A source is quiet when it is =serving= and
+   has not ticked inside the interval its demand implies, or when its adapter is
+   =stale=. The person sorts by last tick.
+6. *Bring a source back.* For a stale adapter, the person reads the adapter's log
+   and restarts the adapter service. The service sends the demand set again when
+   the heartbeat returns. For a simulated source the person can also start and
+   stop single generators from the simulator area; the demand set does the rest.
+7. *Read what a party takes.* The person opens the parties routed to a source and
+   follows the link to the party's subscription.
+8. *Leave.* The person goes back to the *Operations* area.
 
-Start and stop act on the running service, not on stored rows, and the running
-set is not stored, so the effect is visible in the reply and a later visit
-re-reads it from the service.
+* When a source goes quiet
 
-* When a feed goes quiet
+A quiet source has stopped delivering, whatever its adapter says. The checks go
+in this order.
 
-A quiet binding has not ticked, whatever its feed is doing. The status is read
-from the age of the last tick once the running set is known, and it does not ask
-whether the feed is running, so a feed that runs and writes nothing reads quiet
-in the same way as one that stopped. The running set is the first thing to read
-next, because it is not stored: it is the producer service's memory.
+1. *Heartbeat.* A missed heartbeat makes the adapter =stale=. The service keeps
+   the routes and waits.
+2. *Demand.* An adapter that serves an empty demand set has nothing to send. Check
+   that a party routes to the source.
+3. *Rejected ids.* An id the adapter rejects with =unknown_id= or =not_entitled=
+   delivers nothing. Check the catalogue and the vendor entitlement.
+4. *Mapping.* Ticks that arrive but are dropped as =unmapped= show in the quality
+   counters. Check the mapping of the provider.
+5. *Generators.* For a simulated source, a generator that failed to start rejects
+   its ids. The reason is in the reply. Two generators for one vendor instrument
+   conflict, and the runner names the holder.
 
-A restart of the producer service starts every enabled auto-start feed of every
-active tenant again, so a quiet binding after a restart is a feed that did not
-start. A feed that cannot start because marketdata or IAM is not up yet is tried
-again for five minutes, so the order in which the services start does not matter.
-A new installation starts its system feeds when the system is provisioned. The
-log of the producer service names the reason for each feed it skipped.
-There are four:
-
-- The feed starts from a vintage price and its collection holds no run grant, because no person has started the collection yet.
-- The grant lapsed, because its grantor lost a permission of the role or left.
-- Another running feed holds the same series.
-- Marketdata or IAM did not answer in five minutes.
-
-A feed that a person started and that is not auto-start does not come back after
-a restart, and a feed that a person stopped and that is auto-start does. The
-flags decide, not the last Start or Stop.
-
-A person who holds the permissions starts the collection from the shell, which
-gives a new consent and starts the feed. A feed that was running when the service
-stopped needs no such step. The binding stays enabled, the ingest loop stays
-subscribed, and the feed ticks again as soon as the restore has started it.
+An adapter restart needs no person to restore the state. The adapter announces
+again, the service sends the demand set, and delivery resumes.
 
 * Screens and wireframes
 
-One screen. The binding table and its summary sit at the top, the selected
-binding and the producer behind it sit in the middle, the folder control with
-its start and stop buttons sits under them, and the binding's versions sit at
-the bottom, so the person reads what is held, then what is behind it, then what
-can be done to it.
-
-#+caption: Market data feeds: the feed bindings with their source, enabled state, running state and last tick, the producer behind the selected source, and the folder start and stop controls.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/journeys/operations/wireframe_keep-the-market-data-feeds-running.png]]
-
-* Prototype
-
-A static page at =doc/prototypes/operations/keep-the-market-data-feeds-running/index.html=: mock data only, no backend,
-no build step and no session. It argues that a feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear.
-
-- Variants :: a a flat table, b grouped by source family, c the roster with a per-feed detail
-- States :: all, quiet, disabled
-- Source :: =doc/prototypes/operations/keep-the-market-data-feeds-running/index.html=
-- Open :: =/OreStudio/doc/prototypes/operations/keep-the-market-data-feeds-running/= once the site is built, or the
-  file directly
+One screen of the table, a detail panel, and the demand and drops views. The
+wireframe is still to be drawn.
 
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
-| Entity | What it contributes | Model |
-|--------+---------------------+-------|
-| =feed_binding= | The binding row: the source name, the party and workspace that consume it, and whether ingestion is enabled | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
-| =folder= | The folder subtree a start or a stop names | [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]] |
-| =ir_curve_generation_config= | The IR producer behind a source: its folder, currency, index family, tenor, tick rate, enabled and auto-start flags | [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ores.synthetic.ir_curve_generation_config]] |
-| =fx_spot_generation_config= | The FX producer behind a source: its pair, folder, tick rate, enabled and auto-start flags | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
-| =market_series= | The series a source's ticks land in; resolved per tick from the datum URI, not stored on the binding | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
-| =market_observation= | The stored ticks, with their observation time and source; this is where the activity read answers the last tick from | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
-
-The binding and the producer configurations are versioned, so each has a
-history. The running set is not an entity: it lives in the producer factory and
-in the ingest loop, and it is gone after a restart. The series is the one
-identity a tick carries, so the screen reads the series from the observations
-rather than from the binding.
+| Entity | What it contributes |
+|--------+---------------------|
+| =market_data_source= | Name, provider, kind, rate card |
+| =market_data_adapter_status= | State, heartbeat age, demand counts, last tick, drops |
+| =market_data_route= | The parties routed to the source |
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| List the feed bindings | List the bindings | =marketdata.v1.feed_bindings.list= | exists |
-| Read one binding | Read one binding | =marketdata.v1.feed_bindings.get= | exists |
-| Read one binding | List a binding's versions | =marketdata.v1.feed_bindings_versions.list= | exists |
-| Read the feed behind the source | List the FX generation configs | =synthetic.v1.fx_spot_generation_configs.list= | exists |
-| Read the feed behind the source | List the IR generation configs | =synthetic.v1.ir_curve_generation_configs.list= | exists |
-| Read the feed behind the source | Read one IR generation config | =synthetic.v1.ir_curve_generation_configs.get= | exists |
-| Read the feed behind the source | List the folders | =synthetic.v1.folders.list= | exists |
-| Read whether the source is running | List the running source names | =synthetic.v1.feed_configs.list= | exists |
-| Read the last tick | Read the newest observation of each binding's source | =marketdata.v1.ops.list_feed_binding_activity= | exists |
-| Read the last tick | Read the ingest loop's tick count and last received tick per source | no subject | missing |
-| Start a feed | Start one feed by config | =synthetic.v1.ops.start_feed= | exists |
-| Start a feed | Start every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder= | exists |
-| Stop a feed | Stop one feed by config | =synthetic.v1.ops.stop_feed= | exists |
-| Stop a feed | Stop every feed under a folder | =marketdata.v1.ops.stop_feeds_under_folder= | exists |
-| Enable or disable a binding | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
-| Enable or disable a binding | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
-| See a feed that has gone quiet | Read the expected tick rate | =synthetic.v1.ir_curve_generation_configs.list=, =synthetic.v1.fx_spot_generation_configs.list= | partial |
-| See a feed that has gone quiet | Read a feed's uptime or status history | no subject | missing |
-
-The list of running sources is =synthetic.v1.feed_configs.list=, which returns
-the running =source_name= values of every kind. The one-feed start and stop are
-keyed by a config id, which the server resolves to the config's =source_name=;
-the folder start and stop take a folder id and resolve the whole subtree
-server-side. The last tick comes from
-=marketdata.v1.ops.list_feed_binding_activity=, which reads the newest
-observation of each binding's source for the caller's party; what it cannot say
-is what the ingest loop itself has received, because the loop keeps its counters
-in memory and writes them to the status log once a minute; see /What is
-missing/.
-
-* What is missing
-
-1. *No read of the ingest loop's own counters.* The loop keeps a tick count and
-   the last tick it received, per binding, in memory, and the status log writes
-   them once a minute, but no subject returns them. The activity read answers
-   from the stored observations instead, so it says what a source has written
-   and not what the loop has heard; the two agree for a live feed and separate
-   for an imported series, which has observations and no ticks. The candidate is
-   a read over the ingest loop's statistics, or a stored last-received time per
-   binding. Until then the screen reads the stored last tick and says nothing
-   about the consumer.
-2. *No stored source-to-series mapping.* A feed binding names a source, a party
-   and a workspace; it does not name the series its ticks land in, because the
-   series is resolved per tick from the datum's =oresmd_uri=. The row cannot say
-   which series a source writes without reading the observations. The candidate
-   is a series reference on the binding, or a read that resolves a source to the
-   series it has written. Until then the screen shows the series of the source's
-   most recent observations and says the mapping is inferred.
-3. *The IR producer configurations can be listed now.*
-   =synthetic.v1.ir_curve_generation_configs.list= exists beside the FX list,
-   so the screen reads both lists and no longer needs the folder tree to
-   enumerate the IR feeds. This item stays so the numbering of the others holds.
-4. *Start and stop are shell-only, and carry no permission of their own.* The
-   subjects exist and the shell reaches them, through =synthetic start
-   folder|feed=, =synthetic stop folder|feed= and =synthetic list feeds=, but
-   no web operation calls them. The permission catalogue names permissions for
-   the producer configs and the feed bindings and none for the start and stop
-   subjects, so what gates them is not stated. The candidate is the web
-   operation and a permission for each act. Until then the screen is read-only
-   and points the operator at the shell.
-5. *No silence threshold and no alert.* Nothing states how long a feed may be
-   quiet, and nothing raises a notification when it goes quiet. The producer
-   configs carry a tick rate, =ticks_per_hour=, but nothing compares it with a
-   last tick. The candidate is a threshold on the binding or the config, and a
-   notification kind for a quiet feed. Until then the screen sorts by last tick
-   and the person judges.
-6. *No feed status history.* A binding has versions, so a change to the enabled
-   flag is recorded, but nothing records when a feed started, stopped or went
-   quiet, so the operator cannot read a feed's uptime. The candidate is a
-   start-and-stop event with an actor and a time, or a status sample. Until then
-   the screen shows the current state only.
-7. *Enabled and running are different things.* A binding's enabled flag governs
-   ingestion; the producer runs or not independently, and the running set is not
-   stored. No read returns a binding's running state, so the screen joins the
-   stored binding to the live running set on the source name string, and the two
-   can disagree. The candidate is a single stored field that says a feed is up,
-   or a read that returns both together. Until then the screen shows both and
-   says what each one means.
-8. *The screen says quiet but not why.* =statusOf= calls a binding quiet when its
-   last tick is older than 600 seconds or it has none, and it never looks at the
-   running set to say which of the two it is, so a stopped feed and a feed that
-   was never started read the same. The candidate is a second sentence beside the
-   status, from the same two facts the status already holds. Until then the
-   person reads the running set separately, in step 4.
+| List the sources | List sources with status | =marketdata.v1.ops.list_source_status= | planned |
+| Read the demand | Read the demand set and the rejected ids | =marketdata.v1.ops.get_source_demand= | planned |
+| Read the drops | Read the quality counters | =marketdata.v1.ops.get_source_drops= | planned |
+| Read what a party takes | List the routes of a source | =marketdata.v1.routes.list= | planned |
+| Start or stop a generator | Start or stop one generator | =marketdata.v1.synthetic.ops.start_generator=, =.stop_generator= | planned |
 
 * Related journeys
 
-- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the services a feed's producers run in, and whether they are up
-- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] — the bus the ticks cross, and whether it is moving
-- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — where the compute behind a derivation runs, when a feed feeds one
-- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the ingest loop's own status lines, which report the ticks it received, not the ticks a source stored
-- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] — the builds under the services a feed depends on
-- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — what a running feed writes, and the quotes that fail
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — what a party takes and from which source.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Offer a synthetic collection]] — how a simulator author prepares the generators.
 
 * Related knowledge
 
-- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
-- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
-- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
-- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Architecture]]
-- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]
-
-* See also
-
-- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
-- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]]
-- [[id:5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7][ores.synthetic.folder]]
-- [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ores.synthetic.ir_curve_generation_config]]
-- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]]
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]]
+- [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]]
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]

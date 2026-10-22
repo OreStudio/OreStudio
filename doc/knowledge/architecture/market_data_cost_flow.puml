@@ -1,0 +1,48 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title From usage events to a bill for each party
+
+left to right direction
+skinparam componentStyle rectangle
+
+component "Subscription intervals\n(party, provider, source, rights)" as e1
+component "Demand intervals\n(party, instrument)" as e2
+component "Delivery counts\n(party, instrument)" as e3
+component "Access audit\n(user counts, later)" as e4
+
+component "Rate card\nof the source" as rc
+component "Rating\napply the card to one period" as rate
+component "Source bill\nthe system's cost" as bill
+component "Allocation\nby the driver of each component" as alloc
+component "Party bill\nshadow bill when the source is simulated" as pbill
+
+e1 --> rate
+e2 --> rate
+e3 --> rate
+e4 --> rate
+rc --> rate
+rate --> bill
+bill --> alloc
+e1 --> alloc
+e2 --> alloc
+e3 --> alloc
+alloc --> pbill
+
+@enduml

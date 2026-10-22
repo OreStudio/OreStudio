@@ -86,6 +86,7 @@ set(files
     "swap_leg_commands_tests.cpp"
     "swaption_instrument_commands_tests.cpp"
     "synthetic_cdo_instrument_commands_tests.cpp"
+    "trade_authorisation_request_commands_tests.cpp"
     "trade_booking_commands_tests.cpp"
     "trade_id_type_commands_tests.cpp"
     "trade_identifier_commands_tests.cpp"

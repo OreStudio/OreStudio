@@ -26,12 +26,12 @@ The story needs a report type, a definition owned by an ACME party, and the inpu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Now          | The ACME bundle and the report definitions are seeded (=acme_bundle_populate.sql=, =acme_*_report_definitions_artefact_populate.sql=). That a recreate gives a triggerable report, with its input in storage and an app version, is not witnessed.                       |
+| Waiting on   | A database recreate and a trigger.                               |
+| Next         | Recreate, trigger one report and record what is missing.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

@@ -118,6 +118,7 @@ def bindings(company, records):
         "configuration_name": name,
     } for r in records for type_code, name in (
         [(t, documents.document_name(company, t)) for t in documents.DOCUMENT_NAMES]
+        + [("pricing_engines", documents.pricing_for_report(company, r["name"]))]
         + [("risk_report_config", risk.configuration_name(company, r["name"])),
            ("engine_settings", risk.engine_settings_name(company, r["name"]))])]
 

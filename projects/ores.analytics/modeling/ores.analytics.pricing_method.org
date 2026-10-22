@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 6DEC7115-B99D-4A2B-ADAF-F6101BB84EC4
+:END:
+#+title: ores.analytics.pricing_method
+#+description: Codegen entity model for the analytics =pricing_method= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A pricing method (the engine in the ORE pricing engine file) with its description.
+#+entity_singular: pricing_method
+#+entity_plural: pricing_methods
+#+entity_title: Pricing Method
+#+created: 2026-10-21
+#+updated: 2026-10-21
+
+The pricing methods that a pricing engine configuration names. ORE calls them engines. The name pricing_method keeps the table apart from the pricing engine configurations of the screens. Each row has a one-line description and a paragraph of detail, which the screens show next to the engine choice.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+Unique engine name as ORE writes it in the pricing engine file.
+
+Examples: 'Grid', 'AMC', 'DiscountingSwapEngine'.
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+One-line description of the engine, for lists.
+
+#+begin_src cpp :name generator
+std::string("Convolution grid engine")
+#+end_src
+
+** detail
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+Paragraph that states what the engine builds, how it prices, and which settings steer it.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Where the text comes from: ore_guide, ore_code or authored. A person must review authored text.
+
+#+begin_src cpp :name generator
+std::string("authored")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_pricing_methods_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: method
+:entity_plural_short:   methods
+:entity_singular_words: pricing method
+:entity_plural_words:   pricing methods
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pme
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code | Code |
+| description | Description |
+| source | Source |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  methods
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget         | type      | is_key | is_required | placeholder |
+|-------------+-------------+----------------+-----------+--------+-------------+-------------|
+| code        | Code        | codeEdit       | line_edit | true   | true        | Enter the engine name |
+| description | Description | descriptionEdit | line_edit |        | true        | Enter a one-line description |
+| detail      | Detail      | detailEdit     | text_edit |        |             | Enter the detail |
+| source      | Source      | sourceEdit     | line_edit |        | true        | ore_guide, ore_code or authored |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Code       | code        | Code        | string    | 240   |
+| Description | description | Description | string   | 380   |
+| Source     | source      | Source      | string    | 100   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

@@ -28,13 +28,14 @@
  * - The netting set belongs to the trade's counterparty and party
  * - The state follows the trade_status machine
  * - A virtual book holds only drafts, tests and hypotheticals
+ * - The live status of the trade_status machine is the one the authorisation check finds
  *
  * Run with: pg_prove -d <database> test/trading_trade_components_test.sql
  */
 
 begin;
 
-select plan(17);
+select plan(19);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -330,6 +331,27 @@ select lives_ok(
 select lives_ok(
     $$select pg_temp.state('00000000-0000-0000-0000-0000000ba003', 'new_booking', 0)$$,
     'a hypothetical in a virtual book may be live');
+
+-- The operational authorisation check finds the live state by its name in the
+-- trade_status machine. A rename would make it return false and raise no
+-- request, so state the lookup here.
+select ok(
+    ores_trading_status_is_live_fn(
+        (select t.status_id from ores_trading_trade_states_tbl t
+          where t.trade_id = '00000000-0000-0000-0000-0000000ba001'
+            and t.valid_to = ores_utility_infinity_timestamp_fn())),
+    'the status of a live trade is the live status');
+
+select ok(
+    not ores_trading_status_is_live_fn(
+        (select s.id from ores_dq_fsm_states_tbl s
+           join ores_dq_fsm_machines_tbl m
+             on m.id = s.machine_id and m.tenant_id = s.tenant_id
+            and m.valid_to = ores_utility_infinity_timestamp_fn()
+          where s.name = 'draft' and m.name = 'trade_status'
+            and s.tenant_id = ores_utility_system_tenant_id_fn()
+            and s.valid_to = ores_utility_infinity_timestamp_fn())),
+    'the draft status is not the live status');
 
 select * from finish();
 

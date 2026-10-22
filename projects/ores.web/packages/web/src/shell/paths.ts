@@ -50,6 +50,8 @@ export const PATHS = {
     reporting: '/reporting',
     reports: '/reporting/reports',
     configurations: '/reporting/configurations',
+    pricingEngines: '/reporting/pricing-engines',
+    pricingEngineAuthoring: '/reporting/pricing-engines/author',
 } as const;
 
 /** The address of one person's page. */
@@ -82,6 +84,11 @@ export function gridNodePath(hostId: string): string {
  */
 export function reportPath(id: string): string {
     return `${PATHS.reports}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one pricing engine configuration's page. */
+export function pricingEnginePath(id: string): string {
+    return `${PATHS.pricingEngines}/${encodeURIComponent(id)}`;
 }
 
 /** The address of one report configuration's page. */

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-583 tables in 21 groups.
+585 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -564,6 +564,7 @@ entity "trading" as trading {
   ores_trading_synthetic_cdo_instruments_tbl
   ores_trading_trade_activities_tbl
   ores_trading_trade_additional_fields_tbl
+  ores_trading_trade_authorisation_requests_tbl
   ores_trading_trade_bookings_tbl
   ores_trading_trade_id_types_tbl
   ores_trading_trade_identifiers_tbl
@@ -577,7 +578,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-117 tables — ores_schema.trading.puml
+118 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -645,12 +646,13 @@ entity "compute" as compute {
   ores_compute_results_tbl
   ores_compute_work_ledger_tbl
   ores_compute_work_tenants_tbl
+  ores_compute_work_totals_tbl
   ores_compute_workflow_batch_links_tbl
   ores_compute_workunits_tbl
 }
 note bottom of compute
 Distributed Compute Grid (BOINC)
-14 tables — ores_schema.compute.puml
+15 tables — ores_schema.compute.puml
 end note
 
 entity "workflow" as workflow {

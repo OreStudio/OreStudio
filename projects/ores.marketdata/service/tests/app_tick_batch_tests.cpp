@@ -17,12 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.service/app/batch_handoff.hpp"
 #include "ores.marketdata.service/app/batch_size.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
 #include "ores.marketdata.service/app/store_backoff.hpp"
 #include "ores.marketdata.service/app/tick_age.hpp"
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <optional>
 #include <thread>
 #include <vector>
 
@@ -30,6 +33,7 @@ namespace {
 
 const std::string tags("[app][tick_batch]");
 
+using ores::marketdata::service::app::batch_handoff;
 using ores::marketdata::service::app::drop_oldest_queue;
 using ores::marketdata::messaging::market_tick;
 using ores::marketdata::service::app::erase_stale;
@@ -186,4 +190,67 @@ TEST_CASE("the_next_batch_stays_between_the_lowest_and_the_highest_size", tags) 
 
 TEST_CASE("a_batch_that_took_no_time_does_not_divide_by_zero", tags) {
     CHECK(next_batch_ticks(100, 0, 1000, 50, 20000) == 20000);
+}
+
+TEST_CASE("a_handoff_gives_the_batches_back_in_the_order_they_were_pushed", tags) {
+    batch_handoff<int> handoff(2);
+    REQUIRE(handoff.push(1));
+    REQUIRE(handoff.push(2));
+    CHECK(handoff.pop() == 1);
+    REQUIRE(handoff.push(3));
+    CHECK(handoff.pop() == 2);
+    CHECK(handoff.pop() == 3);
+}
+
+TEST_CASE("a_push_to_a_full_handoff_waits_until_a_batch_is_taken", tags) {
+    batch_handoff<int> handoff(1);
+    REQUIRE(handoff.push(1));
+
+    std::atomic<bool> pushed{false};
+    std::thread producer([&] {
+        handoff.push(2);
+        pushed = true;
+    });
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    CHECK_FALSE(pushed.load());
+
+    CHECK(handoff.pop() == 1);
+    producer.join();
+    CHECK(pushed.load());
+    CHECK(handoff.pop() == 2);
+}
+
+TEST_CASE("closing_a_handoff_wakes_a_waiting_pop_with_nothing", tags) {
+    batch_handoff<int> handoff(1);
+    std::optional<int> taken = 0;
+    std::thread consumer([&] { taken = handoff.pop(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    handoff.close();
+    consumer.join();
+    CHECK_FALSE(taken.has_value());
+}
+
+TEST_CASE("closing_a_handoff_wakes_a_waiting_push_and_drops_its_batch", tags) {
+    batch_handoff<int> handoff(1);
+    REQUIRE(handoff.push(1));
+    bool accepted = true;
+    std::thread producer([&] { accepted = handoff.push(2); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    handoff.close();
+    producer.join();
+    CHECK_FALSE(accepted);
+    CHECK(handoff.pop() == 1);
+    CHECK_FALSE(handoff.pop().has_value());
+}
+
+TEST_CASE("a_closed_handoff_keeps_what_is_queued_and_refuses_more", tags) {
+    batch_handoff<int> handoff(3);
+    REQUIRE(handoff.push(1));
+    REQUIRE(handoff.push(2));
+    handoff.close();
+
+    CHECK_FALSE(handoff.push(3));
+    CHECK(handoff.pop() == 1);
+    CHECK(handoff.pop() == 2);
+    CHECK_FALSE(handoff.pop().has_value());
 }

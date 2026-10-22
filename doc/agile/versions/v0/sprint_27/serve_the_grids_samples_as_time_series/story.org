@@ -68,7 +68,7 @@ Read on 2026-10-11 at main 5c7b5a0324.
   specification. It names the ranges (last hour, day, week), nine panels on one
   shared time axis, and eight gaps. It marks the range reads for grid and node
   samples as missing, with no subject and no permission gate.
-- The capture [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]]
+- The capture The grid has no usage history
   is the core gap. The grid read answers with the newest sample alone, and
   nothing reads a range.
 - The capture [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]

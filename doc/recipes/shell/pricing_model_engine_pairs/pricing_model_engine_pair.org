@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 496100E1-7D92-5E71-9401-8ED19F7E8721
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the pricing_model_engine_pairs commands from the shell?
+#+description: Every command the pricing_model_engine_pairs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:pricing_model_engine_pairs:
+
+This file documents the pricing_model_engine_pairs resource at the shell, one section per command. Every command is a subcommand of =pricing_model_engine_pairs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 81DD473B-7F23-5C32-BABB-99E5CCD500A2
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.list=.
+
+#+name: pricing_model_engine_pairs-list
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-list.ores :exports none
+pricing_model_engine_pairs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: BBCE3EED-2D56-5057-835E-96E6520E146F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs get <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.get=.
+
+#+name: pricing_model_engine_pairs-get
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-get.ores :exports none
+pricing_model_engine_pairs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 378BA03A-5C3B-51DB-A4FA-48D58FFD45D4
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.get_many=.
+
+#+name: pricing_model_engine_pairs-get-many
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-get-many.ores :exports none
+pricing_model_engine_pairs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D52F7104-BB28-5D35-9E96-5DDFF105B98C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs add <code> <model> <engine> <pricing_engine_type_code> <is_usual> <note> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.put=.
+
+#+name: pricing_model_engine_pairs-add
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-add.ores :exports none
+pricing_model_engine_pairs add __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 72103414-411F-5B08-9877-1B5EFA4C6999
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs set <code> <model> <engine> <pricing_engine_type_code> <is_usual> <note> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.put=.
+
+#+name: pricing_model_engine_pairs-set
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-set.ores :exports none
+pricing_model_engine_pairs set __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1E5D65F1-6111-5C54-8E25-047E25D92C3F
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs put-many --count <n> <code> <model> <engine> <pricing_engine_type_code> <is_usual> <note> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.put_many=.
+
+#+name: pricing_model_engine_pairs-put-many
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-put-many.ores :exports none
+pricing_model_engine_pairs put-many --count 1 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 34969790-794A-56C1-8CAA-984A0CE8079D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.delete=.
+
+#+name: pricing_model_engine_pairs-delete
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-delete.ores :exports none
+pricing_model_engine_pairs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DA8C14C2-8F8E-5A1E-9C18-280634A0A29A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs.delete_many=.
+
+#+name: pricing_model_engine_pairs-delete-many
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-delete-many.ores :exports none
+pricing_model_engine_pairs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0ABA754E-D8C9-5A4C-AC2C-BF869368E839
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs_versions.list=.
+
+#+name: pricing_model_engine_pairs-versions
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-versions.ores :exports none
+pricing_model_engine_pairs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 2F31AC1F-05E3-535B-B74B-D28A89F0BAC3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_engine_pairs version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_engine_pairs_versions.get=.
+
+#+name: pricing_model_engine_pairs-version
+#+begin_src ores-shell :tangle pricing_model_engine_pairs-version.ores :exports none
+pricing_model_engine_pairs version __none__ --version 1
+#+end_src
+

@@ -293,6 +293,30 @@
 
 - ores_trading_
 
+# Raising an operational authorisation request when an actual trade goes live
+# is the trading service's work, so it writes the request and the notices that
+# tell the deciders. It writes no decision: the inbox service owns those.
+- ores_inbox_approval_requests_
+- ores_inbox_notifications_
+- ores_inbox_notification_arguments_
+- ores_inbox_notification_recipients_
+- ores_inbox_notification_deliveries_
+
+** Select prefixes
+
+# The raise reads the kind, and the triggers of the rows it writes check the
+# state, the request and the account. A notice checks its kind, channel and
+# outcome.
+- ores_inbox_approval_
+- ores_inbox_notification_kinds_
+- ores_inbox_notification_channels_
+- ores_inbox_delivery_outcome_types_
+- ores_iam_accounts_
+
+# A read of an account is limited by a policy that looks at the account-party
+# links, and a policy runs with the privileges of the caller.
+- ores_iam_account_parties_
+
 ** Extra args
 
 - --http-base-url http://localhost:{http_port}

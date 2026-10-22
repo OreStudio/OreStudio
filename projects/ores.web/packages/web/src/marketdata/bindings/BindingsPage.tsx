@@ -29,9 +29,10 @@ import { RecordDialog, show } from '../../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useSeriesTitle } from '../../oresmd/useSeriesTitle.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
+import { Tag } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
-import { SYNTHETIC, heldBy } from './bindingView.js';
-import { BINDINGS, VENDOR, bindingPath } from './bindingPaths.js';
+import { SYNTHETIC, heldBy, isSynthetic } from './bindingView.js';
+import { BINDINGS, BINDING_WATCHES, VENDOR, bindingPath } from './bindingPaths.js';
 import { BINDING_DIALOG_FIELDS } from './BindingPage.js';
 import { StatusTag } from './StatusTag.js';
 import { useBindingFacts } from './useBindings.js';
@@ -71,7 +72,12 @@ function BindingsList(): ReactNode {
     return (
         <>
             <RecordList
-                source={{ ...base, filters }}
+                source={{
+                    ...base,
+                    filters,
+                    watches: BINDING_WATCHES,
+                    recordKey: (row) => ({ source_name: show(row['source_name']) }),
+                }}
                 title={t('marketdata.bindings.title')}
                 lead={t('marketdata.bindings.lead')}
                 crumbs={[...useAreaRoot('marketdata'), { label: t('marketdata.bindings.title') }]}
@@ -102,16 +108,21 @@ function BindingsList(): ReactNode {
                     {
                         id: 'producer_kind',
                         header: t('refdata.fields.producer_kind'),
-                        cell: (row) =>
-                            t(`refdata.choices.producer_kind.${show(row['producer_kind'])}`),
+                        cell: (row) => (
+                            <Tag tone={isSynthetic(show(row['producer_kind'])) ? 'accent' : 'warn'}>
+                                {t(`refdata.choices.producer_kind.${show(row['producer_kind'])}`)}
+                            </Tag>
+                        ),
                     },
                     {
                         id: 'enabled',
                         header: t('refdata.fields.enabled'),
                         cell: (row) =>
-                            row['enabled'] === true
-                                ? t('refdata.records.yes')
-                                : t('refdata.records.no'),
+                            row['enabled'] === true ? (
+                                <Tag tone="up">{t('refdata.records.yes')}</Tag>
+                            ) : (
+                                <Tag tone="muted">{t('refdata.records.no')}</Tag>
+                            ),
                         sort: 'enabled',
                     },
                     {

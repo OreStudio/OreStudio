@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: compute
-Tables: 14
+Tables: 15
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -407,6 +407,39 @@ package "compute" #EDE7F6 {
     ledger's does, so it is not a widening.
     The table is hand-written, not generated: it is a small installation-owned
     list, a shape the entity templates do not offer.
+    end note
+
+    entity ores_compute_work_totals_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * sampled_at : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * tenants_counted : integer
+        * results_inactive : integer
+        * results_unsent : integer
+        * results_in_progress : integer
+        * results_done : integer
+        * total_workunits : integer
+        * total_batches : integer
+        * active_batches : integer
+        * outcomes_success : integer
+        * outcomes_client_error : integer
+        * outcomes_no_reply : integer
+    }
+
+    note right of ores_compute_work_totals_tbl
+    The work of every tenant on the compute grid, summed, one row for each
+    sample. The poller of the grid samples writes it. It enters each tenant in
+    turn, reads that tenant's counters there, and adds them. No read crosses a
+    tenant, and no function runs with its owner's rights.
+    A total of every tenant's work is a fact about several tenants at once, and
+    no tenant owns it, so it is not stored where a tenant reads. The table
+    belongs to the installation and holds counts only: no id of a tenant, a
+    party, a batch or a result. The policy admits only a session of the system
+    tenant, as the work ledger's does, so it is not a widening and a tenant
+    session reads none of it.
+    The table is hand-written, not generated: it is a small installation-owned
+    series, a shape the entity templates do not offer.
     end note
 
     entity ores_compute_workflow_batch_links_tbl  #F7E5FF {

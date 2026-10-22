@@ -19,6 +19,11 @@
  */
 #include "ores.analytics.service/messaging/event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_engine_type_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_model_engine_pair_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_pair_setting_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_model_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_method_event_registrar.hpp"
+#include "ores.analytics.service/messaging/sensitivity_template_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_parameter_event_registrar.hpp"
@@ -35,6 +40,11 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // NOTIFY channel and returns the event_bus subscription that republishes
     // it to NATS; this call site owns the subscriptions so they outlive it.
     subs.push_back(register_pricing_engine_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_pricing_model_engine_pair_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_pricing_pair_setting_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_pricing_model_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_pricing_method_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_sensitivity_template_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_model_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_model_product_event_mapping(event_source, event_bus, nats));
     subs.push_back(

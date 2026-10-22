@@ -73,10 +73,10 @@ struct tick_writer_options final {
  *
  * Every write is one COPY, so it is one transaction.
  */
-class ORES_MARKETDATA_SERVICE_EXPORT tick_writer final {
+class ORES_MARKETDATA_SERVICE_EXPORT tick_writer {
 public:
     explicit tick_writer(tick_writer_options options);
-    ~tick_writer();
+    virtual ~tick_writer();
     tick_writer(const tick_writer&) = delete;
     tick_writer& operator=(const tick_writer&) = delete;
 
@@ -85,7 +85,7 @@ public:
      *
      * @throws std::runtime_error when the connection or the COPY fails.
      */
-    void write(std::span<const tick_row> rows);
+    virtual void write(std::span<const tick_row> rows);
 
 private:
     void close() noexcept;

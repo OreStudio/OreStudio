@@ -207,7 +207,7 @@ party-scoped.
 | 2, Details | Read the status, the cycle and the sign-off of a version | (no operation) | missing |
 | 2, Reports | Read the product types of a report's portfolio | (no operation) | missing |
 | 3, coverage | Read the product types the party trades | (no operation) | missing |
-| The screen | Read pricing engines from the browser | (no BFF route) | missing |
+| The screen | Read pricing engines from the browser | =GET /api/reporting/pricing-engines= and =GET /api/reporting/pricing-engines/:id= | exists |
 
 * What is missing
 

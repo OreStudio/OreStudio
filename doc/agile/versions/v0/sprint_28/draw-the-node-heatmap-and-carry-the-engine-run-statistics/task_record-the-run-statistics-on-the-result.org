@@ -28,10 +28,10 @@ A result states when its run started and finished, how many bytes it read and wr
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] |
-| Now          | Not yet started.                       |
+| Now          | Not built. Checked at 3425f340d7: the result table and the wrapper carry none of it.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Add the columns and carry them in the submit message.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 

@@ -213,46 +213,44 @@ carries all three as arrays.
 | 1, copy | Read the source document | =analytics.v1.pricing_engines_documents.get= | exists |
 | 2, the types | List the product types | =analytics.v1.pricing_engine_types.list= | exists |
 | 2, the book | Read the instrument types the party trades | (no operation) | missing |
-| 3, models and engines | Read the models and engines the system knows | (no operation) | missing |
-| 3, the usual pair | Read the pair other configurations use | (no operation) | missing |
-| 4, known settings | Read the settings a pair takes, with notes and usual values | (no operation) | missing |
+| 3, models and engines | Read the models and engines the system knows | =analytics.v1.pricing_model_engine_pairs.list= | exists |
+| 3, the usual pair | Read the pair other configurations use | =analytics.v1.pricing_model_engine_pairs.list=, the =is_usual= column | exists |
+| 4, known settings | Read the settings a pair takes, with notes and usual values | =analytics.v1.pricing_pair_settings.list= | exists |
 | 5, checks | Check a document before saving | (no operation) | missing |
 | 5, the portfolios | Read the product types of the reports of a cycle | (no operation) | missing |
 | 6, submit | Write a candidate and open its sign-off | (no operation for a status or a sign-off) | missing |
 | 6, save | Write the document | =analytics.v1.pricing_engines_documents.put= | exists |
-| The screen | Author from the browser | (no BFF route) | missing |
+| The screen | Author from the browser | =POST /api/reporting/pricing-engines= | exists, as a draft with no sign-off |
 
 * What is missing
 
-1. *A vocabulary of models and engines.* =model= and =engine= are free text in the
-   table. Nothing returns the models and engines the system knows, so the combo
-   boxes in step 3 have nothing to read. The prototype draws them from a fixture
-   built from the ORE pricing engine files the project holds. A vocabulary read,
-   or two lookup tables, is the first thing to add.
-2. *The pairs that work.* Which engine runs which model is ORE's knowledge, and
-   no table stores it. The narrowing in step 3 and the marked pair both depend on
-   it. A table of known pairs, with the product types each pair prices, would
-   serve both.
-3. *The settings a pair takes.* The same gap as the analytics parameters: a
-   parameter's name, kind, usual value and note live in ORE's documentation and
-   in the files, and no operation returns them. Step 4 draws a text field where it
-   does not know a setting, and a select where the fixture does.
-4. *No check on write.* Nothing validates a document when it is written: not an
+1. *Built: the vocabulary.* Two lookup tables, =pricing_model_engine_pair= and
+   =pricing_pair_setting=, hold the pairs that price each product type, the pair
+   that ORE's examples use most, and the settings a pair takes with their kind,
+   options and usual value. The seeds come from the same ORE files as the
+   prototype fixture. The models and the engines are the distinct values of the
+   pair table. The screen reads all three lists in one request, and the combo
+   boxes in steps 3 and 4 draw from it. A pair the tables do not know is marked
+   and never refused.
+2. *Still open: where the pair rows come from.* The seeds hold 24 pairs and 12
+   settings from the files the project holds. A person cannot add a pair from a
+   screen yet. The shell and the lookup operations can.
+3. *No check on write.* Nothing validates a document when it is written: not an
    empty model, not a pair that does not work, not a missing calibration setting.
    Every finding in step 5 is the screen's own, and the failure arrives in the
    run. This is the same silence the analytics screen defends against.
-5. *The write is not one transaction.* The document service writes the
+4. *The write is not one transaction.* The document service writes the
    configuration, then the products, then the parameters in sequence, with no unit
    of work, so a failure part way leaves a configuration without its parameters.
    The [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]] records it as
    B3, "wrongly shaped". The screen cannot repair it, and the final step says what
    it would do after a failed write: read the document back and show what landed.
-6. *The party's book and the portfolios.* Steps 2 and 5 need the instrument types
+5. *The party's book and the portfolios.* Steps 2 and 5 need the instrument types
    of the party's trades and of each report's portfolio, and no operation returns
    them.
-7. *A copy has no operation.* The copy is the screen reading a document and
+6. *A copy has no operation.* The copy is the screen reading a document and
    writing a new one with new identifiers. Nothing makes a copy on the server.
-8. *No status, no cycle, no sign-off.* A draft, a candidate and an official
+7. *No status, no cycle, no sign-off.* A draft, a candidate and an official
    configuration are the same row today. The same gap as in
    [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]].
    A candidate that replaces the official configuration also rebinds the reports of

@@ -128,6 +128,28 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
+-- Whether a status is the live state of the trade_status machine.
+create or replace function ores_trading_status_is_live_fn(
+    p_status_id uuid
+)
+returns boolean as $$
+begin
+    return exists (
+        select 1
+        from ores_dq_fsm_states_tbl s
+        join ores_dq_fsm_machines_tbl m
+          on m.tenant_id = s.tenant_id
+         and m.id = s.machine_id
+         and m.valid_to = ores_utility_infinity_timestamp_fn()
+        where s.tenant_id = ores_utility_system_tenant_id_fn()
+          and s.id = p_status_id
+          and s.name = 'live'
+          and m.name = 'trade_status'
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 -- =============================================================================
 -- Envelope names
 -- =============================================================================

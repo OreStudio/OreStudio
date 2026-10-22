@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/document-the-analytic-ore-parameters
-#+pr:
+#+pr: 3639
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3639][#3639]] | [reporting] Document the analytic ORE parameters |
 
 * Review
 

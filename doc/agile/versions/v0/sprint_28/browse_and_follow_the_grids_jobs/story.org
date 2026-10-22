@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: C8D96F9A-75F2-4AB8-90F0-3FD1FF807845
+:END:
+#+title: Story: Browse and follow the grid's jobs
+#+description: The grid screen counts batches, workunits and results and shows no row of any of them. The journeys Browse the grid's jobs and Follow a job are written and prototyped. This story builds the screens: the paged tree of batches, workunits and results, the details of each, the job page, and the file download, for the operator, the tenant administrator and the party member.
+#+type: story
+#+level: s2
+#+filetags: :compute:web:ux:journeys:grid:sprint_28:v0:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person sees the batches, workunits and results that the session may see, as a tree with the details of each record, and can follow one job from its batch to its output.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Scaffolded. No task has started.                       |
+| Waiting on    | Nothing. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics.                               |
+| Next          | Start Serve the paged job tree through the BFF.            |
+| Last touched  | 2026-10-22                               |
+
+* Acceptance
+
+- The Jobs tab of the grid screen lists the batches the session may see, newest first, and opens the workunits of a batch and the results of a workunit one page at a time.
+- The details of a batch, workunit or result show the entity's own fields under the model's headers, with state and outcome as badges, and the references as links.
+- The list filters by status, party and reference on the server, and a failed result is found by its outcome.
+- The person downloads a workunit input or a result output, and the route checks that the caller may read the owning record first.
+- A job page states where the job is, the node it ran on, when it ran, and what it produced, and links to the report run behind its batch.
+- An operator, a tenant administrator and a party member each see only what their session allows.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D6CA4B25-D1E0-4E11-AFB7-58D80A9C4116][Scaffold story: Browse and follow the grid's jobs]] | STARTED | 2026-10-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | BACKLOG | | | Initial task for: Browse and follow the grid's jobs |
+| [[id:78C4D328-EA8E-46D3-B25B-8B09CE6930C3][Filter the batch list by status, party and reference]] | BACKLOG | | | The batch list pages by offset and limit only. A person cannot find one batch among thousands. |
+| [[id:26625549-D4D9-47F3-B978-2C240F85CC5A][Find a result by its outcome]] | BACKLOG | | | Which of the failed results ran? Today read_by_state filters on server_state, and every stored result is Done, so a failed result cannot be separated from a successful one. |
+| [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | BACKLOG | | | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
+| [[id:8088985C-EAE9-4CF3-962E-4BC6C319A0E7][Serve a stored input or output as a download]] | BACKLOG | | | A workunit names its input and a result names its output as stored objects. The browser has no route that streams them. |
+| [[id:9F73E400-ADDE-499A-A0B0-A616FB5D1668][Build the job page]] | BACKLOG | | | Follow a job: the batch, the state of the job, the node, the timings, the input, the output, and the report run behind the batch. |
+| [[id:32140ED0-C5D0-46A3-8DA4-560A8BF68F8B][Decide who sees a node's name]] | BACKLOG | | | A result names its host. The operator needs the node. A tenant administrator or a party member probably should not see the installation's node names. The owner must decide. |
+
+* Decisions
+
+- 2026-10-22: The story builds what the journeys Browse the grid's jobs and Follow a job already specify. It adds no screen they do not draw. The reads for batches, workunits and results exist as generated subjects, so the first slice is the BFF route and the screen, not new compute code.
+- 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the timing and size fields when those exist, and show the prototype's dashed block until then.
+
+* Out of scope
+
+- The compute catalogue screen, which is the journey Keep what the grid runs.
+- Registering a compute node for a tenant.
+- Charts of the grid over time, which the grid screen already carries.
+- The report run naming its batch, and a scheduler job instance read by id. The job page links through the batch's =external_ref= until they exist.
+- Per-phase timestamps for the waterfall chart.

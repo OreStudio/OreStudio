@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/deepen-the-analytic-parameter-texts
-#+pr:
+#+pr: 3650
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3650][#3650]] | [reporting] Deepen the analytic ORE parameter texts |
 
 * Review
 

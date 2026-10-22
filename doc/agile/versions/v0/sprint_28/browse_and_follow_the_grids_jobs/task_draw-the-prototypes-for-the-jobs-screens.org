@@ -26,11 +26,11 @@ Three prototypes show the Jobs tab, the job page and the app version page for th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -71,7 +71,8 @@ page draws one and the task Store a release note with the app version adds the
 column.
 
 Opened in headless Chrome on 2026-10-22: the three prototypes render for every
-role, state and variant checked. No review by the owner has happened yet.
+role, state and variant checked. The owner reviewed the three prototypes on
+2026-10-22 and approved them.
 
 * Test Scenarios
 
@@ -97,3 +98,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three prototypes are drawn and approved: the Jobs tab, the job page and the app
+version page, under =doc/prototypes/compute/=. They use the data model's own
+field names. The glossary defines target redundancy and canonical result. The
+release note needs a new =release_note= column on =app_version=, which the task
+Store a release note with the app version adds. The build tasks of the story
+follow these prototypes. Merged in PR #3637.

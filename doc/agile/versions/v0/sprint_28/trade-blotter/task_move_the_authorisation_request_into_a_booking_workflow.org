@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: AAC8F56A-E9B8-465B-AC50-40FC14ADD5F4
+:END:
+#+title: Task: Move the authorisation request into a booking workflow
+#+description: Raise the authorisation request in a workflow step after the trade commits, so trading no longer writes inbox rows in its own transaction.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Booking an actual trade into a real book commits the trade in one trading transaction. A workflow then raises the authorisation request in the inbox and writes the trading detail row. Each step is atomic in its own owner, and a retry never raises a second request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The trade commit writes no inbox row, and the trading service holds no write grant on an inbox table.
+- A workflow raises one request for a trade and a version, and a repeat of the step raises no second request.
+- A live actual trade with no request yet shows the authorisation status request pending in the list.
+- Bulk callers (the synthetic population writer and the ORE import) raise their requests in batch or on purpose, and are measured on a large book.
+- The Execute path of a draft raises its request through the same workflow.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Why this task exists
+
+Task 1 raises the request inside the trading transaction. That writes five inbox tables from the trading service. The page [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]] says one owner holds a bundle and no transaction spans two owners. A set that crosses owners runs as steps in the workflow engine. Each step is atomic in its own owner.
+
+Task 1 chose the in-transaction raise so that a live actual trade never exists without a request. A workflow keeps that guarantee by retry and resume, and it shows the gap as the status request pending.
+
+** The steps
+
+1. Book. Trading writes the trade, activity, booking and state in one =unit_of_work=. This is the existing =book_trade=, and it stays the bundle B7 of the bundle catalogue.
+2. Raise. The inbox creates the approval request. Trading then writes the detail row. The step is idempotent on the trade id and version, per [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]].
+3. Announce. Operations is told.
+
+The model to follow is =book_apply_workflow= in refdata: a definition with steps, each with a deadline, and the policy stop, so a failure leaves the run stopped for the engine's retry verb.
+
+** Findings that shape the work
+
+- Two bulk callers book actual trades and so now raise one request each: the synthetic population writer (=trading_trade_population_writer.cpp=, line 384) and the ORE import outside a sandbox (=ore_import_execute_handler.cpp=, line 619). One workflow run for each trade is too heavy for a seeded book of thousands. This task must batch them or raise on purpose. Task 1 did not measure this.
+- Not yet checked: how long a run takes, and whether an interactive booking can wait on one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/define-the-adapter-contract
-#+pr:
+#+pr: 3645
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3645][#3645]] | [marketdata] Define the adapter contract |
 
 * Review
 

@@ -324,14 +324,13 @@ export function toResultView(result: Result, mayReadHost: boolean): ResultView {
  * The outcome is the one the service stated, so a route answers with the
  * status that matches and not with a failure it cannot explain.
  */
-export class GridJobsRefusedError extends OperationFailedError {
-    readonly outcome: 'invalid' | 'denied' | 'missing' | 'conflict' | 'unavailable' | 'failed';
+export type GridJobsRefusal =
+    'invalid' | 'denied' | 'missing' | 'conflict' | 'unavailable' | 'failed';
 
-    constructor(
-        subject: string,
-        outcome: 'invalid' | 'denied' | 'missing' | 'conflict' | 'unavailable' | 'failed',
-        message: string,
-    ) {
+export class GridJobsRefusedError extends OperationFailedError {
+    readonly outcome: GridJobsRefusal;
+
+    constructor(subject: string, outcome: GridJobsRefusal, message: string) {
         super(subject, message);
         this.outcome = outcome;
     }
@@ -344,11 +343,7 @@ function requireOk(
     if (result.outcome === 'ok') {
         return;
     }
-    throw new GridJobsRefusedError(
-        subject,
-        result.outcome as GridJobsRefusedError['outcome'],
-        result.message,
-    );
+    throw new GridJobsRefusedError(subject, result.outcome as GridJobsRefusal, result.message);
 }
 
 /** The page the caller asked for. */

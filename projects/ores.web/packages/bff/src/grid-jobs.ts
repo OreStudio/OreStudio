@@ -53,13 +53,17 @@ import type { LiveSession } from './sessions.js';
  * tenant the session is inside.
  */
 
+// The wire schema allows a page of up to 1000 rows. The BFF holds a page to 200.
 const PAGE_DEFAULT = 25;
 const PAGE_MAX = 200;
 
+// An empty or signed value is refused, where a plain coercion would read it as 0.
+const wholeNumber = z.string().regex(/^\d+$/).transform(Number);
+
 const pageQuerySchema = z
     .object({
-        offset: z.coerce.number().pipe(z.int().min(0)).default(0),
-        limit: z.coerce.number().pipe(z.int().min(1).max(PAGE_MAX)).default(PAGE_DEFAULT),
+        offset: wholeNumber.pipe(z.int().min(0)).default(0),
+        limit: wholeNumber.pipe(z.int().min(1).max(PAGE_MAX)).default(PAGE_DEFAULT),
     })
     .strict();
 

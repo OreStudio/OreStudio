@@ -164,6 +164,7 @@ export {
 export type {
     BatchPage,
     BatchView,
+    GridJobsRefusal,
     JobPageRequest,
     ResultPage,
     ResultView,

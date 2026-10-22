@@ -116,6 +116,7 @@ is written with a plain =s=. A table whose plural is irregular, such as
 
 * Related knowledge
 
+- [[id:E509AFFC-3924-428E-B504-96D68BF5568A][Trade booking]] — the one booking contract, the transaction and the callers.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — how a deal is built from its parts.
 
 * See also

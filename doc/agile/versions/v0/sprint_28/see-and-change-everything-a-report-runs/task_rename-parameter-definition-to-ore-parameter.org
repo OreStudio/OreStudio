@@ -26,11 +26,11 @@ The entity ore_parameter documents one leaf of an ORE XML document. A row says w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | The rename and the two new columns are done. The review is next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -92,3 +92,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The entity is =ore_parameter=, and its value domain is =ore_parameter_value_domain=. The rename touched about 180 files and kept the synthetic yield curve process parameter definition as it was. A row says which leaf it documents by =schema_name= and =xpath=, both required. All 380 seeded rows carry them. A pgTAP test fails when two forms of an =ore.xsd= row disagree.
+
+The owner asked to add the schema and the path, so =scope= and =subtype= stay. The run document service and the importer read them. A later task can drop them when a second schema needs the table.
+
+Left for other tasks: the documentation of the Setup, Markets and Logging blocks beyond the 15 engine settings, and the leaves of other schemas.

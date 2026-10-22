@@ -26,11 +26,11 @@ Extend the parameter definition with a label, a help line, a full description, a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | The model, seed and tests are done. The PR is next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR and review it. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Extend the parameter definition with a label, a help line, a full description, a
 - The parameter definition holds label, help, description, default, format, introduced_in and removed_in, and the model, the generated SQL and the C++ carry them.
 - The 15 engine settings are rows of the definition in the Setup scope, each with the full description, default, format and release range of the prototype.
 - Each engine settings column names its parameter definition, and a test fails when a column has none.
-- The analytic parameters keep working with the new fields empty.
+- The analytic parameters keep working while the new fields are empty. The analytics task later filled the fields and made them required.
 
 * Plan
 
@@ -70,7 +70,7 @@ task and name that file in the Command column.
 - The link between an engine settings column and its definition is the name. The column =n_threads= is the Setup parameter =nThreads=. A pgTAP test checks both directions. A foreign key would need a column on each part table for no gain.
 - The texts are those of the prototype =see-the-engine-settings-a-party-holds=. Most describe the effect and when to change the setting. Only =log_mask= and =observation_model= give worked values. The owner may ask for examples on the others.
 - =introduced_in= holds the text a screen shows, for example =1.8.0.7 or earlier=, so a bound the project could not measure stays visible.
-- The seed of the analytic parameters has no generator in the tree. Its rows keep the new fields empty.
+- The seed of the analytic parameters had no generator. The task that documents the analytic parameters added one.
 
 * Test Scenarios
 
@@ -96,3 +96,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The parameter definition gained the fields a screen shows: label, help, description, default, format, introduced_in and removed_in. The 15 Setup parameters of the engine settings are seeded with the full text of the prototype by =generate_setup_parameter_definitions_populate.py=, and a pgTAP test ties each setting column to its definition by name.
+
+The entity was renamed to =ore_parameter= by the next task, and the generator and test names follow it. This task ships in the PR of that task, because the branches are stacked.

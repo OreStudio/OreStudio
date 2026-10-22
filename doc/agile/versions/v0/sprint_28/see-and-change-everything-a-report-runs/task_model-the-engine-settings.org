@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3630
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3630 | Replace the engine columns of the run settings with named engine settings |
 
 * Review
 

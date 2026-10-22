@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F
+:END:
+#+title: Task: Design the engine settings and prototype their screen
+#+description: Task for: See and change everything a report runs
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/design-the-engine-settings
+#+pr: 3619
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Engine settings become a named configuration that reports bind, held as a central row with five parts. This task records the design in the story and draws the screen as a prototype that fits beside the other named configurations.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The story holds the engine settings design: the five groups, the central row and the reasons.
+- A prototype draws the engine settings as a named configuration beside pricing engines, with the five groups and the reports that share it.
+- The owner signs off the prototype before any model or screen is built.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3619 | Design the engine settings as a named configuration and prototype their screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The engine settings design is in the story: the measurements, 14 findings, the comparison with the other named configurations, the central row with three parts holding the 15 documented engine settings, the documentation system, and the open questions. The prototype `see-the-engine-settings-a-party-holds` draws the list and the page with editing in place. Both are in PR #3619. The owner's sign-off on the prototype is the gate before any model or screen is built.
+

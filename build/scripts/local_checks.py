@@ -662,8 +662,8 @@ CATALOGUE: tuple[Check, ...] = (
         title="No code outside ores.platform names a C++20 stop type",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_portable_stop_types.py"),
         classes=("cpp",),
-        fix="Use ores.platform/concurrency/stoppable_thread.hpp: Apple's libc++ has no"
-            " std::jthread or std::stop_token.",
+        fix="Use the same name from ores::platform::concurrency (stoppable_thread.hpp):"
+            " Apple's libc++ has no std::jthread or std::stop_token.",
     ),
     Check(
         id="event-registrars",

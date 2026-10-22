@@ -10,10 +10,12 @@ reports it. It has happened three times: a comms thread on 2026-03-12, the
 workflow engine's deadline watch on 2026-09-30, and the feed restore retry on
 2026-10-19.
 
-``ores.platform`` holds the portable counterparts, ``stoppable_thread`` and
-``stop_source``, which every platform uses. This check fails on the standard
-types anywhere else, so the next author finds out in the pull request and not
-at the nightly build. Comments and string literals are not code, so a comment
+``ores.platform/concurrency/stoppable_thread.hpp`` names ``jthread``,
+``stop_token``, ``stop_source`` and ``wait_for`` for every platform. They are
+the standard types where the library has them and a portable subset where it
+does not. This check fails on the standard types anywhere else, so the next
+author finds out in the pull request and not at the nightly build. When Apple's
+libc++ has the types, the header and this check go, and the code uses ``std::``. Comments and string literals are not code, so a comment
 that names a standard type, as the header of the portable thread does, is not
 a finding.
 
@@ -98,8 +100,8 @@ def check() -> list[str]:
             except ValueError:
                 shown = path
             findings.append(
-                f"{shown}:{number}: {name} is not portable. Use "
-                "ores.platform/concurrency/stoppable_thread.hpp."
+                f"{shown}:{number}: {name} is not portable. Use the same name in "
+                "ores::platform::concurrency from stoppable_thread.hpp."
             )
     return findings
 

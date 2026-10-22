@@ -86,7 +86,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An empty id builds a subject with an empty token | adapter_subjects.hpp | Accept | The reader refuses an empty adapter id or external id, and a test shows it. The announce handler validates the id in the ingest task. |
+| 2 | An adapter named announce could clash with a future single token subject | adapter_subjects.hpp | Decline | The subject has two tokens and the demand and heartbeat subjects have three. No single token subject is planned. |
+| 3 | The ingress subject drops the id scheme and the field | adapter_subjects.hpp | Accept | A comment on the builder says a reader takes both from the payload. |
+| 4 | Awkward adapter ids on the demand and heartbeat subjects | tests | Accept | A test pins the encoding. |
+| 5 | No TypeScript twin of the subjects | adapter_subjects.hpp | Decline | The browser does not publish to adapter subjects. The message types have their twin. |
 
 * Result
 

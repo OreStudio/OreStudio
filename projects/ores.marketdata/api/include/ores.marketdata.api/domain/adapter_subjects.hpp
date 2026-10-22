@@ -64,7 +64,12 @@ inline std::string adapter_heartbeat_subject(std::string_view adapter_id) {
         .append(".heartbeat");
 }
 
-/// The subject a tick of @p external_id travels on when @p adapter_id publishes it.
+/**
+ * @brief The subject a tick of @p external_id travels on when @p adapter_id publishes it.
+ *
+ * The subject names the adapter and the external id only. The id scheme and the field travel
+ * in the tick, so a reader takes them from the payload and never from the subject.
+ */
 inline std::string adapter_ingress_subject(std::string_view adapter_id,
                                            std::string_view external_id) {
     return std::string(adapter_ingress_subject_base)
@@ -108,7 +113,7 @@ adapter_ingress_subject_parts(std::string_view subject) {
         return std::nullopt;
     auto adapter = subject_token_text(rest.substr(0, dot));
     auto external = subject_token_text(rest.substr(dot + 1));
-    if (!adapter || !external)
+    if (!adapter || !external || adapter->empty() || external->empty())
         return std::nullopt;
     return adapter_ingress_parts{std::move(*adapter), std::move(*external)};
 }

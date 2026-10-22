@@ -69,6 +69,10 @@ Close anyway. The prototype follows the rule that an action the table lacks is
 added to the table first, so it draws those without a new icon. The standards
 need those rows. This task does not edit the standards.
 
+The query flags =stale=, =news=, =newer= and =refused= are fixtures. The
+prototype reads them on load and does not write them back to the address, so a
+reload after a change drops =news= and =newer=. This is on purpose.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

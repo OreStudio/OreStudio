@@ -83,16 +83,19 @@
 
     /* A person is drawn with an avatar and the name. The prototypes hold no
        person page, so the name is plain text and not a link. */
+    function initials(name) {
+        return name.replace(/[^A-Za-z. ]/g, '').split(/[ .]+/).filter(Boolean).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+    }
     M.person = function (id) {
         var p = M.PEOPLE[id];
         var name = p ? p.name : id;
-        var ini = name.replace(/[^A-Za-z. ]/g, '').split(/[ .]+/).filter(Boolean).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+        var ini = initials(name);
         return '<span class="person"><span class="avatar" aria-hidden="true">' + M.esc(ini) + '</span>' + M.esc(name) + '</span>';
     };
     M.avatar = function (id) {
         var p = M.PEOPLE[id];
         var name = p ? p.name : id;
-        var ini = name.replace(/[^A-Za-z. ]/g, '').split(/[ .]+/).filter(Boolean).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+        var ini = initials(name);
         return '<span class="avatar" title="' + M.esc(name) + '">' + M.esc(ini) + '</span>';
     };
 

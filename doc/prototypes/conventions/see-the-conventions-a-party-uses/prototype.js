@@ -227,7 +227,7 @@
 
     /* A reason that needs a commentary. */
     var NEEDS_COMMENT = ['common.market_practice'];
-    /* Fixture: a second person saved version 3 while the dialog was open. */
+    /* Fixture: a second person saved the next version while the dialog was open. */
     var NEWER = { by: 't.brandt', at: '2026-10-19T13:01:10+01:00', col: 'fixed_day_count', h: 'Fixed day count fraction', was: 'ACT/360', now: 'ACT/365' };
 
     function openDialog(mode) {
@@ -277,7 +277,7 @@
             (k.party ? '' : M.notice('warn', 'This document is shared. The change applies to every party.')) +
             (D.newer ? M.notice('warn', '<b>' + M.esc(M.PEOPLE[D.newer.by].name) + ' saved a newer version at <span class="mono">' + D.newer.at + '</span>.</b> ' + M.esc(D.newer.h) + ' moved from ' + M.esc(D.newer.was) + ' to ' + M.esc(D.newer.now) + '. ' +
                 M.btn('keep', 'Keep my edit', { cls: 'small' }) + ' ' + M.btn('take', 'Take the new values', { cls: 'small' })) : '') +
-            (D.refused ? M.notice('error', '<b>The save was refused.</b> Version 3 of ' + M.esc(D.key) + ' exists and your edit started from version 2. Your edit stays in the form. Choose Keep my edit to replace version 3, or Take the new values.') : '') +
+            (D.refused ? M.notice('error', '<b>The save was refused.</b> Version ' + (doc().version + 1) + ' of ' + M.esc(D.key) + ' exists and your edit started from version ' + doc().version + '. Your edit stays in the form. Choose Keep my edit to replace version ' + (doc().version + 1) + ', or Take the new values.') : '') +
             '<div class="field' + (keyBad ? ' bad' : '') + '" data-field="dkey"><span class="lbl">Key <span class="req">(' + (add ? 'required' : 'fixed') + ')</span></span><input type="text" data-input="dkey" value="' + M.esc(D.key) + '"' + (add ? '' : ' disabled') + '>' +
             (add ? '' : '<p class="hint">The key is fixed once the document exists.</p>') +
             '<p class="msg" data-msg="dkey"' + (keyBad ? '' : ' hidden') + '>' + M.esc(keyProblem()) + '</p></div>' +

@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/let-a-party-member-read-workunits-and-results
-#+pr:
+#+pr: 3647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ A party member reads the workunits and results of the batches of their own party
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | The seed holds the reads and a live check passed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -87,13 +87,14 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| PR | [iam] Let a party member read workunits and results |
+| #3647 | [iam] Let a party member read workunits and results |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Live roles still lack the grants | rls_exceptions_register.org | Fixed | The register states it. |
+| 2 | The journey keeps a dated history line | journey_browse_the_grids_jobs.org | Fixed | The line is removed. |
 
 * Result
 

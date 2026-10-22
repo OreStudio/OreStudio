@@ -141,8 +141,7 @@ tenant. The row-level policy narrows a party member to their own party. The
 Member role holds the batch, workunit and result read codes in the seed, so a
 party member opens a batch of their own party and reads its workunits and
 results. The TenantAdmin role holds every code, and the ReportRun service role
-holds the three reads. A live check on 2026-10-22 found the member refused the
-workunit and result reads with =forbidden= before the seed held them.
+holds the three reads.
 
 The batch list reads newest first. The batch model declares =recorded_at=
 sortable and orders by it, descending, and the workunit and result lists accept

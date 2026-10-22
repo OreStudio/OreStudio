@@ -94,7 +94,7 @@ Open point for the review: the policy admits the whole system-tenant row, and th
 | Exposes | Every person of a tenant gains the read of the grid series and usage for the work their party scope allows. The workunit and result reads add the jobs of the person's own parties. The BFF hides the host of a result from a session that is not an operator. |
 | Limits | The rows are cut by the policies above. The machines, nodes and heatmap routes still need the read of the deployment. The route reads no node and no host for a non-operator. |
 | Evidence | PR #3214. BFF and web tests check the tenant series route and that a tenant is not offered the machines, nodes or heatmap. |
-| Review | Pending. The live Member roles of Acme and Barclays were not changed. The populate script is the only change, so a database that is not rebuilt does not have the permissions. |
+| Review | Pending. The live Member roles of Acme and Barclays were not changed. The populate script is the only change, so a database that is not rebuilt does not have the permissions, and that includes the workunit and result reads added by PR #3647. A live check after a recreate showed a member of the batches' own party reading the tree and a member of another party reading none. |
 | Sign-off | Pending |
 
 ** E7. An operator enters each tenant to read its work

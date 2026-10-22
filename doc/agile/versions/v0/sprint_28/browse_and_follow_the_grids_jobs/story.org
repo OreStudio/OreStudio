@@ -25,7 +25,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Scaffolded. No task has started.                       |
 | Waiting on    | Nothing. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics.                               |
-| Next          | Start Serve the paged job tree through the BFF.            |
+| Next          | Review the prototypes, then start Serve the paged job tree through the BFF.            |
 | Last touched  | 2026-10-22                               |
 
 * Acceptance
@@ -33,6 +33,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 - The Jobs tab of the grid screen lists the batches the session may see, newest first, and opens the workunits of a batch and the results of a workunit one page at a time.
 - The details of a batch, workunit or result show the entity's own fields under the model's headers, with state and outcome as badges, and the references as links.
 - The list filters by status, party and reference on the server, and a failed result is found by its outcome.
+- An app version page shows the release note stored with the version, its platforms and packages, and the other versions of its app.
 - The person downloads a workunit input or a result output, and the route checks that the caller may read the owning record first.
 - A job page states where the job is, the node it ran on, when it ran, and what it produced, and links to the report run behind its batch.
 - An operator, a tenant administrator and a party member each see only what their session allows.
@@ -49,15 +50,20 @@ A person sees the batches, workunits and results that the session may see, as a 
 | [[id:8088985C-EAE9-4CF3-962E-4BC6C319A0E7][Serve a stored input or output as a download]] | BACKLOG | | | A workunit names its input and a result names its output as stored objects. The browser has no route that streams them. |
 | [[id:9F73E400-ADDE-499A-A0B0-A616FB5D1668][Build the job page]] | BACKLOG | | | Follow a job: the batch, the state of the job, the node, the timings, the input, the output, and the report run behind the batch. |
 | [[id:32140ED0-C5D0-46A3-8DA4-560A8BF68F8B][Decide who sees a node's name]] | BACKLOG | | | A result names its host. The operator needs the node. A tenant administrator or a party member probably should not see the installation's node names. The owner must decide. |
+| [[id:AD0E1F28-52B5-4138-BAFB-83548B676D08][Draw the prototypes for the jobs screens]] | STARTED | 2026-10-22 | | Redraw the Jobs tab and draw the job page and the app version page before any screen is built, so the build tasks follow an agreed design. |
+| [[id:A2D86110-9343-487F-990E-C8AA4A491575][Store a release note with the app version]] | BACKLOG | | | The app version model has no release note. A job pins a version and a person cannot read what changed in it. Add the note to the version, and publish it with the bundle. |
+| [[id:B5C3CA59-67B9-4826-9191-0AB40C6B80CE][Build the app version page]] | BACKLOG | | | One app version of the compute catalogue: the build, its release note, its packages and the other versions of its app, drawn in the prototype and not yet in the web client. |
 
 * Decisions
 
 - 2026-10-22: The story builds what the journeys Browse the grid's jobs and Follow a job already specify. It adds no screen they do not draw. The reads for batches, workunits and results exist as generated subjects, so the first slice is the BFF route and the screen, not new compute code.
-- 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the timing and size fields when those exist, and show the prototype's dashed block until then.
+- 2026-10-22: The job page links to a page for the app version, and the page shows a release note stored on the version. The model has no such column, so the story adds one, =release_note=, to =app_version=, not to the package. A release is one engine build and one wrapper build, packaged for several platforms, and one note describes the release. The shell's =compute publish-package= writes the note with the bundle.
+- 2026-10-22: The prototypes come before the build. The Jobs tab prototype was compared with the acceptance and redrawn, and the job page and the app version page were drawn. The screens use the model's own field names and add no other term. The glossary defines target redundancy and canonical result.
+- 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the Run statistics panel when those fields exist, and show no such panel until then.
 
 * Out of scope
 
-- The compute catalogue screen, which is the journey Keep what the grid runs.
+- The rest of the compute catalogue screen, which is the journey Keep what the grid runs. This story builds only the page of one app version.
 - Registering a compute node for a tenant.
 - Charts of the grid over time, which the grid screen already carries.
 - The report run naming its batch, and a scheduler job instance read by id. The job page links through the batch's =external_ref= until they exist.

@@ -238,3 +238,7 @@ a.path { display: block; background: var(--bg); border: 1px solid var(--line-sof
 .proposed { margin-top: 12px; padding: 8px 10px; border: 1px dashed var(--warn); border-radius: var(--radius); }
 .proposed .kicker { color: var(--warn); }
 .proposed dl { margin: 8px 0 0; }
+
+.stats { margin-top: 12px; padding: 8px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+.stats dl { margin: 8px 0 0; }
+.details a.btn { display: inline-block; margin-top: 8px; }

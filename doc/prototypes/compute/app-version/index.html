@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compute prototype — app version</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  One app version of the compute catalogue, from
+  doc/knowledge/journeys/compute/journey_keep_what_the_grid_runs.org: the
+  engine and wrapper build a job pins, the release note that goes with it, and
+  the packages the wrapper downloads.
+
+  Switch the role with ?role=operator|tenant|member, the state with
+  ?state=loaded|loading|empty|error|refused and the version with
+  ?version=newest|older|nopackage. The bar at the foot does all three.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -105,6 +105,10 @@ roles, and the four states.
 - Open :: =index.html=, with =?role=operator|tenant|member= and
   =?state=loaded|loading|empty|error|refused=
 
+The finder also filters by =outcome=, and a workunit or a result links to
+[[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]. The address holds the
+filters, the open rows, the page and the selection.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

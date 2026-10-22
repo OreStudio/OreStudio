@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/key-the-series-by-item-provider-and-party
-#+pr:
+#+pr: 3644
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3644][#3644]] | [marketdata] Key the series by item, provider and party |
 
 * Review
 

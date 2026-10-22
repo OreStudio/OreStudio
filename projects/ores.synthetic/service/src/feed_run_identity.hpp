@@ -81,7 +81,7 @@ struct feed_run_identity_ports final {
  * the grant that a person gave. Only a feed that starts from a vintage price
  * reads marketdata at its start, so only such a feed needs a token.
  *
- * @see The identity a feed runs as (doc/knowledge/architecture/feed_execution_identity.org)
+ * @see The identity an adapter runs as (doc/knowledge/architecture/adapter_identity.org)
  */
 class feed_run_identity final {
 public:

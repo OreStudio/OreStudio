@@ -1679,6 +1679,10 @@ def apply_stated_order(domain_entity):
             raise ValueError(
                 f"{name}: :sortable_recorded_at: needs an entity that keeps "
                 "its history, and a current-state entity has no valid_from")
+        if any(f['name'] == 'recorded_at' for f in sortable):
+            raise ValueError(
+                f"{name}: :sortable_recorded_at: adds the field recorded_at, "
+                "and a :sortable: column already has that name")
         sortable.append({'name': 'recorded_at', 'column': 'valid_from'})
     columns_by_name = {f['name']: f['column'] for f in sortable}
     domain_entity['sortable_fields'] = sortable

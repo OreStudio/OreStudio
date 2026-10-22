@@ -109,6 +109,13 @@ def test_the_recording_time_is_not_sortable_unless_the_model_says_so():
         apply_stated_order(entity(default_order='recorded_at'))
 
 
+def test_a_sortable_column_named_recorded_at_collides_with_the_flag():
+    e = entity(sortable_recorded_at=True,
+               columns=[{'name': 'recorded_at', 'sortable': True}])
+    with pytest.raises(ValueError, match="already has that name"):
+        apply_stated_order(e)
+
+
 def test_a_current_state_entity_has_no_recording_time_to_sort_by():
     with pytest.raises(ValueError, match="sortable_recorded_at"):
         apply_stated_order(entity(sortable_recorded_at=True, sql={'current_state': True}))

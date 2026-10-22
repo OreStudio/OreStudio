@@ -1110,7 +1110,7 @@ begin
             'ore.xsd', '/ORE/Setup/Parameter[@name=''csvCommentReportHeader'']',
             'Setup', '', 'csvCommentReportHeader', 62, 'string', false,
             'CSV comment character', 'A single character. It starts the header line of a report.',
-            'Sets the character at the start of the header line of a CSV report. A reader that skips lines that start with this character skips the header, which is the choice for a file with no header. The text must be one character. For example, # writes #Trade,NPV and so on.',
+            'Sets the character that starts the header line of a CSV report. ORE writes this character in front of the header, so a reader can treat the header as a comment. The text must be one character. For example, # writes #TradeId,NPV as the header.',
             'A hash mark, #.', 'One character.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed Setup parameter: csvCommentReportHeader'

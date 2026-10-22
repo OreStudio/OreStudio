@@ -41,11 +41,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <libpq-fe.h>
 #include <memory>
+#include <mutex>
+#include <optional>
+#include <span>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -200,20 +205,28 @@ tick_rows_of(const std::string& tenant, const std::string& party, const std::str
                            series + "'");
 }
 
-/// The writer of the tick table as the environment configures it, or nothing when the role is
-/// not set. The loop stores nothing without it.
-std::shared_ptr<ores::marketdata::service::app::tick_writer> make_writer() {
+/// The options of the writer of the tick table as the environment configures them, or nothing
+/// when the role is not set.
+std::optional<ores::marketdata::service::app::tick_writer_options> writer_options() {
     const auto* user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
     const auto* password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
     if (user == nullptr || password == nullptr ||
         std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+        return std::nullopt;
+    return ores::marketdata::service::app::tick_writer_options{
+        .user = user,
+        .password = password,
+        .host = std::getenv("ORES_TEST_DB_HOST"),
+        .database = std::getenv("ORES_TEST_DB_DATABASE")};
+}
+
+/// The writer of the tick table as the environment configures it, or nothing when the role is
+/// not set. The loop stores nothing without it.
+std::shared_ptr<ores::marketdata::service::app::tick_writer> make_writer() {
+    const auto options = writer_options();
+    if (!options)
         return nullptr;
-    return std::make_shared<ores::marketdata::service::app::tick_writer>(
-        ores::marketdata::service::app::tick_writer_options{
-            .user = user,
-            .password = password,
-            .host = std::getenv("ORES_TEST_DB_HOST"),
-            .database = std::getenv("ORES_TEST_DB_DATABASE")});
+    return std::make_shared<ores::marketdata::service::app::tick_writer>(*options);
 }
 
 }
@@ -668,6 +681,73 @@ void report(const std::string& what, int rep, std::size_t rows, double seconds) 
               << static_cast<double>(rows) / seconds << " rows per second" << std::endl;
 }
 
+/// The ticks that the loop republished, each with the time it arrived. The callback only copies
+/// the message, so it does not slow the drain that a test times. The ticks are decoded later.
+class republish_tap final {
+public:
+    republish_tap(fixture& f, const std::string& tenant, const std::string& party)
+        : sub_(f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
+                                [this](ores::nats::message msg) {
+                                    const auto at = std::chrono::system_clock::now();
+                                    std::lock_guard lock(mu_);
+                                    seen_.emplace_back(at, std::move(msg.data));
+                                })) {}
+
+    std::size_t count() const {
+        std::lock_guard lock(mu_);
+        return seen_.size();
+    }
+
+    /// Waits until no tick has arrived for @p quiet, or for a minute at most.
+    void wait_for_quiet(std::chrono::milliseconds quiet) const {
+        const auto deadline = burst_clock::now() + std::chrono::seconds(60);
+        auto last = count();
+        auto last_change = burst_clock::now();
+        while (burst_clock::now() < deadline && burst_clock::now() - last_change < quiet) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            if (const auto now = count(); now != last) {
+                last = now;
+                last_change = burst_clock::now();
+            }
+        }
+    }
+
+    /// The age of each tick observed at or after @p since, in milliseconds, at the time it arrived.
+    std::vector<double> ages_ms(std::chrono::system_clock::time_point since) const {
+        std::vector<double> ages;
+        std::lock_guard lock(mu_);
+        for (const auto& [at, data] : seen_) {
+            const auto tick = ores::nats::default_wire_codec().decode<market_tick>(data);
+            if (tick.has_value() && tick->observation_time >= since)
+                ages.push_back(
+                    std::chrono::duration<double, std::milli>(at - tick->observation_time).count());
+        }
+        return ages;
+    }
+
+private:
+    mutable std::mutex mu_;
+    std::vector<std::pair<std::chrono::system_clock::time_point, std::vector<std::byte>>> seen_;
+    ores::nats::service::subscription sub_;
+};
+
+/// What one run of the serial or the pipelined loop measured.
+struct sample_result {
+    double rows_per_second = 0;
+    std::vector<double> burst_ages_ms;
+    std::vector<double> stream_ages_ms;
+};
+
+void report_ages(const std::string& what, int rep, std::vector<double> ages, std::size_t sent) {
+    std::sort(ages.begin(), ages.end());
+    const auto at = [&](double q) {
+        return ages.empty() ? 0.0 : ages[static_cast<std::size_t>(q * (ages.size() - 1))];
+    };
+    std::cout << "RESULT age at republish, " << what << " run " << rep << ": " << ages.size()
+              << " of " << sent << " republished, median " << std::fixed << std::setprecision(1)
+              << at(0.5) << " ms, p99 " << at(0.99) << " ms, max " << at(1.0) << " ms" << std::endl;
+}
+
 }
 
 TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
@@ -790,4 +870,212 @@ TEST_CASE("burst_through_nats_and_the_worker_of_the_loop", "[.][burst]") {
         report("drain through nats and the worker", rep, stored, seconds);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+}
+
+TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
+    const auto source = bound_prefix + run_tag();
+    f.bind(source, "SYNTHETIC");
+    f.connect();
+    burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
+    const auto publish = [&](const market_tick& tick) {
+        f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
+    };
+
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+
+    // One loop and one burst for each sample, the two modes in turn, so that both see the load
+    // of the machine as it changes. A second part sends a slow stream of ticks, which shows what
+    // the stages add to the wait of a tick when the loop is not busy.
+    const auto sample = [&](bool pipelined) {
+        republish_tap tap(f, tenant, party);
+        feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer, pipelined);
+        loop.start();
+        const auto set = warm_up(f, source, reader, [&](const std::vector<market_tick>& ticks) {
+            for (const auto& tick : ticks)
+                publish(tick);
+        });
+        const auto base = std::chrono::system_clock::now();
+        const auto start = burst_clock::now();
+        std::chrono::system_clock::time_point last_ts;
+        std::size_t last_datum = 0;
+        for (std::size_t i = 0; i < burst_ticks; ++i) {
+            auto tick = tick_from(source, set.uris[i % set.uris.size()]);
+            publish(tick);
+            last_ts = tick.observation_time;
+            last_datum = i % set.uris.size();
+        }
+        const auto deadline = start + std::chrono::seconds(60);
+        bool done = false;
+        while (burst_clock::now() < deadline &&
+               !(done = reader.has(set.series[last_datum], last_ts)))
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        const auto seconds = std::chrono::duration<double>(burst_clock::now() - start).count();
+        REQUIRE(done);
+        CHECK(reader.count_since(base) == burst_ticks);
+
+        // The republish follows the copy of the batch that holds the tick. A tick that is too
+        // old is not republished, so the wait ends when the count stops growing.
+        tap.wait_for_quiet(std::chrono::seconds(2));
+        sample_result result;
+        result.rows_per_second = static_cast<double>(burst_ticks) / seconds;
+        result.burst_ages_ms = tap.ages_ms(base);
+
+        const auto stream_base = std::chrono::system_clock::now();
+        constexpr std::size_t stream_ticks = 500;
+        for (std::size_t i = 0; i < stream_ticks; ++i) {
+            publish(tick_from(source, set.uris[i % set.uris.size()]));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
+        tap.wait_for_quiet(std::chrono::seconds(2));
+        result.stream_ages_ms = tap.ages_ms(stream_base);
+        return result;
+    };
+
+    for (int rep = 1; rep <= burst_repetitions; ++rep) {
+        const auto serial = sample(false);
+        const auto pipelined = sample(true);
+        std::cout << "RESULT serial against pipelined run " << rep << ": serial " << std::fixed
+                  << std::setprecision(0) << serial.rows_per_second << ", pipelined "
+                  << pipelined.rows_per_second << " rows per second, load " << std::setprecision(1)
+                  <<
+            []() {
+                double load = 0;
+                std::ifstream("/proc/loadavg") >> load;
+                return load;
+            }() << std::endl;
+        report_ages("serial burst", rep, serial.burst_ages_ms, burst_ticks);
+        report_ages("pipelined burst", rep, pipelined.burst_ages_ms, burst_ticks);
+        report_ages("serial stream", rep, serial.stream_ages_ms, 500);
+        report_ages("pipelined stream", rep, pipelined.stream_ages_ms, 500);
+    }
+}
+
+namespace {
+
+/// The writer of the environment with a copy that fails once, when it is armed. It counts the
+/// rows that its copies wrote.
+class flaky_writer final : public ores::marketdata::service::app::tick_writer {
+public:
+    using tick_writer::tick_writer;
+
+    void arm() {
+        armed_ = true;
+    }
+
+    std::size_t written() const {
+        return written_;
+    }
+
+    void write(std::span<const ores::marketdata::service::app::tick_row> rows) override {
+        if (armed_.exchange(false))
+            throw std::runtime_error("the copy fails on purpose");
+        tick_writer::write(rows);
+        written_ += rows.size();
+    }
+
+private:
+    std::atomic<bool> armed_{false};
+    std::atomic<std::size_t> written_{0};
+};
+
+}
+
+TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits",
+          tags) {
+    const auto options = writer_options();
+    if (!options)
+        SKIP("The tick writer role is not configured");
+    auto writer = std::make_shared<flaky_writer>(*options);
+
+    fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
+    const auto source = bound_prefix + run_tag();
+    f.bind(source, "SYNTHETIC");
+    f.connect();
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+    burst_reader reader(tenant, party);
+
+    // Every tick is republished once, stored or not, so the count of the republish says that
+    // none was lost, and the rows of the table say that none was stored twice.
+    std::atomic<std::size_t> republished{0};
+    const auto sub =
+        f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
+                         [&](ores::nats::message) { ++republished; });
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.start();
+    const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
+    const auto uris = burst_uris();
+    std::size_t sent = 0;
+    std::chrono::system_clock::time_point last_ts;
+    std::size_t last_datum = 0;
+    const auto send = [&](std::size_t count) {
+        for (std::size_t i = 0; i < count; ++i) {
+            auto tick = tick_from(source, uris[i % uris.size()]);
+            f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
+            last_ts = tick.observation_time;
+            last_datum = i % uris.size();
+            ++sent;
+        }
+    };
+    const auto wait_until = [](const std::function<bool()>& done) {
+        const auto deadline = burst_clock::now() + std::chrono::seconds(60);
+        while (!done() && burst_clock::now() < deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        return done();
+    };
+
+    const auto base = std::chrono::system_clock::now();
+    std::vector<std::string> series;
+    {
+        std::vector<market_tick> warm;
+        for (const auto& uri : uris)
+            warm.push_back(tick_from(source, uri));
+        for (const auto& tick : warm)
+            f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
+        sent += warm.size();
+        for (std::size_t i = 0; i < uris.size(); ++i) {
+            std::string id;
+            REQUIRE(wait_until([&] {
+                const auto found = f.series_for(uris[i]);
+                if (found.empty())
+                    return false;
+                id = boost::uuids::to_string(found.front().id);
+                return reader.has(id, warm[i].observation_time);
+            }));
+            series.push_back(id);
+        }
+    }
+
+    // A burst that the table takes.
+    constexpr std::size_t part = 6000;
+    send(part);
+    REQUIRE(wait_until([&] { return reader.has(series[last_datum], last_ts); }));
+    const auto stored_before = reader.count_since(base);
+    CHECK(stored_before == uris.size() + part);
+
+    // A burst whose first copy fails. The batches behind it are prepared while it fails, and the
+    // wait that follows the failure leaves them unstored.
+    writer->arm();
+    send(20000);
+    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+    CHECK(reader.count_since(base) == stored_before);
+
+    // After the wait, the store is tried again and takes the next burst.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    send(part);
+    REQUIRE(wait_until([&] { return reader.has(series[last_datum], last_ts); }));
+    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+
+    CHECK(reader.count_since(base) == stored_before + part);
+    CHECK(writer->written() == stored_before + part);
+    CHECK(republished.load() == sent);
 }

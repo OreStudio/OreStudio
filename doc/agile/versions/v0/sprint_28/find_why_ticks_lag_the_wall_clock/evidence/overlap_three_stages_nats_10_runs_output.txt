@@ -1,0 +1,16 @@
+# commit f92fac4827, 2026-10-21T21:48:13Z
+# 60,000 ticks over 200 datums, one binding, one tick writer connection, three stages, Timescale licence apache
+# cpus: 8, load average before: 10.36 11.22 11.04
+# ORES_BURST_REPETITIONS=10 ores.marketdata.service.tests burst_through_nats_and_the_worker_of_the_loop
+RESULT drain through nats and the worker run 1: 60000 rows in 0.458 s = 130909 rows per second
+RESULT drain through nats and the worker run 2: 60000 rows in 0.415 s = 144643 rows per second
+RESULT drain through nats and the worker run 3: 60000 rows in 0.694 s = 86448 rows per second
+RESULT drain through nats and the worker run 4: 60000 rows in 0.497 s = 120747 rows per second
+RESULT drain through nats and the worker run 5: 60000 rows in 0.444 s = 135268 rows per second
+RESULT drain through nats and the worker run 6: 60000 rows in 0.529 s = 113519 rows per second
+RESULT drain through nats and the worker run 7: 60000 rows in 0.440 s = 136510 rows per second
+RESULT drain through nats and the worker run 8: 60000 rows in 0.459 s = 130855 rows per second
+RESULT drain through nats and the worker run 9: 60000 rows in 0.513 s = 117068 rows per second
+RESULT drain through nats and the worker run 10: 60000 rows in 0.479 s = 125264 rows per second
+All tests passed (1768 assertions in 1 test case)
+# load average after: 12.12 11.55 11.15

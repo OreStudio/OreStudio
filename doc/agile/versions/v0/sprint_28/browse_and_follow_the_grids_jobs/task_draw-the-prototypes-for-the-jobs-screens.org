@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/draw-the-prototypes-for-the-jobs-screens
-#+pr:
+#+pr: 3637
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3637][#3637]] | [agile] Draw the prototypes for the grid's jobs screens |
 
 * Review
 

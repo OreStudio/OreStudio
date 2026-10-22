@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/portable-stop-wait
+#+pr: 3634
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3634 | [platform] Wake a wait on the stop state at once |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/rework-the-simulated-market-feeds
-#+pr:
+#+pr: 3635
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3635][#3635]] | [doc] Describe market data as a service with adapters |
 
 * Review
 

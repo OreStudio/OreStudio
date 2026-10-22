@@ -22,7 +22,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -323,7 +323,7 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     // URI the observation rows carry.
     const auto owner =
         t.ctx.with_party(t.ctx.tenant_id(), s.party_id, {s.party_id}, t.base.db_user());
-    const auto number = ores::marketdata::repository::tick_coordinate_repository{}.resolve(
+    const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
         owner, s.party_id, s.id, stored.front().oresmd_uri);
     using namespace std::chrono;
     ores::marketdata::tests::insert_tick(

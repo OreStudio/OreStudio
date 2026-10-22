@@ -27,7 +27,7 @@
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
-#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.marketdata.service/app/batch_size.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -574,7 +574,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
     }
     for (const auto& [tenant, wanted] : unknown) {
         try {
-            const auto numbers = repository::tick_coordinate_repository{}.resolve_all(
+            const auto numbers = repository::tick_coords_repository{}.resolve_all(
                 batch.tenant_ctxs.at(tenant), wanted);
             std::lock_guard lock(mu_);
             for (std::size_t j = 0; j < numbers.size(); ++j)

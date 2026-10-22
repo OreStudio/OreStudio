@@ -46,10 +46,10 @@ struct tick_datum final {
  * number, because every tick row of the series refers to it. A series without coordinates has
  * one datum and so one number.
  */
-class ORES_MARKETDATA_CORE_EXPORT tick_coordinate_repository {
+class ORES_MARKETDATA_CORE_EXPORT tick_coords_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.marketdata.repository.tick_coordinate_repository";
+        "ores.marketdata.repository.tick_coords_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

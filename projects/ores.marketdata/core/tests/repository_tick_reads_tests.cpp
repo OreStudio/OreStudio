@@ -24,7 +24,7 @@
 #include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -45,7 +45,7 @@ using ores::marketdata::repository::feed_binding_activity_entry;
 using ores::marketdata::repository::feed_binding_activity_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
-using ores::marketdata::repository::tick_coordinate_repository;
+using ores::marketdata::repository::tick_coords_repository;
 using ores::marketdata::repository::tick_datum;
 using ores::testing::database_helper;
 
@@ -55,7 +55,7 @@ using ores::marketdata::tests::party_context;
 /// The number of the series' own datum in the tick dictionary, assigned if it has none.
 int number_of(const ores::database::context& owner,
               const ores::marketdata::domain::market_series& s) {
-    return tick_coordinate_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
+    return tick_coords_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
 }
 
 /// A whole second, so that the instants of a test survive the round trip through text.
@@ -94,7 +94,7 @@ TEST_CASE("a_snapshot_reads_the_latest_tick_of_each_coordinate_at_or_before_the_
     const auto owner = party_context(h, s.party_id);
     const auto spot = "oresmd://test/" + boost::uuids::to_string(s.id) + "/SPOT";
     const auto year = "oresmd://test/" + boost::uuids::to_string(s.id) + "/1Y";
-    tick_coordinate_repository numbers;
+    tick_coords_repository numbers;
     const auto spot_number = numbers.resolve(owner, s.party_id, s.id, spot);
     const auto year_number = numbers.resolve(owner, s.party_id, s.id, year);
     CHECK(spot_number == 1);
@@ -228,7 +228,7 @@ TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same", 
 
     // A URI may hold a comma, a quote and a backslash, which an array literal must carry.
     const std::string awkward = R"(oresmd://test/a,"b"\c)";
-    tick_coordinate_repository numbers;
+    tick_coords_repository numbers;
     const auto assigned = numbers.resolve_all(owner,
                                               {{first.party_id, first.id, "oresmd://test/b"},
                                                {first.party_id, first.id, "oresmd://test/a"},

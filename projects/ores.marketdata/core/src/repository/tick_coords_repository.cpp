@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.marketdata.core/repository/pg_array.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -39,7 +39,7 @@ using datum_key = std::pair<std::string, std::string>;
 }
 
 std::vector<std::int16_t>
-tick_coordinate_repository::resolve_all(context ctx, const std::vector<tick_datum>& wanted) {
+tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& wanted) {
     if (wanted.empty())
         return {};
 
@@ -121,7 +121,7 @@ tick_coordinate_repository::resolve_all(context ctx, const std::vector<tick_datu
                              " datum(s) cannot be assigned");
 }
 
-std::int16_t tick_coordinate_repository::resolve(context ctx,
+std::int16_t tick_coords_repository::resolve(context ctx,
                                                  const boost::uuids::uuid& party_id,
                                                  const boost::uuids::uuid& series_id,
                                                  const std::string& oresmd_uri) {

@@ -571,6 +571,22 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_setup_ore_parameters_populate.py and commit the seed.",
     ),
     Check(
+        id="block-parameters-seed",
+        title="The seeded Setup, Logging and Markets ore parameters match their texts",
+        argv=("python3", "projects/ores.sql/utility/generate_block_ore_parameters_populate.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_block_ore_parameters_populate.sql",
+            "projects/ores.sql/utility/generate_block_ore_parameters_populate.py",
+            "projects/ores.sql/utility/block_parameter_catalogue.py",
+            "projects/ores.sql/utility/block_parameter_releases.py",
+            "projects/ores.sql/utility/block_parameter_descriptions/*",
+            "projects/ores.sql/utility/setup_parameter_descriptions.py",
+            "projects/ores.sql/utility/ore_parameter_seed.py",
+        ),
+        fix="Run projects/ores.sql/utility/generate_block_ore_parameters_populate.py and commit the seed.",
+    ),
+    Check(
         id="analytic-parameters-seed",
         title="The seeded analytic ore parameters match their texts",
         argv=("python3", "projects/ores.sql/utility/generate_analytic_ore_parameters_populate.py", "--check"),

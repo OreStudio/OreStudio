@@ -156,7 +156,7 @@ SETUP_PARAMETERS = [
         "description": (
             "Decides what happens to a trade that cannot be loaded or built. When it is Yes, the engine builds a dummy trade of type Failed, with zero notional and zero NPV, so the trade still appears in the portfolio. When it is No, the failed trade is left out. Yes keeps the trade count honest, but a reader must know that a Failed trade has no value."
         ),
-        "default_text": "Yes. A failed trade becomes a dummy trade.",
+        "default_text": "No. A failed trade is left out. The ORE application sets this default; the engine library itself defaults to Yes.",
         "format": "A flag, written Y or N, or true or false.",
         "introduced_in": "1.8.7.0",
         "removed_in": None,

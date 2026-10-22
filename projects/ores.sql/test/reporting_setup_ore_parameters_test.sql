@@ -22,7 +22,8 @@
  *
  * A screen reads the text of a setting from its ore parameter, and the
  * link between the two is the name: the column n_threads of a part is the Setup
- * parameter nThreads.
+ * parameter nThreads. The engine settings take the first positions of the Setup
+ * block, and the other Setup parameters follow them.
  * - Every setting column of a part has a Setup definition
  * - Every Setup definition has a setting column
  * - Every definition carries the text a screen shows
@@ -53,7 +54,8 @@ select d.name,
        d.label, d.help, d.description, d.default_text, d.format, d.introduced_in,
        d.removed_in
 from ores_reporting_ore_parameters_tbl d
-where d.scope = 'Setup' and d.valid_to = ores_utility_infinity_timestamp_fn();
+where d.scope = 'Setup' and d.valid_to = ores_utility_infinity_timestamp_fn()
+  and d.position <= (select count(*) from t_columns);
 
 select is_empty(
     $$select column_name from t_columns

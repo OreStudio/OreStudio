@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/rename-parameter-definition-to-ore-parameter
-#+pr:
+#+pr: 3638
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3638][#3638]] | [reporting] Rename the parameter definition to ore parameter |
 
 * Review
 

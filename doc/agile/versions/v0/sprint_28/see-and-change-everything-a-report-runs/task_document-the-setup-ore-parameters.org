@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/document-the-setup-ore-parameters
-#+pr:
+#+pr: 3646
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3646][#3646]] | [reporting] Document the Setup, Logging and Markets ORE parameters |
 
 * Review
 

@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "concurrency_atomic_shared_ptr_tests.cpp"
+    "concurrency_stoppable_thread_tests.cpp"
     "environment_environment_tests.cpp"
     "filesystem_file_tests.cpp"
     "filesystem_scoped_temp_file_tests.cpp"

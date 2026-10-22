@@ -231,15 +231,23 @@ void feed_ingest_loop::worker_loop() {
         const auto count = batch.size();
         try {
             const auto started = std::chrono::steady_clock::now();
-            if (pipelined_) {
-                if (!handoff_.push(prepare(std::move(batch), nullptr)))
+            // With nothing in the stages, a small batch keeps its order and skips the handoffs.
+            const bool quiet =
+                count <= inline_batch_ticks && in_flight_.load(std::memory_order_acquire) == 0;
+            if (pipelined_ && !quiet) {
+                auto prepared = prepare(std::move(batch), nullptr);
+                in_flight_.fetch_add(1, std::memory_order_relaxed);
+                if (!handoff_.push(std::move(prepared))) {
+                    in_flight_.fetch_sub(1, std::memory_order_release);
                     shutdown_dropped_.fetch_add(count, std::memory_order_relaxed);
+                }
             } else
                 process(std::move(batch), nullptr);
-            // Size the next batch from the time of one turn of the two stages, so that it takes
-            // about target_batch_ms. The push waits while the copy of the batch before this one
-            // runs, so the turn is as long as the slower stage. A slow store gets smaller
-            // batches and a tick waits less.
+            // Size the next batch from the time of one turn, so that it takes about
+            // target_batch_ms. A batch that goes through the stages waits in the push while the
+            // stage ahead runs, so its turn is as long as the slower stage. A batch that the
+            // worker works through itself takes the time of all three stages. A slow store gets
+            // smaller batches and a tick waits less.
             limit = next_batch_ticks(count,
                                      std::chrono::duration_cast<std::chrono::milliseconds>(
                                          std::chrono::steady_clock::now() - started)
@@ -391,8 +399,10 @@ void feed_ingest_loop::commit_loop() {
             }
         }
         const auto count = (*batch)->ticks.size();
-        if (!announce_handoff_.push(std::move(*batch)))
+        if (!announce_handoff_.push(std::move(*batch))) {
+            in_flight_.fetch_sub(1, std::memory_order_release);
             shutdown_dropped_.fetch_add(count, std::memory_order_relaxed);
+        }
     }
 }
 
@@ -404,6 +414,7 @@ void feed_ingest_loop::announce_loop() {
             BOOST_LOG_SEV(lg(), error) << "Failed to announce a batch of " << (*batch)->ticks.size()
                                        << " tick(s): " << e.what();
         }
+        in_flight_.fetch_sub(1, std::memory_order_release);
     }
 }
 

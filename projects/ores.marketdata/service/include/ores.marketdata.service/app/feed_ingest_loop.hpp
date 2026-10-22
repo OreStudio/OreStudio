@@ -97,7 +97,9 @@ make_feed_series(const domain::feed_binding& binding,
  * thread copies the batch to the tick table with one copy. A third thread then records the
  * activity and republishes. The three stages work on three batches at once. One batch waits
  * at most between two stages, so five batches are in the loop at most, and a slow stage stops
- * the stage before it and the batches do not pile up. Republish follows the copy of the batch that
+ * the stage before it and the batches do not pile up. A small batch that arrives while no
+ * batch is in the stages skips them: the worker prepares, copies and republishes it itself, so a
+ * slow stream does not pay for two thread wakeups. Republish follows the copy of the batch that
  * stored the tick, on core NATS with no wait for an acknowledgement. A tick is perishable, because
  * an old tick that waits while a newer one arrives is worse than a tick that is lost. So the queue
  * is bounded and a full queue drops its oldest tick, and the worker drops a tick that has aged past
@@ -121,6 +123,14 @@ private:
     }
 
 public:
+    /// A batch of this many ticks or fewer, taken while no batch is in the stages, is worked
+    /// through by the worker itself. A handoff wakes a thread, which waits for a free CPU, so a
+    /// slow stream is faster without the stages. This is a tuning value. It is above
+    /// min_batch_ticks, and the work of a batch this size takes a few milliseconds, so a feed
+    /// that sends more than about ten thousand ticks a second makes larger batches and uses the
+    /// stages. No run has tried another value.
+    static constexpr std::size_t inline_batch_ticks = 64;
+
     /// @param crm_bridge Optional; when set, every stored FX spot tick is offered
     /// to it as a candidate driver update.
     /// @param tick_writer The writer of the tick table, which is the store. The loop is its
@@ -344,6 +354,9 @@ private:
     batch_handoff<std::unique_ptr<prepared_batch>> handoff_{1};
     /// The copied batches that wait for their republish, one at most.
     batch_handoff<std::unique_ptr<prepared_batch>> announce_handoff_{1};
+    /// The batches that the worker handed to the stages and the third stage has not finished.
+    /// Only the worker adds to it, so a zero that the worker reads stays zero until it adds.
+    std::atomic<std::size_t> in_flight_{0};
     std::thread worker_;
     std::thread commit_thread_;
     std::thread announce_thread_;

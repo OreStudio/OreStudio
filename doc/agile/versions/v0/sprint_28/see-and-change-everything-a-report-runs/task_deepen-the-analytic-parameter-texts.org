@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/deepen-the-analytic-parameter-texts
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The analytic parameters that a report screen shows first have a description of t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Done.                                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-22                               |
+| Next         | Build the engine settings screens.     |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -84,3 +84,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+About 230 analytic parameter texts are deeper. Each one now says what the parameter decides, what its values do or what it changes in the results, when to change it, and an example where one helps. The median description grew from 193 to 289 characters, and the number of descriptions under 200 characters fell from 276 to 47.
+
+The 47 that stay short are the parameters that ORE ignores or no longer reads. A longer text for them would be padding, so they say plainly that ORE ignores them.
+
+The facts come from the ORE user guide, the example files and the ORE source at tag v1.8.17.0. Where the source did not settle a point, the text says less. A reviewer who knows ORE should still read the texts for the capital and margin analytics.

@@ -42,13 +42,18 @@ SIMM = {
         "Run the SIMM analytic",
         "A flag. Y runs the analytic.",
         "Switches the ISDA Standard Initial Margin Model (SIMM) on or off. The analytic computes the initial "
-        "margin from sensitivities in the Common Risk Interchange Format (CRIF).",
+        "margin from sensitivities in the Common Risk Interchange Format (CRIF): it applies the risk weights "
+        "and the correlations of the chosen SIMM version to the sensitivities of each product class and adds "
+        "the results. Use it to estimate the margin that a bilateral agreement asks for.",
         "No. The analytic does not run.",
         FLAG, required=True),
     "version": entry(
         "SIMM version",
         "A SIMM version, for example 2.6.",
-        "Selects the version of the SIMM. " + SIMM_VERSIONS + " The run stops if no version is set.",
+        "Selects the version of the SIMM. ISDA publishes a new version about once a year, and the firm and its "
+        "counterparties must use the same one. ORE supports the SIMM versions 1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, "
+        "2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5. For example, 2.6 applies the risk weights of that "
+        "version. The run stops if no version is set.",
         "None. The parameter is mandatory.",
         SIMM_FORMAT),
     "crif": entry(
@@ -70,14 +75,19 @@ SIMM = {
         "A currency code of three letters, for example USD."),
     "calculationCurrencyCall": currency(
         "Calculation currency to call",
-        "Sets a separate calculation currency for the margin that we call." + MATCH, ""),
+        "Sets a separate calculation currency for the margin that we call. A credit support annex can set one "
+        "currency for what we call and another for what we post." + MATCH, ""),
     "calculationCurrencyPost": currency(
         "Calculation currency to post",
-        "Sets a separate calculation currency for the margin that we post." + MATCH, ""),
+        "Sets a separate calculation currency for the margin that we post. A credit support annex can set one "
+        "currency for what we call and another for what we post." + MATCH, ""),
     "resultCurrency": entry(
         "Result currency",
         "A currency code, for example USD.",
-        "Sets the currency of the SIMM amounts in the report." + MATCH,
+        "Sets the currency of the SIMM amounts in the report. ORE converts the margin from the calculation "
+        "currency into this currency at the spot rate of the valuation date. For example, EUR reports the "
+        "margin in euro. When the SIMM and the IM schedule analytic are both active, the two values must be the "
+        "same, or the run stops.",
         "The calculation currency to call.",
         "A currency code of three letters, for example USD."),
     "reportingCurrency": entry(
@@ -98,22 +108,28 @@ SIMM = {
     "mporDays": entry(
         "Margin period of risk in days",
         "1 or 10.",
-        "Sets the margin period of risk of the SIMM. ORE supports 1 and 10 for the versions from 2.2 onwards "
-        "and only 10 for the earlier versions.",
+        "Sets the margin period of risk of the SIMM, in days. The SIMM scales the risk weights to the period "
+        "over which the portfolio can move before a defaulted counterparty is closed out. ORE supports 1 and 10 "
+        "for the versions from 2.2 onwards and only 10 for the earlier versions. The default is 10, the period "
+        "for bilateral margin.",
         "10",
         "1 or 10."),
     "simmCalibration": entry(
         "SIMM calibration file",
         "A file name.",
-        "Names a file with the calibration of the SIMM, that is the risk weights and the correlations. When "
-        "the file exists, it replaces the calibration of the SIMM version above.",
+        "Names a file with the calibration of the SIMM, that is the risk weights and the correlations. When the "
+        "file exists, it replaces the calibration of the SIMM version above. Use it to test a calibration that "
+        "ISDA has proposed but not yet released, or a calibration of your own. Without it ORE uses the "
+        "calibration of the version.",
         "None. ORE uses the calibration of the version.",
         INPUT_FILE),
     "writeIntermediateReports": entry(
         "Write the intermediate reports",
         "A flag. Y writes the reports.",
-        "Decides whether the SIMM analytic writes its intermediate reports, which show the steps from the "
-        "CRIF to the margin.",
+        "Decides whether the SIMM analytic writes its intermediate reports, which show the steps from the CRIF "
+        "to the margin: the sensitivities by risk class, the weighted sensitivities, and the margin of each "
+        "bucket. Use them to follow how the margin builds up, or to find which bucket drives it. The default is "
+        "Yes.",
         "Yes.",
         FLAG),
     "nameMappingInputFile": entry(
@@ -126,8 +142,9 @@ SIMM = {
     "bucketMappingInputFile": entry(
         "Bucket mapping file",
         "A file name.",
-        "Names the file that maps risk factors to the SIMM buckets. Without it ORE uses the standard buckets. "
-        + MAPPING_ORDER,
+        "Names the file that maps risk factors to the SIMM buckets. The bucket decides the risk weight and the "
+        "correlation that a sensitivity gets. Without it ORE uses the standard buckets. ORE reads it from the "
+        "first of the blocks crif, saccr, simm, npv and Setup that has a value.",
         "None. ORE uses the standard SIMM buckets.",
         INPUT_FILE),
     "computeTheta": entry(
@@ -161,7 +178,9 @@ CRIF = {
     "sensitivityConfigFile": entry(
         "Sensitivity configuration file",
         "A file name.",
-        "Names the XML file with the SIMM sensitivity configuration. For example, sensitivity.xml.",
+        "Names the XML file with the SIMM sensitivity configuration: the risk factors, the shift types and "
+        "sizes. The CRIF generation computes the sensitivities with this setup and then writes them in the CRIF "
+        "format. For example, sensitivity.xml. The analytic needs this file.",
         "None. The analytic needs the file.",
         INPUT_FILE),
     "simmVersion": entry(
@@ -190,7 +209,8 @@ CRIF = {
         "Apply SIMM exemptions",
         "A flag. Y applies the exemptions.",
         "Decides whether the CRIF generation applies the SIMM exemptions and writes a report of what it "
-        "exempted.",
+        "exempted. Some products or risk factors are exempt from the SIMM under the rules of ISDA, for example "
+        "certain FX products. With Yes, the CRIF leaves out the exempt sensitivities. The default is No.",
         "No.",
         FLAG),
     "computeTheta": entry(
@@ -238,31 +258,43 @@ IMSCHEDULE = {
     "version": entry(
         "SIMM version",
         "A SIMM version, for example 2.6.",
-        "Selects the version for the CRIF." + MATCH,
+        "Selects the version for the CRIF. When the SIMM and the IM schedule analytic are both active, the two "
+        "values must be the same, or the run stops. Use the version that the firm has adopted. The default is "
+        "the version of the simm block.",
         "The version of the simm block.",
         SIMM_FORMAT),
     "calculationCurrency": entry(
         "Calculation currency",
         "A currency code, for example USD.",
-        "Sets the currency of the calculation." + MATCH + " For example, USD.",
+        "Sets the currency of the calculation. The schedule approach states the margin in this currency, and "
+        "the credit support annex usually names it. When the SIMM and the IM schedule analytic are both active, "
+        "the two values must be the same, or the run stops. For example, USD.",
         "The base currency. The run stops if neither is set.",
         "A currency code of three letters, for example USD."),
     "calculationCurrencyCall": currency(
         "Calculation currency to call",
-        "Sets a separate calculation currency for the margin that we call." + MATCH, ""),
+        "Sets a separate calculation currency for the margin that we call. A credit support annex can set one "
+        "currency for what we call and another for what we post." + MATCH, ""),
     "calculationCurrencyPost": currency(
         "Calculation currency to post",
-        "Sets a separate calculation currency for the margin that we post." + MATCH, ""),
+        "Sets a separate calculation currency for the margin that we post. A credit support annex can set one "
+        "currency for what we call and another for what we post." + MATCH, ""),
     "resultCurrency": entry(
         "Result currency",
         "A currency code, for example USD.",
-        "Sets the currency of the amounts in the report." + MATCH,
+        "Sets the currency of the amounts in the report. ORE converts the margin from the calculation currency "
+        "into this currency at the spot rate of the valuation date. For example, EUR reports the margin in "
+        "euro. When the SIMM and the IM schedule analytic are both active, the two values must be the same, or "
+        "the run stops.",
         "The calculation currency to call.",
         "A currency code of three letters, for example USD."),
     "reportingCurrency": entry(
         "Reporting currency",
         "A currency code, for example USD.",
-        "Adds two columns to the report: the reporting currency and the amount converted into it." + MATCH,
+        "Adds two columns to the report: the reporting currency and the amount converted into it. Use it to see "
+        "the margin in a second currency next to the calculation currency, for example the currency of the "
+        "group accounts. When the SIMM and the IM schedule analytic are both active, the two values must be the "
+        "same, or the run stops.",
         "None. The report has no extra columns.",
         "A currency code of three letters, for example USD."),
     "enforceIMRegulations": entry(
@@ -286,27 +318,32 @@ PORTFOLIO_DETAILS = {
     "riskFactorFileName": entry(
         "Risk factor report file",
         "A file name.",
-        "Names the file with the report of the risk factors of the portfolio.",
+        "Names the file with the report of the risk factors of the portfolio: one row for each risk factor that "
+        "the trades depend on. Use it to find the market data that a run needs before you load it. The default "
+        "is risk_factors.csv, written in the output path.",
         "risk_factors.csv",
         FILE),
     "marketObjectFileName": entry(
         "Market object report file",
         "A file name.",
-        "Names the file with the report of the market objects that the portfolio needs.",
+        "Names the file with the report of the market objects that the portfolio needs, for example the yield "
+        "curves, the volatility surfaces and the FX spots. Use it to check that todays market holds everything "
+        "the trades use. The default is market_objects.csv, written in the output path.",
         "market_objects.csv",
         FILE),
     "version": entry(
         "SIMM version",
         "A SIMM version, for example 2.6.",
         "Names a SIMM version. The CRIF generation uses it as its last choice, when the crif block, the saccr "
-        "block and the simm block have no version.",
+        "block and the simm block have no version. The portfolio details analytic itself computes no margin. "
+        "For example, 2.6.",
         "None.",
         SIMM_FORMAT),
     "portfolio_details_configuration": entry(
         "Details configuration",
         "A name.",
         "Names the configuration of the portfolio details. ORE reads the value, and no analytic of release "
-        "1.8.17.0 uses it.",
+        "1.8.17.0 uses it. The default is BASIC. Leave it as it is.",
         "BASIC",
         "A name such as BASIC."),
 }
@@ -315,21 +352,26 @@ STRESSED_SIMM = {
     "active": entry(
         "Run the stressed SIMM analytic",
         "A flag. Y runs the analytic.",
-        "Switches the stressed SIMM analytic on or off. It computes the SIMM under stress scenarios. It reads "
-        "the other SIMM settings from the simm block.",
+        "Switches the stressed SIMM analytic on or off. It computes the SIMM under stress scenarios, as the "
+        "margin that the firm would owe in a stressed market. It reads the other SIMM settings from the simm "
+        "block, so the version and the calibration are those of the plain SIMM. Use N to keep the entry in the "
+        "document without running it.",
         "No. The analytic does not run.",
         FLAG, required=True),
     "stressedSimmScenarioData": entry(
         "Stress scenario file",
         "A file name.",
-        "Names the XML file with the stress scenarios for the stressed SIMM. The run stops if the file is "
-        "missing.",
+        "Names the XML file with the stress scenarios for the stressed SIMM. Each scenario shifts the market, "
+        "and the analytic recomputes the sensitivities and the margin under it. The run stops if the file is "
+        "missing. For example, stressedsimm.xml.",
         "None. The parameter is mandatory.",
         INPUT_FILE),
     "version": entry(
         "SIMM version",
         "A SIMM version, for example 2.6.",
-        "Selects the SIMM version for the stressed SIMM. The run stops if no version is set. " + SIMM_VERSIONS,
+        "Selects the SIMM version for the stressed SIMM. Use the same version as for the plain SIMM, so that "
+        "the two margins are comparable. The run stops if no version is set. ORE supports the SIMM versions "
+        "1.0, 1.1, 1.2, 1.3, 1.3.38, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.5A, 2.6 and 2.6.5.",
         "None. The parameter is mandatory.",
         SIMM_FORMAT),
 }
@@ -346,8 +388,9 @@ SIMM_BACKTEST = {
     "crif": entry(
         "CRIF file",
         "A file name.",
-        "Names the CRIF file for the SIMM backtest. ORE reads it, and the open source release has no "
-        "analytic of this type.",
+        "Names the CRIF file for the SIMM backtest. ORE reads the parameter, and the open source release has no "
+        "analytic of this type, so a value has no effect there. Another build can use the file to compare the "
+        "margin that the SIMM implies with the realised moves.",
         "None.",
         INPUT_FILE),
 }

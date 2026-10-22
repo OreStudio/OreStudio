@@ -27,6 +27,20 @@ PERIODS = (
 )
 
 
+WHAT = {
+    "parametric": (
+        "When it is on, the run computes the value at risk from the sensitivities and a covariance matrix of "
+        "the risk factors, under the assumption that the returns follow a normal distribution. It is fast, "
+        "because it revalues nothing."
+    ),
+    "historical": (
+        "When it is on, the run revalues the portfolio under shifts of the risk factors taken from a history "
+        "of market moves, and reads the VaR as a quantile of the resulting P&L. It needs a file of historical "
+        "scenarios and the return configuration."
+    ),
+}
+
+
 def var_shared(kind, label):
     """The VaR parameters that the parametric and the historical simulation analytics share."""
     other = (
@@ -37,7 +51,7 @@ def var_shared(kind, label):
         "active": entry(
             f"Run the {label}",
             "A flag. Y runs the analytic.",
-            f"Switches the {label} on or off. Use N to keep the entry in the document without running it.",
+            f"Switches the {label} on or off. {WHAT[kind]} Use N to keep the entry in the document without running it.",
             "No. The analytic does not run.",
             FLAG, required=True),
         "quantiles": entry(
@@ -61,15 +75,18 @@ def var_shared(kind, label):
             "Portfolio filter",
             "A regular expression.",
             "Limits the VaR to the trades whose portfolio id matches the regular expression. Without it, the "
-            "analytic uses the whole portfolio. For example, PF1|PF2 selects the portfolios PF1 and PF2. "
+            "analytic uses the whole portfolio. Use it to compute the VaR of one desk or one book from a "
+            "portfolio file that holds many. For example, PF1|PF2 selects the portfolios PF1 and PF2. "
             + other,
             "None. The analytic uses the whole portfolio.",
             "A regular expression."),
         "outputFile": entry(
             "VaR report file",
             "A file name.",
-            "Names the file with the main VaR report. The parametric and the historical simulation analytic "
-            "share this name: ORE reads it from the parametric block first. For example, var.csv.",
+            "Names the file with the main VaR report: one row for each portfolio, risk class and risk type with "
+            "the VaR at each quantile. The parametric and the historical simulation analytic share this name: "
+            "ORE reads it from the parametric block first, so set it there when you run both. For example, "
+            "var.csv.",
             "var.csv",
             FILE),
     }
@@ -80,8 +97,10 @@ PARAMETRIC.update({
     "sensitivityInputFile": entry(
         "Sensitivities file",
         "A comma-separated list of file names.",
-        "Lists the files with the delta, vega and gamma sensitivities and the cross gamma, as ORE's "
-        "sensitivity analytic writes them. For example, ../Output/sensitivity.csv,../Output/crossgamma.csv.",
+        "Lists the files with the delta, vega and gamma sensitivities and the cross gamma, as the sensitivity "
+        "analytic of ORE writes them. The analytic reads the sensitivities from these files and does not "
+        "compute them, so run the sensitivity analytic first or supply the files from another system. Separate "
+        "the names with a comma. For example, ../Output/sensitivity.csv,../Output/crossgamma.csv.",
         "None. The analytic needs the sensitivities.",
         "A comma-separated list of file names."),
     "covarianceInputFile": entry(
@@ -107,8 +126,11 @@ PARAMETRIC.update({
     "SalvagingAlgorithm": entry(
         "Salvaging algorithm",
         "None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal.",
-        "Selects the algorithm that repairs a covariance matrix that is not positive semi-definite. None "
-        "does not repair it. The other five names are repair methods.",
+        "Selects the algorithm that repairs a covariance matrix that is not positive semi-definite. Such a "
+        "matrix arises when the correlations come from different sources or from too few observations, and the "
+        "VaR needs a valid matrix. None does not repair it, and the run then stops on an invalid matrix. The "
+        "other five names are repair methods. The default is Spectral, which replaces the negative eigenvalues "
+        "by zero.",
         "Spectral",
         "One of None, Spectral, Hypersphere, LowerDiagonal, Higham or Principal."),
     "mcSamples": entry(
@@ -157,15 +179,19 @@ HISTORICAL.update({
     "mporDays": entry(
         "Holding period in days",
         "A whole number of days.",
-        "Sets the number of days between two scenarios that the analytic uses to compute a P&L. Typical "
-        "values are 1 and 10. The name horizonDays is another name for the same parameter.",
+        "Sets the number of days between two scenarios that the analytic uses to compute a P&L. This is the "
+        "holding period of the VaR: the time in which the portfolio cannot be changed. Typical values are 1 and "
+        "10. For example, 10 gives a ten-day VaR, which is the period of the Basel market risk rules. The name "
+        "horizonDays is another name for the same parameter.",
         "10",
         COUNT),
     "mporCalendar": entry(
         "Holding period calendar",
         "A calendar name.",
-        "Names the calendar that ORE uses to compute the dates of the scenarios. The name horizonCalendar is "
-        "another name for the same parameter.",
+        "Names the calendar that ORE uses to compute the dates of the scenarios. The holding period counts "
+        "business days of this calendar, so a ten-day period over a holiday spans more calendar days. Use the "
+        "calendar of the market of the portfolio. For example, TARGET. The name horizonCalendar is another name "
+        "for the same parameter.",
         "The calendar of the base currency.",
         "A calendar name such as TARGET, USD or UK."),
     "mporOverlappingPeriods": entry(
@@ -179,21 +205,26 @@ HISTORICAL.update({
     "includeExpectedShortfall": entry(
         "Include the expected shortfall",
         "A flag. Y adds the expected shortfall columns.",
-        "Decides whether the report also shows the expected shortfall for each quantile, in extra columns. "
-        "The expected shortfall at level p is the average P&L of all scenarios at or below the VaR for p.",
+        "Decides whether the report also shows the expected shortfall for each quantile, in extra columns. The "
+        "expected shortfall at level p is the average P&L of all scenarios at or below the VaR for p, so it "
+        "shows how bad the tail is beyond the VaR. The Basel market risk rules use the expected shortfall. The "
+        "default is No.",
         "No.",
         FLAG),
     "tradePnl": entry(
         "Report the P&L by trade",
         "A flag. Y adds the report.",
         "Decides whether the analytic writes a second report with the P&L for each trade, risk class and risk "
-        "type.",
+        "type. Use it to find which trades drive the VaR. The report is large for a big portfolio and many "
+        "scenarios. The default is No.",
         "No.",
         FLAG),
     "riskFactorBreakdown": entry(
         "Report the P&L by risk factor",
         "A flag. Y adds the report.",
-        "Decides whether the analytic writes a third report with the P&L for each risk factor.",
+        "Decides whether the analytic writes a third report with the P&L for each risk factor. Use it to find "
+        "which risk factors drive the VaR, for example a single curve or a single FX rate. The report is large "
+        "for many risk factors and scenarios. The default is No.",
         "No.",
         FLAG),
     "riskClassBreakdown": entry(
@@ -207,21 +238,25 @@ HISTORICAL.update({
     "outputHistoricalScenarios": entry(
         "Write the historical scenarios",
         "A flag. Y writes the scenarios.",
-        "Decides whether the analytic writes the historical scenarios that it used to a report.",
+        "Decides whether the analytic writes the historical scenarios that it used to a report. Use it to check "
+        "which dates and which shifts went into the VaR, or to rerun the scenarios in another system. The "
+        "report is large, because it holds every risk factor for every scenario. The default is No.",
         "No.",
         FLAG),
     "includeTheta": entry(
         "Include the theta",
         "A flag. Y includes the theta in the P&L.",
-        "Decides whether the P&L of each scenario also includes the change of the NPV that the passing of "
-        "the holding period causes.",
+        "Decides whether the P&L of each scenario also includes the change of the NPV that the passing of the "
+        "holding period causes, the theta. Without it the P&L shows the effect of the market move only. Switch "
+        "it on when the VaR must cover the time decay too. The default is No.",
         "No.",
         FLAG),
     "includePeriodCashflow": entry(
         "Include the cash flows of the period",
         "A flag. Y includes the cash flows.",
-        "Decides whether the P&L of each scenario also includes the cash flows that pay during the "
-        "holding period.",
+        "Decides whether the P&L of each scenario also includes the cash flows that pay during the holding "
+        "period. Without it a coupon that pays in the period is lost from the P&L. Switch it on for a VaR that "
+        "measures the full change of wealth. The default is No.",
         "No.",
         FLAG),
     "sensitivityInputFile": entry(
@@ -245,7 +280,9 @@ HISTORICAL.update({
         "Return configuration file",
         "A file name.",
         "Names the XML file with the return configuration, which sets how ORE derives the shift of each risk "
-        "factor from the historical scenarios.",
+        "factor from the historical scenarios, for example as an absolute difference or as a relative or log "
+        "return. Use it when a risk factor needs another return type than the standard one. Without the file "
+        "ORE uses its standard return calculation.",
         "None. ORE uses its standard return calculation.",
         INPUT_FILE),
 })
@@ -293,7 +330,8 @@ def pnl_shared(kind, label):
             "Overlapping periods",
             "A flag. Y uses overlapping periods.",
             "Sets whether holding periods overlap. The name horizonOverlappingPeriods is another name for the "
-            "same parameter. " + other,
+            "same parameter. With overlapping periods each scenario starts one day after the one before, which "
+            "gives many scenarios from a short history. " + other,
             "Yes.",
             FLAG),
         "simulationConfigFile": entry(
@@ -323,15 +361,18 @@ def pnl_shared(kind, label):
         "conventionsMporFile": entry(
             "Conventions at the second date",
             "A file name.",
-            "Names the XML file with the conventions for the second valuation date. The name "
-            "conventionsPnlFile is another name for the same parameter. " + other,
+            "Names the XML file with the conventions for the second valuation date. Use it when the market "
+            "conventions changed between the two dates, for example after a move to a new reference rate. The "
+            "name conventionsPnlFile is another name for the same parameter. Without it ORE uses the "
+            "conventions of the Setup block. " + other,
             "The conventions of the Setup block.",
             INPUT_FILE),
         "conventionsPnlOverride": entry(
             "Conventions override at the second date",
             "A file name.",
             "Names an XML file with convention settings that replace the matching settings of the "
-            "conventions at the second date. " + other,
+            "conventions at the second date. Use it to change only the conventions that differ between the two "
+            "dates and keep the rest. The file needs only the entries that change. " + other,
             "None.",
             INPUT_FILE),
         "portfolioMporFile": entry(
@@ -359,13 +400,16 @@ PNL["active"] = entry(
     "Run the P&L analytic",
     "A flag. Y runs the analytic.",
     "Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between "
-    "the valuation date and a second valuation date. It needs market data for both dates.",
+    "the valuation date and a second valuation date: the change of the NPV of each trade, split into the "
+    "effect of the market move and the time effect. It needs market data for both dates.",
     "No. The analytic does not run.",
     FLAG, required=True)
 PNL["outputFileName"] = entry(
     "P&L report file",
     "A file name.",
-    "Names the file with the P&L report. For example, pnl.csv.",
+    "Names the file with the P&L report: one row for each trade with the NPV at both dates and the P&L. "
+    "Change it when one run writes several reports and you need to tell the files apart. The default is "
+    "pnl.csv, written in the output path. For example, pnl.csv.",
     "pnl.csv",
     FILE)
 
@@ -374,14 +418,18 @@ PNL_EXPLAIN["active"] = entry(
     "Run the P&L explain analytic",
     "A flag. Y runs the analytic.",
     "Switches the P&L explain analytic on or off. When it is on, the run explains the P&L between two "
-    "valuation dates by the raw or par sensitivities and the moves of the risk factors.",
+    "valuation dates by the raw or par sensitivities and the moves of the risk factors: the delta effect, "
+    "the gamma effect and what remains unexplained. Use it to check that the risk numbers account for the "
+    "P&L.",
     "No. The analytic does not run.",
     FLAG, required=True)
 PNL_EXPLAIN.update({
     "outputFileName": entry(
         "P&L explain report file",
         "A file name.",
-        "Names the file with the P&L explain report. For example, pnl_explain.csv.",
+        "Names the file with the P&L explain report: one row for each trade, or for each risk factor when the "
+        "risk factor level report is on, with the explained parts and the remainder. The default is "
+        "pnl_explain.csv, written in the output path. For example, pnl_explain.csv.",
         "pnl_explain.csv",
         FILE),
     "sensitivityConfigFile": entry(
@@ -395,35 +443,42 @@ PNL_EXPLAIN.update({
     "parSensitivity": entry(
         "Use par sensitivities",
         "A flag. Y explains the P&L with par sensitivities.",
-        "Decides whether the explanation uses par sensitivities. With N, it uses the raw sensitivities. "
-        "Par rate shifts between the two dates come from the zero to par shift analytic.",
+        "Decides whether the explanation uses par sensitivities. With N, it uses the raw sensitivities and the "
+        "moves of the zero rates. With Y, it uses the par sensitivities and the par rate shifts between the two "
+        "dates, which come from the zero to par shift analytic. Use Y when the desk thinks in par rates. The "
+        "default is No.",
         "No. The explanation uses raw sensitivities.",
         FLAG),
     "riskFactorLevelReporting": entry(
         "Report by risk factor",
         "A flag. Y breaks the explanation down by risk factor.",
-        "Decides whether the explanation shows the P&L for each risk factor.",
+        "Decides whether the explanation shows the P&L for each risk factor. Use it to see which move of the "
+        "market caused which part of the P&L. The report is larger, because it has a row for each trade and "
+        "risk factor. The default is No.",
         "No.",
         FLAG),
     "portfolioFilter": entry(
         "Portfolio filter",
         "A regular expression.",
-        "Limits the explanation to the trades whose portfolio id matches the regular expression. Without "
-        "it, the analytic uses the whole portfolio.",
+        "Limits the explanation to the trades whose portfolio id matches the regular expression. Use it to "
+        "explain the P&L of one desk or one book from a portfolio file that holds many. Without it, the "
+        "analytic uses the whole portfolio. For example, PF1 selects the portfolio PF1.",
         "None. The analytic uses the whole portfolio.",
         "A regular expression."),
     "returnConfigFile": entry(
         "Return configuration file",
         "A file name.",
         "Names the XML file with the return configuration, which sets how ORE derives the shift of each risk "
-        "factor between the two dates.",
+        "factor between the two dates, for example as an absolute difference or as a relative or log return. "
+        "Without the file ORE uses its standard return calculation.",
         "None. ORE uses its standard return calculation.",
         INPUT_FILE),
     "historicalScenarioFile": entry(
         "Historical scenario file",
         "A file name.",
         "Names the CSV file with the market scenarios of the two dates, if the explanation reads them from a "
-        "file.",
+        "file. The explanation then takes the moves of the risk factors from the file and does not build them "
+        "from market data of the two dates. Without it the analytic uses the market data of the two dates.",
         "None.",
         INPUT_FILE),
 })
@@ -433,20 +488,23 @@ SCENARIO = {
         "Run the scenario analytic",
         "A flag. Y runs the analytic.",
         "Switches the scenario analytic on or off. It is a utility that exports the base scenario of the "
-        "simulation market to a file. The P&L calculation uses it too.",
+        "simulation market to a file: the value of every risk factor on the valuation date. The P&L calculation "
+        "uses it too, to get the scenario of each date. Use it to check what the simulation market holds.",
         "No. The analytic does not run.",
         FLAG, required=True),
     "simulationConfigFile": entry(
         "Simulation configuration file",
         "A file name.",
-        "Names the XML file with the simulation market whose base scenario the analytic exports. For "
-        "example, simulation.xml.",
+        "Names the XML file with the simulation market whose base scenario the analytic exports. The market "
+        "lists the risk factors, so the file decides which values the scenario holds. For example, "
+        "simulation.xml. The analytic needs this file.",
         "None. The analytic needs the file.",
         INPUT_FILE),
     "scenarioOutputFile": entry(
         "Scenario output file",
         "A file name.",
-        "Names the file that receives the base scenario. For example, scenario.csv.",
+        "Names the file that receives the base scenario: one row for each risk factor with its value on the "
+        "valuation date. The default is scenario.csv, written in the output path. For example, scenario.csv.",
         "scenario.csv",
         FILE),
 }
@@ -455,23 +513,26 @@ CORRELATION = {
     "active": entry(
         "Run the correlation analytic",
         "A flag. Y runs the analytic.",
-        "Switches the correlation analytic on or off. It computes a correlation matrix of the risk factors "
-        "from historical scenarios. The XVA analytic can run it to get the correlations of its model.",
+        "Switches the correlation analytic on or off. It computes a correlation matrix of the risk factors from "
+        "historical scenarios, as the correlation of the moves over the horizon. The XVA analytic can run it to "
+        "get the correlations of its model. Use N to keep the entry in the document without running it.",
         "No. The analytic does not run.",
         FLAG, required=True),
     "correlation_method": entry(
         "Correlation method",
         "Pearson or Kendall-Rank.",
-        "Selects the method for the correlation matrix. Pearson is the standard linear correlation. "
-        "Kendall-Rank is a rank correlation. The name correlationMethod is another name for the same "
-        "parameter.",
+        "Selects the method for the correlation matrix. Pearson is the standard linear correlation, which "
+        "reacts strongly to outliers. Kendall-Rank is a rank correlation, which depends on the order of the "
+        "moves and not on their size, so it is steadier when the data has outliers. The default is Pearson. The "
+        "name correlationMethod is another name for the same parameter.",
         "Pearson",
         "Pearson or Kendall-Rank."),
     "scenarioCorrSimulation": entry(
         "Simulation market file",
         "A file name.",
-        "Names the XML file with the simulation market for the correlation calculation. The name "
-        "scenarioSimulationUri is another name for the same parameter. For example, simulation.xml.",
+        "Names the XML file with the simulation market for the correlation calculation. The market lists the "
+        "risk factors, so the file decides which factors the matrix covers. The name scenarioSimulationUri is "
+        "another name for the same parameter. For example, simulation.xml. The analytic needs this file.",
         "None. The analytic needs the file.",
         INPUT_FILE),
     "historicalScenarioFile": entry(
@@ -486,8 +547,9 @@ CORRELATION = {
     "sensitivityConfigFile": entry(
         "Sensitivity configuration file",
         "A file name.",
-        "Names the XML file with the sensitivity setup for the analysis at the valuation date. For example, "
-        "sensitivity.xml.",
+        "Names the XML file with the sensitivity setup for the analysis at the valuation date. The file lists "
+        "the risk factors and the shift sizes. For example, sensitivity.xml. It is optional, and the analytic "
+        "uses it only for the analysis at the valuation date.",
         "None.",
         INPUT_FILE),
     "historicalPeriod": entry(
@@ -501,28 +563,34 @@ CORRELATION = {
     "mporDays": entry(
         "Horizon in days",
         "A whole number of days.",
-        "Sets the length of the horizon over which the analytic measures the moves of the risk factors, in "
-        "days on the calendar. The name horizonDays is another name for the same parameter.",
+        "Sets the length of the horizon over which the analytic measures the moves of the risk factors, in days "
+        "on the calendar. The correlation is the correlation of the moves over this horizon, so a longer "
+        "horizon smooths daily noise and gives fewer observations. The default is 10. The name horizonDays is "
+        "another name for the same parameter.",
         "10",
         COUNT),
     "mporCalendar": entry(
         "Horizon calendar",
         "A calendar name.",
-        "Names the calendar that ORE uses to count the days of the horizon. The name horizonCalendar is "
-        "another name for the same parameter.",
+        "Names the calendar that ORE uses to count the days of the horizon. Use the calendar of the market of "
+        "the risk factors. For example, TARGET. The name horizonCalendar is another name for the same "
+        "parameter. Without a value ORE takes the calendar of the base currency.",
         "The calendar of the base currency.",
         "A calendar name such as TARGET, USD or UK."),
     "mporOverlappingPeriods": entry(
         "Overlapping horizons",
         "A flag. Y uses overlapping horizons.",
-        "Decides whether the horizons overlap. The name horizonOverlappingPeriods is another name for the "
-        "same parameter.",
+        "Decides whether the horizons overlap. The name horizonOverlappingPeriods is another name for the same "
+        "parameter. With overlapping horizons each observation starts one day after the one before, which gives "
+        "many observations from a short history. The observations are then not independent. The default is Yes.",
         "Yes.",
         FLAG),
     "allowPartialScenarios": entry(
         "Allow partial scenarios",
         "A flag. Y accepts scenarios that touch only part of the market.",
-        "Decides whether the simulated market accepts scenarios that do not set every risk factor.",
+        "Decides whether the simulated market accepts scenarios that do not set every risk factor. Historical "
+        "data often lacks a few risk factors on some dates. With Yes, the market keeps the value of a missing "
+        "factor from the base scenario. With No, a scenario with a gap stops the run. The default is No.",
         "No.",
         FLAG),
     "filterCamCorrelationScenarioTenor": entry(
@@ -538,7 +606,8 @@ CORRELATION = {
     "outputFileName": entry(
         "Correlation report file",
         "A file name.",
-        "Names the file with the correlation matrix. For example, correlation.csv.",
+        "Names the file with the correlation matrix: one row for each pair of risk factors with their "
+        "correlation. The default is correlation.csv, written in the output path. For example, correlation.csv.",
         "correlation.csv",
         FILE),
     "outputFile": entry(

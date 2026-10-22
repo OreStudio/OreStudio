@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 411B189D-ABCB-4C88-B622-DE423F807276
+:END:
+#+title: A failing test reached main because no PR workflow runs ctest
+#+description: The range bound repository test failed on main. The workflows that build and run ctest run on a schedule, not on a PR, so nothing ran the test before the merge. Find out why, and decide whether a PR needs a test gate.
+#+type: capture
+#+level: cross
+#+filetags: :ci:testing:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find out why a failing test reached main. Then decide whether a pull request needs a test gate.
+
+The range bound repository test wrote rows with an empty =modified_by=. The store refused them, so the test failed on main. PR #3636 fixed it.
+
+* Why
+
+The workflows that build and run ctest (=continuous-*.yml= and =nightly-*.yml=) run on a schedule. They do not run on a pull request. The PR workflows check drift and lint only. A test can therefore fail on main with no check on the PR that added it. The cause is not confirmed. Check the scheduled runs first.
+
+* References
+
+- PR #3636, which fixed the test.
+- The =compass-pr-raise= skill, which names the path-filtered PR workflows.
+
+* See also
+
+-

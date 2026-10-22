@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
@@ -83,3 +83,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done by other work, found while reconciling the sprint pages on 2026-10-21.
+
+The ACME seed carries risk report configurations for every party:
+=projects/ores.sql/populate/acme/acme_{group,uk,us,hk}_risk_report_configs_artefact_populate.sql=.
+They landed in 69f7871e7c ("Craft the risk report configurations and bind them
+and the conventions for each ACME party") and were extended in 65f7421ea6,
+1c181721a2, 0ffd092027 and fe03771c91, all on 2026-10-12. The artefact table is
+=ores_dq_risk_report_configs_artefact_tbl=.
+
+*Not verified.* No database was built or run for this record. That a report
+resolves its configuration at run time belongs to the live run.

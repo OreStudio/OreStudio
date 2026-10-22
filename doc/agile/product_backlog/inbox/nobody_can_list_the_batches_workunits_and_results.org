@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 77DA388B-FC5A-41AE-B88C-4BF34C82D7C9
 :END:
-#+title: A tenant cannot list its own jobs
-#+description: The grid screen is the system administrator's. Nothing gives a tenant administrator a listing of the workunits and results its own users are running, because the compute journeys that would define it have not been extracted.
+#+title: Nobody can list the batches, workunits and results
+#+description: The grid screen shows counts of batches, workunits and results and no row of any of them. The journeys Browse the grid's jobs and Follow a job are written and prototyped. No BFF route and no web screen serves them, so neither a tenant administrator nor the operator can list or open a job.
 #+type: capture
 #+level: cross
 #+filetags: :compute:web:ux:journeys:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-21
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -18,23 +18,21 @@ grid, the bus, the logs and the versions. Its grid screen is the system
 administrator's, offered in system administration mode alone, and it shows
 the fleet and the installation's work counts.
 
-Nothing serves a tenant administrator the other half — the workunits,
-batches and results its own users are running. The compute screens that
-would carry it belong to the ores.compute journeys, which have not been
-extracted: fourteen journeys over forty-five legacy =ores.qt/compute=
-screens, still a backlog story.
+Nothing serves anyone a list of the workunits, batches and results themselves.
+The grid screen counts them. The journeys that define the screens exist:
+[[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]]
+holds the extraction, and =doc/knowledge/journeys/compute/= holds Browse the
+grid's jobs and Follow a job, each with a wireframe and a clickable prototype
+under =doc/prototypes/compute/=. The wire protocol types for the compute reads
+are generated, and no BFF route calls them.
 
 * Why
 
 The tenant administrator's question — "what is my tenant running?" — has no
-screen, and the operations screens do not answer it by design. The jobs
-tables are already per-tenant, so the data is there; the journey and the
-screen are the missing pieces.
-
-The order matters. The operations group wrote its journeys, walked a
-prototype, and then built. A screen ported without its journey is a screen
-nobody agreed to, which is why this capture names the extraction as the
-prerequisite rather than the screen.
+screen, and neither has the operator's "where is this job?". The jobs tables
+are per-tenant and the journeys are written, so the BFF routes and the screens
+are the missing pieces. The run statistics of Draw the node heatmap and carry
+the engine run statistics feed the timing and size columns of those screens.
 
 * References
 

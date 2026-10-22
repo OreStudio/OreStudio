@@ -23,9 +23,9 @@ A person sees the batches, workunits and results that the session may see, as a 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Scaffolded. No task has started.                       |
+| Now           | The prototypes of the Jobs tab, the job page and the app version page are approved. No build task has started.                       |
 | Waiting on    | Nothing. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics.                               |
-| Next          | Review the prototypes, then start Serve the paged job tree through the BFF.            |
+| Next          | Start Serve the paged job tree through the BFF.            |
 | Last touched  | 2026-10-22                               |
 
 * Acceptance

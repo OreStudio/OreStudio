@@ -559,15 +559,15 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="setup-parameters-seed",
-        title="The seeded Setup parameter definitions match their texts",
-        argv=("python3", "projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py", "--check"),
+        title="The seeded Setup ore parameters match their texts",
+        argv=("python3", "projects/ores.sql/utility/generate_setup_ore_parameters_populate.py", "--check"),
         classes=("sql",),
         paths=(
-            "projects/ores.sql/populate/reporting/reporting_setup_parameter_definitions_populate.sql",
-            "projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py",
+            "projects/ores.sql/populate/reporting/reporting_setup_ore_parameters_populate.sql",
+            "projects/ores.sql/utility/generate_setup_ore_parameters_populate.py",
             "projects/ores.sql/utility/setup_parameter_descriptions.py",
         ),
-        fix="Run projects/ores.sql/utility/generate_setup_parameter_definitions_populate.py and commit the seed.",
+        fix="Run projects/ores.sql/utility/generate_setup_ore_parameters_populate.py and commit the seed.",
     ),
     Check(
         id="marketdata-identity-columns",

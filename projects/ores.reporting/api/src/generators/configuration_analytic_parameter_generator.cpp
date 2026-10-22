@@ -47,7 +47,7 @@ generate_synthetic_configuration_analytic_parameter(utility::generation::generat
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.configuration_analytic_id = ctx.generate_uuid();
-    r.parameter_definition_id = ctx.generate_uuid();
+    r.ore_parameter_id = ctx.generate_uuid();
     r.value = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 10EE66B7-D0C5-52AC-84E3-0367181F65F9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the ore_parameter_value_domains commands from the shell?
+#+description: Every command the ore_parameter_value_domains submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ore_parameter_value_domains:
+
+This file documents the ore_parameter_value_domains resource at the shell, one section per command. Every command is a subcommand of =ore_parameter_value_domains=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 6458E8BE-F633-5D5E-9FB7-26DB5C5F2941
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.list=.
+
+#+name: ore_parameter_value_domains-list
+#+begin_src ores-shell :tangle ore_parameter_value_domains-list.ores :exports none
+ore_parameter_value_domains list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2823C634-A0C9-5A2F-B4DD-CD153BB53A00
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains get <code>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.get=.
+
+#+name: ore_parameter_value_domains-get
+#+begin_src ores-shell :tangle ore_parameter_value_domains-get.ores :exports none
+ore_parameter_value_domains get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 61E02F6E-1206-54C0-8B91-39DA096757BD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.get_many=.
+
+#+name: ore_parameter_value_domains-get-many
+#+begin_src ores-shell :tangle ore_parameter_value_domains-get-many.ores :exports none
+ore_parameter_value_domains get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8591AFEE-5393-5C9E-9C30-075C70EA810C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains add <code> <name> <storage_kind> <referenced_entity> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.put=.
+
+#+name: ore_parameter_value_domains-add
+#+begin_src ores-shell :tangle ore_parameter_value_domains-add.ores :exports none
+ore_parameter_value_domains add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 93D30F95-12F0-522C-BEB0-1D96A0F104EE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains set <code> <name> <storage_kind> <referenced_entity> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.put=.
+
+#+name: ore_parameter_value_domains-set
+#+begin_src ores-shell :tangle ore_parameter_value_domains-set.ores :exports none
+ore_parameter_value_domains set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 55777237-9880-589E-9703-40E5FF9571F2
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains put-many --count <n> <code> <name> <storage_kind> <referenced_entity> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.put_many=.
+
+#+name: ore_parameter_value_domains-put-many
+#+begin_src ores-shell :tangle ore_parameter_value_domains-put-many.ores :exports none
+ore_parameter_value_domains put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BC42C5D4-84C3-5F0B-B492-7CAB83B03572
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.delete=.
+
+#+name: ore_parameter_value_domains-delete
+#+begin_src ores-shell :tangle ore_parameter_value_domains-delete.ores :exports none
+ore_parameter_value_domains delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8A0F0E01-0BD5-5807-894B-3F3698A447CA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains.delete_many=.
+
+#+name: ore_parameter_value_domains-delete-many
+#+begin_src ores-shell :tangle ore_parameter_value_domains-delete-many.ores :exports none
+ore_parameter_value_domains delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E5DA5A52-D9A0-5D9B-9E6B-3DF716A07901
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains_versions.list=.
+
+#+name: ore_parameter_value_domains-versions
+#+begin_src ores-shell :tangle ore_parameter_value_domains-versions.ores :exports none
+ore_parameter_value_domains versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: BA416005-17B3-5FFD-99E9-D49ED2A6BBA4
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_domains version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_domains_versions.get=.
+
+#+name: ore_parameter_value_domains-version
+#+begin_src ores-shell :tangle ore_parameter_value_domains-version.ores :exports none
+ore_parameter_value_domains version __none__ --version 1
+#+end_src
+

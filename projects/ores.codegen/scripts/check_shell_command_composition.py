@@ -18,7 +18,7 @@ to-do, not exempt. A census on 2026-10-06 found 21 units with no caller:
 ores.analytics 13 (the credit_simulation_*, shift_type, stress_shift_family
 and todays_market_* families) and ores.reporting 8 (analytic_type,
 configuration, configuration_parameter, configuration_type,
-parameter_definition, parameter_value_domain, report_configuration and
+ore_parameter, ore_parameter_value_domain, report_configuration and
 report_type_configuration_type). Each of those needs its own story; this check
 keeps the component that is complete from regressing.
 

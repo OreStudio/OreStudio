@@ -22,7 +22,7 @@ documentation describes as an engine choice. The words come from the engine sett
 prototype. name is the parameter as ORE writes it. column is the column of the engine
 settings part table that holds it. group names the part. introduced_in and removed_in
 are measured from the release tags of the ORE source, and removed_in is None while the
-parameter exists. The seed script writes one parameter definition for each entry.
+parameter exists. The seed script writes one ore parameter for each entry.
 """
 
 SETUP_PARAMETERS = [

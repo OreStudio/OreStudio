@@ -37,8 +37,8 @@ namespace ores::reporting::domain {
  *
  * One Parameter element inside one Analytic of the run document that a configuration describes: the
  * value, and the definition that says what it means. A row is keyed to a definition in
- * parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so
- * adding a parameter is a lookup row and never a column.
+ * ore_parameter whose scope is the analytic and whose subtype is the analytic type code, so adding
+ * a parameter is a lookup row and never a column.
  */
 struct configuration_analytic_parameter final {
     /**
@@ -70,7 +70,7 @@ struct configuration_analytic_parameter final {
     /**
      * @brief The definition that says what this value means.
      */
-    boost::uuids::uuid parameter_definition_id;
+    boost::uuids::uuid ore_parameter_id;
 
     /**
      * @brief The value, whose type comes from the definition's value domain.

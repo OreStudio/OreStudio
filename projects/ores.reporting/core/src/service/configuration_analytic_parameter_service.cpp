@@ -105,7 +105,7 @@ to_domain(const messaging::configuration_analytic_parameter_write& write) {
     domain::configuration_analytic_parameter v;
     v.id = write.id;
     v.configuration_analytic_id = write.configuration_analytic_id;
-    v.parameter_definition_id = write.parameter_definition_id;
+    v.ore_parameter_id = write.ore_parameter_id;
     v.value = write.value;
     v.position = write.position;
     return v;
@@ -136,10 +136,10 @@ configuration_analytic_parameter_service::list_configuration_analytic_parameters
                                  {.field = "configuration_analytic_id_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->parameter_definition_id_one_of &&
-        request.filter->parameter_definition_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->ore_parameter_id_one_of &&
+        request.filter->ore_parameter_id_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "parameter_definition_id_one_of", .limit = "1000"});
+                                 {.field = "ore_parameter_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -184,10 +184,10 @@ configuration_analytic_parameter_service::
                                  {.field = "configuration_analytic_id_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->parameter_definition_id_one_of &&
-        request.filter->parameter_definition_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->ore_parameter_id_one_of &&
+        request.filter->ore_parameter_id_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "parameter_definition_id_one_of", .limit = "1000"});
+                                 {.field = "ore_parameter_id_one_of", .limit = "1000"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -203,12 +203,12 @@ configuration_analytic_parameter_service::
     return response;
 }
 
-messaging::list_by_parameter_definition_id_configuration_analytic_parameters_response
+messaging::list_by_ore_parameter_id_configuration_analytic_parameters_response
 configuration_analytic_parameter_service::
-    list_by_parameter_definition_id_configuration_analytic_parameters(
-        const messaging::list_by_parameter_definition_id_configuration_analytic_parameters_request&
+    list_by_ore_parameter_id_configuration_analytic_parameters(
+        const messaging::list_by_ore_parameter_id_configuration_analytic_parameters_request&
             request) {
-    messaging::list_by_parameter_definition_id_configuration_analytic_parameters_response response;
+    messaging::list_by_ore_parameter_id_configuration_analytic_parameters_response response;
     if (!request.order.field.empty() &&
         !repository::configuration_analytic_parameter_repository::is_sortable(
             request.order.field)) {
@@ -227,10 +227,10 @@ configuration_analytic_parameter_service::
                                  {.field = "configuration_analytic_id_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->parameter_definition_id_one_of &&
-        request.filter->parameter_definition_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->ore_parameter_id_one_of &&
+        request.filter->ore_parameter_id_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "parameter_definition_id_one_of", .limit = "1000"});
+                                 {.field = "ore_parameter_id_one_of", .limit = "1000"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -238,11 +238,11 @@ configuration_analytic_parameter_service::
             refuse(outcome_code::scope_not_supported, {.entity = "analytic parameters"});
         return response;
     }
-    const auto relation = boost::uuids::to_string(request.parameter_definition_id);
-    response.parameter_values = repo_.read_latest_by_parameter_definition_id(
+    const auto relation = boost::uuids::to_string(request.ore_parameter_id);
+    response.parameter_values = repo_.read_latest_by_ore_parameter_id(
         ctx_, relation, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_parameter_value_count_by_parameter_definition_id(
-        ctx_, relation, request.filter);
+    response.total =
+        repo_.get_total_parameter_value_count_by_ore_parameter_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -524,22 +524,18 @@ configuration_analytic_parameter_service::count_parameter_values_by_configuratio
 
 
 std::vector<domain::configuration_analytic_parameter>
-configuration_analytic_parameter_service::list_parameter_values_by_parameter_definition_id(
-    const std::string& parameter_definition_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing analytic parameters by parameter_definition_id: "
-                               << parameter_definition_id;
-    return repo_.read_latest_by_parameter_definition_id(
-        ctx_, parameter_definition_id, offset, limit);
+configuration_analytic_parameter_service::list_parameter_values_by_ore_parameter_id(
+    const std::string& ore_parameter_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing analytic parameters by ore_parameter_id: "
+                               << ore_parameter_id;
+    return repo_.read_latest_by_ore_parameter_id(ctx_, ore_parameter_id, offset, limit);
 }
 
-std::uint32_t
-configuration_analytic_parameter_service::count_parameter_values_by_parameter_definition_id(
-    const std::string& parameter_definition_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total analytic parameters count by parameter_definition_id: "
-        << parameter_definition_id;
-    return repo_.get_total_parameter_value_count_by_parameter_definition_id(
-        ctx_, parameter_definition_id);
+std::uint32_t configuration_analytic_parameter_service::count_parameter_values_by_ore_parameter_id(
+    const std::string& ore_parameter_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total analytic parameters count by ore_parameter_id: "
+                               << ore_parameter_id;
+    return repo_.get_total_parameter_value_count_by_ore_parameter_id(ctx_, ore_parameter_id);
 }
 
 

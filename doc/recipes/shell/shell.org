@@ -532,7 +532,7 @@ tangled into the runnable script library
 
 - [[id:DF7F76E9-26FF-5D2F-A6D4-1A2969704124][How do I run the market_data_generation_configs commands from the shell?]]
 
-* Yield Curve Process Parameter Definitions
+* Yield Curve Process Ore Parameters
 
 - [[id:6657CEBD-B7F6-5626-BF3D-8A277B46E591][How do I run the yield_curve_process_parameter_definitions commands from the shell?]]
 
@@ -826,13 +826,13 @@ tangled into the runnable script library
 
 - [[id:C10B8762-D5B0-575D-8CFB-17312188CEDA][How do I run the credit_simulation_matrix_row_configs commands from the shell?]]
 
-* Parameter Definitions
+* Ore Parameters
 
-- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the parameter_definitions commands from the shell?]]
+- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the ore_parameters commands from the shell?]]
 
-* Parameter Value Domains
+* Ore Parameter Value Domains
 
-- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the parameter_value_domains commands from the shell?]]
+- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the ore_parameter_value_domains commands from the shell?]]
 
 * Report Configurations
 

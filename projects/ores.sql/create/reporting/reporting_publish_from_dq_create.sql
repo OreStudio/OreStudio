@@ -232,8 +232,8 @@ begin
                   'configuration_analytic_parameters', 'configuration_market_bindings'],
             array[]::text[],
             jsonb_build_object('configuration_analytic_parameters', jsonb_build_object(
-                'parameter_definition_id',
-                'select d.id from ores_reporting_parameter_definitions_tbl d '
+                'ore_parameter_id',
+                'select d.id from ores_reporting_ore_parameters_tbl d '
                 || 'join ores_dq_configuration_analytics_artefact_tbl p '
                 || 'on p.dataset_id = a.dataset_id and p.id = a.configuration_analytic_id '
                 || 'where d.tenant_id = ores_utility_system_tenant_id_fn() '

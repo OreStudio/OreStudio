@@ -93,9 +93,9 @@ public:
     messaging::list_by_configuration_id_configuration_parameters_response
     list_by_configuration_id_configuration_parameters(
         const messaging::list_by_configuration_id_configuration_parameters_request& request);
-    messaging::list_by_parameter_definition_id_configuration_parameters_response
-    list_by_parameter_definition_id_configuration_parameters(
-        const messaging::list_by_parameter_definition_id_configuration_parameters_request& request);
+    messaging::list_by_ore_parameter_id_configuration_parameters_response
+    list_by_ore_parameter_id_configuration_parameters(
+        const messaging::list_by_ore_parameter_id_configuration_parameters_request& request);
     messaging::list_configuration_parameter_versions_response list_configuration_parameter_versions(
         const messaging::list_configuration_parameter_versions_request& request);
     messaging::get_configuration_parameter_version_response get_configuration_parameter_version(
@@ -141,25 +141,23 @@ public:
 
 
     /**
-     * @brief Lists configuration parameters filtered by parameter_definition_id, with pagination.
+     * @brief Lists configuration parameters filtered by ore_parameter_id, with pagination.
      *
-     * @param parameter_definition_id The parameter_definition_id to filter by.
+     * @param ore_parameter_id The ore_parameter_id to filter by.
      * @param offset Number of records to skip.
      * @param limit Maximum number of records to return.
      * @return Vector of matching configuration parameters for the requested page.
      */
-    std::vector<domain::configuration_parameter> list_parameter_values_by_parameter_definition_id(
-        const std::string& parameter_definition_id, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::configuration_parameter> list_parameter_values_by_ore_parameter_id(
+        const std::string& ore_parameter_id, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active configuration parameters filtered by
-     * parameter_definition_id.
+     * @brief Gets the total count of active configuration parameters filtered by ore_parameter_id.
      *
-     * @param parameter_definition_id The parameter_definition_id to filter by.
+     * @param ore_parameter_id The ore_parameter_id to filter by.
      * @return Total number of matching configuration parameters.
      */
-    std::uint32_t
-    count_parameter_values_by_parameter_definition_id(const std::string& parameter_definition_id);
+    std::uint32_t count_parameter_values_by_ore_parameter_id(const std::string& ore_parameter_id);
 
 
     /**

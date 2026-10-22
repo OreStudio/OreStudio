@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/key-the-series-by-item-provider-and-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A quote series is keyed by item, provider and party, and an observation records 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,6 +44,19 @@ A quote series is keyed by item, provider and party, and an observation records 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Install the first catalogue rows with the system bundle: the provider =ore= and its source =ore-import= of kind replay, and the providers =bloomberg=, =lseg=, =ice= and =tradeweb= with no source yet.
+2. Add =provider_code= to =market_series= as part of the natural key, so a series is unique on party, provider and identity. Validate it against the catalogue.
+3. Add =source_id= to =market_observation=. It is information, never part of the key.
+4. Write the provider =ore= on every series the seed data and the ORE import create, and the source =ore-import= on their observations.
+5. Move the as-of reads, the DQ publish and the ingest bridge to the new key.
+6. Remove =producer_kind= from =market_series= and from =feed_binding=, then drop the =producer_kind= code table from ores.refdata with its populate and permissions.
+7. Test that two providers keep two series for one item and party, that one provider keeps one history across two sources, and that an observation records its source.
+
+Open points, with the recommended answer:
+- Seed series with no vendor: give them the provider =ore=. They come from ORE examples, so no vendor is invented.
+- =feed_binding= still uses =producer_kind=: drop the column there too. The bindings screen goes in a later task, and the simulator sets no other value than =SYNTHETIC= today.
+- Existing observations have no source: the column is not null with the source =ore-import= as the value the seed writers supply. No default in the table.
 
 * Measurements
 

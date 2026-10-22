@@ -9182,7 +9182,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''active'']',
             'analytic', 'pnl', 'active', 398, 'boolean', true,
             'Run the P&L analytic', 'A flag. Y runs the analytic.',
-            'Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between the valuation date and a second valuation date: the change of the NPV of each trade, split into the effect of the market move and the time effect. It needs market data for both dates.',
+            'Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between the valuation date and a second valuation date: the change of the NPV of each trade. It needs market data for both dates.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: pnl.active'
@@ -11804,7 +11804,7 @@ begin
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''allowPartialScenarios'']',
             'analytic', 'correlation', 'allowPartialScenarios', 512, 'boolean', false,
             'Allow partial scenarios', 'A flag. Y accepts scenarios that touch only part of the market.',
-            'Decides whether the simulated market accepts scenarios that do not set every risk factor. Historical data often lacks a few risk factors on some dates. With Yes, the market keeps the value of a missing factor from the base scenario. With No, a scenario with a gap stops the run. The default is No.',
+            'Decides whether the simulated market accepts scenarios that do not set every risk factor. Historical data often lacks a few risk factors on some dates. With Yes, the market accepts such a scenario. With No, it accepts only scenarios that set every risk factor. The default is No.',
             'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: correlation.allowPartialScenarios'

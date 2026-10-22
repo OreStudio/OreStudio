@@ -400,8 +400,8 @@ PNL["active"] = entry(
     "Run the P&L analytic",
     "A flag. Y runs the analytic.",
     "Switches the P&L analytic on or off. When it is on, the run computes the single-period P&L between "
-    "the valuation date and a second valuation date: the change of the NPV of each trade, split into the "
-    "effect of the market move and the time effect. It needs market data for both dates.",
+    "the valuation date and a second valuation date: the change of the NPV of each trade. It needs "
+    "market data for both dates.",
     "No. The analytic does not run.",
     FLAG, required=True)
 PNL["outputFileName"] = entry(
@@ -589,8 +589,8 @@ CORRELATION = {
         "Allow partial scenarios",
         "A flag. Y accepts scenarios that touch only part of the market.",
         "Decides whether the simulated market accepts scenarios that do not set every risk factor. Historical "
-        "data often lacks a few risk factors on some dates. With Yes, the market keeps the value of a missing "
-        "factor from the base scenario. With No, a scenario with a gap stops the run. The default is No.",
+        "data often lacks a few risk factors on some dates. With Yes, the market accepts such a scenario. "
+        "With No, it accepts only scenarios that set every risk factor. The default is No.",
         "No.",
         FLAG),
     "filterCamCorrelationScenarioTenor": entry(

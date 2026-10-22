@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.service/app/batch_size.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
-#include "ores.marketdata.service/app/observation_batch.hpp"
 #include "ores.marketdata.service/app/store_backoff.hpp"
 #include "ores.marketdata.service/app/tick_age.hpp"
-#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <thread>
@@ -31,29 +30,13 @@ namespace {
 
 const std::string tags("[app][tick_batch]");
 
-using ores::marketdata::domain::market_observation;
 using ores::marketdata::service::app::drop_oldest_queue;
 using ores::marketdata::messaging::market_tick;
 using ores::marketdata::service::app::erase_stale;
-using ores::marketdata::service::app::keep_last_per_key;
 using ores::marketdata::service::app::next_batch_ticks;
 using ores::marketdata::service::app::store_backoff;
 
 constexpr auto no_wait = std::chrono::milliseconds(0);
-
-market_observation row(const boost::uuids::uuid& series,
-                       std::chrono::system_clock::time_point at,
-                       const std::string& value,
-                       const std::string& uri = "oresmd://fx/USD?type=quote") {
-    static boost::uuids::random_generator gen;
-    market_observation o;
-    o.id = gen();
-    o.series_id = series;
-    o.observation_datetime = at;
-    o.oresmd_uri = uri;
-    o.value = value;
-    return o;
-}
 
 }
 
@@ -108,38 +91,6 @@ TEST_CASE("closing_a_queue_wakes_a_waiting_worker_with_nothing", tags) {
     queue.close();
     worker.join();
     CHECK(out.empty());
-}
-
-TEST_CASE("a_batch_keeps_the_last_row_of_each_key_and_the_order_of_the_rest", tags) {
-    boost::uuids::random_generator gen;
-    const auto series_a = gen();
-    const auto series_b = gen();
-    const auto t0 = std::chrono::system_clock::now();
-    const auto t1 = t0 + std::chrono::milliseconds(5);
-
-    std::vector<market_observation> rows;
-    rows.push_back(row(series_a, t0, "first"));
-    rows.push_back(row(series_b, t0, "other_series"));
-    rows.push_back(row(series_a, t0, "second"));
-    rows.push_back(row(series_a, t1, "other_time"));
-
-    const auto kept = keep_last_per_key(std::move(rows));
-    REQUIRE(kept.size() == 3);
-    CHECK(kept[0].value == "other_series");
-    CHECK(kept[1].value == "second");
-    CHECK(kept[2].value == "other_time");
-}
-
-TEST_CASE("rows_of_one_series_and_time_with_different_coordinates_are_all_kept", tags) {
-    boost::uuids::random_generator gen;
-    const auto series = gen();
-    const auto at = std::chrono::system_clock::now();
-
-    std::vector<market_observation> rows;
-    rows.push_back(row(series, at, "3m", "oresmd://ir/USD?type=quote&tenor=3M"));
-    rows.push_back(row(series, at, "6m", "oresmd://ir/USD?type=quote&tenor=6M"));
-
-    CHECK(keep_last_per_key(std::move(rows)).size() == 2);
 }
 
 TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_order", tags) {

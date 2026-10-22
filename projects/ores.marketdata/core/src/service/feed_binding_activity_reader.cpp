@@ -20,7 +20,6 @@
 #include "ores.marketdata.core/service/feed_binding_activity_reader.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
-#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include <algorithm>
 #include <string>
 #include <string_view>
@@ -41,14 +40,14 @@ inline std::string_view logger_name = "ores.marketdata.core.feed_binding_activit
 
 }
 
-messaging::feed_binding_activity
-feed_binding_activity_reader::activity_of(const std::string& source_name,
-                                          const std::optional<domain::market_observation>& newest) {
+messaging::feed_binding_activity feed_binding_activity_reader::activity_of(
+    const std::string& source_name,
+    const std::optional<repository::feed_binding_activity_record>& recorded) {
     messaging::feed_binding_activity activity;
     activity.source_name = source_name;
-    if (newest) {
-        activity.series_id = newest->series_id;
-        activity.last_tick_at = newest->observation_datetime;
+    if (recorded) {
+        activity.series_id = recorded->series_id;
+        activity.last_tick_at = recorded->last_tick_at;
     }
     return activity;
 }
@@ -64,7 +63,7 @@ messaging::list_feed_binding_activity_response
 feed_binding_activity_reader::read(ores::database::context ctx) {
     messaging::list_feed_binding_activity_response response;
 
-    // The bindings and the observations are isolated by tenant alone, so the caller's
+    // The bindings and the activity rows are isolated by tenant alone, so the caller's
     // party is stated here. A context that names no party has no bindings of its own.
     const auto party_id = ctx.party_id();
     if (!party_id) {
@@ -73,7 +72,7 @@ feed_binding_activity_reader::read(ores::database::context ctx) {
         return response;
     }
 
-    // One read for each binding, which the source index serves. A party holds tens of
+    // One read for each binding, which the primary key serves. A party holds tens of
     // bindings, so the round trips stay few; one read for all of them is the change if
     // that stops being true.
     auto bindings =
@@ -81,11 +80,11 @@ feed_binding_activity_reader::read(ores::database::context ctx) {
     std::ranges::sort(bindings,
                       [](const auto& a, const auto& b) { return a.source_name < b.source_name; });
 
-    repository::market_observation_repository observations;
+    repository::feed_binding_activity_repository recorded;
     response.activities.reserve(bindings.size());
     for (const auto& binding : bindings) {
-        response.activities.push_back(activity_of(
-            binding.source_name, observations.read_newest_for_source(ctx, binding.source_name)));
+        response.activities.push_back(
+            activity_of(binding.source_name, recorded.read(ctx, *party_id, binding.source_name)));
     }
     BOOST_LOG_SEV(lg(), debug) << "Read the activity of " << response.activities.size()
                                << " feed bindings.";

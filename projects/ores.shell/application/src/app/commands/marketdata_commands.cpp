@@ -182,7 +182,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
             process_export(std::ref(out), std::ref(session), args);
         },
         "Write the tenant's market data back out as ORE market.txt/fixings.txt files",
-        {"[--market-data <path>] [--fixings <path>]"});
+        {"[--market-data <path>] [--fixings <path>] [--date <YYYY-MM-DD>] [--max-age-days <n>]"});
 
     marketdata_menu->Insert(
         "backfill-identity",
@@ -297,7 +297,9 @@ void marketdata_commands::process_export(std::ostream& out,
     auto parsed =
         parse_args(args,
                    {{.name = "market-data", .requires_value = true, .default_value = "market.txt"},
-                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"}});
+                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"},
+                    {.name = "date", .requires_value = true, .default_value = ""},
+                    {.name = "max-age-days", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -316,6 +318,17 @@ void marketdata_commands::process_export(std::ostream& out,
     out << "Exporting market data..." << std::endl;
 
     marketdata::messaging::export_market_data_request req;
+    if (!parsed->flag("date").empty())
+        req.valuation_date = parsed->flag("date");
+    if (!parsed->flag("max-age-days").empty()) {
+        try {
+            req.max_age_days = std::stoi(parsed->flag("max-age-days"));
+        } catch (const std::exception&) {
+            fail(out) << "--max-age-days is not a number: " << parsed->flag("max-age-days")
+                      << std::endl;
+            return;
+        }
+    }
     auto result = do_auth_request<marketdata::messaging::export_market_data_response>(
         out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
     if (!result)
@@ -341,6 +354,10 @@ void marketdata_commands::process_export(std::ostream& out,
     out << "✓ Exported " << result->series_count << " series, " << result->observation_count
         << " observation(s), " << result->fixing_count << " fixing(s) to " << market_path << " and "
         << fixings_path << std::endl;
+    if (result->carried_forward_count > 0 || result->stale_count > 0)
+        out << "  " << result->carried_forward_count
+            << " datum(s) carry a value from an earlier day, " << result->stale_count
+            << " older than the limit left out of the date." << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
                               << result->observation_count << " observations, "
                               << result->fixing_count << " fixings.";

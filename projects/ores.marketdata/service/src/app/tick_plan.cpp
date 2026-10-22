@@ -25,32 +25,57 @@
 
 namespace ores::marketdata::service::app {
 
-std::expected<tick_plan, tick_drop> plan_tick(const messaging::market_tick& tick,
-                                              const std::vector<domain::feed_binding>& bindings) {
+std::expected<std::shared_ptr<const named_datum>, tick_drop> name_datum(std::string_view uri) {
+    auto datum = datum::oresmd_uri_codec::read(uri);
+    if (!datum)
+        return std::unexpected(tick_drop::unnameable_datum);
+    // The codec reads only a datum's one spelling, so the URI it writes is the tick's own and
+    // the subject is the datum's alone. A datum needs no ORE key.
+    auto canonical = datum::oresmd_uri_codec::write(*datum);
+    if (!canonical)
+        return std::unexpected(tick_drop::unnameable_datum);
+    auto series = datum::oresmd_uri_codec::write(datum::series_of(*datum));
+    if (!series)
+        return std::unexpected(tick_drop::unnameable_datum);
+    return std::make_shared<const named_datum>(
+        named_datum{std::move(*datum), std::move(*canonical), std::move(*series)});
+}
+
+std::shared_ptr<const std::vector<tick_target>>
+make_targets(const std::vector<domain::feed_binding>& bindings, const named_datum& named) {
+    auto targets = std::make_shared<std::vector<tick_target>>();
+    targets->reserve(bindings.size());
+    for (const auto& b : bindings) {
+        auto tenant = b.tenant_id.to_string();
+        auto party = boost::uuids::to_string(b.party_id);
+        auto subject = domain::market_tick_subject(tenant, party, named.uri);
+        targets->push_back({b, std::move(subject), std::move(tenant), std::move(party)});
+    }
+    return targets;
+}
+
+std::expected<tick_plan, tick_drop>
+plan_tick(const messaging::market_tick& tick,
+          const std::vector<domain::feed_binding>& bindings,
+          std::shared_ptr<const named_datum> named,
+          std::shared_ptr<const std::vector<tick_target>> targets) {
     if (bindings.empty())
         return std::unexpected(tick_drop::unbound_source);
 
-    auto tick_datum = datum::oresmd_uri_codec::read(tick.oresmd_uri);
-    if (!tick_datum)
-        return std::unexpected(tick_drop::unnameable_datum);
-    // The codec reads only a datum's one spelling, so the URI it writes is the
-    // tick's own and the subject is the datum's alone. A datum needs no ORE key.
-    const auto uri = datum::oresmd_uri_codec::write(*tick_datum);
-    if (!uri)
-        return std::unexpected(tick_drop::unnameable_datum);
+    if (!named) {
+        auto read = name_datum(tick.oresmd_uri);
+        if (!read)
+            return std::unexpected(read.error());
+        named = std::move(*read);
+    }
 
     const auto value = ores::platform::numeric::parse_double(tick.value);
     if (!value)
         return std::unexpected(tick_drop::not_a_number);
 
-    tick_plan plan{std::move(*tick_datum), *value, {}};
-    plan.targets.reserve(bindings.size());
-    for (const auto& b : bindings)
-        plan.targets.push_back({b,
-                                domain::market_tick_subject(b.tenant_id.to_string(),
-                                                            boost::uuids::to_string(b.party_id),
-                                                            *uri)});
-    return plan;
+    if (!targets)
+        targets = make_targets(bindings, *named);
+    return tick_plan{std::move(named), *value, std::move(targets)};
 }
 
 }

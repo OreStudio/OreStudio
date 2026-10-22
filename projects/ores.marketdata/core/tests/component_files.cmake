@@ -37,6 +37,7 @@ set(files
     "repository_market_series_repository_tests.cpp"
     "repository_market_write_ceiling_tests.cpp"
     "repository_series_identity_backfill_tests.cpp"
+    "repository_tick_reads_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
     "service_corpus_import_tests.cpp"
     "service_feed_binding_activity_reader_tests.cpp"

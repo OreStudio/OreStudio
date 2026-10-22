@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/browse-and-follow-the-grids-jobs
-#+pr:
+#+pr: 3625
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3625][#3625]] | [agile] Scaffold the story to browse and follow the grid's jobs |
 
 * Review
 

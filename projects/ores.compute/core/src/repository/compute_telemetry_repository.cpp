@@ -221,9 +221,10 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
     // totals of the installation instead, which sum every tenant's work and which no other
     // session reads. The newest instant of each bucket then gives the bucket's
     // figures. The host counts are the installation's and sit on the system tenant's
-    // row, which every session reads, so they come from the rows that carry them. The newest sample is taken with array_agg so the read runs on a plain
-    // PostgreSQL and needs no TimescaleDB function. Column 0 is the bucket's index on
-    // the axis and column 1 the number of instants with job counters in it.
+    // row, which every session reads, so they come from the rows that carry them. The newest sample
+    // is taken with array_agg so the read runs on a plain PostgreSQL and needs no TimescaleDB
+    // function. Column 0 is the bucket's index on the axis and column 1 the number of instants with
+    // job counters in it.
     static const std::string sql = R"(
         WITH own_jobs AS (
             SELECT sampled_at,

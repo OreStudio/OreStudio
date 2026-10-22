@@ -33,7 +33,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analytic_parameter_catalogue import CATALOGUE  # noqa: E402
 from analytic_parameter_descriptions import DESCRIPTIONS  # noqa: E402
-from analytic_parameter_releases import INTRODUCED_IN  # noqa: E402
+from analytic_parameter_releases import INTRODUCED_IN, REMOVED_IN  # noqa: E402
 from ore_parameter_seed import SQL_FOOTER, TEXT_KEYS, header, insert_block  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -54,6 +54,7 @@ def rows():
                     "position": position, "domain": domain,
                     "required": text.get("required", False),
                     "introduced_in": INTRODUCED_IN[f"{analytic}|{name}"],
+                    "removed_in": REMOVED_IN.get(f"{analytic}|{name}"),
                     **{k: text.get(k) for k in TEXT_KEYS if k != "introduced_in"}})
     return out
 

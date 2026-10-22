@@ -532,10 +532,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''active'']',
-            'analytic', 'simulation', 'active', 22, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'simulation', 'active', 22, 'boolean', true,
+            'Run the exposure simulation', 'A flag. Y runs the simulation.',
+            'Switches the exposure simulation on or off. When it is on, the run evolves the market with a Monte Carlo simulation and values every trade of the portfolio at each date of the simulation grid on each path. The result is an NPV cube. The XVA, PFE and other exposure analytics use this cube. Use N to keep the entry in the document without running it.',
+            'No. The simulation does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.active'
         );
@@ -556,9 +556,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amc'']',
             'analytic', 'simulation', 'amc', 23, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Use American Monte Carlo', 'A flag. Y uses American Monte Carlo for the trade types listed.',
+            'Decides whether ORE values some trade types with American Monte Carlo (AMC) instead of the classic simulation. AMC regresses the trade value on the simulated state and is much faster for products with early exercise. The parameter AMC trade types lists the trade types that AMC covers. The classic simulation values the other trades, and ORE joins the two cubes.',
+            'No. The classic simulation values all trades.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amc'
         );
@@ -579,9 +579,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcTradeTypes'']',
             'analytic', 'simulation', 'amcTradeTypes', 24, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'AMC trade types', 'A comma-separated list of trade types.',
+            'Lists the trade types that ORE values with American Monte Carlo when AMC is on. The allowed types are Swap, Swaption, FxForward, FxOption, ForwardBond, FxTaRF, ScriptedTrade and CompositeTrade. The classic simulation values every other trade of the portfolio. For example, Swap,Swaption,FxOption.',
+            'None. With AMC on and no list, no trade type is covered by AMC.', 'A comma-separated list of trade type names.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcTradeTypes'
         );
@@ -602,9 +602,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationConfigFile'']',
             'analytic', 'simulation', 'simulationConfigFile', 25, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Simulation configuration file', 'A file name.',
+            'Names the XML file that sets up the simulation. The file holds three things: the simulated market (which curves, volatilities and rates evolve), the model (the cross asset model and its calibration) and the scenario generator (the date grid, the number of samples and the random number generator). ORE reads all three from this one file, unless the parameters Cross asset model data or Scenario generator data name another file. For example, simulation.xml.',
+            'None. The simulation needs this file, so a run without it fails.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationConfigFile'
         );
@@ -625,9 +625,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''pricingEnginesFile'']',
             'analytic', 'simulation', 'pricingEnginesFile', 26, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Pricing engines file for the simulation', 'A file name.',
+            'Names the XML file that sets the pricing engines for the valuations on the simulated scenarios. These can differ from the engines of the valuation date, for example faster approximations. For example, pricingengine.xml.',
+            'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.pricingEnginesFile'
         );
@@ -648,9 +648,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPricingEnginesFile'']',
             'analytic', 'simulation', 'amcPricingEnginesFile', 27, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Pricing engines file for AMC', 'A file name.',
+            'Names the XML file that sets the pricing engines for the trades that AMC values. These engines differ from the classic ones, because they are the AMC pricers. For example, pricingengine_amc.xml.',
+            'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPricingEnginesFile'
         );
@@ -671,9 +671,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''baseCurrency'']',
             'analytic', 'simulation', 'baseCurrency', 28, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Base currency for the cube', 'A currency code, for example EUR.',
+            'Names the currency in which ORE converts all NPVs before it writes them to the trade-level cube and the netting set cube. Exposures and XVA are then stated in this currency. For example, EUR stores all cube values in euro.',
+            'The base currency of the Setup block.', 'A currency code of three letters, for example EUR.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.baseCurrency'
         );
@@ -694,9 +694,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeScenarios'']',
             'analytic', 'simulation', 'storeScenarios', 29, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Store scenarios', 'A flag. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files carry it with the value N. To write the scenarios, use Scenario dump file or Write scenarios.',
+            'No. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeScenarios'
         );
@@ -717,9 +717,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''cubeFile'']',
             'analytic', 'simulation', 'cubeFile', 30, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Cube file', 'A file name.',
+            'Names the file that holds the NPV cube of the simulation: the value of every trade on every date and every path. Setting it also switches the cube output on. The XVA and PFE analytics can read the file back with their own Cube file parameter, so a later run does not need to simulate again. Example files use cube.csv.gz and cube.dat.',
+            'None. When Write cube is on, the name is cube.csv.gz.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.cubeFile'
         );
@@ -740,9 +740,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''aggregationScenarioDataFileName'']',
             'analytic', 'simulation', 'aggregationScenarioDataFileName', 31, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Aggregation scenario data file', 'A file name.',
+            'Names the file that holds the market data that the XVA post processing needs, for example the simulated FX rates and index fixings that the variation margin calculation uses. The simulation configuration file lists the data to store. For example, scenariodata.csv.gz.',
+            'None. When Write cube is on, the name is scenariodata.csv.gz.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.3.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.aggregationScenarioDataFileName'
         );
@@ -763,10 +763,10 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''aggregationScenarioDataDump'']',
             'analytic', 'simulation', 'aggregationScenarioDataDump', 32, 'string', false,
-            null, null,
-            null,
-            null, null,
-            '1.8.3.0', null,
+            'Aggregation scenario data dump', 'A file name. ORE no longer reads it.',
+            'Named a CSV file for a dump of the aggregation scenario data. ORE stopped reading it in 1.8.9.1. Use Aggregation scenario data file to name the file that holds this data.',
+            'None. ORE ignores the parameter.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
+            '1.8.3.0', '1.8.9.1',
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.aggregationScenarioDataDump'
         );
     end if;
@@ -786,9 +786,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''allowPartialScenarios'']',
             'analytic', 'simulation', 'allowPartialScenarios', 33, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Allow partial scenarios', 'A flag. Y accepts scenarios that touch only part of the market.',
+            'Decides whether the simulated market accepts scenarios that do not set every risk factor of the simulation market. When it is N, ORE checks that each scenario covers all of the market and stops if a risk factor is missing. Switch it on when you read scenarios from a file that covers only part of the market.',
+            'No. ORE checks that scenarios cover the whole market.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.allowPartialScenarios'
         );
@@ -809,9 +809,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''scenariodump'']',
             'analytic', 'simulation', 'scenariodump', 34, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Scenario dump file', 'A file name.',
+            'Names the file that receives the raw market scenarios of the simulation: the discount factors of the yield curves and the other simulated values, for each date and path. Setting it also switches the output on. Use it to inspect the scenarios or to feed them to another tool. Filter risk keys limits the content. For example, scenariodump.csv.',
+            'None. When Write scenarios is on, the name is scenario.csv.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.scenariodump'
         );
@@ -832,9 +832,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCg'']',
             'analytic', 'simulation', 'amcCg', 35, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Computation graph engine mode', 'One of Disabled, CubeGeneration or Full.',
+            'Selects the use of the computation graph (CG) engine for AMC. Disabled keeps the normal AMC. CubeGeneration builds the NPV cube with the CG engine and leaves the XVA post processing to the normal code. Full also computes the XVA with the CG engine. The CG engine allows sensitivities by algorithmic differentiation and dynamic initial margin.',
+            'Disabled', 'One of Disabled, CubeGeneration or Full.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCg'
         );
@@ -855,9 +855,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseExternalComputeDevice'']',
             'analytic', 'simulation', 'xvaCgUseExternalComputeDevice', 36, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG use an external compute device', 'A flag. Y runs the graph on an external device.',
+            'Decides whether the CG engine runs the computation graph on an external compute device, for example a GPU, instead of the CPU. The parameter CG external compute device names the device.',
+            'No. The engine runs on the CPU.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseExternalComputeDevice'
         );
@@ -878,9 +878,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgExternalDeviceCompatibilityMode'']',
             'analytic', 'simulation', 'xvaCgExternalDeviceCompatibilityMode', 37, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG device compatibility mode', 'A flag. Y uses the compatibility mode.',
+            'Decides whether the CG engine runs the external device in its compatibility mode. Switch it on when the device does not run the normal mode correctly. Example files set it together with the name of the device.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgExternalDeviceCompatibilityMode'
         );
@@ -901,9 +901,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseDoublePrecisionForExternalCalculation'']',
             'analytic', 'simulation', 'xvaCgUseDoublePrecisionForExternalCalculation', 38, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG double precision on the device', 'A flag. Y uses double precision.',
+            'Decides whether the external device calculates with double precision numbers instead of single precision. Double precision is more exact and slower, and some devices do not support it.',
+            'No. The device uses single precision.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseDoublePrecisionForExternalCalculation'
         );
@@ -924,9 +924,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgExternalComputeDevice'']',
             'analytic', 'simulation', 'xvaCgExternalComputeDevice', 39, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'CG external compute device', 'The name of a compute device.',
+            'Names the device that the CG engine uses when it runs on an external compute device. The name has the form framework, vendor and device, separated by slashes. For example, OpenCL/Apple/Apple M2 Max, or BasicCpu/Default/Default for a plain CPU back end.',
+            'None. Without a name, ORE uses no external device.', 'Three names separated by slashes, for example OpenCL/Apple/Apple M2 Max.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgExternalComputeDevice'
         );
@@ -947,9 +947,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCgPricingEnginesFile'']',
             'analytic', 'simulation', 'amcCgPricingEnginesFile', 40, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Pricing engines file for the CG engine', 'A file name.',
+            'Names the XML file that sets the pricing engines for the computation graph engine. For example, pricingengine_amccg.xml.',
+            'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCgPricingEnginesFile'
         );
@@ -970,9 +970,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgDynamicIM'']',
             'analytic', 'simulation', 'xvaCgDynamicIM', 41, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG dynamic initial margin', 'A flag. Y computes dynamic initial margin with the CG engine.',
+            'Decides whether the CG engine also computes the initial margin along each path. The DIM model DynamicIM of the XVA analytic needs this. It makes the run longer and the memory use higher.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgDynamicIM'
         );
@@ -993,9 +993,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgDynamicIMStepSize'']',
             'analytic', 'simulation', 'xvaCgDynamicIMStepSize', 42, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'CG dynamic IM step size', 'A whole number of time steps.',
+            'Sets how often the CG engine computes dynamic initial margin: on every n-th time step of the grid. A value of 1 computes it on every step. With a larger value the run is faster, and ORE copies the margin of the last computed step to the steps in between. For example, 4 computes it on every fourth step.',
+            '1', 'A whole number of one or more.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgDynamicIMStepSize'
         );
@@ -1016,9 +1016,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrder'']',
             'analytic', 'simulation', 'xvaCgRegressionOrder', 43, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'CG regression order', 'A whole number.',
+            'Sets the order of the polynomial that the CG engine uses in the regression for the exposures. A higher order fits the value better and needs more paths to stay stable. For example, 4.',
+            '4', 'A whole number of one or more.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrder'
         );
@@ -1039,9 +1039,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionOrderDynamicIm'']',
             'analytic', 'simulation', 'xvaCgRegressionOrderDynamicIm', 44, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'CG regression order for dynamic IM', 'A whole number.',
+            'Sets the order of the regression polynomial that the CG engine uses for dynamic initial margin. It works like the CG regression order and applies to the margin only.',
+            '4', 'A whole number of one or more.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionOrderDynamicIm'
         );
@@ -1062,9 +1062,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgTradeLevelBreakDown'']',
             'analytic', 'simulation', 'xvaCgTradeLevelBreakDown', 45, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG trade level breakdown', 'A flag. Y keeps the results for each trade.',
+            'Decides whether the CG engine produces the exposure results for each trade as well as for each netting set. Switch it off when you need only the netting set results.',
+            'Yes. The engine keeps the results for each trade.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgTradeLevelBreakDown'
         );
@@ -1085,9 +1085,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUseRedBlocks'']',
             'analytic', 'simulation', 'xvaCgUseRedBlocks', 46, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG use red blocks', 'A flag. Y uses red blocks.',
+            'Decides whether the CG engine puts the part of the graph that belongs to one trade into a red block while it builds the graph. It is on by default. Switch it off to build the graph without red blocks, for example to check a result.',
+            'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUseRedBlocks'
         );
@@ -1108,9 +1108,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeFlows'']',
             'analytic', 'simulation', 'storeFlows', 47, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Store cash flows in the cube', 'A flag. Y stores the cash flows.',
+            'Decides whether the cube also stores the cumulative cash flows between the simulation dates. Some dynamic initial margin and variation margin models need them in the XVA post processing.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeFlows'
         );
@@ -1131,9 +1131,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeSensis'']',
             'analytic', 'simulation', 'storeSensis', 48, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Store sensitivities along the paths', 'A flag. Y stores the sensitivities.',
+            'Decides whether the simulation stores the analytical sensitivities of the trades along each path, in the netting set cube. Some dynamic initial margin models need them. The parameters Curve sensitivity grid and Vega sensitivity grid set the points. The run stops if it stores sensitivities and neither grid is set.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeSensis'
         );
@@ -1154,9 +1154,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''curveSensiGrid'']',
             'analytic', 'simulation', 'curveSensiGrid', 49, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Curve sensitivity grid', 'A comma-separated list of numbers of years.',
+            'Lists the points on the yield curves for which the simulation stores sensitivities when Store sensitivities along the paths is on. For example, 1,2,3,5,7,10,15,20.',
+            'None.', 'A comma-separated list of numbers of years, for example 1,2,3,5,7,10.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.curveSensiGrid'
         );
@@ -1177,9 +1177,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''vegaSensiGrid'']',
             'analytic', 'simulation', 'vegaSensiGrid', 50, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Vega sensitivity grid', 'A comma-separated list of numbers of years.',
+            'Lists the option expiries for which the simulation stores vega sensitivities when Store sensitivities along the paths is on. For example, 1,2,3,5,7,10,15,20.',
+            'None.', 'A comma-separated list of numbers of years, for example 1,2,3,5,7,10.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.vegaSensiGrid'
         );
@@ -1200,9 +1200,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeSurvivalProbabilities'']',
             'analytic', 'simulation', 'storeSurvivalProbabilities', 51, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Store survival probabilities', 'A flag. Y stores the survival probabilities.',
+            'Decides whether the cube stores the survival probabilities of the counterparties on each simulation date. The dynamic credit XVA calculation needs them.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.6.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeSurvivalProbabilities'
         );
@@ -1223,9 +1223,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationModelFile'']',
             'analytic', 'simulation', 'simulationModelFile', 52, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Simulation model file', 'A file name. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files of an older layout carry it. ORE reads the model from the simulation configuration file.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationModelFile'
         );
@@ -1246,9 +1246,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationMarketFile'']',
             'analytic', 'simulation', 'simulationMarketFile', 53, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Simulation market file', 'A file name. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files of an older layout carry it. ORE reads the simulated market from the simulation configuration file.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationMarketFile'
         );
@@ -1269,9 +1269,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''simulationParamFile'']',
             'analytic', 'simulation', 'simulationParamFile', 54, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Simulation parameter file', 'A file name. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files of an older layout carry it. ORE reads the scenario generator from the simulation configuration file.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.simulationParamFile'
         );
@@ -1292,9 +1292,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''computeCube'']',
             'analytic', 'simulation', 'computeCube', 55, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Compute the cube', 'A flag. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files carry it with the value Y. The simulation always computes the cube when it runs.',
+            'Yes. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.computeCube'
         );
@@ -1315,10 +1315,10 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''additionalScenarioDataFileName'']',
             'analytic', 'simulation', 'additionalScenarioDataFileName', 56, 'string', false,
-            null, null,
-            null,
-            null, null,
-            '1.8.0.7 or earlier', null,
+            'Additional scenario data file', 'A file name. ORE no longer reads it.',
+            'Named the file for the additional market data of the simulation. ORE stopped reading it in 1.8.3.0. Use Aggregation scenario data file to name the file that holds this data.',
+            'None. ORE ignores the parameter.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
+            '1.8.0.7 or earlier', '1.8.3.0',
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.additionalScenarioDataFileName'
         );
     end if;
@@ -1338,9 +1338,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeCreditStateNPVs'']',
             'analytic', 'simulation', 'storeCreditStateNPVs', 57, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'Store NPVs by credit state', 'A whole number of credit states.',
+            'Sets the number of credit states for which the cube also stores the NPV of each trade. A value of zero stores none. The credit migration and the dynamic credit XVA calculations need these values. For example, 8 stores the NPV for 8 credit states.',
+            '0. The cube stores no NPVs by credit state.', 'A whole number of zero or more.',
             '1.8.10.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeCreditStateNPVs'
         );
@@ -1361,9 +1361,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''observationModel'']',
             'analytic', 'simulation', 'observationModel', 58, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Observation model for the simulation', 'The name of an observation model, for example Disable.',
+            'Controls how many QuantLib observer notifications the simulation uses when market data and fixings are updated and when the evaluation date moves along a path. Notifications cost time in a simulation. None is the normal QuantLib behaviour. Disable switches the notifications off and lets the engine trigger the recalculations. Defer holds the updates back until notifications are on again. Unregister keeps notifications on but unregisters floating rate coupons from their indices. Disable and Unregister give a similar speed up. The Setup block has a parameter of the same name, and this one overrides it for the simulation.',
+            'The observation model of the Setup block, which is None by default.', 'One of None, Disable, Defer or Unregister.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.observationModel'
         );
@@ -1384,9 +1384,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''includeTodaysCashFlows'']',
             'analytic', 'simulation', 'includeTodaysCashFlows', 59, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Include today''s cash flows in the simulation', 'A flag. Y counts the cash flows of the valuation date.',
+            'Decides whether the simulation counts a cash flow that pays on the valuation date itself, or treats it as matured. Set it to Y when a payment of the day must be part of the exposure. The Setup block has a parameter of the same name, and this one overrides it for the simulation.',
+            'The choice of the Setup block. When that is missing too, No: a cash flow of the valuation date is treated as matured.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.includeTodaysCashFlows'
         );
@@ -1407,9 +1407,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''filterRiskKeys'']',
             'analytic', 'simulation', 'filterRiskKeys', 60, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Risk factor types in the dump', 'A comma-separated list of risk factor types.',
+            'Limits the scenario dump to the listed types of risk factor. Without it the dump holds every risk factor of the simulation market and can be very large. For example, DiscountCurve writes the discount factors only.',
+            'None. The dump holds all risk factors.', 'A comma-separated list of risk factor key types such as DiscountCurve.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.filterRiskKeys'
         );
@@ -1430,9 +1430,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgSensitivityConfigFile'']',
             'analytic', 'simulation', 'xvaCgSensitivityConfigFile', 61, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'CG sensitivity configuration file', 'A file name.',
+            'Names the XML file that sets which sensitivities the CG engine computes: the risk factors and the shifts. Without it the CG engine computes no sensitivities. For example, xvasensiconfig.xml.',
+            'None. The CG engine computes no sensitivities.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgSensitivityConfigFile'
         );
@@ -1453,9 +1453,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgBumpSensis'']',
             'analytic', 'simulation', 'xvaCgBumpSensis', 62, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG bump and revalue sensitivities', 'A flag. Y bumps and revalues instead of using differentiation.',
+            'Decides how the CG engine computes the CVA sensitivities. When it is Y, the engine bumps each risk factor and revalues. When it is N, the engine uses algorithmic differentiation. Use Y to check the differentiated sensitivities.',
+            'No. The engine uses algorithmic differentiation.', 'A flag, written Y or N, or true or false.',
             '1.8.12.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgBumpSensis'
         );
@@ -1476,9 +1476,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionCacheSize'']',
             'analytic', 'simulation', 'xvaCgRegressionCacheSize', 63, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'CG regression cache size', 'A whole number.',
+            'Sets the size of the cache of regression results that the CG engine uses. A larger cache can save repeated regressions and uses more memory.',
+            '512', 'A whole number of one or more.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionCacheSize'
         );
@@ -1499,9 +1499,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''disableEvaluationDateObservation'']',
             'analytic', 'simulation', 'disableEvaluationDateObservation', 64, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Disable evaluation date observation', 'A flag. ORE ignores it.',
+            'ORE does not read this parameter in any release. Example files carry it with the value Y. To reduce the cost of notifications, use the observation model.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.disableEvaluationDateObservation'
         );
@@ -1522,9 +1522,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''scenarioFile'']',
             'analytic', 'simulation', 'scenarioFile', 65, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'Scenario input file', 'A file name.',
+            'Names a file with ready-made market scenarios. When it is set, the simulation reads its scenarios from the file and does not generate them with the model. Use it to value a portfolio on scenarios that an earlier run wrote. For example, ../Output/scenarios.csv.',
+            'None. The simulation generates its own scenarios.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.0.7 or earlier', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.scenarioFile'
         );
@@ -1545,9 +1545,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPathDataOutput'']',
             'analytic', 'simulation', 'amcPathDataOutput', 66, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'AMC path data output file', 'A file name.',
+            'Names the file that receives the path data of the AMC run, that is the simulated states of the model. A later run can read the file with the AMC path data input parameter. For example, amcBuffer.dat.',
+            'None. The run does not write the path data.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPathDataOutput'
         );
@@ -1568,9 +1568,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcIndividualTrainingOutput'']',
             'analytic', 'simulation', 'amcIndividualTrainingOutput', 67, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'AMC individual training output', 'A flag. Y writes the trained regression of each trade.',
+            'Decides whether the AMC run writes the trained regression of each trade to a file, so that a later run can reuse it. Switch it on to avoid the training step in repeat runs.',
+            'No. The run does not write the regressions.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcIndividualTrainingOutput'
         );
@@ -1591,9 +1591,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcIndividualTrainingInput'']',
             'analytic', 'simulation', 'amcIndividualTrainingInput', 68, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'AMC individual training input', 'A flag. ORE does not read this setting from the simulation block.',
+            'Is meant to make the AMC run read the trained regression of each trade from a file. ORE reads the parameter from a block with the wrong name, xsimulationva, so a value in the simulation block has no effect in release 1.8.17.0.',
+            'No. The value in the simulation block has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcIndividualTrainingInput'
         );
@@ -1614,9 +1614,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''includeReferenceDateEvents'']',
             'analytic', 'simulation', 'includeReferenceDateEvents', 69, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Include reference date events in the simulation', 'A flag. Y counts the events of the valuation date.',
+            'Decides whether the simulation counts an event that falls on the valuation date, for example an exercise or a fixing. The Setup block has a parameter of the same name, and this one overrides it for the simulation.',
+            'The choice of the Setup block. When that is missing too, No: an event of the valuation date is treated as matured.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.includeReferenceDateEvents'
         );
@@ -1637,9 +1637,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionReportTimeStepsDynamicIM'']',
             'analytic', 'simulation', 'xvaCgRegressionReportTimeStepsDynamicIM', 70, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'CG regression report time steps', 'A comma-separated list of time step numbers.',
+            'Lists the time steps for which the CG engine writes a report of the dynamic initial margin regression. Use it to check the quality of the fit on a few dates. For example, 1,2,3 writes the report for the first three steps.',
+            'None. The engine writes no regression report.', 'A comma-separated list of whole numbers.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionReportTimeStepsDynamicIM'
         );
@@ -1660,9 +1660,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegration'']',
             'analytic', 'simulation', 'xvaCgUsePythonIntegration', 71, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG Python integration', 'A flag. Y uses the Python integration.',
+            'Decides whether the CG regression calls Python code for the conditional expectations, through the Python integration of ORE. Switch it on only when that integration is installed.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegration'
         );
@@ -1683,9 +1683,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgUsePythonIntegrationDynamicIm'']',
             'analytic', 'simulation', 'xvaCgUsePythonIntegrationDynamicIm', 72, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG Python integration for dynamic IM', 'A flag. Y uses the Python integration for the margin.',
+            'Decides whether the CG engine calls Python code for the dynamic initial margin. It works like the CG Python integration parameter and applies to the margin only.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgUsePythonIntegrationDynamicIm'
         );
@@ -1706,9 +1706,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgTradeLevelBreakdown'']',
             'analytic', 'simulation', 'xvaCgTradeLevelBreakdown', 73, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG trade level breakdown (misspelt)', 'A flag. ORE ignores this spelling.',
+            'Is a spelling of the CG trade level breakdown parameter that ORE does not read. ORE reads only the spelling with a capital D in Break Down: xvaCgTradeLevelBreakDown. Example files use both spellings, so a document with this spelling does not change the run.',
+            'Not applicable. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgTradeLevelBreakdown'
         );
@@ -1729,9 +1729,9 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''storeExerciseValues'']',
             'analytic', 'simulation', 'storeExerciseValues', 74, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'Store exercise values in the cube', 'A flag. Y stores the exercise values.',
+            'Decides whether the cube also stores the exercise value of each trade on each date. Switch it on when a later analytic needs the value of an option if it is exercised.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.storeExerciseValues'
         );
@@ -1752,11 +1752,333 @@ begin
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgEnableCgOptimization'']',
             'analytic', 'simulation', 'xvaCgEnableCgOptimization', 75, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'CG graph optimisation', 'A flag. Y optimises the graph.',
+            'Decides whether the CG engine optimises the computation graph while it builds the graph. Switch it on to try the optimisation on a large portfolio.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.17.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgEnableCgOptimization'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'amcPathDataInput'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPathDataInput'']',
+            'analytic', 'simulation', 'amcPathDataInput', 76, 'string', false,
+            'AMC path data input file', 'A file name.',
+            'Names a file with the path data of an earlier AMC run, that is the simulated states of the model. The run reads the path data from the file. Use it together with the output parameter to repeat an AMC valuation on the same paths.',
+            'None. The run computes the path data.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPathDataInput'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'amcUseGpuRegression'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcUseGpuRegression'']',
+            'analytic', 'simulation', 'amcUseGpuRegression', 77, 'boolean', false,
+            'Use the GPU for the AMC regression', 'A flag. Y runs the regression on the GPU.',
+            'Decides whether the AMC regression runs its QR step on a GPU through cuSOLVER. It is an opt-in for runs with a large portfolio on a machine with a supported GPU. The results do not change.',
+            'No. The regression runs on the CPU.', 'A flag, written Y or N, or true or false.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcUseGpuRegression'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'crossAssetModelData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''crossAssetModelData'']',
+            'analytic', 'simulation', 'crossAssetModelData', 78, 'string', false,
+            'Cross asset model file', 'A file name.',
+            'Names an XML file for the cross asset model, if the model sits in another file than the rest of the simulation setup. Use it to share one calibrated model between several runs. When the parameter is missing, ORE reads the model from the simulation configuration file.',
+            'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.crossAssetModelData'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'scenarioGeneratorData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''scenarioGeneratorData'']',
+            'analytic', 'simulation', 'scenarioGeneratorData', 79, 'string', false,
+            'Scenario generator file', 'A file name.',
+            'Names an XML file for the scenario generator, if it sits in another file than the rest of the simulation setup. The scenario generator sets the date grid, the number of samples and the random number generator. Use it to run the same model on a different grid or sample size. When the parameter is missing, ORE reads the scenario generator from the simulation configuration file.',
+            'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.scenarioGeneratorData'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'maxScenario'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''maxScenario'']',
+            'analytic', 'simulation', 'maxScenario', 80, 'integer', false,
+            'Maximum number of scenarios', 'A whole number of paths.',
+            'Caps the number of Monte Carlo paths. When the scenario generator asks for more samples than this number, ORE uses this number. It never raises the number of samples. Use a small value for a quick test run. For example, 100 runs at most 100 paths.',
+            'None. The scenario generator decides.', 'A whole number of zero or more.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.maxScenario'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'writeCube'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''writeCube'']',
+            'analytic', 'simulation', 'writeCube', 81, 'boolean', false,
+            'Write the cube', 'A flag. Y writes the cube files.',
+            'Decides whether the run writes the NPV cube, the scenario data, the netting set cube and the counterparty cube to files. A value in Cube file switches the output on by itself. Use this flag to write the files with the standard names. The files are cube.csv.gz, scenariodata.csv.gz, nettingsetcube.csv.gz and cptycube.csv.gz.',
+            'No. The run writes no cube unless Cube file is set.', 'A flag, written Y or N, or true or false.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.writeCube'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'writeScenarios'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''writeScenarios'']',
+            'analytic', 'simulation', 'writeScenarios', 82, 'boolean', false,
+            'Write the scenarios', 'A flag. Y writes the scenario dump.',
+            'Decides whether the run writes the raw scenarios to a file with the standard name scenario.csv. A value in Scenario dump file switches the output on by itself and sets the name.',
+            'No. The run writes no scenarios unless Scenario dump file is set.', 'A flag, written Y or N, or true or false.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.writeScenarios'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'nettingSetId'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''nettingSetId'']',
+            'analytic', 'simulation', 'nettingSetId', 83, 'string', false,
+            'Netting set', 'A netting set id. ORE reads it and does not use it.',
+            'Is read by ORE in release 1.8.17.0 and not used by any later step. A value has no effect.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A netting set id.',
+            '1.8.9.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.nettingSetId'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'xvaCgRegressionVarianceCutoff'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionVarianceCutoff'']',
+            'analytic', 'simulation', 'xvaCgRegressionVarianceCutoff', 84, 'double', false,
+            'CG regression variance cutoff', 'A number between 0 and 1.',
+            'Switches on a principal component analysis of the regressors in the CG regression and sets its variance cutoff. The analysis rotates the regressors, and the regression drops the directions with a variance below the cutoff. Use it when the regressors are strongly correlated. For example, 0.01.',
+            'None. The regression uses the regressors as they are.', 'A number, written with a decimal point.',
+            '1.8.13.1', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionVarianceCutoff'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'xvaCgRegressionVarianceCutoffDynamicIm'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''xvaCgRegressionVarianceCutoffDynamicIm'']',
+            'analytic', 'simulation', 'xvaCgRegressionVarianceCutoffDynamicIm', 85, 'double', false,
+            'CG regression variance cutoff for dynamic IM', 'A number between 0 and 1.',
+            'Sets the variance cutoff of the regression that the CG engine uses for dynamic initial margin. It works like the CG regression variance cutoff and applies to the margin only.',
+            'None. The regression uses the regressors as they are.', 'A number, written with a decimal point.',
+            '1.8.14.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.xvaCgRegressionVarianceCutoffDynamicIm'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'cubeNpvOverlay'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''cubeNpvOverlay'']',
+            'analytic', 'simulation', 'cubeNpvOverlay', 86, 'boolean', false,
+            'Correct the cube with the first NPV', 'A flag. Y corrects the cube entries.',
+            'Decides whether ORE corrects every raw NPV of the cube by the difference between the NPV of the valuation date from the pricing analytic and the NPV of the valuation date from the simulation. Use it when the simulation engines give a slightly different NPV today than the pricing engines.',
+            'No.', 'A flag, written Y or N, or true or false.',
+            '1.8.15.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.cubeNpvOverlay'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'pricingEnginesOverride'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''pricingEnginesOverride'']',
+            'analytic', 'simulation', 'pricingEnginesOverride', 87, 'string', false,
+            'Pricing engines override', 'A file name.',
+            'Names an XML file with pricing engine settings that replace the matching settings of the pricing engines file for the simulation. Use it to change a few engines and keep the rest. ORE applies the file on top of the pricing engines that the simulation uses.',
+            'None. The engines stay as the pricing engines file sets them.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.pricingEnginesOverride'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'amcPricingEnginesOverride'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcPricingEnginesOverride'']',
+            'analytic', 'simulation', 'amcPricingEnginesOverride', 88, 'string', false,
+            'Pricing engines override for AMC', 'A file name.',
+            'Names an XML file with pricing engine settings that replace the matching settings of the AMC pricing engines file. Use it to change a few engines and keep the rest.',
+            'None. The engines stay as the AMC pricing engines file sets them.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcPricingEnginesOverride'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'simulation' and name = 'amcCgPricingEnginesOverride'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''simulation'']/Parameter[@name=''amcCgPricingEnginesOverride'']',
+            'analytic', 'simulation', 'amcCgPricingEnginesOverride', 89, 'string', false,
+            'Pricing engines override for the CG engine', 'A file name.',
+            'Names an XML file with pricing engine settings that replace the matching settings of the CG pricing engines file. Use it to change a few engines and keep the rest.',
+            'None. The engines stay as the CG pricing engines file sets them.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: simulation.amcCgPricingEnginesOverride'
         );
     end if;
 
@@ -1774,7 +2096,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''active'']',
-            'analytic', 'xva', 'active', 76, 'boolean', false,
+            'analytic', 'xva', 'active', 90, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -1797,7 +2119,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''csaFile'']',
-            'analytic', 'xva', 'csaFile', 77, 'string', false,
+            'analytic', 'xva', 'csaFile', 91, 'string', false,
             null, null,
             null,
             null, null,
@@ -1820,7 +2142,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cubeFile'']',
-            'analytic', 'xva', 'cubeFile', 78, 'string', false,
+            'analytic', 'xva', 'cubeFile', 92, 'string', false,
             null, null,
             null,
             null, null,
@@ -1843,7 +2165,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''scenarioFile'']',
-            'analytic', 'xva', 'scenarioFile', 79, 'string', false,
+            'analytic', 'xva', 'scenarioFile', 93, 'string', false,
             null, null,
             null,
             null, null,
@@ -1866,7 +2188,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''baseCurrency'']',
-            'analytic', 'xva', 'baseCurrency', 80, 'string', false,
+            'analytic', 'xva', 'baseCurrency', 94, 'string', false,
             null, null,
             null,
             null, null,
@@ -1889,7 +2211,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exposureProfiles'']',
-            'analytic', 'xva', 'exposureProfiles', 81, 'boolean', false,
+            'analytic', 'xva', 'exposureProfiles', 95, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -1912,7 +2234,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exposureProfilesByTrade'']',
-            'analytic', 'xva', 'exposureProfilesByTrade', 82, 'boolean', false,
+            'analytic', 'xva', 'exposureProfilesByTrade', 96, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -1935,7 +2257,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''quantile'']',
-            'analytic', 'xva', 'quantile', 83, 'double', false,
+            'analytic', 'xva', 'quantile', 97, 'double', false,
             null, null,
             null,
             null, null,
@@ -1958,7 +2280,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''calculationType'']',
-            'analytic', 'xva', 'calculationType', 84, 'string', false,
+            'analytic', 'xva', 'calculationType', 98, 'string', false,
             null, null,
             null,
             null, null,
@@ -1981,7 +2303,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''cva'']',
-            'analytic', 'xva', 'cva', 85, 'boolean', false,
+            'analytic', 'xva', 'cva', 99, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2004,7 +2326,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''rawCubeOutputFile'']',
-            'analytic', 'xva', 'rawCubeOutputFile', 86, 'string', false,
+            'analytic', 'xva', 'rawCubeOutputFile', 100, 'string', false,
             null, null,
             null,
             null, null,
@@ -2027,7 +2349,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''netCubeOutputFile'']',
-            'analytic', 'xva', 'netCubeOutputFile', 87, 'string', false,
+            'analytic', 'xva', 'netCubeOutputFile', 101, 'string', false,
             null, null,
             null,
             null, null,
@@ -2050,7 +2372,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dim'']',
-            'analytic', 'xva', 'dim', 88, 'boolean', false,
+            'analytic', 'xva', 'dim', 102, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2073,7 +2395,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimModel'']',
-            'analytic', 'xva', 'dimModel', 89, 'string', false,
+            'analytic', 'xva', 'dimModel', 103, 'string', false,
             null, null,
             null,
             null, null,
@@ -2096,7 +2418,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimQuantile'']',
-            'analytic', 'xva', 'dimQuantile', 90, 'double', false,
+            'analytic', 'xva', 'dimQuantile', 104, 'double', false,
             null, null,
             null,
             null, null,
@@ -2119,7 +2441,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimHorizonCalendarDays'']',
-            'analytic', 'xva', 'dimHorizonCalendarDays', 91, 'integer', false,
+            'analytic', 'xva', 'dimHorizonCalendarDays', 105, 'integer', false,
             null, null,
             null,
             null, null,
@@ -2142,7 +2464,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionOrder'']',
-            'analytic', 'xva', 'dimRegressionOrder', 92, 'integer', false,
+            'analytic', 'xva', 'dimRegressionOrder', 106, 'integer', false,
             null, null,
             null,
             null, null,
@@ -2165,7 +2487,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''allocationMethod'']',
-            'analytic', 'xva', 'allocationMethod', 93, 'string', false,
+            'analytic', 'xva', 'allocationMethod', 107, 'string', false,
             null, null,
             null,
             null, null,
@@ -2188,7 +2510,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''marginalAllocationLimit'']',
-            'analytic', 'xva', 'marginalAllocationLimit', 94, 'double', false,
+            'analytic', 'xva', 'marginalAllocationLimit', 108, 'double', false,
             null, null,
             null,
             null, null,
@@ -2211,7 +2533,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''exerciseNextBreak'']',
-            'analytic', 'xva', 'exerciseNextBreak', 95, 'boolean', false,
+            'analytic', 'xva', 'exerciseNextBreak', 109, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2234,7 +2556,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dva'']',
-            'analytic', 'xva', 'dva', 96, 'boolean', false,
+            'analytic', 'xva', 'dva', 110, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2257,7 +2579,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dvaName'']',
-            'analytic', 'xva', 'dvaName', 97, 'string', false,
+            'analytic', 'xva', 'dvaName', 111, 'string', false,
             null, null,
             null,
             null, null,
@@ -2280,7 +2602,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fva'']',
-            'analytic', 'xva', 'fva', 98, 'boolean', false,
+            'analytic', 'xva', 'fva', 112, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2303,7 +2625,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaBorrowingCurve'']',
-            'analytic', 'xva', 'fvaBorrowingCurve', 99, 'string', false,
+            'analytic', 'xva', 'fvaBorrowingCurve', 113, 'string', false,
             null, null,
             null,
             null, null,
@@ -2326,7 +2648,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaLendingCurve'']',
-            'analytic', 'xva', 'fvaLendingCurve', 100, 'string', false,
+            'analytic', 'xva', 'fvaLendingCurve', 114, 'string', false,
             null, null,
             null,
             null, null,
@@ -2349,7 +2671,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''colva'']',
-            'analytic', 'xva', 'colva', 101, 'boolean', false,
+            'analytic', 'xva', 'colva', 115, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2372,11 +2694,11 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralSpread'']',
-            'analytic', 'xva', 'collateralSpread', 102, 'double', false,
+            'analytic', 'xva', 'collateralSpread', 116, 'double', false,
             null, null,
             null,
             null, null,
-            '1.8.0.7 or earlier', null,
+            '1.8.0.7 or earlier', '1.8.3.0',
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.collateralSpread'
         );
     end if;
@@ -2395,7 +2717,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralFloor'']',
-            'analytic', 'xva', 'collateralFloor', 103, 'boolean', false,
+            'analytic', 'xva', 'collateralFloor', 117, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2418,7 +2740,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimScaling'']',
-            'analytic', 'xva', 'dimScaling', 104, 'double', false,
+            'analytic', 'xva', 'dimScaling', 118, 'double', false,
             null, null,
             null,
             null, null,
@@ -2441,7 +2763,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimEvolutionFile'']',
-            'analytic', 'xva', 'dimEvolutionFile', 105, 'string', false,
+            'analytic', 'xva', 'dimEvolutionFile', 119, 'string', false,
             null, null,
             null,
             null, null,
@@ -2464,7 +2786,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressionFiles'']',
-            'analytic', 'xva', 'dimRegressionFiles', 106, 'string', false,
+            'analytic', 'xva', 'dimRegressionFiles', 120, 'string', false,
             null, null,
             null,
             null, null,
@@ -2487,7 +2809,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputNettingSet'']',
-            'analytic', 'xva', 'dimOutputNettingSet', 107, 'string', false,
+            'analytic', 'xva', 'dimOutputNettingSet', 121, 'string', false,
             null, null,
             null,
             null, null,
@@ -2510,7 +2832,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimOutputGridPoints'']',
-            'analytic', 'xva', 'dimOutputGridPoints', 108, 'integer', false,
+            'analytic', 'xva', 'dimOutputGridPoints', 122, 'integer', false,
             null, null,
             null,
             null, null,
@@ -2533,7 +2855,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimLocalRegressionEvaluations'']',
-            'analytic', 'xva', 'dimLocalRegressionEvaluations', 109, 'integer', false,
+            'analytic', 'xva', 'dimLocalRegressionEvaluations', 123, 'integer', false,
             null, null,
             null,
             null, null,
@@ -2556,7 +2878,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimLocalRegressionBandwidth'']',
-            'analytic', 'xva', 'dimLocalRegressionBandwidth', 110, 'double', false,
+            'analytic', 'xva', 'dimLocalRegressionBandwidth', 124, 'double', false,
             null, null,
             null,
             null, null,
@@ -2579,7 +2901,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mva'']',
-            'analytic', 'xva', 'mva', 111, 'boolean', false,
+            'analytic', 'xva', 'mva', 125, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2602,7 +2924,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimRegressors'']',
-            'analytic', 'xva', 'dimRegressors', 112, 'string', false,
+            'analytic', 'xva', 'dimRegressors', 126, 'string', false,
             null, null,
             null,
             null, null,
@@ -2625,7 +2947,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''collateralBalancesFile'']',
-            'analytic', 'xva', 'collateralBalancesFile', 113, 'string', false,
+            'analytic', 'xva', 'collateralBalancesFile', 127, 'string', false,
             null, null,
             null,
             null, null,
@@ -2648,11 +2970,11 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''useXvaRunner'']',
-            'analytic', 'xva', 'useXvaRunner', 114, 'boolean', false,
+            'analytic', 'xva', 'useXvaRunner', 128, 'boolean', false,
             null, null,
             null,
             null, null,
-            '1.8.6.0', null,
+            '1.8.6.0', '1.8.9.1',
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.useXvaRunner'
         );
     end if;
@@ -2671,7 +2993,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dynamicCredit'']',
-            'analytic', 'xva', 'dynamicCredit', 115, 'boolean', false,
+            'analytic', 'xva', 'dynamicCredit', 129, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2694,7 +3016,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaFundingCurve'']',
-            'analytic', 'xva', 'fvaFundingCurve', 116, 'string', false,
+            'analytic', 'xva', 'fvaFundingCurve', 130, 'string', false,
             null, null,
             null,
             null, null,
@@ -2717,7 +3039,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fvaInvestmentCurve'']',
-            'analytic', 'xva', 'fvaInvestmentCurve', 117, 'string', false,
+            'analytic', 'xva', 'fvaInvestmentCurve', 131, 'string', false,
             null, null,
             null,
             null, null,
@@ -2740,7 +3062,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''colvaSpread'']',
-            'analytic', 'xva', 'colvaSpread', 118, 'double', false,
+            'analytic', 'xva', 'colvaSpread', 132, 'double', false,
             null, null,
             null,
             null, null,
@@ -2763,7 +3085,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''eoniaFloor'']',
-            'analytic', 'xva', 'eoniaFloor', 119, 'boolean', false,
+            'analytic', 'xva', 'eoniaFloor', 133, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2786,11 +3108,11 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''hyperCube'']',
-            'analytic', 'xva', 'hyperCube', 120, 'boolean', false,
+            'analytic', 'xva', 'hyperCube', 134, 'boolean', false,
             null, null,
             null,
             null, null,
-            '1.8.0.7 or earlier', null,
+            '1.8.0.7 or earlier', '1.8.9.1',
             current_user, 'system.initial_load', 'Seed analytic parameter: xva.hyperCube'
         );
     end if;
@@ -2809,7 +3131,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigration'']',
-            'analytic', 'xva', 'creditMigration', 121, 'boolean', false,
+            'analytic', 'xva', 'creditMigration', 135, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2832,7 +3154,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationDistributionGrid'']',
-            'analytic', 'xva', 'creditMigrationDistributionGrid', 122, 'string', false,
+            'analytic', 'xva', 'creditMigrationDistributionGrid', 136, 'string', false,
             null, null,
             null,
             null, null,
@@ -2855,7 +3177,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationTimeSteps'']',
-            'analytic', 'xva', 'creditMigrationTimeSteps', 123, 'string', false,
+            'analytic', 'xva', 'creditMigrationTimeSteps', 137, 'string', false,
             null, null,
             null,
             null, null,
@@ -2878,7 +3200,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationConfig'']',
-            'analytic', 'xva', 'creditMigrationConfig', 124, 'string', false,
+            'analytic', 'xva', 'creditMigrationConfig', 138, 'string', false,
             null, null,
             null,
             null, null,
@@ -2901,7 +3223,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''creditMigrationOutputFiles'']',
-            'analytic', 'xva', 'creditMigrationOutputFiles', 125, 'string', false,
+            'analytic', 'xva', 'creditMigrationOutputFiles', 139, 'string', false,
             null, null,
             null,
             null, null,
@@ -2924,7 +3246,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewXVA'']',
-            'analytic', 'xva', 'flipViewXVA', 126, 'boolean', false,
+            'analytic', 'xva', 'flipViewXVA', 140, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -2947,7 +3269,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewBorrowingCurvePostfix'']',
-            'analytic', 'xva', 'flipViewBorrowingCurvePostfix', 127, 'string', false,
+            'analytic', 'xva', 'flipViewBorrowingCurvePostfix', 141, 'string', false,
             null, null,
             null,
             null, null,
@@ -2970,7 +3292,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''flipViewLendingCurvePostfix'']',
-            'analytic', 'xva', 'flipViewLendingCurvePostfix', 128, 'string', false,
+            'analytic', 'xva', 'flipViewLendingCurvePostfix', 142, 'string', false,
             null, null,
             null,
             null, null,
@@ -2993,7 +3315,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''timeAveragedNettedExposureOutputFile'']',
-            'analytic', 'xva', 'timeAveragedNettedExposureOutputFile', 129, 'string', false,
+            'analytic', 'xva', 'timeAveragedNettedExposureOutputFile', 143, 'string', false,
             null, null,
             null,
             null, null,
@@ -3016,7 +3338,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''firstMporCollateralAdjustment'']',
-            'analytic', 'xva', 'firstMporCollateralAdjustment', 130, 'boolean', false,
+            'analytic', 'xva', 'firstMporCollateralAdjustment', 144, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3039,7 +3361,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''outputCrossAssetModelData'']',
-            'analytic', 'xva', 'outputCrossAssetModelData', 131, 'boolean', false,
+            'analytic', 'xva', 'outputCrossAssetModelData', 145, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3062,7 +3384,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''correlationInputFile'']',
-            'analytic', 'xva', 'correlationInputFile', 132, 'string', false,
+            'analytic', 'xva', 'correlationInputFile', 146, 'string', false,
             null, null,
             null,
             null, null,
@@ -3085,7 +3407,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''scenarioCorrSimulation'']',
-            'analytic', 'xva', 'scenarioCorrSimulation', 133, 'string', false,
+            'analytic', 'xva', 'scenarioCorrSimulation', 147, 'string', false,
             null, null,
             null,
             null, null,
@@ -3108,7 +3430,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'xva', 'simulationConfigFile', 134, 'string', false,
+            'analytic', 'xva', 'simulationConfigFile', 148, 'string', false,
             null, null,
             null,
             null, null,
@@ -3131,7 +3453,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'xva', 'historicalScenarioFile', 135, 'string', false,
+            'analytic', 'xva', 'historicalScenarioFile', 149, 'string', false,
             null, null,
             null,
             null, null,
@@ -3154,7 +3476,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'xva', 'sensitivityConfigFile', 136, 'string', false,
+            'analytic', 'xva', 'sensitivityConfigFile', 150, 'string', false,
             null, null,
             null,
             null, null,
@@ -3177,7 +3499,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''historicalPeriod'']',
-            'analytic', 'xva', 'historicalPeriod', 137, 'string', false,
+            'analytic', 'xva', 'historicalPeriod', 151, 'string', false,
             null, null,
             null,
             null, null,
@@ -3200,7 +3522,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mporDays'']',
-            'analytic', 'xva', 'mporDays', 138, 'integer', false,
+            'analytic', 'xva', 'mporDays', 152, 'integer', false,
             null, null,
             null,
             null, null,
@@ -3223,7 +3545,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'xva', 'mporCalendar', 139, 'string', false,
+            'analytic', 'xva', 'mporCalendar', 153, 'string', false,
             null, null,
             null,
             null, null,
@@ -3246,7 +3568,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''deterministicInitialMarginFile'']',
-            'analytic', 'xva', 'deterministicInitialMarginFile', 140, 'string', false,
+            'analytic', 'xva', 'deterministicInitialMarginFile', 154, 'string', false,
             null, null,
             null,
             null, null,
@@ -3269,7 +3591,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''fullInitialCollateralisation'']',
-            'analytic', 'xva', 'fullInitialCollateralisation', 141, 'boolean', false,
+            'analytic', 'xva', 'fullInitialCollateralisation', 155, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3292,7 +3614,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionCoveredStdDevs'']',
-            'analytic', 'xva', 'dimDistributionCoveredStdDevs', 142, 'double', false,
+            'analytic', 'xva', 'dimDistributionCoveredStdDevs', 156, 'double', false,
             null, null,
             null,
             null, null,
@@ -3315,7 +3637,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''dimDistributionGridSize'']',
-            'analytic', 'xva', 'dimDistributionGridSize', 143, 'integer', false,
+            'analytic', 'xva', 'dimDistributionGridSize', 157, 'integer', false,
             null, null,
             null,
             null, null,
@@ -3338,7 +3660,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''borrowingCurve'']',
-            'analytic', 'xva', 'borrowingCurve', 144, 'string', false,
+            'analytic', 'xva', 'borrowingCurve', 158, 'string', false,
             null, null,
             null,
             null, null,
@@ -3361,7 +3683,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xva'']/Parameter[@name=''lendingCurve'']',
-            'analytic', 'xva', 'lendingCurve', 145, 'string', false,
+            'analytic', 'xva', 'lendingCurve', 159, 'string', false,
             null, null,
             null,
             null, null,
@@ -3384,7 +3706,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''active'']',
-            'analytic', 'xvaSensitivity', 'active', 146, 'boolean', false,
+            'analytic', 'xvaSensitivity', 'active', 160, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3407,7 +3729,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'xvaSensitivity', 'marketConfigFile', 147, 'string', false,
+            'analytic', 'xvaSensitivity', 'marketConfigFile', 161, 'string', false,
             null, null,
             null,
             null, null,
@@ -3430,7 +3752,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'xvaSensitivity', 'sensitivityConfigFile', 148, 'string', false,
+            'analytic', 'xvaSensitivity', 'sensitivityConfigFile', 162, 'string', false,
             null, null,
             null,
             null, null,
@@ -3453,7 +3775,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputSensitivityThreshold'']',
-            'analytic', 'xvaSensitivity', 'outputSensitivityThreshold', 149, 'double', false,
+            'analytic', 'xvaSensitivity', 'outputSensitivityThreshold', 163, 'double', false,
             null, null,
             null,
             null, null,
@@ -3476,7 +3798,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''parSensitivity'']',
-            'analytic', 'xvaSensitivity', 'parSensitivity', 150, 'boolean', false,
+            'analytic', 'xvaSensitivity', 'parSensitivity', 164, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3499,7 +3821,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''outputJacobi'']',
-            'analytic', 'xvaSensitivity', 'outputJacobi', 151, 'boolean', false,
+            'analytic', 'xvaSensitivity', 'outputJacobi', 165, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3522,7 +3844,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiOutputFile'']',
-            'analytic', 'xvaSensitivity', 'jacobiOutputFile', 152, 'string', false,
+            'analytic', 'xvaSensitivity', 'jacobiOutputFile', 166, 'string', false,
             null, null,
             null,
             null, null,
@@ -3545,7 +3867,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaSensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']',
-            'analytic', 'xvaSensitivity', 'jacobiInverseOutputFile', 153, 'string', false,
+            'analytic', 'xvaSensitivity', 'jacobiInverseOutputFile', 167, 'string', false,
             null, null,
             null,
             null, null,
@@ -3568,7 +3890,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''active'']',
-            'analytic', 'xvaExplain', 'active', 154, 'boolean', false,
+            'analytic', 'xvaExplain', 'active', 168, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3591,7 +3913,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'xvaExplain', 'marketConfigFile', 155, 'string', false,
+            'analytic', 'xvaExplain', 'marketConfigFile', 169, 'string', false,
             null, null,
             null,
             null, null,
@@ -3614,7 +3936,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'xvaExplain', 'sensitivityConfigFile', 156, 'string', false,
+            'analytic', 'xvaExplain', 'sensitivityConfigFile', 170, 'string', false,
             null, null,
             null,
             null, null,
@@ -3637,7 +3959,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''writeCubes'']',
-            'analytic', 'xvaExplain', 'writeCubes', 157, 'boolean', false,
+            'analytic', 'xvaExplain', 'writeCubes', 171, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3660,7 +3982,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''shiftThreshold'']',
-            'analytic', 'xvaExplain', 'shiftThreshold', 158, 'double', false,
+            'analytic', 'xvaExplain', 'shiftThreshold', 172, 'double', false,
             null, null,
             null,
             null, null,
@@ -3683,7 +4005,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporDays'']',
-            'analytic', 'xvaExplain', 'mporDays', 159, 'integer', false,
+            'analytic', 'xvaExplain', 'mporDays', 173, 'integer', false,
             null, null,
             null,
             null, null,
@@ -3706,7 +4028,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'xvaExplain', 'mporCalendar', 160, 'string', false,
+            'analytic', 'xvaExplain', 'mporCalendar', 174, 'string', false,
             null, null,
             null,
             null, null,
@@ -3729,7 +4051,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaExplain'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'xvaExplain', 'stressConfigFile', 161, 'string', false,
+            'analytic', 'xvaExplain', 'stressConfigFile', 175, 'string', false,
             null, null,
             null,
             null, null,
@@ -3752,7 +4074,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''active'']',
-            'analytic', 'bacva', 'active', 162, 'boolean', false,
+            'analytic', 'bacva', 'active', 176, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3775,7 +4097,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''simmVersion'']',
-            'analytic', 'bacva', 'simmVersion', 163, 'double', false,
+            'analytic', 'bacva', 'simmVersion', 177, 'double', false,
             null, null,
             null,
             null, null,
@@ -3798,7 +4120,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''csaFile'']',
-            'analytic', 'bacva', 'csaFile', 164, 'string', false,
+            'analytic', 'bacva', 'csaFile', 178, 'string', false,
             null, null,
             null,
             null, null,
@@ -3821,7 +4143,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''bacva'']/Parameter[@name=''collateralBalancesFile'']',
-            'analytic', 'bacva', 'collateralBalancesFile', 165, 'string', false,
+            'analytic', 'bacva', 'collateralBalancesFile', 179, 'string', false,
             null, null,
             null,
             null, null,
@@ -3844,7 +4166,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''active'']',
-            'analytic', 'xvaStress', 'active', 166, 'boolean', false,
+            'analytic', 'xvaStress', 'active', 180, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3867,7 +4189,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'xvaStress', 'marketConfigFile', 167, 'string', false,
+            'analytic', 'xvaStress', 'marketConfigFile', 181, 'string', false,
             null, null,
             null,
             null, null,
@@ -3890,7 +4212,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'xvaStress', 'stressConfigFile', 168, 'string', false,
+            'analytic', 'xvaStress', 'stressConfigFile', 182, 'string', false,
             null, null,
             null,
             null, null,
@@ -3913,7 +4235,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''writeCubes'']',
-            'analytic', 'xvaStress', 'writeCubes', 169, 'boolean', false,
+            'analytic', 'xvaStress', 'writeCubes', 183, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3936,7 +4258,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''xvaStress'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'xvaStress', 'sensitivityConfigFile', 170, 'string', false,
+            'analytic', 'xvaStress', 'sensitivityConfigFile', 184, 'string', false,
             null, null,
             null,
             null, null,
@@ -3959,7 +4281,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sacva'']/Parameter[@name=''active'']',
-            'analytic', 'sacva', 'active', 171, 'boolean', false,
+            'analytic', 'sacva', 'active', 185, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -3982,7 +4304,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''active'']',
-            'analytic', 'zeroToParShift', 'active', 172, 'boolean', false,
+            'analytic', 'zeroToParShift', 'active', 186, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4005,7 +4327,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'zeroToParShift', 'marketConfigFile', 173, 'string', false,
+            'analytic', 'zeroToParShift', 'marketConfigFile', 187, 'string', false,
             null, null,
             null,
             null, null,
@@ -4028,7 +4350,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'zeroToParShift', 'stressConfigFile', 174, 'string', false,
+            'analytic', 'zeroToParShift', 'stressConfigFile', 188, 'string', false,
             null, null,
             null,
             null, null,
@@ -4051,7 +4373,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'zeroToParShift', 'sensitivityConfigFile', 175, 'string', false,
+            'analytic', 'zeroToParShift', 'sensitivityConfigFile', 189, 'string', false,
             null, null,
             null,
             null, null,
@@ -4074,7 +4396,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'zeroToParShift', 'pricingEnginesFile', 176, 'string', false,
+            'analytic', 'zeroToParShift', 'pricingEnginesFile', 190, 'string', false,
             null, null,
             null,
             null, null,
@@ -4097,7 +4419,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'zeroToParShift', 'scenarioOutputFile', 177, 'string', false,
+            'analytic', 'zeroToParShift', 'scenarioOutputFile', 191, 'string', false,
             null, null,
             null,
             null, null,
@@ -4120,7 +4442,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParShift'']/Parameter[@name=''parShiftsFile'']',
-            'analytic', 'zeroToParShift', 'parShiftsFile', 178, 'string', false,
+            'analytic', 'zeroToParShift', 'parShiftsFile', 192, 'string', false,
             null, null,
             null,
             null, null,
@@ -4143,7 +4465,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''additionalResults'']/Parameter[@name=''active'']',
-            'analytic', 'additionalResults', 'active', 179, 'boolean', true,
+            'analytic', 'additionalResults', 'active', 193, 'boolean', true,
             'Run the additional results analytic', 'A flag. Y runs the analytic.',
             'Switches the additional results analytic on or off. When it is on, the run writes a report with the results that the pricing engines compute besides the NPV, for example the annuity, the forward rate and the standard deviation of a swaption. What a trade returns depends on its pricing engine. Use it to check how an engine reached an NPV.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -4166,7 +4488,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''additionalResults'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'additionalResults', 'outputFileName', 180, 'string', false,
+            'analytic', 'additionalResults', 'outputFileName', 194, 'string', false,
             'Additional results report file', 'A file name.',
             'Is meant to name the file that holds the additional results. ORE does not read it. The report always has the name additional_results.csv, whatever this parameter says, and has one row for each result of each trade with the trade, the name of the result, its type and its value. Example files carry the parameter.',
             'additional_results.csv. ORE ignores the parameter, so the name is always this one.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
@@ -4189,7 +4511,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''additionalResults'']/Parameter[@name=''additionalResultsReportPrecision'']',
-            'analytic', 'additionalResults', 'additionalResultsReportPrecision', 181, 'integer', false,
+            'analytic', 'additionalResults', 'additionalResultsReportPrecision', 195, 'integer', false,
             'Additional results precision', 'A whole number of decimal places.',
             'Sets the number of decimal places of the numbers in the additional results report. A higher value shows more of each result and makes the file larger. For example, 12 writes a result such as 0.016641350123. ORE reads this parameter first. The NPV analytic has a parameter of the same name that ORE reads only when this one is missing.',
             '6', 'A whole number of zero or more.',
@@ -4212,7 +4534,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''active'']',
-            'analytic', 'sensitivity', 'active', 182, 'boolean', false,
+            'analytic', 'sensitivity', 'active', 196, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4235,7 +4557,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'sensitivity', 'marketConfigFile', 183, 'string', false,
+            'analytic', 'sensitivity', 'marketConfigFile', 197, 'string', false,
             null, null,
             null,
             null, null,
@@ -4258,7 +4580,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'sensitivity', 'sensitivityConfigFile', 184, 'string', false,
+            'analytic', 'sensitivity', 'sensitivityConfigFile', 198, 'string', false,
             null, null,
             null,
             null, null,
@@ -4281,7 +4603,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'sensitivity', 'pricingEnginesFile', 185, 'string', false,
+            'analytic', 'sensitivity', 'pricingEnginesFile', 199, 'string', false,
             null, null,
             null,
             null, null,
@@ -4304,7 +4626,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'sensitivity', 'scenarioOutputFile', 186, 'string', false,
+            'analytic', 'sensitivity', 'scenarioOutputFile', 200, 'string', false,
             null, null,
             null,
             null, null,
@@ -4327,7 +4649,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''sensitivityOutputFile'']',
-            'analytic', 'sensitivity', 'sensitivityOutputFile', 187, 'string', false,
+            'analytic', 'sensitivity', 'sensitivityOutputFile', 201, 'string', false,
             null, null,
             null,
             null, null,
@@ -4350,11 +4672,11 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''crossGammaOutputFile'']',
-            'analytic', 'sensitivity', 'crossGammaOutputFile', 188, 'string', false,
+            'analytic', 'sensitivity', 'crossGammaOutputFile', 202, 'string', false,
             null, null,
             null,
             null, null,
-            '1.8.2.0', null,
+            '1.8.2.0', '1.8.4.0',
             current_user, 'system.initial_load', 'Seed analytic parameter: sensitivity.crossGammaOutputFile'
         );
     end if;
@@ -4373,7 +4695,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputSensitivityThreshold'']',
-            'analytic', 'sensitivity', 'outputSensitivityThreshold', 189, 'double', false,
+            'analytic', 'sensitivity', 'outputSensitivityThreshold', 203, 'double', false,
             null, null,
             null,
             null, null,
@@ -4396,7 +4718,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''recalibrateModels'']',
-            'analytic', 'sensitivity', 'recalibrateModels', 190, 'boolean', false,
+            'analytic', 'sensitivity', 'recalibrateModels', 204, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4419,7 +4741,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''applySimmExemptions'']',
-            'analytic', 'sensitivity', 'applySimmExemptions', 191, 'boolean', false,
+            'analytic', 'sensitivity', 'applySimmExemptions', 205, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4442,7 +4764,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputProductClassMapping'']',
-            'analytic', 'sensitivity', 'outputProductClassMapping', 192, 'boolean', false,
+            'analytic', 'sensitivity', 'outputProductClassMapping', 206, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4465,7 +4787,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''productClassMappingOutputFile'']',
-            'analytic', 'sensitivity', 'productClassMappingOutputFile', 193, 'string', false,
+            'analytic', 'sensitivity', 'productClassMappingOutputFile', 207, 'string', false,
             null, null,
             null,
             null, null,
@@ -4488,7 +4810,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivity'']',
-            'analytic', 'sensitivity', 'parSensitivity', 194, 'boolean', false,
+            'analytic', 'sensitivity', 'parSensitivity', 208, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4511,7 +4833,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parSensitivityOutputFile'']',
-            'analytic', 'sensitivity', 'parSensitivityOutputFile', 195, 'string', false,
+            'analytic', 'sensitivity', 'parSensitivityOutputFile', 209, 'string', false,
             null, null,
             null,
             null, null,
@@ -4534,7 +4856,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''outputJacobi'']',
-            'analytic', 'sensitivity', 'outputJacobi', 196, 'boolean', false,
+            'analytic', 'sensitivity', 'outputJacobi', 210, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4557,7 +4879,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiOutputFile'']',
-            'analytic', 'sensitivity', 'jacobiOutputFile', 197, 'string', false,
+            'analytic', 'sensitivity', 'jacobiOutputFile', 211, 'string', false,
             null, null,
             null,
             null, null,
@@ -4580,7 +4902,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''jacobiInverseOutputFile'']',
-            'analytic', 'sensitivity', 'jacobiInverseOutputFile', 198, 'string', false,
+            'analytic', 'sensitivity', 'jacobiInverseOutputFile', 212, 'string', false,
             null, null,
             null,
             null, null,
@@ -4603,7 +4925,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''parRateSensitivityOutputFile'']',
-            'analytic', 'sensitivity', 'parRateSensitivityOutputFile', 199, 'string', false,
+            'analytic', 'sensitivity', 'parRateSensitivityOutputFile', 213, 'string', false,
             null, null,
             null,
             null, null,
@@ -4626,7 +4948,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''optimiseRiskFactors'']',
-            'analytic', 'sensitivity', 'optimiseRiskFactors', 200, 'boolean', false,
+            'analytic', 'sensitivity', 'optimiseRiskFactors', 214, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4649,7 +4971,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''laxFxConversion'']',
-            'analytic', 'sensitivity', 'laxFxConversion', 201, 'boolean', false,
+            'analytic', 'sensitivity', 'laxFxConversion', 215, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4672,7 +4994,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''decomposeIndexSensitivities'']',
-            'analytic', 'sensitivity', 'decomposeIndexSensitivities', 202, 'boolean', false,
+            'analytic', 'sensitivity', 'decomposeIndexSensitivities', 216, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4695,7 +5017,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivity'']/Parameter[@name=''alignPillars'']',
-            'analytic', 'sensitivity', 'alignPillars', 203, 'boolean', false,
+            'analytic', 'sensitivity', 'alignPillars', 217, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -4718,10 +5040,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''active'']',
-            'analytic', 'calibration', 'active', 204, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'active', 218, 'boolean', true,
+            'Run the calibration', 'A flag. Y runs the calibration.',
+            'Switches the model calibration on or off. When it is on, the run calibrates the simulation model and writes the calibrated model data, so that a later simulation can start from it without a new calibration. The calibration runs a part of what the simulation does.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.active'
         );
@@ -4741,10 +5063,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''configFile'']',
-            'analytic', 'calibration', 'configFile', 205, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'configFile', 219, 'string', false,
+            'Model configuration file', 'A file name.',
+            'Names the XML file with the cross asset model data to calibrate: the currencies, the model parametrisations and the calibration instruments. This is usually the simulation configuration file. The output of the run replaces the initial values in this data with the calibrated values. For example, simulation.xml. ORE uses the file only for the CAM model.',
+            'None. A CAM calibration needs this file, or the parameter Cross asset model file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.configFile'
         );
@@ -4764,10 +5086,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''outputFile'']',
-            'analytic', 'calibration', 'outputFile', 206, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'outputFile', 220, 'string', false,
+            'Calibration report file', 'A file name.',
+            'Names the file of the calibration report. The report holds the calibrated cross asset model as one XML string. The run also writes the model data to calibration.xml in the output path, and you can paste its model section into the simulation configuration file to run without a calibration. For example, calibration.csv.',
+            'calibration.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.outputFile'
         );
@@ -4787,10 +5109,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''model'']',
-            'analytic', 'calibration', 'model', 207, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'model', 221, 'string', false,
+            'Calibration model', 'CAM or HW.',
+            'Selects the model to calibrate. CAM is the cross asset model of the simulation, calibrated to market instruments. HW is the Hull-White model, calibrated to historical data. The HW parameters of this analytic have an effect only for HW.',
+            'CAM', 'CAM or HW.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.model'
         );
@@ -4810,10 +5132,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''mode'']',
-            'analytic', 'calibration', 'mode', 208, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'mode', 222, 'string', false,
+            'HW calibration mode', 'historical',
+            'Selects how ORE calibrates the Hull-White model. Only historical is supported: ORE fits the model to historical discount factors and rates. The mode riskNeutral is a stub that does nothing in release 1.8.17.0. ORE uses it only when the model is HW and the mode is historical.',
+            'None. With the HW model the parameter is needed.', 'historical',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.mode'
         );
@@ -4833,10 +5155,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''foreignCurrencies'']',
-            'analytic', 'calibration', 'foreignCurrencies', 209, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'foreignCurrencies', 223, 'string', false,
+            'Foreign currencies', 'A comma-separated list of currency codes.',
+            'Lists the foreign currencies that the calibration covers, besides the base currency. For example, EUR,GBP calibrates the model for euro and sterling. ORE uses it only when the model is HW and the mode is historical.',
+            'None. The calibration covers the base currency only.', 'A comma-separated list of currency codes.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.foreignCurrencies'
         );
@@ -4856,10 +5178,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaCalibration'']',
-            'analytic', 'calibration', 'pcaCalibration', 210, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'pcaCalibration', 224, 'boolean', false,
+            'PCA calibration', 'A flag. Y runs the principal component analysis.',
+            'Decides whether ORE reads the historical discount factors and runs a principal component analysis (PCA) to find the factors of the interest rate curves. Switch it off to supply the eigenvectors from files, with PCA input files. ORE uses it only when the model is HW and the mode is historical.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaCalibration'
         );
@@ -4879,10 +5201,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''curveTenors'']',
-            'analytic', 'calibration', 'curveTenors', 211, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'curveTenors', 225, 'string', false,
+            'Curve tenors', 'A comma-separated list of periods.',
+            'Lists the tenors of each interest rate curve. They are the points of the historical discount factors, and the points of each eigenvector in the files that give them. For example, 1Y,2Y,3Y,5Y,10Y,15Y,20Y,30Y. ORE uses it only when the model is HW and the mode is historical. The run stops if the list is missing.',
+            'None. The parameter is mandatory.', 'A comma-separated list of periods such as 1Y,5Y.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.curveTenors'
         );
@@ -4902,10 +5224,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''useForwardOrZeroRate'']',
-            'analytic', 'calibration', 'useForwardOrZeroRate', 212, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'useForwardOrZeroRate', 226, 'string', false,
+            'Zero or forward rates', 'zero or forward.',
+            'Selects the rates of the calibration. With PCA calibration on, it says whether the covariance matrix comes from changes in zero rates or in forward rates. With PCA calibration off, it says how ORE reads the eigenvectors of the input files for the mean reversion calibration. The run stops if the value is neither zero nor forward. ORE uses it only when the model is HW and the mode is historical.',
+            'None. The parameter is needed.', 'zero or forward.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.useForwardOrZeroRate'
         );
@@ -4925,10 +5247,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaInputFileName'']',
-            'analytic', 'calibration', 'pcaInputFileName', 213, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'pcaInputFileName', 227, 'string', false,
+            'PCA input files', 'A comma-separated list of file names.',
+            'Lists the files with the eigenvalues and eigenvectors for the mean reversion calibration, one curve for each file. Use it when PCA calibration is off. For example, pca_USD.csv,pca_EUR.csv,pca_GBP.csv. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            'None.', 'A comma-separated list of file names.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaInputFileName'
         );
@@ -4948,10 +5270,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''meanReversionCalibration'']',
-            'analytic', 'calibration', 'meanReversionCalibration', 214, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'meanReversionCalibration', 228, 'boolean', false,
+            'Mean reversion calibration', 'A flag. Y calibrates the mean reversion.',
+            'Decides whether ORE calibrates the mean reversion of the principal components that it keeps. The components come from the PCA step or from the PCA input files. ORE uses it only when the model is HW and the mode is historical.',
+            'No.', 'A flag, written Y or N, or true or false.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.meanReversionCalibration'
         );
@@ -4971,10 +5293,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''basisFunctionNumber'']',
-            'analytic', 'calibration', 'basisFunctionNumber', 215, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'basisFunctionNumber', 229, 'integer', false,
+            'Number of basis functions', 'A whole number.',
+            'Sets the number of basis functions in the mean reversion calibration. For example, 2. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            '0. A run with mean reversion calibration needs a value.', 'A whole number of zero or more.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.basisFunctionNumber'
         );
@@ -4994,10 +5316,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''kappaUpperBound'']',
-            'analytic', 'calibration', 'kappaUpperBound', 216, 'double', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'kappaUpperBound', 230, 'double', false,
+            'Upper bound of kappa', 'A number.',
+            'Sets the upper bound of the mean reversion speed (kappa) in the mean reversion calibration. For example, 5.0. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            '0. A run with mean reversion calibration needs a value.', 'A number, written with a decimal point.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.kappaUpperBound'
         );
@@ -5017,10 +5339,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''haltonMaxGuess'']',
-            'analytic', 'calibration', 'haltonMaxGuess', 217, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'haltonMaxGuess', 231, 'integer', false,
+            'Maximum number of guesses', 'A whole number.',
+            'Sets the largest number of starting points that the optimisation of the mean reversion calibration tries. The points come from a Halton sequence. A higher number can find a better fit and takes longer. For example, 500. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            '0. A run with mean reversion calibration needs a value.', 'A whole number of zero or more.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.haltonMaxGuess'
         );
@@ -5040,10 +5362,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''meanReversionOutputFileName'']',
-            'analytic', 'calibration', 'meanReversionOutputFileName', 218, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'meanReversionOutputFileName', 232, 'string', false,
+            'Mean reversion output file', 'A file name.',
+            'Names the file that receives the calibrated mean reversion speed (kappa) and the volatility (v) of each curve. ORE writes it in the output path. For example, meanReversion.csv. ORE uses it only for the HW model with historical mode and mean reversion calibration on.',
+            'None. ORE does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.meanReversionOutputFileName'
         );
@@ -5063,10 +5385,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''scenarioInputFile'']',
-            'analytic', 'calibration', 'scenarioInputFile', 219, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'scenarioInputFile', 233, 'string', false,
+            'Historical scenario file', 'A file name.',
+            'Names the file with the historical discount factors and FX spot rates. The file must be in the scenario.csv format of ORE. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the file is missing.',
+            'None. The parameter is mandatory.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.scenarioInputFile'
         );
@@ -5086,10 +5408,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''startDate'']',
-            'analytic', 'calibration', 'startDate', 220, 'date', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'startDate', 234, 'date', false,
+            'History start date', 'A date.',
+            'Sets the first date of the historical data that the calibration uses. For example, 2019-09-29. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
+            'None. The parameter is mandatory.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
             '1.8.13.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.startDate'
         );
@@ -5109,10 +5431,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''endDate'']',
-            'analytic', 'calibration', 'endDate', 221, 'date', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'endDate', 235, 'date', false,
+            'History end date', 'A date.',
+            'Sets the last date of the historical data that the calibration uses. For example, 2022-09-27. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the date is missing.',
+            'None. The parameter is mandatory.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.endDate'
         );
@@ -5132,10 +5454,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''lambda'']',
-            'analytic', 'calibration', 'lambda', 222, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'lambda', 236, 'double', false,
+            'Decay factor', 'A number between 0 and 1.',
+            'Sets the weight decay of the exponentially weighted differences in the historical rates, when ORE computes the covariance matrix. A value of 1 gives all dates the same weight. A smaller value puts more weight on recent dates. ORE uses it only for the HW model with historical mode and PCA calibration on.',
+            '1. All dates have the same weight.', 'A number, written with a decimal point.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.lambda'
         );
@@ -5155,10 +5477,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''varianceRetained'']',
-            'analytic', 'calibration', 'varianceRetained', 223, 'double', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'varianceRetained', 237, 'double', false,
+            'Variance retained', 'A number above 0 and up to 1.',
+            'Sets the share of the total variance that the retained principal components must explain. It decides how many principal components ORE keeps. For example, 0.90 keeps as many components as needed to explain 90 percent of the variance. ORE uses it only for the HW model with historical mode and PCA calibration on. The run stops if the value is missing, zero or above 1.',
+            'None. The parameter is mandatory.', 'A number, written with a decimal point.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.varianceRetained'
         );
@@ -5178,12 +5500,58 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pcaOutputFileName'']',
-            'analytic', 'calibration', 'pcaOutputFileName', 224, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'calibration', 'pcaOutputFileName', 238, 'string', false,
+            'PCA output file', 'A file name.',
+            'Names the file that receives the eigenvalues and eigenvectors that ORE retains for each currency. ORE writes it in the output path. For example, pca.csv. ORE uses it only for the HW model with historical mode and PCA calibration on.',
+            'None. ORE does not write the file.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.15.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pcaOutputFileName'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'calibration' and name = 'pricingEnginesFile'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''pricingEnginesFile'']',
+            'analytic', 'calibration', 'pricingEnginesFile', 239, 'string', false,
+            'Pricing engines file for the calibration', 'A file name.',
+            'Names the XML file that sets the pricing engines for the calibration instruments, for example the swaptions that the model is calibrated to. For example, pricingengine.xml.',
+            'The pricing engines file of the Setup block.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.13.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: calibration.pricingEnginesFile'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'calibration' and name = 'crossAssetModelData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''calibration'']/Parameter[@name=''crossAssetModelData'']',
+            'analytic', 'calibration', 'crossAssetModelData', 240, 'string', false,
+            'Cross asset model file', 'A file name.',
+            'Names the XML file with the cross asset model data, if it sits in another file than the model configuration file. When it is set, ORE reads the model data from this file and not from the configuration file.',
+            'The model configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: calibration.crossAssetModelData'
         );
     end if;
 
@@ -5201,7 +5569,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''active'']',
-            'analytic', 'initialMargin', 'active', 225, 'boolean', false,
+            'analytic', 'initialMargin', 'active', 241, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5224,7 +5592,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''initialMargin'']/Parameter[@name=''method'']',
-            'analytic', 'initialMargin', 'method', 226, 'string', false,
+            'analytic', 'initialMargin', 'method', 242, 'string', false,
             null, null,
             null,
             null, null,
@@ -5247,7 +5615,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''active'']',
-            'analytic', 'zeroToParSensiConversion', 'active', 227, 'boolean', false,
+            'analytic', 'zeroToParSensiConversion', 'active', 243, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5270,7 +5638,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'zeroToParSensiConversion', 'marketConfigFile', 228, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'marketConfigFile', 244, 'string', false,
             null, null,
             null,
             null, null,
@@ -5293,7 +5661,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'zeroToParSensiConversion', 'sensitivityConfigFile', 229, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'sensitivityConfigFile', 245, 'string', false,
             null, null,
             null,
             null, null,
@@ -5316,7 +5684,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'zeroToParSensiConversion', 'pricingEnginesFile', 230, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'pricingEnginesFile', 246, 'string', false,
             null, null,
             null,
             null, null,
@@ -5339,7 +5707,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''sensitivityInputFile'']',
-            'analytic', 'zeroToParSensiConversion', 'sensitivityInputFile', 231, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'sensitivityInputFile', 247, 'string', false,
             null, null,
             null,
             null, null,
@@ -5362,7 +5730,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputThreshold'']',
-            'analytic', 'zeroToParSensiConversion', 'outputThreshold', 232, 'double', false,
+            'analytic', 'zeroToParSensiConversion', 'outputThreshold', 248, 'double', false,
             null, null,
             null,
             null, null,
@@ -5385,7 +5753,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputFile'']',
-            'analytic', 'zeroToParSensiConversion', 'outputFile', 233, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'outputFile', 249, 'string', false,
             null, null,
             null,
             null, null,
@@ -5408,7 +5776,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''outputJacobi'']',
-            'analytic', 'zeroToParSensiConversion', 'outputJacobi', 234, 'boolean', false,
+            'analytic', 'zeroToParSensiConversion', 'outputJacobi', 250, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5431,7 +5799,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiOutputFile'']',
-            'analytic', 'zeroToParSensiConversion', 'jacobiOutputFile', 235, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'jacobiOutputFile', 251, 'string', false,
             null, null,
             null,
             null, null,
@@ -5454,7 +5822,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''zeroToParSensiConversion'']/Parameter[@name=''jacobiInverseOutputFile'']',
-            'analytic', 'zeroToParSensiConversion', 'jacobiInverseOutputFile', 236, 'string', false,
+            'analytic', 'zeroToParSensiConversion', 'jacobiInverseOutputFile', 252, 'string', false,
             null, null,
             null,
             null, null,
@@ -5477,7 +5845,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''active'']',
-            'analytic', 'saccr', 'active', 237, 'boolean', false,
+            'analytic', 'saccr', 'active', 253, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5500,7 +5868,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''csaFile'']',
-            'analytic', 'saccr', 'csaFile', 238, 'string', false,
+            'analytic', 'saccr', 'csaFile', 254, 'string', false,
             null, null,
             null,
             null, null,
@@ -5523,7 +5891,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''collateralBalancesFile'']',
-            'analytic', 'saccr', 'collateralBalancesFile', 239, 'string', false,
+            'analytic', 'saccr', 'collateralBalancesFile', 255, 'string', false,
             null, null,
             null,
             null, null,
@@ -5546,7 +5914,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''saccr'']/Parameter[@name=''simmVersion'']',
-            'analytic', 'saccr', 'simmVersion', 240, 'double', false,
+            'analytic', 'saccr', 'simmVersion', 256, 'double', false,
             null, null,
             null,
             null, null,
@@ -5569,7 +5937,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''smrc'']/Parameter[@name=''active'']',
-            'analytic', 'smrc', 'active', 241, 'boolean', false,
+            'analytic', 'smrc', 'active', 257, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5592,7 +5960,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''active'']',
-            'analytic', 'portfolioDetails', 'active', 242, 'boolean', false,
+            'analytic', 'portfolioDetails', 'active', 258, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5615,7 +5983,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''riskFactorFileName'']',
-            'analytic', 'portfolioDetails', 'riskFactorFileName', 243, 'string', false,
+            'analytic', 'portfolioDetails', 'riskFactorFileName', 259, 'string', false,
             null, null,
             null,
             null, null,
@@ -5638,7 +6006,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''portfolioDetails'']/Parameter[@name=''marketObjectFileName'']',
-            'analytic', 'portfolioDetails', 'marketObjectFileName', 244, 'string', false,
+            'analytic', 'portfolioDetails', 'marketObjectFileName', 260, 'string', false,
             null, null,
             null,
             null, null,
@@ -5661,7 +6029,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''active'']',
-            'analytic', 'stress', 'active', 245, 'boolean', false,
+            'analytic', 'stress', 'active', 261, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5684,7 +6052,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''precision'']',
-            'analytic', 'stress', 'precision', 246, 'integer', false,
+            'analytic', 'stress', 'precision', 262, 'integer', false,
             null, null,
             null,
             null, null,
@@ -5707,7 +6075,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'stress', 'marketConfigFile', 247, 'string', false,
+            'analytic', 'stress', 'marketConfigFile', 263, 'string', false,
             null, null,
             null,
             null, null,
@@ -5730,7 +6098,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'stress', 'stressConfigFile', 248, 'string', false,
+            'analytic', 'stress', 'stressConfigFile', 264, 'string', false,
             null, null,
             null,
             null, null,
@@ -5753,7 +6121,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'stress', 'pricingEnginesFile', 249, 'string', false,
+            'analytic', 'stress', 'pricingEnginesFile', 265, 'string', false,
             null, null,
             null,
             null, null,
@@ -5776,7 +6144,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'stress', 'scenarioOutputFile', 250, 'string', false,
+            'analytic', 'stress', 'scenarioOutputFile', 266, 'string', false,
             null, null,
             null,
             null, null,
@@ -5799,7 +6167,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''outputThreshold'']',
-            'analytic', 'stress', 'outputThreshold', 251, 'double', false,
+            'analytic', 'stress', 'outputThreshold', 267, 'double', false,
             null, null,
             null,
             null, null,
@@ -5822,7 +6190,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''generateCashflows'']',
-            'analytic', 'stress', 'generateCashflows', 252, 'boolean', false,
+            'analytic', 'stress', 'generateCashflows', 268, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5845,7 +6213,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioCashflowOutputFile'']',
-            'analytic', 'stress', 'scenarioCashflowOutputFile', 253, 'string', false,
+            'analytic', 'stress', 'scenarioCashflowOutputFile', 269, 'string', false,
             null, null,
             null,
             null, null,
@@ -5868,7 +6236,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'stress', 'sensitivityConfigFile', 254, 'string', false,
+            'analytic', 'stress', 'sensitivityConfigFile', 270, 'string', false,
             null, null,
             null,
             null, null,
@@ -5891,7 +6259,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''stressZeroScenarioDataFile'']',
-            'analytic', 'stress', 'stressZeroScenarioDataFile', 255, 'string', false,
+            'analytic', 'stress', 'stressZeroScenarioDataFile', 271, 'string', false,
             null, null,
             null,
             null, null,
@@ -5914,7 +6282,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''stress'']/Parameter[@name=''scenarioFile'']',
-            'analytic', 'stress', 'scenarioFile', 256, 'string', false,
+            'analytic', 'stress', 'scenarioFile', 272, 'string', false,
             null, null,
             null,
             null, null,
@@ -5937,7 +6305,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''active'']',
-            'analytic', 'parametricVar', 'active', 257, 'boolean', false,
+            'analytic', 'parametricVar', 'active', 273, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -5960,7 +6328,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''sensitivityInputFile'']',
-            'analytic', 'parametricVar', 'sensitivityInputFile', 258, 'string', false,
+            'analytic', 'parametricVar', 'sensitivityInputFile', 274, 'string', false,
             null, null,
             null,
             null, null,
@@ -5983,7 +6351,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''covarianceInputFile'']',
-            'analytic', 'parametricVar', 'covarianceInputFile', 259, 'string', false,
+            'analytic', 'parametricVar', 'covarianceInputFile', 275, 'string', false,
             null, null,
             null,
             null, null,
@@ -6006,7 +6374,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''quantiles'']',
-            'analytic', 'parametricVar', 'quantiles', 260, 'string', false,
+            'analytic', 'parametricVar', 'quantiles', 276, 'string', false,
             null, null,
             null,
             null, null,
@@ -6029,7 +6397,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''breakdown'']',
-            'analytic', 'parametricVar', 'breakdown', 261, 'boolean', false,
+            'analytic', 'parametricVar', 'breakdown', 277, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6052,7 +6420,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''portfolioFilter'']',
-            'analytic', 'parametricVar', 'portfolioFilter', 262, 'string', false,
+            'analytic', 'parametricVar', 'portfolioFilter', 278, 'string', false,
             null, null,
             null,
             null, null,
@@ -6075,7 +6443,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''method'']',
-            'analytic', 'parametricVar', 'method', 263, 'string', false,
+            'analytic', 'parametricVar', 'method', 279, 'string', false,
             null, null,
             null,
             null, null,
@@ -6098,7 +6466,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parametricVar'']/Parameter[@name=''outputFile'']',
-            'analytic', 'parametricVar', 'outputFile', 264, 'string', false,
+            'analytic', 'parametricVar', 'outputFile', 280, 'string', false,
             null, null,
             null,
             null, null,
@@ -6121,7 +6489,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''active'']',
-            'analytic', 'simm', 'active', 265, 'boolean', false,
+            'analytic', 'simm', 'active', 281, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6144,7 +6512,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''version'']',
-            'analytic', 'simm', 'version', 266, 'string', false,
+            'analytic', 'simm', 'version', 282, 'string', false,
             null, null,
             null,
             null, null,
@@ -6167,7 +6535,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''crif'']',
-            'analytic', 'simm', 'crif', 267, 'string', false,
+            'analytic', 'simm', 'crif', 283, 'string', false,
             null, null,
             null,
             null, null,
@@ -6190,7 +6558,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''calculationCurrency'']',
-            'analytic', 'simm', 'calculationCurrency', 268, 'string', false,
+            'analytic', 'simm', 'calculationCurrency', 284, 'string', false,
             null, null,
             null,
             null, null,
@@ -6213,7 +6581,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''enforceIMRegulations'']',
-            'analytic', 'simm', 'enforceIMRegulations', 269, 'boolean', false,
+            'analytic', 'simm', 'enforceIMRegulations', 285, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6236,7 +6604,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''mporDays'']',
-            'analytic', 'simm', 'mporDays', 270, 'integer', false,
+            'analytic', 'simm', 'mporDays', 286, 'integer', false,
             null, null,
             null,
             null, null,
@@ -6259,7 +6627,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''simmCalibration'']',
-            'analytic', 'simm', 'simmCalibration', 271, 'string', false,
+            'analytic', 'simm', 'simmCalibration', 287, 'string', false,
             null, null,
             null,
             null, null,
@@ -6282,7 +6650,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''simm'']/Parameter[@name=''writeIntermediateReports'']',
-            'analytic', 'simm', 'writeIntermediateReports', 272, 'boolean', false,
+            'analytic', 'simm', 'writeIntermediateReports', 288, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6305,7 +6673,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''active'']',
-            'analytic', 'imschedule', 'active', 273, 'boolean', false,
+            'analytic', 'imschedule', 'active', 289, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6328,7 +6696,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''crif'']',
-            'analytic', 'imschedule', 'crif', 274, 'string', false,
+            'analytic', 'imschedule', 'crif', 290, 'string', false,
             null, null,
             null,
             null, null,
@@ -6351,7 +6719,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''calculationCurrency'']',
-            'analytic', 'imschedule', 'calculationCurrency', 275, 'string', false,
+            'analytic', 'imschedule', 'calculationCurrency', 291, 'string', false,
             null, null,
             null,
             null, null,
@@ -6374,7 +6742,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''imschedule'']/Parameter[@name=''version'']',
-            'analytic', 'imschedule', 'version', 276, 'double', false,
+            'analytic', 'imschedule', 'version', 292, 'double', false,
             null, null,
             null,
             null, null,
@@ -6397,7 +6765,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''active'']',
-            'analytic', 'creditcurves', 'active', 277, 'boolean', false,
+            'analytic', 'creditcurves', 'active', 293, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6420,7 +6788,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''configuration'']',
-            'analytic', 'creditcurves', 'configuration', 278, 'string', false,
+            'analytic', 'creditcurves', 'configuration', 294, 'string', false,
             null, null,
             null,
             null, null,
@@ -6443,7 +6811,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''grid'']',
-            'analytic', 'creditcurves', 'grid', 279, 'string', false,
+            'analytic', 'creditcurves', 'grid', 295, 'string', false,
             null, null,
             null,
             null, null,
@@ -6466,7 +6834,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''creditcurves'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'creditcurves', 'outputFileName', 280, 'string', false,
+            'analytic', 'creditcurves', 'outputFileName', 296, 'string', false,
             null, null,
             null,
             null, null,
@@ -6489,7 +6857,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''active'']',
-            'analytic', 'scenario', 'active', 281, 'boolean', false,
+            'analytic', 'scenario', 'active', 297, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6512,7 +6880,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'scenario', 'simulationConfigFile', 282, 'string', false,
+            'analytic', 'scenario', 'simulationConfigFile', 298, 'string', false,
             null, null,
             null,
             null, null,
@@ -6535,7 +6903,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenario'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'scenario', 'scenarioOutputFile', 283, 'string', false,
+            'analytic', 'scenario', 'scenarioOutputFile', 299, 'string', false,
             null, null,
             null,
             null, null,
@@ -6558,7 +6926,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''active'']',
-            'analytic', 'pnlExplain', 'active', 284, 'boolean', false,
+            'analytic', 'pnlExplain', 'active', 300, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6581,7 +6949,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''mporDate'']',
-            'analytic', 'pnlExplain', 'mporDate', 285, 'date', false,
+            'analytic', 'pnlExplain', 'mporDate', 301, 'date', false,
             null, null,
             null,
             null, null,
@@ -6604,7 +6972,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'pnlExplain', 'simulationConfigFile', 286, 'string', false,
+            'analytic', 'pnlExplain', 'simulationConfigFile', 302, 'string', false,
             null, null,
             null,
             null, null,
@@ -6627,7 +6995,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'pnlExplain', 'sensitivityConfigFile', 287, 'string', false,
+            'analytic', 'pnlExplain', 'sensitivityConfigFile', 303, 'string', false,
             null, null,
             null,
             null, null,
@@ -6650,7 +7018,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''parSensitivity'']',
-            'analytic', 'pnlExplain', 'parSensitivity', 288, 'boolean', false,
+            'analytic', 'pnlExplain', 'parSensitivity', 304, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6673,7 +7041,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''curveConfigMporFile'']',
-            'analytic', 'pnlExplain', 'curveConfigMporFile', 289, 'string', false,
+            'analytic', 'pnlExplain', 'curveConfigMporFile', 305, 'string', false,
             null, null,
             null,
             null, null,
@@ -6696,7 +7064,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''conventionsMporFile'']',
-            'analytic', 'pnlExplain', 'conventionsMporFile', 290, 'string', false,
+            'analytic', 'pnlExplain', 'conventionsMporFile', 306, 'string', false,
             null, null,
             null,
             null, null,
@@ -6719,7 +7087,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''portfolioMporFile'']',
-            'analytic', 'pnlExplain', 'portfolioMporFile', 291, 'string', false,
+            'analytic', 'pnlExplain', 'portfolioMporFile', 307, 'string', false,
             null, null,
             null,
             null, null,
@@ -6742,7 +7110,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnlExplain'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'pnlExplain', 'outputFileName', 292, 'string', false,
+            'analytic', 'pnlExplain', 'outputFileName', 308, 'string', false,
             null, null,
             null,
             null, null,
@@ -6765,7 +7133,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''active'']',
-            'analytic', 'pnl', 'active', 293, 'boolean', false,
+            'analytic', 'pnl', 'active', 309, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6788,7 +7156,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporDays'']',
-            'analytic', 'pnl', 'mporDays', 294, 'integer', false,
+            'analytic', 'pnl', 'mporDays', 310, 'integer', false,
             null, null,
             null,
             null, null,
@@ -6811,7 +7179,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'pnl', 'mporCalendar', 295, 'string', false,
+            'analytic', 'pnl', 'mporCalendar', 311, 'string', false,
             null, null,
             null,
             null, null,
@@ -6834,7 +7202,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''curveConfigMporFile'']',
-            'analytic', 'pnl', 'curveConfigMporFile', 296, 'string', false,
+            'analytic', 'pnl', 'curveConfigMporFile', 312, 'string', false,
             null, null,
             null,
             null, null,
@@ -6857,7 +7225,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''conventionsMporFile'']',
-            'analytic', 'pnl', 'conventionsMporFile', 297, 'string', false,
+            'analytic', 'pnl', 'conventionsMporFile', 313, 'string', false,
             null, null,
             null,
             null, null,
@@ -6880,7 +7248,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''portfolioMporFile'']',
-            'analytic', 'pnl', 'portfolioMporFile', 298, 'string', false,
+            'analytic', 'pnl', 'portfolioMporFile', 314, 'string', false,
             null, null,
             null,
             null, null,
@@ -6903,7 +7271,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'pnl', 'simulationConfigFile', 299, 'string', false,
+            'analytic', 'pnl', 'simulationConfigFile', 315, 'string', false,
             null, null,
             null,
             null, null,
@@ -6926,7 +7294,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pnl'']/Parameter[@name=''outputFileName'']',
-            'analytic', 'pnl', 'outputFileName', 300, 'string', false,
+            'analytic', 'pnl', 'outputFileName', 316, 'string', false,
             null, null,
             null,
             null, null,
@@ -6949,7 +7317,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''active'']',
-            'analytic', 'historicalSimulationVar', 'active', 301, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'active', 317, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -6972,7 +7340,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 302, 'string', false,
+            'analytic', 'historicalSimulationVar', 'historicalScenarioFile', 318, 'string', false,
             null, null,
             null,
             null, null,
@@ -6995,7 +7363,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'historicalSimulationVar', 'simulationConfigFile', 303, 'string', false,
+            'analytic', 'historicalSimulationVar', 'simulationConfigFile', 319, 'string', false,
             null, null,
             null,
             null, null,
@@ -7018,7 +7386,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''historicalPeriod'']',
-            'analytic', 'historicalSimulationVar', 'historicalPeriod', 304, 'string', false,
+            'analytic', 'historicalSimulationVar', 'historicalPeriod', 320, 'string', false,
             null, null,
             null,
             null, null,
@@ -7041,7 +7409,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporDays'']',
-            'analytic', 'historicalSimulationVar', 'mporDays', 305, 'integer', false,
+            'analytic', 'historicalSimulationVar', 'mporDays', 321, 'integer', false,
             null, null,
             null,
             null, null,
@@ -7064,7 +7432,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'historicalSimulationVar', 'mporCalendar', 306, 'string', false,
+            'analytic', 'historicalSimulationVar', 'mporCalendar', 322, 'string', false,
             null, null,
             null,
             null, null,
@@ -7087,7 +7455,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''mporOverlappingPeriods'']',
-            'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 307, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'mporOverlappingPeriods', 323, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7110,7 +7478,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''quantiles'']',
-            'analytic', 'historicalSimulationVar', 'quantiles', 308, 'string', false,
+            'analytic', 'historicalSimulationVar', 'quantiles', 324, 'string', false,
             null, null,
             null,
             null, null,
@@ -7133,7 +7501,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputFile'']',
-            'analytic', 'historicalSimulationVar', 'outputFile', 309, 'string', false,
+            'analytic', 'historicalSimulationVar', 'outputFile', 325, 'string', false,
             null, null,
             null,
             null, null,
@@ -7156,7 +7524,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeExpectedShortfall'']',
-            'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 310, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includeExpectedShortfall', 326, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7179,7 +7547,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''breakdown'']',
-            'analytic', 'historicalSimulationVar', 'breakdown', 311, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'breakdown', 327, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7202,7 +7570,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''tradePnl'']',
-            'analytic', 'historicalSimulationVar', 'tradePnl', 312, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'tradePnl', 328, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7225,7 +7593,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskFactorBreakdown'']',
-            'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 313, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'riskFactorBreakdown', 329, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7248,7 +7616,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''riskClassBreakdown'']',
-            'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 314, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'riskClassBreakdown', 330, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7271,7 +7639,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''outputHistoricalScenarios'']',
-            'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 315, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'outputHistoricalScenarios', 331, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7294,7 +7662,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includeTheta'']',
-            'analytic', 'historicalSimulationVar', 'includeTheta', 316, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includeTheta', 332, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7317,7 +7685,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''historicalSimulationVar'']/Parameter[@name=''includePeriodCashflow'']',
-            'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 317, 'boolean', false,
+            'analytic', 'historicalSimulationVar', 'includePeriodCashflow', 333, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7340,10 +7708,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''active'']',
-            'analytic', 'amc', 'active', 318, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'amc', 'active', 334, 'boolean', false,
+            'AMC block active', 'A flag. ORE ignores the amc block.',
+            'ORE has no analytic of the type amc and does not read this block. Example files of an older layout carry it. The switch for American Monte Carlo is the parameter AMC in the simulation analytic.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A flag, written Y or N, or true or false.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.active'
         );
@@ -7363,10 +7731,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'amc', 'pricingEnginesFile', 319, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'amc', 'pricingEnginesFile', 335, 'string', false,
+            'Pricing engines file in the amc block', 'A file name. ORE ignores the amc block.',
+            'ORE has no analytic of the type amc and does not read this block. The pricing engines for American Monte Carlo are set in the simulation analytic, with the parameter Pricing engines file for AMC.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.pricingEnginesFile'
         );
@@ -7386,10 +7754,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''amc'']/Parameter[@name=''amcTradeTypes'']',
-            'analytic', 'amc', 'amcTradeTypes', 320, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'amc', 'amcTradeTypes', 336, 'string', false,
+            'Trade types in the amc block', 'A comma-separated list of trade types. ORE ignores the amc block.',
+            'ORE has no analytic of the type amc and does not read this block. The trade types that American Monte Carlo covers are set in the simulation analytic, with the parameter AMC trade types.',
+            'None. ORE ignores the parameter, so a value has no effect.', 'A comma-separated list of trade type names.',
             '1.8.9.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: amc.amcTradeTypes'
         );
@@ -7409,10 +7777,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''active'']',
-            'analytic', 'scenarioGeneration', 'active', 321, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'active', 337, 'boolean', true,
+            'Run scenario generation', 'A flag. Y runs the analytic.',
+            'Switches the scenario generation on or off. When it is on, the run generates market scenarios and writes statistics and distributions of them. Use it to check the scenarios of a simulation market, a stress test or a sensitivity run.',
+            'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.active'
         );
@@ -7432,10 +7800,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''simulationConfigFile'']',
-            'analytic', 'scenarioGeneration', 'simulationConfigFile', 322, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'simulationConfigFile', 338, 'string', false,
+            'Simulation configuration file', 'A file name.',
+            'Names the XML file with the simulation market that the scenarios are for. For an exposure run the file also supplies the model and the scenario generator, unless the parameters Cross asset model file and Scenario generator file name another file. For example, simulation.xml.',
+            'None. The analytic needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.simulationConfigFile'
         );
@@ -7455,10 +7823,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'scenarioGeneration', 'scenarioOutputFile', 323, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'scenarioOutputFile', 339, 'string', false,
+            'Scenario output file', 'A file name.',
+            'Names the file that holds all scenarios that the analytic generates through the simulation market. For example, scenariodump.csv.',
+            'scenario.csv', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioOutputFile'
         );
@@ -7478,10 +7846,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''amcPathDataOutput'']',
-            'analytic', 'scenarioGeneration', 'amcPathDataOutput', 324, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'amcPathDataOutput', 340, 'string', false,
+            'AMC path data output file', 'A file name.',
+            'Names a file that receives the path data of the generated exposure scenarios, so that an AMC run can read it later with its path data input. ORE uses it only for the scenario type exposure.',
+            'None. The analytic does not write path data.', 'A file name, written without a directory. ORE writes the file in the output path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.amcPathDataOutput'
         );
@@ -7501,10 +7869,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputStatistics'']',
-            'analytic', 'scenarioGeneration', 'outputStatistics', 325, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'outputStatistics', 341, 'boolean', false,
+            'Write the statistics report', 'A flag. Y writes the report.',
+            'Decides whether the analytic writes a report with statistics of the generated scenarios for each risk factor and date: the minimum, the mean, the maximum, the standard deviation, the skewness and the kurtosis.',
+            'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputStatistics'
         );
@@ -7524,10 +7892,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputDistributions'']',
-            'analytic', 'scenarioGeneration', 'outputDistributions', 326, 'boolean', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'outputDistributions', 342, 'boolean', false,
+            'Write the distribution report', 'A flag. Y writes the report.',
+            'Decides whether the analytic writes a report with the distribution histogram of the generated scenarios for each risk factor and date. The parameter Distribution buckets sets its resolution.',
+            'Yes.', 'A flag, written Y or N, or true or false.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputDistributions'
         );
@@ -7547,10 +7915,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioType'']',
-            'analytic', 'scenarioGeneration', 'scenarioType', 327, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'scenarioType', 343, 'string', false,
+            'Scenario type', 'stress, sensitivity or exposure.',
+            'Selects which scenarios the analytic generates. exposure takes them from the simulation model. stress takes them from a stress test configuration. sensitivity is accepted, but release 1.8.17.0 has no scenario generation for it. The run stops if the value is none of the three.',
+            'exposure', 'stress, sensitivity or exposure.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioType'
         );
@@ -7570,10 +7938,10 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'scenarioGeneration', 'stressConfigFile', 328, 'string', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'stressConfigFile', 344, 'string', false,
+            'Stress configuration file', 'A file name.',
+            'Names the XML file with the stress scenarios to generate. ORE uses it only when the scenario type is stress.',
+            'None. A stress run needs this file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.stressConfigFile'
         );
@@ -7593,12 +7961,127 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioPrecision'']',
-            'analytic', 'scenarioGeneration', 'scenarioPrecision', 329, 'integer', false,
-            null, null,
-            null,
-            null, null,
+            'analytic', 'scenarioGeneration', 'scenarioPrecision', 345, 'integer', false,
+            'Scenario precision', 'A whole number of decimal places.',
+            'Sets the number of decimal places of the numbers in the scenario output. A higher number shows more of each value and makes the file larger.',
+            '8', 'A whole number of zero or more.',
             '1.8.14.0', null,
             current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioPrecision'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'scenarioGeneration' and name = 'distributionBuckets'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''distributionBuckets'']',
+            'analytic', 'scenarioGeneration', 'distributionBuckets', 346, 'integer', false,
+            'Distribution buckets', 'A whole number.',
+            'Sets the number of buckets of the distribution histogram of the generated scenarios. A higher number gives a finer histogram and needs more scenarios to be stable. For example, 20.',
+            '20', 'A whole number of zero or more.',
+            '1.8.14.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.distributionBuckets'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'scenarioGeneration' and name = 'outputZeroRate'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''outputZeroRate'']',
+            'analytic', 'scenarioGeneration', 'outputZeroRate', 347, 'boolean', false,
+            'Report zero rates', 'A flag. Y reports zero rates, N reports discount factors.',
+            'Decides whether the statistics report and the distribution report show zero rates or discount factors for the yield curves. Zero rates are easier to compare between dates.',
+            'No. The reports show discount factors.', 'A flag, written Y or N, or true or false.',
+            '1.8.14.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.outputZeroRate'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'scenarioGeneration' and name = 'filterRiskKeys'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''filterRiskKeys'']',
+            'analytic', 'scenarioGeneration', 'filterRiskKeys', 348, 'string', false,
+            'Risk factor types in the output', 'A comma-separated list of risk factor types.',
+            'Limits the scenario output to the listed types of risk factor. Without it the output holds every risk factor of the simulation market and can be very large. For example, DiscountCurve.',
+            'None. The output holds all risk factors.', 'A comma-separated list of risk factor key types such as DiscountCurve.',
+            '1.8.17.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.filterRiskKeys'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'scenarioGeneration' and name = 'crossAssetModelData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''crossAssetModelData'']',
+            'analytic', 'scenarioGeneration', 'crossAssetModelData', 349, 'string', false,
+            'Cross asset model file', 'A file name.',
+            'Names the XML file with the cross asset model, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
+            'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.crossAssetModelData'
+        );
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_ore_parameters_tbl
+        where tenant_id = v_sys_tenant and scope = 'analytic'
+          and subtype = 'scenarioGeneration' and name = 'scenarioGeneratorData'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_ore_parameters_tbl (
+            id, tenant_id, version,
+            schema_name, xpath, scope, subtype, name, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text, format, introduced_in, removed_in,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            gen_random_uuid(), v_sys_tenant, 0,
+            'ore.xsd', '/ORE/Analytics/Analytic[@type=''scenarioGeneration'']/Parameter[@name=''scenarioGeneratorData'']',
+            'analytic', 'scenarioGeneration', 'scenarioGeneratorData', 350, 'string', false,
+            'Scenario generator file', 'A file name.',
+            'Names the XML file with the scenario generator, if it sits in another file than the simulation configuration file. ORE uses it only when the scenario type is exposure.',
+            'The simulation configuration file.', 'A file name. ORE looks for the file in the input path of the Setup block.',
+            '1.8.16.0', null,
+            current_user, 'system.initial_load', 'Seed analytic parameter: scenarioGeneration.scenarioGeneratorData'
         );
     end if;
 
@@ -7616,7 +8099,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''active'']',
-            'analytic', 'parStressConversion', 'active', 330, 'boolean', false,
+            'analytic', 'parStressConversion', 'active', 351, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7639,7 +8122,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'parStressConversion', 'marketConfigFile', 331, 'string', false,
+            'analytic', 'parStressConversion', 'marketConfigFile', 352, 'string', false,
             null, null,
             null,
             null, null,
@@ -7662,7 +8145,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'parStressConversion', 'stressConfigFile', 332, 'string', false,
+            'analytic', 'parStressConversion', 'stressConfigFile', 353, 'string', false,
             null, null,
             null,
             null, null,
@@ -7685,7 +8168,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'parStressConversion', 'sensitivityConfigFile', 333, 'string', false,
+            'analytic', 'parStressConversion', 'sensitivityConfigFile', 354, 'string', false,
             null, null,
             null,
             null, null,
@@ -7708,7 +8191,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''pricingEnginesFile'']',
-            'analytic', 'parStressConversion', 'pricingEnginesFile', 334, 'string', false,
+            'analytic', 'parStressConversion', 'pricingEnginesFile', 355, 'string', false,
             null, null,
             null,
             null, null,
@@ -7731,7 +8214,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''scenarioOutputFile'']',
-            'analytic', 'parStressConversion', 'scenarioOutputFile', 335, 'string', false,
+            'analytic', 'parStressConversion', 'scenarioOutputFile', 356, 'string', false,
             null, null,
             null,
             null, null,
@@ -7754,7 +8237,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''outputThreshold'']',
-            'analytic', 'parStressConversion', 'outputThreshold', 336, 'double', false,
+            'analytic', 'parStressConversion', 'outputThreshold', 357, 'double', false,
             null, null,
             null,
             null, null,
@@ -7777,7 +8260,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''parStressConversion'']/Parameter[@name=''stressZeroScenarioDataFile'']',
-            'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 337, 'string', false,
+            'analytic', 'parStressConversion', 'stressZeroScenarioDataFile', 358, 'string', false,
             null, null,
             null,
             null, null,
@@ -7800,7 +8283,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''active'']',
-            'analytic', 'pfe', 'active', 338, 'boolean', false,
+            'analytic', 'pfe', 'active', 359, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7823,7 +8306,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''csaFile'']',
-            'analytic', 'pfe', 'csaFile', 339, 'string', false,
+            'analytic', 'pfe', 'csaFile', 360, 'string', false,
             null, null,
             null,
             null, null,
@@ -7846,7 +8329,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''cubeFile'']',
-            'analytic', 'pfe', 'cubeFile', 340, 'string', false,
+            'analytic', 'pfe', 'cubeFile', 361, 'string', false,
             null, null,
             null,
             null, null,
@@ -7869,7 +8352,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''scenarioFile'']',
-            'analytic', 'pfe', 'scenarioFile', 341, 'string', false,
+            'analytic', 'pfe', 'scenarioFile', 362, 'string', false,
             null, null,
             null,
             null, null,
@@ -7892,7 +8375,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''baseCurrency'']',
-            'analytic', 'pfe', 'baseCurrency', 342, 'string', false,
+            'analytic', 'pfe', 'baseCurrency', 363, 'string', false,
             null, null,
             null,
             null, null,
@@ -7915,7 +8398,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfiles'']',
-            'analytic', 'pfe', 'exposureProfiles', 343, 'boolean', false,
+            'analytic', 'pfe', 'exposureProfiles', 364, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7938,7 +8421,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exposureProfilesByTrade'']',
-            'analytic', 'pfe', 'exposureProfilesByTrade', 344, 'boolean', false,
+            'analytic', 'pfe', 'exposureProfilesByTrade', 365, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -7961,7 +8444,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''quantile'']',
-            'analytic', 'pfe', 'quantile', 345, 'double', false,
+            'analytic', 'pfe', 'quantile', 366, 'double', false,
             null, null,
             null,
             null, null,
@@ -7984,7 +8467,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''calculationType'']',
-            'analytic', 'pfe', 'calculationType', 346, 'string', false,
+            'analytic', 'pfe', 'calculationType', 367, 'string', false,
             null, null,
             null,
             null, null,
@@ -8007,7 +8490,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''allocationMethod'']',
-            'analytic', 'pfe', 'allocationMethod', 347, 'string', false,
+            'analytic', 'pfe', 'allocationMethod', 368, 'string', false,
             null, null,
             null,
             null, null,
@@ -8030,7 +8513,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''marginalAllocationLimit'']',
-            'analytic', 'pfe', 'marginalAllocationLimit', 348, 'double', false,
+            'analytic', 'pfe', 'marginalAllocationLimit', 369, 'double', false,
             null, null,
             null,
             null, null,
@@ -8053,7 +8536,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''exerciseNextBreak'']',
-            'analytic', 'pfe', 'exerciseNextBreak', 349, 'boolean', false,
+            'analytic', 'pfe', 'exerciseNextBreak', 370, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -8076,7 +8559,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''rawCubeOutputFile'']',
-            'analytic', 'pfe', 'rawCubeOutputFile', 350, 'string', false,
+            'analytic', 'pfe', 'rawCubeOutputFile', 371, 'string', false,
             null, null,
             null,
             null, null,
@@ -8099,7 +8582,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''pfe'']/Parameter[@name=''netCubeOutputFile'']',
-            'analytic', 'pfe', 'netCubeOutputFile', 351, 'string', false,
+            'analytic', 'pfe', 'netCubeOutputFile', 372, 'string', false,
             null, null,
             null,
             null, null,
@@ -8122,7 +8605,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''active'']',
-            'analytic', 'crif', 'active', 352, 'boolean', false,
+            'analytic', 'crif', 'active', 373, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -8145,7 +8628,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'crif', 'marketConfigFile', 353, 'string', false,
+            'analytic', 'crif', 'marketConfigFile', 374, 'string', false,
             null, null,
             null,
             null, null,
@@ -8168,7 +8651,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'crif', 'sensitivityConfigFile', 354, 'string', false,
+            'analytic', 'crif', 'sensitivityConfigFile', 375, 'string', false,
             null, null,
             null,
             null, null,
@@ -8191,7 +8674,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''baseCurrency'']',
-            'analytic', 'crif', 'baseCurrency', 355, 'string', false,
+            'analytic', 'crif', 'baseCurrency', 376, 'string', false,
             null, null,
             null,
             null, null,
@@ -8214,7 +8697,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''simmVersion'']',
-            'analytic', 'crif', 'simmVersion', 356, 'double', false,
+            'analytic', 'crif', 'simmVersion', 377, 'double', false,
             null, null,
             null,
             null, null,
@@ -8237,7 +8720,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''crif'']/Parameter[@name=''crifOutputFile'']',
-            'analytic', 'crif', 'crifOutputFile', 357, 'string', false,
+            'analytic', 'crif', 'crifOutputFile', 378, 'string', false,
             null, null,
             null,
             null, null,
@@ -8260,7 +8743,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflownpv'']/Parameter[@name=''active'']',
-            'analytic', 'cashflownpv', 'active', 358, 'boolean', true,
+            'analytic', 'cashflownpv', 'active', 379, 'boolean', true,
             'Run the cash flow NPV analytic', 'A flag. Y runs the analytic.',
             'Switches the cash flow NPV analytic on or off. When it is on, the run builds the cash flow report and adds up, for each trade, the present value of the cash flows up to the horizon. The result is one row for each trade with its NPV in the base currency.',
             'No. The analytic does not run.', 'A flag, written Y or N, or true or false.',
@@ -8283,7 +8766,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''cashflownpv'']/Parameter[@name=''cashFlowHorizon'']',
-            'analytic', 'cashflownpv', 'cashFlowHorizon', 359, 'date', false,
+            'analytic', 'cashflownpv', 'cashFlowHorizon', 380, 'date', false,
             'Cash flow horizon', 'A date.',
             'Sets the last pay date that the report counts. ORE adds up the present value of the cash flows of each trade that pay after the valuation date and on or before this date. For example, 2027-12-31 counts the cash flows up to the end of 2027. The cash flow analytic has a parameter of the same name.',
             'None. Without a horizon the report counts no cash flow, so every present value is 0.', 'A date, written as YYYY-MM-DD or YYYYMMDD.',
@@ -8306,7 +8789,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''active'']',
-            'analytic', 'sensitivityStress', 'active', 360, 'boolean', false,
+            'analytic', 'sensitivityStress', 'active', 381, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -8329,7 +8812,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''marketConfigFile'']',
-            'analytic', 'sensitivityStress', 'marketConfigFile', 361, 'string', false,
+            'analytic', 'sensitivityStress', 'marketConfigFile', 382, 'string', false,
             null, null,
             null,
             null, null,
@@ -8352,7 +8835,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''stressConfigFile'']',
-            'analytic', 'sensitivityStress', 'stressConfigFile', 362, 'string', false,
+            'analytic', 'sensitivityStress', 'stressConfigFile', 383, 'string', false,
             null, null,
             null,
             null, null,
@@ -8375,7 +8858,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'sensitivityStress', 'sensitivityConfigFile', 363, 'string', false,
+            'analytic', 'sensitivityStress', 'sensitivityConfigFile', 384, 'string', false,
             null, null,
             null,
             null, null,
@@ -8398,7 +8881,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''sensitivityStress'']/Parameter[@name=''calcBaseScenario'']',
-            'analytic', 'sensitivityStress', 'calcBaseScenario', 364, 'boolean', false,
+            'analytic', 'sensitivityStress', 'calcBaseScenario', 385, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -8421,7 +8904,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''active'']',
-            'analytic', 'correlation', 'active', 365, 'boolean', false,
+            'analytic', 'correlation', 'active', 386, 'boolean', false,
             null, null,
             null,
             null, null,
@@ -8444,7 +8927,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''correlation_method'']',
-            'analytic', 'correlation', 'correlation_method', 366, 'string', false,
+            'analytic', 'correlation', 'correlation_method', 387, 'string', false,
             null, null,
             null,
             null, null,
@@ -8467,7 +8950,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''scenarioCorrSimulation'']',
-            'analytic', 'correlation', 'scenarioCorrSimulation', 367, 'string', false,
+            'analytic', 'correlation', 'scenarioCorrSimulation', 388, 'string', false,
             null, null,
             null,
             null, null,
@@ -8490,7 +8973,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalScenarioFile'']',
-            'analytic', 'correlation', 'historicalScenarioFile', 368, 'string', false,
+            'analytic', 'correlation', 'historicalScenarioFile', 389, 'string', false,
             null, null,
             null,
             null, null,
@@ -8513,7 +8996,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''sensitivityConfigFile'']',
-            'analytic', 'correlation', 'sensitivityConfigFile', 369, 'string', false,
+            'analytic', 'correlation', 'sensitivityConfigFile', 390, 'string', false,
             null, null,
             null,
             null, null,
@@ -8536,7 +9019,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''historicalPeriod'']',
-            'analytic', 'correlation', 'historicalPeriod', 370, 'string', false,
+            'analytic', 'correlation', 'historicalPeriod', 391, 'string', false,
             null, null,
             null,
             null, null,
@@ -8559,7 +9042,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporDays'']',
-            'analytic', 'correlation', 'mporDays', 371, 'integer', false,
+            'analytic', 'correlation', 'mporDays', 392, 'integer', false,
             null, null,
             null,
             null, null,
@@ -8582,7 +9065,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''mporCalendar'']',
-            'analytic', 'correlation', 'mporCalendar', 372, 'string', false,
+            'analytic', 'correlation', 'mporCalendar', 393, 'string', false,
             null, null,
             null,
             null, null,
@@ -8605,7 +9088,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''filterCamCorrelationScenarioTenor'']',
-            'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 373, 'string', false,
+            'analytic', 'correlation', 'filterCamCorrelationScenarioTenor', 394, 'string', false,
             null, null,
             null,
             null, null,
@@ -8628,7 +9111,7 @@ begin
         ) values (
             gen_random_uuid(), v_sys_tenant, 0,
             'ore.xsd', '/ORE/Analytics/Analytic[@type=''correlation'']/Parameter[@name=''outputFile'']',
-            'analytic', 'correlation', 'outputFile', 374, 'string', false,
+            'analytic', 'correlation', 'outputFile', 395, 'string', false,
             null, null,
             null,
             null, null,

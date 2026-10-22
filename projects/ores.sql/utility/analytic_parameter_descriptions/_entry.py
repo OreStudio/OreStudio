@@ -28,3 +28,11 @@ def entry(label, help, description, default, format, required=False):
     """
     return {"label": label, "help": help, "description": description,
             "default_text": default, "format": format, "required": required}
+
+
+FLAG = "A flag, written Y or N, or true or false."
+FILE = "A file name, written without a directory. ORE writes the file in the output path of the Setup block."
+INPUT_FILE = "A file name. ORE looks for the file in the input path of the Setup block."
+DATE = "A date, written as YYYY-MM-DD or YYYYMMDD."
+COUNT = "A whole number of zero or more."
+REAL = "A number, written with a decimal point."

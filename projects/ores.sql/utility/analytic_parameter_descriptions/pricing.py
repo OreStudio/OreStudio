@@ -17,11 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """The pricing analytics: NPV, cash flows, curves and additional results."""
 
-from ._entry import entry
-
-FLAG = "A flag, written Y or N, or true or false."
-FILE = "A file name, written without a directory. ORE writes the file in the output path of the Setup block."
-DATE = "A date, written as YYYY-MM-DD or YYYYMMDD."
+from ._entry import DATE, FILE, FLAG, entry
 
 ENTRIES = {
     "npv": {

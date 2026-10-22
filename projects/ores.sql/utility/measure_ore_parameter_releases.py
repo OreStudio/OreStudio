@@ -84,6 +84,7 @@ def measure(source):
     names = {n for _, n in pairs}
     order = releases(source)
     first_type, first_name, first_pair = {}, {}, {}
+    read_in = {n: [] for n in names}
     latest_names, latest_pairs = set(), set()
     for version, ref in order.items():
         latest_names, latest_pairs = set(), set()
@@ -95,6 +96,7 @@ def measure(source):
         for n in names & literals:
             first_name.setdefault(n, version)
             latest_names.add(n)
+            read_in[n].append(version)
         files = git(source, "grep", "-l", "-E", "Analytic type=", ref, "--").split("\n")
         for f in files:
             if not f.endswith((".xml", ".tex", ".md", ".txt")):
@@ -116,16 +118,23 @@ def measure(source):
         type_date = first_type[t]
         name_date = min(known, key=version_key) if known else type_date
         out[f"{t}|{n}"] = max(name_date, type_date, key=version_key)
-    gone = sorted(f"{t}|{n}" for t, n in pairs
-                  if n not in latest_names and (t, n) not in latest_pairs)
-    return out, order, gone
+    last = list(order)[-1]
+    versions = list(order)
+    removed, never_read = {}, []
+    for t, n in pairs:
+        seen = read_in[n]
+        if not seen:
+            never_read.append(f"{t}|{n}")
+        elif seen[-1] != last:
+            removed[f"{t}|{n}"] = versions[versions.index(seen[-1]) + 1]
+    return out, order, removed, never_read
 
 
 def display(version):
     return f"{version} or earlier" if version == OLDEST else version
 
 
-def write_module(path, dates):
+def write_module(path, dates, removed, never_read):
     licence = Path(__file__).read_text(encoding="utf-8").split('"""')[0].split("\n", 1)[1]
     lines = [licence.rstrip(),
              '"""The ORE release that introduced each analytic parameter.',
@@ -139,6 +148,15 @@ def write_module(path, dates):
     for key in sorted(dates):
         lines.append(f'    "{key}": "{display(dates[key])}",')
     lines.append("}")
+    lines += ["", "# The first release whose C++ sources no longer read the name.",
+              "REMOVED_IN = {"]
+    for key in sorted(removed):
+        lines.append(f'    "{key}": "{removed[key]}",')
+    lines += ["}", "", "# Names that no release of the C++ sources ever read. Examples carry them.",
+              "NEVER_READ = ["]
+    for key in sorted(never_read):
+        lines.append(f'    "{key}",')
+    lines.append("]")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -149,15 +167,16 @@ def main():
     parser.add_argument("--write-module", type=Path,
                         help="write the dates as the Python module the seed generator reads")
     args = parser.parse_args()
-    out, order, gone = measure(args.ore_source)
+    out, order, removed, never_read = measure(args.ore_source)
     counts = collections.Counter(out.values())
     for version in order:
         if counts[version]:
             print(f"{display(version):>20}  {counts[version]}")
     print(f"{len(out)} analytic parameters")
-    print(f"{len(gone)} absent from the latest release: {', '.join(gone)}")
+    print(f"{len(never_read)} never read by the C++ sources: {', '.join(never_read)}")
+    print(f"{len(removed)} no longer read: {', '.join(f'{k} from {v}' for k, v in removed.items())}")
     if args.write_module:
-        write_module(args.write_module, out)
+        write_module(args.write_module, out, removed, never_read)
     if args.json:
         args.json.write_text(json.dumps(out, indent=1, sort_keys=True))
     return 0

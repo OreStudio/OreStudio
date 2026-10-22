@@ -218,9 +218,8 @@ public:
      *
      * A typed definition reads only the books of its regulatory book type.
      */
-    std::vector<std::string> resolve_book_ids(context ctx,
-                                              const std::string& config_id,
-                                              const std::string& definition_id);
+    std::vector<std::string>
+    resolve_book_ids(context ctx, const std::string& config_id, const std::string& definition_id);
 
     /**
      * @brief The regulatory book type a definition is limited to, or nothing

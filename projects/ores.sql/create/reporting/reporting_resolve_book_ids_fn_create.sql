@@ -190,6 +190,23 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
+-- Whether an active report definition has this id. Security definer for the same
+-- reason as the checks above.
+create or replace function ores_reporting_definition_exists_fn(
+    p_tenant_id            uuid,
+    p_report_definition_id uuid
+)
+returns boolean as $$
+begin
+    return exists (
+        select 1 from ores_reporting_report_definitions_tbl
+        where tenant_id = p_tenant_id
+          and id = p_report_definition_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 -- Whether the scope of a risk report config names, as an explicit book, a book of
 -- a regulatory book type other than p_type. A portfolio in the scope is not
 -- checked: the resolver reads the books of the type below it.
@@ -292,6 +309,12 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
  * of its regulatory book type are returned, whichever way the scope names them.
  * The configuration is shared by every definition that binds it, so the type is
  * the definition's and not the configuration's.
+ *
+ * Omitting the definition, which is what the default null does, reads the scope
+ * with no type filter. A caller that has a definition must pass it, or its report
+ * reads books of every type. A definition that is named and cannot be found is
+ * refused, because reading the untyped scope in its place would widen the report
+ * without a word.
  */
 drop function if exists ores_reporting_resolve_book_ids_for_config_fn(uuid, uuid);
 
@@ -309,6 +332,13 @@ declare
     v_type           text := ores_reporting_definition_regulatory_type_fn(
         p_tenant_id, p_report_definition_id);
 begin
+    if p_report_definition_id is not null
+       and not ores_reporting_definition_exists_fn(p_tenant_id, p_report_definition_id) then
+        raise exception 'Invalid report_definition_id: %. No active report definition found with this id.',
+            p_report_definition_id
+            using errcode = 'P0002';
+    end if;
+
     -- Check if explicit book scope exists.
     select exists(
         select 1
@@ -369,4 +399,5 @@ comment on function ores_reporting_resolve_book_ids_for_config_fn(uuid, uuid, uu
  explicit book scope first, then portfolio scope (with subtree expansion).
  When a typed report definition is named, only the books of its regulatory book
  type are returned. Returns an empty set when neither scope is configured or no
- book of the type is left.';
+ book of the type is left. A named definition that cannot be found is refused
+ with P0002; omitting the definition reads the scope with no type filter.';

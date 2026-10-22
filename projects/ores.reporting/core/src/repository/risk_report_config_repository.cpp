@@ -454,10 +454,8 @@ risk_report_config_repository::find_by_definition_id(context ctx,
     return results.front();
 }
 
-std::vector<std::string>
-risk_report_config_repository::resolve_book_ids(context ctx,
-                                                const std::string& config_id,
-                                                const std::string& definition_id) {
+std::vector<std::string> risk_report_config_repository::resolve_book_ids(
+    context ctx, const std::string& config_id, const std::string& definition_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Resolving book IDs for config: " << config_id
                                << " definition: " << definition_id;
@@ -467,8 +465,11 @@ risk_report_config_repository::resolve_book_ids(context ctx,
         "SELECT id::text FROM "
         "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid, $3::uuid) AS t(id)";
 
-    return execute_parameterized_string_query(
-        ctx, sql, {tid, config_id, definition_id}, lg(), "Resolving book IDs for risk_report_config");
+    return execute_parameterized_string_query(ctx,
+                                              sql,
+                                              {tid, config_id, definition_id},
+                                              lg(),
+                                              "Resolving book IDs for risk_report_config");
 }
 
 std::optional<std::string>

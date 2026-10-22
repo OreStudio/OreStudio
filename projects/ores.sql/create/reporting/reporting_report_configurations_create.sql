@@ -127,17 +127,17 @@ begin
     -- A typed report reads the books of its type only: a definition cannot bind a
     -- risk configuration whose scope names a book of another type.
     if NEW.configuration_type_code = 'risk_report_config'
-       and ores_reporting_definition_regulatory_type_fn(NEW.tenant_id, NEW.report_definition_id)
-           is not null
        and exists (
-           select 1 from ores_reporting_risk_report_configs_tbl c
-           where c.tenant_id = NEW.tenant_id
-             and c.configuration_id = NEW.configuration_id
-             and c.valid_to = ores_utility_infinity_timestamp_fn()
+           select 1
+           from (select ores_reporting_definition_regulatory_type_fn(
+                            NEW.tenant_id, NEW.report_definition_id) as book_type) d
+           join ores_reporting_risk_report_configs_tbl c
+             on c.tenant_id = NEW.tenant_id
+            and c.configuration_id = NEW.configuration_id
+            and c.valid_to = ores_utility_infinity_timestamp_fn()
+           where d.book_type is not null
              and ores_reporting_config_scope_names_other_type_fn(
-                     NEW.tenant_id, c.id,
-                     ores_reporting_definition_regulatory_type_fn(
-                         NEW.tenant_id, NEW.report_definition_id))) then
+                     NEW.tenant_id, c.id, d.book_type)) then
         raise exception 'Invalid configuration_id: %. The configuration scopes books of another regulatory book type than the definition.',
             NEW.configuration_id
             using errcode = '23514';

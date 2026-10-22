@@ -29,13 +29,16 @@
  * - A definition cannot take a type while its explicit scope names a book of another type
  * - A typed definition cannot bind a configuration that scopes a book of another type
  * - A scope with no book of the type resolves no book
+ * - A portfolio that holds only books of another type resolves no book
+ * - A definition that is named and cannot be found is refused
+ * - Omitting the definition reads the scope with no type filter
  *
  * Run with: pg_prove -d <database> test/reporting_regulatory_book_type_test.sql
  */
 
 begin;
 
-select plan(12);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -288,6 +291,45 @@ select throws_ok($$insert into ores_reporting_report_configurations_tbl (
 -- first definition is Trading.
 select is((select count(*) from pg_temp.resolved('00000000-0000-0000-0000-0000000cb402', '00000000-0000-0000-0000-0000000cb301')), 0::bigint,
     'a Trading report scoped to a banking book resolves no book');
+
+-- A portfolio that holds only banking books, scoped on a configuration of its own.
+insert into ores_reporting_configurations_tbl (
+    tenant_id, id, version, party_id, name, configuration_type_code, owning_component,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select ores_utility_system_tenant_id_fn(), '00000000-0000-0000-0000-0000000cb503'::uuid, 0,
+    id, 'RBT-FIXTURE-SETTINGS-3', 'risk_report_config', 'ores.reporting',
+    current_user, current_user, 'system.test', 'Regulatory book type pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_reporting_risk_report_configs_tbl (
+    id, tenant_id, version, party_id, name, configuration_id, base_currency,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cb502'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    id, 'RBT-FIXTURE-SETTINGS-3', '00000000-0000-0000-0000-0000000cb503'::uuid, 'USD',
+    current_user, current_user, 'system.test', 'Regulatory book type pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+select lives_ok($$select pg_temp.scope_portfolio('00000000-0000-0000-0000-0000000cb502', '00000000-0000-0000-0000-0000000cb002')$$,
+    'a portfolio of banking books only is scoped');
+
+select is((select count(*) from pg_temp.resolved('00000000-0000-0000-0000-0000000cb502', '00000000-0000-0000-0000-0000000cb301')), 0::bigint,
+    'a Trading report scoped to a portfolio of banking books only resolves no book');
+
+-- =============================================================================
+-- A definition that cannot be found, and no definition
+-- =============================================================================
+
+select throws_ok($$select * from pg_temp.resolved('00000000-0000-0000-0000-0000000cb302', '00000000-0000-0000-0000-0000000cb999')$$,
+    'P0002', null, 'a definition that is named and cannot be found is refused');
+
+select is((select count(*) from pg_temp.resolved('00000000-0000-0000-0000-0000000cb302', null)), 2::bigint,
+    'omitting the definition reads the books of both types');
 
 select * from finish();
 

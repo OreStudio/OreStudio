@@ -27,6 +27,7 @@ drop function if exists ores_reporting_config_refuses_book_fn(uuid, uuid, uuid);
 drop function if exists ores_reporting_definition_scope_names_other_type_fn(uuid, uuid, text);
 drop function if exists ores_reporting_config_scope_names_other_type_fn(uuid, uuid, text);
 drop function if exists ores_reporting_definition_regulatory_type_fn(uuid, uuid);
+drop function if exists ores_reporting_definition_exists_fn(uuid, uuid);
 drop function if exists ores_reporting_book_regulatory_type_fn(uuid, uuid);
 drop function if exists ores_reporting_definition_scope_has_sandbox_fn(uuid, uuid);
 drop function if exists ores_reporting_definition_is_official_fn(uuid, uuid);

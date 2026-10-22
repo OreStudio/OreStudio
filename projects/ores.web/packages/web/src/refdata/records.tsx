@@ -802,10 +802,13 @@ export function RecordDetails({
     specs,
     row,
     extra,
+    drawn,
     heading,
 }: {
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow;
+    /** A field drawn by the screen in place of its plain value. */
+    readonly drawn?: Readonly<Record<string, ReactNode>>;
     /** A third item is a hint: the words the label opens on hover, on focus and on a tap. */
     readonly extra?: readonly (readonly [string, ReactNode, string?])[];
     /**
@@ -841,7 +844,9 @@ export function RecordDetails({
                     <div key={spec.field}>
                         <dt className="text-xs text-ink-faint">{labelOf(t, spec)}</dt>
                         <dd className="mt-0.5 text-sm">
-                            <DetailValue spec={spec} value={row[spec.field]} />
+                            {drawn?.[spec.field] ?? (
+                                <DetailValue spec={spec} value={row[spec.field]} />
+                            )}
                         </dd>
                         {(() => {
                             const meaning = meaningOf(t, spec, show(row[spec.field]));

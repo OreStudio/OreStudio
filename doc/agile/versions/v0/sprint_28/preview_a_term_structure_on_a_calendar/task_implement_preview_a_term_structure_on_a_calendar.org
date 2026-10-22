@@ -8,7 +8,7 @@
 #+filetags: :preview_a_term_structure_on_a_calendar:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-preview-a-term-structure-on-a-calendar
-#+pr:
+#+pr: 3626
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3626][#3626]] | [refdata] Resolve every tenor of a convention in one call |
 
 * Review
 

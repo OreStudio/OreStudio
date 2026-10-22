@@ -243,10 +243,11 @@ void feed_ingest_loop::worker_loop() {
                 }
             } else
                 process(std::move(batch), nullptr);
-            // Size the next batch from the time of one turn of the two stages, so that it takes
-            // about target_batch_ms. The push waits while the copy of the batch before this one
-            // runs, so the turn is as long as the slower stage. A slow store gets smaller
-            // batches and a tick waits less.
+            // Size the next batch from the time of one turn, so that it takes about
+            // target_batch_ms. A batch that goes through the stages waits in the push while the
+            // stage ahead runs, so its turn is as long as the slower stage. A batch that the
+            // worker works through itself takes the time of all three stages. A slow store gets
+            // smaller batches and a tick waits less.
             limit = next_batch_ticks(count,
                                      std::chrono::duration_cast<std::chrono::milliseconds>(
                                          std::chrono::steady_clock::now() - started)

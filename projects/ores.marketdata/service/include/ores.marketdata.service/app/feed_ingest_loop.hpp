@@ -97,7 +97,9 @@ make_feed_series(const domain::feed_binding& binding,
  * thread copies the batch to the tick table with one copy. A third thread then records the
  * activity and republishes. The three stages work on three batches at once. One batch waits
  * at most between two stages, so five batches are in the loop at most, and a slow stage stops
- * the stage before it and the batches do not pile up. Republish follows the copy of the batch that
+ * the stage before it and the batches do not pile up. A small batch that arrives while no
+ * batch is in the stages skips them: the worker prepares, copies and republishes it itself, so a
+ * slow stream does not pay for two thread wakeups. Republish follows the copy of the batch that
  * stored the tick, on core NATS with no wait for an acknowledgement. A tick is perishable, because
  * an old tick that waits while a newer one arrives is worse than a tick that is lost. So the queue
  * is bounded and a full queue drops its oldest tick, and the worker drops a tick that has aged past
@@ -121,6 +123,14 @@ private:
     }
 
 public:
+    /// A batch of this many ticks or fewer, taken while no batch is in the stages, is worked
+    /// through by the worker itself. A handoff wakes a thread, which waits for a free CPU, so a
+    /// slow stream is faster without the stages. This is a tuning value. It is above
+    /// min_batch_ticks, and the work of a batch this size takes a few milliseconds, so a feed
+    /// that sends more than about ten thousand ticks a second makes larger batches and uses the
+    /// stages. No run has tried another value.
+    static constexpr std::size_t inline_batch_ticks = 64;
+
     /// @param crm_bridge Optional; when set, every stored FX spot tick is offered
     /// to it as a candidate driver update.
     /// @param tick_writer The writer of the tick table, which is the store. The loop is its
@@ -316,10 +326,6 @@ private:
     static constexpr std::size_t batch_limit = 20000;
     static constexpr std::size_t initial_batch_ticks = 500;
     static constexpr std::size_t min_batch_ticks = 50;
-    /// A batch of this many ticks or fewer, taken while no batch is in the stages, is worked
-    /// through by the worker itself. A handoff wakes a thread, which waits for a free CPU, so
-    /// a slow stream is faster without the stages. A burst makes larger batches at once.
-    static constexpr std::size_t inline_batch_ticks = 64;
     static constexpr std::int64_t target_batch_ms = 1000;
     /// A live tick older than this is dropped when the worker takes it.
     static constexpr std::chrono::milliseconds max_tick_age{5000};

@@ -40,6 +40,7 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <fstream>
 #include <functional>
@@ -49,6 +50,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -1092,19 +1094,87 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     CHECK(republished.load() == sent);
 }
 
-TEST_CASE("ticks_keep_their_order_when_bursts_and_slow_streams_alternate", tags) {
+namespace {
+
+/// The writer of the environment that holds every copy of more than inline_batch_ticks rows while
+/// its gate is closed. A copy of fewer rows goes through at once. It records the thread of each
+/// kind of copy, so a test can tell whether the worker or the copy stage wrote a batch.
+class gated_writer final : public ores::marketdata::service::app::tick_writer {
+public:
+    using tick_writer::tick_writer;
+
+    void close_gate() {
+        std::lock_guard lock(mu_);
+        open_ = false;
+    }
+
+    void open_gate() {
+        {
+            std::lock_guard lock(mu_);
+            open_ = true;
+        }
+        opened_.notify_all();
+    }
+
+    /// The number of copies that are, or were, held at the gate.
+    std::size_t held() const {
+        std::lock_guard lock(mu_);
+        return held_;
+    }
+
+    std::set<std::thread::id> small_threads() const {
+        std::lock_guard lock(mu_);
+        return small_threads_;
+    }
+
+    std::thread::id held_thread() const {
+        std::lock_guard lock(mu_);
+        return held_thread_;
+    }
+
+    void write(std::span<const ores::marketdata::service::app::tick_row> rows) override {
+        {
+            std::unique_lock lock(mu_);
+            if (rows.size() <= feed_ingest_loop::inline_batch_ticks) {
+                small_threads_.insert(std::this_thread::get_id());
+            } else if (!open_) {
+                ++held_;
+                held_thread_ = std::this_thread::get_id();
+                opened_.wait(lock, [this] { return open_; });
+            }
+        }
+        tick_writer::write(rows);
+    }
+
+private:
+    mutable std::mutex mu_;
+    std::condition_variable opened_;
+    bool open_ = true;
+    std::size_t held_ = 0;
+    std::set<std::thread::id> small_threads_;
+    std::thread::id held_thread_;
+};
+
+}
+
+TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages", tags) {
+    const auto options = writer_options();
+    if (!options)
+        SKIP("The tick writer role is not configured");
+    auto writer = std::make_shared<gated_writer>(*options);
+
     fixture f;
+    burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.bind(source, "SYNTHETIC");
     f.connect();
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
 
-    // A burst makes batches that go through the stages, and a slow stream makes batches that
-    // the worker works through itself. Each tick carries its number as its value, so the
-    // republish shows whether any tick passed another.
+    // Each tick carries its number as its value, so the republish shows whether any tick passed
+    // another.
     republish_tap tap(f, tenant, party);
-    feed_ingest_loop loop(f.nats, f.h.context());
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.start();
     const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
     const auto uris = burst_uris();
@@ -1118,16 +1188,36 @@ TEST_CASE("ticks_keep_their_order_when_bursts_and_slow_streams_alternate", tags)
                 std::this_thread::sleep_for(pause);
         }
     };
+    const auto wait_until = [](const std::function<bool()>& done) {
+        const auto deadline = burst_clock::now() + std::chrono::seconds(60);
+        while (!done() && burst_clock::now() < deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        return done();
+    };
 
-    for (int round = 0; round < 4; ++round) {
-        send(3000, std::chrono::milliseconds(0));
-        send(40, std::chrono::milliseconds(3));
-    }
+    // A slow stream makes batches of one tick, which the worker works through itself.
+    send(20, std::chrono::milliseconds(5));
+    REQUIRE(wait_until([&] { return tap.count() == sent; }));
+    REQUIRE(writer->small_threads().size() == 1);
 
-    const auto deadline = burst_clock::now() + std::chrono::seconds(60);
-    while (tap.count() < sent && burst_clock::now() < deadline)
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // A burst makes a large batch, which goes through the stages. The gate holds its copy, so
+    // the batch stays in the copy stage.
+    writer->close_gate();
+    send(400, std::chrono::milliseconds(0));
+    REQUIRE(wait_until([&] { return writer->held() >= 1; }));
+    CHECK(writer->held_thread() != *writer->small_threads().begin());
 
+    // A tick that arrives now is a small batch. It must wait behind the batch in the copy stage.
+    // A loop that worked it through at once would republish it while that batch is held.
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    send(1, std::chrono::milliseconds(0));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    const auto held_values = tap.values();
+    CHECK(std::find(held_values.begin(), held_values.end(), static_cast<double>(sent)) ==
+          held_values.end());
+
+    writer->open_gate();
+    REQUIRE(wait_until([&] { return tap.count() == sent; }));
     const auto values = tap.values();
     CHECK(values.size() == sent);
     CHECK(std::adjacent_find(values.begin(), values.end(), std::greater_equal<>{}) == values.end());

@@ -1325,16 +1325,8 @@ void workflow_engine::start_deadline_watch() {
                 << "Deadline watch started: a step that outlives the deadline its run states is "
                    "failed every "
                 << expiry_pass_interval.count() << "s.";
-            constexpr auto slice = std::chrono::milliseconds{250};
             while (!stop.stop_requested()) {
-                // Sleep in slices so a stop is honoured promptly rather than at the
-                // end of a whole interval.
-                for (auto waited = std::chrono::milliseconds{0};
-                     waited < expiry_pass_interval && !stop.stop_requested();
-                     waited += slice) {
-                    std::this_thread::sleep_for(slice);
-                }
-                if (stop.stop_requested())
+                if (stop.wait_for(expiry_pass_interval))
                     break;
                 try {
                     expire_overdue_steps();

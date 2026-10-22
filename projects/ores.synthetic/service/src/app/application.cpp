@@ -35,9 +35,9 @@
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.platform/concurrency/stoppable_thread.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
-#include "ores.platform/concurrency/stoppable_thread.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/step_subjects.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
@@ -50,7 +50,6 @@
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -299,14 +298,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         restore_retries = ores::platform::concurrency::stoppable_thread(
             [restorer, pending, retry_ctx = db_ctx](
                 const ores::platform::concurrency::stop_source& stop) {
-                // The stop state has no wake-up, so the wait is cut into short spans and the
-                // flag is read between them.
                 const auto sleep = [&](std::chrono::milliseconds span) {
-                    constexpr std::chrono::milliseconds slice{100};
-                    for (auto waited = std::chrono::milliseconds{0};
-                         waited < span && !stop.stop_requested();
-                         waited += slice)
-                        std::this_thread::sleep_for(std::min(slice, span - waited));
+                    stop.wait_for(span);
                 };
                 const auto left = retry_restore(
                     restore_retry_policy{},

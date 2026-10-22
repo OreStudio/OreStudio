@@ -381,7 +381,14 @@ void feed_ingest_loop::commit_loop() {
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to copy a batch of " << (*batch)->ticks.size()
                                        << " tick(s): " << e.what();
-            continue;
+            // The ticks are still republished, as when the store does not answer.
+            for (auto& it : (*batch)->items) {
+                it.stored = false;
+                if (!it.unavailable) {
+                    it.unavailable = true;
+                    store_unavailable_.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
         }
         const auto count = (*batch)->ticks.size();
         if (!announce_handoff_.push(std::move(*batch)))
@@ -622,7 +629,6 @@ void feed_ingest_loop::write_rows(prepared_batch& batch) {
     std::string failure = batch.failure;
     if (failure.empty()) {
         try {
-            std::lock_guard writer(writer_mu_);
             tick_writer_->write(batch.rows);
         } catch (const std::exception& e) {
             failure = e.what();

@@ -47,6 +47,7 @@
 #include <iostream>
 #include <libpq-fe.h>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -680,6 +681,73 @@ void report(const std::string& what, int rep, std::size_t rows, double seconds) 
               << static_cast<double>(rows) / seconds << " rows per second" << std::endl;
 }
 
+/// The ticks that the loop republished, each with the time it arrived. The callback only copies
+/// the message, so it does not slow the drain that a test times. The ticks are decoded later.
+class republish_tap final {
+public:
+    republish_tap(fixture& f, const std::string& tenant, const std::string& party)
+        : sub_(f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
+                                [this](ores::nats::message msg) {
+                                    const auto at = std::chrono::system_clock::now();
+                                    std::lock_guard lock(mu_);
+                                    seen_.emplace_back(at, std::move(msg.data));
+                                })) {}
+
+    std::size_t count() const {
+        std::lock_guard lock(mu_);
+        return seen_.size();
+    }
+
+    /// Waits until no tick has arrived for @p quiet, or for a minute at most.
+    void wait_for_quiet(std::chrono::milliseconds quiet) const {
+        const auto deadline = burst_clock::now() + std::chrono::seconds(60);
+        auto last = count();
+        auto last_change = burst_clock::now();
+        while (burst_clock::now() < deadline && burst_clock::now() - last_change < quiet) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            if (const auto now = count(); now != last) {
+                last = now;
+                last_change = burst_clock::now();
+            }
+        }
+    }
+
+    /// The age of each tick observed at or after @p since, in milliseconds, at the time it arrived.
+    std::vector<double> ages_ms(std::chrono::system_clock::time_point since) const {
+        std::vector<double> ages;
+        std::lock_guard lock(mu_);
+        for (const auto& [at, data] : seen_) {
+            const auto tick = ores::nats::default_wire_codec().decode<market_tick>(data);
+            if (tick.has_value() && tick->observation_time >= since)
+                ages.push_back(
+                    std::chrono::duration<double, std::milli>(at - tick->observation_time).count());
+        }
+        return ages;
+    }
+
+private:
+    mutable std::mutex mu_;
+    std::vector<std::pair<std::chrono::system_clock::time_point, std::vector<std::byte>>> seen_;
+    ores::nats::service::subscription sub_;
+};
+
+/// What one run of the serial or the pipelined loop measured.
+struct sample_result {
+    double rows_per_second = 0;
+    std::vector<double> burst_ages_ms;
+    std::vector<double> stream_ages_ms;
+};
+
+void report_ages(const std::string& what, int rep, std::vector<double> ages, std::size_t sent) {
+    std::sort(ages.begin(), ages.end());
+    const auto at = [&](double q) {
+        return ages.empty() ? 0.0 : ages[static_cast<std::size_t>(q * (ages.size() - 1))];
+    };
+    std::cout << "RESULT age at republish, " << what << " run " << rep << ": " << ages.size()
+              << " of " << sent << " republished, median " << std::fixed << std::setprecision(1)
+              << at(0.5) << " ms, p99 " << at(0.99) << " ms, max " << at(1.0) << " ms" << std::endl;
+}
+
 }
 
 TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
@@ -819,9 +887,14 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
         f.nats.publish(subject, ores::nats::default_wire_codec().encode(tick));
     };
 
+    const auto tenant = f.h.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(f.party_id);
+
     // One loop and one burst for each sample, the two modes in turn, so that both see the load
-    // of the machine as it changes.
+    // of the machine as it changes. A second part sends a slow stream of ticks, which shows what
+    // the stages add to the wait of a tick when the loop is not busy.
     const auto sample = [&](bool pipelined) {
+        republish_tap tap(f, tenant, party);
         feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer, pipelined);
         loop.start();
         const auto set = warm_up(f, source, reader, [&](const std::vector<market_tick>& ticks) {
@@ -846,20 +919,41 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
         const auto seconds = std::chrono::duration<double>(burst_clock::now() - start).count();
         REQUIRE(done);
         CHECK(reader.count_since(base) == burst_ticks);
-        return static_cast<double>(burst_ticks) / seconds;
+
+        // The republish follows the copy of the batch that holds the tick. A tick that is too
+        // old is not republished, so the wait ends when the count stops growing.
+        tap.wait_for_quiet(std::chrono::seconds(2));
+        sample_result result;
+        result.rows_per_second = static_cast<double>(burst_ticks) / seconds;
+        result.burst_ages_ms = tap.ages_ms(base);
+
+        const auto stream_base = std::chrono::system_clock::now();
+        constexpr std::size_t stream_ticks = 500;
+        for (std::size_t i = 0; i < stream_ticks; ++i) {
+            publish(tick_from(source, set.uris[i % set.uris.size()]));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
+        tap.wait_for_quiet(std::chrono::seconds(2));
+        result.stream_ages_ms = tap.ages_ms(stream_base);
+        return result;
     };
 
     for (int rep = 1; rep <= burst_repetitions; ++rep) {
         const auto serial = sample(false);
         const auto pipelined = sample(true);
         std::cout << "RESULT serial against pipelined run " << rep << ": serial " << std::fixed
-                  << std::setprecision(0) << serial << ", pipelined " << pipelined
-                  << " rows per second, load " << std::setprecision(1) <<
+                  << std::setprecision(0) << serial.rows_per_second << ", pipelined "
+                  << pipelined.rows_per_second << " rows per second, load " << std::setprecision(1)
+                  <<
             []() {
                 double load = 0;
                 std::ifstream("/proc/loadavg") >> load;
                 return load;
             }() << std::endl;
+        report_ages("serial burst", rep, serial.burst_ages_ms, burst_ticks);
+        report_ages("pipelined burst", rep, pipelined.burst_ages_ms, burst_ticks);
+        report_ages("serial stream", rep, serial.stream_ages_ms, 500);
+        report_ages("pipelined stream", rep, pipelined.stream_ages_ms, 500);
     }
 }
 

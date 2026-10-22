@@ -62,6 +62,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:3397BE56-F060-40B2-8962-F759D20692D2][Measure and trim the dated export]] | BACKLOG | | | A dated export makes three reads for each series, where the export without a date made one. |
 | [[id:4782C6AA-E569-4333-8E24-7E22B6D4FB04][Overlap the copy with the next batch]] | STARTED | 2026-10-21 | | The worker prepares a batch and then waits for its COPY, so the drain through NATS reaches about 98,000 rows per second against a target of more than 100,000. |
 | [[id:EBB7CB46-E476-4547-B63A-9FE78A075E8C][Remove the session functions from the policies]] | BACKLOG | | | The row-level security policies of the other tables call session functions, which cost about seven times a policy in the scalar subquery form on an indexed read. |
+| [[id:D1D8273D-DC95-4C69-8FBE-FCD8F30B9FB6][Wait on the backoff in the failed copy test]] | BACKLOG | | | The test of a failed copy sleeps a fixed 1500 ms for the store backoff and assumes the queue drops no tick, so it can fail on a loaded machine. |
 
 * Decisions
 

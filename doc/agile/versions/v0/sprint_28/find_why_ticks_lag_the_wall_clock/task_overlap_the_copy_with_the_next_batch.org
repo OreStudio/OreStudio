@@ -44,7 +44,8 @@ The drain of a burst through NATS passes 100,000 rows per second with margin on 
 
 Step 5 of the parent task showed that the loop prepares a batch and then waits for its =COPY=.
 A bare =COPY= takes about 0.26 s of the 0.55 s for 60,000 rows, and the loop takes the rest,
-one after the other in one thread. The loop now has three stages that work on three batches.
+one after the other in one thread. The loop now has three stages that work on three batches at
+once, with a place for one waiting batch between two stages.
 
 1. The worker prepares a batch: it plans the ticks, finds the series, numbers the datums and
    builds the rows. It hands the batch to the next stage through a bounded handoff of one batch.
@@ -120,7 +121,9 @@ than 100,000 rows per second through NATS, with margin, is met.
 What a reader needs to know:
 
 - A handoff of one batch lets a slow stage stop the one before it, so the batches do not pile up
-  in memory. At most three batches are in the loop at a time.
+  in memory. Each stage holds one batch and one batch waits between two stages, so at most five
+  batches are in the loop at a time, and the memory of the batches is bounded by five times the
+  largest batch.
 - A tick is republished after the copy of its batch, in the order of the batches. A store that
   does not answer leaves a batch unstored and republished, and the backoff is the one of before.
   The test =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits=

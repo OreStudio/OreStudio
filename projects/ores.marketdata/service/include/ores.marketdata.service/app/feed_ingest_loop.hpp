@@ -95,15 +95,15 @@ make_feed_series(const domain::feed_binding& binding,
  * every tick that has arrived and prepares them as one batch: it plans each tick, finds
  * the series of each consumer once, numbers the datums and builds the rows. A second
  * thread copies the batch to the tick table with one copy. A third thread then records the
- * activity and republishes. The three stages work on three batches at once, and one batch waits
- * at most between two stages, so a slow stage stops the stage before it and the batches do
- * not pile up. Republish follows the copy of the batch that stored the tick, on core NATS
- * with no wait for an acknowledgement. A tick is perishable, because an old tick
- * that waits while a newer one arrives is worse than a tick that is lost. So the
- * queue is bounded and a full queue drops its oldest tick, and the worker drops a
- * tick that has aged past max_tick_age when it takes the tick. A batch takes about one
- * second, so a tick does not wait long inside a slow batch, and a tick that has aged past
- * the limit by the time its batch commits is stored and not republished.
+ * activity and republishes. The three stages work on three batches at once. One batch waits
+ * at most between two stages, so five batches are in the loop at most, and a slow stage stops
+ * the stage before it and the batches do not pile up. Republish follows the copy of the batch that
+ * stored the tick, on core NATS with no wait for an acknowledgement. A tick is perishable, because
+ * an old tick that waits while a newer one arrives is worse than a tick that is lost. So the queue
+ * is bounded and a full queue drops its oldest tick, and the worker drops a tick that has aged past
+ * max_tick_age when it takes the tick. A batch takes about one second, so a tick does not wait long
+ * inside a slow batch, and a tick that has aged past the limit by the time its batch commits is
+ * stored and not republished.
  *
  * A store that does not answer does not stop the live path. The loop leaves the
  * store alone for a growing wait, and it still republishes the ticks it could not
@@ -256,8 +256,6 @@ private:
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     std::shared_ptr<tick_writer> tick_writer_;
     const bool pipelined_;
-    /// Guards the connection of the tick writer, which one thread uses at a time.
-    std::mutex writer_mu_;
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
     using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;

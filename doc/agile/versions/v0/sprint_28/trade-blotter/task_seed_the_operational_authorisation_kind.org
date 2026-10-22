@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
 #+branch: feature/seed-the-operational-authorisation-kind
-#+pr:
+#+pr: 3624
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3624][#3624]] | [trading] Raise an operational authorisation request when a live trade is booked |
 
 * Review
 

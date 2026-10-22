@@ -26,11 +26,11 @@ Every leaf of the ore.xml analytics has a label, help line, description with exa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | All 525 analytic parameters are documented and the columns are NOT NULL. Tests and the PR are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the tests, open the PR and review it. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -102,3 +102,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 525 analytic parameters of =ore.xml= have a label, a help line, a description, a default, a format and the release that introduced them. The columns are NOT NULL, except =removed_in=. The seed comes from a generator that fails when a text is incomplete, and a local gate compares the seed with the texts.
+
+Reading the sources found 16 example parameters that no release reads, 6 that the latest release no longer reads, and three faults of release 1.8.17.0. The texts say so.
+
+The descriptions are shorter than the prototype text of the engine settings: the median is about 190 characters, and examples are sparse. The owner can ask to deepen them for the analytics that a screen shows first.
+
+Left for other tasks: the Setup, Markets and Logging blocks, and the leaves of other schemas.

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 14CB6854-0360-4821-8871-B64B19028644
+:END:
+#+title: App version prototype
+#+description: One app version of the compute catalogue: the engine and wrapper build a job pins, the release note stored with it, and the packages the wrapper downloads.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:compute:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+| Item      | Where                                      |
+|-----------+--------------------------------------------|
+| Prototype | [[file:app-version/][the prototype]]                        |
+| Group     | [[file:index.org][Compute prototypes]]                |
+| Journey   | [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]] |
+
+* Summary
+
+A job pins an app version, and the job page links to it. A person who follows
+that link asks "what is this release, and what changed in it?" The catalogue
+holds the build and the packages and holds no answer to the second question.
+This prototype draws the page of one app version with a release note beside the
+build.
+
+It is throwaway. It reads no service. Open the [[file:app-version/][app version page]].
+
+* Detail
+
+** What it argues
+
+- The release note belongs to the app version. A release is one engine build
+  with one wrapper build, and it is packaged for several platforms. One note
+  describes the release, so it is not stored on each package.
+- The note is stored with the bundle. The shell's =compute publish-package=
+  uploads the package and registers the rows. The same call carries the note,
+  so a release and its note are written together and cannot drift apart.
+- The page reads for every signed-in person and writes for a super
+  administrator. A reader sees the note. A writer also sees a button to edit
+  it. The write controls are withheld from the other roles, as the journey
+  states for the whole catalogue.
+- A version with no package is marked. The page says the version is stored and
+  never runs, because the wrapper has nothing to download.
+- A release with no note says so, and says who writes it.
+
+** Variants and states
+
+=?role=operator|tenant|member=, =?state=loaded|loading|empty|error|refused= and
+=?version=newest|older|nopackage=. The bar at the foot of the page switches all
+three.
+
+| Version   | What it shows |
+|-----------+---------------|
+| newest    | A note with a summary, changes and known issues. Four packages, one for an inactive platform. |
+| older     | A shorter note. The same packages. |
+| nopackage | No note and no package. The page marks both. |
+
+** What is real and what is not
+
+The app, the version ids and the platform codes follow the development
+database. The engine versions, the digests, the package names and the release
+notes are invented.
+
+The /Release Note/ panel is the one exception to the fields-only rule. The app
+version model has no such column today. The story Browse and follow the grid's
+jobs holds a task that adds a text column named =release_note= to
+=app_version=, so the page waits for that task. The panel reads two marks in the
+stored text: a line that starts with "## " is a heading, and a line that starts
+with "- " is an item.
+
+** What is left out
+
+- A mark that says a version is the newest of its app. The model states no flag
+  and no order, and the journey lists that as a gap.
+- The jobs that pinned this version, and how many still run it. No aggregate
+  read exists.
+- The versions-in-flight matrix and the concurrency panel of the full catalogue
+  screen.
+
+* See also
+
+- [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]] — the journey this prototype answers.
+- [[file:follow-a-job.org][Follow a job]] — the page that links here.
+- [[file:index.org][Compute prototypes]] — the group page.

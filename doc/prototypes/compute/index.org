@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:compute:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-22
 
 * Summary
 
 The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run.
 
-Two prototypes answer to this group. Each one is a static page under
+Four prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -28,6 +28,8 @@ generated alternative kept beside the agreed design, never instead of it.
 |------------------+----------------+---------+--------|
 | Compute journeys | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][prototype]] | none |
 | [[file:browse-the-grids-jobs.org][Browse the grid's jobs]] | A paged tree of batches, workunits and results beside a details panel answers "which ones failed, and why" for each role: the Jobs tab of the compute grid screen. | [[file:browse-the-grids-jobs/][prototype]] | [[file:browse-the-grids-jobs/review/][Gemini review]] |
+| [[file:follow-a-job.org][Follow a job]] | One page answers "where is this job, what ran it, and what did it produce": the state with the outcome beside it, the runs, the files, the release and the chain back to the scheduled job. | [[file:follow-a-job/][prototype]] | none |
+| [[file:app-version.org][App version]] | One app version of the catalogue with the release note stored beside its build: what a job pinned, what changed in it, and the packages the wrapper downloads. | [[file:app-version/][prototype]] | none |
 
 * Adding a prototype
 

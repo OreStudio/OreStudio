@@ -96,7 +96,7 @@
                 failing: w < b.failed
             });
             var run = resultsOf(b, out[out.length - 1])[0];
-            out[out.length - 1].canonical_result_id = run.server_state === 5 && run.outcome === 1 ? run.id : null;
+            out[out.length - 1].canonical_result_id = run.server_state === 5 ? run.id : null;
         }
         return out;
     }
@@ -129,7 +129,38 @@
     var q = new URLSearchParams(location.search);
     var role = ROLES[q.get('role')] ? q.get('role') : 'operator';
     var screen = STATES.indexOf(q.get('state')) >= 0 ? q.get('state') : 'loaded';
-    var ui = { text: '', state: '', party: '', page: 0, size: 10, open: {}, selected: null, wuPage: {}, readOnly: true };
+    var ui = {
+        text: q.get('find') || '',
+        state: q.get('status') || '',
+        party: q.get('party') || '',
+        outcome: q.get('outcome') || '',
+        page: Math.max(0, (parseInt(q.get('page'), 10) || 1) - 1),
+        size: PAGE_SIZES.indexOf(parseInt(q.get('size'), 10)) >= 0 ? parseInt(q.get('size'), 10) : 10,
+        open: {},
+        selected: q.get('sel') || null,
+        wuPage: {}
+    };
+    (q.get('open') || '').split(',').forEach(function (id) { if (id) { ui.open[id] = true; } });
+
+    /* The filters, the open rows, the page and the selection live in the
+     * address, so a reload or a shared link shows the same screen. */
+    function save() {
+        try {
+            var p = new URLSearchParams();
+            p.set('role', role);
+            if (screen !== 'loaded') { p.set('state', screen); }
+            if (ui.text) { p.set('find', ui.text); }
+            if (ui.state) { p.set('status', ui.state); }
+            if (ui.party) { p.set('party', ui.party); }
+            if (ui.outcome) { p.set('outcome', ui.outcome); }
+            if (ui.page) { p.set('page', ui.page + 1); }
+            if (ui.size !== 10) { p.set('size', ui.size); }
+            var open = Object.keys(ui.open).filter(function (k) { return ui.open[k]; });
+            if (open.length) { p.set('open', open.join(',')); }
+            if (ui.selected) { p.set('sel', ui.selected); }
+            history.replaceState(null, '', '?' + p.toString());
+        } catch (e) { /* the address stays as it was */ }
+    }
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -146,10 +177,18 @@
         return { open: 'queue', processing: 'run', assimilating: 'run', closed: 'ok' }[st] || 'queue';
     }
 
+    function wantedRun(res) { return !ui.outcome || String(res.outcome) === ui.outcome; }
+
+    /* A workunit stays in the tree when one of its runs has the outcome asked
+     * for, and a batch stays when one of its workunits does. */
+    function wantedWorkunit(b, wu) { return resultsOf(b, wu).some(wantedRun); }
+    function wantedBatch(b) { return !ui.outcome || workunitsOf(b).some(function (wu) { return wantedWorkunit(b, wu); }); }
+
     function filtered() {
         return batches.filter(function (b) {
             return (!ui.text || b.external_ref.indexOf(ui.text) >= 0 || b.id === ui.text) &&
                 (!ui.state || b.status === ui.state) &&
+                wantedBatch(b) &&
                 (role === 'member' ? b.party === MEMBER_PARTY : !ui.party || b.party === ui.party);
         });
     }
@@ -214,7 +253,7 @@
             r.onclick = function () { ui.open[b.id] = !open; ui.selected = b.id; render(); };
             ul.appendChild(r);
             if (!open) { return; }
-            var wus = workunitsOf(b);
+            var wus = workunitsOf(b).filter(function (wu) { return wantedWorkunit(b, wu); });
             var wp = ui.wuPage[b.id] || 0;
             var wsize = WUNIT_PAGE;
             var l1 = el('ul', 'tree lvl1');
@@ -225,7 +264,7 @@
                 l1.appendChild(wr);
                 if (wopen) {
                     var l2 = el('ul', 'tree lvl2');
-                    resultsOf(b, wu).forEach(function (res) {
+                    resultsOf(b, wu).filter(wantedRun).forEach(function (res) {
                         var rr = row(res.id.slice(0, 8), res.id, '', resultBadges(res));
                         rr.onclick = function (e) { e.stopPropagation(); ui.selected = res.id; render(); };
                         l2.appendChild(rr);
@@ -259,15 +298,15 @@
 
     function mib(n) { return (n / 1048576).toFixed(n >= 1073741824 ? 0 : 1) + ' MiB'; }
 
-    /* Not stored today: the wrapper measures the run's duration and the bytes
-     * it moved but only sums them per node; the engine's peak memory is a line
-     * in its log. The block is drawn to judge the layout, and it says so.
-     * A result shows its own figures. A workunit and a batch aggregate those
+    /* The result stores none of these today: the wrapper measures the run's
+     * duration and the bytes it moved but only sums them per node, and the
+     * engine's peak memory is a line in its log. The story that adds the run
+     * statistics adds the fields. A result shows its own figures. A workunit and a batch aggregate those
      * of the results below them: the earliest start, the latest finish, the
      * sums of the bytes, and the largest peak memory of any run. */
     function runStats(label, results) {
-        var box = el('div', 'proposed');
-        box.appendChild(el('div', 'kicker', 'Run statistics \u00b7 proposed, not stored yet'));
+        var box = el('div', 'stats');
+        box.appendChild(el('div', 'kicker', 'Run statistics'));
         var dl = el('dl');
         function line(k, v) { dl.appendChild(el('dt', '', k)); dl.appendChild(el('dd', '', v)); }
         var done = results.filter(function (r) { return r.stats; });
@@ -315,11 +354,11 @@
             dl.appendChild(dd);
         }
         function text(k, v) { put(k, document.createTextNode(v === null || v === '' ? 'none' : String(v))); }
-        function link(k, v, target) {
+        function link(k, v, target, href) {
             var a = el('a', v.length === 36 ? 'mono' : '', v);
-            a.href = '#';
+            a.href = href || '#';
             a.title = 'Open ' + target;
-            a.onclick = function (e) { e.preventDefault(); toast('Would open ' + target + ' ' + v); };
+            if (!href) { a.onclick = function (e) { e.preventDefault(); toast('Would open ' + target + ' ' + v); }; }
             put(k, a);
         }
         function file(k, uri) {
@@ -338,7 +377,7 @@
             audit();
         } else if (hit.kind === 'workunit') {
             link('Batch ID', hit.b.id, 'batch');
-            link('App Version ID', hit.wu.app_version_id, 'app version');
+            link('App Version ID', hit.wu.app_version_id, 'app version', '../app-version/index.html?role=' + role);
             file('Input URI', hit.wu.input_uri);
             text('Config URI', hit.wu.config_uri);
             text('Priority', hit.wu.priority);
@@ -361,6 +400,13 @@
             audit();
         }
         d.appendChild(dl);
+        if (hit.kind !== 'batch') {
+            var run = hit.kind === 'result' ? hit.res : resultsOf(hit.b, hit.wu)[0];
+            var kind = run.server_state === 4 ? 'running' : run.outcome === 3 ? 'failed' : 'done';
+            var go = el('a', 'btn', 'Follow this job');
+            go.href = '../follow-a-job/index.html?role=' + role + '&job=' + kind;
+            d.appendChild(go);
+        }
         if (hit.kind === 'result') { d.appendChild(runStats('', [hit.res])); }
         else if (hit.kind === 'workunit') { d.appendChild(runStats('Aggregated from the results of this workunit.', resultsOf(hit.b, hit.wu))); }
         else {
@@ -382,6 +428,10 @@
         [''].concat(BATCH_STATUSES).forEach(function (v) { var o = el('option', '', v || 'Any'); o.value = v; o.selected = v === ui.state; s.appendChild(o); });
         s.onchange = function () { ui.state = s.value; ui.page = 0; render(); };
         field('Status', s);
+        var oc = el('select');
+        [['', 'Any'], ['1', 'Success'], ['3', 'ClientError'], ['4', 'NoReply'], ['0', 'not set (0)']].forEach(function (v) { var o = el('option', '', v[1]); o.value = v[0]; o.selected = v[0] === ui.outcome; oc.appendChild(o); });
+        oc.onchange = function () { ui.outcome = oc.value; ui.page = 0; render(); };
+        field('Outcome', oc);
         if (ROLES[role].parties) {
             var p = el('select');
             [''].concat(PARTIES).forEach(function (v) { var o = el('option', '', v || 'Any'); o.value = v; o.selected = v === ui.party; p.appendChild(o); });
@@ -391,7 +441,7 @@
         var go = el('button', 'btn', 'Search');
         go.onclick = function () { ui.text = t.value.trim(); ui.page = 0; render(); };
         var clr = el('button', 'btn', 'Clear');
-        clr.onclick = function () { ui.text = ''; ui.state = ''; ui.party = ''; ui.page = 0; render(); };
+        clr.onclick = function () { ui.text = ''; ui.state = ''; ui.party = ''; ui.outcome = ''; ui.page = 0; render(); };
         f.appendChild(go); f.appendChild(clr);
         return f;
     }
@@ -453,7 +503,7 @@
         app.textContent = '';
         app.appendChild(el('h1', 'screen-title', 'Compute grid'));
         var tabs = el('div', 'tabs');
-        ['Overview', 'Machines', 'Usage', 'Jobs'].forEach(function (t) { tabs.appendChild(el('span', t === 'Jobs' ? 'on' : '', t)); });
+        ['Overview', 'Usage', 'Machines', 'Nodes', 'Heatmap', 'Jobs'].forEach(function (t) { tabs.appendChild(el('span', t === 'Jobs' ? 'on' : '', t)); });
         app.appendChild(tabs);
         if (screen === 'refused') {
             app.appendChild(stateNote());
@@ -473,6 +523,7 @@
             }
         }
         bar();
+        save();
     }
 
     render();

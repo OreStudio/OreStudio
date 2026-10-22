@@ -246,7 +246,7 @@ and not by a filter the screen applies.
 | Search a kind by a term | Filter a convention list by anything but the key | (the filter is =id_one_of= and nothing else) | missing |
 | Name the document a run takes | Read the default of a kind | (no default column, no default row) | missing |
 | Read what a configuration names | Read the documents a conventions configuration holds | (a conventions configuration has no children to read) | missing |
-| The screen itself | Read 26 kinds for one party in one answer | (no BFF route) | missing |
+| The screen itself | Read 26 kinds for one party in one answer | =GET /api/conventions/families= | partial |
 
 The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.list=
 and its equals for every one of the 26 kinds, under the kind's own plural. A
@@ -263,10 +263,12 @@ which hold =*=. The person who reads conventions for a living holds
 =refdata::swap_conventions:read= and its siblings under =Operations=, and reads
 them one kind at a time.
 
-No BFF route serves conventions. This journey adds one, for example
-=GET /api/refdata/parties/<party-id>/conventions=, which reads the party's
-document once, joins the term lists, derives the names and returns the 26 rows
-with their counts and their provenance.
+=GET /api/conventions/families= exists. It returns one row for each kind with a
+count of documents, and the count is null where it cannot be read. It names no
+party, states no number of distinct term sets and carries no provenance.
+=GET /api/conventions/<family>= returns one page of a kind by offset and limit. This
+journey adds the term-set count and the provenance to the first, and the order
+and the search to the second.
 
 * What is missing
 

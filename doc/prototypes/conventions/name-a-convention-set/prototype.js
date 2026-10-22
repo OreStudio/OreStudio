@@ -118,7 +118,7 @@
         var st = S.withdrawn ? ['inactive', 'Withdrawn'] : ['pending', 'Pending'];
         var h = '<h2>Your request</h2><p class="lede">A new set needs a second person.</p>' +
             '<dl class="plain"><dt>Request</dt><dd>New set: ' + M.esc(S.f.name || 'Dubai swaps desk') + '</dd><dt>State</dt><dd>' + M.badge(st[0], st[1]) + '</dd>' +
-            '<dt>Asked by</dt><dd>' + M.esc(S.person.name) + '</dd><dt>Decides</dt><dd>Market Risk</dd><dt>Asked</dt><dd>just now</dd></dl><div style="height:16px"></div>';
+            '<dt>Asked by</dt><dd>' + M.person(S.person.id) + '</dd><dt>Decides</dt><dd>Market Risk</dd><dt>Asked</dt><dd>just now</dd></dl><div style="height:16px"></div>';
         h += S.withdrawn ? M.notice('info', '<b>You withdrew this request.</b> No set was created.')
             : M.notice('info', '<b>Waiting for Market Risk.</b> The set does not exist yet, so no report can choose it.');
         h += M.gap('No approval kind exists for a set, a request holds no pending set, and nothing creates the set when the last decider approves.');

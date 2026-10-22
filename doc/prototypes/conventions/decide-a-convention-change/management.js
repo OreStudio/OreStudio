@@ -71,6 +71,34 @@
             M.icon(editable ? 'edit' : 'lock_closed') + (editable ? 'Editable' : 'Read only') + '</span>';
     };
 
+    /* The shared Refresh control. The time the data loaded stands under it, in
+       ISO 8601 and the reader's zone. A stale screen turns it gold. */
+    M.LOADED = '2026-10-19T13:00:00+01:00';
+    M.refresh = function (stale, loaded) {
+        var at = loaded || M.LOADED;
+        return '<span class="refresh"><button type="button" class="btn' + (stale ? ' stale pulse' : '') + '" data-act="refresh"' +
+            (stale ? ' title="The data changed on the server at 2026-10-19T13:04:30+01:00. Press Refresh to read it."' : '') + '>' +
+            M.icon('arrow_clockwise') + 'Refresh</button><span class="loaded" title="Loaded ' + at + '">' + at + '</span></span>';
+    };
+
+    /* A person is drawn with an avatar and the name. The prototypes hold no
+       person page, so the name is plain text and not a link. */
+    function initials(name) {
+        return name.replace(/[^A-Za-z. ]/g, '').split(/[ .]+/).filter(Boolean).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+    }
+    M.person = function (id) {
+        var p = M.PEOPLE[id];
+        var name = p ? p.name : id;
+        var ini = initials(name);
+        return '<span class="person"><span class="avatar" aria-hidden="true">' + M.esc(ini) + '</span>' + M.esc(name) + '</span>';
+    };
+    M.avatar = function (id) {
+        var p = M.PEOPLE[id];
+        var name = p ? p.name : id;
+        var ini = initials(name);
+        return '<span class="avatar" title="' + M.esc(name) + '">' + M.esc(ini) + '</span>';
+    };
+
     /* The menu of workflows a list or a record page carries. Each line is a
        verb and its object, and one line about it. items: [{t, d, href}]. */
     M.workflowMenu = function (items) {
@@ -197,7 +225,7 @@
                     M.esc(c.h) + (on ? (o.sort.dir > 0 ? ' ↑' : ' ↓') : '') + '</button>') + '</th>';
             }).join('') + '</tr></thead><tbody>' +
             rows.map(function (r, i) {
-                return '<tr class="' + (o.plain ? '' : 'pick') + (o.isOn && o.isOn(r) ? ' on' : '') + '"' + (o.plain ? '' : ' tabindex="0"') + ' data-row="' + i + '">' +
+                return '<tr class="' + (o.plain ? '' : 'pick') + (o.isOn && o.isOn(r) ? ' on' : '') + (o.rowClass ? ' ' + o.rowClass(r) : '') + '"' + (o.plain ? '' : ' tabindex="0"') + ' data-row="' + i + '">' +
                     cols.map(function (c) { return '<td class="' + (c.cls || '') + '">' + c.cell(r) + '</td>'; }).join('') + '</tr>';
             }).join('') + '</tbody></table>';
     };
@@ -252,9 +280,13 @@
     M.closeDialog = function () {
         var s = document.getElementById('dialog-scrim');
         if (s) { s.remove(); }
+        M.beforeClose = null;
     };
+    /* A dialog that holds unsaved work sets this. It returns true to let the
+       dialog close. */
+    M.beforeClose = null;
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { M.closeDialog(); }
+        if (e.key === 'Escape' && (!M.beforeClose || M.beforeClose())) { M.closeDialog(); }
     });
 
     /* ---------------------------------------------------------------- */
@@ -266,6 +298,12 @@
         'j.ruiz': { id: 'j.ruiz', name: 'J. Ruiz', part: 'Market Risk', decides: ['market_risk'] },
         't.brandt': { id: 't.brandt', name: 'T. Brandt', part: 'Market Risk', decides: ['market_risk'] },
         'k.mori': { id: 'k.mori', name: 'K. Mori', part: 'Trading desk', decides: [] }
+    };
+
+    M.reasonName = function (code) {
+        var all = M.CHANGE_REASONS.amend.concat(M.CHANGE_REASONS.delete, [{ v: 'system.new_record', t: 'New record' }, { v: 'system.external_data_import', t: 'External data import' }]);
+        var r = all.filter(function (x) { return x.v === code; })[0];
+        return r ? r.t : code;
     };
 
     M.CHANGE_REASONS = {

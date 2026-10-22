@@ -74,7 +74,7 @@
         }
         var cols = [
             { id: 'title', h: 'Request', cell: function (r) { return M.esc(r.title); }, val: function (r) { return r.title; } },
-            { id: 'by', h: 'Asked by', cell: function (r) { return M.esc(who(r.by)); }, val: function (r) { return who(r.by); } },
+            { id: 'by', h: 'Asked by', cell: function (r) { return M.person(r.by); }, val: function (r) { return who(r.by); } },
             { id: 'kind', h: 'Change', cell: function (r) { return M.badge('class', KIND_TEXT[r.kind]); }, val: function (r) { return r.kind; } },
             { id: 'at', h: 'Waiting', cell: function (r) { return M.relTime(r.at); }, val: function (r) { return r.at; } }
         ];
@@ -116,7 +116,7 @@
     function changeStep() {
         var r = req();
         var tenant = r.target && !M.kind(r.target).party;
-        var h = '<h2>' + M.esc(r.title) + '</h2><p class="lede">' + M.badge('pending', 'Pending') + ' Asked by ' + M.esc(who(r.by)) + ' ' + M.relTime(r.at) + '. Expires in ' + (14 - Math.round((M.NOW - Date.parse(r.at)) / 86400000)) + ' days.</p>' +
+        var h = '<h2>' + M.esc(r.title) + '</h2><p class="lede">' + M.badge('pending', 'Pending') + ' Asked by ' + M.person(r.by) + ' ' + M.relTime(r.at) + '. Expires in ' + (14 - Math.round((M.NOW - Date.parse(r.at)) / 86400000)) + ' days.</p>' +
             '<h3 style="margin-top:0">Reason given</h3><p>' + M.esc(r.reason) + '</p><h3>The change</h3>' + changeBody(r);
         h += '<h3>What it reaches</h3><dl class="plain"><dt>Read by</dt><dd>' + (r.kind === 'set' ? 'Every report that chooses the set' :
             (tenant ? 'Every party of the tenant' : 'Every definition of ACME, through the party’s conventions file')) + '</dd>' +
@@ -150,7 +150,7 @@
         var r = req();
         var d = S.done;
         var h = '<h2>' + M.esc(r.title) + '</h2><p class="lede">' + (d === 'approve' ? M.badge('ok', 'Approved') : d === 'decline' ? M.badge('bad', 'Declined') : M.badge('caution', 'On hold')) +
-            ' Decided by ' + M.esc(S.person.name) + ' just now.</p>';
+            ' Decided by ' + M.person(S.person.id) + ' just now.</p>';
         if (d === 'approve') {
             h += M.notice('success', '<b>The change is applied.</b> ' + (r.kind === 'set' ? 'The set exists and a report can choose it.' :
                 r.kind === 'delete' ? 'Runs of ACME no longer read the document. Version ' + (r.version + 1) + ' records the delete.' :

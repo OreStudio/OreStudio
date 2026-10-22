@@ -42,6 +42,8 @@ A person can see, from clickable prototypes, how conventions are managed. Each p
 | [[id:7F24F915-BB5E-4AF0-8B0C-F6BDED942645][Scaffold story: Prototype the management of conventions]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:093A0192-AA05-47DD-B829-2130B7C40F8C][Write the user journeys for managing conventions]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: Prototype the management of conventions |
 | [[id:2B7E97DF-2F4F-4356-9B6F-615FCCF606DD][Draw the five convention management prototypes]] | DONE | 2026-10-19 | 2026-10-19 | One static prototype for each of the four management journeys, in the conventions prototype group. |
+| [[id:EDDD9B0E-0CE7-4378-B5E7-42109F98EE7E][Correct the gap statements about the conventions routes]] | DONE | 2026-10-21 | 2026-10-21 | Task for: Prototype the management of conventions |
+| [[id:85029F0B-CDED-495C-8596-3538297346C0][Bring the convention prototypes to the screen review checklist]] | DONE | 2026-10-21 | 2026-10-21 | Task for: Prototype the management of conventions |
 
 * Decisions
 

@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 85029F0B-CDED-495C-8596-3538297346C0
+:END:
+#+title: Task: Bring the convention prototypes to the screen review checklist
+#+description: Task for: Prototype the management of conventions
+#+type: task
+#+level: s1
+#+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
+#+owner: marco
+#+branch: feature/correct-the-conventions-route-gaps
+#+pr: 3621
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The screen review checklist was written after the convention prototypes. Tick each line against the list prototype, record each gap, and fix the gaps the prototype can draw. The workflow prototypes get the lines on words, icons, states and colour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
+| Now          | The list prototype meets the checklist, with four named exceptions. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge, then build the list screen. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- Each checklist line is marked Meets, Gap or N/A for the list prototype, in the task result.
+- Every gap the prototype can draw is fixed, and every gap it cannot draw is named with its reason.
+- The local checks pass.
+
+* Plan
+
+1. Read the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] and its two sources.
+2. Mark each line against the list prototype: Meets, Gap, or N/A.
+3. Add the shared parts the gaps need to =management.js= and =management.css=: the Refresh control with its load time, the person with an avatar, the change reason names, a row mark, and a hook for a dialog that holds changes.
+4. Fix the gaps the prototype can draw. Name the gaps it cannot, with the reason.
+5. Give the four workflow prototypes the lines on people, reasons and words.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Checklist lines read | 88 | =grep -c '^- \[ \]' doc/knowledge/ui/screen_review_checklist.org= | 8f7612bcac |
+
+* Notes
+
+The checklist was written on 2026-10-20, after the prototypes. The standards do
+not list an icon for Propose, Clear, Retry, Keep my edit, Take the new values or
+Close anyway. The prototype follows the rule that an action the table lacks is
+added to the table first, so it draws those without a new icon. The standards
+need those rows. This task does not edit the standards.
+
+The query flags =stale=, =news=, =newer= and =refused= are fixtures. The
+prototype reads them on load and does not write them back to the address, so a
+reload after a change drops =news= and =newer=. This is on purpose.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3621][#3621]] | [agile,prototypes] Correct the convention route gaps and meet the checklist |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The list prototype meets every line of the checklist except those below. Each
+line not named here Meets.
+
+| Line | Mark | What changed or why it stands |
+|------+------+-------------------------------|
+| Page, size, search, filter and order live in the address | Fixed | The prototype writes them to the address as it draws. |
+| States: loading again with dimmed rows | Fixed | =?state=reloading= dims the rows. |
+| A refused read is stated in words | Fixed | =?state=refused= says what the person cannot read and whom to ask. |
+| Rows that changed after a reload are marked | Fixed | After a Refresh that follows a change, the row carries a gold mark for a few seconds. The strip for a change off the page is not drawn. |
+| Tabs: a tab that does not apply is not drawn | Fixed | The Requests tab shows only while a request waits. |
+| A person is drawn with a photo and a link | Fixed, in part | An avatar and the name. The name is plain text, because no person page exists in the prototype. |
+| A value shows as a name | Fixed | A change reason shows its name and not its code. |
+| The screen does not explain what is absent | Fixed | The "None yet" and "terms not drawn" sentences are gone. |
+| Edit is on the card, and the header has none | Fixed | Edit stands on the Terms card. The record screen standard puts Edit in the header. The checklist says to follow the entity screen specification. |
+| Save waits until a field differs | Fixed | Propose waits. "No change in substance" is never offered, because nothing can be saved without a change. |
+| A commentary is required when the reason needs one | Fixed | Market practice changed needs a commentary. |
+| A wrong field shows its message when the person leaves it | Fixed | The key of a new document. Propose waits until the form is complete. |
+| A stale save is refused | Fixed | =?dialog=edit&newer=1&refused=1=. |
+| The dialog listens for a newer version | Fixed | =?dialog=edit&newer=1= shows who saved it and what moved, with Keep my edit and Take the new values. |
+| The dialog says when the record was loaded | Fixed | A line under the title. |
+| Closing with changes asks first | Fixed | "You have unsaved changes. Close anyway?" |
+| An optional field has a Clear control | Fixed | Without an icon, see the notes. |
+| A fixed field says why | Fixed | One line under the key. |
+| The header has the shared Refresh button with the load time | Fixed | ISO 8601 under the button. |
+| Refresh turns gold when the data changed | Fixed | =?stale=1=, or the bar entry "Changed on the server". |
+| The author's photo stands left of each history entry | Fixed | Avatar and name. |
+| Every action carries its icon | Standards gap | Propose, Clear, Retry and the three dialog actions have no row in the icon table. |
+| Search, sort, filter and page go to the server | Gap, server | The list route sends an empty filter and no order. The prototype marks it. |
+| Every column sorts on the server | Gap, server | The same route gap. |
+| The pager shows the count first, default 15 | Exception | The list of kinds has none. It is grouped and short. |
+| After a create the screen opens the new record page | Exception | Propose creates a request, not a record. The screen links to Requests. |
+| Every string exists in English, French and Portuguese | Gap, by design | The prototypes are English only. The real screen carries all three. |
+| A party appears as a tag | N/A | No party column exists. A person reads one party. |
+| A record the server will not change shows no Edit | N/A | Every convention document can be changed. |
+| The screen needs a typed permission | N/A | The prototype shows the access mark and holds no permission code. |
+| Check on the running screen | Open | The prototype is static. A person must click through it. |
+
+The four workflow prototypes now draw a person with an avatar, show a change
+reason by name, and give each history entry an avatar.

@@ -111,7 +111,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.ops.export_portfolio.
+     * @brief Serves trading.v1.ops.put_bond_issue_composite.
      */
     void put_bond_issue_composite(ores::nats::message msg) {
         using ores::service::messaging::decode;
@@ -152,6 +152,9 @@ public:
         }
     }
 
+    /**
+     * @brief Serves trading.v1.ops.export_portfolio.
+     */
     void export_portfolio(ores::nats::message msg) {
         using ores::service::messaging::decode;
         using ores::service::messaging::error_reply;

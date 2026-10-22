@@ -159,7 +159,6 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     return response;
 }
 
-
 messaging::put_bond_issue_composite_response trade_operations_service::put_bond_issue_composite(
     const messaging::put_bond_issue_composite_request& request) {
     using ores::database::repository::unit_of_work;

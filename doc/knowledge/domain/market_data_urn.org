@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:identifiers:design:
 #+created: 2026-07-27
-#+updated: 2026-10-11
+#+updated: 2026-10-22
 
 * Summary
 
@@ -39,7 +39,7 @@ A key read into ORE Studio means what ORE means by it, and it goes back out as
 the same key. The proof is in the tests: see [[*Tests][Tests]].
 
 Every other part of market data names its object by one of these URIs. A
-feed, a feed binding, a tick, a stored series and a screen all use the same
+vendor mapping, a tick, a stored series, a composite and a screen all use the same
 reference, so there is no second name for a curve, a surface or a rate. The
 page [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] states the datum behind the URI.
 

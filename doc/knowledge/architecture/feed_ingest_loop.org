@@ -2,113 +2,88 @@
 :ID: 00D63182-C7FF-4AC9-8A83-9A5D984B2876
 :END:
 #+title: The ingest loop and the one pipeline
-#+description: How a tick is queued, planned against its bindings, written in a batch with one transaction for each tenant, and republished per consumer on core NATS, and where an if still stands in for a registered hook.
+#+description: The one path every tick takes from an adapter to the stored quote series and the party stream, and how the loop keeps the newest value when the store is slow.
 #+type: knowledge
 #+level: cross
-#+filetags: :marketdata:feeds:ingest:pipeline:
+#+filetags: :marketdata:ingest:pipeline:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
-=feed_ingest_loop=, declared in
-=ores.marketdata.service/app/feed_ingest_loop.hpp=, is the one path every
-tick takes from the wire to the store. It holds one subscription over every
-producer's ticks and handles every tick the same way, whatever its asset
-class.
+The ingest loop is the one path every tick takes. An adapter publishes a tick
+with a vendor id. The loop maps the id to an internal item, checks the value,
+writes one observation for each party routed to the source, and delivers the
+tick on each party stream. The path is the same for every adapter and every
+asset class. The loop never asks whether the source is live or simulated.
 
 * Detail
 
-** The one pipeline rule
+** The pipeline
 
-The market data pipeline in ORE Studio is one path. A producer publishes a
-=market_tick= on ="synthetic.v1.ops.tick.<source>"=. The tick names its datum
-by its oresmd quote URI and its producer by its source, and it carries no
-owner. The ingest loop plans the tick against the enabled bindings of that
-source, writes one observation per binding, and republishes the tick on the
-per consumer stream. Every other note in this cluster describes one part of
-that path and links here rather than restating this rule.
+#+caption: One tick, from the demand to the party's stream.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/market_data_tick_sequence.png]]
 
-** How a tick is handled
+Source: [[proj:doc/knowledge/architecture/market_data_tick_sequence.puml][=market_data_tick_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/market_data_tick_sequence.puml=.
 
-- =refresh()= reads every feed binding across all tenants through
-  =feed_binding_repository= and caches the enabled ones by source name. The
-  marketdata service subscribes to the =feed_binding_event= channel and
-  calls =refresh()= when a binding is created, retargeted or removed, so a
-  bind or an unbind changes what the loop ingests without a restart.
-- =plan_tick=, in =ores.marketdata.service/src/app/tick_plan.cpp=, is pure.
-  It reads the tick's URI into a datum through =oresmd_uri_codec::read=,
-  writes the canonical ORE key, parses the value and builds one target per
-  binding. Each target carries the binding and the republish subject from
-  =market_tick_subject=. It returns a =tick_drop= instead of a plan in three
-  cases, which are =unbound_source=, =unnameable_datum= and =not_a_number=.
-  The loop warns once per source or per URI and drops the tick.
-- The subscription only decodes a tick and puts it in a bounded queue. A worker
-  thread takes every tick that has arrived and handles them as one batch. A full queue
-  drops its oldest tick, because an old tick that waits while a newer one arrives is
-  worse than a tick that is lost. A batch that grows as the worker falls behind shares
-  the cost of its write among more ticks.
-- A batch writes the rows of one tenant in one transaction, because the row-level
-  security policy checks the tenant of the connection. The loop keeps the last row of
-  each key in a batch, because two rows of one key in one transaction would break the
-  unique index of current rows. A batch that fails is split in two until the failing
-  row is alone, and the loop logs that row and goes on.
-- The worker drops a tick older than 5 seconds when it takes the tick from the queue, and
-  it counts the drop. A worker that has fallen behind reaches the newest ticks at once and
-  does not work through the old ones.
-- A batch takes about one second. The worker sizes the next batch from the speed of the
-  last one, between 50 and 20,000 ticks, so a slow store gets smaller batches and a tick
-  waits less inside a batch.
-- A tick that has aged past 5 seconds by the time its batch commits stays in the store as
-  history. The loop does not republish it, because the live stream carries no old tick.
-- After the commit the loop republishes each stored tick on core NATS, with no wait
-  for an acknowledgement. The republish follows the commit of the batch, so the stream
-  does not run ahead of the table.
-- A store that does not answer does not stop the live path. When a write fails, the loop
-  opens a fresh transaction to tell a store that is down from a row that the store
-  refuses. A store that is down is left alone for a wait that starts at one second and
-  doubles to thirty seconds, and the loop republishes the ticks that it could not store.
-  One write that succeeds ends the outage.
-- A shutdown stops the subscription first. The worker then works through the queued ticks
-  for two seconds and drops the rest, and it logs how many it dropped.
-- The loop keeps the id of each series after it reads the series once. The cache
-  clears on =refresh()= and when a row for a series fails to store.
-- Persistence creates the series on the first tick that lands in it.
-  =make_feed_series= takes the identity and the classification from the
-  datum and the =producer_kind= from the binding. Every later tick inserts
-  an observation against the series that already exists.
+The stages, in order:
 
-** Where the one path is not yet complete
+1. *Receive.* One wildcard subscription covers all adapter ingress subjects.
+   A new adapter needs no subscription change. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]].
+2. *Map.* The loop reads the tick's provider, id scheme, external id and field
+   and finds the internal item. See [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]]. A tick with no mapping is
+   dropped with the reason =unmapped=, and the loop logs it once for each id.
+3. *Check quality.* See [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]].
+4. *Resolve the parties.* The loop finds every party routed to the tick's
+   source for that provider. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+5. *Store.* One observation for each party in the series
+   (item, provider, party). See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+6. *Compose.* A composite item that uses this series is recomputed. See
+   [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
+7. *Deliver and meter.* The loop delivers the tick on each party stream and
+   counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
 
-One branch in =handle_tick= is not a registered hook. After a successful
-persist, the loop offers an FX spot datum to the CRM bridge under the
-condition =plan->datum.type() == datum::instrument_type::fx_spot=. The
-comment beside it records the reason. Currency driver pairs are FX shaped,
-so only an FX spot rate is a candidate driver update. A third asset class
-that wants to feed CRM would need an edit at this line, so this is the one
-place where an =if= still stands in for a registration that a kind could
-supply.
+** How the loop keeps the newest value
 
-** Two facts the code shape does not show
+- The subscription decodes a tick and puts it in a bounded queue. A full queue
+  drops its oldest tick, because an old tick that waits while a newer one
+  arrives is worse than a lost tick.
+- A worker thread takes every tick that has arrived and handles them as one
+  batch. The worker sizes the next batch from the speed of the last one,
+  between 50 and 20,000 ticks.
+- A batch writes the rows of one tenant in one transaction, because
+  row-level security checks the tenant of the connection. The loop keeps the
+  last row of each key in a batch. A batch that fails is split in two until
+  the failing row is alone, and the loop logs that row and goes on.
+- The worker drops a tick older than 5 seconds and counts the drop.
+- The loop delivers a tick after the commit of its batch, with no wait for an
+  acknowledgement. A store that is down does not stop delivery: the loop
+  delivers the ticks it cannot store, and it waits one second, then doubles the
+  wait to thirty seconds, before it tries the store again.
+- A shutdown stops the subscription, works through the queue for two seconds,
+  and logs how many ticks it dropped.
+- The loop keeps the id of each series after one read. The cache clears when
+  routing changes and when a row for a series fails to store.
 
-- The subscription is a single wildcard over the bound prefix and not one
-  subscription per source. A new producer starts being ingested through the
-  existence of its binding, with no subscription change.
-- A bound consumer that never ticks still appears in the status log,
-  because =refresh()= keeps a stats entry per bound consumer rather than
-  creating one on the first tick.
-- The status log gives the lag of each source, which is the age of its newest stored
-  tick when its batch committed. It also gives the depth of the queue, the ticks that the
-  queue dropped, the ticks dropped for their age, the ticks republished without a store,
-  and the size and time of the last batch. A lag of 70
-  minutes shows there within the first status line.
-- The observation table sends no change notification. A tick changes many times each
-  second, and the live tick stream carries each new value.
+** What the loop reads
+
+The loop caches the mapping and the routes. The service refreshes the cache
+when a mapping or a route changes, from the change events of those entities.
+The observation table sends no change notification, because a tick changes
+many times each second and the party stream carries each value.
+
+** The one place an if remains
+
+After a successful store, the loop offers an FX spot datum to the CRM bridge
+under the condition =datum.type() == fx_spot=. A third asset class that feeds
+CRM needs an edit at that line. It is the one place where an =if= stands in for
+a registered hook.
 
 * See also
 
-- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub this cluster hangs from.
-- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type the loop reads.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the loop leaves behind.
-- [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]], the extra row a derived observation carries.
-- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]], the proposal that replaces the serial loop described here.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][One service owns market data between the vendors and the parties]] — completes: the service around the loop.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — completes: the per-party tick this loop delivers.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — completes: a proposal that replaces the serial loop with lanes and a ring.

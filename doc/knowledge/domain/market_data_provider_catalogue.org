@@ -1,151 +1,64 @@
 :PROPERTIES:
 :ID: 68CE1E1D-7568-4911-BB71-CCF5A9E07BB7
 :END:
-#+title: The market data provider catalogue
-#+description: The simulated providers a synthetic collection can stand for, why a provider is optional, how the synthetic mark keeps a simulated feed apart from a real one, and how a system collection's feeds reach every tenant.
+#+title: Every source belongs to a provider in the catalogue
+#+description: The provider as the vendor and namespace of ids, the catalogue tables the service owns, and the system bundle that installs them.
 #+type: knowledge
 #+level: cross
-#+filetags: :synthetic:config:catalogue:
+#+filetags: :marketdata:catalogue:providers:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-22
 
 * Summary
 
-=market_data_provider= is a reference-data table of the providers whose
-market data the synthetic feeds simulate: data vendors such as Bloomberg and
-Refinitiv, exchanges such as CME and LSE, a broker, and the ORE examples, a
-reference set. It is declared in =ores.synthetic.api/domain/market_data_provider.hpp=,
-and a collection's required =provider_code= is validated against its =code=.
-
-The rows arrive through DQ, as the installation's other reference data does.
-The =synthetic.market_data_providers= dataset stages them in
-=ores_dq_market_data_providers_artefact_tbl=
-(=projects/ores.sql/populate/synthetic/synthetic_market_data_providers_artefact_populate.sql=).
-The dataset is a member of the =system_core= bundle, so the system
-provisioning step of a profile such as =acme_demo= publishes it into the
-system tenant through =ores_synthetic_publish_market_data_providers_from_dq_fn=
-on =synthetic.v1.ops.publish_market_data_providers_from_dq=. The function
-refuses any other target tenant, so a tenant's own setup never writes the
-catalogue.
+A provider is a vendor, an exchange, a broker or a reference set, and it owns
+a namespace of ids. The catalogue holds the providers, their sources, their
+vendor instruments and their mappings. It lives in =ores.marketdata=. The
+system tenant owns it, and every tenant can read it.
 
 * Detail
 
-** Why it exists
-
-A desk reads Bloomberg's FX spot, an exchange's settlement prices, a broker's
-composites: the market has providers, and a synthetic installation that
-simulates the market needs to say which provider a feed stands for. A
-system-scope collection names its provider, so the installation runs a
-simulated provider once and every tenant reads it as that provider's data.
-
-** The row
+** The provider row
 
 | Column | Meaning |
 |--------+---------|
-| =code= | The provider's code, lower case, the provider segment of a source name |
-| =name= | The provider as a person knows it, without the synthetic mark |
+| =code= | The provider code in lower case, such as =bloomberg=, =lseg=, =ice= or =ore= |
+| =name= | The provider as a person knows it |
 | =kind= | =data_vendor=, =exchange=, =broker= or =reference= |
-| =description= | What the provider's feeds simulate, in a sentence or two |
+| =description= | What the provider supplies |
 | =display_order= | The order screens list providers in |
 
-The system tenant manages the rows, as it manages the yield curve process
-types; the catalogue is in =ores.synthetic= because only synthetic generation
-uses it.
+The name carries no mark of any source kind. Bloomberg is Bloomberg whether the
+source is live or simulated. The kind is a property of the source. See
+[[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]].
 
-** Every collection names a provider
+** What else the catalogue holds
 
-A collection names the provider it stands for, so every feed has one. The ORE
-examples are a provider of their own, =ore=, of kind =reference=. There is no
-generic provider.
+- Sources of each provider. See [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]].
+- Vendor instruments of each provider. See [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]].
+- Mappings from vendor instruments to internal items. See [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]].
+- Rate cards of the sources. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
 
-** The synthetic mark
+** Who owns it and who reads it
 
-Every provider here is simulated, and nothing may read a simulated feed as the
-real one. Every source name starts =synthetic.=, which the feed tables check,
-and a provider's feed's source name starts =synthetic.<provider code>.=.
-Screens name a provider with the mark, as "Bloomberg (synthetic)". A real
-provider integration belongs in market data, under its own namespace, and
-cannot collide.
+The system tenant and the system party own all catalogue rows. Row-level
+security lets every tenant read them, and only the system tenant writes them.
+A party therefore sees every provider and source and can look up what each
+source is.
 
-** The fact the code shape does not show
+** How it is installed
 
-A collection's scope decides who reads its feeds. A system collection belongs
-to the system tenant and its system party, as its feeds do, and row-level
-security lets every tenant read a system collection and every feed and part
-under it. Writing stays with the system tenant. The synthetic service's
-generated repositories state the same with =:system_tenant_visible: true= on
-each entity (the collection, its feeds and their parts, the folders and the
-provider), so a tenant's service call returns the system rows the policy admits.
-No dataset publishes a system collection yet, so a tenant sees only the
-provider catalogue so far.
+The system bundle installs the catalogue. See [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]].
 
-Providers are published into the system tenant alone, and the roles that may write a
-provider belong to the system tenant. The provider table's policy admits the system
-tenant's rows to every tenant for reading, and a tenant writes only its own rows. A
-provider code is therefore unique in practice. A tenant that holds the write
-permission and writes a provider with a system code would make a lookup by code
-ambiguous, which the catalogue does not guard against.
+** Two views of one provider
 
-Only one enabled, bound system collection may run at a time: the conflict
-guard of the collection rejects a second. So one provider is chosen as the
-bound, authoritative source for a pair such as EUR/USD, and the other
-providers' collections run sandboxed. A rate blending service is the planned
-owner of blended rates: it will read the providers' spots and publish the
-blended EUR/USD itself. A tenant consumes a
-system feed's ticks through a feed binding, which stores each tick once for
-every party that binds the source.
-
-** How a set of feeds names its provider
-
-Feeds come from a synthetic feeds dataset, the one way to set them up: a DQ
-dataset of artefact type =synthetic_feeds=, published by
-=ores_synthetic_publish_feeds_from_dq_fn=. A publish that names a party makes a
-party collection in that party. A publish that names none, into the system tenant,
-makes a sandboxed system collection held by the system party. Each FX and IR feed row of the dataset may carry a
-=provider_code=. The published feed's source name then starts
-=synthetic.<provider code>.=, and the collection names the provider when
-every feed row names the same one. The feed tables check only the =synthetic.=
-mark: the provider part of a source name holds because the one publish
-path builds it, not because a constraint ties it to the provider.
-
-=synthetic.feeds.bloomberg= is the provider dataset today
-(=projects/ores.sql/populate/synthetic/synthetic_feeds_bloomberg_populate.sql=),
-in the =synthetic_bloomberg= bundle that =acme_demo= publishes. It holds what
-the ACME reports need: a USD spot for each of 26 currencies, and a curve on
-the overnight benchmark of each of 28 currencies, plus the USD FOMC short
-end. A bank reads all its spots from one vendor, so one provider quoting
-every pair is the realistic case. The 13 spots the Federal Reserve H.10
-release quotes start from its 2026-05-05 vintage; the other 13 start at an
-illustrative fixed level, which is not a sourced quote.
-
-** The provider feeds
-
-Three providers have system feeds, in datasets of the =system_core= bundle
-(=projects/ores.sql/populate/synthetic/synthetic_feeds_providers_populate.sql=):
-
-| Provider | Feeds |
-|----------+-------|
-| Refinitiv | Fourteen cross spots between the major non-USD currencies, which Bloomberg leaves to the cross-rates matrix |
-| ICE Data Services | LIBOR curves of USD 1M and 6M, and GBP, CHF and JPY 3M |
-| Tradeweb | Dealer composite curves of EURIBOR 1M and 6M, GBP and JPY LIBOR 1M, and CHF LIBOR 6M |
-
-One series has one running publisher, in the whole service, whatever the binding
-mode, so each dataset names series that Bloomberg and the 2016 ORE Samples do not. A
-feed's series is its currency, its index tenor and its pillar, or its currency
-pair. Bloomberg stays a party collection, bound, because the demo's reports read
-its ticks.
-
-CME, LSE and Eurex have no feeds. They quote futures and equities, which have no
-feed kind yet, and the IR curve config admits term tenors only for the LIBOR and
-EURIBOR families, so a CME Term SOFR curve cannot be stored.
-
-The synthetic service starts the auto-start feeds of the system collections when it
-starts, in the system tenant. Only the system tenant starts and stops a system
-feed. A start or a stop from another tenant skips it, and the feeds that should
-run, for another tenant, leave the system feeds out.
+A provider can have many sources at once. Bloomberg can have =bloomberg-live=
+and =bloomberg-sim=. A party subscribes to the provider and the route picks the
+source. See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] and [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
 
 * See also
 
-- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]] — the collection that names its provider
-- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] — the system catalogue this follows
-- [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]] — the story that brings providers
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] — completes: the kind of each source.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the ids a provider publishes.
+- [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: how the rows arrive.

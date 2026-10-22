@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 5DFA094B-4F9F-4190-8251-8D4D0B77A5C7
+:END:
+#+title: An adapter and the service meet at four messages
+#+description: The announce, demand, tick and heartbeat messages that every adapter sends or answers, and why nothing else crosses the seam.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:architecture:adapters:nats:contract:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+An adapter is a separate NATS service that reaches one provider through one
+route: a live session, a replay file, a test harness or a simulator. It meets
+the market data service at four messages. It announces itself. It answers a
+demand request. It publishes ticks. It sends a heartbeat. A live adapter and
+the simulator send the same four messages, and the service cannot tell them
+apart from the messages alone.
+
+* Detail
+
+** The four messages
+
+| Message | Direction | Style | Subject |
+|---------+-----------+-------+---------|
+| Announce | adapter to service | request and reply | =marketdata.v1.adapters.announce= |
+| Demand | service to adapter | request and reply | =marketdata.v1.adapters.<adapter>.demand= |
+| Tick | adapter to service | core NATS publish | =marketdata.v1.ingress.<adapter>.<id token>= |
+| Heartbeat | adapter to service | core NATS publish, periodic | =marketdata.v1.adapters.<adapter>.heartbeat= |
+
+- *Announce* carries the adapter id, the provider code, and the universe: the
+  set of (id scheme, external id, field) the adapter can serve. The service
+  checks the universe against the installed catalogue. See
+  [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]].
+- *Demand* carries the full set of external ids that the parties routed to
+  this adapter need. The set replaces the last one. The adapter answers with
+  the ids it accepts and the ids it rejects, each with a reason. See [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
+- *Tick* carries the id scheme, the external id, the field, the value as
+  decimal text, the vendor time and a per-adapter sequence number. It carries
+  no oresmd URI, no tenant, no party and no source kind.
+- *Heartbeat* carries the adapter id and a counter. A missed heartbeat makes
+  the adapter =stale=. See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]].
+
+** What an adapter must not do
+
+- It must not publish an oresmd URI. Mapping is the service's job, so the
+  mapping is the same for every source of one provider. See [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]].
+- It must not know a tenant or a party. It runs as a system service. See
+  [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+- It must not store anything. The service owns persistence.
+- It must not publish an id it did not announce.
+
+** Why this seam
+
+A narrow seam keeps the vendor translation in one place. A live Bloomberg
+adapter turns =blpapi= subscriptions into ticks. Nothing behind the seam
+changes when the adapter changes. The simulator therefore has to match the
+seam only, and not the vendor protocol. See [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][One service owns market data between the vendors and the parties]] — completes: the service on the other side of the seam.
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] — completes: the subject grammar and the token rule.
+- [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]] — exemplifies: what a live adapter adds behind the seam.
+- [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — answers: why the simulator stops at this seam.

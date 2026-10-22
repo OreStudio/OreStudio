@@ -64,7 +64,7 @@ struct restore_report final {
  * start. A feed that already runs is not a failure, so a second pass leaves the
  * running feeds as they are.
  *
- * @see The identity a feed runs as (doc/knowledge/architecture/feed_execution_identity.org)
+ * @see The identity an adapter runs as (doc/knowledge/architecture/adapter_identity.org)
  */
 class feed_restorer final {
 public:

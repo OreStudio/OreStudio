@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: BAE0F052-CCA6-43FB-A139-03518CE2D929
+:END:
+#+title: The mapping belongs to the provider and not to the source
+#+description: How a vendor instrument becomes an internal item, why the mapping is on the provider, and what that allows.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:mapping:catalogue:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The mapping links a vendor instrument (provider, id scheme, external id, field)
+to an internal item, which is an oresmd datum. It is on the provider. The live
+and the simulated sources of one provider share the mapping. That is what lets a
+party change its source and keep its series.
+
+* Detail
+
+** The row
+
+| Column | Meaning |
+|--------+---------|
+| =provider=, =id_scheme=, =external_id=, =field= | The vendor instrument |
+| =oresmd_uri= | The internal item |
+| =valid_from=, =valid_to= | The period in which the mapping holds |
+
+The mapping is many-to-one. Several vendor instruments, of different providers,
+can map to one item. That is how two providers quote one EUR/USD spot.
+
+** Why provider and not source
+
+If the mapping were on the source, =bloomberg-live= and =bloomberg-sim= would
+need two mappings that must stay equal. A drift between them would make the
+simulated run a worse test of the live run. One mapping rules this out.
+
+** What the mapping replaces
+
+An adapter never publishes an oresmd URI. The service applies the mapping at
+ingest. See [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]. This is the same job that a Calypso feed address does:
+it links an internal quote name to a vendor instrument and field.
+
+** Changing a mapping
+
+A mapping change is an effective-dated change with a reason. The service
+refreshes its ingest cache when a mapping changes. The history of a mapping is
+readable.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the left side of the mapping.
+- [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] — completes: the right side of the mapping.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the key that the mapping feeds.

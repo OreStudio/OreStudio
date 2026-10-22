@@ -48,9 +48,9 @@ the provenance is what tells them apart.
 | [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] | auditor | The trail of a published curve |
 | [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] | quant, trader | The pair, the process, the GMM mixture and the sample paths that say whether it is a price feed |
 | [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] | quant | The short-rate model, its parameters and the tenor ladder the curve is bootstrapped from |
-| [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] | trader, operations | The feeds a collection owns, what it covers, and one folder-scoped start |
+| [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Offer a synthetic collection]] | simulator author | The generators a collection owns, what it covers, and offering it by enabling it |
 | [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] | system administrator | The short-rate models and their parameters, kept as data rather than code |
-| [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data bindings]] | market data operator | The producers a party consumes: the bindings, what each feeds, its last tick, and add, edit, delete and history, as a record screen, for synthetic data, with real data shown and read only |
+| [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] | party administrator | The providers a party takes, the source that serves each, the usage and the cost, as a record screen, the same for live and simulated sources |
 
 * Related
 

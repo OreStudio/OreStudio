@@ -51,7 +51,7 @@ inline auto& restore_feeds_handler_lg() {
  * authorises the call. The pass runs in the caller's tenant and party, gives no
  * consent and creates no binding.
  *
- * @see The identity a feed runs as (doc/knowledge/architecture/feed_execution_identity.org)
+ * @see The identity an adapter runs as (doc/knowledge/architecture/adapter_identity.org)
  */
 class restore_feeds_handler {
 public:

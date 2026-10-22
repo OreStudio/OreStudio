@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:storage:provenance:lineage:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
@@ -52,10 +52,10 @@ carry the audit columns.
 ** The axis this is not
 
 =derivation_kind= separates a published observation from a computed one.
-=producer_kind= on the series records whether the producer was a real feed
-or a generated one. The two axes are independent, and a generated feed
-whose output is then bootstrapped into a curve appears under both. The
-producer kind note states the second axis.
+=source_kind= on the source of an observation says whether a live adapter, a
+replay or a simulator produced the input. The two axes are independent, and a
+simulated quote that a bootstrap turns into a curve appears under both. The
+source kind note states the second axis.
 
 ** The fact the code shape does not show
 

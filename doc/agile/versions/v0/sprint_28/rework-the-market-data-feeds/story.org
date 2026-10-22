@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: BC8B619A-D766-4208-B4D1-4785F24AC67D
+:END:
+#+title: Story: Rework the market data feeds into a market data service with adapters
+#+description: Move the simulated feeds behind a market data service: vendor ids and a mapping, sources with a kind, subscriptions and routes, adapters on NATS, metering and cost, and the simulator as one adapter, so the system treats live and simulated data in the same way.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.marketdata owns the catalogue, the mapping, the ingest path, routing and metering. Adapters, including the simulator, publish vendor-id ticks over NATS and answer a demand set. Every simulated feed belongs to the system tenant and the system party, a party takes a provider by subscription, and no part of the system behaves differently because a source is simulated.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The architecture pages describe the target state. No task has started. |
+| Waiting on    | Nothing.                               |
+| Next          | Start Add the market data catalogue, then Key the series by item, provider and party. |
+| Last touched  | 2026-10-22                               |
+
+* Acceptance
+
+- The catalogue holds providers, sources with a kind, vendor instruments and mappings, installed by a system bundle.
+- An adapter announces itself, answers a demand set, publishes vendor-id ticks and sends a heartbeat, and the service maps, checks, stores and delivers them.
+- A party holds a subscription with rights and one route per provider, and a source switch is audited and effective-dated.
+- The simulator is an adapter under ores.marketdata.synthetic, its generators belong to the system tenant and system party, and no subject, table or constraint carries a mark of the simulator.
+- Usage events, rate cards, rating and allocation give each party a bill, and a simulated source gives a shadow bill.
+- The screens and the shell follow the architecture pages, and a scenario shows a development party on a simulated source and a prelive party on a live source side by side.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4A204157-3172-4C7C-BEEB-E065059DB454][Add the market data catalogue]] | BACKLOG | | | Add providers, sources with a kind, vendor instruments with the minted flag, and mappings to ores.marketdata, with the source_kind vocabulary. |
+| [[id:588E506E-B400-4A34-A5CF-5CDBEB787BFC][Key the series by item, provider and party]] | BACKLOG | | | Add the provider to the series key, and record the source id on each observation. |
+| [[id:28A8B07C-9162-4F31-BF56-2526B6592E67][Define the adapter contract]] | BACKLOG | | | Add the announce, demand, tick and heartbeat messages and the ingress subjects. |
+| [[id:31720152-8E45-4E9B-9D9A-3E77CD9A4B9D][Ingest by mapping and route]] | BACKLOG | | | Make the ingest loop map vendor ids, check quality, resolve the routed parties and store one observation for each. |
+| [[id:E41BD4AC-8603-4E5D-8558-19E9E657EF6B][Add subscriptions and routes]] | BACKLOG | | | Add the subscription with rights and the route to one source for each provider. |
+| [[id:8354553E-21FB-4785-A8F5-73D95B28DC76][Track adapter state and demand]] | BACKLOG | | | Track each adapter's state, compute its demand set, and check its universe against the catalogue. |
+| [[id:BAB5D8D0-76C6-43C5-93A5-D495E03C6378][Meter usage events]] | BACKLOG | | | Record subscription intervals, demand intervals and delivery counts for each party. |
+| [[id:DAA15D3D-F31E-4FAB-BAAF-37072815F31E][Add rate cards, rating and allocation]] | BACKLOG | | | Add the rate card on a source, the rating step and the allocation of a source bill to parties. |
+| [[id:B6B90346-B5B7-4B21-88DD-B30C445CC6E6][Model composites and their rights]] | BACKLOG | | | Add the composite, its inputs and rule, the derived-right check, and the attribution of its use to its input providers. |
+| [[id:2856500E-6771-474E-8899-765761D7A0A5][Move the simulator to ores.marketdata.synthetic as an adapter]] | BACKLOG | | | Rename the synthetic component under market data and make the runner serve a demand set as an adapter. |
+| [[id:EF8A62C0-B72A-47AC-8976-B29FF2360A42][Make generators system-owned and bundle-installed]] | BACKLOG | | | Move every collection, folder and generator to the system tenant and party and install them with the system bundle. |
+| [[id:8D5C8A02-A6E3-4195-9FD1-140A0293C78B][Remove the marks of the simulator from names, subjects and constraints]] | BACKLOG | | | Remove the synthetic prefix, subjects, constraints and screen marks so that nothing in the system depends on the simulator. |
+| [[id:BC8F67D4-59FD-446B-94A3-F62844F82A53][Add fault injection to the simulator]] | BACKLOG | | | Let the simulator drop, delay, repeat and corrupt ticks and reject ids on request. |
+| [[id:AF826E35-6ED4-411D-B1E3-79D3B2103778][Split trade generation into ores.trading.synthetic]] | BACKLOG | | | Move the trade generators out of ores.synthetic into ores.trading.synthetic. |
+| [[id:3614B1D7-0D9C-4004-B190-2D8968C6A721][Build the market data service screens]] | BACKLOG | | | Build the catalogue, subscriptions and routes, usage and cost, and source status screens, and retire the bindings screen. |
+| [[id:9814C1C5-E599-4405-B79F-3525C0314A7C][Rework the shell commands for the market data service]] | BACKLOG | | | Add shell commands for the catalogue, subscriptions, routes, sources and usage, and move the simulator commands. |
+| [[id:56D38654-9CC3-45A9-B23A-78EAEE1A402C][Draw the prototypes and wireframes for the new journeys]] | BACKLOG | | | Draw the wireframes and prototypes for the subscriptions, sources and offer-a-collection journeys. |
+| [[id:2EF479E7-8A34-4B91-A830-386B807216DD][Write the mapping inventory for each provider]] | BACKLOG | | | List the vendor instruments and mappings to install for Bloomberg, LSEG, ICE, Tradeweb and ORE. |
+| [[id:A712C3E7-ED5C-4E71-B6FB-5D1932354F6D][Add a replay adapter]] | BACKLOG | | | Add an adapter that replays recorded vendor ticks as a source of kind replay. |
+| [[id:816F6540-89B4-4847-A289-88A1948DC682][Check a development party and a prelive party side by side]] | BACKLOG | | | Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running. |
+| [[id:292A74E4-36F7-48A2-B67A-7CD17C4E4257][Describe the market data target architecture]] | DONE | 2026-10-22 | 2026-10-22 | Write the architecture pages, diagrams and journeys for the target state, and plan the implementation tasks. |
+
+* Decisions
+
+- Market data has one owner, =ores.marketdata=. Adapters, including the simulator, are separate NATS services that meet it at four messages: announce, demand, tick and heartbeat. Marco decided this on 2026-10-22.
+- The mapping from a vendor instrument to an internal item is on the provider, not the source, so a live and a simulated source of one provider share it. Decided on 2026-10-22.
+- A series is keyed by item, provider and party. The source is a route and an observation records it for information. Decided on 2026-10-22.
+- A party has one active source for each provider. A source switch is audited and effective-dated. Decided on 2026-10-22.
+- Demand drives the adapters, ticks travel on core NATS, and a system bundle installs the catalogue and the simulator universe. Decided on 2026-10-22.
+- Vendor ids follow the vendor's notation. An id the system must invent carries the minted flag and a deviation note. Decided on 2026-10-22.
+- Composite licensing rights are modelled now: display, non_display and derived on the subscription. Decided on 2026-10-22.
+- The cost model records usage as events and prices it later with a rate card on the source. The platform pays the vendors and allocates the cost to parties, splitting a fixed fee equally among active subscribers. A simulated source has a simulated rate card and gives a shadow bill. Decided on 2026-10-22.
+- The simulator stops at the adapter seam. It imitates vendor data and failure behaviour, and it does not imitate vendor protocols. Decided on 2026-10-22.
+- ores.synthetic splits into ores.marketdata.synthetic and ores.trading.synthetic. Decided on 2026-10-22.
+- The story Subscribe tenants to provider feeds and prove the browser at scale describes feed bindings and overlaps this story. It needs a decision from Marco.
+
+* Out of scope
+
+-

@@ -2,27 +2,26 @@
 :ID: 46FF8EF4-3874-4C9A-9222-69DA691E793F
 :END:
 #+title: The FX spot producer
-#+description: The fixed-mode tick clock, the step from process state to tick, and the datum URI an FX spot feed publishes.
+#+description: The fixed-mode tick clock, the step from process state to tick, and the vendor instrument an FX spot generator serves.
 #+type: knowledge
 #+level: cross
 #+filetags: :synthetic:producers:fx:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
-=ores::synthetic::feed::fx_spot_feed= is the producer that turns an
-=fx_spot_generation_config= into a tick stream on NATS. It is declared in
-=ores.synthetic.api/feeds/fx_spot_feed.hpp= and implemented in
-=ores.synthetic.api/src/feeds/fx_spot_feed.cpp=. It implements
-=ores::marketdata::domain::IFeed=, and its =kind()= returns the string
-constant =fx_spot_feed_kind=, spelled ="fx_spot"=.
+=ores::marketdata::synthetic::fx_spot_generator= is the generator that turns an
+=fx_spot_generation_config= into vendor ticks for the simulator adapter. It is
+declared in =ores.marketdata.synthetic.api/generators/fx_spot_generator.hpp=. It
+implements =i_generator=, and its =kind()= returns the string constant
+=fx_spot_generator_kind=, spelled ="fx_spot"=.
 
 * Detail
 
-** How the feed is built
+** How the generator is built
 
-=make_fx_spot_feed= is the builder the factory calls with a persisted config
+=make_fx_spot_generator= is the builder the factory calls with a persisted config
 and its component rows. It does four things.
 
 1. It rejects an empty component set with =std::invalid_argument=, because a
@@ -37,9 +36,9 @@ and its component rows. It does four things.
    =process_type= and the means, standard deviations and weights taken from
    the component rows in order.
 
-The publish subject is not built here. The caller derives it from
-=source_name= and the binding mode through =producer_subject=, so two
-producers for one datum publish on distinct subjects.
+The publish subject is not built here. The adapter publishes on its ingress
+subject, and the tick names the vendor instrument that the config serves. See
+[[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]].
 
 ** The tick clock
 
@@ -56,24 +55,24 @@ be clobbered, and the loop and its join would never finish.
 ** One tick
 
 Each pass through the loop advances the process once with =next()= and
-builds one =market_tick=.
+builds one adapter tick.
 
-- =oresmd_uri= is the config's quote URI. The constructor reads it through
-  =oresmd_uri_codec::read= and writes it back, so the tick and any later
-  vintage read name one series.
+- The tick names the vendor instrument: the provider, the id scheme, the
+  external id and the field. A vintage read finds the datum through the
+  mapping and reads the stored series.
 - =value= is the price as decimal text, produced by =std::format("{}", ...)=
   on the double the process returned.
-- =observation_time= is the wall clock at the tick, and =source= is the
-  config's =source_name=.
+- =vendor_time= is the simulator's clock at the tick. The tick carries no source
+  name; the service knows the source from the adapter.
 
 ** Identity and conflict
 
-The feed reports the one series of its quote in =series_uris()=, so
-=oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD= yields
-=oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD=, as
-[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] explains. The feed reports an empty role. Two FX feeds conflict when they
-name the same series. Nothing else about
-the config enters the conflict rule.
+The generator reports the one vendor instrument it serves in
+=vendor_instruments()=: a provider, an id scheme, an external id and a field. Two
+FX generators conflict when they serve the same vendor instrument. Nothing else
+about the config enters the conflict rule. The oresmd datum of the quote is not
+the generator's concern. The service finds it through
+[[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][the mapping]].
 
 ** The facts the code shape does not show
 
@@ -98,7 +97,7 @@ seed a running feed used.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], which this feed reads.
 - [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one child row per weighted Gaussian.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the process this feed steps.
-- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface contract this class implements.
-- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], which turns the source name and the binding mode into the publish subject.
-- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], where =fx_spot_feed_kind= selects this builder.
-- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the message this feed publishes.
+- [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]], the contract this generator's adapter shares with a live adapter.
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]], the subject the adapter publishes on.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]], where =fx_spot_generator_kind= selects this builder.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the tick the party receives after the service maps and stores this generator's output.

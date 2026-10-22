@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: AC0C19EF-158C-4766-8661-A1DCECE3D424
+:END:
+#+title: Vendor adapters
+#+description: What a live vendor adapter must do to join the service, what it adds behind the seam, and how it differs from the simulator.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:adapters:vendor:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+A live vendor adapter is a separate service. It meets the contract in
+[[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] and adds a vendor session behind it. It announces one
+provider, receives demand sets, and publishes ticks with the vendor's own ids and
+fields. The service treats it exactly as it treats the simulator.
+
+* Detail
+
+** What the adapter must do
+
+1. Announce its provider and universe.
+2. Open vendor subscriptions for the ids in each demand set and close the
+   others. This is how the platform pays only for what a party demands.
+3. Translate each vendor update into a tick with the vendor's id scheme, id,
+   field, value and time.
+4. Reply to a demand with the accepted ids and the rejected ids, such as
+   =not_entitled=.
+5. Send a heartbeat, reconnect to the vendor and resend its demand on a new
+   session.
+
+** What it holds that the simulator does not
+
+- Vendor credentials and a session.
+- Throttle rules and vendor limits.
+- A mapping from minted ids to the vendor's real request. See
+  [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]].
+
+** What it does not hold
+
+A mapping to oresmd, a tenant, a party, a rate card, or storage. The service holds
+them.
+
+** Several live sources
+
+One provider can have more than one live adapter: for example a production
+session and a vendor test environment. Each has a source of its own kind (=live=
+or =test=). Routes choose between them. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+
+** Fit with the rest
+
+The adapter reads like any other source in the catalogue, with a rate card taken
+from the real contract. The cost model applies unchanged. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the messages this adapter must send.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — completes: the differences from the simulator.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the notation of vendor ids.

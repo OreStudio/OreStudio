@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:shell:operations:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
@@ -34,8 +34,7 @@ enabled, whether it is set to auto-start, whether it is running now, and the
 child rows it holds; a feed missing a child row is marked =[partial]=, so an
 incomplete feed is visible rather than absent. The one fact no config row
 carries is what is running, so the command joins the config families against
-the service's running set by =source_name=, the only name a feed binding
-carries.
+the runner's running set by generator id.
 
 =synthetic setup= authors a whole feed in one pass, of the class =--kind=
 names: for FX the collection, the folder chain, the generation config, the FX

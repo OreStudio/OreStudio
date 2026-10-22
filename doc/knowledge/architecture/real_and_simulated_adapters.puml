@@ -1,0 +1,57 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A live adapter and the simulator behind the same contract
+
+skinparam componentStyle rectangle
+
+package "Adapter contract (identical)" as contract {
+    interface "announce" as i1
+    interface "demand" as i2
+    interface "ingress ticks" as i3
+    interface "heartbeat" as i4
+}
+
+package "bloomberg-live" {
+    component "Session manager\nblpapi, credentials" as sess
+    component "Vendor translation\nfield and id handling" as tr
+}
+
+package "bloomberg-sim (ores.marketdata.synthetic)" {
+    component "Generator runner\nprocesses, vintage anchors" as gen
+    component "Fault injection\ndrops, delays, bad ticks" as fault
+    component "Authoring\ncollections, folders, preview" as auth
+}
+
+sess --> tr
+tr --> i3
+tr --> i2
+gen --> fault
+fault --> i3
+gen --> i2
+auth ..> gen : generators
+sess ..> i4
+gen ..> i4
+
+note bottom of contract
+  Everything above this line differs.
+  Everything below it, in ores.marketdata, is the same.
+end note
+
+@enduml

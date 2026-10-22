@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 37B27CA8-9F44-4A61-9B02-3EAABD8C3818
+:END:
+#+title: A party routes to exactly one source for each provider
+#+description: The route that connects a subscription to a source, why only one source is active at a time, and how routes make development and prelive coexist.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:routing:subscription:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+Each party has at most one active route for each provider. The route names the
+source that serves the party. A development party routes Bloomberg to
+=bloomberg-sim=. A prelive party routes Bloomberg to =bloomberg-live=. Both
+sources run at once, and each party sees one stream.
+
+* Detail
+
+** The route
+
+| Column | Meaning |
+|--------+---------|
+| =party_id=, =provider= | The subscription the route serves |
+| =source_id= | The source that serves the party |
+| =valid_from=, =valid_to= | The period of the route |
+| Audit columns | A reason and a commentary for each change |
+
+** Why one source
+
+If a party read two sources of one provider, it would hold two values for one
+instrument and have no rule to choose. The mapping and the series key are both
+per provider. A second source would collide. The party that wants two values
+takes two providers and uses a composite. See [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
+
+** What a route decides
+
+- Which adapter's demand set holds the party's ids. See [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
+- Which ticks the service stores for the party. See [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
+- Which source is named on each observation. See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+
+** The default route
+
+A new subscription routes to the default source of its provider. The catalogue
+marks one source of each provider as the default. A party administrator can
+change the route if the permission allows. See [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]].
+
+** Constraints
+
+- The source must belong to the subscription's provider.
+- The source must be =ready= or =serving=, or the change is refused.
+- A route change is effective-dated and audited. It is never an edit in place.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the entitlement the route serves.
+- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — completes: the change of a route in motion.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — exemplifies: development on simulated, prelive on live.

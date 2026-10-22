@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 5297997A-5175-43E9-861B-2A11D003CD35
+:END:
+#+title: A vendor instrument is an id scheme, an id and a field
+#+description: How the system names what a provider publishes, the vendor conventions it follows, and the minted flag for ids it must invent.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:vendor:catalogue:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+A vendor instrument names one value that a provider publishes. It has an id
+scheme, an external id and a field. The system uses the vendor's own
+conventions for all three, so a live adapter and the simulator publish the same
+names. Where the system must invent an id, it sets the =minted= flag and writes
+down why.
+
+* Detail
+
+** The three parts
+
+| Part | Example (Bloomberg) | Example (LSEG) |
+|------+---------------------+----------------|
+| Id scheme | =bbg_ticker= | =ric= |
+| External id | =EURUSD Curncy= | =EUR== |
+| Field | =PX_LAST= | =BID= |
+
+The scheme says how to read the id. The field says which value of the
+instrument is meant, because one instrument carries many values.
+
+** Follow the vendor
+
+The rule is to match the vendor's conventions. The survey of the notation of
+each vendor is [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]]. A catalogue row holds the id exactly as the
+vendor writes it, including spaces and punctuation. Encoding for NATS happens in
+the subject and never in the stored id. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]].
+
+** The minted flag
+
+Sometimes the vendor has no single id for what the system needs. An example is
+one pillar of a curve that a vendor publishes only as a chain. The system then
+mints an id in the vendor's style, sets =minted= to true, and records the reason
+in the row's =deviation_note=. A live adapter must map a minted id to the
+vendor's real way of asking. A reader can list all minted ids per provider.
+
+** The row
+
+| Column | Meaning |
+|--------+---------|
+| =provider= | The owner of the namespace |
+| =id_scheme= | How to read the id |
+| =external_id= | The id in the vendor's notation |
+| =field= | The value of the instrument |
+| =minted= | True when the system invented the id |
+| =deviation_note= | Why the id differs from the vendor's, when =minted= is true |
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how a vendor instrument becomes an internal item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of vendor notations.

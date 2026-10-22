@@ -35,8 +35,9 @@ confirmed the stored counts.
 The file must be in ORE's text shape: =market.txt= holds
 =DATE<TAB>KEY<TAB>VALUE= and =fixings.txt= holds =DATE<TAB>INDEX<TAB>VALUE=.
 A vendor that writes CSV or JSON needs a conversion outside the platform. No
-CSV, JSON or HTTP API feed import exists today. The feed bindings in the market
-data screens author and run synthetic feeds; they do not consume a vendor feed.
+CSV, JSON or HTTP API feed import exists today. The ORE import writes to the source =ore-import= of
+the provider =ore=, with the kind =replay=. No live adapter consumes a vendor feed
+from a file.
 
 * Steps
 
@@ -95,7 +96,7 @@ it does not import.
 | =market_series= | The series each quote belongs to | |
 | =market_observation= | The quotes, with time, value and source | |
 | =market_fixing= | The fixings, with date, index and value | |
-| =feed_binding= | The synthetic source binding, not the vendor file | |
+| =market_data_source= | The source =ore-import=, not the vendor file | |
 | =observation_lineage= | The provenance of a derived point | |
 
 * Operations and messages
@@ -114,8 +115,8 @@ it does not import.
 
 1. *No native CSV or JSON import.* Every vendor file is converted to ORE text
    first. The conversion is outside the platform and outside its audit.
-2. *No vendor connector.* A feed binding starts a synthetic feed. No binding
-   consumes a vendor URL or a drop folder.
+2. *No vendor connector.* No adapter consumes a vendor URL or a drop folder. A
+   file adapter would announce itself as a source like any other.
 3. *No per-section result.* The counts are totals and the errors are strings.
    Nothing says which series or fixing was refused and why.
 4. *No dry run.* The person cannot see what would be stored before the write.

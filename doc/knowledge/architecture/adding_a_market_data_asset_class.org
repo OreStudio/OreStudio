@@ -2,70 +2,45 @@
 :ID: B7A03C80-6566-4E97-9D45-14A69726C381
 :END:
 #+title: Adding an asset class
-#+description: The two places a new asset class plugs in and the list of edits a new kind still requires outside the factory seam.
+#+description: The two places a new asset class plugs into the simulator and the catalogue entries it needs outside the generator seam.
 #+type: knowledge
 #+level: cross
-#+filetags: :marketdata:feeds:producers:extension:
+#+filetags: :marketdata:synthetic:generators:extension:
 #+created: 2026-10-06
-#+updated: 2026-10-07
+#+updated: 2026-10-22
 
 * Summary
 
-A new asset class plugs into two places. Its configuration rows become a
-typed build input, and its producer implements =IFeed= behind a new kind
-string. Everything outside those two places stays as it is, which covers the
-feed controller, the producer subject builder, the market tick type and the
-ingest loop.
+A new asset class plugs into two places in the simulator: its configuration rows
+become a typed build input, and its generator implements =i_generator= behind a new
+kind string. It also needs catalogue rows for its vendor instruments and
+mappings. Everything else stays as it is: the runner, the adapter contract, the
+ingest loop and the party tick.
 
 * Detail
 
-** The two plug in points
+** The edits
 
-1. The build input. Add a struct to =feed_build_input= in
-   =ores.synthetic/api/feeds/feed_factory.hpp= that carries the new config
-   entity plus the child rows its builder needs, and add the struct as a
-   variant member.
-2. The producer. Implement =IFeed= and register it in
-   =make_default_feed_factory= through =feed_factory::register_kind=, using
-   a kind constant declared beside the producer. The two constants in the
-   tree today are =fx_spot_feed_kind= and =ir_curve_feed_kind=.
+1. A codegen entity model for the config, regenerated.
+2. A struct in =generator_build_input= and a builder registered in
+   =make_default_generator_factory()=.
+3. One =register_kind= call in =make_default_generator_kind_registry()=. It carries
+   the kind's config read permission, loader, build-input resolver, vintage anchor
+   and simulate decode and reply pair.
+4. A permission row and a role grant in the IAM populate SQL.
+5. Catalogue rows: vendor instruments and mappings for each provider that quotes
+   the class, in the system bundle. See [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]].
 
-** The edits a new kind requires
+Steps 1 to 4 are the simulator's. Step 5 is the service's, and a live adapter
+needs the same rows.
 
-A new kind is four edits, and none of them is in a handler.
+** What needs no edit
 
-1. Its own codegen entity model, regenerated, because the config table is
-   the asset class's own.
-2. A struct in =feed_build_input= and a builder registered in
-   =make_default_feed_factory()=, in =ores.synthetic/api=. The inputs
-   genuinely differ, so the variant is real.
-3. One =register_kind= call in =make_default_feed_kind_registry()=, in
-   =ores.synthetic/service/src/feed_kind_registry.cpp=. That entry carries
-   the kind's config read permission, its config-row loader, its lazy
-   build-input resolver, its vintage anchor and its simulate decode/reply
-   pair.
-4. Its permission row and role grant in the IAM populate SQL. The gate over
-   a span of kinds is the conjunction of every registered kind's config read
-   permission, so a kind with no grant refuses every caller of =list=, the
-   folder cascade and vintage validity. This step is easy to forget because
-   it is data, not code.
-
-=feed_config_handler=, =folder_feed_control_handler=,
-=vintage_validity_handler=, =simulate_handler=, =ir_curve_preview_handler=
-and =application.cpp= need no edit, and =feed_controller=,
-=producer_subject=, =market_tick= and =feed_ingest_loop= stay untouched.
-
-** Why the list is the point
-
-The list is the evidence about where the seam ends today. It shrank from
-three service call sites to a registration and a grant when the per-kind
-registry landed; before that, a note claiming one registration would have
-been wrong. The one entry point the registry cannot absorb is the SQL grant,
-so it is named rather than implied.
+The runner, the subject builders, the adapter contract, the party tick and the
+ingest loop. The only exception is the CRM hook in [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
 
 * See also
 
-
-- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], the seam these edits sit around.
-- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the path that stays unchanged.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] — completes: the seam these edits sit around.
+- [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: where the catalogue rows go.

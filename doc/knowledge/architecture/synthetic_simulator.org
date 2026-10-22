@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 54C9E31E-26FF-4530-A868-0850FCE1FE30
+:END:
+#+title: The simulator is one adapter plus the tools that author its generators
+#+description: What ores.marketdata.synthetic contains, how it differs from ores.trading.synthetic, and which parts are adapter and which are authoring.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:simulator:adapters:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+=ores.marketdata.synthetic= is an adapter. It implements the adapter contract and
+produces ticks from generators. It also holds the tools that author the
+generators: collections, folders, generator configs and preview. Trade
+generation is a different thing and belongs to =ores.trading.synthetic=.
+
+* Detail
+
+** Two components, two jobs
+
+| Component | Stands in for | Acts through |
+|-----------+---------------+--------------|
+| =ores.marketdata.synthetic= | The external world: vendors | The adapter contract |
+| =ores.trading.synthetic= | Business activity: traders and counterparties | The normal trading API, like a user |
+
+The two share authoring needs such as seeding, collections and preview. A small
+shared library can hold them if the duplication grows.
+
+** Inside the simulator
+
+- *Adapter part.* Announce, demand, tick and heartbeat. The generator runner
+  turns the demand set into running generators. See [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]].
+- *Generators.* FX spot and IR curve processes, with a factory for new asset
+  classes. See [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] and [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]].
+- *Authoring part.* Collections, folders, configs and the preview operations. See
+  [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]].
+- *Fault injection.* See [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]].
+
+** What the simulator never does
+
+- It does not write to the store.
+- It does not know a party.
+- It does not publish an oresmd URI.
+- It does not make up names that mark the data as simulated. Its source names are
+  ordinary labels such as =bloomberg-sim=.
+
+** Several simulated sources
+
+The simulator can serve more than one provider. Each provider's simulated source
+is its own adapter instance and announces its own provider. One process can host
+many instances.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — completes: how far the simulator goes.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: who owns what it runs.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — completes: the comparison with a live adapter.

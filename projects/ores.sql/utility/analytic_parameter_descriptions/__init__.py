@@ -22,9 +22,9 @@ entry(). The generator joins them and refuses an entry that no parameter of the
 catalogue has.
 """
 
-from . import calibration, pricing, sensitivity, simulation, xva, xva_family
+from . import calibration, pricing, risk, sensitivity, simulation, xva, xva_family
 
-MODULES = [pricing, simulation, calibration, xva, xva_family, sensitivity]
+MODULES = [pricing, simulation, calibration, xva, xva_family, sensitivity, risk]
 
 DESCRIPTIONS = {}
 for module in MODULES:

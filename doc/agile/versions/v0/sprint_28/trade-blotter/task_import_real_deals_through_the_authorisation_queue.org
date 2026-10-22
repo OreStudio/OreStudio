@@ -35,9 +35,11 @@ Close the open part of the May import plan. A real import books into a real book
 
 * Acceptance
 
-- A second run of the same import books no trade twice.
+- Gate, checked first: a second run of the same import books no trade twice.
+  No other step starts until this holds.
 - A failed row is reported and no row of it is stored.
 - Each new live trade raises one authorisation request.
+- The sandbox page states that a failed import row is reported and not stored.
 
 * Plan
 

@@ -29,7 +29,7 @@ The job page links a failed run to the failure screen and the job's load to the 
 | State        | BACKLOG                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
 | Now          | Not yet started.                       |
-| Waiting on   | The screens Diagnose and reproduce a failure and Watch the grid. The grid screen exists. The failure screen does not. |
+| Waiting on   | The screens of the journeys [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]] and [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]. The grid screen exists. The failure screen does not. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-24                               |
 

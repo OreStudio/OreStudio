@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/book-a-bond-trade-as-one-unit
-#+pr:
+#+pr: 3673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3673][#3673]] | [trading] Book a bond trade with its identifiers and instrument in one unit |
 
 * Review
 

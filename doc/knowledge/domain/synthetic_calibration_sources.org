@@ -69,17 +69,9 @@ Two things are not settled. The licence page of Frankfurter was not read, becaus
 
 ** How a generator uses a source
 
-Each generator config carries a calibration entry: the source code, such as =ecb.eurofxref=, =fed.h10= or =ust.par_yield=, and a window for the volatility. The initial value is the latest value that the source has published. The volatility is the spread of the log returns over the window.
+Each generator config points at a published quote: an item, a policy and a window for the volatility. The initial value is the latest value on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not load anything. A separate loader reads the public sources into the table of published quotes, and a reader returns the value with its provenance. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]].
 
-** The daily rates are asked for once
-
-A source publishes one set of rates for each day, so the system asks for a day only once. A table of daily rates holds each rate with its source, its provider key, its pair or its series, its as-of date and the time of retrieval. A feed that needs a day looks in the table first. A rate that is there is reused. A rate that is not there is fetched, stored, and then reused, by this feed, by every other feed and after a restart.
-
-The date to read comes from a system clock that the feeds check. The clock gives today's date, and the feeds read the latest day that the table or the source has on or before that date. The clock is the subject of the capture [[id:CF2FFE22-85E6-4490-B44D-37657F9B76EE][A system clock drives the date the feeds read]]. Until it exists, the retrieval step reads the date from the host clock.
-
-The retrieval is a step that is separate from the simulator. The feed screen shows the time of retrieval and the as-of date, so a reader sees how old the level of a feed is. A source that cannot be reached leaves the last stored day in place, and the screen shows its age.
-
-A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So the step stores each ECB value exactly as the ECB published it, with the credit "Source: ECB statistics". A cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from the two stored values. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
+A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So each ECB value is stored exactly as the ECB published it, with the credit "Source: ECB statistics". A cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from the two stored values. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
 
 ** What this replaces
 

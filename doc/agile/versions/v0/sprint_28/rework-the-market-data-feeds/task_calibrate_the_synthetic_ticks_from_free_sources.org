@@ -2,7 +2,7 @@
 :ID: A4165C70-0EAB-483D-8055-C1D8BF543113
 :END:
 #+title: Task: Calibrate the synthetic ticks from free public sources
-#+description: Each generator config names a free public source that sets its initial value and its volatility, and the feed screen shows when the value was retrieved.
+#+description: Each generator config points at a published quote that sets its initial value and its volatility, and the feed screen shows where and when the value was retrieved.
 #+type: task
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
@@ -35,13 +35,12 @@ The level of a synthetic price comes from a public source that anyone can check,
 
 * Acceptance
 
-- A generator config carries a calibration entry: a source code (ecb.eurofxref, fed.h10, ust.par_yield or an overnight rate), an as-of date and a window for the volatility.
-- A table of daily rates holds each rate with its source, provider key, pair or series, as-of date and time of retrieval. A day is asked for once: a feed looks in the table first, reuses a rate that is there, and otherwise fetches, stores and reuses it.
-- The date to read comes from one clock that the feeds check. Until the system clock of the capture exists, the host clock gives the date.
-- A retrieval step, separate from the simulator, reads the latest day on or before that date, and keeps the last stored day when the source cannot be reached.
-- The feed screen shows the time of retrieval and the as-of date. A pair that no source covers keeps a fixed level and says so.
-- No value of a source is stored until its terms page is read and recorded on the sources page. The page lists the sources whose terms are not read, and that list is empty when the task closes. The credit or notice each source asks for is kept, and a value is stored as published.
-- The 2016 ORE vintage calibrates no generator.
+- The task needs the published quotes of the task [[file:task_load_published_quotes_from_the_public_sources.org][Load published quotes from the public sources]]. It loads nothing itself.
+- A generator config carries =price_source= of =fixed= or =published=. For =published= it carries a quote item (an oresmd URI), a policy (=latest_on_or_before_clock= or =exact:<date>=) and a window in days for the volatility. The vintage columns are gone.
+- A feed starts from the value that the reader returns for the item and the date of the market clock, and its volatility is the spread of the log returns over the window. A cross rate is computed from two stored values and marked derived.
+- A pair with no published quote keeps its fixed level, and the feed screen says so.
+- The feed screen shows the publisher, the source key, the valid time and the time of retrieval of the value a feed started from.
+- The 2016 ORE vintage and the vintage datasets calibrate no generator, and the dependency rows that required them are gone.
 
 * Plan
 

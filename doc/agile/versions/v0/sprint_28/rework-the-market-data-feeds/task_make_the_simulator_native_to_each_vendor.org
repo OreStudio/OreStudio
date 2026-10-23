@@ -84,7 +84,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The synthetic service depends on the marketdata core and its repository | application.cpp | decline | The service already linked and included ores.marketdata.core before this change. The build lists its include path, and the feed code reads the oresmd codec from it. |
+| 2 | Warn when no simulated source is served | application.cpp | accept | The service logs a warning when the count is zero. |
+| 3 | Two instances of one provider map to one source in the old binding | feed_controller.hpp | decline | The binding belongs to the old control plane that the marks task removes. A second instance of a provider has no old-path feed. |
+| 4 | Two adapters of one provider start the same generators twice | simulator_offers.hpp | decline | Each adapter publishes on its own ingress subject, so nothing clashes. The load doubles. A second simulated source of one provider is a case for the task that calibrates and splits the collections by source, and no source needs it today. |
+| 5 | The error path of the Bloomberg reader parses twice | bloomberg_notation.cpp | decline | An error path. Correctness is tested by the corpus. |
+| 6 | Style and a note on the pointer overload of start_date | market_clock.hpp | accept | The blank lines are removed and the comment states that a null pointer means the system clock. |
+| 7 | Existing databases keep the removed rows | populate scripts | decline | The story recreates the database at each task, and the project builds it from the create and populate scripts. |
+| 8 | The web check does not run | web | decline | The lock file mismatch is on main. |
 
 * Result
 

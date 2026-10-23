@@ -183,7 +183,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto adapters = make_adapters(db_ctx, nats, registry, adapter_build, faults);
     for (auto& one : adapters)
         one.adapter->start();
-    BOOST_LOG_SEV(lg(), info) << adapters.size() << " simulated source(s) served as adapters";
+    if (adapters.empty())
+        BOOST_LOG_SEV(lg(), warn)
+            << "The catalogue holds no simulated source, so the simulator serves no adapter.";
+    else
+        BOOST_LOG_SEV(lg(), info) << adapters.size() << " simulated source(s) served as adapters";
 
     co_await ores::service::service::run(
         io_ctx,

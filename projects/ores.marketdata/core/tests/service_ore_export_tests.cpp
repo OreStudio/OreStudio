@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -368,6 +369,60 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
 
     // Without a date, the export is the rows of the observation table, as before.
     CHECK(lines_of(exporter.write_all().market_data) == lines{"20160204 1.05", "20160205 1.10"});
+}
+
+TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give", tags) {
+    export_tenant t;
+    ores::nats::service::nats_client auth_nats;
+    import_service importer(t.ctx, auth_nats);
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160204 FX/RATE/EUR/USD 1.05\n20160205 FX/RATE/EUR/USD 1.10\n"
+                              "20160204 FX/RATE/GBP/USD 1.40\n20160205 FX/RATE/GBP/USD 1.45\n"
+                              "20160204 FX/RATE/CHF/USD 1.01\n";
+    req.source = "test.ore_export";
+    REQUIRE(importer.import(req).success);
+
+    const auto series = ores::marketdata::repository::market_series_repository{}.read_latest(t.ctx);
+    REQUIRE(series.size() == 3);
+    ores::marketdata::repository::market_observation_repository observations;
+
+    // A tick after the second point of one series, so the snapshot of that series differs
+    // from its observation rows.
+    const auto& ticked = series.front();
+    const auto stored = observations.read_latest_for_series(t.ctx, ticked.id);
+    REQUIRE(!stored.empty());
+    const auto owner =
+        t.ctx.with_party(t.ctx.tenant_id(), ticked.party_id, {ticked.party_id}, t.base.db_user());
+    const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
+        owner, ticked.party_id, ticked.id, stored.front().oresmd_uri);
+    using namespace std::chrono;
+    ores::marketdata::tests::insert_tick(
+        owner, ticked.party_id, ticked.id, number, sys_days{2016y / February / 5} + 12h, 1.2);
+
+    // The datums of a read, as "uri value", sorted, so the order of the rows does not matter.
+    const auto datums = [](const std::vector<ores::marketdata::domain::market_observation>& rows) {
+        std::vector<std::string> out;
+        for (const auto& o : rows)
+            out.push_back(o.oresmd_uri + " " + o.value);
+        std::ranges::sort(out);
+        return out;
+    };
+
+    const auto every = observations.read_latest_all(owner);
+    const auto close = sys_days{2016y / February / 5} + hours{23};
+    const auto every_at_close = observations.read_as_of_all(owner, close);
+    for (const auto& s : series) {
+        std::vector<ores::marketdata::domain::market_observation> mine, mine_at_close;
+        std::ranges::copy_if(
+            every, std::back_inserter(mine), [&](const auto& o) { return o.series_id == s.id; });
+        std::ranges::copy_if(every_at_close, std::back_inserter(mine_at_close), [&](const auto& o) {
+            return o.series_id == s.id;
+        });
+        CHECK(datums(mine) == datums(observations.read_latest_for_series(owner, s.id)));
+        CHECK(datums(mine_at_close) == datums(observations.read_as_of(owner, s.id, close)));
+    }
+    CHECK(every.size() == 5);
 }
 
 TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit", tags) {

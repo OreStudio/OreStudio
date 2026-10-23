@@ -43,6 +43,7 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <set>
 #include <string>
@@ -571,13 +572,28 @@ public:
                 return;
             }
 
+            const auto began = std::chrono::steady_clock::now();
+            const auto since = [&began] {
+                return std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::steady_clock::now() - began)
+                    .count();
+            };
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: exporting for valuation date '"
+                << req->valuation_date.value_or("") << "' to " << req->storage_bucket << "/"
+                << req->storage_key;
+
             service::ore_export_service svc(ctx);
             const auto written = svc.write_all(req->valuation_date, req->max_age_days);
+            const auto exported_ms = since();
 
             ores::storage::net::storage_transfer transfer(http_base_url,
                                                           ores::nats::service::extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, written.market_data);
             transfer.upload_blob(req->storage_bucket, req->fixings_storage_key, written.fixings);
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: built the export in " << exported_ms
+                << " ms and uploaded it in " << (since() - exported_ms) << " ms";
 
             resp.success = true;
             resp.series_count = written.series_count;

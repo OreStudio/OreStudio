@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <map>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -105,11 +106,49 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         close = std::chrono::sys_days{*date} + std::chrono::days{1} - std::chrono::microseconds{1};
     }
 
+    using clock = std::chrono::steady_clock;
+    const auto began = clock::now();
+    auto lap = began;
+    // The time since the last lap, in milliseconds, and the lap restarted.
+    const auto lapped = [&lap] {
+        const auto now = clock::now();
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - lap).count();
+        lap = now;
+        return ms;
+    };
+
     repository::market_series_repository series_repo;
     repository::market_observation_repository obs_repo;
     repository::market_fixing_repository fixings_repo;
 
     const auto series = series_repo.read_latest(ctx_);
+    BOOST_LOG_SEV(lg(), info) << "market data export: read " << series.size() << " series in "
+                              << lapped() << " ms"
+                              << (date ? ", valuing at the close of the day" : ", with no date");
+
+    // One read for the tenant answers every series, because a read for each series
+    // pays the planner once for every chunk of the observation and tick tables.
+    std::map<boost::uuids::uuid, std::vector<domain::market_observation>> latest;
+    for (auto& o : obs_repo.read_latest_all(ctx_)) {
+        const auto id = o.series_id;
+        latest[id].push_back(std::move(o));
+    }
+    BOOST_LOG_SEV(lg(), info) << "market data export: read the current observations of "
+                              << latest.size() << " series in " << lapped() << " ms";
+
+    std::map<boost::uuids::uuid, std::vector<domain::market_observation>> at_close;
+    if (date) {
+        std::size_t points = 0;
+        for (auto& o : obs_repo.read_as_of_all(ctx_, close)) {
+            const auto id = o.series_id;
+            at_close[id].push_back(std::move(o));
+            ++points;
+        }
+        BOOST_LOG_SEV(lg(), info) << "market data export: read " << points
+                                  << " points at the close of the day for " << at_close.size()
+                                  << " series in " << lapped() << " ms";
+    }
+
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
     for (const auto& s : series) {
@@ -128,7 +167,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                 fixings.push_back(to_fixing(index_name, f));
             continue;
         }
-        auto observations = obs_repo.read_latest_for_series(ctx_, s.id);
+        auto observations = std::move(latest[s.id]);
         if (date) {
             // The history stays, because an analytic may read several dates. The lines of the
             // valuation date are replaced by the value each datum had at its close, which is
@@ -137,7 +176,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                 return std::chrono::year_month_day{
                            std::chrono::floor<std::chrono::days>(o.observation_datetime)} == *date;
             });
-            for (const auto& o : obs_repo.read_as_of(ctx_, s.id, close)) {
+            for (const auto& o : at_close[s.id]) {
                 if (close - o.observation_datetime > limit) {
                     ++stale;
                     continue;
@@ -151,6 +190,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         for (const auto& o : observations)
             data.push_back(to_datum(o, std::nullopt));
     }
+    BOOST_LOG_SEV(lg(), info) << "market data export: built " << data.size() << " datum(s) and "
+                              << fixings.size() << " fixing(s) in " << lapped() << " ms";
 
     ore_export_result result;
     result.series_count = static_cast<int>(series.size());
@@ -167,9 +208,11 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     ores::ore::market::serialize_fixings(fixing_text, fixings);
     result.fixings = fixing_text.str();
 
-    BOOST_LOG_SEV(lg(), info) << "Exported " << result.series_count << " series, "
-                              << result.observation_count << " observation(s), "
-                              << result.fixing_count << " fixing(s)";
+    BOOST_LOG_SEV(lg(), info)
+        << "Exported " << result.series_count << " series, " << result.observation_count
+        << " observation(s), " << result.fixing_count << " fixing(s) in "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - began).count()
+        << " ms, of which writing the text took " << lapped() << " ms";
     return result;
 }
 

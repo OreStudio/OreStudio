@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/track-adapter-state-and-demand
-#+pr:
+#+pr: 3654
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3654][#3654]] | [marketdata] Track adapter state and demand |
 
 * Review
 

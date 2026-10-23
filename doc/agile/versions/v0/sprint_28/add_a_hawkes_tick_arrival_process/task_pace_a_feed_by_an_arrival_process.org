@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A synthetic feed can run in Fixed, Poisson or Hawkes mode, set from its config, with the same mean ticks per hour.
+A synthetic feed can run in periodic, Poisson or Hawkes mode, set from its config, with the same mean ticks per hour.
 
 * Status
 
@@ -35,7 +35,7 @@ A synthetic feed can run in Fixed, Poisson or Hawkes mode, set from its config, 
 
 * Acceptance
 
-- Fixed mode behaves as it does today.
+- Periodic mode behaves as it does today.
 - The config, the Qt editor and the web editor carry the mode, the branching ratio and the decay, and refuse a branching ratio of one or more.
 
 * Plan

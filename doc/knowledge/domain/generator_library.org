@@ -80,8 +80,11 @@ Everything above answers what the next price is. When the price arrives is a
 different question with a different answer, and it does not fit
 =IStochasticProcess=, because =next()= there returns a level. A third
 interface, =i_arrival_process=, returns the gap to the next tick in seconds,
-and the factory gets a third entry. The design, its parameters and its limits
-are in [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]. The
+and the factory gets a third entry. The existing =tick_clock= takes its gaps
+from it, and a periodic arrival process keeps today's fixed period. The value
+process in turn gains =next(elapsed)=, so a step can be longer or shorter than
+one nominal tick. The design, its parameters and its limits are in
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]. The
 mathematics is in [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]
 and [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]].
 

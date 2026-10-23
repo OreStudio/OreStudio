@@ -272,7 +272,7 @@ Decisions of the owner, 2026-10-23:
    =IYieldCurveProcess= and =IFeed= are CamelCase and get renamed in their own
    task.
 2. *Shape.* One stream. No consumer needs cross-excitation.
-3. *Neighbours.* The Fixed and Poisson arrival processes come in this story.
+3. *Neighbours.* The periodic and Poisson arrival processes come in this story.
 4. *Kernels.* The exponential kernel only. A stream of ticks clusters with one
    decay, and direct inversion is exact for it. The sum of exponentials is the
    first extension and needs thinning.
@@ -287,6 +287,24 @@ documents come first and are done: the point process, Poisson and Hawkes
 notes, the tick arrival note, the tick note, and edits to the hub, the
 generator library, the FX spot producer, the approach note, the market data
 architecture note and the external index.
+
+Second round, 2026-10-24. The owner made three more decisions.
+
+1. *Plug into the clock.* =tick_clock= stays the only clock. It takes its gaps
+   from an =i_arrival_process=. The tick arrival note says so in its first
+   section.
+2. *A regular clock stays.* The fixed timer becomes the
+   =periodic_arrival_process=, so a feed can still be fully non-stochastic.
+   "Steady" was rejected because =steady_clock= and the asio =steady_timer=
+   mean "never goes backwards". "Periodic" is the term for a point process with
+   equal gaps.
+3. *Close the =dt= gap now.* The value process gains =next(elapsed)=, with
+   =elapsed= counted in nominal ticks. The geometric and arithmetic mixtures and
+   the Ornstein-Uhlenbeck process take it. The others throw for an elapsed other
+   than one, and validation refuses a non-periodic mode for them. A fourth
+   task, "Step a value process by the elapsed time", carries this.
+
+Findings from the first round:
 
 Two findings changed the design. First, =ores.synthetic.api/feeds/tick_clock.hpp=
 already exists and paces every feed with one fixed period, so the arrival

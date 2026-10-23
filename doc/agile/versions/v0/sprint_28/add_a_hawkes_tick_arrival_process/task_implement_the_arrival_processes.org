@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3CF5D3C2-454C-4F27-B891-BFD4920144EC
 :END:
-#+title: Task: Implement the fixed, Poisson and Hawkes arrival processes
+#+title: Task: Implement the periodic, Poisson and Hawkes arrival processes
 #+description: Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, inspired by the tick library.
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A caller can build a fixed, Poisson or Hawkes arrival process from a mode name and plain numbers, and draw gaps in seconds that pass the statistical checks of the Hawkes note.
+A caller can build a periodic, Poisson or Hawkes arrival process from a mode name and plain numbers, and draw gaps in seconds that pass the statistical checks of the Hawkes note.
 
 * Status
 

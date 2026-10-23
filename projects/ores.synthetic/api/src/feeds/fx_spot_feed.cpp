@@ -88,7 +88,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode,
-                  const std::string& run_token) {
+                  const std::string& run_token,
+                  std::optional<adapter_target> adapter) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
         "oresmd://fx/" + cfg.base_currency_code +
@@ -140,7 +141,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                           cfg.source_name,
                                           producer_subject(cfg.source_name, binding_mode),
                                           std::move(process),
-                                          static_cast<double>(cfg.ticks_per_hour));
+                                          static_cast<double>(cfg.ticks_per_hour),
+                                          std::move(adapter));
 }
 
 fx_spot_feed::fx_spot_feed(
@@ -149,13 +151,15 @@ fx_spot_feed::fx_spot_feed(
     std::string source_name,
     std::string nats_subject,
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
-    double ticks_per_hour)
+    double ticks_per_hour,
+    std::optional<adapter_target> adapter)
     : nats_(nats)
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
     , clock_(ticks_per_hour)
-    , nats_subject_(std::move(nats_subject)) {
+    , nats_subject_(std::move(nats_subject))
+    , adapter_(std::move(adapter)) {
 
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
@@ -189,31 +193,40 @@ const std::string& fx_spot_feed::role() const {
 void fx_spot_feed::start() {
     clock_.run(
         [this] {
-            ores::marketdata::messaging::market_tick tick;
-            tick.oresmd_uri = quote_uri_;
-            tick.value = std::format("{}", process_->next());
-            tick.observation_time = std::chrono::system_clock::now();
-            tick.source = source_name_;
-
+            const auto value = std::format("{}", process_->next());
+            const auto now = std::chrono::system_clock::now();
             const auto& codec = ores::nats::default_wire_codec();
-            BOOST_LOG_SEV(lg(), trace)
-                << "Encoding market_tick for " << nats_subject_ << ": wire_format="
-                << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
             // A quote is perishable, so it goes out on core NATS without a wait for an
             // acknowledgement. A producer that waits limits its own rate to the round
             // trip of the broker.
+            if (adapter_) {
+                ores::marketdata::messaging::adapter_tick tick;
+                tick.id_scheme = adapter_->id.id_scheme;
+                tick.external_id = adapter_->id.external_id;
+                tick.field = adapter_->id.field;
+                tick.value = value;
+                tick.vendor_time = now;
+                tick.sequence = clock_.publish_count() + 1;
+                nats_.publish(adapter_->subject, codec.encode(tick));
+                return value;
+            }
+            ores::marketdata::messaging::market_tick tick;
+            tick.oresmd_uri = quote_uri_;
+            tick.value = value;
+            tick.observation_time = now;
+            tick.source = source_name_;
             nats_.publish(nats_subject_, codec.encode(tick));
-            return tick.value;
+            return value;
         },
         [this](std::uint64_t n, const std::string& value) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' oresmd_uri='"
+                    << "SYNTHETIC PUBLISH: subject='" << published_subject() << "' oresmd_uri='"
                     << quote_uri_ << "' count=" << n << " value=" << value;
             }
         },
         [this](const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_
+            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << published_subject()
                                        << "' oresmd_uri='" << quote_uri_ << "': " << ex.what();
         });
 }

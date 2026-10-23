@@ -30,4 +30,5 @@ set(files
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"
     "restore_retry_tests.cpp"
+    "simulator_adapter_tests.cpp"
 )

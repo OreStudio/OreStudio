@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
@@ -30,11 +31,37 @@
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::synthetic::feed {
+
+/**
+ * @brief The vendor id a generator quotes and the subject it publishes the quote on.
+ *
+ * A generator with a target publishes an @c adapter_tick of that id on the subject. A
+ * generator without one publishes the old @c market_tick on its producer subject.
+ */
+struct adapter_target final {
+    ores::marketdata::messaging::vendor_id id;
+    std::string subject;
+};
+
+/// The id scheme of an ORE quote key, and the field its one value is in.
+inline constexpr std::string_view ore_key_scheme = "ore_key";
+inline constexpr std::string_view ore_key_field = "value";
+
+/**
+ * @brief The ORE key of the FX spot quote of a pair, such as "FX/RATE/EUR/USD".
+ *
+ * The pair is in the order the config states it, which is the market quoting order the
+ * catalogue installs.
+ */
+inline std::string fx_spot_ore_key(std::string_view base, std::string_view quote) {
+    return std::string("FX/RATE/").append(base).append("/").append(quote);
+}
 
 /**
  * @brief The kind string this producer registers under in
@@ -76,7 +103,8 @@ public:
                  std::string source_name,
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
-                 double ticks_per_hour);
+                 double ticks_per_hour,
+                 std::optional<adapter_target> adapter = std::nullopt);
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -103,6 +131,10 @@ public:
     }
 
 private:
+    const std::string& published_subject() const {
+        return adapter_ ? adapter_->subject : nats_subject_;
+    }
+
     ores::nats::service::client& nats_;
     std::string quote_uri_;
     std::vector<std::string> series_uris_;
@@ -110,6 +142,7 @@ private:
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
     tick_clock clock_;
     std::string nats_subject_;
+    std::optional<adapter_target> adapter_;
 };
 
 /**
@@ -139,7 +172,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode =
                       ores::synthetic::domain::binding_mode::bound,
-                  const std::string& run_token = {});
+                  const std::string& run_token = {},
+                  std::optional<adapter_target> adapter = std::nullopt);
 
 }
 #endif

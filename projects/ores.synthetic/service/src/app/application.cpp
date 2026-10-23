@@ -23,6 +23,9 @@
 #include "../feed_restore.hpp"
 #include "../registrar.hpp"
 #include "../restore_retry.hpp"
+#include "../generator_runner.hpp"
+#include "../simulator_adapter.hpp"
+#include "../simulator_offers.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/party_context.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -67,6 +70,11 @@ namespace ev = ores::eventing;
 namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
+
+// The adapter id is the name of the simulator's source in the catalogue, and the provider is the
+// one whose notation its ticks use.
+constexpr std::string_view simulator_adapter_id = "ore-simulated";
+constexpr std::string_view simulator_provider_code = "ore";
 
 // The restore of the feeds: one pass for each tenant when the service starts,
 // and tries again for the feeds that a dependency kept from starting. A context
@@ -311,6 +319,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             });
     }
 
+    // The simulator is an adapter of the market data service. It serves the system collections
+    // it can see, and it starts a generator for each id that the demand names.
+    const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats, {}};
+    generator_runner runner([&registry, &adapter_build, adapter_ctx = db_ctx] {
+        return system_generator_offers(registry, adapter_ctx, adapter_build, std::string(simulator_adapter_id));
+    });
+    simulator_adapter adapter(nats, runner, std::string(simulator_adapter_id),
+                              std::string(simulator_provider_code));
+    adapter.start();
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -335,6 +353,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         restore_retries.request_stop();
         restore_retries.join();
     }
+    adapter.stop();
+    runner.stop_all();
     ctrl->shutdown();
     event_source.stop();
     co_return;

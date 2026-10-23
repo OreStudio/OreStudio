@@ -39,7 +39,7 @@ rectangle "Live fan-out\ncore NATS, no ack" as live
 database "Observation store\none transaction per batch" as db
 rectangle "Live consumers\ncharts, CRM bridge" as cons
 rectangle "Readers of the store\nreports, older history" as readers
-rectangle "Chart seeding and late joiners\nlast value, recent ticks" as seed
+rectangle "History call\none reply: window, then store" as seed
 
 prod --> nats
 prod ..> js : durable classes

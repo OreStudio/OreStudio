@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:storage:snapshot:cut:
 #+created: 2026-10-06
-#+updated: 2026-10-10
+#+updated: 2026-10-23
 
 * Summary
 
@@ -109,6 +109,23 @@ remains the repository's as-of read over a uniform grid; the wire window that
 used it, =marketdata.v1.ops.get_curve_snapshot_buckets= with its fixed five
 half-hour buckets ending now, is gone.
 
+** These reads take ticks and observations side by side
+
+=read_as_of_records=, =read_as_of_buckets= and =read_instants= read the tick table and
+the observation table together. For a coordinate they take the latest tick at or before
+the bound. A tick has no source and no id, so the read gives it an id that it builds from
+the series, the coordinate and the time, and a record time equal to its own time. When a
+tick and an observation state the same coordinate at the same instant, the observation
+wins. The ORE export reads both tables in the same way.
+
+A context with no party sees no ticks, because the party policy of the tick table lists
+the parties a session may see. These reads therefore refuse such a context and do not
+return a snapshot that lacks its live values.
+
+These reads answer a question of valuation: the state of a series at a time. The history
+of ticks is a different question, and it has its own call, which returns every tick of
+a range. See [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+
 ** The instant ceiling
 
 Both range reads declare =max_instants = 200= as a server side ceiling, enforced
@@ -156,6 +173,7 @@ word and nothing else.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution-side snapshot this note is not about.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the reads return rows from.
+- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]], the read of tick history that these reads are not.
 - The handlers are =curve_snapshot_handler=, =series_slice_handler= and
   =series_evolution_handler= in
   =projects/ores.marketdata/core/include/ores.marketdata.core/messaging/=.

@@ -1,0 +1,76 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A chart reads a series: one live subscription, one history call
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+actor "User" as u
+participant "Client\n(chart)" as c
+queue "NATS" as n
+participant "Marketdata\nhistory read" as h
+participant "Lane\nrecent window" as w
+database "Tick table" as s
+
+== The chart opens ==
+
+u -> c : open the chart of a series
+c -> n : subscribe\nmarketdata.v1.ops.market_tick.<tenant>.<party>.<type>.<series>.>
+note right of c
+  Subscribe first.
+  The client buffers every live tick
+  until the history reply arrives.
+end note
+
+c -> h : get_series_ticks(series, from, to)\nrequest/reply
+h -> h : check session, tenant and party
+h -> w : ticks from the window start to now
+w --> h : ticks, with their coordinates
+h -> s : ticks from "from" to the window start\none index probe on series and time
+s --> h : ticks
+h --> c : one reply\ncoordinates once, then time, coordinate and value arrays\nand the as_of time of the read
+
+c -> c : merge history and buffered live ticks\nby coordinate and time, keep one of a pair
+c -> u : plot the series
+
+== The chart stays open ==
+
+loop every conflated live tick
+    n -> c : market_tick
+    c -> c : add the tick to the series
+    c -> u : extend the plot
+end
+
+== The connection drops and returns ==
+
+c -> n : subscribe again
+c -> h : get_series_ticks(series, from = newest held tick, to)
+h --> c : one reply with the missed span
+c -> c : merge by coordinate and time
+
+== The user scrolls to an older span ==
+
+u -> c : scroll back
+c -> h : get_series_ticks(series, from, to = oldest held tick)
+h --> c : one reply with the older span
+c -> c : merge by coordinate and time
+c -> u : plot the longer series
+
+@enduml

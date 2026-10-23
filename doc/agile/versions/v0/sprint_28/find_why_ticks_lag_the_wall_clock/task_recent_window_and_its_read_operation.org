@@ -35,8 +35,8 @@ A chart that opens, and a consumer that joins late, read recent values from memo
 
 * Acceptance
 
-- A read operation returns the last value of a datum and the recent ticks of a series, and it checks the tenant and the party of the caller against the bindings.
-- A request for older data goes to the store, and the reader merges by time.
+- The history call, =get_series_ticks=, answers the part of a range that the window covers from memory, and it checks the tenant and the party of the caller against the bindings.
+- A range that starts before the window is answered from the window and the store in one reply. The client never sees the join, and it merges the reply with its live ticks by coordinate and time.
 - The lane learns which datums are watched, by a subscription, a request, or a setting.
 - A chart opens from the window in under 100 ms and does not read the store for the span that the window covers.
 

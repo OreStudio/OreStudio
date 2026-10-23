@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-authorisation-request-into-a-booking-workflow
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Booking an actual trade into a real book commits the trade in one trading transa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -106,3 +106,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-23, before any code. The task rested on the claim that task 1 writes inbox rows across an owner boundary. The claim was too strong. The refdata service already raises its approval requests in its own transaction, through =approval_lifecycle=, with write grants on the same inbox tables. The bundle catalogue lists these cases (B15 and B16) as implemented, with atomicity that holds. The request and the held change must commit together, and a workflow cannot give that.
+
+What survives:
+
+- The wide inbox grants are a real cost. The capture [[id:A0B50FB0-A546-4A02-B25D-D3C5C0C78238][Narrow the inbox raise to one security-definer function]] holds the fix, for refdata and trading together.
+- The bulk callers are an open problem. The synthetic population writer and the ORE import outside a sandbox book actual trades, so each now raises one request. Nobody has measured this on a large book. The import task and a decision on seeded trades must settle it.

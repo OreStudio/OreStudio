@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ingest-by-mapping-and-route
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The ingest loop reads an adapter tick, maps it through the provider mapping, app
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,12 @@ The ingest loop reads an adapter tick, maps it through the provider mapping, app
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Build a translator that maps an adapter tick through the provider mapping and applies the five checks, with no database or NATS, so each reason can be tested.
+2. Make a route a consumer of its source in the loop, by building the loop's consumer from the route, so the existing batch, series and store code is the one path.
+3. Subscribe the loop to the ingress subjects of all adapters and queue the translated ticks.
+4. Record the id of the source on each stored tick.
+5. Refresh the loop when a route, a source, a vendor instrument or a mapping changes.
 
 * Measurements
 
@@ -85,3 +91,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An adapter tick now goes through the provider mapping and five checks before it is stored. =adapter_tick_translator= finds the source by the adapter id, the vendor instrument by provider, scheme, id and field, and the mapping that holds now. It drops a tick as unmapped, not_a_number, out_of_range, stale or out_of_order, and counts each drop for each adapter and reason. The loop subscribes to the ingress subjects of all adapters, and a route makes its party a consumer of its source, in the same table as a binding, so the existing batch, series and store code is the one path. The tick table records the id of the source for each row. The loop refreshes when a route, a source, a vendor instrument or a mapping changes. Eleven translator tests pass, with the tick writer tests: a live and a simulated source take the same path and differ in the source id only. The build of the service and core test targets passes.
+
+Left for later tasks:
+- The stored rows of the live path were not read back in a test against a database or NATS, because the worktree =.env= is at version 32.
+- Reads of a series from the tick table, and a manual point, still give a nil =source_id=. The tick table holds it, and the read projections do not carry it yet.
+- The bounds of out_of_range are one absolute limit for every item. Item bounds need a model that does not exist yet.
+- A default route is not created for a new subscription, so a party with no route receives nothing from an adapter.
+- The legacy synthetic subjects and feed bindings stay until the simulator moves in a later task.

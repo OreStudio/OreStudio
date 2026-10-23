@@ -211,6 +211,7 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<domain::route> read_latest_all_tenants(context ctx);
 
 private:
     /**

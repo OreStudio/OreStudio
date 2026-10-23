@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.service/app/adapter_tick_translator.hpp"
 #include "ores.marketdata.service/app/batch_handoff.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
@@ -146,7 +147,28 @@ public:
     ~feed_ingest_loop();
 
     void start();
+
+    /// Reads the feed bindings, the routes and the catalogue again, and drops what was cached
+    /// from them.
     void refresh();
+
+    /**
+     * @brief The translator of the ticks of adapters, as the last refresh() built it.
+     *
+     * Its counts say how many ticks of each adapter were dropped, for each reason.
+     */
+    [[nodiscard]] std::shared_ptr<adapter_tick_translator> translator() const;
+
+    /**
+     * @brief Checks and maps the tick of an adapter, and queues it for the store.
+     *
+     * This is what the ingress subscription does with each message, so a test drives it to
+     * reach the pipeline without NATS.
+     *
+     * @return The reason the tick was dropped, or nothing when it was queued.
+     */
+    std::optional<adapter_tick_drop> accept_adapter_tick(std::string_view adapter_id,
+                                                         const messaging::adapter_tick& tick);
 
     /**
      * @brief Stores @p tick for every cached binding of its source, and drops it
@@ -173,6 +195,7 @@ private:
     struct item;
 
     void on_tick(const ores::nats::message& msg);
+    void on_adapter_tick(const ores::nats::message& msg);
     void worker_loop();
 
     /// A batch between its two stages: its ticks, what the loop decided for each, and the rows
@@ -268,6 +291,17 @@ private:
     const bool pipelined_;
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;
+    std::optional<ores::nats::service::subscription> adapter_sub_;
+    /// Built by refresh() from the catalogue. It is replaced as a whole, so a tick in flight
+    /// finishes with the one it started with.
+    std::shared_ptr<adapter_tick_translator> translator_ =
+        std::make_shared<adapter_tick_translator>(
+            std::vector<domain::market_data_source>{},
+            std::vector<domain::market_data_vendor_instrument>{},
+            std::vector<domain::market_data_mapping>{});
+    /// Adapter and reason pairs already reported as dropped, so each is reported once per
+    /// refresh().
+    std::set<std::string> adapter_drop_warned_;
     using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
 
     /// The enabled bindings by source, and the targets built from them for each source and

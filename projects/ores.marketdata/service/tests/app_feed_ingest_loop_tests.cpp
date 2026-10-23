@@ -778,6 +778,8 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
     const auto series = boost::uuids::to_string(boost::uuids::random_generator{}());
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
+    const auto source =
+        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_simulated_source_id());
     for (int rep = 1; rep <= burst_repetitions; ++rep) {
         const auto base = std::chrono::system_clock::now();
         std::vector<ores::marketdata::service::app::tick_row> rows(burst_ticks);
@@ -788,6 +790,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
             rows[i].ts = base + std::chrono::microseconds(i);
             rows[i].coord = 1;
             rows[i].value = 999.0;
+            rows[i].source_id = source;
         }
         const auto start = burst_clock::now();
         writer->write(rows);

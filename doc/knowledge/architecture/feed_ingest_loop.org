@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ingest:pipeline:
 #+created: 2026-10-06
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 
 * Summary
 
@@ -73,6 +73,21 @@ The loop caches the mapping and the routes. The service refreshes the cache
 when a mapping or a route changes, from the change events of those entities.
 The observation table sends no change notification, because a tick changes
 many times each second and the party stream carries each value.
+
+** How an adapter becomes a source
+
+The ingress subject names the adapter, and the adapter id is the name of a source in the
+catalogue. The loop finds the source by that name, never by reading the text of the name.
+The source says the provider, so the tick is mapped by the vendor instruments and mappings of
+that provider. A route that names the source makes its party a consumer of the source. The
+tick is stored once for each such party, in the series of the party under the provider, and
+the row records the id of the source. A live source and a simulated source of one provider
+differ in that id only.
+
+The loop counts a drop for each adapter and each reason: =unmapped=, =not_a_number=,
+=out_of_range=, =stale= and =out_of_order=. The first drop of a reason for an adapter is
+logged. The bounds of =out_of_range= are one absolute limit for every item until items carry
+bounds of their own.
 
 ** The one place an if remains
 

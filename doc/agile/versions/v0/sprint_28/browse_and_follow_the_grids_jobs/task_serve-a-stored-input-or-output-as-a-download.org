@@ -8,12 +8,12 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/serve-a-stored-input-or-output-as-a-download
-#+pr:
+#+pr: 3668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,23 +26,32 @@ A route streams the stored file after it checks that the caller may read the rec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
 
-- A caller who may read the record downloads the file, and a large file streams.
+- A caller who may read the record and holds the storage read code downloads the file, and a large file streams. A party member lacks that code, and the task Let a party member download its own files carries that case.
 - A caller who may not read the record is refused before any byte of the file is read.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two BFF routes stream a stored file, and the screens link to them.
+
+- =GET .../workunits/:id/input= and =GET .../results/:id/output= read the owning record on
+  the session's own client first. A denied or missing record answers 403 or 404 before the
+  storage service is asked for any byte.
+- The route then asks the storage service for the object path the row states, with the
+  session's own token, and streams the body on under the file's own name. A path that is not
+  a plain object path under the storage prefix is never asked for.
+- The Jobs tab details and the job page Files panel show the stored address as a link to the
+  route for a person who holds =storage::objects:read=, and as text for anyone else.
+- The HTTP server read no request whose headers passed 8 KB, and the access token of a person
+  who acts for many parties does. The server now accepts up to 64 KB of headers.
 
 * Measurements
 
@@ -56,9 +65,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| BFF tests for the download routes | 21 pass | =npx vitest run src/grid-downloads.test.ts= in =packages/bff= | aa4605e98d plus the working tree |
+| Jobs tab and job page tests | 31 and 14 pass | =npx vitest run src/operations= in =packages/web= | aa4605e98d plus the working tree |
+| HTTP API tests | pass | =ctest -R ores.http.api.tests= | aa4605e98d plus the working tree |
+| Download of a workunit input as the tenant administrator | 143 bytes, identical to the source | =curl= on the input route, then =cmp= | aa4605e98d plus the working tree |
+| The same as a member of another party | 404 | the same route as =diane.kay= | aa4605e98d plus the working tree |
+| The same as a member of the party | 403 from the storage service | the same route as =adrian.vance= | aa4605e98d plus the working tree |
 
 * Notes
+
+- The first member download failed with 500 and then 502 because the HTTP server closed
+  the connection: the member's token was larger than 8 KB. The header limit option fixes it.
+  The storage service then refused the member with 403, because the Member role does not hold
+  =storage::objects:read=.
+- Granting that code to the Member role would let any member read any stored object through
+  the storage service, since the code states no record. The task does not grant it.
+- The storage service is reached at the base address the HTTP info subject states, so the BFF
+  keeps no address of its own.
 
 * Test Scenarios
 
@@ -75,12 +98,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3668 | [web] Serve a stored input or output as a download |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A percent-encoded dot passes the path check | grid-downloads.ts | Fixed | Each segment is decoded and refused for a dot, a slash, a backslash or a control character, and the built address must equal the stated one. Tests cover the cases. |
+| 2 | The file name is under-sanitised | grid-downloads.ts | Fixed | The header has an ASCII fallback and the real name in the extended form. |
+| 3 | The upstream body is not released on an error | grid-downloads.ts | Fixed | The body is cancelled before the failure is thrown. |
+| 4 | No timeout and no redirect policy | grid-downloads.ts | Fixed | The wait for the headers is 15 seconds, and a redirect is an error. |
+| 5 | Content-Length from upstream | grid-downloads.ts | No change | The storage service does not compress its answers. |
+| 6 | DownloadLink lives in the tab module | GridJobs.tsx | Declined | The job page already imports the tab's other shared parts. |
+| 7 | The header limit is not in the server configuration | http_server_options.hpp | Noted | The default is bounded at 64 KB. A configuration entry can follow when a deployment needs another limit. |
 
 * Result
+
+A person who holds the storage read code downloads the stored input of a workunit and the stored
+output of a run from the Jobs tab and the job page. The BFF reads the owning record first and streams
+the file on. A party member lacks the code and sees the address as text, which a follow-up task carries.
+The HTTP server accepts larger headers, so the token of a person who acts for many parties is read.

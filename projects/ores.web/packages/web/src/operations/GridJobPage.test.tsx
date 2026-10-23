@@ -98,8 +98,26 @@ function page<Row>(rows: readonly Row[], limit = 15) {
     };
 }
 
-function render(wu: WorkunitView, runs: readonly ResultView[]): string {
+function render(
+    wu: WorkunitView,
+    runs: readonly ResultView[],
+    permissions: readonly string[] = ['storage::objects:read'],
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['my-access'], {
+        roles: [
+            {
+                roleId: 'r',
+                name: 'Viewer',
+                description: '',
+                permissionCodes: [...permissions],
+                givenBy: 'system',
+                givenAt: '2026-10-05 09:30:00Z',
+                reasonCode: 'access.initial',
+                commentary: '',
+            },
+        ],
+    });
     client.setQueryData([GRID_JOBS_QUERY_KEY, 'job', WORKUNIT_ID], wu);
     client.setQueryData([GRID_JOBS_QUERY_KEY, 'job-batch', BATCH_ID], batch);
     client.setQueryData([GRID_JOBS_QUERY_KEY, 'job-runs', WORKUNIT_ID], page(runs, 50));
@@ -201,6 +219,20 @@ describe('the job page', () => {
         expect(html).toContain('1.8.17.0');
         expect(html).toContain(`href="/operations/grid/jobs/${SIBLING_ID}"`);
         expect(html).toContain('(this job)');
+    });
+
+    it('links the files to the download routes', () => {
+        const html = render(workunit(), [run()]);
+
+        expect(html).toContain(`href="/api/operations/grid/jobs/workunits/${WORKUNIT_ID}/input"`);
+        expect(html).toContain(`href="/api/operations/grid/jobs/results/${RESULT_ID}/output"`);
+    });
+
+    it('shows the files as text to a person without the storage read code', () => {
+        const html = render(workunit(), [run()], []);
+
+        expect(html).toContain('/api/v1/storage/ores/compute/input/batch.tar.gz');
+        expect(html).not.toContain('/api/operations/grid/jobs/workunits/');
     });
 
     it('marks the accepted run among the runs', () => {

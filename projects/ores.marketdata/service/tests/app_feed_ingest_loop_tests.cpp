@@ -152,7 +152,7 @@ struct fixture {
         b.source_name = source;
         b.producer_kind = producer_kind;
         b.provider_code = "ore";
-        b.source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+        b.source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
         b.enabled = true;
         b.modified_by = h.db_user();
         b.performed_by = h.db_user();
@@ -779,7 +779,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
     const auto source =
-        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_simulated_source_id());
+        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_derived_source_id());
     for (int rep = 1; rep <= burst_repetitions; ++rep) {
         const auto base = std::chrono::system_clock::now();
         std::vector<ores::marketdata::service::app::tick_row> rows(burst_ticks);

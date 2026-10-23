@@ -434,7 +434,8 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
              declared(
                  "attach_photos",
                  R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
-             declared("subscribe_market_data", R"({"provider":"ore","source":"ore-simulated"})")}),
+             declared("subscribe_market_data",
+                      R"({"provider":"bloomberg","source":"bloomberg-a"})")}),
         tenant_id,
         correlation_id);
 

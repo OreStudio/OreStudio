@@ -55,7 +55,7 @@ Bloomberg publishes some points of a curve only as a chain, with no ticker of th
 
 ** What the simulator does
 
-The simulated Bloomberg source publishes ticks with =bbg_ticker=, the ticker and the field above. It does not speak =blpapi=. Nothing behind the adapter seam is simulated. See [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]].
+The source =bloomberg-a= is the simulated Bloomberg source. It publishes ticks with =bbg_ticker=, the ticker and the field above. It does not speak =blpapi=. Nothing behind the adapter seam is simulated. See [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]].
 
 ** External references
 

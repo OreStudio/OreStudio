@@ -37,6 +37,8 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
@@ -187,6 +189,9 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
     REQUIRE(tenant_ctx.tenant_id().to_string() != tenant_context::system_tenant_id);
 
     auto p = generate_synthetic_provider(ctx);
+    // The row is the system tenant's and stays after the test, so its code is its own and never
+    // meets the code another test generates for its tenant.
+    p.code = "system-" + boost::uuids::to_string(boost::uuids::random_generator{}());
     p.tenant_id =
         ores::utility::uuid::tenant_id::from_string(tenant_context::system_tenant_id).value();
     p.change_reason_code = "system.test";

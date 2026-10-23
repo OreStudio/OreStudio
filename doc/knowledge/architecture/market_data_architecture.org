@@ -116,6 +116,7 @@ data, and why the two differ only inside the adapter.
     the mapping of each, with the vendor's own documents.
 11. [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]]. The rows the bundle installs, which need a check, and what is not inventoried.
 12. [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. The free sources that set the level of the synthetic ticks, their terms, and what is still open.
+13. [[id:7C994EDE-829A-4F82-A095-D9E5198E2AD9][The notation of a provider is an independent class that roundtrips]]. The classes that read and write the ids of Bloomberg, LSEG and Demo, and the corpus that proves it.
 
 #+caption: A live adapter and the simulator behind the same contract.
 #+attr_html: :width 100%

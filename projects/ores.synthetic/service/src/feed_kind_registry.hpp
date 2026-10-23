@@ -38,6 +38,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -87,9 +88,8 @@ struct feed_kind_candidate final {
     /** The feed starts from a vintage price, so its start reads marketdata. */
     bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
-    /** The vendor id the feed quotes when it serves an adapter. A kind with no vendor rows leaves
-     * it empty. */
-    std::optional<ores::marketdata::messaging::vendor_id> vendor;
+    /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
+    std::optional<std::pair<std::string, std::string>> fx_pair;
 
     /** Built lazily: only the vintage verb reads it. */
     std::function<feed_vintage_anchor()> vintage_anchor;

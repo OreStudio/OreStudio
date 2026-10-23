@@ -37,8 +37,8 @@ namespace ores::marketdata::domain {
  * @brief One adapter instance of a provider, with a name and a kind (live, replay, test, simulated
  * or derived).
  *
- * A source is one adapter instance of a provider: bloomberg-live and
- * bloomberg-sim are two sources of the provider bloomberg. Its kind says how the
+ * A source is one adapter instance of a provider: bloomberg-a and
+ * bloomberg-b are two sources of the provider bloomberg. Its kind says how the
  * adapter gets its values and is data a person can read. No code in the pipeline
  * branches on it. The name is a label and no code parses it.
  *
@@ -66,8 +66,8 @@ struct market_data_source final {
     boost::uuids::uuid id;
 
     /**
-     * @brief The source's readable label, such as bloomberg-live. Unique within the system tenant.
-     * It is a label and no code parses it.
+     * @brief The source's readable label, such as bloomberg-a. Unique within the system tenant. It
+     * is a label and no code parses it.
      */
     std::string name;
 

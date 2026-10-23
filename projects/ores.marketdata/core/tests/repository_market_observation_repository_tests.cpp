@@ -129,7 +129,7 @@ TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", tags
     for (auto& o : written)
         o.series_id = s.id;
     written[0].source_id = ores::marketdata::domain::catalogue_ids::ore_import_source_id();
-    written[1].source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+    written[1].source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
     obs_repo.insert(h.context(), written);
 
     const auto read = obs_repo.read_latest_for_series(h.context(), s.id);
@@ -139,7 +139,7 @@ TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", tags
           }) == 1);
     CHECK(std::ranges::count_if(read, [](const auto& r) {
               return r.source_id ==
-                     ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+                     ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
           }) == 1);
 }
 

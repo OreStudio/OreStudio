@@ -11,7 +11,7 @@
 
 * Summary
 
-ORE, the Open Source Risk Engine, is a provider whose notation is open. An ORE quote key is a slash delimited string such as =FX/RATE/EUR/USD=, and each key has one value. The provider code is =ore=. Its sources are =ore-import=, which replays a market data file, and =ore-simulated=.
+ORE, the Open Source Risk Engine, is a provider whose notation is open. An ORE quote key is a slash delimited string such as =FX/RATE/EUR/USD=, and each key has one value. The provider code is =ore=. Its sources are =ore-import=, which replays a market data file, and =ore-derived=, which holds the values the service computes from other series.
 
 * Detail
 
@@ -46,7 +46,7 @@ None. Every ORE key is defined by ORE itself.
 
 ** What the simulator does
 
-The source =ore-simulated= publishes ticks with =ore_key= for the keys of a market data file. It has the same shape as the simulated source of any other provider.
+Nothing. The simulator is native to each vendor and publishes the ids of Bloomberg, of LSEG and of the fictional provider Demo. It publishes no ORE key, and no simulated source of this provider exists. The values of this provider are the values of ORE's own example files, imported by =ore-import=, and the values the service derives from them, stored by =ore-derived=.
 
 ** External references
 

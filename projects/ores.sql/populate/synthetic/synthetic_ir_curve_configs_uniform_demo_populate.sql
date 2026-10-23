@@ -122,7 +122,7 @@ begin
         true, false, c.currency_code, c.index_family, '', 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', '', '', '', 'ore'
+        'fixed', '', '', '', 'demo'
     from (values
         -- currency, index_family, theta (mean/initial level) -- same 20 currencies and levels
         -- as the matching Bloomberg curves, but uniform kappa/sigma (v_kappa/v_sigma

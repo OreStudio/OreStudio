@@ -21,22 +21,19 @@
 /**
  * Synthetic FX Spot Config Seed Population Script — Uniform Volatility Demo
  *
- * Registers the synthetic.feeds.uniform_demo dataset: all 8 major +
- * 3 EM/exotic FX driver pairs from the marketdata.fx_driver_rates
- * dataset (see marketdata_fx_driver_rates_populate.sql), seeded from
- * the 2016-02-05 Fed H.10 vintage (an arbitrary starting price for this
- * archetype, not a vintage grounding -- see the note below), each on a
+ * Registers the synthetic.feeds.uniform_demo dataset: 8 major +
+ * 3 EM/exotic FX pairs of the fictional provider demo, each starting at
+ * a fixed level (an arbitrary starting price for this archetype, not
+ * calibrated from any source), each on a
  * single-component geometric (multiplicative) process with a deliberately
  * exaggerated per-tick volatility — the same for every pair, not
  * individually calibrated — so movement is easy to eyeball on a chart and
  * every UI feature (ticking, charting, GMM editing) gets exercised without
  * needing to squint.
  *
- * These are not vintage feeds -- they don't pin to any point in market
- * history -- it's a deliberately simple demo/exercise archetype. Contrast
- * with synthetic_fx_spot_configs_ore_samples_2016_populate.sql, whose
- * per-pair volatility is calibrated to plausible real-world FX behaviour
- * for the 2016 ORE Samples vintage feeds.
+ * These feeds are calibrated from no source -- it's a deliberately simple
+ * demo/exercise archetype. Contrast with the Bloomberg feeds, whose
+ * per-pair volatility is calibrated to plausible real-world FX behaviour.
  *
  * This script is idempotent.
  */
@@ -133,17 +130,17 @@ begin
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         -- Name prefix mirrors price_source, same convention as the synthetic IR curve config
-        -- populate scripts -- every row here is 'vintage' today.
-        'Vintage Synthetic FX Spot (Uniform Demo): ' || p.base || '/' || p.quote,
+        -- populate scripts -- every row here is 'fixed'.
+        'Fixed Synthetic FX Spot (Uniform Demo): ' || p.base || '/' || p.quote,
         'Uniform Volatility Demo synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
         true, true, p.base, p.quote,
-        0, 3600, 'geometric',
-        'vintage', 'fed.h10.2016-02-05', '2016-02-05', 'ore'
+        p.level, 3600, 'geometric',
+        'fixed', '', '', 'demo'
     from (values
-        ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
-        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),
-        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR')
-    ) as p(base, quote);
+        ('EUR', 'USD', 1.08), ('GBP', 'USD', 1.27), ('USD', 'CHF', 0.88), ('USD', 'JPY', 150.0),
+        ('USD', 'SEK', 10.5), ('AUD', 'USD', 0.66), ('USD', 'CAD', 1.36), ('NZD', 'USD', 0.61),
+        ('USD', 'ZAR', 18.5), ('USD', 'MXN', 17.0), ('USD', 'INR', 83.0)
+    ) as p(base, quote, level);
 
     insert into ores_dq_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,

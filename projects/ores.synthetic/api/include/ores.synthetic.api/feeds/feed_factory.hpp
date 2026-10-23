@@ -23,6 +23,7 @@
 #include "fx_spot_feed.hpp"
 #include "ir_curve_feed.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -50,6 +51,9 @@ struct feed_build_context final {
     ores::nats::service::client& nats;
     /// The service's own identity. A vintage lookup runs as the system tenant through it.
     ores::nats::service::nats_client& auth_nats;
+    /// The clock every feed asks for the date it starts from, so no two feeds start from two days.
+    std::shared_ptr<const ores::marketdata::domain::market_clock> clock =
+        std::make_shared<ores::marketdata::domain::system_market_clock>();
 };
 
 /**

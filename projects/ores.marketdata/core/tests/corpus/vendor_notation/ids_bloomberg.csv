@@ -1,0 +1,190 @@
+# Vendor ids of Bloomberg, and what a reader makes of each.
+# scheme,external id,field,outcome -- an outcome is 'fx base quote side' or 'error kind'.
+bbg_ticker,EURUSD Curncy,PX_LAST,fx EUR USD last
+bbg_ticker,EURUSD Curncy,PX_BID,fx EUR USD bid
+bbg_ticker,EURUSD Curncy,PX_ASK,fx EUR USD ask
+bbg_ticker,EURUSD Curncy,PX_MID,fx EUR USD mid
+bbg_ticker,GBPUSD Curncy,PX_LAST,fx GBP USD last
+bbg_ticker,GBPUSD Curncy,PX_BID,fx GBP USD bid
+bbg_ticker,GBPUSD Curncy,PX_ASK,fx GBP USD ask
+bbg_ticker,GBPUSD Curncy,PX_MID,fx GBP USD mid
+bbg_ticker,AUDUSD Curncy,PX_LAST,fx AUD USD last
+bbg_ticker,AUDUSD Curncy,PX_BID,fx AUD USD bid
+bbg_ticker,AUDUSD Curncy,PX_ASK,fx AUD USD ask
+bbg_ticker,AUDUSD Curncy,PX_MID,fx AUD USD mid
+bbg_ticker,NZDUSD Curncy,PX_LAST,fx NZD USD last
+bbg_ticker,NZDUSD Curncy,PX_BID,fx NZD USD bid
+bbg_ticker,NZDUSD Curncy,PX_ASK,fx NZD USD ask
+bbg_ticker,NZDUSD Curncy,PX_MID,fx NZD USD mid
+bbg_ticker,USDCAD Curncy,PX_LAST,fx USD CAD last
+bbg_ticker,USDCAD Curncy,PX_BID,fx USD CAD bid
+bbg_ticker,USDCAD Curncy,PX_ASK,fx USD CAD ask
+bbg_ticker,USDCAD Curncy,PX_MID,fx USD CAD mid
+bbg_ticker,USDCHF Curncy,PX_LAST,fx USD CHF last
+bbg_ticker,USDCHF Curncy,PX_BID,fx USD CHF bid
+bbg_ticker,USDCHF Curncy,PX_ASK,fx USD CHF ask
+bbg_ticker,USDCHF Curncy,PX_MID,fx USD CHF mid
+bbg_ticker,USDDKK Curncy,PX_LAST,fx USD DKK last
+bbg_ticker,USDDKK Curncy,PX_BID,fx USD DKK bid
+bbg_ticker,USDDKK Curncy,PX_ASK,fx USD DKK ask
+bbg_ticker,USDDKK Curncy,PX_MID,fx USD DKK mid
+bbg_ticker,USDINR Curncy,PX_LAST,fx USD INR last
+bbg_ticker,USDINR Curncy,PX_BID,fx USD INR bid
+bbg_ticker,USDINR Curncy,PX_ASK,fx USD INR ask
+bbg_ticker,USDINR Curncy,PX_MID,fx USD INR mid
+bbg_ticker,USDJPY Curncy,PX_LAST,fx USD JPY last
+bbg_ticker,USDJPY Curncy,PX_BID,fx USD JPY bid
+bbg_ticker,USDJPY Curncy,PX_ASK,fx USD JPY ask
+bbg_ticker,USDJPY Curncy,PX_MID,fx USD JPY mid
+bbg_ticker,USDMXN Curncy,PX_LAST,fx USD MXN last
+bbg_ticker,USDMXN Curncy,PX_BID,fx USD MXN bid
+bbg_ticker,USDMXN Curncy,PX_ASK,fx USD MXN ask
+bbg_ticker,USDMXN Curncy,PX_MID,fx USD MXN mid
+bbg_ticker,USDNOK Curncy,PX_LAST,fx USD NOK last
+bbg_ticker,USDNOK Curncy,PX_BID,fx USD NOK bid
+bbg_ticker,USDNOK Curncy,PX_ASK,fx USD NOK ask
+bbg_ticker,USDNOK Curncy,PX_MID,fx USD NOK mid
+bbg_ticker,USDSEK Curncy,PX_LAST,fx USD SEK last
+bbg_ticker,USDSEK Curncy,PX_BID,fx USD SEK bid
+bbg_ticker,USDSEK Curncy,PX_ASK,fx USD SEK ask
+bbg_ticker,USDSEK Curncy,PX_MID,fx USD SEK mid
+bbg_ticker,USDZAR Curncy,PX_LAST,fx USD ZAR last
+bbg_ticker,USDZAR Curncy,PX_BID,fx USD ZAR bid
+bbg_ticker,USDZAR Curncy,PX_ASK,fx USD ZAR ask
+bbg_ticker,USDZAR Curncy,PX_MID,fx USD ZAR mid
+bbg_ticker,USDHKD Curncy,PX_LAST,fx USD HKD last
+bbg_ticker,USDHKD Curncy,PX_BID,fx USD HKD bid
+bbg_ticker,USDHKD Curncy,PX_ASK,fx USD HKD ask
+bbg_ticker,USDHKD Curncy,PX_MID,fx USD HKD mid
+bbg_ticker,USDSGD Curncy,PX_LAST,fx USD SGD last
+bbg_ticker,USDSGD Curncy,PX_BID,fx USD SGD bid
+bbg_ticker,USDSGD Curncy,PX_ASK,fx USD SGD ask
+bbg_ticker,USDSGD Curncy,PX_MID,fx USD SGD mid
+bbg_ticker,USDCNH Curncy,PX_LAST,fx USD CNH last
+bbg_ticker,USDCNH Curncy,PX_BID,fx USD CNH bid
+bbg_ticker,USDCNH Curncy,PX_ASK,fx USD CNH ask
+bbg_ticker,USDCNH Curncy,PX_MID,fx USD CNH mid
+bbg_ticker,USDKRW Curncy,PX_LAST,fx USD KRW last
+bbg_ticker,USDKRW Curncy,PX_BID,fx USD KRW bid
+bbg_ticker,USDKRW Curncy,PX_ASK,fx USD KRW ask
+bbg_ticker,USDKRW Curncy,PX_MID,fx USD KRW mid
+bbg_ticker,USDTWD Curncy,PX_LAST,fx USD TWD last
+bbg_ticker,USDTWD Curncy,PX_BID,fx USD TWD bid
+bbg_ticker,USDTWD Curncy,PX_ASK,fx USD TWD ask
+bbg_ticker,USDTWD Curncy,PX_MID,fx USD TWD mid
+bbg_ticker,USDPLN Curncy,PX_LAST,fx USD PLN last
+bbg_ticker,USDPLN Curncy,PX_BID,fx USD PLN bid
+bbg_ticker,USDPLN Curncy,PX_ASK,fx USD PLN ask
+bbg_ticker,USDPLN Curncy,PX_MID,fx USD PLN mid
+bbg_ticker,USDCZK Curncy,PX_LAST,fx USD CZK last
+bbg_ticker,USDCZK Curncy,PX_BID,fx USD CZK bid
+bbg_ticker,USDCZK Curncy,PX_ASK,fx USD CZK ask
+bbg_ticker,USDCZK Curncy,PX_MID,fx USD CZK mid
+bbg_ticker,USDHUF Curncy,PX_LAST,fx USD HUF last
+bbg_ticker,USDHUF Curncy,PX_BID,fx USD HUF bid
+bbg_ticker,USDHUF Curncy,PX_ASK,fx USD HUF ask
+bbg_ticker,USDHUF Curncy,PX_MID,fx USD HUF mid
+bbg_ticker,USDTRY Curncy,PX_LAST,fx USD TRY last
+bbg_ticker,USDTRY Curncy,PX_BID,fx USD TRY bid
+bbg_ticker,USDTRY Curncy,PX_ASK,fx USD TRY ask
+bbg_ticker,USDTRY Curncy,PX_MID,fx USD TRY mid
+bbg_ticker,USDILS Curncy,PX_LAST,fx USD ILS last
+bbg_ticker,USDILS Curncy,PX_BID,fx USD ILS bid
+bbg_ticker,USDILS Curncy,PX_ASK,fx USD ILS ask
+bbg_ticker,USDILS Curncy,PX_MID,fx USD ILS mid
+bbg_ticker,USDBRL Curncy,PX_LAST,fx USD BRL last
+bbg_ticker,USDBRL Curncy,PX_BID,fx USD BRL bid
+bbg_ticker,USDBRL Curncy,PX_ASK,fx USD BRL ask
+bbg_ticker,USDBRL Curncy,PX_MID,fx USD BRL mid
+bbg_ticker,USDCLP Curncy,PX_LAST,fx USD CLP last
+bbg_ticker,USDCLP Curncy,PX_BID,fx USD CLP bid
+bbg_ticker,USDCLP Curncy,PX_ASK,fx USD CLP ask
+bbg_ticker,USDCLP Curncy,PX_MID,fx USD CLP mid
+bbg_ticker,USDCOP Curncy,PX_LAST,fx USD COP last
+bbg_ticker,USDCOP Curncy,PX_BID,fx USD COP bid
+bbg_ticker,USDCOP Curncy,PX_ASK,fx USD COP ask
+bbg_ticker,USDCOP Curncy,PX_MID,fx USD COP mid
+bbg_ticker,EURGBP Curncy,PX_LAST,fx EUR GBP last
+bbg_ticker,EURGBP Curncy,PX_BID,fx EUR GBP bid
+bbg_ticker,EURGBP Curncy,PX_ASK,fx EUR GBP ask
+bbg_ticker,EURGBP Curncy,PX_MID,fx EUR GBP mid
+bbg_ticker,EURJPY Curncy,PX_LAST,fx EUR JPY last
+bbg_ticker,EURJPY Curncy,PX_BID,fx EUR JPY bid
+bbg_ticker,EURJPY Curncy,PX_ASK,fx EUR JPY ask
+bbg_ticker,EURJPY Curncy,PX_MID,fx EUR JPY mid
+bbg_ticker,EURCHF Curncy,PX_LAST,fx EUR CHF last
+bbg_ticker,EURCHF Curncy,PX_BID,fx EUR CHF bid
+bbg_ticker,EURCHF Curncy,PX_ASK,fx EUR CHF ask
+bbg_ticker,EURCHF Curncy,PX_MID,fx EUR CHF mid
+bbg_ticker,EURAUD Curncy,PX_LAST,fx EUR AUD last
+bbg_ticker,EURAUD Curncy,PX_BID,fx EUR AUD bid
+bbg_ticker,EURAUD Curncy,PX_ASK,fx EUR AUD ask
+bbg_ticker,EURAUD Curncy,PX_MID,fx EUR AUD mid
+bbg_ticker,GBPJPY Curncy,PX_LAST,fx GBP JPY last
+bbg_ticker,GBPJPY Curncy,PX_BID,fx GBP JPY bid
+bbg_ticker,GBPJPY Curncy,PX_ASK,fx GBP JPY ask
+bbg_ticker,GBPJPY Curncy,PX_MID,fx GBP JPY mid
+bbg_ticker,AUDNZD Curncy,PX_LAST,fx AUD NZD last
+bbg_ticker,AUDNZD Curncy,PX_BID,fx AUD NZD bid
+bbg_ticker,AUDNZD Curncy,PX_ASK,fx AUD NZD ask
+bbg_ticker,AUDNZD Curncy,PX_MID,fx AUD NZD mid
+bbg_ticker,CHFJPY Curncy,PX_LAST,fx CHF JPY last
+bbg_ticker,CHFJPY Curncy,PX_BID,fx CHF JPY bid
+bbg_ticker,CHFJPY Curncy,PX_ASK,fx CHF JPY ask
+bbg_ticker,CHFJPY Curncy,PX_MID,fx CHF JPY mid
+bbg_ticker,CADJPY Curncy,PX_LAST,fx CAD JPY last
+bbg_ticker,CADJPY Curncy,PX_BID,fx CAD JPY bid
+bbg_ticker,CADJPY Curncy,PX_ASK,fx CAD JPY ask
+bbg_ticker,CADJPY Curncy,PX_MID,fx CAD JPY mid
+bbg_ticker,AUDJPY Curncy,PX_LAST,fx AUD JPY last
+bbg_ticker,AUDJPY Curncy,PX_BID,fx AUD JPY bid
+bbg_ticker,AUDJPY Curncy,PX_ASK,fx AUD JPY ask
+bbg_ticker,AUDJPY Curncy,PX_MID,fx AUD JPY mid
+bbg_ticker,NZDJPY Curncy,PX_LAST,fx NZD JPY last
+bbg_ticker,NZDJPY Curncy,PX_BID,fx NZD JPY bid
+bbg_ticker,NZDJPY Curncy,PX_ASK,fx NZD JPY ask
+bbg_ticker,NZDJPY Curncy,PX_MID,fx NZD JPY mid
+bbg_ticker,EURSEK Curncy,PX_LAST,fx EUR SEK last
+bbg_ticker,EURSEK Curncy,PX_BID,fx EUR SEK bid
+bbg_ticker,EURSEK Curncy,PX_ASK,fx EUR SEK ask
+bbg_ticker,EURSEK Curncy,PX_MID,fx EUR SEK mid
+bbg_ticker,EURNOK Curncy,PX_LAST,fx EUR NOK last
+bbg_ticker,EURNOK Curncy,PX_BID,fx EUR NOK bid
+bbg_ticker,EURNOK Curncy,PX_ASK,fx EUR NOK ask
+bbg_ticker,EURNOK Curncy,PX_MID,fx EUR NOK mid
+bbg_ticker,USDEUR Curncy,PX_LAST,fx USD EUR last
+bbg_ticker,USDEUR Curncy,PX_BID,fx USD EUR bid
+bbg_ticker,USDEUR Curncy,PX_ASK,fx USD EUR ask
+bbg_ticker,USDEUR Curncy,PX_MID,fx USD EUR mid
+bbg_ticker,USDGBP Curncy,PX_LAST,fx USD GBP last
+bbg_ticker,USDGBP Curncy,PX_BID,fx USD GBP bid
+bbg_ticker,USDGBP Curncy,PX_ASK,fx USD GBP ask
+bbg_ticker,USDGBP Curncy,PX_MID,fx USD GBP mid
+bbg_ticker,JPYUSD Curncy,PX_LAST,fx JPY USD last
+bbg_ticker,JPYUSD Curncy,PX_BID,fx JPY USD bid
+bbg_ticker,JPYUSD Curncy,PX_ASK,fx JPY USD ask
+bbg_ticker,JPYUSD Curncy,PX_MID,fx JPY USD mid
+bbg_ticker,CADUSD Curncy,PX_LAST,fx CAD USD last
+bbg_ticker,CADUSD Curncy,PX_BID,fx CAD USD bid
+bbg_ticker,CADUSD Curncy,PX_ASK,fx CAD USD ask
+bbg_ticker,CADUSD Curncy,PX_MID,fx CAD USD mid
+# Ids that must be refused.
+bbg_ticker,eurusd Curncy,PX_LAST,error malformed
+bbg_ticker,EURUSDCurncy,PX_LAST,error malformed
+bbg_ticker,EURUSD  Curncy,PX_LAST,error malformed
+bbg_ticker,EURUSD curncy,PX_LAST,error malformed
+bbg_ticker,EURUSD BGN Curncy,PX_LAST,error unsupported
+bbg_ticker,EURUSD Index,PX_LAST,error unsupported
+bbg_ticker,ES1 Index,PX_LAST,error unsupported
+bbg_ticker,USDJPY Comdty,PX_LAST,error unsupported
+bbg_ticker,EUREUR Curncy,PX_LAST,error malformed
+bbg_ticker,EURUS Curncy,PX_LAST,error unsupported
+bbg_ticker,EURUSDX Curncy,PX_LAST,error unsupported
+bbg_ticker,EURUSD1M Curncy,PX_LAST,error unsupported
+bbg_ticker,,PX_LAST,error malformed
+bbg_ticker,Curncy,PX_LAST,error malformed
+bbg_ticker,EURUSD Curncy,PX_VOLUME,error wrong_field
+bbg_ticker,EURUSD Curncy,px_last,error wrong_field
+bbg_ticker,EURUSD Curncy,,error wrong_field
+ric,EURUSD Curncy,PX_LAST,error wrong_scheme
+,EURUSD Curncy,PX_LAST,error wrong_scheme

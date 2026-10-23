@@ -21,12 +21,14 @@
 /**
  * Market Data Catalogue Population Script
  *
- * Installs the providers the system names, the three sources of the provider ore and the one
- * source of the provider composite. The system tenant owns the rows and every tenant reads them.
- * The source
- * ids are fixed, because the ORE import and the DQ publish name their source
- * by id: ore-import below is the id that the publish function and the C++
- * catalogue_ids header carry.
+ * Installs the providers the system names, the two sources of the provider ore that import and
+ * derive values, the one source of the provider composite, and one source for each provider the
+ * simulator stands for. The system tenant owns the rows and every tenant reads them. The source
+ * ids are fixed, because the ORE import and the DQ publish name their source by id: ore-import
+ * below is the id that the publish function and the C++ catalogue_ids header carry.
+ *
+ * A source name says which provider and which instance, and never the kind. The kind is in its
+ * own column.
  *
  * Sources of the other providers are installed with their adapters.
  *
@@ -53,8 +55,11 @@ values
      'Tradeweb publishes pricing for fixed income and other OTC markets.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
     (ores_utility_system_tenant_id_fn(), 'ore', 0, 'ORE', 'reference',
-     'The Open Source Risk Engine. Its quote keys are an open notation.',
+     'The Open Source Risk Engine. The values of its example market data files are imported under this provider.',
      5, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
+    (ores_utility_system_tenant_id_fn(), 'demo', 0, 'Demo', 'reference',
+     'A fictional provider for exercises and demonstrations. Its notation is a slash pair such as EUR/USD.',
+     7, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
     (ores_utility_system_tenant_id_fn(), 'composite', 0, 'Composite', 'reference',
      'The internal provider of the items that the service derives from the quote series of other providers.',
      6, current_user, current_user, 'system.initial_load', 'Initial population of providers')
@@ -73,9 +78,17 @@ values
      'ore-import', 'ore', 'replay', true,
      'The values of an ORE market data file, as the import and the DQ publish write them.',
      current_user, current_user, 'system.initial_load', 'Initial population of sources'),
-    ('a94c20bb-09c4-48d3-b91a-d66322322d60', ores_utility_system_tenant_id_fn(), 0,
-     'ore-simulated', 'ore', 'simulated', false,
-     'The values that the simulator generates for the keys of an ORE market data file.',
+    ('0a42775e-3da7-4c61-a732-6b62cb9f948f', ores_utility_system_tenant_id_fn(), 0,
+     'bloomberg-a', 'bloomberg', 'simulated', true,
+     'The values that the simulator generates for the ids of Bloomberg.',
+     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+    ('c0f53bf1-a03a-4557-9906-7213091fcd82', ores_utility_system_tenant_id_fn(), 0,
+     'lseg-a', 'lseg', 'simulated', true,
+     'The values that the simulator generates for the ids of LSEG.',
+     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+    ('8c0aa62c-3e8e-4174-9dca-010180c6fed0', ores_utility_system_tenant_id_fn(), 0,
+     'demo-a', 'demo', 'simulated', true,
+     'The values that the simulator generates for the exercises and demonstrations.',
      current_user, current_user, 'system.initial_load', 'Initial population of sources'),
     ('437b14be-6443-4492-b421-a51ce34f318a', ores_utility_system_tenant_id_fn(), 0,
      'ore-derived', 'ore', 'derived', false,
@@ -91,9 +104,9 @@ do nothing;
 
 \echo '--- Market Data Rate Cards ---'
 
--- Illustrative charges for the sources of the provider ore. A real contract replaces them with
--- its own components. The simulated source carries a card of the same shape, so a party that
--- runs on it sees the bill the same use would cost on a live source.
+-- Illustrative charges. A real contract replaces them with its own components. A simulated
+-- source carries a card of the same shape as any other, so a party that runs on it sees the bill
+-- the same use would cost on a live source.
 insert into ores_marketdata_rate_card_components_tbl (
     id, tenant_id, version, source_id, driver, licence_right, currency, charge_micros,
     effective_from, modified_by, performed_by, change_reason_code, change_commentary
@@ -103,7 +116,9 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, s.source_id, c.
        current_user, current_user, 'system.initial_load', 'Initial population of rate cards'
 from (values
     ('26772cc0-57d6-4fac-be36-2ae75eb56b6b'::uuid),
-    ('a94c20bb-09c4-48d3-b91a-d66322322d60'::uuid)
+    ('0a42775e-3da7-4c61-a732-6b62cb9f948f'::uuid),
+    ('c0f53bf1-a03a-4557-9906-7213091fcd82'::uuid),
+    ('8c0aa62c-3e8e-4174-9dca-010180c6fed0'::uuid)
 ) as s(source_id)
 cross join (values
     ('fixed_per_period',   '',            100000000::bigint),

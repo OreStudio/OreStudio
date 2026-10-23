@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -51,19 +52,6 @@ struct adapter_target final {
     std::shared_ptr<const fault_state> faults;
 };
 
-/// The id scheme of an ORE quote key, and the field its one value is in.
-inline constexpr std::string_view ore_key_scheme = "ore_key";
-inline constexpr std::string_view ore_key_field = "value";
-
-/**
- * @brief The ORE key of the FX spot quote of a pair, such as "FX/RATE/EUR/USD".
- *
- * The pair is in the order the config states it, which is the market quoting order the
- * catalogue installs.
- */
-inline std::string fx_spot_ore_key(std::string_view base, std::string_view quote) {
-    return std::string("FX/RATE/").append(base).append("/").append(quote);
-}
 
 /**
  * @brief The kind string this producer registers under in
@@ -157,7 +145,8 @@ private:
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation
  * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
- * through @p auth_nats as the service itself, overriding the stored gmm_initial_price
+ * through @p auth_nats as the service itself, on the date the config names or, when it names none,
+ * on the date of @p clock (the system clock when null), overriding the stored gmm_initial_price
  * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
  * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves, replacing the vintage
  * lookup the deleted client-supplied-params path of feed_controller::start() used to perform.
@@ -173,7 +162,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  std::optional<adapter_target> adapter = std::nullopt);
+                  std::optional<adapter_target> adapter = std::nullopt,
+                  const ores::marketdata::domain::market_clock* clock = nullptr);
 
 }
 #endif

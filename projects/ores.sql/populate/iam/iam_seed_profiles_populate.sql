@@ -152,7 +152,7 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    ('acme_demo', 'subscribe_market_data', 60, '{"provider": "ore", "source": "ore-simulated"}'::jsonb),
+    ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a"}'::jsonb),
     -- One config per trading entity, each booking into the book that entity
     -- keeps its liquidity in. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the

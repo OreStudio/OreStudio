@@ -31,6 +31,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -64,10 +65,46 @@ namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-// The adapter id is the name of the simulator's source in the catalogue, and the provider is the
-// one whose notation its ticks use.
-constexpr std::string_view simulator_adapter_id = "ore-simulated";
-constexpr std::string_view simulator_provider_code = "ore";
+// An adapter serves one source of the catalogue. Its id is the name of the source, and the provider
+// of the source is the one whose notation its ticks use.
+struct simulated_adapter final {
+    std::unique_ptr<generator_runner> runner;
+    std::unique_ptr<simulator_adapter> adapter;
+};
+
+// The simulator serves each source of the catalogue whose kind is simulated, one adapter for each.
+// The simulator is the implementation of that kind, so it is the one place that reads the kind.
+std::vector<simulated_adapter>
+make_adapters(const ores::database::context& db_ctx,
+              ores::nats::service::client& nats,
+              const feed_kind_registry& registry,
+              const ores::synthetic::feed::feed_build_context& build,
+              const std::shared_ptr<ores::synthetic::feed::fault_state>& faults) {
+    std::vector<simulated_adapter> out;
+    const auto sources =
+        ores::marketdata::repository::market_data_source_repository{}.read_latest(db_ctx);
+    for (const auto& source : sources) {
+        if (source.kind != "simulated")
+            continue;
+        simulated_adapter one;
+        one.runner = std::make_unique<generator_runner>([&registry,
+                                                         &build,
+                                                         ctx = db_ctx,
+                                                         faults,
+                                                         name = source.name,
+                                                         provider = source.provider_code] {
+            return system_generator_offers(registry, ctx, build, name, provider, faults);
+        });
+        one.adapter = std::make_unique<simulator_adapter>(nats,
+                                                          *one.runner,
+                                                          source.name,
+                                                          source.provider_code,
+                                                          simulator_adapter_timing{},
+                                                          faults);
+        out.push_back(std::move(one));
+    }
+    return out;
+}
 }
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
@@ -138,25 +175,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // control-plane verb reads.
     const auto registry = make_default_feed_kind_registry();
 
-    // The simulator is an adapter of the market data service. It serves the system collections
-    // it can see, and it starts a generator for each id that the demand names.
+    // The simulator is an adapter of the market data service for each simulated source. It
+    // serves the system collections of the provider of the source, and it starts a generator for
+    // each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
-    generator_runner runner([&registry, &adapter_build, adapter_ctx = db_ctx, faults] {
-        return system_generator_offers(registry,
-                                       adapter_ctx,
-                                       adapter_build,
-                                       std::string(simulator_adapter_id),
-                                       std::string(simulator_provider_code),
-                                       faults);
-    });
-    simulator_adapter adapter(nats,
-                              runner,
-                              std::string(simulator_adapter_id),
-                              std::string(simulator_provider_code),
-                              {},
-                              faults);
-    adapter.start();
+    auto adapters = make_adapters(db_ctx, nats, registry, adapter_build, faults);
+    for (auto& one : adapters)
+        one.adapter->start();
+    if (adapters.empty())
+        BOOST_LOG_SEV(lg(), warn)
+            << "The catalogue holds no simulated source, so the simulator serves no adapter.";
+    else
+        BOOST_LOG_SEV(lg(), info) << adapters.size() << " simulated source(s) served as adapters";
 
     co_await ores::service::service::run(
         io_ctx,
@@ -178,8 +209,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
-    adapter.stop();
-    runner.stop_all();
+    for (auto& one : adapters) {
+        one.adapter->stop();
+        one.runner->stop_all();
+    }
     ctrl->shutdown();
     event_source.stop();
     co_return;

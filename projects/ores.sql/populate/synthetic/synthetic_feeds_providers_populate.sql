@@ -19,7 +19,7 @@
  */
 
 /**
- * Provider Feeds: Refinitiv, ICE and Tradeweb
+ * Provider Feeds: LSEG, ICE and Tradeweb
  *
  * Registers three synthetic feeds datasets, one for each provider that has feeds of a kind
  * the platform can simulate today. CME, LSE and Eurex have none yet: the futures, equity and
@@ -31,12 +31,11 @@
  * does not own them.
  *
  * One series has one running publisher. A feed's series is its currency, its index tenor and
- * its pillar, or its currency pair, so the datasets below name series that Bloomberg and the
- * 2016 ORE Samples do not, and every provider runs beside the others:
- *   - Refinitiv: spot rates of fourteen cross pairs, which Bloomberg leaves to the
- *     cross-rates matrix. A WM/Refinitiv style composite, started at the level the
+ * its pillar, or its currency pair, so the datasets below name series that Bloomberg does not, and every provider runs beside the others:
+ *   - LSEG: spot rates of fourteen cross pairs, which Bloomberg leaves to the
+ *     cross-rates matrix. A WM style composite, started at the level the
  *     Bloomberg USD spots imply.
- *   - ICE: LIBOR curves of the tenors the 2016 ORE Samples leave out: USD 1M and 6M, GBP,
+ *   - ICE: LIBOR curves of the tenors the Bloomberg feeds leave out: USD 1M and 6M, GBP,
  *     CHF and JPY 3M.
  *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, the one month GBP
  *     and JPY LIBOR and the six month CHF LIBOR.
@@ -56,10 +55,10 @@ declare
 begin
     for v_provider in
         select * from (values
-            ('synthetic.feeds.refinitiv', 'Synthetic Feeds: Refinitiv',
-             'The cross rates a simulated Refinitiv quotes: fourteen spot pairs between the major non-USD currencies.'),
+            ('synthetic.feeds.lseg', 'Synthetic Feeds: LSEG',
+             'The cross rates a simulated LSEG quotes: fourteen spot pairs between the major non-USD currencies.'),
             ('synthetic.feeds.ice', 'Synthetic Feeds: ICE Data Services',
-             'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the 2016 ORE Samples do not cover.'),
+             'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the Bloomberg feeds do not cover.'),
             ('synthetic.feeds.tradeweb', 'Synthetic Feeds: Tradeweb',
              'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR and LIBOR tenors the other providers do not.')
         ) as t(code, title, description)
@@ -99,20 +98,20 @@ begin
     -- 0.7196, NZD/USD 0.5903, USD/CAD 1.3609, USD/CHF 0.7822, USD/JPY 157.68, USD/SEK 9.246
     -- and USD/NOK 9.2402. The vols are approximate, not fitted to a source.
     insert into t_provider_fx values
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'GBP', 0.8624,   6.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'JPY', 184.60,   9.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'CHF', 0.9158,   5.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'AUD', 1.6269,   8.0),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'CAD', 1.5932,   7.0),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'SEK', 10.825,   6.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'EUR', 'NOK', 10.817,   7.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'GBP', 'JPY', 214.10,  10.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'GBP', 'CHF', 1.0620,   7.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'AUD', 'JPY', 113.50,  11.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'NZD', 'JPY', 93.08,   11.5),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'CHF', 'JPY', 201.60,  10.0),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'CAD', 'JPY', 115.86,  10.0),
-        ('synthetic.feeds.refinitiv', 'refinitiv', 'Refinitiv', 'AUD', 'NZD', 1.2190,   6.0);
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'GBP', 0.8624,   6.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'JPY', 184.60,   9.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'CHF', 0.9158,   5.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'AUD', 1.6269,   8.0),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'CAD', 1.5932,   7.0),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'SEK', 10.825,   6.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'EUR', 'NOK', 10.817,   7.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'GBP', 'JPY', 214.10,  10.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'GBP', 'CHF', 1.0620,   7.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'AUD', 'JPY', 113.50,  11.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'NZD', 'JPY', 93.08,   11.5),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'CHF', 'JPY', 201.60,  10.0),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'CAD', 'JPY', 115.86,  10.0),
+        ('synthetic.feeds.lseg', 'lseg', 'LSEG', 'AUD', 'NZD', 1.2190,   6.0);
 
     create temporary table t_provider_ir (
         dataset_code text, provider_code text, provider_name text,
@@ -138,7 +137,7 @@ begin
         select d.id, d.code
         from ores_dq_datasets_tbl d
         where d.tenant_id = v_tenant_id
-          and d.code in ('synthetic.feeds.refinitiv', 'synthetic.feeds.ice', 'synthetic.feeds.tradeweb')
+          and d.code in ('synthetic.feeds.lseg', 'synthetic.feeds.ice', 'synthetic.feeds.tradeweb')
           and d.valid_to = ores_utility_infinity_timestamp_fn()
     loop
         if exists (select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl where dataset_id = v_dataset.id)

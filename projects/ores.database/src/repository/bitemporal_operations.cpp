@@ -595,7 +595,8 @@ execute_parameterized_multi_column_query(context ctx,
 
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
-        BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
+        BOOST_LOG_SEV(lg, error) << operation_desc << ". Query failed after " << ms_since(began)
+                                 << " ms: " << err_msg;
         throw std::runtime_error("Query execution failed: " + err_msg);
     }
 
@@ -617,7 +618,8 @@ execute_parameterized_multi_column_query(context ctx,
     }
 
     // Where the time went: a connection of its own for each statement, the session
-    // settings, and the statement itself, which includes its planning.
+    // settings, and the statement itself, which includes its planning and the copy of
+    // its rows, so a large result adds to it.
     const auto total_ms = ms_since(began);
     BOOST_LOG_SEV(lg, total_ms >= slow_statement_ms ? warn : debug)
         << operation_desc << ". Total rows: " << result.size() << " in " << total_ms

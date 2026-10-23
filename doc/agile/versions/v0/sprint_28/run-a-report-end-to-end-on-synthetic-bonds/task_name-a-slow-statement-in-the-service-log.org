@@ -89,13 +89,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | Name a slow statement in the service log |
+| 3692 | Name a slow statement in the service log |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Use a std::chrono::milliseconds constant for the threshold. | bitemporal_operations.hpp | Skipped | The header is the base of almost every component, so a change to it rebuilds the product. The constant is documented in milliseconds and a long long matches the clock count. |
+| 2 | The statement time includes the copy of the rows. | bitemporal_operations.cpp | Fixed | The comment says so. |
+| 3 | A slow failed statement is not logged with its timing. | bitemporal_operations.cpp | Fixed | The failure log of the executor that opens its own connection states how long the statement ran before it failed. The sqlgen executor throws through ensure_success and is not changed. |
+| 4 | The 250 ms threshold is hard-coded. | bitemporal_operations.hpp | Skipped | A constant is fine until it proves noisy. |
+| 5 | A scoped timer helper if a third place needs one. | bitemporal_operations.cpp | No change needed | Two places time a read, and they report different parts. |
 
 * Result
 

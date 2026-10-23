@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: A296C7C0-780D-46DD-A8B4-8B7998C17B8C
+:END:
+#+title: Poisson Process
+#+description: The point process with a constant intensity — memoryless exponential gaps between events, and the baseline every clustered arrival model is measured against.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:ore:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+The *Poisson process* is the point process whose
+[[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][conditional intensity]] is a constant
+$\lambda$. Events arrive at random, at a steady average rate, and what has
+happened so far tells nothing about what happens next. The gap between two
+events follows the exponential law with mean $1/\lambda$. It is the simplest
+model of random arrivals, and it is the baseline against which clustering is
+measured: a stream that is more bursty than a Poisson process of the same
+rate needs a model that has memory, such as the
+[[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes process]].
+
+* Layperson's mental model
+
+Think of raindrops on a roof. The rain has an average rate, but each drop
+ignores the last one. Sometimes two drops land close together and sometimes
+there is a long dry gap, and that is all the variation there is. A gap that
+has already lasted ten seconds is no more likely to end in the next second than
+a gap that has just begun. That is the *memoryless* property.
+
+#+begin_src cpp
+// the wait to the next event, from one uniform draw u in (0, 1]
+double gap = -std::log(u) / rate;
+#+end_src
+
+* Detail
+
+** The definition
+
+With a constant intensity $\lambda$, the count $N(t)$ of events in $(0, t]$
+follows the Poisson law with mean $\lambda t$:
+
+\begin{equation}
+P(N(t) = k) = \frac{(\lambda t)^k}{k!}\, e^{-\lambda t}
+\end{equation}
+
+Counts in separate time windows are independent. The gaps between events are
+independent and follow $\text{Exp}(\lambda)$.
+
+** The exact simulation
+
+The exponential law has an inverse in closed form, so a gap needs one uniform
+draw $U$: $\Delta = -\ln(U)/\lambda$. No rejection is needed. This is the
+inversion method of the [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][point process]]
+note. Summing the gaps gives the event times.
+
+** The test of dispersion
+
+Mean and variance of the count in a window are both $\lambda t$. So the *Fano
+factor*, the variance divided by the mean, is one. A real tick stream usually
+shows a Fano factor above one over windows of seconds to minutes, because ticks
+cluster. A measured value above one is the sign that a Poisson model is too
+smooth. For a stationary
+[[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes process]] with branching ratio
+$n$, the long-window Fano factor is $1/(1-n)^2$, which gives a way to pick $n$
+from data.
+
+** When the rate follows the clock
+
+If $\lambda$ depends on the time of day, $\lambda(t)$, the process is
+*inhomogeneous*. A busy session and a quiet night then differ in rate while
+each tick still ignores the previous one. Thinning (see the point process note)
+simulates it. An intraday profile for a feed is the case of this.
+
+* See also
+
+- [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]] — the definition this process specialises.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — a Poisson process whose rate each event raises; it reduces to this one when the excitation is zero.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the memoryless gap is the continuous-time form of "no memory".
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] — how a feed uses this process as its tick clock.
+
+** Further reading
+
+- Kingman, J. F. C. (1993). /Poisson Processes/. Oxford University Press.
+- Daley, D. J., & Vere-Jones, D. (2003). /An Introduction to the Theory of
+  Point Processes/, vol. 1, 2nd ed. Springer.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Poisson_point_process][Poisson point process]].

@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: F135B9AF-902F-46C5-847C-0820D8C92D28
+:END:
+#+title: A tick clock draws its gaps from an arrival process
+#+description: How a synthetic feed decides when its next tick comes — a fixed timer today, and an arrival process in =ores.analytics.quant= that adds Poisson and Hawkes gaps behind one interface — and why the value process is left alone.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:producers:arrival:point_process:design:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+A synthetic feed has two separate jobs. One job decides /what/ the next price
+is. The other decides /when/ it arrives. The
+[[id:E1C64302-FA31-4C25-8E92-38265013F644][generator library]] holds the first
+job: a value process whose =next()= returns a price. The second job is a fixed
+timer today. This page argues that the timer should be one case of a general
+*arrival process*, a source of gaps in seconds, and that the Poisson and Hawkes
+processes are two more cases. The change makes the timing of a feed random and
+bursty, as live ticks are, and leaves the value process untouched.
+
+*Status:* design. The classes named here are the plan of the "Add a Hawkes tick
+arrival process" story and they do not exist in the tree yet. This page changes
+to describe the code when the code lands.
+
+* Detail
+
+** What exists today
+
+The one clock every feed runs on is =tick_clock= in
+=ores.synthetic.api/feeds/tick_clock.hpp=, described in
+[[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][the FX spot producer]]. It takes
+=ticks_per_hour=, turns that into one fixed period, sleeps for the period in
+slices of a hundred milliseconds so that =stop()= is seen quickly, and then runs
+one tick. The period is a constant. Every gap is equal, so a feed with a
+=ticks_per_hour= of 3600 ticks once a second, every second, for ever.
+
+The note
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+already plans the other modes. Its section on the tick clock lists Fixed,
+Poisson, Regime-switching and Hawkes, and it names the Hawkes parameters. That
+note says what a user may choose. This page says where the choice lives in the
+code.
+
+** The seam
+
+The new seam is an interface in =ores.analytics.quant=, beside
+=IStochasticProcess=:
+
+- =i_arrival_process= has one method, =next_gap()=, that returns the time in
+  seconds from the last tick to the next one. The process owns its state and
+  its random engine and is not thread-safe, like every value process.
+- =fixed_arrival_process= returns the same gap every time. It is the present
+  behaviour, and it is the default.
+- =poisson_arrival_process= returns an exponential gap
+  ([[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]]).
+- =hawkes_arrival_process= returns a gap that depends on the earlier ones
+  ([[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]).
+- =process_factory= gets a third entry, =make_arrival_process=, beside
+  =make_process= and =make_yield_curve_process=. Like the second, and unlike
+  the first, it throws on a name it does not know. A silent fallback to a fixed
+  timer would hide a mistyped mode as a feed that quietly stays regular.
+
+=tick_clock= then asks the arrival process for the next gap, instead of
+reading a constant. The slicing, the stop check and the guard around one tick
+are not changed.
+
+The class names follow the snake_case of the rest of the code. The existing
+interfaces use =IStochasticProcess= and =IYieldCurveProcess=. A task in the
+story renames them, and this page follows the rename.
+
+** The parameters
+
+A feed names its mode and one set of numbers.
+
+| Mode | Parameters | Meaning |
+|------+------------+---------|
+| Fixed | ticks per hour | Equal gaps. |
+| Poisson | ticks per hour | The mean rate. Gaps are exponential. |
+| Hawkes | ticks per hour, branching ratio, decay | The long-run mean rate, how clustered the stream is, and how fast a burst fades. |
+
+The Hawkes row uses the parametrisation in
+[[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]: the mean rate
+$\bar\lambda$, the branching ratio $n$ and the decay $\beta$. The factory turns
+them into the baseline $\mu = \bar\lambda(1-n)$ and the jump $\alpha = n\beta$.
+The reason is that =ticks_per_hour= keeps its meaning in every mode. A person
+who switches from Fixed to Hawkes keeps the same load on the pipeline, and
+changes only how that load is spread in time. The approach note's
+$(\mu, \alpha, \beta)$ is the same process in other coordinates.
+
+The unit of the arrival process is the second, and =ticks_per_hour= stays the
+unit of the config. The factory converts once. The second is the unit because
+the clock sleeps in wall time. The process itself has no notion of a unit, and
+a template parameter would add noise for no gain.
+
+** What validation guards
+
+=validate_process_parameters= is the one rule set that the service and the Qt
+client share. It gains the arrival rules:
+
+- the rate is positive and finite;
+- the decay is positive and finite;
+- the branching ratio is at least zero and strictly below one.
+
+A branching ratio of one or more gives a stream that does not settle. A ratio
+very close to one gives gaps so short that the pipeline cannot keep up. The
+process also stops after a fixed number of events in one request and reports
+that it did so, which guards the tick loop against a parameter set that the
+rules let through.
+
+** What stays the same
+
+The value process is not told how long the gap was. The Gaussian mixture
+processes take their moments per tick, and they ignore elapsed time. The
+Ornstein-Uhlenbeck process and the short-rate processes take a year fraction
+=dt= when they are built, and they use it for every step. So a bursty clock
+changes /when/ prices arrive and not /how far/ one tick moves. In a burst the
+price moves per tick as it does in a lull, so the volatility per unit of real
+time is higher in a burst. That is the right direction for a market. It is not
+yet an exact model, because a mean-reverting process would need a different
+=dt= for each step. This gap is stated here and is not closed by the story.
+
+The pipeline after the feed does not change. A tick carries its time, the
+marketdata ingest loop plans and stores it, and the rule in
+[[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]]
+holds: the arrival process is a property of the generator and no later stage
+reads it.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] — the value processes and the factory this page adds a third kind to.
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] — the fixed-mode clock that this page generalises.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the list of modes and the control panel.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub that carries the mathematics.
+- [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]], [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] and [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the mathematics of the three arrival processes.
+- [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the library whose Hawkes simulation inspired the implementation, and where we differ.

@@ -25,7 +25,9 @@ without leaving continuous time). Everything else in this cluster is one
 of six concrete processes built on those two foundations, split into two
 families: *price processes*, which model a quantity that can wander
 without bound, and *mean-reverting processes*, which model a quantity
-that is pulled back toward a long-run level. The first place these
+that is pulled back toward a long-run level. A third family, *point
+processes*, models something else: not the level of a quantity but the
+times at which events, such as ticks, arrive. The first place these
 processes are put to use in ORE Studio is
 [[id:D9424733-9602-45DB-8E87-88F2851C3C29][=ores.analytics.quant=]]'s
 synthetic market data generators (FX spot, equity, and short-rate paths)
@@ -123,6 +125,24 @@ requires the Poisson-mixture-of-central-chi-squared construction
 described in its own atomic doc, rather than the closed-form Gaussian
 update the other three share.
 
+** Point processes (arrival times)
+
+The processes above answer "what is the level now?". A *point process*
+answers "when does the next event happen?". It is the third family, and
+its [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][foundation note]] defines the
+conditional intensity that all of them share.
+
+- [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]] — the rate of events given the
+  history, the compensator, and the time-rescaling test.
+- [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] — a constant intensity; memoryless exponential gaps.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — each event raises the intensity for a while; bursts
+  breed bursts. It reduces to the Poisson process when its branching ratio
+  is zero.
+
+These do not implement =IStochasticProcess=, because =next()= there returns a
+level. Their consumer, and the interface they sit behind, are in
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]].
+
 ** Current consumer: synthetic data generation
 
 =ores::analytics::quant::service::process_factory= constructs the
@@ -139,6 +159,7 @@ Studio.
 - [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] — the system these processes are currently used in.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — these processes are calibrated/sampled under the real-world $P$ measure for data generation, as distinct from the $Q$-measure dynamics ORE's pricing engines use.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — the discrete-time counterpart to the Gaussian-mixture fat-tail problem the price processes address.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] — how the point processes pace a feed's ticks.
 
 ** Further reading
 

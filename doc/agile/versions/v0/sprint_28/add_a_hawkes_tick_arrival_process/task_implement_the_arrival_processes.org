@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3CF5D3C2-454C-4F27-B891-BFD4920144EC
+:END:
+#+title: Task: Implement the fixed, Poisson and Hawkes arrival processes
+#+description: Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, inspired by the tick library.
+#+type: task
+#+level: s1
+#+filetags: :add_a_hawkes_tick_arrival_process:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-add-a-hawkes-tick-arrival-process
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A caller can build a fixed, Poisson or Hawkes arrival process from a mode name and plain numbers, and draw gaps in seconds that pass the statistical checks of the Hawkes note.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- Each source file says it is inspired by tick and points at the tick note.
+- Tests check the mean rate, the Fano factor and the time-rescaling test, and that a branching ratio of one or more is refused.
+- The Hawkes note, the tick arrival note and the component overview describe the code as built.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

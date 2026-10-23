@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: FD28C144-FAC0-44D1-9E90-BE433A90061E
+:END:
+#+title: tick
+#+description: The open-source statistical learning library for point processes whose Hawkes simulation inspired ORE Studio's tick arrival process — what it is, its licence, and exactly where our design differs.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:external:upstream:hawkes:point_process:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+[[https://github.com/X-DataInitiative/tick][tick]] is an open-source Python 3
+library, with a C++ core, for statistical learning on time-dependent data. It
+began in 2016 at the Datascience initiative of École Polytechnique, led by
+Emmanuel Bacry, Stéphane Gaïffas, Martin Bompaire and Søren Vinther Poulsen.
+Its core is an optimisation toolbox. Its best-known part is the simulation and
+inference of [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes processes]].
+Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+ORE Studio does not use tick, link against it or copy its source. The
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][tick arrival]] design takes ideas
+from tick's Hawkes simulation and builds them again in the style of
+=ores.analytics.quant=. Every source file of that implementation says so in a
+comment. The ORE Studio licence applies to the files, because they contain no
+tick code. This page records what the ideas are, what we do differently, and
+where to read more.
+
+* Detail
+
+** Where it lives
+
+- /Upstream/ — [[https://github.com/X-DataInitiative/tick][github.com/X-DataInitiative/tick]].
+- /Documentation/ — [[https://x-datainitiative.github.io/tick][x-datainitiative.github.io/tick]].
+- /Licence/ — BSD 3-clause, "Copyright (c) 2015-2018, the tick developers".
+- /Version read/ — 0.8.0.2, commit =a40d19f868=. The read covered
+  =lib/cpp/hawkes/simulation=.
+- /In this repo/ — not vendored, not a dependency.
+
+** The ideas we take
+
+1. *A point process is simulated by thinning.* tick follows Ogata (1981): bound
+   the future intensity, draw a candidate gap from the exponential law at the
+   bound, and keep or discard the candidate by comparing the true intensity to
+   the bound. See [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]].
+2. *The exponential kernel keeps one running number.* tick caches the sum of
+   the kernel over past events, and decays it by $e^{-\beta\,\Delta}$ between
+   events. Each event then costs constant time.
+3. *The kernel is stated by a branching ratio and a decay.* tick's
+   =HawkesKernelExp(intensity, decay)= is
+   $\phi(x) = \text{intensity}\cdot\text{decay}\cdot e^{-\text{decay}\,x}$. So its
+   =intensity= is the branching ratio $n = \alpha/\beta$, and the usual $\alpha$
+   is =intensity * decay=. Our parametrisation also states the kernel by $n$ and
+   $\beta$.
+4. *A simulation is checked against its compensator.* tick can evaluate the
+   compensator at each event, which supports the time-rescaling test in
+   [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]].
+
+** Where ORE Studio differs
+
+| Matter | tick | ORE Studio |
+|--------+------+------------|
+| Dimensions | Any number of streams, with a matrix of kernels | One stream. A feed has one tick stream, and no consumer needs cross-excitation. |
+| Kernels | Exponential, sum of exponentials, power law, a user time function | Exponential. A stream of ticks clusters with one exponential kernel, and the sum of exponentials is the first extension. |
+| Method | Thinning for every kernel | Direct inversion (Dassios and Zhao 2013) for the exponential kernel. It needs no rejected candidates. Thinning is the method to add for another kernel. |
+| Stability | Not checked. A branching ratio of one or more runs until the caller stops it. | Checked in the shared parameter validation: the branching ratio must be below one. A cap on events in a request is a second guard. |
+| Parameters | Baseline, intensity (branching ratio) and decay | Long-run rate, branching ratio and decay, which keeps the ticks-per-hour setting of a feed meaningful. |
+| Time | A unitless double | Seconds, because the clock sleeps in wall time. |
+| Random numbers | Its own =Rand= wrapper on =std::mt19937_64=, an =int= seed | =std::mt19937= from a 32-bit seed, as every process in the library does. A seed does not give tick's numbers. |
+| Arrays and storage | Its own array library, reference-counted arrays and cereal serialisation | None. The process keeps one number. |
+| Inference | Fits kernels to data by several estimators | None. Our processes generate data. |
+| Language | Python 3 front end over C++ | C++ only, in a library that has no logging, database or messaging dependency. |
+
+** Why the source says "inspired by"
+
+The ORE Studio files contain no tick code. They share an algorithm and a
+parametrisation name with tick, and copyright protects the expression of source, not an algorithm. Even so, the
+courteous and honest course is to say where the ideas came from. Each file of
+the implementation carries a short comment that names tick, its licence and
+this page. The commit that adds the files says the same. If a later change
+copies any tick source, the BSD 3-clause terms apply to the copied part, and
+the file must then carry tick's notice.
+
+** How to cite
+
+The tick README asks that scientific work cite the library. The paper is
+Bacry, Bompaire, Gaïffas and Poulsen (2017), arXiv:1707.03003. The Hawkes note
+lists it under further reading.
+
+* See also
+
+- [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] — the index this page hangs off.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the mathematics, with the references tick builds on.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] — where the implementation sits in the system.
+- [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] — another upstream library, one that we do depend on.
+- [[https://arxiv.org/abs/1707.03003][arXiv:1707.03003]] — the tick paper.

@@ -203,30 +203,13 @@ the clock takes plain parameters and a seed, like the other processes.
 
 ** Attribution
 
-tick is under the BSD 3-clause licence: "Copyright (c) 2015-2018, the tick
-developers". ORE Studio is under the GPL, version 3. BSD 3-clause code may go
-into a GPL work. The terms we must meet:
-
-1. Keep the copyright notice, the three conditions and the disclaimer in every
-   source file or file part that derives from tick.
-2. Reproduce the same text in the documentation of a binary distribution.
-3. Do not use the names of the tick developers or the CMAP authors to endorse
-   ORE Studio.
-
-The repository has no convention for third-party source. Searching for
-"Adapted from" and "Derived from" finds only tool scripts. The proposal:
-
-- Each ported file opens with a notice: what it derives from, the upstream path,
-  the upstream commit, the upstream licence line, and a statement that the file
-  is changed.
-- The full licence text lives once, in a notices file the owner picks (see the
-  choices below), and the external note links to it.
-- The external note =tick.org= records the paper
-  (Bacry, Bompaire, Gaïffas, Poulsen, "tick: a Python library for statistical
-  learning, with a particular emphasis on time-dependent modelling",
-  arXiv:1707.03003). The tick README asks for a citation in scientific work.
-- The Hawkes note cites the paper and the file it derives from.
-- The commit message of the port names the upstream project and commit.
+The owner decided on 2026-10-23 that the port copies no tick source. The code
+is a new implementation of tick's ideas in the style of =ores.analytics.quant=,
+so the ORE Studio licence applies and tick's BSD 3-clause notice does not
+travel. Each source file carries a comment that says it is inspired by tick and
+points at the [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] note, which
+lists the ideas we take and every difference. The paper is cited in the Hawkes
+note. If a later change copies tick source, the BSD terms apply to that part.
 
 ** Port size
 
@@ -282,15 +265,32 @@ The port is small and the code is not the hard part.
 4. *Licence.* BSD 3-clause code may go into our GPL work if each derived file
    keeps the notice and the licence text ships with binaries.
 
-Choices for the owner, before any code:
+Decisions of the owner, 2026-10-23:
 
-1. *Interface.* A new =ITickClock= with =next()= returning the wait to the next
-   tick (recommended), or a method on =IStochasticProcess=.
-2. *Shape.* One node only, or the multivariate form from the start.
-3. *Neighbours.* Whether the Fixed and Poisson clocks come in the same story.
-   Poisson is the Hawkes process with no excitation, so it is a free test
-   baseline.
-4. *Kernels.* Exponential only, or the sum of exponentials as well.
-5. *Notices file.* Where the licence text lives: a file in the component, a
-   file at the repository root, or the documentation only.
-6. *Units.* Seconds, or the year fraction the value processes use.
+1. *Interface.* A new interface, not a method on =IStochasticProcess=. Its name
+   is =i_arrival_process=, in snake_case. The existing =IStochasticProcess=,
+   =IYieldCurveProcess= and =IFeed= are CamelCase and get renamed in their own
+   task.
+2. *Shape.* One stream. No consumer needs cross-excitation.
+3. *Neighbours.* The Fixed and Poisson arrival processes come in this story.
+4. *Kernels.* The exponential kernel only. A stream of ticks clusters with one
+   decay, and direct inversion is exact for it. The sum of exponentials is the
+   first extension and needs thinning.
+5. *Licence.* The ORE Studio licence, with the "inspired by tick" comment.
+6. *Units.* Seconds. The existing =tick_clock= sleeps in wall time and its
+   config unit is ticks per hour, so the factory converts once. No template
+   parameter is needed.
+
+What changed in the plan: the story now has three code tasks, to rename the
+interfaces, to implement the arrival processes and to pace a feed by one. The
+documents come first and are done: the point process, Poisson and Hawkes
+notes, the tick arrival note, the tick note, and edits to the hub, the
+generator library, the FX spot producer, the approach note, the market data
+architecture note and the external index.
+
+Two findings changed the design. First, =ores.synthetic.api/feeds/tick_clock.hpp=
+already exists and paces every feed with one fixed period, so the arrival
+process replaces its constant and does not need a second clock. Second, the
+value processes take =dt= once, at construction. A variable gap would need a
+per-step =dt= to be exact for a mean-reverting process. The tick arrival note
+states that gap. The story leaves it open.

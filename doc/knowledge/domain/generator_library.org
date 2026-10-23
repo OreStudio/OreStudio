@@ -74,6 +74,17 @@ A reader who edits an FX config's components while its =process_type= is
 ="ornstein_uhlenbeck"= is therefore editing a reversion speed in a field
 labelled as a weight.
 
+** The arrival process is a third kind
+
+Everything above answers what the next price is. When the price arrives is a
+different question with a different answer, and it does not fit
+=IStochasticProcess=, because =next()= there returns a level. A third
+interface, =i_arrival_process=, returns the gap to the next tick in seconds,
+and the factory gets a third entry. The design, its parameters and its limits
+are in [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]. The
+mathematics is in [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]
+and [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]].
+
 ** The RNG design
 
 Every process owns a =std::mt19937= engine built from the seed passed to its
@@ -123,3 +134,4 @@ catalogued short-rate engines, and it has no caller in the tree. See
 - [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic Brownian Motion]], the engine the ="arithmetic"= name selects.
 - [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]], the engine whose parameters arrive through the mixture columns.
 - [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] and [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], the two callers.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]], the third kind of process: when a tick comes, not what it says.

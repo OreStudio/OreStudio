@@ -46,7 +46,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 | [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | DONE | 2026-10-22 | 2026-10-23 | Initial task for: Browse and follow the grid's jobs |
 | [[id:78C4D328-EA8E-46D3-B25B-8B09CE6930C3][Filter the batch list by status, party and reference]] | BACKLOG | | | The batch list pages by offset and limit only. A person cannot find one batch among thousands. |
 | [[id:26625549-D4D9-47F3-B978-2C240F85CC5A][Find a result by its outcome]] | BACKLOG | | | Which of the failed results ran? Today read_by_state filters on server_state, and every stored result is Done, so a failed result cannot be separated from a successful one. |
-| [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | BACKLOG | | | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
+| [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | STARTED | 2026-10-23 | | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
 | [[id:8088985C-EAE9-4CF3-962E-4BC6C319A0E7][Serve a stored input or output as a download]] | BACKLOG | | | A workunit names its input and a result names its output as stored objects. The browser has no route that streams them. |
 | [[id:9F73E400-ADDE-499A-A0B0-A616FB5D1668][Build the job page]] | BACKLOG | | | Follow a job: the batch, the state of the job, the node, the timings, the input, the output, and the report run behind the batch. |
 | [[id:32140ED0-C5D0-46A3-8DA4-560A8BF68F8B][Decide who sees a node's name]] | BACKLOG | | | A result names its host. The operator needs the node. A tenant administrator or a party member probably should not see the installation's node names. The owner must decide. |
@@ -55,6 +55,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 | [[id:B5C3CA59-67B9-4826-9191-0AB40C6B80CE][Build the app version page]] | BACKLOG | | | One app version of the compute catalogue: the build, its release note, its packages and the other versions of its app, drawn in the prototype and not yet in the web client. |
 | [[id:75489199-9605-4135-AFA9-7F03CBAAFD5F][Order the job lists by when they were recorded]] | DONE | | 2026-10-23 | The batch, workunit and result lists order by their key alone, and the key is a random identifier. A page cannot read newest first. Make the recording time sortable. |
 | [[id:97AA0C61-915C-4650-B717-3F4416AF9610][Let a party member read workunits and results]] | DONE | | 2026-10-23 | A party member may read batches and is refused the workunit and result reads with forbidden. The Browse the grid's jobs journey gives the party member the whole tree. |
+| [[id:EA8D3864-10B4-4AAE-A0CA-6C1660FED111][Key the app version by its app, engine and wrapper versions]] | BACKLOG | | | The app version service reads the version precondition by wrapper_version alone, so two versions that share a wrapper version read each other's row and a second republish fails. |
 
 * Decisions
 

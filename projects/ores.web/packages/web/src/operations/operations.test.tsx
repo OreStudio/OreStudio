@@ -1601,7 +1601,7 @@ describe('the grid over time', () => {
         expect(html).not.toContain('href="/operations/bus"');
     });
 
-    it('offers a tenant or a party member the overview and the usage, and no machine', () => {
+    it('offers a tenant or a party member the overview, the usage and the jobs, and no machine', () => {
         const render = (mode: 'tenant-administration' | 'application', path: string): string =>
             withProviders(
                 <GridPage mode={mode} />,
@@ -1619,6 +1619,7 @@ describe('the grid over time', () => {
             const overview = render(mode, '/');
             expect(overview).toContain('>Overview<');
             expect(overview).toContain('>Usage<');
+            expect(overview).toContain('>Jobs<');
             expect(overview).not.toContain('>Machines<');
             expect(overview).not.toContain('>Nodes<');
             expect(overview).not.toContain('>Heatmap<');
@@ -1634,7 +1635,7 @@ describe('the grid over time', () => {
         }
     });
 
-    it('keeps the grid screen on five tabs, so each page stays short', () => {
+    it('keeps the grid screen on six tabs, so each page stays short', () => {
         const seeded = (path: string): string =>
             withProviders(
                 <GridPage />,
@@ -1649,7 +1650,7 @@ describe('the grid over time', () => {
 
         const overview = seeded('/');
         expect(overview).toContain('role="tablist"');
-        for (const title of ['Overview', 'Usage', 'Machines', 'Nodes', 'Heatmap']) {
+        for (const title of ['Overview', 'Usage', 'Machines', 'Nodes', 'Heatmap', 'Jobs']) {
             expect(overview).toContain(`>${title}<`);
         }
         // The overview holds the charts alone: the machines have their own tab.

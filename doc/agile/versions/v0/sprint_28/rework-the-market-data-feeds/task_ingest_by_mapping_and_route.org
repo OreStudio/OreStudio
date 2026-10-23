@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/ingest-by-mapping-and-route
-#+pr:
+#+pr: 3652
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3652][#3652]] | [marketdata] Ingest adapter ticks by mapping and route |
 
 * Review
 

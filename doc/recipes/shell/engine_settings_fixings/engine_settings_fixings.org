@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 19E6840B-B36B-52AF-9398-50E4FEFCB8EE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the engine_settings_fixings commands from the shell?
+#+description: Every command the engine_settings_fixings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:engine_settings_fixings:
+
+This file documents the engine_settings_fixings resource at the shell, one section per command. Every command is a subcommand of =engine_settings_fixings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 39D69B38-1B4A-5431-9F9E-B175FC47B788
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.list=.
+
+#+name: engine_settings_fixings-list
+#+begin_src ores-shell :tangle engine_settings_fixings-list.ores :exports none
+engine_settings_fixings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 182EE366-D593-5623-A5F7-A82A2A50DC14
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings get <id>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.get=.
+
+#+name: engine_settings_fixings-get
+#+begin_src ores-shell :tangle engine_settings_fixings-get.ores :exports none
+engine_settings_fixings get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5B764998-8822-53FF-BC18-BFB664C5BA4D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.get_many=.
+
+#+name: engine_settings_fixings-get-many
+#+begin_src ores-shell :tangle engine_settings_fixings-get-many.ores :exports none
+engine_settings_fixings get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 575A75CC-CEAB-56C8-BB49-5423C5DDCCBE
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings add <engine_settings_id> <imply_todays_fixings> <include_todays_cash_flows> <include_reference_date_events> <enrich_index_fixings> <ignore_fixing_lag> <ignore_fixing_lead> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.put=.
+
+#+name: engine_settings_fixings-add
+#+begin_src ores-shell :tangle engine_settings_fixings-add.ores :exports none
+engine_settings_fixings add 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9AD52163-44C7-51F0-91E5-3D33B4ED7DEF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings set <id> <engine_settings_id> <imply_todays_fixings> <include_todays_cash_flows> <include_reference_date_events> <enrich_index_fixings> <ignore_fixing_lag> <ignore_fixing_lead> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.put=.
+
+#+name: engine_settings_fixings-set
+#+begin_src ores-shell :tangle engine_settings_fixings-set.ores :exports none
+engine_settings_fixings set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9B48520F-DF12-535F-9F00-90CA74C4370D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings put-many --count <n> <id> <engine_settings_id> <imply_todays_fixings> <include_todays_cash_flows> <include_reference_date_events> <enrich_index_fixings> <ignore_fixing_lag> <ignore_fixing_lead> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.put_many=.
+
+#+name: engine_settings_fixings-put-many
+#+begin_src ores-shell :tangle engine_settings_fixings-put-many.ores :exports none
+engine_settings_fixings put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A5C2AF10-1734-5AB4-8D9C-CC3265429B48
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.delete=.
+
+#+name: engine_settings_fixings-delete
+#+begin_src ores-shell :tangle engine_settings_fixings-delete.ores :exports none
+engine_settings_fixings delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7710F6B2-D970-5B07-8652-423DA9FA9C64
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.delete_many=.
+
+#+name: engine_settings_fixings-delete-many
+#+begin_src ores-shell :tangle engine_settings_fixings-delete-many.ores :exports none
+engine_settings_fixings delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-engine-settings-id=
+:PROPERTIES:
+:ID: 5F08D385-1391-59E3-AB6B-FE0C4CE8BFB8
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings by-engine-settings-id <engine_settings_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings.list_by_engine_settings_id=.
+
+#+name: engine_settings_fixings-by-engine-settings-id
+#+begin_src ores-shell :tangle engine_settings_fixings-by-engine-settings-id.ores :exports none
+engine_settings_fixings by-engine-settings-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E7256613-2D9D-5F07-A6C8-03EF066B3987
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings_versions.list=.
+
+#+name: engine_settings_fixings-versions
+#+begin_src ores-shell :tangle engine_settings_fixings-versions.ores :exports none
+engine_settings_fixings versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9167EAFC-2050-5644-83B0-C35C4B73D95C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_fixings version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_fixings_versions.get=.
+
+#+name: engine_settings_fixings-version
+#+begin_src ores-shell :tangle engine_settings_fixings-version.ores :exports none
+engine_settings_fixings version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

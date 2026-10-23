@@ -269,6 +269,7 @@ void market_data_generation_config_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -540,6 +541,7 @@ void market_data_generation_config_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -644,6 +646,7 @@ void market_data_generation_config_commands::process_versions(
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -689,6 +692,7 @@ void market_data_generation_config_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.market_data_generation_config.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

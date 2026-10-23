@@ -106,23 +106,6 @@ public:
     std::vector<domain::app_version> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
-    /**
-     * @brief Reads latest app versions filtered by wrapper_version.
-     */
-    std::vector<domain::app_version>
-    read_latest_by_wrapper_version(context ctx, const std::string& wrapper_version);
-
-    /**
-     * @brief Reads the newest app versions filtered by wrapper_version, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
-     */
-    std::vector<domain::app_version>
-    read_any_by_wrapper_version(context ctx, const std::string& wrapper_version);
-
 
     /**
      * @brief Reads all app versions, possibly filtered by primary key.

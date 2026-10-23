@@ -274,6 +274,7 @@ void trade_identifier_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.id_type, parsed->positionals[next++], "id_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -543,6 +544,7 @@ void trade_identifier_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.removal.key.id_type, parsed->positionals[next++], "id_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -705,6 +707,7 @@ void trade_identifier_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.id_type, parsed->positionals[next++], "id_type");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
@@ -751,6 +754,7 @@ void trade_identifier_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_identifier.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.trade_identifier.id_type, parsed->positionals[next++], "id_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");

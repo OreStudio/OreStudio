@@ -5348,6 +5348,13 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             _input(column.get("column", ""), column.get("cpp_type", ""))
             for column in (entity.get("primary_key") or {}).get("columns") or []
         ]
+    # A command always reads its key from the caller. An id that a put mints
+    # for a new row is still typed to name an existing one, so a key input is
+    # never the minted or session-filled kind the write record may call it.
+    for item in keys:
+        item["is_user"] = True
+        item["is_minted"] = False
+        item["is_session_party"] = False
     writes = [
         _input(field.get("name", ""), field.get("cpp_type", ""))
         for field in entity.get("write_fields") or []

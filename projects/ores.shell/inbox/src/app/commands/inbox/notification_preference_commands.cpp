@@ -276,6 +276,7 @@ void notification_preference_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.account_id, parsed->positionals[next++], "account_id");
         read_token(req.key.kind_code, parsed->positionals[next++], "kind_code");
         read_token(req.key.channel_code, parsed->positionals[next++], "channel_code");
     } catch (const std::exception& e) {
@@ -538,6 +539,7 @@ void notification_preference_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.account_id, parsed->positionals[next++], "account_id");
         read_token(req.removal.key.kind_code, parsed->positionals[next++], "kind_code");
         read_token(req.removal.key.channel_code, parsed->positionals[next++], "channel_code");
         req.intent.reason_code = parsed->positionals[next++];
@@ -703,6 +705,7 @@ void notification_preference_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.account_id, parsed->positionals[next++], "account_id");
         read_token(req.key.kind_code, parsed->positionals[next++], "kind_code");
         read_token(req.key.channel_code, parsed->positionals[next++], "channel_code");
         apply_page(req, *parsed);
@@ -750,6 +753,8 @@ void notification_preference_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(
+            req.key.notification_preference.account_id, parsed->positionals[next++], "account_id");
         read_token(
             req.key.notification_preference.kind_code, parsed->positionals[next++], "kind_code");
         read_token(req.key.notification_preference.channel_code,

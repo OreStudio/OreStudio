@@ -94,6 +94,7 @@ ctx.generate_uuid()
 :tablename:                 ores_marketdata_routes_tbl
 :rls_tenant_isolation:      true
 :rls_party_isolation:       true
+:rls_system_tenant_visible: true
 :END:
 
 ** Checks

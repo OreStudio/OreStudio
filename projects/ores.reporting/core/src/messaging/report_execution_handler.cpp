@@ -55,13 +55,36 @@ using namespace ores::service::messaging;
 
 namespace {
 
+inline auto& nats_call_lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.reporting.messaging.report_execution_handler.nats_call");
+    return instance;
+}
+
+/**
+ * @brief Calls a service and states how long the call took.
+ *
+ * A call that fails says how long it waited, so a timeout reads as a duration and
+ * not as a bare refusal. A call that takes more than five seconds is logged as a
+ * warning, before it is slow enough to fail.
+ */
 template <typename Req>
 std::optional<typename Req::response_type>
 nats_call(ores::nats::service::nats_client& nats, const Req& request, std::string& out_error) {
     using Resp = typename Req::response_type;
+    using namespace ores::logging;
+    const auto began = std::chrono::steady_clock::now();
+    const auto elapsed_ms = [&] {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::steady_clock::now() - began)
+            .count();
+    };
     try {
         const auto& codec = ores::nats::default_wire_codec();
         const auto msg = nats.authenticated_request(Req::nats_subject, codec.encode(request));
+        const auto took = elapsed_ms();
+        BOOST_LOG_SEV(nats_call_lg(), took > 5000 ? warn : debug)
+            << Req::nats_subject << " answered in " << took << " ms";
 
         const auto err_it = msg.headers.find("X-Error");
         if (err_it != msg.headers.end()) {
@@ -76,7 +99,9 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
         }
         return *result;
     } catch (const std::exception& e) {
-        out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
+        out_error = std::format(
+            "Exception calling {} after {} ms: {}", Req::nats_subject, elapsed_ms(), e.what());
+        BOOST_LOG_SEV(nats_call_lg(), error) << out_error;
         return std::nullopt;
     }
 }
@@ -375,6 +400,10 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
         md_req.fixings_storage_key = service::fixings_storage_key(req.report_instance_id);
+        BOOST_LOG_SEV(lg(), info) << "gather_market_data asking marketdata to export | instance="
+                                  << req.report_instance_id
+                                  << " valuation_date=" << md_req.valuation_date.value_or("")
+                                  << " storage_key=" << md_req.storage_key;
 
         std::string err;
         auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);

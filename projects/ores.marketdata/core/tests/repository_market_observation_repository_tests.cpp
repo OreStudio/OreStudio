@@ -480,6 +480,44 @@ TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
     CHECK(buckets[3].front().value == "0.050000");
 }
 
+TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    auto manual = make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(10), 0.0500);
+    obs_repo.insert(h.context(), manual);
+    lineage_repo.write(h.context(), make_lineage(ctx, manual, "manual"));
+    obs_repo.insert(h.context(),
+                    make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(20), 0.0450));
+
+    // Before the manual point is keyed, between it and the later feed write, and after both.
+    for (const auto minutes : {5, 15, 30}) {
+        const auto instant = t0 + std::chrono::minutes(minutes);
+        const auto one = obs_repo.read_as_of(h.context(), s.id, instant);
+        std::vector<std::string> from_one, from_all;
+        for (const auto& o : one)
+            from_one.push_back(o.oresmd_uri + " " + o.value);
+        for (const auto& o : obs_repo.read_as_of_all(h.context(), instant))
+            if (o.series_id == s.id)
+                from_all.push_back(o.oresmd_uri + " " + o.value);
+        std::ranges::sort(from_one);
+        std::ranges::sort(from_all);
+        CAPTURE(minutes);
+        CHECK(from_all == from_one);
+    }
+}
+
 namespace {
 
 // The session an operator writes a manual point with: the series' party, so

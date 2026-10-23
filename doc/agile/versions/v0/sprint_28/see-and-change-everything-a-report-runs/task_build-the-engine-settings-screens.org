@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-engine-settings-screens
-#+pr:
+#+pr: 3671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3671][#3671]] | [web] Build the engine settings screens |
 
 * Review
 

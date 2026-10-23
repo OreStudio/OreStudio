@@ -42,7 +42,7 @@ import {
     type PageRequest,
 } from '../refdata/RecordList.js';
 import { NEW_RECORD_REASON, useCloseGuard, LeavingFooter } from '../refdata/records.js';
-import { PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
+import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -97,7 +97,13 @@ export function pageOf(
 function sourceOf(filter: ListFilter | undefined): ListSource<EngineSummary> {
     return {
         key: 'engine-settings',
-        read: async (page) => pageOf(await engineSettings.list(), page),
+        // An address can carry a party from a time the account worked in several. A
+        // list with no party filter has no way to clear it, so it ignores it.
+        read: async (page) =>
+            pageOf(
+                await engineSettings.list(),
+                filter === undefined ? { ...page, filters: {} } : page,
+            ),
         search: true,
         sortable: SORTABLE,
         ...(filter === undefined ? {} : { filters: [filter] }),
@@ -164,7 +170,7 @@ function useColumns(showParty: boolean): readonly ListColumn<EngineSummary>[] {
             cell: (row) => <RelativeTime at={row.recordedAt} />,
         },
     ];
-    return showParty ? columns : columns.filter((column) => column.id !== 'party');
+    return showParty ? columns : columns.filter((column) => column.id !== PARTY_COLUMN_ID);
 }
 
 /** Adds a configuration with a name and a description. Its groups are set on its own page. */

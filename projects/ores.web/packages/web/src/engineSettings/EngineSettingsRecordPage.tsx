@@ -52,6 +52,8 @@ import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { DeleteDialog, LeavingFooter, RecordHeader, useCloseGuard } from '../refdata/records.js';
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
+import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
+import { api } from '../api/client.js';
 import { useActingPartyId, useSwitchParty } from '../session/SessionProvider.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -147,6 +149,19 @@ export function EngineSettingsRecordPage(): ReactNode {
     const acting = useActingPartyId();
     const switchParty = useSwitchParty();
     const owner = open.data?.partyId;
+    const parties = useQuery({
+        queryKey: MY_PARTIES_QUERY_KEY,
+        queryFn: api.myParties,
+        enabled: switchParty !== undefined,
+        meta: { quiet: true },
+    });
+    // The switch works only to a party the account works in. Until the parties are
+    // read, or when the owner is not one of them, the notice states the fact and
+    // offers no button that would fail.
+    const mayReach =
+        switchParty !== undefined &&
+        owner !== undefined &&
+        parties.data?.parties.some((party) => party.partyId === owner) === true;
     const switchToOwner = useMutation({
         mutationFn: async () => {
             await switchParty?.(owner ?? '');
@@ -240,13 +255,15 @@ export function EngineSettingsRecordPage(): ReactNode {
             {foreign && (
                 <Notice tone="info">
                     <span>{t('engineSettings.otherParty.notice', { party: ownerName })}</span>{' '}
-                    <Button
-                        variant="ghost"
-                        pending={switchToOwner.isPending}
-                        onClick={() => switchToOwner.mutate()}
-                    >
-                        {t('engineSettings.otherParty.switch', { party: ownerName })}
-                    </Button>
+                    {mayReach && (
+                        <Button
+                            variant="ghost"
+                            pending={switchToOwner.isPending}
+                            onClick={() => switchToOwner.mutate()}
+                        >
+                            {t('engineSettings.otherParty.switch', { party: ownerName })}
+                        </Button>
+                    )}
                     {switchToOwner.isError && (
                         <span role="alert">
                             {' '}
@@ -738,12 +755,18 @@ export function SettingRow({
                                 label={label}
                                 text={text}
                                 unset={unset}
-                                invalid={problem !== null}
+                                describedBy={
+                                    problem === null ? undefined : `problem-${setting.column}`
+                                }
                                 onText={onText}
                                 onFocus={onFocus}
                             />
                             {problem !== null && (
-                                <p role="alert" className="mt-1 text-xs text-down">
+                                <p
+                                    id={`problem-${setting.column}`}
+                                    role="alert"
+                                    className="mt-1 text-xs text-down"
+                                >
                                     {t(problem.key, problem.params)}
                                 </p>
                             )}
@@ -772,7 +795,7 @@ function Control({
     label,
     text,
     unset,
-    invalid,
+    describedBy,
     onText,
     onFocus,
 }: {
@@ -780,7 +803,8 @@ function Control({
     readonly label: string;
     readonly text: string;
     readonly unset: string;
-    readonly invalid: boolean;
+    /** The id of the problem text, when the text typed is not a value the setting takes. */
+    readonly describedBy: string | undefined;
     readonly onText: (text: string) => void;
     readonly onFocus: () => void;
 }): ReactNode {
@@ -789,7 +813,8 @@ function Control({
         return (
             <Input
                 aria-label={label}
-                aria-invalid={invalid}
+                aria-invalid={describedBy !== undefined}
+                aria-describedby={describedBy}
                 inputMode="numeric"
                 value={text}
                 placeholder={unset}
@@ -808,7 +833,8 @@ function Control({
     return (
         <Select
             aria-label={label}
-            aria-invalid={invalid}
+            aria-invalid={describedBy !== undefined}
+            aria-describedby={describedBy}
             value={text}
             onFocus={onFocus}
             onChange={(event) => onText(event.target.value)}

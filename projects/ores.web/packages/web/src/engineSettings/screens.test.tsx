@@ -36,11 +36,14 @@ import {
     engineSettingsKey,
 } from './EngineSettingsRecordPage.js';
 
-const acting = vi.hoisted(() => ({ party: undefined as string | undefined }));
+const acting = vi.hoisted(() => ({
+    party: undefined as string | undefined,
+    canSwitch: true,
+}));
 
 vi.mock('../session/SessionProvider.js', () => ({
     useActingPartyId: () => acting.party,
-    useSwitchParty: () => undefined,
+    useSwitchParty: () => (acting.canSwitch ? async () => undefined : undefined),
 }));
 
 /**
@@ -203,8 +206,11 @@ const TWO_PARTIES = {
     parties: [party('p-hk', 'ACME Corporation HK'), party('p-uk', 'ACME Corporation UK')],
 };
 
+const ONE_PARTY_UK = { defaultPartyId: 'p-uk', parties: [party('p-uk', 'ACME Corporation UK')] };
+
 afterEach(() => {
     acting.party = undefined;
+    acting.canSwitch = true;
 });
 
 function list(codes: string[], parties = TWO_PARTIES): string {
@@ -223,13 +229,19 @@ function list(codes: string[], parties = TWO_PARTIES): string {
     );
 }
 
-function record(codes: string[], tab = '', document: EngineDocument = DOCUMENT): string {
+function record(
+    codes: string[],
+    tab = '',
+    document: EngineDocument = DOCUMENT,
+    parties = TWO_PARTIES,
+): string {
     return renderRecords(
         `/reporting/engine-settings/${HK}${tab === '' ? '' : `?tab=${tab}`}`,
         [],
         <Route path="/reporting/engine-settings/:id" element={<EngineSettingsRecordPage />} />,
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(engineSettingsKey(HK), document);
             client.setQueryData(DOCUMENTATION_KEY, DOCUMENTATION);
         },
@@ -384,6 +396,13 @@ describe('a configuration another party owns', () => {
         expect(text).toContain('belong to ACME Corporation HK');
         expect(text).toContain('Switch to ACME Corporation HK');
         expect(text).not.toContain('Edit');
+    });
+
+    it('offers no switch to a party the account does not work in', () => {
+        acting.party = 'p-uk';
+        const text = textOf(record(WRITE, '', DOCUMENT, ONE_PARTY_UK));
+        expect(text).toContain('belong to ACME Corporation HK');
+        expect(text).not.toContain('Switch to');
     });
 
     it('says the history is in the owning party instead of reading it', () => {

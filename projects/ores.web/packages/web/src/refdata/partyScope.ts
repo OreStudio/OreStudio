@@ -25,6 +25,9 @@ import type { ListFilter } from './RecordList.js';
 /** The parties the session's account works in, which are the parties a filter may offer. */
 export const MY_PARTIES_QUERY_KEY = ['my-parties'] as const;
 
+/** The id of the column that names the owning party, which a list drops when it has one party. */
+export const PARTY_COLUMN_ID = 'party';
+
 /** The id a list's party filter travels under in the address and in the page request. */
 export const PARTY_FILTER_ID = 'party';
 

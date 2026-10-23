@@ -51,7 +51,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Crumbs } from '../refdata/shared.js';
-import { MY_PARTIES_QUERY_KEY, usePartyScope } from '../refdata/partyScope.js';
+import { MY_PARTIES_QUERY_KEY, PARTY_COLUMN_ID, usePartyScope } from '../refdata/partyScope.js';
 import { reportPath } from '../shell/paths.js';
 import {
     RecordList,
@@ -113,7 +113,8 @@ function useReportSource(party: ListFilter | undefined): ListSource<ReportRowVie
     return {
         key: 'reports',
         read: async (page) => {
-            const partyId = page.filters['party'] ?? null;
+            // A party in the address is dropped when the list has no party filter to clear it.
+            const partyId = party === undefined ? null : (page.filters['party'] ?? null);
             // The tally is of every report the party and the search match, so it
             // is read with the page and not added up from it. It is read apart
             // from the rows: a tally that cannot be read costs the strip and the
@@ -299,7 +300,7 @@ function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
             numeric: true,
         },
     ];
-    return showParty ? columns : columns.filter((column) => column.id !== 'party');
+    return showParty ? columns : columns.filter((column) => column.id !== PARTY_COLUMN_ID);
 }
 
 export function ReportsPage(): ReactNode {

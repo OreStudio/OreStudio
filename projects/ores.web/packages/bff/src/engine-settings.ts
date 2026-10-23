@@ -379,6 +379,8 @@ function requireOwningParty(
     central: Readonly<Record<string, unknown>>,
 ): void {
     const owner = text(central['party_id']);
+    // A session with no party cannot be compared. A signed-in session always has one,
+    // so this passes only a login still choosing its party, which cannot reach a route.
     if (session.party === undefined || session.party.id === owner) {
         return;
     }

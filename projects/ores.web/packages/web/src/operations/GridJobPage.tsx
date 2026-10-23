@@ -42,7 +42,13 @@ import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/br
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { gridAppVersionPath, gridBatchPath, gridJobPath, gridNodePath } from '../shell/paths.js';
+import {
+    gridAppVersionPath,
+    gridBatchPath,
+    gridJobPath,
+    gridNodePath,
+    gridReportRunPath,
+} from '../shell/paths.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
@@ -519,13 +525,16 @@ function Release({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
     );
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * What the model states and what it does not.
  *
  * The hop from a batch to the report run behind it is the batch's External Ref,
  * which holds the run's id when a report dispatched it. The model does not state
- * that as a relationship, so the page says it is not a checked one. A batch the
- * shell dispatched holds an operator string there, and has no report behind it.
+ * that as a relationship, so the link goes to a page that answers not found when
+ * the reference names no run. A batch the shell dispatched holds an operator
+ * string there, and the page says no report is behind it.
  */
 function Lineage({
     workunit,
@@ -544,9 +553,13 @@ function Lineage({
                     <li>
                         <PageLink to={gridBatchPath(batch.id)}>{batch.external_ref}</PageLink>
                         <p className="text-xs text-ink-faint">
-                            {t('operations.grid.job.lineage.batchVia', {
-                                ref: batch.external_ref,
-                            })}
+                            {UUID.test(batch.external_ref) ? (
+                                <PageLink to={gridReportRunPath(batch.external_ref)}>
+                                    {t('operations.grid.job.lineage.reportRun')}
+                                </PageLink>
+                            ) : (
+                                t('operations.grid.job.lineage.noReport')
+                            )}
                         </p>
                     </li>
                 )}

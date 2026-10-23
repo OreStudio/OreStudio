@@ -1828,12 +1828,32 @@ const fr: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Filiation',
-                    batchVia:
-                        'Le lot nomme une exécution de rapport dans sa référence externe, ici {ref}. Le modèle ne l’énonce pas comme une relation, et aucune page d’exécution de rapport n’existe encore. Un lot envoyé par le shell contient une chaîne d’opérateur et n’a aucun rapport derrière lui.',
+                    reportRun: 'Ouvrir l’exécution de rapport nommée par la référence externe',
+                    noReport:
+                        'Aucun rapport n’est derrière ce lot. Le shell l’a envoyé, et sa référence externe est une chaîne d’opérateur.',
                     workunit: 'Unité de travail {id} (ce travail)',
                     viaBatch: 'par batch_id',
                     result: 'Résultat {id}, exécution {run},',
                 },
+            },
+            reportRun: {
+                title: 'Exécution de rapport',
+                description:
+                    'L’exécution d’un rapport qui a envoyé un lot : son état, ses heures et le lot qu’elle a créé.',
+                loading: 'Lecture de l’exécution de rapport...',
+                run: 'Exécution',
+                name: 'Nom',
+                kind: 'Type',
+                state: 'État',
+                startedAt: 'Début',
+                completedAt: 'Fin',
+                output: 'Sortie',
+                links: 'Liens',
+                report: 'Ouvrir le rapport',
+                batch: 'Ouvrir le lot',
+                noBatch: 'Aucun lot de cette exécution n’est visible pour vous.',
+                notProduction:
+                    'Cette exécution est de type {kind}, pas une exécution de production.',
             },
             appVersion: {
                 title: 'Version de l’application',

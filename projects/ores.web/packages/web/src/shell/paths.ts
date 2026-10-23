@@ -92,6 +92,11 @@ export function gridAppVersionPath(appVersionId: string): string {
     return `/operations/grid/app-versions/${encodeURIComponent(appVersionId)}`;
 }
 
+/** The address of the page of the report run that dispatched a batch. */
+export function gridReportRunPath(reportInstanceId: string): string {
+    return `/operations/grid/report-runs/${encodeURIComponent(reportInstanceId)}`;
+}
+
 /** The address of the page of one compute node. */
 export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;

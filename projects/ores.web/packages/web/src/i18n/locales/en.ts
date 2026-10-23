@@ -1808,12 +1808,31 @@ export const en: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Lineage',
-                    batchVia:
-                        'The batch names a report run in its External Ref, here {ref}. The model does not state this as a relationship, and no page for a report run exists yet. A batch that the shell dispatched holds an operator string and has no report behind it.',
+                    reportRun: 'Open the report run named by the External Ref',
+                    noReport:
+                        'No report is behind this batch. The shell dispatched it, and its External Ref is an operator string.',
                     workunit: 'Workunit {id} (this job)',
                     viaBatch: 'by batch_id',
                     result: 'Result {id}, run {run},',
                 },
+            },
+            reportRun: {
+                title: 'Report run',
+                description:
+                    'The run of a report that dispatched a batch: its state, its times and the batch it made.',
+                loading: 'Reading the report run...',
+                run: 'Run',
+                name: 'Name',
+                kind: 'Kind',
+                state: 'State',
+                startedAt: 'Started',
+                completedAt: 'Completed',
+                output: 'Output',
+                links: 'Links',
+                report: 'Open the report',
+                batch: 'Open the batch',
+                noBatch: 'No batch of this run is visible to you.',
+                notProduction: 'This run is of the kind {kind}, not a production run.',
             },
             appVersion: {
                 title: 'App version',

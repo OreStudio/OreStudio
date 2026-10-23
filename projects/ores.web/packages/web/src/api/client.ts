@@ -108,6 +108,7 @@ import {
     gridUsageViewSchema,
     gridViewSchema,
     appVersionPageViewSchema,
+    gridReportRunViewSchema,
     batchPageSchema,
     batchViewSchema,
     resultPageSchema,
@@ -143,6 +144,7 @@ import {
     type GridSeriesView,
     type GridUsageView,
     type AppVersionPageView,
+    type GridReportRunView,
     type BatchPage,
     type BatchView,
     type ResultPage,
@@ -2410,6 +2412,13 @@ export const api = {
     async gridJobResult(id: string): Promise<ResultView> {
         return resultViewSchema.parse(
             await request(`/api/operations/grid/jobs/results/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** The report run that dispatched a batch. */
+    async gridReportRun(id: string): Promise<GridReportRunView> {
+        return gridReportRunViewSchema.parse(
+            await request(`/api/operations/grid/report-runs/${id}`, { method: 'GET' }),
         );
     },
 

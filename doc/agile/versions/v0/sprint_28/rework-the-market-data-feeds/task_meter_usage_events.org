@@ -89,7 +89,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every event is stamped system.initial_load | usage_planner, usage_recorder | Accept | An opened interval and a count carry system.new_record, and a closed interval carries system.update. |
+| 2 | Counts can be lost at shutdown | usage_recorder, application | Accept | The recorder reports the counts left in the meter after its last flush. The loop stops after the recorder, so a late count is possible and now visible. |
+| 3 | Memory grows while the store is down | delivery_meter | Accept | A flush that fails warns when more than 100000 counts wait. |
+| 4 | The meter key allocates on each comparison | delivery_meter, usage_planner | Accept | The keys compare the tenant uuid and not its text. |
+| 5 | Intervals stay open across downtime | usage_recorder | Defer | The service cannot know when the adapter or the party stopped. A stop that closes the intervals, or a sweep at start, is a later change with the rating step. |
 
 * Result
 

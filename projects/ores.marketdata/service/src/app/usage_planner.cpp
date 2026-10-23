@@ -27,10 +27,11 @@ namespace ores::marketdata::service::app {
 
 namespace {
 
-constexpr auto reason = "system.initial_load";
+constexpr auto opened_reason = "system.new_record";
+constexpr auto closed_reason = "system.update";
 
 template <typename Interval>
-void stamp(Interval& i, const std::string& commentary) {
+void stamp(Interval& i, const char* reason, const std::string& commentary) {
     i.modified_by = "ores.marketdata.service";
     i.performed_by = "ores.marketdata.service";
     i.change_reason_code = reason;
@@ -59,12 +60,12 @@ auto key_of(const domain::subscription_interval& i) {
 
 auto key_of(const demand_state& s) {
     return std::make_tuple(
-        s.tenant_id.to_string(), s.party_id, s.provider_code, s.source_id, s.oresmd_uri);
+        s.tenant_id.to_uuid(), s.party_id, s.provider_code, s.source_id, s.oresmd_uri);
 }
 
 auto key_of(const domain::demand_interval& i) {
     return std::make_tuple(
-        i.tenant_id.to_string(), i.party_id, i.provider_code, i.source_id, i.oresmd_uri);
+        i.tenant_id.to_uuid(), i.party_id, i.provider_code, i.source_id, i.oresmd_uri);
 }
 
 }
@@ -122,7 +123,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         } else {
             auto closed = i;
             closed.interval_to = now;
-            stamp(closed, "The route or the subscription ended or changed.");
+            stamp(closed, closed_reason, "The route or the subscription ended or changed.");
             plan.to_close.push_back(std::move(closed));
         }
     }
@@ -139,7 +140,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         i.non_display = s.non_display;
         i.derived = s.derived;
         i.interval_from = now;
-        stamp(i, "The party holds a route and a subscription with these rights.");
+        stamp(i, opened_reason, "The party holds a route and a subscription with these rights.");
         plan.to_open.push_back(std::move(i));
         held.insert(key_of(s));
     }
@@ -166,7 +167,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         } else {
             auto closed = i;
             closed.interval_to = now;
-            stamp(closed, "The item left the demand of the party.");
+            stamp(closed, closed_reason, "The item left the demand of the party.");
             plan.to_close.push_back(std::move(closed));
         }
     }
@@ -181,7 +182,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         i.source_id = s.source_id;
         i.oresmd_uri = s.oresmd_uri;
         i.interval_from = now;
-        stamp(i, "The item entered the demand of the party.");
+        stamp(i, opened_reason, "The item entered the demand of the party.");
         plan.to_open.push_back(std::move(i));
         held.insert(key_of(s));
     }

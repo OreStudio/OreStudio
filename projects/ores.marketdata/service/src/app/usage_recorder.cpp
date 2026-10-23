@@ -34,6 +34,9 @@ namespace {
 
 constexpr auto service_name = "ores.marketdata.service";
 
+/// The number of waiting counts beyond which a store that is down is reported.
+constexpr std::size_t pending_warning_limit = 100000;
+
 template <typename Interval, typename Repo>
 void apply(const ores::database::context& ctx, const interval_plan<Interval>& plan) {
     // A close is the next version of the row that was open, so it goes first and a failure to
@@ -56,6 +59,9 @@ usage_recorder::~usage_recorder() {
     if (flusher_.joinable())
         flusher_.join();
     flush(std::chrono::system_clock::now());
+    if (meter_ && meter_->pending() > 0)
+        BOOST_LOG_SEV(lg(), warn) << meter_->pending()
+                                  << " delivery count(s) were not written at stop and are lost";
 }
 
 void usage_recorder::start() {
@@ -118,7 +124,7 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
         row.deliveries = c.deliveries;
         row.modified_by = service_name;
         row.performed_by = service_name;
-        row.change_reason_code = "system.initial_load";
+        row.change_reason_code = "system.new_record";
         row.change_commentary = "Deliveries counted by the fan-out";
         const auto tenant = c.key.tenant_id.to_string();
         by_tenant[tenant].push_back(std::move(row));
@@ -133,6 +139,10 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to write " << rows.size() << " delivery count(s): " << e.what();
             meter_->add_many(entries_by_tenant[tenant]);
+            if (meter_->pending() > pending_warning_limit)
+                BOOST_LOG_SEV(lg(), warn) << meter_->pending()
+                                          << " delivery count(s) wait for a store that does not "
+                                             "answer: memory grows until it does";
         }
     }
 }

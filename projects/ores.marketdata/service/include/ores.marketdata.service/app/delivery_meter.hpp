@@ -49,12 +49,12 @@ struct delivery_key {
     std::chrono::system_clock::time_point period_start;
 
     bool operator<(const delivery_key& other) const {
-        return std::make_tuple(tenant_id.to_string(),
+        return std::make_tuple(tenant_id.to_uuid(),
                                party_id,
                                provider_code,
                                source_id,
                                oresmd_uri,
-                               period_start) < std::make_tuple(other.tenant_id.to_string(),
+                               period_start) < std::make_tuple(other.tenant_id.to_uuid(),
                                                                other.party_id,
                                                                other.provider_code,
                                                                other.source_id,

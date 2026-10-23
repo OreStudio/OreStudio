@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/let-the-marketdata-service-read-the-routes-and-subscriptions-of-every-tenant
-#+pr:
+#+pr: 3693
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3693][#3693]] | [marketdata,sql] Marketdata reads all tenants' routes and subscriptions |
 
 * Review
 

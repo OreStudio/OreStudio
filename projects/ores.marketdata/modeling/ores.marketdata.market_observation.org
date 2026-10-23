@@ -379,7 +379,7 @@ std::string latest_tick_points(std::string_view bound, std::string_view max) {
     return std::format(R"(
             SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
                    t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
-                   NULL::text, t.ts, {1}::timestamptz, 1
+                   NULL::text, t.source_id, t.ts, {1}::timestamptz, 1
             FROM coords c
             CROSS JOIN LATERAL (
                 SELECT * FROM ores_marketdata_ticks_tbl x
@@ -407,7 +407,7 @@ read_manual_points(market_observation_repository::context ctx,
     const auto sid = boost::uuids::to_string(series_id);
     static const std::string sql = R"(
         SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
-               o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+               o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
         FROM ores_marketdata_observation_lineages_tbl l
         JOIN ores_marketdata_market_observations_tbl o
           ON o.tenant_id = l.tenant_id AND o.party_id = l.party_id
@@ -454,7 +454,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     static const std::string sql = "WITH " + tick_coords_cte() + R"(,
         points AS (
             SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-                   source, valid_from, valid_to, 0 AS src_rank
+                   source, source_id, valid_from, valid_to, 0 AS src_rank
             FROM ores_marketdata_market_observations_tbl
             WHERE tenant_id = $1 AND series_id = $2 AND observation_datetime <= $3
                 AND valid_to = $4
@@ -463,7 +463,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
         )
         SELECT DISTINCT ON (oresmd_uri)
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-            source, valid_from, valid_to
+            source, source_id, valid_from, valid_to
         FROM points
         ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
@@ -595,16 +595,16 @@ market_observation_repository::read_as_of_buckets(
         )" + tick_coords_cte() +
                                    R"(
         SELECT b.bucket_ordinal, o.id, o.tenant_id, o.party_id, o.series_id,
-               o.observation_datetime, o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+               o.observation_datetime, o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
         FROM boundaries b
         CROSS JOIN LATERAL (
             SELECT DISTINCT ON (u.oresmd_uri)
                 u.id, u.tenant_id, u.party_id, u.series_id, u.observation_datetime,
-                u.oresmd_uri, u.value, u.source, u.valid_from, u.valid_to
+                u.oresmd_uri, u.value, u.source, u.source_id, u.valid_from, u.valid_to
             FROM (
                 (SELECT DISTINCT ON (oresmd_uri)
                     id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-                    source, valid_from, valid_to, 0 AS src_rank
+                    source, source_id, valid_from, valid_to, 0 AS src_rank
                 FROM ores_marketdata_market_observations_tbl m
                 WHERE m.tenant_id = $1 AND m.series_id = $2
                     AND m.observation_datetime <= b.boundary
@@ -767,7 +767,7 @@ market_observation_repository::read_instants(
         ),
         points AS (
             SELECT i.instant, o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
-                   o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to, 0 AS src_rank
+                   o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to, 0 AS src_rank
             FROM instants i
             JOIN ores_marketdata_market_observations_tbl o
               ON o.tenant_id = $1 AND o.series_id = $2
@@ -775,7 +775,7 @@ market_observation_repository::read_instants(
             UNION ALL
             SELECT i.instant, md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
                    t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
-                   NULL::text, t.ts, $6::timestamptz, 1
+                   NULL::text, t.source_id, t.ts, $6::timestamptz, 1
             FROM instants i
             JOIN ores_marketdata_ticks_tbl t ON t.series_id = $2::uuid AND t.ts = i.instant
             JOIN coords c ON c.coord = t.coord
@@ -783,7 +783,7 @@ market_observation_repository::read_instants(
         SELECT DISTINCT ON (instant, oresmd_uri)
                (extract(epoch FROM instant) * 1000000)::bigint::text,
                id, tenant_id, party_id, series_id, observation_datetime,
-               oresmd_uri, value, source, valid_from, valid_to
+               oresmd_uri, value, source, source_id, valid_from, valid_to
         FROM points
         ORDER BY instant, oresmd_uri, src_rank
     )";

@@ -75,7 +75,7 @@ std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
 
 ** effective_from
 :PROPERTIES:
-:type:        timestamp
+:type:        timestamp with time zone
 :cpp_type:    std::chrono::system_clock::time_point
 :nullable: false
 :natural_key: true
@@ -85,7 +85,7 @@ The first instant at which the mapping holds.
 
 ** effective_to
 :PROPERTIES:
-:type:        timestamp
+:type:        timestamp with time zone
 :cpp_type:    std::optional<std::chrono::system_clock::time_point>
 :nullable: true
 :END:

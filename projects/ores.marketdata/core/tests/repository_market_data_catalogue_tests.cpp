@@ -199,10 +199,13 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
     CHECK(read.front().code == p.code);
 }
 
-TEST_CASE("a_tenant_cannot_write_a_provider_for_the_system_tenant", tags) {
+// The system tenant id on a write means "the session's tenant", so a tenant that writes a provider
+// for the system tenant writes one of its own. It cannot reach a system row.
+TEST_CASE("a_tenant_write_for_the_system_tenant_lands_in_its_own_tenant", tags) {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto& tenant_ctx = h.context();
+    const auto system_ctx = tenant_context::with_system_tenant(tenant_ctx);
     REQUIRE(tenant_ctx.tenant_id().to_string() != tenant_context::system_tenant_id);
 
     auto p = generate_synthetic_provider(ctx);
@@ -210,6 +213,12 @@ TEST_CASE("a_tenant_cannot_write_a_provider_for_the_system_tenant", tags) {
         ores::utility::uuid::tenant_id::from_string(tenant_context::system_tenant_id).value();
 
     provider_repository repo;
-    CHECK_THROWS_WITH(repo.write(tenant_ctx, p),
-                      Catch::Matchers::ContainsSubstring("row-level security"));
+    repo.write(tenant_ctx, p);
+
+    const auto own = repo.read_latest(tenant_ctx, p.code);
+    REQUIRE(own.size() == 1);
+    CHECK(own.front().tenant_id.to_string() == tenant_ctx.tenant_id().to_string());
+
+    for (const auto& row : repo.read_latest(system_ctx, p.code))
+        CHECK(row.tenant_id.to_string() != tenant_context::system_tenant_id);
 }

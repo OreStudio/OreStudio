@@ -90,7 +90,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Overlapping components double-bill | billing.cpp | Accept | Of the components that share a driver and a licence right, the one that started last bills, and a test shows it. |
+| 2 | Mixed currencies are summed silently | billing.cpp | Defer | One currency for each source needs a rule when a component is written. It is a later change to the entity. |
+| 3 | An unknown driver is skipped and the currency is set before it | billing.cpp | Accept | The currency is set after the driver is known. The entity already refuses any driver outside its list. |
+| 4 | Negative charges are not handled | billing.cpp | Accept | The entity refuses a negative charge, and the contract of the splits says the total is not negative. |
+| 5 | allocate recounts the events | billing.cpp | Defer | The cost grows with the events and the sources. A shared count belongs with a measurement. |
 
 * Result
 

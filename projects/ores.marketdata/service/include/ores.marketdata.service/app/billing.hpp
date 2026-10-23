@@ -98,7 +98,7 @@ struct allocation {
 
 /**
  * @brief Divides @p total into @p parts whole numbers that add up to @p total and differ by at
- * most one, the larger ones first.
+ * most one, the larger ones first. The total is not negative, because a charge is not negative.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::int64_t>
 split_evenly(std::int64_t total, std::size_t parts);
@@ -106,7 +106,7 @@ split_evenly(std::int64_t total, std::size_t parts);
 /**
  * @brief Divides @p total in proportion to @p weights into whole numbers that add up to
  * @p total. The remainder goes to the largest fractions, the earlier weight first. A total weight
- * of zero gives zero shares.
+ * of zero gives zero shares. The total and the weights are not negative.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::int64_t>
 split_weighted(std::int64_t total, const std::vector<std::int64_t>& weights);

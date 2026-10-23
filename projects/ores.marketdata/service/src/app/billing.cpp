@@ -159,12 +159,27 @@ source_bill rate_source(const domain::market_data_source& source,
     bill.period = period;
 
     const auto c = count_events(source.id, events, period);
+
+    // Of the components that share a driver and a licence right and apply in the period, the one
+    // that started last holds, so a new contract that did not close the old row bills once.
+    std::map<std::pair<std::string, std::string>, const domain::rate_card_component*> held;
+    std::vector<const domain::rate_card_component*> order;
     for (const auto& component : card) {
         if (!applies(component, source.id, period))
             continue;
-        if (bill.currency.empty())
-            bill.currency = component.currency;
+        const auto key = std::make_pair(component.driver, component.licence_right);
+        const auto found = held.find(key);
+        if (found == held.end()) {
+            held.emplace(key, &component);
+            order.push_back(&component);
+        } else if (component.effective_from > found->second->effective_from) {
+            std::ranges::replace(order, found->second, &component);
+            found->second = &component;
+        }
+    }
 
+    for (const auto* current : order) {
+        const auto& component = *current;
         bill_line line;
         line.driver = component.driver;
         line.licence_right = component.licence_right;
@@ -183,8 +198,12 @@ source_bill rate_source(const domain::market_data_source& source,
             line.quantity = c.total_ticks;
             line.total_micros = per_thousand(c.total_ticks, component.charge_micros);
         } else {
+            // The entity refuses any other driver, so this is a driver a later change added
+            // to the table and not to the rating. It has no line, and no currency.
             continue;
         }
+        if (bill.currency.empty())
+            bill.currency = component.currency;
         if (component.driver != "per_thousand_ticks")
             line.total_micros = line.quantity * component.charge_micros;
         bill.total_micros += line.total_micros;

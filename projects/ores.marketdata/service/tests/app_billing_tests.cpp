@@ -420,3 +420,29 @@ TEST_CASE("the_charges_of_a_report_add_up_to_its_bills", tags) {
     CHECK(billed > 0);
     CHECK(charged == billed);
 }
+
+TEST_CASE("of_two_components_that_overlap_the_newest_one_bills", tags) {
+    world w;
+    w.component(w.live, "per_party", 100);
+    w.component(w.live, "per_party", 250);
+    w.card.back().effective_from = w.from - 1h;
+    w.subscribes(w.alice, w.live);
+
+    const auto bill = rate_source(w.live, w.card, w.events, w.period());
+
+    REQUIRE(bill.lines.size() == 1);
+    CHECK(bill.lines.front().charge_micros == 250);
+    CHECK(bill.total_micros == 250);
+}
+
+TEST_CASE("components_of_different_licence_rights_do_not_replace_each_other", tags) {
+    world w;
+    w.component(w.live, "per_licence", 100, "non_display");
+    w.component(w.live, "per_licence", 200, "derived");
+    w.subscribes(w.alice, w.live, true, true);
+
+    const auto bill = rate_source(w.live, w.card, w.events, w.period());
+
+    CHECK(bill.lines.size() == 2);
+    CHECK(bill.total_micros == 300);
+}

@@ -53,10 +53,10 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:403386BD-F99F-48CD-88EF-C17B868BA87E][Publish the ore parameters through DQ]] | DONE | | 2026-10-23 | Stage the ore parameters and their value domains as DQ datasets and publish them to the system tenant and to every tenant, as currencies are. |
 | [[id:83BADCEA-D3DF-4E70-950A-E9C34495D33F][Edit a row only in its owning party]] | BACKLOG | | | From a party that is not the owner, show the engine settings record read-only, offer a switch to the owning party, and turn the repository error into a clear refusal. |
 | [[id:2CDF7207-5D50-4C60-A5DA-21316268CA17][Show and filter by the owning party]] | BACKLOG | | | Show which party owns each row of a list and filter by party, only when the list holds rows of more than one party. |
-| [[id:3F761AD2-4DC6-45F6-A1AB-1ACD8B25324F][Name the Acme engine settings by purpose]] | BACKLOG | | | Replace the names Standard and Simulation, and the descriptions that only list reports, with names and descriptions that say what each engine settings configuration is for. |
+| [[id:3F761AD2-4DC6-45F6-A1AB-1ACD8B25324F][Name the Acme engine settings by purpose]] | DONE | | 2026-10-23 | Replace the names Standard and Simulation, and the descriptions that only list reports, with names and descriptions that say what each engine settings configuration is for. |
 | [[id:2D431AD2-8325-4A2A-B250-70F0128AF085][Show a field error on the field]] | BACKLOG | | | Mark an invalid engine setting field in red and show its message next to the field. |
 | [[id:03EA50A2-FD5C-440D-9516-F91791DA30F4][Add a language selector]] | BACKLOG | | | Let a person choose the language of the web client, which now follows only the stored value or the browser language. |
-| [[id:8FE13BDB-B6B1-4CCE-BCE4-A612B4C55277][Correct the engine settings scenario]] | BACKLOG | | | Fix the scenario steps that expected the wrong thing: the list at the group party, and the French step that assumes a language selector. |
+| [[id:8FE13BDB-B6B1-4CCE-BCE4-A612B4C55277][Correct the engine settings scenario]] | DONE | | 2026-10-23 | Fix the scenario steps that expected the wrong thing: the list at the group party, and the French step that assumes a language selector. |
 
 * Analysis
 

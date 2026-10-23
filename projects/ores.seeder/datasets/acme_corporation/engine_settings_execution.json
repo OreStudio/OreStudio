@@ -1,64 +1,64 @@
 [
   {
     "company_code": "acme_group",
-    "id": "0ddf82b9-ff9f-58b5-a952-89b0dbfafb94",
+    "id": "767209a3-c861-541f-88bc-43c23de7efca",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "722b3002-e413-5615-833c-60abec22aeab",
+    "engine_settings_id": "ad04ef07-42af-5ad4-b26c-019007e25972",
     "log_mask": 31,
     "n_threads": 1
   },
   {
     "company_code": "acme_uk",
-    "id": "a967292c-d614-5f19-83a6-d073555876c2",
+    "id": "60040d62-857d-50da-a862-ffd318b5f85f",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "5a3c772c-c6d3-5931-ae15-0cfbb226065b",
+    "engine_settings_id": "549683b7-b0d1-5587-8aa8-b04f8c30a047",
     "log_mask": 31,
     "n_threads": 4
   },
   {
     "company_code": "acme_uk",
-    "id": "04ab67ff-1e76-53ee-ab5b-53324f44143a",
+    "id": "0b09dbd1-d29f-5370-84c6-c4bc2a264e07",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "7f4516d2-96c8-50eb-bce8-4f74908f3500",
+    "engine_settings_id": "4865bd86-3486-5e53-bc06-273760809805",
     "log_mask": 31,
     "n_threads": 1
   },
   {
     "company_code": "acme_us",
-    "id": "ab389fbd-1292-5e3f-b51e-d51a6d158d9c",
+    "id": "d3b3aa40-73f1-55e6-9854-8d74e2df213b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "2d1c4d30-e0d8-52e3-83fc-397d7314763e",
+    "engine_settings_id": "a3fab8a3-5b19-56c8-a973-4a5c88cb2628",
     "log_mask": 31,
     "n_threads": 4
   },
   {
     "company_code": "acme_us",
-    "id": "9d570b66-965c-5c94-b3e9-207086268194",
+    "id": "79b64d28-e15c-57fd-aa14-cdfb98c2f07f",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "cc979142-bcbe-5e4f-a077-db4dfbabc02a",
+    "engine_settings_id": "fe83b5a8-094b-5177-8a22-7fd3554c0cae",
     "log_mask": 31,
     "n_threads": 1
   },
   {
     "company_code": "acme_hk",
-    "id": "f83ed309-0a17-5e4e-9667-4ad5488711d3",
+    "id": "250d16c4-8ace-5062-b9b2-040de8edc34e",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "c0b0f980-86e9-5bba-ad0c-e0c656562c17",
+    "engine_settings_id": "90729646-c246-59c0-af89-31293f020674",
     "log_mask": 31,
     "n_threads": 4
   },
   {
     "company_code": "acme_hk",
-    "id": "b61c0cba-1834-5532-b906-dc219d23fb1e",
+    "id": "02d704a2-7f3f-57d7-9417-61db62840925",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "engine_settings_id": "af61c06a-866e-53bc-a38b-084a749b8618",
+    "engine_settings_id": "5e196c22-802e-5d15-90a7-6825dc32f058",
     "log_mask": 31,
     "n_threads": 1
   }

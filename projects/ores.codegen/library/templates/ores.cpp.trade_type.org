@@ -28,6 +28,7 @@ routing in hand-written conditions.
 | [[id:4c843ca3-122a-4fe0-875d-149bd5aea924][ores.cpp.trade_type.batch]] | The export's typed instrument arrays, generated from the trade-type catalogue. |
 | [[id:f18107c9-baeb-4aa5-b1f9-2478831d3cf8][ores.cpp.trade_type.digest]] | The reader of the rows an instrument's economic digest folds, generated from the trade-type catalogue. |
 | [[id:1ddf3fc1-a3f6-44d8-936e-b9a5efcae9d0][ores.cpp.trade_type.routing]] | The routing from a trade type to the instrument table that holds it, generated from the trade-type catalogue. |
+| [[id:7d0b5a3e-5c2f-4d6a-9a41-3f8e1c2b6d90][ores.cpp.trade_type.writer]] | The writer of the instrument batch of a booking, generated from the trade-type catalogue. |
 
 * See also
 

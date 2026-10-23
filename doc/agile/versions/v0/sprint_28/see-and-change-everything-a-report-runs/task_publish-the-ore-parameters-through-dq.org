@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/test-the-engine-settings
-#+pr:
+#+pr: 3680
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3680][#3680]] | [reporting] Publish the ore parameters through DQ and test the engine settings |
 
 * Review
 

@@ -150,9 +150,9 @@ whose =status= changes is recorded again and moves to the top of the list.
 
 * What is missing
 
-1. *No filters on the batch list.* The list pages by offset and limit. Status,
-   party and reference filters need a server-side predicate, or the screen
-   cannot find one batch among thousands.
+1. *Filters on the batch list are partial.* The list narrows by status, by party and
+   by a part of the reference, on the server. A filter by outcome is still missing,
+   and so is one by date.
 2. *No way to find failed results.* "Which of the 1268 failed?" has no read.
    =read_by_state= filters on =server_state=, and every stored result is Done,
    so the failed ones are not separable. A read by =outcome=, and a way from a
@@ -177,8 +177,8 @@ whose =status= changes is recorded again and moves to the top of the list.
 4. *No download route.* =input_uri= and =output_uri= name stored objects. The
    browser has no route to stream them, and the route must check that the
    caller may read the owning record first.
-5. *No BFF route.* The web client reads through hand-written BFF routes, as
-   the grid series does. A route for the paged tree is needed.
+5. *The BFF routes exist.* Six routes under =/api/operations/grid/jobs/= serve the
+   paged tree, and the batch route takes =status=, =party= and =find=.
 6. *Node names for tenants.* A result names its host. A tenant administrator
    or a party member should probably not see the installation's node names.
    The owner must decide. Until then, the prototype shows the node to the

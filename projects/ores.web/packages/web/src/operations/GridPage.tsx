@@ -53,7 +53,7 @@ import {
     type ScreenGap,
 } from './OperationsParts.js';
 import { GRID_SERIES_QUERY_KEY, GridLoadTab, GridNodeLoad } from './GridSeries.js';
-import { GRID_JOBS_QUERY_KEY, GridJobsTab } from './GridJobs.js';
+import { GRID_JOBS_QUERY_KEY, GridJobsTab, type PartyChoice } from './GridJobs.js';
 import { GRID_USAGE_QUERY_KEY, GridUsageTab } from './GridUsage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -655,7 +655,13 @@ export const TENANT_GRID_TABS = ['overview', 'usage', 'jobs'] as const;
  * only an operator is offered them, and the read of the grid's node list, which
  * they need, is refused to a tenant.
  */
-function TenantGridPage({ mode }: { readonly mode: SessionMode | undefined }): ReactNode {
+function TenantGridPage({
+    mode,
+    parties,
+}: {
+    readonly mode: SessionMode | undefined;
+    readonly parties: readonly PartyChoice[];
+}): ReactNode {
     const { t } = useTranslation();
     const [range, setRange] = useState<SeriesRange>('1h');
     const { tab, bar } = useTabs({
@@ -680,7 +686,7 @@ function TenantGridPage({ mode }: { readonly mode: SessionMode | undefined }): R
 
             {tab === 'usage' && <GridUsageTab />}
 
-            {tab === 'jobs' && <GridJobsTab />}
+            {tab === 'jobs' && <GridJobsTab parties={parties} />}
         </div>
     );
 }
@@ -689,15 +695,22 @@ function TenantGridPage({ mode }: { readonly mode: SessionMode | undefined }): R
  * The grid screen. An operator in system administration reads the whole
  * installation, and everybody else reads their own work.
  */
-export function GridPage({ mode }: { readonly mode?: SessionMode } = {}): ReactNode {
+export function GridPage({
+    mode,
+    parties = [],
+}: {
+    readonly mode?: SessionMode;
+    /** The parties the session acts for, so the Jobs tab can narrow by one of them. */
+    readonly parties?: readonly PartyChoice[];
+} = {}): ReactNode {
     return mode !== undefined && mode !== 'system-administration' ? (
-        <TenantGridPage mode={mode} />
+        <TenantGridPage mode={mode} parties={parties} />
     ) : (
-        <OperatorGridPage />
+        <OperatorGridPage parties={parties} />
     );
 }
 
-function OperatorGridPage(): ReactNode {
+function OperatorGridPage({ parties }: { readonly parties: readonly PartyChoice[] }): ReactNode {
     const { t } = useTranslation();
     const grid = useQuery({ queryKey: GRID_QUERY_KEY, queryFn: api.grid });
     const [range, setRange] = useState<SeriesRange>('1h');
@@ -759,7 +772,7 @@ function OperatorGridPage(): ReactNode {
 
             {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
 
-            {tab === 'jobs' && <GridJobsTab />}
+            {tab === 'jobs' && <GridJobsTab parties={parties} />}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

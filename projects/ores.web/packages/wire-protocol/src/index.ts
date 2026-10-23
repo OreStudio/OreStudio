@@ -163,6 +163,7 @@ export {
 } from './grid-jobs.js';
 export type {
     BatchPage,
+    BatchFilter,
     BatchView,
     GridJobsRefusal,
     JobPageRequest,

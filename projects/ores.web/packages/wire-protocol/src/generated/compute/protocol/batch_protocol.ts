@@ -54,7 +54,12 @@ export interface BatchLookup {
 }
 
 export interface BatchesFilter {
+    party_id: string | null | null;
+    status: string | null;
     id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
+    status_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface BatchEvent {

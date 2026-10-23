@@ -111,6 +111,8 @@ function pageOf<Row>(rows: readonly Row[], total = rows.length, offset = 0, limi
 interface Seeds {
     readonly batches?: BatchPage;
     readonly batchOffset?: number;
+    readonly filter?: { find?: string; status?: string; party?: string };
+    readonly parties?: readonly { id: string; name: string }[];
     readonly workunits?: WorkunitPage;
     readonly results?: ResultPage;
     readonly record?: readonly [kind: string, id: string, value: unknown];
@@ -120,7 +122,15 @@ function render(path: string, seeds: Seeds): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     if (seeds.batches !== undefined) {
         client.setQueryData(
-            [GRID_JOBS_QUERY_KEY, 'batches', seeds.batchOffset ?? 0, 15],
+            [
+                GRID_JOBS_QUERY_KEY,
+                'batches',
+                seeds.batchOffset ?? 0,
+                15,
+                seeds.filter?.find ?? '',
+                seeds.filter?.status ?? '',
+                seeds.filter?.party ?? '',
+            ],
             seeds.batches,
         );
     }
@@ -136,7 +146,7 @@ function render(path: string, seeds: Seeds): string {
             data: seeds.record[2],
         });
     }
-    const element: ReactNode = <GridJobsTab />;
+    const element: ReactNode = <GridJobsTab parties={seeds.parties ?? []} />;
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -183,6 +193,50 @@ describe('the Jobs tab', () => {
 
         expect(html).toContain('This page is past the last one.');
         expect(html).toContain('Back to the first page');
+        expect(html).not.toContain('No batch has been recorded yet.');
+    });
+
+    it('offers a search, the statuses and no party choice for one party', () => {
+        const html = render('/?tab=jobs', { batches: TWO_BATCHES });
+
+        expect(html).toContain('part of a batch reference');
+        for (const status of ['open', 'dispatched', 'processing', 'assimilating', 'closed']) {
+            expect(html).toContain(`<option value="${status}">`);
+        }
+        expect(html).not.toContain('>Party<');
+    });
+
+    it('offers a choice of parties to a session that acts for more than one', () => {
+        const html = render('/?tab=jobs', {
+            batches: TWO_BATCHES,
+            parties: [
+                { id: PARTY_ID, name: 'Acme Corporation Plc' },
+                { id: 'd2222222-0000-4000-8000-000000000002', name: 'Acme UK Ltd' },
+            ],
+        });
+
+        expect(html).toContain('>Party<');
+        expect(html).toContain(`<option value="${PARTY_ID}">Acme Corporation Plc</option>`);
+    });
+
+    it('reads the page the address filters and keeps the choice in the controls', () => {
+        const html = render('/?tab=jobs&status=closed&find=order', {
+            batches: pageOf([batch(BATCH_ID, 'order-e')]),
+            filter: { status: 'closed', find: 'order' },
+        });
+
+        expect(html).toContain('order-e');
+        expect(html).toContain('value="order"');
+        expect(html).toMatch(/<option value="closed" selected="">/);
+    });
+
+    it('says no batch matches when a filter finds none, and not that none was recorded', () => {
+        const html = render('/?tab=jobs&status=closed', {
+            batches: pageOf([]),
+            filter: { status: 'closed' },
+        });
+
+        expect(html).toContain('No batch matches. Clear the filters.');
         expect(html).not.toContain('No batch has been recorded yet.');
     });
 

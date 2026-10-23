@@ -29,6 +29,7 @@ set(files
     "messaging_submit_decision_tests.cpp"
     "platform_eventing_integration_tests.cpp"
     "repository_app_version_platform_repository_tests.cpp"
+    "repository_batch_filter_tests.cpp"
     "repository_batch_stated_order_tests.cpp"
     "repository_compute_telemetry_repository_tests.cpp"
     "repository_work_ledger_repository_tests.cpp"

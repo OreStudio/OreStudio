@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
-#+branch: feature/browse-and-follow-the-grids-jobs
+#+branch: feature/filter-the-batch-list-on-the-server
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The batch list read takes a status, a party and a reference, and returns only th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Done. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge the PR. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -40,9 +40,16 @@ The batch list read takes a status, a party and a reference, and returns only th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The nats entity protocol already defines the filter record, so the work is to declare
+the columns and carry the filter up.
+
+- The batch model declares =status= and =party_id= filterable and =external_ref=
+  searchable. The generator adds the equals, one-of and search members to the filter
+  record, the repository condition and the limits of the service.
+- The wire-protocol read takes a =BatchFilter=, and the BFF batch route takes
+  =status=, =party= and =find=, each checked before a call goes out.
+- The Jobs tab has a finder bar with a search, a status and, for a session that acts
+  for more than one party, a party. The choice lives in the address.
 
 * Measurements
 
@@ -56,9 +63,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compute core tests, with four new filter cases | pass | =ctest -R ores.compute.core.tests= | aa4605e98d plus the working tree |
+| BFF and wire-protocol jobs tests | 25 and 12 pass | =npx vitest run src/grid-jobs.test.ts= in each package | aa4605e98d plus the working tree |
+| Jobs tab tests | 21 pass | =npx vitest run src/operations/GridJobs.test.tsx= | aa4605e98d plus the working tree |
+| Filters through the BFF as the tenant administrator | status 1 and 2 of 3, find CHECK-B 1, party of another 0 | =curl= on =/api/operations/grid/jobs/batches= | aa4605e98d plus the working tree |
+| A member of another party with find=check | 0 | the same route as =diane.kay= | aa4605e98d plus the working tree |
 
 * Notes
+
+- No schema change: the filter is a condition on existing columns, so no recreate is
+  needed.
+- The status list in the finder holds the four statuses of the model and dispatched,
+  which the dispatch command writes.
+- A party member cannot create a batch, so the other-party check read as a member
+  whose party holds no batch.
 
 * Test Scenarios
 
@@ -75,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| TBD | [compute] Filter the batch list on the server |
 
 * Review
 
@@ -84,3 +102,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The batch list narrows by status, by party and by a part of the reference, on the server.
+The total counts the matches, and a filter only narrows what the policy lets the session
+read. The Jobs tab has a finder bar for the three, and the choice lives in the address.

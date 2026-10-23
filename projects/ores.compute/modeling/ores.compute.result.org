@@ -98,6 +98,7 @@ State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
 :cpp_type: int
 :nullable: true
 :default_value: 0
+:filterable: true
 :END:
 
 Result outcome code: 1=Success, 3=ClientError, 4=NoReply.

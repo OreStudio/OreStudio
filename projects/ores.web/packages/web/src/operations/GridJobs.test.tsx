@@ -111,6 +111,7 @@ function pageOf<Row>(rows: readonly Row[], total = rows.length, offset = 0, limi
 interface Seeds {
     readonly batches?: BatchPage;
     readonly batchOffset?: number;
+    readonly byOutcome?: { readonly outcome: number; readonly page: ResultPage };
     readonly filter?: { find?: string; status?: string; party?: string };
     readonly parties?: readonly { id: string; name: string }[];
     readonly workunits?: WorkunitPage;
@@ -132,6 +133,12 @@ function render(path: string, seeds: Seeds): string {
                 seeds.filter?.party ?? '',
             ],
             seeds.batches,
+        );
+    }
+    if (seeds.byOutcome !== undefined) {
+        client.setQueryData(
+            [GRID_JOBS_QUERY_KEY, 'by-outcome', seeds.byOutcome.outcome, 0, 15],
+            seeds.byOutcome.page,
         );
     }
     if (seeds.workunits !== undefined) {
@@ -238,6 +245,56 @@ describe('the Jobs tab', () => {
 
         expect(html).toContain('No batch matches. Clear the filters.');
         expect(html).not.toContain('No batch has been recorded yet.');
+    });
+
+    it('offers the outcomes a person may ask for', () => {
+        const html = render('/?tab=jobs', { batches: TWO_BATCHES });
+
+        expect(html).toContain('Outcome');
+        for (const code of [1, 3, 4, 0]) {
+            expect(html).toContain(`<option value="${code}">`);
+        }
+    });
+
+    it('lists the runs that ended with the outcome, each leading to its workunit', () => {
+        const html = render('/?tab=jobs&outcome=3', {
+            byOutcome: {
+                outcome: 3,
+                page: pageOf(
+                    [result(FAILED_RESULT_ID, { outcome: 3 }), result(RESULT_ID, { outcome: 3 })],
+                    7,
+                ),
+            },
+        });
+
+        expect(html).toContain('Runs with the outcome');
+        expect(html).toContain(FAILED_RESULT_ID.slice(0, 8));
+        expect(html).toContain(`of workunit ${WORKUNIT_ID.slice(0, 8)}`);
+        expect(html).toContain('>ClientError<');
+        expect(html).toContain('Results 1 to 2 of 7');
+        expect(html).not.toContain('Batches, workunits and results');
+    });
+
+    it('turns off the batch filters while the outcome narrows the runs', () => {
+        const html = render('/?tab=jobs&outcome=3', {
+            byOutcome: { outcome: 3, page: pageOf([result(RESULT_ID, { outcome: 3 })]) },
+        });
+
+        expect(html).toMatch(/<input[^>]*type="search"[^>]*disabled/);
+    });
+
+    it('says no run ended with the outcome when the answer is empty', () => {
+        const html = render('/?tab=jobs&outcome=4', {
+            byOutcome: { outcome: 4, page: pageOf([]) },
+        });
+
+        expect(html).toContain('No run ended with this outcome.');
+    });
+
+    it('ignores an outcome that is not a code the tab knows', () => {
+        const html = render('/?tab=jobs&outcome=9', { batches: TWO_BATCHES });
+
+        expect(html).toContain('Batches, workunits and results');
     });
 
     it('prompts for a selection until one is made', () => {

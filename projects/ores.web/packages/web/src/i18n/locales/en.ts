@@ -1683,6 +1683,9 @@ export const en: SourceCatalogue = {
                 loadingResults: 'Reading the results...',
                 empty: 'No batch has been recorded yet.',
                 noMatch: 'No batch matches. Clear the filters.',
+                runsTitle: 'Runs with the outcome',
+                noRuns: 'No run ended with this outcome.',
+                ofWorkunit: 'of workunit {id}',
                 finder: {
                     find: 'Find',
                     placeholder: 'part of a batch reference',

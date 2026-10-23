@@ -25,6 +25,7 @@ import {
     readBatch,
     readBatches,
     readResult,
+    readResultsByOutcome,
     readResultsOfWorkunit,
     readWorkunit,
     readWorkunitsOfBatch,
@@ -209,6 +210,29 @@ describe('the workunits of a batch and the results of a workunit', () => {
         expect(calls[0]?.body).toMatchObject({ batch_id: BATCH, offset: 5, limit: 5 });
         expect(calls[1]?.body).toMatchObject({ workunit_id: WORKUNIT, offset: 0, limit: 25 });
         expect([units.total, runs.total]).toEqual([12, 1]);
+    });
+});
+
+describe('readResultsByOutcome', () => {
+    it('asks for the runs with the outcome and states the page', async () => {
+        const { caller, calls } = callerAnswering({
+            'compute.v1.results.list': {
+                result: OK,
+                results: [wireResult({ outcome: 3 })],
+                total: 2,
+            },
+        });
+
+        const failed = await readResultsByOutcome(caller, 3, { offset: 10, limit: 5 });
+
+        expect(calls).toHaveLength(1);
+        expect(calls[0]?.body).toMatchObject({
+            offset: 10,
+            limit: 5,
+            filter: { outcome: 3, workunit_id: null },
+        });
+        expect(failed.total).toBe(2);
+        expect(failed.results.map((run) => run.outcome)).toEqual([3]);
     });
 });
 

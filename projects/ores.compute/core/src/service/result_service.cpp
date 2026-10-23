@@ -134,6 +134,12 @@ result_service::list_results(const messaging::list_results_request& request) {
                                  {.field = "workunit_id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->outcome_one_of &&
+        request.filter->outcome_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "outcome_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -169,6 +175,12 @@ messaging::list_by_workunit_id_results_response result_service::list_by_workunit
         request.filter->workunit_id_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "workunit_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->outcome_one_of &&
+        request.filter->outcome_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "outcome_one_of", .limit = "1000"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {

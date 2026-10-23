@@ -28,6 +28,7 @@ import {
     readBatch,
     readBatches,
     readResult,
+    readResultsByOutcome,
     readResultsOfWorkunit,
     readWorkunit,
     readWorkunitsOfBatch,
@@ -73,6 +74,11 @@ const batchQuerySchema = pageQuerySchema.extend({
     status: z.string().trim().min(1).max(32).optional(),
     party: z.uuid().optional(),
     find: z.string().trim().max(256).optional(),
+});
+
+/** The runs that ended with an outcome code: 0 none yet, 1 Success, 3 ClientError, 4 NoReply. */
+const outcomeQuerySchema = pageQuerySchema.extend({
+    outcome: wholeNumber.pipe(z.int().min(0).max(9)),
 });
 
 const idParamsSchema = z.object({
@@ -214,6 +220,28 @@ export function registerGridJobsRoutes(
             rows: results.map((result) => toResultView(result, mayReadHost(session))),
             total,
             ...page,
+        });
+    });
+
+    /** One page of the runs that ended with an outcome, the answer to which of them failed. */
+    server.get('/api/operations/grid/jobs/results', async (request) => {
+        const session = requireSession(request);
+        const parsed = outcomeQuerySchema.safeParse(request.query ?? {});
+        if (!parsed.success) {
+            throw invalidRequest(
+                `The runs read takes an outcome code of 0 to 9, an offset of 0 or more and a limit of 1 to ${PAGE_MAX}.`,
+            );
+        }
+        const { outcome, offset, limit } = parsed.data;
+        const { results, total } = await answering(() =>
+            readResultsByOutcome(session.client, outcome, { offset, limit }),
+        );
+        return resultPageSchema.parse({
+            read_at: toWireTimestamp(new Date()),
+            rows: results.map((result) => toResultView(result, mayReadHost(session))),
+            total,
+            offset,
+            limit,
         });
     });
 

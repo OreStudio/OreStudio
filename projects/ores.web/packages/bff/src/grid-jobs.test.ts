@@ -121,6 +121,7 @@ const ANSWERS: Answers = {
     'compute.v1.workunits.get': { result: OK, workunit: wireWorkunit },
     'compute.v1.results.list_by_workunit_id': { result: OK, results: [wireResult], total: 1 },
     'compute.v1.results.get': { result: OK, result_value: wireResult },
+    'compute.v1.results.list': { result: OK, results: [wireResult], total: 3 },
 };
 
 function buildTestServer(mode: SessionMode, answers: Answers = ANSWERS) {
@@ -440,5 +441,55 @@ describe('the results of a workunit', () => {
         );
 
         expect(response.statusCode).toBe(404);
+    });
+});
+
+describe('GET /api/operations/grid/jobs/results', () => {
+    it('serves the runs that ended with the outcome, with their total', async () => {
+        const { response, calls } = await get(
+            'system-administration',
+            '/api/operations/grid/jobs/results?outcome=3&offset=0&limit=10',
+        );
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json<{
+            rows: { id: string; workunit_id: string; outcome: number }[];
+            total: number;
+        }>();
+        expect(body.rows).toEqual([
+            expect.objectContaining({ id: RESULT, workunit_id: WORKUNIT, outcome: 3 }),
+        ]);
+        expect(body.total).toBe(3);
+        expect(calls.map((call) => call.subject)).toEqual(['compute.v1.results.list']);
+        expect(calls[0]?.body).toMatchObject({ filter: { outcome: 3 } });
+    });
+
+    it('hides the node from a role that may not read it', async () => {
+        const { response } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/results?outcome=3',
+        );
+
+        expect(
+            response.json<{ rows: { host_id: string | null; host_hidden: boolean }[] }>().rows[0],
+        ).toMatchObject({
+            host_id: null,
+            host_hidden: true,
+        });
+    });
+
+    it.each([
+        ['no outcome', ''],
+        ['an outcome that is not a number', '?outcome=failed'],
+        ['an outcome past 9', '?outcome=10'],
+        ['a limit above the most a page holds', '?outcome=3&limit=201'],
+    ])('refuses %s before any call goes out', async (_name, query) => {
+        const { response, calls } = await get(
+            'tenant-administration',
+            `/api/operations/grid/jobs/results${query}`,
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 });

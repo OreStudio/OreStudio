@@ -150,6 +150,7 @@ export {
     readBatch,
     readBatches,
     readResult,
+    readResultsByOutcome,
     readResultsOfWorkunit,
     readWorkunit,
     readWorkunitsOfBatch,

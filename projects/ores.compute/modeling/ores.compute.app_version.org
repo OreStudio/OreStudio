@@ -24,8 +24,13 @@ the URI of its own packaged bundle.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
-:key_field: wrapper_version
 :END:
+
+The app version's key is its id. An earlier version of this model said
+=:key_field: wrapper_version=, and that made two versions of one app that share a
+wrapper version read each other's row: the version precondition of a write found the
+first row with that wrapper version, so a second republish of the other version was
+refused with a version conflict.
 
 * Columns
 

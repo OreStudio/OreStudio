@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 23
+Tables: 25
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,6 +41,64 @@ end note
 ' ==================== marketdata (Market Data (Quotes, Fixings, Series)) ====================
 '
 package "marketdata" #E3F2FD {
+    entity ores_marketdata_composite_inputs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * composite_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_composite_inputs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Input Table
+    A composite input is one quote series of one provider that a composite reads. The inputs of a composite are
+    read in the order of their position. The set of inputs also says which providers a party needs the derived right
+    on, and which items the service demands on a party's behalf when the party uses the composite.
+    end note
+
+    entity ores_marketdata_composites_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * provider_code : text
+        * oresmd_uri : text
+        * rule_code : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_composites_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Table
+    A composite is an internal item that the service derives from several quote series by a rule. A blended
+    EUR/USD spot from Bloomberg and LSEG is the first case. The composite is published by an internal provider with
+    one source of kind derived. It has no rate card: its use counts as demand on its inputs.
+    A party that uses a composite needs the derived right on the provider of every input. A composite with a
+    missing right gets no values and shows the reason. The rule is named by a code, so a later rule needs no schema
+    change. The system tenant owns the rows and every tenant reads them.
+    end note
+
     entity ores_marketdata_delivery_counts_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>

@@ -28,6 +28,10 @@
 \ir ./marketdata_delivery_counts_drop.sql
 \ir ./marketdata_rate_card_components_notify_trigger_drop.sql
 \ir ./marketdata_rate_card_components_drop.sql
+\ir ./marketdata_composites_notify_trigger_drop.sql
+\ir ./marketdata_composites_drop.sql
+\ir ./marketdata_composite_inputs_notify_trigger_drop.sql
+\ir ./marketdata_composite_inputs_drop.sql
 \ir ./marketdata_routes_notify_trigger_drop.sql
 \ir ./marketdata_routes_drop.sql
 \ir ./marketdata_subscriptions_notify_trigger_drop.sql

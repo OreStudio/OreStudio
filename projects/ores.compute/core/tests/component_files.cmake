@@ -35,5 +35,6 @@ set(files
     "repository_work_tenant_repository_tests.cpp"
     "repository_work_total_repository_tests.cpp"
     "result_eventing_integration_tests.cpp"
+    "service_app_version_republish_tests.cpp"
     "workunit_eventing_integration_tests.cpp"
 )

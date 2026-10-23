@@ -36,7 +36,7 @@
 namespace ores::compute::messaging {
 
 struct app_version_key {
-    std::string wrapper_version;
+    boost::uuids::uuid id;
 };
 
 struct app_version_write {

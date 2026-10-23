@@ -53,8 +53,8 @@ begin
         dataset_id, tenant_id, id, version, party_id, name, description, configuration_id
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2d1c4d30-e0d8-52e3-83fc-397d7314763e', 0, '00000000-0000-0000-0000-000000000000', 'US - Simulation engine settings', 'Engine settings shared by CVA/DVA/FVA, Exposure.', '72dd98ae-79f2-5bfc-9557-e73b9e4784e5'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cc979142-bcbe-5e4f-a077-db4dfbabc02a', 0, '00000000-0000-0000-0000-000000000000', 'US - Standard engine settings', 'Engine settings shared by Audit Trail Summary, Bucketed DV01, CFTC Swap Data Reporting, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Yield Curves.', '547fd158-86dd-5631-9227-52fb58aa2476');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a3fab8a3-5b19-56c8-a973-4a5c88cb2628', 0, '00000000-0000-0000-0000-000000000000', 'US - Exposure simulation engine settings', 'Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. A simulation is the heaviest run, so it uses 4 threads.', '00df6f30-ff83-5c16-935b-59cf3d0d6c44'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fe83b5a8-094b-5177-8a22-7fd3554c0cae', 0, '00000000-0000-0000-0000-000000000000', 'US - Valuation and risk engine settings', 'Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.', 'd9025930-0636-5cdf-af21-4a1f8667dfd6');
 
     delete from ores_dq_engine_settings_fixings_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -63,8 +63,8 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, imply_todays_fixings
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6393c2d8-6d8c-58f3-8477-6d5d93d3a40a', 0, '00000000-0000-0000-0000-000000000000', '2d1c4d30-e0d8-52e3-83fc-397d7314763e', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '710d1d71-7af6-5686-b0b4-5d29f4d84b7a', 0, '00000000-0000-0000-0000-000000000000', 'cc979142-bcbe-5e4f-a077-db4dfbabc02a', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '932ca024-ec7e-58d9-8dc2-83a7179d573e', 0, '00000000-0000-0000-0000-000000000000', 'a3fab8a3-5b19-56c8-a973-4a5c88cb2628', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '97452604-f81e-5acb-9d4a-880f1b9159be', 0, '00000000-0000-0000-0000-000000000000', 'fe83b5a8-094b-5177-8a22-7fd3554c0cae', false);
 
     delete from ores_dq_engine_settings_building_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -73,8 +73,8 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, observation_model, continue_on_error
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '78d8fef5-7e3c-5bcf-bade-673917c37b77', 0, '00000000-0000-0000-0000-000000000000', '2d1c4d30-e0d8-52e3-83fc-397d7314763e', 'Disable', false),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2895a52c-e1cf-5f4b-85db-c5faeb8347c3', 0, '00000000-0000-0000-0000-000000000000', 'cc979142-bcbe-5e4f-a077-db4dfbabc02a', 'Disable', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '346d8af3-49f8-5abb-aef9-c9e3d0cdee2c', 0, '00000000-0000-0000-0000-000000000000', 'a3fab8a3-5b19-56c8-a973-4a5c88cb2628', 'Disable', false),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0c0cd4ea-9a70-5b77-a6f7-25d20aaed6cc', 0, '00000000-0000-0000-0000-000000000000', 'fe83b5a8-094b-5177-8a22-7fd3554c0cae', 'Disable', false);
 
     delete from ores_dq_engine_settings_execution_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -83,6 +83,6 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, log_mask, n_threads
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ab389fbd-1292-5e3f-b51e-d51a6d158d9c', 0, '00000000-0000-0000-0000-000000000000', '2d1c4d30-e0d8-52e3-83fc-397d7314763e', 31, 4),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9d570b66-965c-5c94-b3e9-207086268194', 0, '00000000-0000-0000-0000-000000000000', 'cc979142-bcbe-5e4f-a077-db4dfbabc02a', 31, 1);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd3b3aa40-73f1-55e6-9854-8d74e2df213b', 0, '00000000-0000-0000-0000-000000000000', 'a3fab8a3-5b19-56c8-a973-4a5c88cb2628', 31, 4),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '79b64d28-e15c-57fd-aa14-cdfb98c2f07f', 0, '00000000-0000-0000-0000-000000000000', 'fe83b5a8-094b-5177-8a22-7fd3554c0cae', 31, 1);
 end $$;

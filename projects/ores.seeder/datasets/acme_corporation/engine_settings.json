@@ -1,65 +1,65 @@
 [
   {
     "company_code": "acme_group",
-    "id": "722b3002-e413-5615-833c-60abec22aeab",
+    "id": "ad04ef07-42af-5ad4-b26c-019007e25972",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "Group - Standard engine settings",
-    "description": "Engine settings shared by Audit Trail Summary, Board Risk Dashboard, Cross-Entity Counterparty Concentration, Data Quality Completeness, Group Consolidated Exposure, Intercompany Exposure Matrix, Large Exposures, Leverage Ratio, Liquidity Coverage, System Health.",
-    "configuration_id": "69d4ee4b-4154-5d2a-b077-0bec3cc7edd7"
+    "name": "Group - Valuation and risk engine settings",
+    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "configuration_id": "86661e4d-844f-51f6-b369-9cd1a13c92d5"
   },
   {
     "company_code": "acme_uk",
-    "id": "5a3c772c-c6d3-5931-ae15-0cfbb226065b",
+    "id": "549683b7-b0d1-5587-8aa8-b04f8c30a047",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "UK - Simulation engine settings",
-    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
-    "configuration_id": "c192769f-b9a3-512b-835c-fdcd847c40df"
+    "name": "UK - Exposure simulation engine settings",
+    "description": "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. A simulation is the heaviest run, so it uses 4 threads.",
+    "configuration_id": "a671732b-565a-51df-9303-d852d9de96d9"
   },
   {
     "company_code": "acme_uk",
-    "id": "7f4516d2-96c8-50eb-bce8-4f74908f3500",
+    "id": "4865bd86-3486-5e53-bc06-273760809805",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "UK - Standard engine settings",
-    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, MIFID II Transaction Reporting, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Vega, Volatility Surfaces, Yield Curves.",
-    "configuration_id": "3b25134e-d1bf-5f0e-9477-9e8737e751d9"
+    "name": "UK - Valuation and risk engine settings",
+    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "configuration_id": "19115ff5-1dd4-59ac-84d6-c0e8e9860388"
   },
   {
     "company_code": "acme_us",
-    "id": "2d1c4d30-e0d8-52e3-83fc-397d7314763e",
+    "id": "a3fab8a3-5b19-56c8-a973-4a5c88cb2628",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "US - Simulation engine settings",
-    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
-    "configuration_id": "72dd98ae-79f2-5bfc-9557-e73b9e4784e5"
+    "name": "US - Exposure simulation engine settings",
+    "description": "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. A simulation is the heaviest run, so it uses 4 threads.",
+    "configuration_id": "00df6f30-ff83-5c16-935b-59cf3d0d6c44"
   },
   {
     "company_code": "acme_us",
-    "id": "cc979142-bcbe-5e4f-a077-db4dfbabc02a",
+    "id": "fe83b5a8-094b-5177-8a22-7fd3554c0cae",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "US - Standard engine settings",
-    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, CFTC Swap Data Reporting, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Yield Curves.",
-    "configuration_id": "547fd158-86dd-5631-9227-52fb58aa2476"
+    "name": "US - Valuation and risk engine settings",
+    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "configuration_id": "d9025930-0636-5cdf-af21-4a1f8667dfd6"
   },
   {
     "company_code": "acme_hk",
-    "id": "c0b0f980-86e9-5bba-ad0c-e0c656562c17",
+    "id": "90729646-c246-59c0-af89-31293f020674",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "HK - Simulation engine settings",
-    "description": "Engine settings shared by CVA/DVA/FVA, Exposure.",
-    "configuration_id": "6f8d683a-b7a0-506c-87ca-1253bd89e50c"
+    "name": "HK - Exposure simulation engine settings",
+    "description": "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. A simulation is the heaviest run, so it uses 4 threads.",
+    "configuration_id": "a733a396-0c59-5c21-969a-09398e74dec8"
   },
   {
     "company_code": "acme_hk",
-    "id": "af61c06a-866e-53bc-a38b-084a749b8618",
+    "id": "5e196c22-802e-5d15-90a7-6825dc32f058",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "name": "HK - Standard engine settings",
-    "description": "Engine settings shared by Audit Trail Summary, Bucketed DV01, Cashflows, Credit Curves, Data Quality Completeness, Delta and Gamma, FRTB SA Capital, FX Spot Rates, HKMA Trade Repository, Headline Position, Intraday Risk Monitor, Large Exposures, Leverage Ratio, Liquidity Coverage, Model Calibration, NPV, P&L Attribution, SA-CCR Exposure, Stressed VaR, Yield Curves.",
-    "configuration_id": "1b01cf50-0750-5b01-bbe8-079f8d67b1bb"
+    "name": "HK - Valuation and risk engine settings",
+    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "configuration_id": "78bd8732-df04-5584-952d-3e3ac2757a37"
   }
 ]

@@ -22,7 +22,7 @@ Do these steps yourself, in this order, before you open the web client.
 - Build the checkout of =feature/test-the-engine-settings=, then confirm the schema with =compass db status=. Recreate the database with =compass services stop= and =compass db recreate -y -k= when it says "out of sync".
 - Start the services with =compass services start=. Check that =ores.reporting.service=, =ores.http.server= and =ores.web.service= run.
 - Provision Acme with =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=. The run must finish with no failed step.
-- Check that Acme holds engine settings: =compass sql -- -c "select name from ores_reporting_engine_settings_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by name"= must list seven names, for example =UK - Standard engine settings=. If it lists none, the publish of the Acme bundle did not reach the reporting tables. Record this in the notes and stop.
+- Check that Acme holds engine settings: =compass sql -- -c "select name from ores_reporting_engine_settings_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by name"= must list seven names, for example =UK - Valuation and risk engine settings=. If it lists none, the publish of the Acme bundle did not reach the reporting tables. Record this in the notes and stop.
 - Check that the Acme tenant holds the parameter documentation: =compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl p join ores_iam_tenants_tbl t on t.id = p.tenant_id where t.code = 'acme_corporation' and p.valid_to = ores_utility_infinity_timestamp_fn()"=. The count must be 610. The =base= bundle that provisioning publishes carries the parameters and their value domains. If the count is 0, the publish of =base= did not reach the reporting service. Record this in the notes and stop.
 - Open the web client as the tenant administrator: =compass open-as tenant_admin=.
 
@@ -43,7 +43,7 @@ Nothing in this scenario was run against a live service before this page was wri
 ** Sign in as the tenant administrator
 
 - Sign in as =tenant_admin@acme_corporation=. The password is =Secure-Password-123=. =compass open-as tenant_admin= fills the form.
-- Select the Acme party when the page asks for a party.
+- Select the UK party (ACME Corporation UK plc) when the page asks for a party. Steps 3 to 11 change UK rows, and a row can be changed only in the party that owns it.
 - The sign-in must succeed and show the home page.
 
 *** Result
@@ -56,8 +56,9 @@ Nothing in this scenario was run against a live service before this page was wri
 
 - Open the Reporting area and choose the Engine settings card. The address is =/reporting/engine-settings=.
 - The title must read "Engine settings". The list must show the columns Name, Party, Groups set, Threads, Changed by and Last changed.
-- The list must hold the engine settings of the selected party. For the UK party, expect "UK - Simulation engine settings" and "UK - Standard engine settings".
-- Write down the Threads value of each row. Expect 4 for Simulation and 1 for Standard.
+- The list holds the engine settings of every party the selected party can see. For the UK party, expect "UK - Exposure simulation engine settings" and "UK - Valuation and risk engine settings".
+- Write down the Threads value of each row. Expect 4 for the exposure simulation and 1 for valuation and risk.
+- Switch to the group party (Acme Corporation Plc). The list must now hold the settings of all four parties, and the Party column must say which party owns each row.
 
 *** Result
 
@@ -66,11 +67,11 @@ Nothing in this scenario was run against a live service before this page was wri
 | Status | FAIL |
 | Notes  | I see the engine settings for all parties tenant admin can see.; ; [[file:scenario_engine-settings-walkthrough_step2_20261023_184343.png]] |
 
-** Open UK Standard engine settings
+** Open the UK valuation and risk settings
 
-- Open "UK - Standard engine settings" from the list.
+- Open "UK - Valuation and risk engine settings" from the list.
 - The page must show the tabs Details, Fixings and cash flows, Market and trade building, Execution, Used by and History.
-- On Details, the description must name the reports that share the settings.
+- On Details, the description must state what the settings are for: valuation, sensitivity and regulatory reports, one thread per run.
 - Open Execution. Threads must read 1. The log mask must read 31.
 - Open Fixings and cash flows. The setting implyTodaysFixings must read No, and it must not say "default".
 
@@ -164,8 +165,8 @@ Nothing in this scenario was run against a live service before this page was wri
 
 ** Check which reports use the settings
 
-- Open the Used by tab of "UK - Standard engine settings".
-- The tab must list the reports that bind the settings. The count must match the description on the Details tab (22 reports).
+- Open the Used by tab of "UK - Valuation and risk engine settings".
+- The tab must list the reports that bind the settings. The tab must list 22 reports.
 - Open the Execution tab of a configuration that no report binds, once you create one in the next step. The Used by tab must say that no report binds it.
 
 *** Result
@@ -180,7 +181,7 @@ Nothing in this scenario was run against a live service before this page was wri
 - The new page must open. Every group must say that the configuration holds no row and that the engine uses its default.
 - Choose the edit action in the page header and change the name to "Scenario test settings 2". The title must change.
 - Delete the configuration. The dialog must warn that the history is kept.
-- Try to delete "UK - Standard engine settings". The dialog must refuse and name the number of reports that bind it.
+- Try to delete "UK - Valuation and risk engine settings". The dialog must refuse and name the number of reports that bind it.
 
 *** Result
 
@@ -191,7 +192,7 @@ Nothing in this scenario was run against a live service before this page was wri
 
 ** Read the screens in French
 
-- Change the language to French.
+- The app has no language selector yet. Open the browser console and run =localStorage.setItem('ores.web.language', 'fr')=, and then reload the page. A browser set to French also works.
 - Reopen the engine settings page. The title, the tab names and the group titles must show French text, with no raw key such as =engineSettings.tabs.history=.
 
 *** Result

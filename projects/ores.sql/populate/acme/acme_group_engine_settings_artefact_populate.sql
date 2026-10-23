@@ -53,7 +53,7 @@ begin
         dataset_id, tenant_id, id, version, party_id, name, description, configuration_id
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '722b3002-e413-5615-833c-60abec22aeab', 0, '00000000-0000-0000-0000-000000000000', 'Group - Standard engine settings', 'Engine settings shared by Audit Trail Summary, Board Risk Dashboard, Cross-Entity Counterparty Concentration, Data Quality Completeness, Group Consolidated Exposure, Intercompany Exposure Matrix, Large Exposures, Leverage Ratio, Liquidity Coverage, System Health.', '69d4ee4b-4154-5d2a-b077-0bec3cc7edd7');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ad04ef07-42af-5ad4-b26c-019007e25972', 0, '00000000-0000-0000-0000-000000000000', 'Group - Valuation and risk engine settings', 'Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.', '86661e4d-844f-51f6-b369-9cd1a13c92d5');
 
     delete from ores_dq_engine_settings_fixings_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -62,7 +62,7 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, imply_todays_fixings
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fed6e00d-b9ff-58fc-9f57-cf80402b76c8', 0, '00000000-0000-0000-0000-000000000000', '722b3002-e413-5615-833c-60abec22aeab', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e6ae5a68-c3fa-53ee-b471-66d69eb89614', 0, '00000000-0000-0000-0000-000000000000', 'ad04ef07-42af-5ad4-b26c-019007e25972', false);
 
     delete from ores_dq_engine_settings_building_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -71,7 +71,7 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, observation_model, continue_on_error
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '08812b84-f998-57e4-ac2e-925a32a80021', 0, '00000000-0000-0000-0000-000000000000', '722b3002-e413-5615-833c-60abec22aeab', 'Disable', false);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0aeb2ef5-46b4-5f6f-ab1d-077aa35d206f', 0, '00000000-0000-0000-0000-000000000000', 'ad04ef07-42af-5ad4-b26c-019007e25972', 'Disable', false);
 
     delete from ores_dq_engine_settings_execution_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -80,5 +80,5 @@ begin
         dataset_id, tenant_id, id, version, party_id, engine_settings_id, log_mask, n_threads
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0ddf82b9-ff9f-58b5-a952-89b0dbfafb94', 0, '00000000-0000-0000-0000-000000000000', '722b3002-e413-5615-833c-60abec22aeab', 31, 1);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '767209a3-c861-541f-88bc-43c23de7efca', 0, '00000000-0000-0000-0000-000000000000', 'ad04ef07-42af-5ad4-b26c-019007e25972', 31, 1);
 end $$;

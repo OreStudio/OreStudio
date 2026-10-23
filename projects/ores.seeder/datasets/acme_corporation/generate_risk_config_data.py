@@ -345,9 +345,22 @@ def risk_report_configs(definitions, portfolios):
     return configs, analytics_rows, parameter_rows, market_rows
 
 
+# What each kind of run is for. The name says the purpose, and the description says
+# what the settings change, so a person choosing between them need not read the reports
+# that bind them.
+PURPOSES = {
+    True: ("Exposure simulation",
+           "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. "
+           "A simulation is the heaviest run, so it uses {threads} threads."),
+    False: ("Valuation and risk",
+            "Settings for the valuation, sensitivity and regulatory reports. "
+            "Each run uses one thread."),
+}
+
+
 def engine_settings_name(company, report_name):
-    kind = "Simulation" if "simulation" in analytics_of(report_name) else "Standard"
-    return f"{documents.LABEL[company]} - {kind} engine settings"
+    purpose = PURPOSES["simulation" in analytics_of(report_name)][0]
+    return f"{documents.LABEL[company]} - {purpose} engine settings"
 
 
 def engine_settings(definitions):
@@ -371,7 +384,7 @@ def engine_settings(definitions):
                 "version": 0,
                 "party_id": documents.NO_PARTY,
                 "name": name,
-                "description": f"Engine settings shared by {', '.join(sorted(reports))}.",
+                "description": PURPOSES[simulation][1].format(threads=SIMULATION_THREADS),
                 "configuration_id": documents.new_uuid(f"engine_settings_header:{company}:{name}"),
             })
             for rows, part, values in (

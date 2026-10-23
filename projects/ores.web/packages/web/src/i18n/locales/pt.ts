@@ -1697,6 +1697,7 @@ const pt: SourceCatalogue = {
                 noResults: 'Esta unidade de trabalho não tem resultados.',
                 pastTheLastPage: 'Esta página está depois da última.',
                 firstPage: 'Voltar à primeira página',
+                follow: 'Seguir este trabalho',
                 error: 'Não foi possível ler os trabalhos. {message}',
                 retry: 'Tentar de novo',
                 refused: 'O seu perfil não pode ler os trabalhos.',
@@ -1752,6 +1753,62 @@ const pt: SourceCatalogue = {
                     success: 'Sucesso',
                     clientError: 'Erro do cliente',
                     noReply: 'Sem resposta',
+                },
+            },
+            job: {
+                title: 'Trabalho',
+                description: 'Onde está um trabalho, o que o executou e o que produziu.',
+                back: 'Voltar aos trabalhos',
+                loading: 'A ler o trabalho...',
+                done: 'Concluído',
+                notDone: 'Não concluído',
+                batchStatus: 'Estado do lote',
+                batchRecordedAt: 'Lote registado em',
+                notYetKnown: 'ainda não conhecido',
+                notYetReceived: 'ainda não recebido',
+                failedNote:
+                    'Um lote fechado não é um lote bem-sucedido. Este trabalho executou e falhou, e a grelha conta-o como concluído. Leia o desfecho da execução.',
+                runs: {
+                    title: 'Execuções do trabalho',
+                    count: {
+                        one: '{count} execução',
+                        other: '{count} execuções',
+                    },
+                    run: 'Execução',
+                    canonical: '(canónica)',
+                },
+                time: {
+                    title: 'Para onde foi o tempo',
+                    note: 'dois instantes guardados',
+                    recorded: 'Registado {time}',
+                    received: 'Recebido {time} ({seconds} s)',
+                    running: 'ainda a executar',
+                    hint: 'O serviço guarda quando a execução foi escrita e quando a sua saída chegou. Não guarda nada entre os dois, por isso a barra não se divide em fases.',
+                },
+                siblings: {
+                    title: 'Trabalhos do lote',
+                    count: {
+                        one: '{total} trabalho',
+                        other: '{total} trabalhos',
+                    },
+                    here: '(este trabalho)',
+                    state: 'Estado',
+                    showing: 'Trabalhos {first} a {last} de {total}',
+                },
+                files: {
+                    title: 'Ficheiros',
+                    output: 'URI de saída, execução {run}',
+                },
+                release: {
+                    title: 'Versão que o executou',
+                },
+                lineage: {
+                    title: 'Linhagem',
+                    batchVia:
+                        'O lote nomeia uma execução de relatório na sua referência externa, aqui {ref}. O modelo não a declara como relação, e ainda não existe página de execução de relatório. Um lote enviado pela shell contém uma cadeia de operador e não tem relatório por trás.',
+                    workunit: 'Unidade de trabalho {id} (este trabalho)',
+                    viaBatch: 'por batch_id',
+                    result: 'Resultado {id}, execução {run},',
                 },
             },
             tenantDescription:

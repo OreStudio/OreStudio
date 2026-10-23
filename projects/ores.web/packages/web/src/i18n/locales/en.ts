@@ -1686,6 +1686,7 @@ export const en: SourceCatalogue = {
                 noResults: 'This workunit has no results.',
                 pastTheLastPage: 'This page is past the last one.',
                 firstPage: 'Back to the first page',
+                follow: 'Follow this job',
                 error: 'The jobs could not be read. {message}',
                 retry: 'Try again',
                 refused: 'Your role cannot read jobs.',
@@ -1741,6 +1742,62 @@ export const en: SourceCatalogue = {
                     success: 'Success',
                     clientError: 'ClientError',
                     noReply: 'NoReply',
+                },
+            },
+            job: {
+                title: 'Job',
+                description: 'Where one job is, what ran it and what it produced.',
+                back: 'Back to the jobs',
+                loading: 'Reading the job...',
+                done: 'Done',
+                notDone: 'Not done',
+                batchStatus: 'Batch Status',
+                batchRecordedAt: 'Batch Recorded At',
+                notYetKnown: 'not yet known',
+                notYetReceived: 'not yet received',
+                failedNote:
+                    'A closed batch is not a successful batch. This job ran and failed, and the grid counts it as done. Read the outcome of the run.',
+                runs: {
+                    title: 'Runs of the job',
+                    count: {
+                        one: '{count} run',
+                        other: '{count} runs',
+                    },
+                    run: 'Run',
+                    canonical: '(canonical)',
+                },
+                time: {
+                    title: 'Where the time went',
+                    note: 'two stored times',
+                    recorded: 'Recorded {time}',
+                    received: 'Received {time} ({seconds} s)',
+                    running: 'still running',
+                    hint: 'The service stores when the run was written and when its output arrived. It stores nothing between, so the bar is not split into phases.',
+                },
+                siblings: {
+                    title: 'Jobs of the batch',
+                    count: {
+                        one: '{total} job',
+                        other: '{total} jobs',
+                    },
+                    here: '(this job)',
+                    state: 'State',
+                    showing: 'Jobs {first} to {last} of {total}',
+                },
+                files: {
+                    title: 'Files',
+                    output: 'Output URI, run {run}',
+                },
+                release: {
+                    title: 'Release that ran it',
+                },
+                lineage: {
+                    title: 'Lineage',
+                    batchVia:
+                        'The batch names a report run in its External Ref, here {ref}. The model does not state this as a relationship, and no page for a report run exists yet. A batch that the shell dispatched holds an operator string and has no report behind it.',
+                    workunit: 'Workunit {id} (this job)',
+                    viaBatch: 'by batch_id',
+                    result: 'Result {id}, run {run},',
                 },
             },
             tenantDescription:

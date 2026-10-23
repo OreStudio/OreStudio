@@ -1706,6 +1706,7 @@ const fr: SourceCatalogue = {
                 noResults: 'Cette unité de travail n’a aucun résultat.',
                 pastTheLastPage: 'Cette page est après la dernière.',
                 firstPage: 'Retour à la première page',
+                follow: 'Suivre ce travail',
                 error: 'Les travaux n’ont pas pu être lus. {message}',
                 retry: 'Réessayer',
                 refused: 'Votre rôle ne peut pas lire les travaux.',
@@ -1761,6 +1762,62 @@ const fr: SourceCatalogue = {
                     success: 'Succès',
                     clientError: 'Erreur client',
                     noReply: 'Sans réponse',
+                },
+            },
+            job: {
+                title: 'Travail',
+                description: 'Où en est un travail, ce qui l’a exécuté et ce qu’il a produit.',
+                back: 'Retour aux travaux',
+                loading: 'Lecture du travail...',
+                done: 'Terminé',
+                notDone: 'Non terminé',
+                batchStatus: 'Statut du lot',
+                batchRecordedAt: 'Lot enregistré le',
+                notYetKnown: 'pas encore connu',
+                notYetReceived: 'pas encore reçu',
+                failedNote:
+                    'Un lot clos n’est pas un lot réussi. Ce travail s’est exécuté et a échoué, et la grille le compte comme terminé. Lisez l’issue de l’exécution.',
+                runs: {
+                    title: 'Exécutions du travail',
+                    count: {
+                        one: '{count} exécution',
+                        other: '{count} exécutions',
+                    },
+                    run: 'Exécution',
+                    canonical: '(canonique)',
+                },
+                time: {
+                    title: 'Où est passé le temps',
+                    note: 'deux heures enregistrées',
+                    recorded: 'Enregistré {time}',
+                    received: 'Reçu {time} ({seconds} s)',
+                    running: 'encore en cours',
+                    hint: 'Le service enregistre quand l’exécution a été écrite et quand sa sortie est arrivée. Il n’enregistre rien entre les deux, donc la barre n’est pas découpée en phases.',
+                },
+                siblings: {
+                    title: 'Travaux du lot',
+                    count: {
+                        one: '{total} travail',
+                        other: '{total} travaux',
+                    },
+                    here: '(ce travail)',
+                    state: 'État',
+                    showing: 'Travaux {first} à {last} sur {total}',
+                },
+                files: {
+                    title: 'Fichiers',
+                    output: 'URI de sortie, exécution {run}',
+                },
+                release: {
+                    title: 'Version qui l’a exécuté',
+                },
+                lineage: {
+                    title: 'Filiation',
+                    batchVia:
+                        'Le lot nomme une exécution de rapport dans sa référence externe, ici {ref}. Le modèle ne l’énonce pas comme une relation, et aucune page d’exécution de rapport n’existe encore. Un lot envoyé par le shell contient une chaîne d’opérateur et n’a aucun rapport derrière lui.',
+                    workunit: 'Unité de travail {id} (ce travail)',
+                    viaBatch: 'par batch_id',
+                    result: 'Résultat {id}, exécution {run},',
                 },
             },
             tenantDescription:

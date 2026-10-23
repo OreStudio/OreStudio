@@ -62,6 +62,7 @@ import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
 import { SeriesPage } from './market/SeriesPage.js';
 import { GridNodePage } from './operations/GridNodePage.js';
+import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -561,6 +562,18 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <GridPage mode={view.mode} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/jobs/:workunitId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridJobPage />
                     ),
                     'workspace',
                 )}

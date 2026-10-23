@@ -75,6 +75,22 @@ export function gridMachinePath(machine: string): string {
     return `/operations/grid?tab=nodes&machine=${encodeURIComponent(machine)}`;
 }
 
+/** The address of the page of one job: the workunit and the runs of it. */
+export function gridJobPath(workunitId: string): string {
+    return `/operations/grid/jobs/${encodeURIComponent(workunitId)}`;
+}
+
+/** The address of the Jobs tab with a batch open and selected. */
+export function gridBatchPath(batchId: string): string {
+    const query = new URLSearchParams({ tab: 'jobs', open: batchId, sel: `batch:${batchId}` });
+    return `/operations/grid?${query.toString()}`;
+}
+
+/** The address of the page of one app version of the compute catalogue. */
+export function gridAppVersionPath(appVersionId: string): string {
+    return `/operations/grid/app-versions/${encodeURIComponent(appVersionId)}`;
+}
+
 /** The address of the page of one compute node. */
 export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;

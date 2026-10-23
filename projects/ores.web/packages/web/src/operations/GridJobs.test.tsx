@@ -257,6 +257,27 @@ describe('the Jobs tab', () => {
         expect(html).toContain('Canonical Result ID');
     });
 
+    it('leads from a workunit or a result to the job page and from a workunit to its app version', () => {
+        const workunitHtml = render(`/?tab=jobs&sel=workunit:${WORKUNIT_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['workunit', WORKUNIT_ID, workunit(WORKUNIT_ID)],
+        });
+        const resultHtml = render(`/?tab=jobs&sel=result:${RESULT_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['result', RESULT_ID, result(RESULT_ID)],
+        });
+        const batchHtml = render(`/?tab=jobs&sel=batch:${BATCH_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['batch', BATCH_ID, batch(BATCH_ID, 'order-e')],
+        });
+
+        expect(workunitHtml).toContain(`href="/operations/grid/jobs/${WORKUNIT_ID}"`);
+        expect(workunitHtml).toContain(`href="/operations/grid/app-versions/${APP_VERSION_ID}"`);
+        expect(resultHtml).toContain(`href="/operations/grid/jobs/${WORKUNIT_ID}"`);
+        expect(workunitHtml).toContain('Follow this job');
+        expect(batchHtml).not.toContain('Follow this job');
+    });
+
     it('states none for an unset field instead of an empty value', () => {
         const html = render(`/?tab=jobs&sel=workunit:${WORKUNIT_ID}`, {
             batches: TWO_BATCHES,

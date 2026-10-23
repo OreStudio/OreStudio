@@ -729,6 +729,7 @@ package "marketdata" #E3F2FD {
         * ts : timestamptz
         * coord : smallint
         * value : double
+        * source_id : uuid <<FK>>
     }
 
     note right of ores_marketdata_ticks_tbl

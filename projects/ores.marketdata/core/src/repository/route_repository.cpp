@@ -421,4 +421,17 @@ void route_repository::remove(context ctx, const std::vector<std::string>& ids) 
 }
 
 
+std::vector<domain::route> route_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<route_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
+
+    return execute_read_query<route_entity, domain::route>(
+        ctx,
+        query,
+        [](const auto& entities) { return route_mapper::map(entities); },
+        lg(),
+        "Reading latest routes across all tenants");
+}
+
 }

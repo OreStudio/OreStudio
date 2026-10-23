@@ -157,6 +157,36 @@ ctx.generate_uuid()
 :entity_plural_words:   routes
 :END:
 
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 5C2E8A14-7D3B-4F96-A1E5-9B4D6C0F3E27
+:END:
+
+Reads the latest routes across all tenants. The ingest loop resolves the parties routed
+to a source regardless of tenant, so it cannot filter on one. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::route> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::route>
+route_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<route_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<route_entity, domain::route>(
+        ctx,
+        query,
+        [](const auto& entities) { return route_mapper::map(entities); },
+        lg(),
+        "Reading latest routes across all tenants");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

@@ -24,6 +24,10 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_source_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_vendor_instrument_event.hpp"
+#include "ores.marketdata.api/eventing/route_event.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
@@ -168,6 +172,30 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto feed_binding_refresh_sub =
         event_bus.subscribe<mdm::feed_binding_event>([ingest](const mdm::feed_binding_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
+            ingest->refresh();
+        });
+
+    // A route, a source, a vendor instrument or a mapping changes what the loop maps and to
+    // whom it stores, so each of them refreshes the loop the way a binding does.
+    auto route_refresh_sub =
+        event_bus.subscribe<mdm::route_event>([ingest](const mdm::route_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop.";
+            ingest->refresh();
+        });
+    auto source_refresh_sub = event_bus.subscribe<mdm::market_data_source_event>(
+        [ingest](const mdm::market_data_source_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop.";
+            ingest->refresh();
+        });
+    auto vendor_instrument_refresh_sub =
+        event_bus.subscribe<mdm::market_data_vendor_instrument_event>(
+            [ingest](const mdm::market_data_vendor_instrument_event&) {
+                BOOST_LOG_SEV(lg(), info) << "Vendor instrument changed — refreshing ingest loop.";
+                ingest->refresh();
+            });
+    auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
+        [ingest](const mdm::market_data_mapping_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop.";
             ingest->refresh();
         });
 

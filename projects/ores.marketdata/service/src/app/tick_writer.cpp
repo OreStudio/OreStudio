@@ -58,13 +58,14 @@ struct result_guard {
 
 std::string tick_copy_line(const tick_row& row) {
     const auto micros = std::chrono::floor<std::chrono::microseconds>(row.ts);
-    return std::format("{},{},{},{:%F %T}+00,{},{}\n",
+    return std::format("{},{},{},{:%F %T}+00,{},{},{}\n",
                        row.tenant_id,
                        row.party_id,
                        row.series_id,
                        micros,
                        row.coord,
-                       row.value);
+                       row.value,
+                       row.source_id);
 }
 
 tick_writer::tick_writer(tick_writer_options options)
@@ -103,10 +104,11 @@ void tick_writer::write(std::span<const tick_row> rows) {
 
     try {
         {
-            result_guard begin(PQexec(conn_,
-                                      "copy ores_marketdata_ticks_tbl "
-                                      "(tenant_id, party_id, series_id, ts, coord, value) "
-                                      "from stdin with (format csv)"));
+            result_guard begin(
+                PQexec(conn_,
+                       "copy ores_marketdata_ticks_tbl "
+                       "(tenant_id, party_id, series_id, ts, coord, value, source_id) "
+                       "from stdin with (format csv)"));
             if (PQresultStatus(begin.result) != PGRES_COPY_IN)
                 throw std::runtime_error(PQerrorMessage(conn_));
         }

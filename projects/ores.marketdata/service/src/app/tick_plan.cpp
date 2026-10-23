@@ -49,7 +49,9 @@ make_targets(const std::vector<domain::feed_binding>& bindings, const named_datu
         auto tenant = b.tenant_id.to_string();
         auto party = boost::uuids::to_string(b.party_id);
         auto subject = domain::market_tick_subject(tenant, party, named.uri);
-        targets->push_back({b, std::move(subject), std::move(tenant), std::move(party)});
+        auto source = boost::uuids::to_string(b.source_id);
+        targets->push_back(
+            {b, std::move(subject), std::move(tenant), std::move(party), std::move(source)});
     }
     return targets;
 }

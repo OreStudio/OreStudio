@@ -44,6 +44,8 @@ struct tick_row final {
     std::chrono::system_clock::time_point ts;
     short coord = 0;
     double value = 0;
+    /// The catalogue source that produced the value.
+    std::string_view source_id;
 };
 
 /**

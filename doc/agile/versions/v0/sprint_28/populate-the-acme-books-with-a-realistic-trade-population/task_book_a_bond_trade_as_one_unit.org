@@ -65,7 +65,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Full suite | 94 of 96 passed; =ores.marketdata.core.tests= and =ores.marketdata.service.tests= failed with =bad lexical cast= and a timestamp-format error. No failing case touches trading. | =./compass.sh test run= | the task commit |
+| Full suite, first run | 94 of 96 passed; =ores.marketdata.core.tests= and =ores.marketdata.service.tests= failed with =bad lexical cast= and a timestamp-format error. No failing case touches trading. | =./compass.sh test run= | the task commit before the rebase |
+| Marketdata core suite, after rebase and database recreate | passed | =./compass.sh test run -- -R ores.marketdata.core.tests= | the rebased task commit |
+| Marketdata service suite, after rebase and database recreate | 159 of 161 cases passed. Two =wait_until= timeouts in =app_feed_ingest_loop_tests.cpp= (lines 1095 and 1254) failed on both runs. Not run on a clean main. | =./compass.sh test run -- -R ores.marketdata.service.tests= | the rebased task commit |
 | Trading core suite | passed, 4 new cases | =./compass.sh test run -- -R ores.trading.core.tests= | the task commit |
 | Synthetic core suite | passed | =./compass.sh test run -- -R ores.synthetic.core.tests= | the task commit |
 | Trades on a provisioned Acme tenant | 32 trades, each with an identifier, a bond instrument, a state and a booking; 17 whole issues | =./compass.sh db sql= with a distinct count of each table | the task commit |
@@ -109,4 +111,4 @@ via its "Verifies task" field.
 
 The synthetic writer makes one call for each trade. =write_instrument=, =call_ok= and the activity map are deleted. A provisioned Acme tenant holds 32 trades, each whole, and a second generation run writes nothing.
 
-Not done: a trade type that does not route to the bond table is refused by the database, as an exception. The two marketdata suites failed in the full run. I did not find the cause, and I did not run them on a clean main.
+Not done: a trade type that does not route to the bond table is refused by the database, as an exception. After a rebase and a database recreate, the marketdata core suite passes. Two cases of the marketdata service suite still time out in =app_feed_ingest_loop_tests.cpp=. This branch touches no marketdata file. I did not run the suite on a clean main.

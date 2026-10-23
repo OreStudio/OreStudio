@@ -162,7 +162,7 @@ market_data_client::save_series(const std::vector<domain::market_series>& series
     return count;
 }
 
-std::expected<std::optional<domain::market_series>, std::string>
+std::expected<std::vector<domain::market_series>, std::string>
 market_data_client::find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id) {
     messaging::list_market_series_request req;
     req.limit = all_rows;
@@ -171,12 +171,13 @@ market_data_client::find_series_by_uri(const std::string& oresmd_uri, const std:
         return std::unexpected(resp.error());
     if (resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::unexpected(describe(resp->result));
+    std::vector<domain::market_series> matches;
     for (auto& s : resp->market_series) {
         if (s.oresmd_uri == oresmd_uri &&
             (party_id.empty() || boost::uuids::to_string(s.party_id) == party_id))
-            return std::optional<domain::market_series>(std::move(s));
+            matches.push_back(std::move(s));
     }
-    return std::optional<domain::market_series>();
+    return matches;
 }
 
 std::expected<std::vector<domain::market_observation>, std::string>

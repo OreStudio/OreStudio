@@ -104,13 +104,13 @@ public:
      * marketdata.v1.market_series.list (limit 10000).
      *
      * When @p party_id is non-empty the scan is restricted to that party's
-     * series. Without it the first id-ordered match wins, which is arbitrary
-     * when the same identity exists for several parties (e.g. FX spot series are
-     * materialised per party).
+     * series. One identity can hold several series, one for each provider and
+     * party (a vintage of one provider and the ticks of another), so every match
+     * is returned.
      *
-     * @return The matching series, std::nullopt if none found, or an error.
+     * @return The matching series, empty if none found, or an error.
      */
-    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
+    [[nodiscard]] std::expected<std::vector<domain::market_series>, std::string>
     find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id = {});
 
     /**

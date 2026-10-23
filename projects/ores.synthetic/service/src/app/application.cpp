@@ -142,29 +142,55 @@ public:
     }
 
 private:
+    // Builds and starts every adapter before any is kept, so a failed start leaves none running.
+    void start_all(const std::vector<ores::marketdata::domain::market_data_source>& sources) {
+        auto built = make_adapters(sources, db_ctx_, nats_, registry_, build_, faults_);
+        std::size_t started = 0;
+        try {
+            for (auto& one : built) {
+                one.adapter->start();
+                ++started;
+            }
+        } catch (...) {
+            for (std::size_t i = 0; i < started; ++i) {
+                built[i].adapter->stop();
+                built[i].runner->stop_all();
+            }
+            throw;
+        }
+        adapters_ = std::move(built);
+        if (adapters_.empty())
+            BOOST_LOG_SEV(lg(), warn)
+                << "The catalogue holds no simulated source, so the simulator serves no adapter.";
+        else
+            BOOST_LOG_SEV(lg(), info)
+                << adapters_.size() << " simulated source(s) served as adapters";
+    }
+
     void run(ores::platform::concurrency::stop_token stop) {
         using namespace std::chrono_literals;
         auto wait = 2s;
         while (!stop.stop_requested()) {
-            ores::marketdata::client::market_data_client client(svc_nats_);
-            const auto sources = client.list_market_data_sources();
-            if (sources) {
-                adapters_ = make_adapters(*sources, db_ctx_, nats_, registry_, build_, faults_);
-                for (auto& one : adapters_)
-                    one.adapter->start();
-                if (adapters_.empty())
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "The catalogue holds no simulated source, so the simulator serves no "
-                           "adapter.";
-                else
-                    BOOST_LOG_SEV(lg(), info)
-                        << adapters_.size() << " simulated source(s) served as adapters";
-                return;
+            std::string failure;
+            try {
+                ores::marketdata::client::market_data_client client(svc_nats_);
+                const auto sources = client.list_market_data_sources();
+                if (sources) {
+                    start_all(*sources);
+                    return;
+                } else {
+                    failure = sources.error();
+                    if (failure.find("denied") != std::string::npos)
+                        failure += " (an environment populated before the grant of "
+                                   "market_data_sources:read needs the IAM roles populated "
+                                   "again)";
+                }
+            } catch (const std::exception& e) {
+                failure = e.what();
             }
             BOOST_LOG_SEV(lg(), warn)
-                << "The catalogue is not readable yet, so the simulator "
-                   "serves no adapter: "
-                << sources.error() << ". Trying again in " << wait.count() << " s.";
+                << "The simulator serves no adapter yet: " << failure << ". Trying again in "
+                << wait.count() << " s.";
             ores::platform::concurrency::wait_for(
                 stop, std::chrono::duration_cast<std::chrono::milliseconds>(wait));
             wait = std::min(wait * 2, std::chrono::seconds(30));

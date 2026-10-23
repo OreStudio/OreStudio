@@ -188,6 +188,7 @@ on delete to "ores_marketdata_routes_tbl" do instead (
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Route
+-- System-tenant sessions may also read every tenant's rows.
 -- =============================================================================
 alter table ores_marketdata_routes_tbl enable row level security;
 
@@ -198,9 +199,11 @@ create policy routes_tbl_tenant_isolation_policy
 on ores_marketdata_routes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- Party isolation (RESTRICTIVE): ANDed with the permissive tenant

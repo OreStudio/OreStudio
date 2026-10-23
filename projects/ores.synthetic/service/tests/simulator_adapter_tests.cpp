@@ -109,6 +109,37 @@ private:
     std::atomic<bool> stop_{false};
 };
 
+// A generator whose tick loop fails at once, as a build that passed and a start that did not.
+class failing_generator final : public domain::IFeed {
+public:
+    const std::string& source_name() const override {
+        return name_;
+    }
+    const std::vector<std::string>& series_uris() const override {
+        return series_;
+    }
+    const std::string& role() const override {
+        return name_;
+    }
+    const std::string& nats_subject() const override {
+        return name_;
+    }
+    std::string_view kind() const override {
+        return "failing";
+    }
+    std::uint64_t publish_count() const override {
+        return 0;
+    }
+    void start() override {
+        throw std::runtime_error("the process cannot step");
+    }
+    void stop() override {}
+
+private:
+    std::string name_ = "failing";
+    std::vector<std::string> series_;
+};
+
 generator_offer idle_offer(const std::string& pair, std::shared_ptr<generator_counters> counters) {
     return {.id = ore_id(pair), .make = [counters] {
                 ++counters->built;
@@ -272,6 +303,20 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
     CHECK(out.rejected.front().reason == "generator_failed");
     CHECK(out.accepted.size() == 1);
     CHECK(runner.running_count() == 1);
+}
+
+TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]") {
+    generator_runner runner([] {
+        return std::vector{generator_offer{
+            .id = ore_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
+    });
+
+    const auto out = runner.apply({ore_id("EUR/USD")});
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    const auto none = runner.apply({});
+
+    CHECK(out.accepted.size() == 1);
+    CHECK(none.stopped == 1);
 }
 
 TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbeats",

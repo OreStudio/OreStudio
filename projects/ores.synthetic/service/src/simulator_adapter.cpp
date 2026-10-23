@@ -128,14 +128,13 @@ void simulator_adapter::loop() {
     auto next_announce = clock::now();
     auto next_heartbeat = clock::now();
     while (!stop_.load(std::memory_order_relaxed)) {
-        const auto now = clock::now();
-        if (now >= next_announce) {
+        if (clock::now() >= next_announce) {
             const auto ok = announce();
             announced_.store(ok, std::memory_order_relaxed);
             next_announce =
                 clock::now() + (ok ? timing_.reannounce_interval : timing_.retry_interval);
         }
-        if (announced() && now >= next_heartbeat) {
+        if (announced() && clock::now() >= next_heartbeat) {
             try {
                 messaging::adapter_heartbeat beat;
                 beat.adapter_id = adapter_id_;

@@ -137,6 +137,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A stop that arrives before the thread enters start() may be lost and hang the join | generator_runner.hpp | decline | The tick clock keeps its stop flag from the member initialiser and never resets it (tick_clock.hpp, run()), so a stop before start is seen at the first loop test. |
+| 2 | An exception in start() ends the process | generator_runner.hpp | accept | The thread now catches and logs it. A test covers it. |
+| 3 | The lock is held while a generator is built and stopped | generator_runner.hpp | accept | Dropped generators are stopped after the lock is released. A build still runs under the lock, because the demand set is applied as a whole. |
+| 4 | The heartbeat check uses a time read before a slow announce | simulator_adapter.cpp | accept | The loop reads the clock at each test. |
+| 5 | Shutdown waits for an announce in flight | simulator_adapter.cpp | decline | The production reply timeout is 2 seconds. |
+| 6 | Relaxed memory order of the stop flag | simulator_adapter.cpp | decline | The reviewer found it correct. |
+| 7 | One run of the real service, adapter and database before merge | PR | decline | Recorded as a limit in the PR and the task notes. The next task starts the generators from the bundle and gives that run a reason to exist. |
 
 * Result

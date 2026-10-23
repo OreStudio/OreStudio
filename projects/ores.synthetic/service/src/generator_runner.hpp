@@ -106,8 +106,9 @@ public:
         using ores::marketdata::messaging::vendor_id;
 
         const auto offers = first_offers();
-        std::lock_guard lock(mu_);
         demand_outcome out;
+        std::vector<running_generator> dropped;
+        std::unique_lock lock(mu_);
         std::set<key> wanted;
         for (const auto& id : demand) {
             const auto k = key_of(id);
@@ -140,7 +141,7 @@ public:
                 ++it;
                 continue;
             }
-            halt(it->second);
+            dropped.push_back(std::move(it->second));
             it = running_.erase(it);
             ++out.stopped;
         }
@@ -148,6 +149,10 @@ public:
             << "Demand of " << demand.size() << " id(s): " << out.accepted.size() << " accepted, "
             << out.rejected.size() << " rejected, " << out.started << " started, " << out.stopped
             << " stopped; " << running_.size() << " generator(s) running";
+        // A generator takes up to a tick period to stop. The lock is free while it does.
+        lock.unlock();
+        for (auto& g : dropped)
+            halt(g);
         return out;
     }
 
@@ -193,7 +198,14 @@ private:
         running_generator g;
         auto* raw = feed.get();
         g.feed = std::move(feed);
-        g.thread = std::thread([raw] { raw->start(); });
+        g.thread = std::thread([raw] {
+            try {
+                raw->start();
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), ores::logging::error)
+                    << "The generator of " << raw->source_name() << " stopped: " << e.what();
+            }
+        });
         return g;
     }
 

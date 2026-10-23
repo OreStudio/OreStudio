@@ -26,11 +26,11 @@ Every collection, folder and generator belongs to the system tenant and system p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -101,3 +101,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every collection, folder and generator belongs to the system tenant and the system party. A collection no longer has a =scope= or a =binding_mode=, and the code that read them is gone. The row-level security of the generator tables is one shape: every tenant reads a row and a session writes only its own tenant's rows. The two helper functions that asked whether a collection is a system one are removed.
+
+The DQ publish of synthetic feeds writes the system tenant only and refuses a tenant. The system bundle installs the Bloomberg, ORE samples and uniform demo feeds with the Refinitiv, ICE and Tradeweb feeds, and the three tenant bundles that published them are removed. The publish of market data observations defaults to the system party for a system publish, because the vintage prices of those feeds are published with them.
+
+The step =start_market_feeds= is now =subscribe_market_data=. It gives each party of the tenant a subscription to the provider the step names and a route to the source it names, and it starts nothing. The Acme profile publishes no generator and subscribes its parties to the provider =ore= and its source =ore-simulated=.
+
+The ownership of a start is the owning tenant of the collection: only the system tenant starts or stops a system feed. The adapter of =ore-simulated= offers only the collections that name the provider =ore=, so a Bloomberg collection is never served under ORE keys.
+
+Against the rebuilt database: pgTAP 56 files, synthetic service 69 cases, api 80, core 61, shell 221, IAM core 304 and api 134, marketdata service 161 and core 271, web 1946 tests. The local check gate passes 44 of 45 checks. The failing one is =web=, whose =npm ci= stops because =package-lock.json= on main disagrees with =package.json= on =fastify=.
+
+Left for other tasks:
+- Only the provider =ore= has a simulated source. A Bloomberg, Refinitiv, ICE or Tradeweb collection exists in the system tenant, and no adapter serves it until the catalogue holds a simulated source of that provider.
+- Rate curve generators still have no vendor rows, so the Acme parties get FX values from the adapter and no curves from it.
+- The publish of the system bundle with its vintage dependencies into the system tenant was checked for the Bloomberg dataset in SQL, and not by a bundle publish through the services.
+- The old control plane (=start_feed=, =stop_feed=, the folder verbs) is unchanged and is retired with the screens.

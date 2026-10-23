@@ -481,7 +481,7 @@ describe('GET /api/operations/grid/jobs/results', () => {
     it.each([
         ['no outcome', ''],
         ['an outcome that is not a number', '?outcome=failed'],
-        ['an outcome past 9', '?outcome=10'],
+        ['an outcome code the model does not hold', '?outcome=2'],
         ['a limit above the most a page holds', '?outcome=3&limit=201'],
     ])('refuses %s before any call goes out', async (_name, query) => {
         const { response, calls } = await get(

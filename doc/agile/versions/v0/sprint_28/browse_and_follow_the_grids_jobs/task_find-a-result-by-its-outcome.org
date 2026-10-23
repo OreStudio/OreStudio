@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/find-a-result-by-its-outcome
-#+pr:
+#+pr: 3666
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ A read returns the results whose outcome is not Success, and names the batch of 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -92,13 +92,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [compute] Find a result by its outcome |
+| #3666 | [compute] Find a result by its outcome |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The BFF accepts any code from 0 to 9 | grid-jobs.ts | Fixed | The route takes the codes the model holds, 0, 1, 3 and 4, and refuses any other with 400. |
+| 2 | Outcome 0 and a null column | ores.compute.result.org | Noted | The service writes the column from an int that is 0 when unset, so a run has no null. The core test covers outcome 0. |
+| 3 | The page after a change of outcome | GridJobs.tsx | No change | The finder resets the page with every change. |
+| 4 | An empty page past the end | GridJobs.tsx | No change | The cause is removed by item 3. |
+| 5 | The default order of the list | grid-jobs.ts | Fixed | The result model states no default order, so the read asks for the recording time, newest first. The doc says so. |
 
 * Result
 

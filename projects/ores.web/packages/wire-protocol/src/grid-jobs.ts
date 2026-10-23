@@ -184,8 +184,9 @@ export const listResultsByWorkunitReplySchema = z.object({
 /**
  * `list_results_request`, sent on `compute.v1.results.list`.
  *
- * The list reads every run the session may see. A filter by outcome narrows it, and
- * the recording time is the default order, as for the other job lists.
+ * The list reads every run the session may see. A filter by outcome narrows it. The
+ * result model states no default order, so a read that wants newest first asks for the
+ * recording time, which the model declares sortable.
  */
 export const listResultsRequestSchema = z.object({
     ...pageFields,
@@ -511,7 +512,11 @@ export async function readResultsByOutcome(
 ): Promise<{ readonly results: readonly Result[]; readonly total: number }> {
     const reply = await caller.callAuthenticated(
         GRID_JOB_SUBJECTS.listResults,
-        listResultsRequestSchema.parse({ ...page, filter: { outcome } }),
+        listResultsRequestSchema.parse({
+            ...page,
+            order: { field: 'recorded_at', descending: true },
+            filter: { outcome },
+        }),
         listResultsReplySchema,
     );
     requireOk(GRID_JOB_SUBJECTS.listResults, reply.result);

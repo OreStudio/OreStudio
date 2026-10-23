@@ -229,6 +229,7 @@ describe('readResultsByOutcome', () => {
         expect(calls[0]?.body).toMatchObject({
             offset: 10,
             limit: 5,
+            order: { field: 'recorded_at', descending: true },
             filter: { outcome: 3, workunit_id: null },
         });
         expect(failed.total).toBe(2);

@@ -77,8 +77,9 @@ const batchQuerySchema = pageQuerySchema.extend({
 });
 
 /** The runs that ended with an outcome code: 0 none yet, 1 Success, 3 ClientError, 4 NoReply. */
+const OUTCOME_CODES = [0, 1, 3, 4] as const;
 const outcomeQuerySchema = pageQuerySchema.extend({
-    outcome: wholeNumber.pipe(z.int().min(0).max(9)),
+    outcome: wholeNumber.pipe(z.union(OUTCOME_CODES.map((code) => z.literal(code)))),
 });
 
 const idParamsSchema = z.object({
@@ -229,7 +230,7 @@ export function registerGridJobsRoutes(
         const parsed = outcomeQuerySchema.safeParse(request.query ?? {});
         if (!parsed.success) {
             throw invalidRequest(
-                `The runs read takes an outcome code of 0 to 9, an offset of 0 or more and a limit of 1 to ${PAGE_MAX}.`,
+                `The runs read takes an outcome code of 0, 1, 3 or 4, an offset of 0 or more and a limit of 1 to ${PAGE_MAX}.`,
             );
         }
         const { outcome, offset, limit } = parsed.data;

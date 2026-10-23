@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/read-live-ticks-from-the-tick-table
-#+pr: 3681
+#+pr: 3695
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -28,9 +28,9 @@ A client reads the ticks of a series with one history call, =marketdata.v1.ops.g
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | The store tier of the call is built and tested. |
+| Now          | The store tier is built, and tested over NATS with a token. |
 | Waiting on   | Nothing.                               |
-| Next         | The window tier, the shell and the screens, and a read of the 45. |
+| Next         | The window tier, the shell and the screens, and the cause of the 45. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -136,7 +136,12 @@ guess. The database of the reporting environment, or a query of its series, woul
   upper bound made inclusive, and the coordinate filter ignored.
 - A codec round trip of the request and the reply passes with the default wire codec.
 - A request with no token to the live subject answers =X-Error: unauthorized=, so the
-  service serves the subject. No authenticated call over NATS has run yet.
+  service serves the subject.
+- Five test cases run the handler over real NATS with a minted token. A token with the read
+  permission gets the ticks with the right gaps, a token without it gets =forbidden=, a request
+  with no token gets =unauthorized=, a token that sees another party gets an empty reply, and a
+  token that sees no party gets =party_required=. Three mutants fail a test each: the permission
+  check removed, the reply that ignores the reader, and, through it, the no-party outcome.
 
 ** Decision
 
@@ -161,6 +166,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3695][#3695]] | [marketdata] Test the history call over NATS with a minted token |
 | [[https://github.com/OreStudio/OreStudio/pull/3681][#3681]] | [marketdata] Add the history call: every tick of a span in one reply |
 | [[https://github.com/OreStudio/OreStudio/pull/3679][#3679]] | [marketdata] Document the tick read: one history call and one live subscription |
 

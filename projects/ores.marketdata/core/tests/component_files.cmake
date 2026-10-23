@@ -34,6 +34,7 @@ set(files
     "market_data_source_eventing_integration_tests.cpp"
     "market_data_vendor_instrument_eventing_integration_tests.cpp"
     "market_series_eventing_integration_tests.cpp"
+    "messaging_series_ticks_handler_tests.cpp"
     "observation_lineage_eventing_integration_tests.cpp"
     "oresmd_pillar_quote_key_tests.cpp"
     "provider_eventing_integration_tests.cpp"

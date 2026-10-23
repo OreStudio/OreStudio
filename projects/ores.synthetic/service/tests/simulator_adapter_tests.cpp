@@ -57,8 +57,13 @@ using ores::synthetic::service::generator_runner;
 using ores::synthetic::service::simulator_adapter;
 using ores::synthetic::service::simulator_adapter_timing;
 
-messaging::vendor_id ore_id(const std::string& pair) {
-    return {.id_scheme = "ore_key", .external_id = "FX/RATE/" + pair, .field = "value"};
+// The Bloomberg id of a pair written as "EUR/USD".
+messaging::vendor_id bbg_id(const std::string& pair) {
+    std::string letters;
+    for (const char c : pair)
+        if (c != '/')
+            letters += c;
+    return {.id_scheme = "bbg_ticker", .external_id = letters + " Curncy", .field = "PX_LAST"};
 }
 
 // A generator that publishes nothing and runs until it is stopped. The counters are shared, so a
@@ -141,7 +146,7 @@ private:
 };
 
 generator_offer idle_offer(const std::string& pair, std::shared_ptr<generator_counters> counters) {
-    return {.id = ore_id(pair), .make = [counters] {
+    return {.id = bbg_id(pair), .make = [counters] {
                 ++counters->built;
                 return std::make_shared<idle_generator>(counters);
             }};
@@ -206,7 +211,7 @@ TEST_CASE("the runner starts one generator for each id in the demand", tags + "[
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
     });
 
-    const auto out = runner.apply({ore_id("EUR/USD"), ore_id("GBP/USD")});
+    const auto out = runner.apply({bbg_id("EUR/USD"), bbg_id("GBP/USD")});
 
     CHECK(out.accepted.size() == 2);
     CHECK(out.rejected.empty());
@@ -220,8 +225,8 @@ TEST_CASE("the runner keeps a running generator when the next demand names it ag
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
-    runner.apply({ore_id("EUR/USD")});
-    const auto again = runner.apply({ore_id("EUR/USD")});
+    runner.apply({bbg_id("EUR/USD")});
+    const auto again = runner.apply({bbg_id("EUR/USD")});
 
     CHECK(again.accepted.size() == 1);
     CHECK(again.started == 0);
@@ -234,9 +239,9 @@ TEST_CASE("the runner stops a generator that the next demand drops", tags + "[ru
     generator_runner runner([&] {
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
     });
-    runner.apply({ore_id("EUR/USD"), ore_id("GBP/USD")});
+    runner.apply({bbg_id("EUR/USD"), bbg_id("GBP/USD")});
 
-    const auto out = runner.apply({ore_id("GBP/USD")});
+    const auto out = runner.apply({bbg_id("GBP/USD")});
 
     CHECK(out.stopped == 1);
     CHECK(runner.running_count() == 1);
@@ -253,12 +258,12 @@ TEST_CASE("the runner rejects an id with no generator and still serves the other
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
-    const auto out = runner.apply({ore_id("EUR/USD"), ore_id("XXX/YYY")});
+    const auto out = runner.apply({bbg_id("EUR/USD"), bbg_id("XXX/YYY")});
 
     REQUIRE(out.accepted.size() == 1);
-    CHECK(out.accepted.front().external_id == "FX/RATE/EUR/USD");
+    CHECK(out.accepted.front().external_id == "EURUSD Curncy");
     REQUIRE(out.rejected.size() == 1);
-    CHECK(out.rejected.front().id.external_id == "FX/RATE/XXX/YYY");
+    CHECK(out.rejected.front().id.external_id == "XXXYYY Curncy");
     CHECK(out.rejected.front().reason == "unknown_id");
 }
 
@@ -269,7 +274,7 @@ TEST_CASE("the runner refuses a second generator for one vendor instrument", tag
         [&] { return std::vector{idle_offer("EUR/USD", first), idle_offer("EUR/USD", second)}; });
 
     CHECK(runner.universe().size() == 1);
-    const auto out = runner.apply({ore_id("EUR/USD")});
+    const auto out = runner.apply({bbg_id("EUR/USD")});
 
     CHECK(out.accepted.size() == 1);
     CHECK(first->built == 1);
@@ -281,7 +286,7 @@ TEST_CASE("the runner counts an id once when the demand repeats it", tags + "[ru
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
-    const auto out = runner.apply({ore_id("EUR/USD"), ore_id("EUR/USD")});
+    const auto out = runner.apply({bbg_id("EUR/USD"), bbg_id("EUR/USD")});
 
     CHECK(out.accepted.size() == 1);
     CHECK(counters->built == 1);
@@ -290,14 +295,14 @@ TEST_CASE("the runner counts an id once when the demand repeats it", tags + "[ru
 TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
-        return std::vector{generator_offer{.id = ore_id("EUR/USD"),
+        return std::vector{generator_offer{.id = bbg_id("EUR/USD"),
                                            .make = []() -> std::shared_ptr<domain::IFeed> {
                                                throw std::runtime_error("no components");
                                            }},
                            idle_offer("GBP/USD", counters)};
     });
 
-    const auto out = runner.apply({ore_id("EUR/USD"), ore_id("GBP/USD")});
+    const auto out = runner.apply({bbg_id("EUR/USD"), bbg_id("GBP/USD")});
 
     REQUIRE(out.rejected.size() == 1);
     CHECK(out.rejected.front().reason == "generator_failed");
@@ -308,10 +313,10 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
 TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]") {
     generator_runner runner([] {
         return std::vector{generator_offer{
-            .id = ore_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
-    const auto out = runner.apply({ore_id("EUR/USD")});
+    const auto out = runner.apply({bbg_id("EUR/USD")});
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     const auto none = runner.apply({});
 
@@ -326,7 +331,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
 
     const auto adapter_id =
         "test-sim-" + boost::uuids::to_string(boost::uuids::random_generator()());
-    const auto target = ore_id("EUR/USD");
+    const auto target = bbg_id("EUR/USD");
 
     // The market data service, reduced to its answer to an announce.
     std::mutex mu;
@@ -372,7 +377,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
         nats,
         runner,
         adapter_id,
-        "ore",
+        "bloomberg",
         simulator_adapter_timing{.heartbeat_interval = std::chrono::milliseconds(20),
                                  .reannounce_interval = std::chrono::seconds(60),
                                  .retry_interval = std::chrono::milliseconds(50),
@@ -383,7 +388,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
     {
         std::lock_guard lock(mu);
         REQUIRE(announces.size() == 1);
-        CHECK(announces.front().provider_code == "ore");
+        CHECK(announces.front().provider_code == "bloomberg");
         REQUIRE(announces.front().universe.size() == 1);
         CHECK(announces.front().universe.front().external_id == target.external_id);
     }
@@ -392,7 +397,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
     CHECK(beats.first().adapter_id == adapter_id);
 
     messaging::adapter_demand_request demand;
-    demand.ids = {target, ore_id("XXX/YYY")};
+    demand.ids = {target, bbg_id("XXX/YYY")};
     const auto bytes = ores::nats::default_wire_codec().encode(demand);
     const auto reply = nats.request_sync(domain::adapter_demand_subject(adapter_id),
                                          std::span<const std::byte>(bytes),
@@ -408,9 +413,9 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
 
     REQUIRE(ticks.wait_for_count(1));
     const auto tick = ticks.first();
-    CHECK(tick.id_scheme == "ore_key");
-    CHECK(tick.external_id == "FX/RATE/EUR/USD");
-    CHECK(tick.field == "value");
+    CHECK(tick.id_scheme == "bbg_ticker");
+    CHECK(tick.external_id == "EURUSD Curncy");
+    CHECK(tick.field == "PX_LAST");
     CHECK(tick.value == "1.25");
 
     const auto empty = ores::nats::default_wire_codec().encode(messaging::adapter_demand_request{});
@@ -435,7 +440,7 @@ TEST_CASE("the adapter announces again until the service answers", tags + "[adap
         nats,
         runner,
         adapter_id,
-        "ore",
+        "bloomberg",
         simulator_adapter_timing{.heartbeat_interval = std::chrono::milliseconds(20),
                                  .reannounce_interval = std::chrono::seconds(60),
                                  .retry_interval = std::chrono::milliseconds(50),
@@ -480,7 +485,8 @@ svc::feed_kind_candidate fx_candidate(const std::string& id,
     c.display_name = pair;
     c.enabled = enabled;
     if (!pair.empty())
-        c.vendor = ore_id(pair);
+        if (!pair.empty())
+            c.fx_pair = std::make_pair(pair.substr(0, 3), pair.substr(4, 3));
     c.build_input = []() {
         return svc::feed_build_outcome{.input =
                                            ores::synthetic::feed::feed_build_input{
@@ -509,12 +515,12 @@ TEST_CASE("the offers are the startable system configs of the provider that have
         ores::synthetic::domain::market_data_generation_config sys;
         sys.id = system_container;
         sys.enabled = true;
-        sys.provider_code = "ore";
+        sys.provider_code = "bloomberg";
         out.push_back(sys);
         ores::synthetic::domain::market_data_generation_config tenant_owned;
         tenant_owned.id = party_container;
         tenant_owned.enabled = true;
-        tenant_owned.provider_code = "ore";
+        tenant_owned.provider_code = "bloomberg";
         tenant_owned.tenant_id =
             ores::utility::uuid::tenant_id::from_uuid(
                 boost::uuids::string_generator()("cccccccc-0000-0000-0000-000000000003"))
@@ -523,7 +529,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
         ores::synthetic::domain::market_data_generation_config other_provider;
         other_provider.id = other_provider_container;
         other_provider.enabled = true;
-        other_provider.provider_code = "bloomberg";
+        other_provider.provider_code = "lseg";
         out.push_back(other_provider);
         return out;
     };
@@ -566,19 +572,20 @@ TEST_CASE("the offers are the startable system configs of the provider that have
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
 
-    const auto offers = svc::system_generator_offers(registry, ctx, build, "ore-simulated", "ore");
+    const auto offers =
+        svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg");
 
     REQUIRE(offers.size() == 2);
-    CHECK(offers[0].id.external_id == "FX/RATE/EUR/USD");
-    CHECK(offers[1].id.external_id == "FX/RATE/EUR/USD");
+    CHECK(offers[0].id.external_id == "EURUSD Curncy");
+    CHECK(offers[1].id.external_id == "EURUSD Curncy");
 
     // The runner keeps the first of the two and builds one generator.
-    generator_runner runner(
-        [&] { return svc::system_generator_offers(registry, ctx, build, "ore-simulated", "ore"); });
+    generator_runner runner([&] {
+        return svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg");
+    });
     CHECK(runner.universe().size() == 1);
-    runner.apply({ore_id("EUR/USD")});
+    runner.apply({bbg_id("EUR/USD")});
     REQUIRE(built.size() == 1);
-    CHECK(built.front().id.external_id == "FX/RATE/EUR/USD");
-    CHECK(built.front().subject ==
-          domain::adapter_ingress_subject("ore-simulated", "FX/RATE/EUR/USD"));
+    CHECK(built.front().id.external_id == "EURUSD Curncy");
+    CHECK(built.front().subject == domain::adapter_ingress_subject("bloomberg-a", "EURUSD Curncy"));
 }

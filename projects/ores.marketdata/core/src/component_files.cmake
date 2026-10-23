@@ -195,6 +195,10 @@ set(files
     "service/series_snapshot_reader.cpp"
     "service/subscription_interval_service.cpp"
     "service/subscription_service.cpp"
+    "vendor/bloomberg_notation.cpp"
+    "vendor/demo_notation.cpp"
+    "vendor/lseg_notation.cpp"
+    "vendor/provider_notation.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -398,4 +402,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_snapshot_reader.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/subscription_interval_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/subscription_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/bloomberg_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/demo_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/lseg_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/provider_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/quote_description.hpp"
 )

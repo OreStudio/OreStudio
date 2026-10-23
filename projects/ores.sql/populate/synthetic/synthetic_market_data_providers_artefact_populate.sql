@@ -23,7 +23,7 @@
  *
  * Registers the synthetic.market_data_providers dataset and stages the
  * simulated market data providers a synthetic collection can stand for: the
- * main data vendors, exchanges and brokers, and the ORE examples. The dataset is a
+ * main data vendors, exchanges and brokers, and a fictional Demo provider for exercises. The dataset is a
  * member of the system_core bundle, so the system provisioning step publishes
  * it into the system tenant through
  * ores_synthetic_publish_market_data_providers_from_dq_fn. Every provider is
@@ -47,7 +47,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic Market Data Providers',
-        'The simulated market data providers the synthetic feeds stand for: Bloomberg, Refinitiv (LSEG), ICE, CME, LSE, Eurex, Tradeweb, and the ORE examples.',
+        'The simulated market data providers the synthetic feeds stand for: Bloomberg, LSEG, ICE, CME, LSE, Eurex, Tradeweb, and a fictional Demo provider for exercises.',
         'ORESTUDIO',
         'Market data providers for the synthetic feeds',
         current_date,
@@ -77,14 +77,14 @@ begin
     insert into ores_dq_market_data_providers_artefact_tbl (
         dataset_id, tenant_id, code, version, name, kind, description, display_order
     ) values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ore', 0, 'ORE', 'reference',
-         'Simulates the market data that ships with the ORE examples, as of 5 February 2016: the FX spots and IBOR-era rates. Use it to run the ORE example portfolios against ticks that move.',
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'demo', 0, 'Demo', 'reference',
+         'A fictional provider for exercises and demonstrations: uniform, exaggerated volatility that is easy to eyeball on a chart.',
          1),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bloomberg', 0, 'Bloomberg', 'data_vendor',
          'Simulates Bloomberg composite quotes: FX spots and overnight and swap rates for the major currencies.',
          2),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'refinitiv', 0, 'Refinitiv (LSEG)', 'data_vendor',
-         'Simulates Refinitiv composite FX quotes, the WM/Refinitiv benchmark rates and money-market rates.',
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'lseg', 0, 'LSEG', 'data_vendor',
+         'Simulates LSEG composite FX quotes, the WM benchmark rates and money-market rates.',
          3),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ice', 0, 'ICE Data Services', 'data_vendor',
          'Simulates ICE evaluated prices and benchmark rates, and the curves they imply.',

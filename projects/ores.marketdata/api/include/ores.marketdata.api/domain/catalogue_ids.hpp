@@ -26,6 +26,7 @@
 
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -47,11 +48,19 @@ inline constexpr std::string_view ore_provider = "ore";
 inline constexpr std::string_view ore_import_source = "26772cc0-57d6-4fac-be36-2ae75eb56b6b";
 
 /**
- * @brief The id of the source ore-simulated, of kind simulated.
+ * @brief The provider codes of the providers that the simulator stands for, and the ids of their
+ * simulated sources.
  *
- * The catalogue populate script installs the row under this id.
+ * A source name says which provider and which instance (bloomberg-a). It never says the kind, so
+ * nothing downstream tells a simulated source from a live one. The catalogue populate script
+ * installs the rows under these ids.
  */
-inline constexpr std::string_view ore_simulated_source = "a94c20bb-09c4-48d3-b91a-d66322322d60";
+inline constexpr std::string_view bloomberg_provider = "bloomberg";
+inline constexpr std::string_view lseg_provider = "lseg";
+inline constexpr std::string_view demo_provider = "demo";
+inline constexpr std::string_view bloomberg_a_source = "0a42775e-3da7-4c61-a732-6b62cb9f948f";
+inline constexpr std::string_view lseg_a_source = "c0f53bf1-a03a-4557-9906-7213091fcd82";
+inline constexpr std::string_view demo_a_source = "8c0aa62c-3e8e-4174-9dca-010180c6fed0";
 
 /**
  * @brief The id of the source ore-derived, of kind derived.
@@ -82,8 +91,30 @@ inline boost::uuids::uuid ore_derived_source_id() {
     return boost::uuids::string_generator{}(std::string(ore_derived_source));
 }
 
-inline boost::uuids::uuid ore_simulated_source_id() {
-    return boost::uuids::string_generator{}(std::string(ore_simulated_source));
+inline boost::uuids::uuid bloomberg_a_source_id() {
+    return boost::uuids::string_generator{}(std::string(bloomberg_a_source));
+}
+
+inline boost::uuids::uuid lseg_a_source_id() {
+    return boost::uuids::string_generator{}(std::string(lseg_a_source));
+}
+
+inline boost::uuids::uuid demo_a_source_id() {
+    return boost::uuids::string_generator{}(std::string(demo_a_source));
+}
+
+/**
+ * @brief The id of the simulated source of a provider, or nothing for a provider the simulator
+ * does not stand for.
+ */
+inline std::optional<boost::uuids::uuid> simulated_source_id_for(std::string_view provider) {
+    if (provider == bloomberg_provider)
+        return bloomberg_a_source_id();
+    if (provider == lseg_provider)
+        return lseg_a_source_id();
+    if (provider == demo_provider)
+        return demo_a_source_id();
+    return std::nullopt;
 }
 
 }

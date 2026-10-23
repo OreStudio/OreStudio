@@ -13,7 +13,7 @@
 #+created: 2026-10-23
 #+updated: 2026-10-23
 
-A simulator author sets the faults of the adapter =ore-simulated= with one request. The request
+A simulator author sets the faults of the adapters of the simulator with one request. The request
 replaces the whole plan, so a request with every field off turns every fault off. The faults are
 off by default and a restart of the service turns them off.
 

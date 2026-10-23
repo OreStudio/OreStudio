@@ -23,6 +23,7 @@
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
@@ -177,7 +178,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         values,
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
-    const ir_curve_refdata_context& refctx);
+    const ir_curve_refdata_context& refctx,
+    const ores::marketdata::domain::market_clock* clock = nullptr);
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

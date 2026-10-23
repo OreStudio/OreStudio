@@ -39,26 +39,8 @@ BEGIN
     -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org, which
     -- called such a dataset a theme).
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.feeds.ore_samples_2016',
-        'marketdata.fx_driver_rates',
-        'vintage_source'
-    );
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.feeds.uniform_demo',
-        'marketdata.fx_driver_rates',
-        'vintage_source'
-    );
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'synthetic.feeds.bloomberg',
         'marketdata.fx_driver_rates_2026',
-        'vintage_source'
-    );
-
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.feeds.ore_samples_2016',
-        'marketdata.ir_deposit_rates',
         'vintage_source'
     );
 END $$;

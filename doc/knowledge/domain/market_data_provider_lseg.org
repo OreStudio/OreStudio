@@ -53,7 +53,7 @@ A RIC is minted when a curve point has no RIC of its own. The minted RIC keeps t
 
 ** What the simulator does
 
-The simulated LSEG source publishes ticks with =ric=, the RIC and the field. It does not speak the LSEG real-time protocols.
+The source =lseg-a= is the simulated LSEG source. It publishes ticks with =ric=, the RIC and the field. It does not speak the LSEG real-time protocols.
 
 ** External references
 

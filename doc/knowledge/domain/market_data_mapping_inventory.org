@@ -2,7 +2,7 @@
 :ID: 3D0E46BD-02A4-4A2F-863A-B948B7E44FCD
 :END:
 #+title: The mapping inventory lists the vendor instruments each provider carries
-#+description: Which vendor instruments the catalogue installs for Bloomberg, LSEG and ORE, what each maps to, which rows need a check against the vendor, and what is not inventoried yet.
+#+description: Which vendor instruments the catalogue installs for Bloomberg, LSEG and the fictional provider Demo, what each maps to, which rows need a check against the vendor, and what is not inventoried yet.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:catalogue:mapping:inventory:
@@ -13,7 +13,7 @@
 
 The inventory lists the vendor instruments that the system bundle installs and the oresmd item that each
 maps to. It covers the 26 FX spot pairs that the simulated feeds quote, in the notation of Bloomberg, LSEG
-and ORE. The three providers quote the same item, so a party that changes its provider keeps its series.
+and Demo. The three providers quote the same item, so a party that changes its provider keeps its series.
 The rows that name a market with a non-deliverable variant are marked for a check against the vendor's own
 screen. The rate curves, ICE and Tradeweb have no rows yet.
 
@@ -24,34 +24,34 @@ screen. The rate curves, ICE and Tradeweb have no rows yet.
 Each pair is in market quoting order, as the feeds quote it. All three providers map to the item
 =oresmd://fx/<base>?type=quote&instrument=fx_spot&quote=rate&ccy=<quote>=.
 
-| Item | Bloomberg (=bbg_ticker=, =PX_LAST=) | LSEG (=ric=, =BID=) | ORE (=ore_key=, =value=) | Check |
+| Item | Bloomberg (=bbg_ticker=, =PX_LAST=) | LSEG (=ric=, =BID=) | Demo (=demo_key=, =value=) | Check |
 |------+------------------------------------+---------------------+--------------------------+-------|
-| EUR/USD | =EURUSD Curncy= | ~EUR=~ | =FX/RATE/EUR/USD= | standard |
-| GBP/USD | =GBPUSD Curncy= | ~GBP=~ | =FX/RATE/GBP/USD= | standard |
-| AUD/USD | =AUDUSD Curncy= | ~AUD=~ | =FX/RATE/AUD/USD= | standard |
-| NZD/USD | =NZDUSD Curncy= | ~NZD=~ | =FX/RATE/NZD/USD= | standard |
-| USD/CAD | =USDCAD Curncy= | ~CAD=~ | =FX/RATE/USD/CAD= | standard |
-| USD/CHF | =USDCHF Curncy= | ~CHF=~ | =FX/RATE/USD/CHF= | standard |
-| USD/DKK | =USDDKK Curncy= | ~DKK=~ | =FX/RATE/USD/DKK= | standard |
-| USD/INR | =USDINR Curncy= | ~INR=~ | =FX/RATE/USD/INR= | to confirm |
-| USD/JPY | =USDJPY Curncy= | ~JPY=~ | =FX/RATE/USD/JPY= | standard |
-| USD/MXN | =USDMXN Curncy= | ~MXN=~ | =FX/RATE/USD/MXN= | standard |
-| USD/NOK | =USDNOK Curncy= | ~NOK=~ | =FX/RATE/USD/NOK= | standard |
-| USD/SEK | =USDSEK Curncy= | ~SEK=~ | =FX/RATE/USD/SEK= | standard |
-| USD/ZAR | =USDZAR Curncy= | ~ZAR=~ | =FX/RATE/USD/ZAR= | standard |
-| USD/HKD | =USDHKD Curncy= | ~HKD=~ | =FX/RATE/USD/HKD= | standard |
-| USD/SGD | =USDSGD Curncy= | ~SGD=~ | =FX/RATE/USD/SGD= | standard |
-| USD/CNH | =USDCNH Curncy= | ~CNH=~ | =FX/RATE/USD/CNH= | standard |
-| USD/KRW | =USDKRW Curncy= | ~KRW=~ | =FX/RATE/USD/KRW= | to confirm |
-| USD/TWD | =USDTWD Curncy= | ~TWD=~ | =FX/RATE/USD/TWD= | to confirm |
-| USD/PLN | =USDPLN Curncy= | ~PLN=~ | =FX/RATE/USD/PLN= | standard |
-| USD/CZK | =USDCZK Curncy= | ~CZK=~ | =FX/RATE/USD/CZK= | standard |
-| USD/HUF | =USDHUF Curncy= | ~HUF=~ | =FX/RATE/USD/HUF= | standard |
-| USD/TRY | =USDTRY Curncy= | ~TRY=~ | =FX/RATE/USD/TRY= | standard |
-| USD/ILS | =USDILS Curncy= | ~ILS=~ | =FX/RATE/USD/ILS= | standard |
-| USD/BRL | =USDBRL Curncy= | ~BRL=~ | =FX/RATE/USD/BRL= | to confirm |
-| USD/CLP | =USDCLP Curncy= | ~CLP=~ | =FX/RATE/USD/CLP= | to confirm |
-| USD/COP | =USDCOP Curncy= | ~COP=~ | =FX/RATE/USD/COP= | to confirm |
+| EUR/USD | =EURUSD Curncy= | ~EUR=~ | =EUR/USD= | standard |
+| GBP/USD | =GBPUSD Curncy= | ~GBP=~ | =GBP/USD= | standard |
+| AUD/USD | =AUDUSD Curncy= | ~AUD=~ | =AUD/USD= | standard |
+| NZD/USD | =NZDUSD Curncy= | ~NZD=~ | =NZD/USD= | standard |
+| USD/CAD | =USDCAD Curncy= | ~CAD=~ | =USD/CAD= | standard |
+| USD/CHF | =USDCHF Curncy= | ~CHF=~ | =USD/CHF= | standard |
+| USD/DKK | =USDDKK Curncy= | ~DKK=~ | =USD/DKK= | standard |
+| USD/INR | =USDINR Curncy= | ~INR=~ | =USD/INR= | to confirm |
+| USD/JPY | =USDJPY Curncy= | ~JPY=~ | =USD/JPY= | standard |
+| USD/MXN | =USDMXN Curncy= | ~MXN=~ | =USD/MXN= | standard |
+| USD/NOK | =USDNOK Curncy= | ~NOK=~ | =USD/NOK= | standard |
+| USD/SEK | =USDSEK Curncy= | ~SEK=~ | =USD/SEK= | standard |
+| USD/ZAR | =USDZAR Curncy= | ~ZAR=~ | =USD/ZAR= | standard |
+| USD/HKD | =USDHKD Curncy= | ~HKD=~ | =USD/HKD= | standard |
+| USD/SGD | =USDSGD Curncy= | ~SGD=~ | =USD/SGD= | standard |
+| USD/CNH | =USDCNH Curncy= | ~CNH=~ | =USD/CNH= | standard |
+| USD/KRW | =USDKRW Curncy= | ~KRW=~ | =USD/KRW= | to confirm |
+| USD/TWD | =USDTWD Curncy= | ~TWD=~ | =USD/TWD= | to confirm |
+| USD/PLN | =USDPLN Curncy= | ~PLN=~ | =USD/PLN= | standard |
+| USD/CZK | =USDCZK Curncy= | ~CZK=~ | =USD/CZK= | standard |
+| USD/HUF | =USDHUF Curncy= | ~HUF=~ | =USD/HUF= | standard |
+| USD/TRY | =USDTRY Curncy= | ~TRY=~ | =USD/TRY= | standard |
+| USD/ILS | =USDILS Curncy= | ~ILS=~ | =USD/ILS= | standard |
+| USD/BRL | =USDBRL Curncy= | ~BRL=~ | =USD/BRL= | to confirm |
+| USD/CLP | =USDCLP Curncy= | ~CLP=~ | =USD/CLP= | to confirm |
+| USD/COP | =USDCOP Curncy= | ~COP=~ | =USD/COP= | to confirm |
 
 ** How the ids are written
 
@@ -59,8 +59,8 @@ Each pair is in market quoting order, as the feeds quote it. All three providers
   See [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]].
 - LSEG: the currency that is not USD, followed by an equals sign, with the field =BID=. See
   [[id:A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D][LSEG data format]].
-- ORE: the slash key =FX/RATE/<base>/<quote>=, with the field =value=. See
-  [[id:810811DC-1F60-4808-A224-1690374CEEC4][ORE data format]].
+- Demo: the pair with a slash, =<base>/<quote>=, with the field =value=. The provider is fictional and exists
+  for exercises and demonstrations.
 
 No id is minted. Each follows the vendor's own notation, so no row needs a deviation note.
 
@@ -88,8 +88,7 @@ they stand.
 ** Checked against the identifier survey
 
 The notation agrees with the examples of [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]]:
-=EURUSD Curncy= is a Bloomberg ticker with its yellow key, ~EUR=~ is an FX spot RIC, and =FX/RATE/EUR/USD= is
-an ORE quote key. The survey says the authoritative definitions of Bloomberg and LSEG notation are behind
+=EURUSD Curncy= is a Bloomberg ticker with its yellow key, and ~EUR=~ is an FX spot RIC. The survey says the authoritative definitions of Bloomberg and LSEG notation are behind
 the vendors' logins, so the rows marked =standard= follow their documented examples and the common
 convention, and a person with a login confirms them with the rows marked =to confirm=.
 

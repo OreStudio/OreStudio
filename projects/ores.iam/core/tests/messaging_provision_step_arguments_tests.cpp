@@ -233,10 +233,10 @@ TEST_CASE("a photo step's party logo key is optional", tags) {
 
 TEST_CASE("a market data step reads its provider", tags) {
     const auto arguments =
-        parse_market_data_arguments(R"({"provider": "ore", "source": "ore-simulated"})");
+        parse_market_data_arguments(R"({"provider": "bloomberg", "source": "bloomberg-a"})");
 
-    CHECK(arguments.provider == "ore");
-    CHECK(arguments.source == "ore-simulated");
+    CHECK(arguments.provider == "bloomberg");
+    CHECK(arguments.source == "bloomberg-a");
 }
 
 TEST_CASE("a market data step that names no provider is refused", tags) {

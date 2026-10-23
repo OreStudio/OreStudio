@@ -24,8 +24,8 @@
  *
  * Market Data Source Table
  *
- * A source is one adapter instance of a provider: bloomberg-live and
- * bloomberg-sim are two sources of the provider bloomberg. Its kind says how the
+ * A source is one adapter instance of a provider: bloomberg-a and
+ * bloomberg-b are two sources of the provider bloomberg. Its kind says how the
  * adapter gets its values and is data a person can read. No code in the pipeline
  * branches on it. The name is a label and no code parses it.
  *

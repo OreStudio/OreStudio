@@ -15,8 +15,8 @@
 #+created: 2026-10-22
 #+updated: 2026-10-22
 
-A source is one adapter instance of a provider: =bloomberg-live= and
-=bloomberg-sim= are two sources of the provider =bloomberg=. Its =kind= says how the
+A source is one adapter instance of a provider: =bloomberg-a= and
+=bloomberg-b= are two sources of the provider =bloomberg=. Its =kind= says how the
 adapter gets its values and is data a person can read. No code in the pipeline
 branches on it. The =name= is a label and no code parses it.
 
@@ -55,7 +55,7 @@ Surrogate UUID uniquely identifying this source.
 :searchable:  true
 :END:
 
-The source's readable label, such as =bloomberg-live=. Unique within the system
+The source's readable label, such as =bloomberg-a=. Unique within the system
 tenant. It is a label and no code parses it.
 
 #+begin_src cpp :name generator

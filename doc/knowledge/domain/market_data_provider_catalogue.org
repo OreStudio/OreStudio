@@ -22,7 +22,7 @@ system tenant owns it, and every tenant can read it.
 
 | Column | Meaning |
 |--------+---------|
-| =code= | The provider code in lower case, such as =bloomberg=, =lseg=, =ice= or =ore= |
+| =code= | The provider code in lower case, such as =bloomberg=, =lseg=, =ice=, =ore= or =demo= |
 | =name= | The provider as a person knows it |
 | =kind= | =data_vendor=, =exchange=, =broker= or =reference= |
 | =description= | What the provider supplies |
@@ -52,8 +52,8 @@ The system bundle installs the catalogue. See [[id:922C155B-6733-4D2B-A675-A7361
 
 ** Two views of one provider
 
-A provider can have many sources at once. Bloomberg can have =bloomberg-live=
-and =bloomberg-sim=. A party subscribes to the provider and the route picks the
+A provider can have many sources at once. Bloomberg can have =bloomberg-a=
+and =bloomberg-b=. A source name says the provider and the instance, and never the kind. A party subscribes to the provider and the route picks the
 source. See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] and [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
 
 * See also

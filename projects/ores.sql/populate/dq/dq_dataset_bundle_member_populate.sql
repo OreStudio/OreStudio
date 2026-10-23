@@ -54,11 +54,10 @@ BEGIN
     -- The provider feeds: system collections, one for each provider that has feeds of a
     -- kind the platform simulates. They publish after the provider catalogue they name,
     -- into the system tenant under its system party, and run there once.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.refinitiv', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.lseg', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ice', 11);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.tradeweb', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 13);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ore_samples_2016', 14);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 15);
 
     -- =============================================================================

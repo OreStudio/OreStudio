@@ -444,8 +444,22 @@ public:
         b.id = uuid_gen();
         b.source_name = source_name;
         b.producer_kind = "SYNTHETIC";
-        b.provider_code = std::string(ores::marketdata::domain::catalogue_ids::ore_provider);
-        b.source_id = ores::marketdata::domain::catalogue_ids::ore_simulated_source_id();
+        // The name of a feed starts "synthetic.<provider>.", and the binding takes the provider
+        // and its simulated source from it. A name of any other shape binds to the provider ore
+        // and the source ore-import, which every series of an unknown origin belongs to.
+        namespace ids = ores::marketdata::domain::catalogue_ids;
+        const auto first = source_name.find('.');
+        const auto second = first == std::string::npos ? first : source_name.find('.', first + 1);
+        const auto provider = second == std::string::npos ?
+                                  std::string() :
+                                  source_name.substr(first + 1, second - first - 1);
+        if (const auto simulated = ids::simulated_source_id_for(provider)) {
+            b.provider_code = provider;
+            b.source_id = *simulated;
+        } else {
+            b.provider_code = std::string(ids::ore_provider);
+            b.source_id = ids::ore_import_source_id();
+        }
         b.enabled = true;
         b.change_reason_code = "system.new_record";
         b.change_commentary = "Auto-created by feed_controller on feed start.";

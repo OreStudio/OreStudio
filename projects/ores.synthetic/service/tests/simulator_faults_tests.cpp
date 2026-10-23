@@ -55,9 +55,9 @@ using ores::synthetic::service::simulator_adapter_timing;
 
 messaging::adapter_tick tick_at(std::chrono::system_clock::time_point at, std::string value) {
     messaging::adapter_tick tick;
-    tick.id_scheme = "ore_key";
-    tick.external_id = "FX/RATE/EUR/USD";
-    tick.field = "value";
+    tick.id_scheme = "bbg_ticker";
+    tick.external_id = "EURUSD Curncy";
+    tick.field = "PX_LAST";
     tick.value = std::move(value);
     tick.vendor_time = at;
     return tick;
@@ -145,10 +145,10 @@ TEST_CASE("a not entitled fault rejects every id and runs no generator", tags) {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     auto faults = std::make_shared<fault_state>();
     generator_runner runner([] { return std::vector<generator_offer>{}; });
-    simulator_adapter adapter(nats, runner, "test-faults", "ore", {}, faults);
+    simulator_adapter adapter(nats, runner, "test-faults", "bloomberg", {}, faults);
 
     messaging::adapter_demand_request request;
-    request.ids = {{.id_scheme = "ore_key", .external_id = "FX/RATE/EUR/USD", .field = "value"}};
+    request.ids = {{.id_scheme = "bbg_ticker", .external_id = "EURUSD Curncy", .field = "PX_LAST"}};
 
     fault_plan plan;
     plan.not_entitled = true;
@@ -192,7 +192,7 @@ TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is of
         nats,
         runner,
         adapter_id,
-        "ore",
+        "bloomberg",
         simulator_adapter_timing{.heartbeat_interval = std::chrono::milliseconds(20),
                                  .reannounce_interval = std::chrono::milliseconds(40),
                                  .retry_interval = std::chrono::milliseconds(40),

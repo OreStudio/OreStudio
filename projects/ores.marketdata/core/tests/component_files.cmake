@@ -65,4 +65,6 @@ set(files
     "service_series_snapshot_reader_tests.cpp"
     "subscription_eventing_integration_tests.cpp"
     "subscription_interval_eventing_integration_tests.cpp"
+    "vendor_notation_catalogue_tests.cpp"
+    "vendor_notation_corpus_tests.cpp"
 )

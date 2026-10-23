@@ -166,7 +166,7 @@ TEST_CASE("a_party_has_one_route_for_a_provider", route_tags) {
 
     auto second = first;
     second.id = ctx.generate_uuid();
-    second.source_id = catalogue::ore_simulated_source_id();
+    second.source_id = catalogue::ore_derived_source_id();
     CHECK_THROWS_WITH(routes.write(h.context(), second),
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
@@ -188,13 +188,13 @@ TEST_CASE("a_party_changes_its_route_and_keeps_the_history", route_tags) {
     const auto id = boost::uuids::to_string(r.id);
     auto current = routes.read_latest(h.context(), id);
     REQUIRE(current.size() == 1);
-    current.front().source_id = catalogue::ore_simulated_source_id();
+    current.front().source_id = catalogue::ore_derived_source_id();
     current.front().change_reason_code = "system.test";
     routes.write(h.context(), current.front());
 
     const auto latest = routes.read_latest(h.context(), id);
     REQUIRE(latest.size() == 1);
-    CHECK(latest.front().source_id == catalogue::ore_simulated_source_id());
+    CHECK(latest.front().source_id == catalogue::ore_derived_source_id());
     CHECK(routes.read_all(h.context(), id).size() == 2);
 }
 

@@ -97,10 +97,7 @@ feed_kind make_fx_spot_kind() {
             c.auto_start = fx.auto_start;
             c.vintage_priced = fx.price_source == "vintage";
             c.folder_id = fx.folder_id;
-            c.vendor = ores::marketdata::messaging::vendor_id{
-                .id_scheme = std::string(feed::ore_key_scheme),
-                .external_id = feed::fx_spot_ore_key(fx.base_currency_code, fx.quote_currency_code),
-                .field = std::string(feed::ore_key_field)};
+            c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
             c.vintage_anchor = [fx] {
                 feed_vintage_anchor a;
                 a.applicable = fx.price_source == "vintage";

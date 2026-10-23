@@ -21,7 +21,7 @@
 /**
  * A provider's feeds dataset publishes as a system collection.
  *
- * synthetic.feeds.refinitiv, published into the system tenant, becomes a system collection
+ * synthetic.feeds.lseg, published into the system tenant, becomes a system collection
  * held by the system party, with its folders and its feeds. Another tenant reads the
  * collection, its folders and its feeds, and a dataset published into a tenant is refused.
  *
@@ -34,7 +34,7 @@ select plan(9);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
-where code in ('synthetic.feeds.refinitiv', 'synthetic.market_data_providers')
+where code in ('synthetic.feeds.lseg', 'synthetic.market_data_providers')
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 create temporary table t_other on commit drop as
@@ -59,21 +59,21 @@ select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
 
 select lives_ok(
     format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
-        (select id from t_dataset where code = 'synthetic.feeds.refinitiv')),
-    'the Refinitiv feeds dataset publishes into the system tenant'
+        (select id from t_dataset where code = 'synthetic.feeds.lseg')),
+    'the LSEG feeds dataset publishes into the system tenant'
 );
 
 create temporary table t_collection on commit drop as
 select c.id, c.provider_code, c.name, c.party_id
 from ores_synthetic_market_data_generation_configs_tbl c
 where c.tenant_id = ores_utility_system_tenant_id_fn()
-  and c.dataset_id = (select id from t_dataset where code = 'synthetic.feeds.refinitiv')
+  and c.dataset_id = (select id from t_dataset where code = 'synthetic.feeds.lseg')
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select results_eq(
     $$select provider_code, name from t_collection$$,
-    $$values ('refinitiv'::text, 'Refinitiv'::text)$$,
-    'the dataset publishes one system collection that stands for Refinitiv'
+    $$values ('lseg'::text, 'LSEG'::text)$$,
+    'the dataset publishes one system collection that stands for LSEG'
 );
 
 select is(
@@ -85,11 +85,11 @@ select is(
 select is(
     (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl
      where config_id = (select id from t_collection)
-       and source_name like 'synthetic.refinitiv.%'
+       and source_name like 'synthetic.lseg.%'
        and asset_class_code = 'fx'
        and valid_to = ores_utility_infinity_timestamp_fn()),
     14,
-    'the collection holds the fourteen cross rates, named for Refinitiv'
+    'the collection holds the fourteen cross rates, named for LSEG'
 );
 
 select is(
@@ -99,15 +99,15 @@ select is(
      join ores_synthetic_folders_tbl a on a.id = f.parent_id and a.valid_to = ores_utility_infinity_timestamp_fn()
      join ores_synthetic_folders_tbl c on c.id = a.parent_id and c.valid_to = ores_utility_infinity_timestamp_fn()
      join ores_synthetic_folders_tbl r on r.id = c.parent_id and r.valid_to = ores_utility_infinity_timestamp_fn()
-     where x.source_name = 'synthetic.refinitiv.eurgbp'
+     where x.source_name = 'synthetic.lseg.eurgbp'
        and x.valid_to = ores_utility_infinity_timestamp_fn()),
-    'FX Rates > FX > Refinitiv > Synthetic',
+    'FX Rates > FX > LSEG > Synthetic',
     'a feed sits in the folders of its collection under the system root'
 );
 
 select throws_ok(
     format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, %L::uuid, 'upsert', '{}'::jsonb)$$,
-        (select id from t_dataset where code = 'synthetic.feeds.refinitiv'),
+        (select id from t_dataset where code = 'synthetic.feeds.lseg'),
         (select id from t_other)),
     null,
     null,
@@ -134,7 +134,7 @@ select is(
     (select count(*)::int from ores_synthetic_folders_tbl f
      where f.tenant_id = ores_utility_system_tenant_id_fn()
        and f.valid_to = ores_utility_infinity_timestamp_fn()
-       and f.name in ('Synthetic', 'Refinitiv', 'FX', 'FX Rates')),
+       and f.name in ('Synthetic', 'LSEG', 'FX', 'FX Rates')),
     4,
     'another tenant reads the folders of the system collection, the root above it included'
 );

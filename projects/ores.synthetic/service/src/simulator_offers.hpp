@@ -24,6 +24,7 @@
 #include "generator_runner.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
+#include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include <algorithm>
@@ -37,12 +38,12 @@ namespace ores::synthetic::service {
 /**
  * @brief The generators the simulator offers an adapter, from the system collections it can see.
  *
- * An offer is a startable config of a kind that has a vendor id, in a collection that names the
- * provider of the adapter. A collection of another provider quotes that provider's ids, which
- * this adapter does not publish. The offers come in the order of the config ids, so when two
- * configs quote one instrument the same one wins at each read. Each offer builds its generator with
- * the target of the adapter, so the generator publishes adapter ticks on the ingress subject of its
- * id.
+ * An offer is a startable config of a kind that has a vendor id in the notation of the provider,
+ * in a collection that names the provider of the adapter. A collection of another provider quotes
+ * that provider's ids, which this adapter does not publish. The offers come in the order of the
+ * config ids, so when two configs quote one instrument the same one wins at each read. Each offer
+ * builds its generator with the target of the adapter, so the generator publishes adapter ticks on
+ * the ingress subject of its id.
  *
  * @param ctx A context of the system tenant, which sees the system collections.
  */
@@ -60,12 +61,20 @@ system_generator_offers(const feed_kind_registry& registry,
     std::vector<generator_offer> out;
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
-        if (!target.startable() || !candidate.vendor || !target.container_is_system ||
+        if (!target.startable() || !candidate.fx_pair || !target.container_is_system ||
             target.container_provider_code != provider_code)
+            continue;
+        // The provider's own notation writes the id. The simulator only asks for it.
+        const auto* notation = ores::marketdata::vendor::notation_of(provider_code);
+        if (!notation)
+            continue;
+        const auto found = notation->write(ores::marketdata::vendor::fx_spot_quote{
+            candidate.fx_pair->first, candidate.fx_pair->second, notation->primary_side()});
+        if (!found)
             continue;
         if (target.row.kind->kind != feed::fx_spot_feed_kind)
             continue;
-        const auto vendor = *candidate.vendor;
+        const auto vendor = *found;
         const auto subject =
             ores::marketdata::domain::adapter_ingress_subject(adapter_id, vendor.external_id);
         out.push_back(generator_offer{

@@ -156,7 +156,7 @@ insert into ores_synthetic_market_data_generation_configs_tbl (
     id, tenant_id, version, party_id, name, description, enabled,
     dataset_id, provider_code, modified_by, performed_by, change_reason_code, change_commentary
 ) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
-    'Placement Test', 'test', true, null, 'ore',
+    'Placement Test', 'test', true, null, 'demo',
     current_user, current_user, 'system.test', 'placement test';
 
 insert into ores_synthetic_ir_curve_generation_configs_tbl (

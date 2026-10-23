@@ -49,11 +49,11 @@ auto& lg() {
 // (from its oresmd_uri), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
 //
 // @throws vintage_data_missing_error if no matching observation is found.
-double
-resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
-                              const ores::synthetic::domain::fx_spot_generation_config& cfg) {
+double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
+                                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                                     const std::string& start_date) {
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
-                                 ", date=" + cfg.vintage_date + ", datum=" + cfg.oresmd_uri + ".";
+                                 ", date=" + start_date + ", datum=" + cfg.oresmd_uri + ".";
 
     // The series and the row are found by the URIs the config's datum writes as: the
     // same codec the marketdata service's ingest loop applies to a tick's URI, so
@@ -71,7 +71,7 @@ resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
                                                 series_uri,
                                                 datum_uri,
                                                 cfg.vintage_source,
-                                                cfg.vintage_date,
+                                                start_date,
                                                 missing_message,
                                                 cfg.oresmd_uri,
                                                 boost::uuids::to_string(cfg.party_id));
@@ -87,7 +87,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  std::optional<adapter_target> adapter) {
+                  std::optional<adapter_target> adapter,
+                  const ores::marketdata::domain::market_clock* clock) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
         "oresmd://fx/" + cfg.base_currency_code +
@@ -114,9 +115,11 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     // "vintage" resolves the initial price from a real market_observation, overriding the stored
     // gmm_initial_price (0 for vintage configs, per the check constraint); "fixed" uses the
     // stored value as-is. See make_fx_spot_feed's doc comment for the vintage semantics.
-    const double initial_price = cfg.price_source == "vintage" ?
-                                     resolve_vintage_initial_price(auth_nats, cfg) :
-                                     cfg.gmm_initial_price;
+    const double initial_price =
+        cfg.price_source == "vintage" ?
+            resolve_vintage_initial_price(
+                auth_nats, cfg, ores::marketdata::domain::start_date(cfg.vintage_date, clock)) :
+            cfg.gmm_initial_price;
 
     // Persistent random_device so the OS entropy pool is not re-seeded between rapid
     // successive calls (which can produce equal values on some platforms when called on

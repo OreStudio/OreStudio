@@ -83,9 +83,9 @@ select is(
 
 select ok(
     exists(select 1 from ores_marketdata_market_data_sources_tbl s
-           where s.name = 'ore-simulated' and s.provider_code = 'ore'
+           where s.name = 'bloomberg-a' and s.provider_code = 'bloomberg'
              and s.valid_to = ores_utility_infinity_timestamp_fn()),
-    'the catalogue holds the source ore-simulated of the provider ore that the Acme profile routes to'
+    'the catalogue holds the source bloomberg-a of the provider bloomberg that the Acme profile routes to'
 );
 
 select * from finish();

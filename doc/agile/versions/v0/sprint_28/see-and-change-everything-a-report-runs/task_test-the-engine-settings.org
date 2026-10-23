@@ -69,7 +69,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:B8D70FF1-E3D9-4FF9-9134-BA64F82E106D][Walk the engine settings screens as an Acme user]] | PENDING | Run after a rebuild and a provisioning of Acme. |
+| [[id:B8D70FF1-E3D9-4FF9-9134-BA64F82E106D][Walk the engine settings screens as an Acme user]] | FAILED | Ran on 2026-10-23 as the tenant administrator at the group party. 7 steps passed and 6 failed. Four failures have one cause: a row of a child party cannot be changed or read in history from the group party. One failure was a wrong expectation about the list, and one was a missing language selector. The follow-up tasks of the story cover each. |
 
 * PRs
 

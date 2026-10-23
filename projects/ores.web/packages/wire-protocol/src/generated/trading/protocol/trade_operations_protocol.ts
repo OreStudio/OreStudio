@@ -33,14 +33,16 @@ import type { BondIssueLegSchedule } from '../domain/bond_issue_leg_schedule.js'
 import type { BondIssueLegScheduleDate } from '../domain/bond_issue_leg_schedule_date.js';
 import type { Trade } from '../domain/trade.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
+import type { TradeIdentifier } from '../domain/trade_identifier.js';
 import type { InstrumentBatch } from '../../../generated/trading/instrument_batch.js';
 import type { Result } from '../../../utility/protocol.js';
 import type { TradeEnvelopeData } from '../../../trading/payload.js';
 
 /**
- * @brief Books a trade: its anchor, its booking and its first state.
+ * @brief Books a trade: its anchor, its booking, its first state, its
+ * identifiers and its instrument.
  *
- * The three rows are written in one transaction. The booking's trade id,
+ * The rows are written in one transaction. The booking's trade id,
  * party and counterparty are taken from the anchor, so the caller states
  * them once.
  */
@@ -60,6 +62,17 @@ export interface BookTradeRequest {
      * draft.
      */
     activity_type_code: string;
+    /**
+     * @brief The trade's identifiers. The service states the trade id and the
+     * activity id on each one, so the caller states the scheme and the value.
+     */
+    identifiers: TradeIdentifier[];
+    /**
+     * @brief The trade's instrument, as one array for each instrument table. The
+     * service states the trade id, the trade type and the activity id on each
+     * row. A row for a kind with no writer yet refuses the booking by name.
+     */
+    instruments: InstrumentBatch;
 }
 
 /**

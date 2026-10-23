@@ -29,8 +29,6 @@
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
-#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -82,27 +80,6 @@ constexpr double security_face_value = 1.0;
 trading_trade_population_writer::trading_trade_population_writer(
     ores::nats::service::nats_client& nats)
     : nats_(nats) {}
-
-template <typename Request>
-bool trading_trade_population_writer::call_ok(std::string_view subject,
-                                              const Request& request,
-                                              const std::string& what) {
-    const auto& codec = ores::nats::default_wire_codec();
-    const auto reply = nats_.authenticated_request(subject, codec.encode(request));
-    const auto error = reply.headers.find("X-Error");
-    if (error != reply.headers.end())
-        throw trade_population_write_error(
-            std::format("Writing {} was refused: {}", what, error->second));
-
-    auto decoded = codec.decode<typename Request::response_type>(reply.data);
-    if (!decoded)
-        throw trade_population_write_error(std::format(
-            "Writing {} answered something unreadable: {}", what, decoded.error().what()));
-    if (decoded->result.outcome != outcome::ok)
-        throw trade_population_write_error(
-            std::format("Writing {} failed: {}", what, decoded->result.message));
-    return true;
-}
 
 domain::trade_generation_scope
 trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_id) {
@@ -447,6 +424,28 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
     book_req.booking.change_commentary = "Generated trade population.";
     book_req.activity_type_code = "new_booking";
 
+    /*
+     * The identifier and the instrument travel with the trade. The service
+     * writes them in the booking's transaction and states the trade id and the
+     * activity id on each, so a trade is never on the books without them.
+     */
+    ores::trading::domain::trade_identifier identifier;
+    identifier.id_type = std::string(internal_id_type);
+    identifier.id_value = slot.internal_identifier;
+    identifier.issuing_party_id = scope.party_id;
+    identifier.modified_by = slot.trader_username;
+    identifier.performed_by = slot.trader_username;
+    identifier.change_reason_code = std::string(population_reason);
+    identifier.change_commentary = "Generated trade population.";
+    book_req.identifiers.push_back(identifier);
+
+    ores::trading::domain::bond_instrument_data bond;
+    bond.instrument.issue_id = write.issue_id;
+    bond.instrument.notional = ores::utility::decimal::decimal::from_double(slot.notional).value();
+    bond.instrument.audit.change_reason_code = std::string(population_reason);
+    bond.instrument.audit.change_commentary = "Generated trade population.";
+    book_req.instruments.bond_instruments.push_back(bond);
+
     const auto reply = nats_.authenticated_request(
         ores::trading::messaging::book_trade_request::nats_subject, codec.encode(book_req));
     const auto error = reply.headers.find("X-Error");
@@ -463,58 +462,6 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
         throw trade_population_write_error(std::format("Booking trade {} failed: {}",
                                                        boost::uuids::to_string(slot.trade_id),
                                                        booked->result.message));
-    if (!booked->activity_id)
-        throw trade_population_write_error(
-            std::format("Booking trade {} named no activity, so nothing can be stamped with it.",
-                        boost::uuids::to_string(slot.trade_id)));
-    activities_[slot.trade_id] = *booked->activity_id;
-
-    /*
-     * The identifier is written beside the trade and not after it, because the
-     * identifier is a composite child: its write bumps its parent, so a run
-     * that booked every trade first and identified them afterwards would leave
-     * every trade standing at a version its own identifier had moved.
-     */
-    ores::trading::messaging::put_trade_identifier_request identifier_req;
-    identifier_req.change.write.trade_id = slot.trade_id;
-    identifier_req.change.write.id_type = std::string(internal_id_type);
-    identifier_req.change.write.trade_activity_id = *booked->activity_id;
-    identifier_req.change.write.id_value = slot.internal_identifier;
-    identifier_req.change.write.issuing_party_id = scope.party_id;
-    identifier_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                          std::nullopt};
-    identifier_req.intent.reason_code = std::string(population_reason);
-    identifier_req.intent.commentary = "Generated trade population.";
-
-    call_ok(ores::trading::messaging::put_trade_identifier_request::nats_subject,
-            identifier_req,
-            "the Internal identifier of trade " + boost::uuids::to_string(slot.trade_id));
-}
-
-void trading_trade_population_writer::write_instrument(const trade_population_write& write,
-                                                       const domain::trade_generation_scope&) {
-    const auto& slot = write.slot;
-    const auto activity = activities_.find(slot.trade_id);
-    if (activity == activities_.end())
-        throw trade_population_write_error("Trade " + boost::uuids::to_string(slot.trade_id) +
-                                           " has no booking activity to stamp its instrument "
-                                           "with.");
-
-    ores::trading::messaging::put_bond_instrument_request instrument_req;
-    instrument_req.change.write.trade_id = slot.trade_id;
-    instrument_req.change.write.trade_activity_id = activity->second;
-    instrument_req.change.write.trade_type_code = slot.trade_type_code;
-    instrument_req.change.write.issue_id = write.issue_id;
-    instrument_req.change.write.notional =
-        ores::utility::decimal::decimal::from_double(slot.notional).value();
-    instrument_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                          std::nullopt};
-    instrument_req.intent.reason_code = std::string(population_reason);
-    instrument_req.intent.commentary = "Generated trade population.";
-
-    call_ok(ores::trading::messaging::put_bond_instrument_request::nats_subject,
-            instrument_req,
-            "the bond instrument of trade " + boost::uuids::to_string(slot.trade_id));
 }
 
 }

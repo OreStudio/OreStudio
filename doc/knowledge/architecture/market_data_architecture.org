@@ -118,6 +118,7 @@ data, and why the two differ only inside the adapter.
 12. [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. The free sources that set the level of the synthetic ticks, their terms, and what is still open.
 13. [[id:7C994EDE-829A-4F82-A095-D9E5198E2AD9][The notation of a provider is an independent class that roundtrips]]. The classes that read and write the ids of Bloomberg, LSEG and Demo, and the corpus that proves it.
 14. [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]]. The table of what public bodies published, its provenance, the seed command and the reader.
+15. [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]]. Why a provisioned tenant did not tick, the shortcomings it showed and the order of the work.
 
 #+caption: A live adapter and the simulator behind the same contract.
 #+attr_html: :width 100%

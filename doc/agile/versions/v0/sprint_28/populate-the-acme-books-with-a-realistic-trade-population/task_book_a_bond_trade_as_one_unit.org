@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/book-a-bond-trade-as-one-unit
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A trade is booked with its identifiers and its bond instrument in one transactio
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ A trade is booked with its identifiers and its bond instrument in one transactio
 - book_trade carries identifiers and an instrument_batch and writes them with the anchor, or writes none.
 - The service stamps trade_activity_id on every part.
 - A kind with no writer yet is refused by name before anything is written.
-- The synthetic writer makes one call for each trade. The repair path, has_instrument and the activity-id read are deleted.
+- The synthetic writer makes one call for each trade. write_instrument, the activity map and the activity-id read are deleted.
 - A database-backed test proves that a failed instrument leaves no trade.
 
 * Plan
@@ -46,6 +46,12 @@ A trade is booked with its identifiers and its bond instrument in one transactio
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Add =identifiers= and =instruments= to =book_trade_request= in =ores.trading.trade_operations.org=. Regenerate the protocol header and the TS twin.
+2. In the service, check the batch before the transaction opens. Refuse by name any array other than =bond_instruments=, and any bond row that carries a fact row or an issue child.
+3. After the state, write each identifier and each bond instrument in the same transaction. The service states the trade id, the trade type and the activity id on each row and stamps the audit. The authorisation request is raised after them, so it records the version they leave.
+4. Prove it with database-backed tests, then on a provisioned Acme tenant.
+5. Merge the synthetic writer calls into one. Delete =write_instrument=, =call_ok= and the activity map.
 
 * Measurements
 
@@ -59,9 +65,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Full suite | 94 of 96 passed; =ores.marketdata.core.tests= and =ores.marketdata.service.tests= failed with =bad lexical cast= and a timestamp-format error. No failing case touches trading. | =./compass.sh test run= | the task commit |
+| Trading core suite | passed, 4 new cases | =./compass.sh test run -- -R ores.trading.core.tests= | the task commit |
+| Synthetic core suite | passed | =./compass.sh test run -- -R ores.synthetic.core.tests= | the task commit |
+| Trades on a provisioned Acme tenant | 32 trades, each with an identifier, a bond instrument, a state and a booking; 17 whole issues | =./compass.sh db sql= with a distinct count of each table | the task commit |
+| Second generation run | wrote 0, already present 8 for each of 4 configs; every trade at version 5 | =synthetic generate-trades= for the 4 configs | the task commit |
 
 * Notes
+
+Decisions made in this task:
+
+- The bond rows of =instrument_batch= are =bond_instrument_data=, the export shape. Booking writes only the =instrument= header of each row. The issue and its children belong to =put_bond_issue_composite=. A row that carries an option, TRS, repo, future or ascot row, or an issue child, is refused by name.
+- The service overwrites the trade id, the trade type and the activity id on each part. The caller never states them.
+- The refusal is =outcome::failed= with the code =instrument_not_supported=. It comes before the transaction opens.
+- The refusal of a trade type that does not route to the bond table is the database's, as an exception. The service has no pre-check for it. The generated writer will route by the trade type catalogue.
 
 * Test Scenarios
 
@@ -87,3 +104,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=book_trade= now books a bond trade with its identifiers and its instrument in the transaction that writes the anchor. The service states the trade id, the trade type and the activity id on each part. A batch array of a kind with no writer, or a bond row with a fact row or an issue child, is refused by name before anything is written. A bond trade of an unknown issue leaves no trade and no identifier.
+
+The synthetic writer makes one call for each trade. =write_instrument=, =call_ok= and the activity map are deleted. A provisioned Acme tenant holds 32 trades, each whole, and a second generation run writes nothing.
+
+Not done: a trade type that does not route to the bond table is refused by the database, as an exception. The two marketdata suites failed in the full run. I did not find the cause, and I did not run them on a clean main.

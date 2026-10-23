@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/the-simulator-reads-its-sources-through-marketdata
-#+pr:
+#+pr: 3687
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3687][#3687]] | [synthetic] Read the simulated sources through marketdata and publish observation dates in UTC |
 
 * Review
 

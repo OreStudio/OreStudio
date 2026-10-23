@@ -38,9 +38,11 @@
 #include "ores.trading.api/generators/bond_issue_leg_schedule_date_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
+#include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
@@ -162,6 +164,32 @@ struct fixture final {
         conversion_target.change_reason_code = "system.test";
         r.conversion_targets.push_back(conversion_target);
         return r;
+    }
+
+    // A bond trade of an issue the store holds, with one identifier.
+    book_trade_request bond_request(const boost::uuids::uuid& issue_id) {
+        auto r = request();
+        r.anchor.trade_type = "Bond";
+
+        ores::trading::domain::trade_identifier identifier;
+        identifier.id_type = "Internal";
+        identifier.id_value = "TEST-" + boost::uuids::to_string(r.anchor.id);
+        identifier.change_reason_code = "system.test";
+        identifier.modified_by = r.booking.modified_by;
+        identifier.performed_by = r.booking.modified_by;
+        r.identifiers.push_back(identifier);
+
+        ores::trading::domain::bond_instrument_data bond;
+        bond.instrument.issue_id = issue_id;
+        bond.instrument.audit.change_reason_code = "system.test";
+        r.instruments.bond_instruments.push_back(bond);
+        return r;
+    }
+
+    boost::uuids::uuid stored_issue() {
+        const auto issue = issue_request();
+        trade_operations_service(ctx).put_bond_issue_composite(issue);
+        return issue.issue.issue_id;
     }
 
     book_trade_request request() {
@@ -374,4 +402,90 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
     REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
 
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
+}
+
+TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", tags) {
+    fixture f;
+    const auto issue_id = f.stored_issue();
+    const auto req = f.bond_request(issue_id);
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    REQUIRE(response.activity_id.has_value());
+    const auto identifiers =
+        ores::trading::repository::trade_identifier_repository().read_latest(f.ctx, id, "Internal");
+    REQUIRE(identifiers.size() == 1);
+    CHECK(identifiers.front().trade_activity_id == *response.activity_id);
+    CHECK(identifiers.front().id_value == req.identifiers.front().id_value);
+    const auto instruments =
+        ores::trading::repository::bond_instrument_repository().read_latest(f.ctx, id);
+    REQUIRE(instruments.size() == 1);
+    CHECK(instruments.front().identity.trade_activity_id == *response.activity_id);
+    CHECK(instruments.front().identity.trade_type_code == "Bond");
+    CHECK(instruments.front().issue_id == issue_id);
+}
+
+TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
+    fixture f;
+    const auto req = f.bond_request(f.gen.generate_uuid());
+
+    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+
+    const auto id = boost::uuids::to_string(req.anchor.id);
+    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
+    CHECK(ores::trading::repository::trade_identifier_repository()
+              .read_latest(f.ctx, id, "Internal")
+              .empty());
+}
+
+TEST_CASE("an_instrument_of_a_kind_with_no_writer_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.fx_forward_instruments.emplace_back();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("fx_forward_instruments"));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.bond_instruments.front().option.emplace();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("bond_instruments"));
+}
+
+TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.bond_instruments.front().option_data.emplace();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("bond_instruments.option_data"));
+}
+
+TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_the_database", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.anchor.trade_type = "Swap";
+
+    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+
+    const auto id = boost::uuids::to_string(req.anchor.id);
+    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
 }

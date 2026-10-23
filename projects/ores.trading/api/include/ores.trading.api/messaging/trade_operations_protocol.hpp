@@ -38,6 +38,7 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
+#include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <optional>
 #include <string>
@@ -46,9 +47,10 @@
 namespace ores::trading::messaging {
 
 /**
- * @brief Books a trade: its anchor, its booking and its first state.
+ * @brief Books a trade: its anchor, its booking, its first state, its
+ * identifiers and its instrument.
  *
- * The three rows are written in one transaction. The booking's trade id,
+ * The rows are written in one transaction. The booking's trade id,
  * party and counterparty are taken from the anchor, so the caller states
  * them once.
  */
@@ -77,6 +79,17 @@ struct book_trade_request {
      * draft.
      */
     std::string activity_type_code;
+    /**
+     * @brief The trade's identifiers. The service states the trade id and the
+     * activity id on each one, so the caller states the scheme and the value.
+     */
+    std::vector<ores::trading::domain::trade_identifier> identifiers;
+    /**
+     * @brief The trade's instrument, as one array for each instrument table. The
+     * service states the trade id, the trade type and the activity id on each
+     * row. A row for a kind with no writer yet refuses the booking by name.
+     */
+    ores::trading::domain::instrument_batch instruments;
 };
 
 /**

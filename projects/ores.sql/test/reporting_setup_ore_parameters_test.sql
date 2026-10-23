@@ -21,7 +21,7 @@
  * pgTAP tests for the Setup ore parameters of the engine settings.
  *
  * A screen reads the text of a setting from its ore parameter, and the
- * link between the two is the name: the column n_threads of a part is the Setup
+ * link between the two is the name, in the staged dataset ore.parameters: the column n_threads of a part is the Setup
  * parameter nThreads. The engine settings take the first positions of the Setup
  * block, and the other Setup parameters follow them.
  * - Every setting column of a part has a Setup definition
@@ -53,8 +53,11 @@ select d.name,
        lower(regexp_replace(d.name, '([A-Z])', '_\1', 'g')) as column_name,
        d.label, d.help, d.description, d.default_text, d.format, d.introduced_in,
        d.removed_in
-from ores_reporting_ore_parameters_tbl d
-where d.scope = 'Setup' and d.valid_to = ores_utility_infinity_timestamp_fn()
+from ores_dq_ore_parameters_artefact_tbl d
+where d.dataset_id = (select id from ores_dq_datasets_tbl
+                      where code = 'ore.parameters'
+                        and valid_to = ores_utility_infinity_timestamp_fn())
+  and d.scope = 'Setup'
   and d.position <= (select count(*) from t_columns);
 
 select is_empty(

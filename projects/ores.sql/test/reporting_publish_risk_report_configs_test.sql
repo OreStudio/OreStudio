@@ -46,6 +46,26 @@ begin;
 select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- The build stages the ore parameters and publishes nothing, and a staged
+-- parameter resolves against the system tenant's rows, so the test publishes
+-- the value domains and then the parameters first.
+create temp table t_vocabulary on commit drop as
+select 'ore.parameter_value_domains'::text as dataset, p.action, p.record_count
+from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+     where code = 'ore.parameter_value_domains'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn()) p;
+
+insert into t_vocabulary
+select 'ore.parameters', p.action, p.record_count
+from ores_reporting_publish_ore_parameters_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+     where code = 'ore.parameters'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn()) p;
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 

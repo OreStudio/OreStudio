@@ -39,6 +39,8 @@
 \ir ./dq_configuration_market_bindings_artefact_drop.sql
 \ir ./dq_configuration_analytic_parameters_artefact_drop.sql
 \ir ./dq_configuration_analytics_artefact_drop.sql
+\ir ./dq_ore_parameters_artefact_drop.sql
+\ir ./dq_ore_parameter_value_domains_artefact_drop.sql
 \ir ./dq_engine_settings_execution_artefact_drop.sql
 \ir ./dq_engine_settings_building_artefact_drop.sql
 \ir ./dq_engine_settings_fixings_artefact_drop.sql

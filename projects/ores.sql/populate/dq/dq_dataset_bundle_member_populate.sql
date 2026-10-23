@@ -60,6 +60,16 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 13);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 15);
 
+    -- The ORE parameter documentation. The system tenant's rows are what the
+    -- validators of the configuration parameters read, and each tenant's rows
+    -- are what its own screens read, so both bundles carry it. The parameters
+    -- depend on the value domains, so the dataset dependency orders them.
+    -- Two copies of one dataset is a stopgap: the capture "One source for
+    -- reference data that the system and each tenant read" tracks the choice
+    -- of one source and the rewrite of the readers that follows.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 16);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 17);
+
     -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================
@@ -146,6 +156,8 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_definitions', 301);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.code_domains', 302);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_mappings', 303);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameter_value_domains', 304);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameters', 305);
 
     -- =============================================================================
     -- Crypto Bundle Members

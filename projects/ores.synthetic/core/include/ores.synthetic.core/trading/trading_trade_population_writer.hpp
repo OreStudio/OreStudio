@@ -63,9 +63,6 @@ public:
     void write_trade(const trade_population_write& write,
                      const domain::trade_generation_scope& scope) override;
 
-    void write_instrument(const trade_population_write& write,
-                          const domain::trade_generation_scope& scope) override;
-
 private:
     /**
      * @brief Creates the trade's security with the security operation.
@@ -76,16 +73,6 @@ private:
      */
     void ensure_issue(const trade_population_write& write);
 
-    /**
-     * @brief Issues an entity write, stating the entity on a refusal.
-     *
-     * @return True when the store took the write.
-     *
-     * @throws trade_population_write_error on a transport failure.
-     */
-    template <typename Request>
-    bool call_ok(std::string_view subject, const Request& request, const std::string& what);
-
     ores::nats::service::nats_client& nats_;
     /*
      * The issues this run has written or found already written. A security's
@@ -94,11 +81,6 @@ private:
      * instrument.
      */
     std::set<boost::uuids::uuid> issues_written_;
-    /*
-     * The activity each booked trade names, so the instrument it then receives
-     * is stamped with the act that booked it rather than with its own id.
-     */
-    std::map<boost::uuids::uuid, boost::uuids::uuid> activities_;
 };
 
 }

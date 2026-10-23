@@ -87,7 +87,6 @@ struct recording_writer final : trade_population_writer {
     domain::trade_generation_scope scope;
     std::map<boost::uuids::uuid, std::uint32_t> versions;
     std::size_t bookings = 0;
-    std::size_t instruments = 0;
 
     explicit recording_writer(domain::trade_generation_scope s)
         : scope(std::move(s)) {}
@@ -107,11 +106,6 @@ struct recording_writer final : trade_population_writer {
                      const domain::trade_generation_scope&) override {
         ++bookings;
         versions[write.slot.trade_id] = 1;
-    }
-
-    void write_instrument(const trade_population_write&,
-                          const domain::trade_generation_scope&) override {
-        ++instruments;
     }
 };
 
@@ -298,7 +292,6 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
     REQUIRE(first.written == trades_per_book * 2);
     REQUIRE(first.already_present == 0);
     REQUIRE(writer.bookings == trades_per_book * 2);
-    REQUIRE(writer.instruments == trades_per_book * 2);
 
     const auto versions_after_first = writer.versions;
 

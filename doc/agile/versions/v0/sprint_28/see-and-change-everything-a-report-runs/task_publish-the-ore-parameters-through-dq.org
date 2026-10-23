@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 403386BD-F99F-48CD-88EF-C17B868BA87E
+:END:
+#+title: Task: Publish the ore parameters through DQ
+#+description: Stage the ore parameters and their value domains as DQ datasets and publish them to the system tenant and to every tenant, as currencies are.
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/test-the-engine-settings
+#+pr: 3680
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ore parameters reach the system tenant through system_core and each tenant through base, so a tenant user reads the documentation of the engine settings.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The two datasets publish in dependency order into the system tenant and into a tenant.
+- No populate script writes the ore parameter tables.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3680][#3680]] | [reporting] Publish the ore parameters through DQ and test the engine settings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The ORE parameters (610 rows) and their value domains (5 rows) are two DQ datasets. One generator writes them. Two publish functions write them into the system tenant through system_core and into each tenant through base. The four direct populate scripts are gone. After a provisioning of Acme, the system tenant and the Acme tenant each hold 610 parameters, and the engine settings screens read the documentation of all 15 settings.
+
+The tests that need an ore parameter seed five of their own and no longer read the real data. The double bundle membership is a stopgap, and the capture "One source for reference data that the system and each tenant read" tracks the choice of one source.

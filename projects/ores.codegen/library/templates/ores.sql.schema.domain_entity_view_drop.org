@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 37913756-1CD5-4B92-94BF-5A5AD0BDC95F
+:END:
+#+title: ores.sql.schema.domain_entity_view_drop
+#+description: Drop script for a read-model view. =sql= profile; output =projects/ores.sql/drop/{component}/{component}_{entity_plural}_drop.sql=.
+#+type: archetype
+#+model_types: domain_entity
+#+output: projects/ores.sql/drop/{component}/{component}_{entity_plural}_drop.sql
+#+facet: ores.sql.schema
+#+default: disabled
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+Drop script for a read-model view. =sql= profile; output =projects/ores.sql/drop/{component}/{component}_{entity_plural}_drop.sql=.
+
+=#+default: disabled=: only an entity bound to the =read-model= profile has a view in place of a table. The profile enables this archetype and withdraws the table create and drop.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+See [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] for the official object-name patterns all SQL templates follow.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_domain_entity_view_drop.mustache=.
+
+#+begin_src mustache :tangle sql_schema_domain_entity_view_drop.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_view_drop.org. Edit the org source. }}
+{{! Template to generate the SQL drop script for a read-model view }}
+{{{sql_license}}}
+{{#domain_entity}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_view_drop.mustache
+ * To modify, update the template and regenerate.
+ */
+
+drop view if exists "{{sql.tablename}}";
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

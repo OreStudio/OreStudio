@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/key-the-app-version-by-its-app-engine-and-wrapper-versions
-#+pr:
+#+pr: 3660
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -26,11 +26,11 @@ A republish of an app version checks the version of its own row, whichever other
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -63,6 +63,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- The review of the PR found a fault in the shell generator, older than this task: a
+  command that names one row (get, delete, versions, version) read no key when the
+  key was an id that a put mints. The command sent a nil key, and delete took the id
+  as the reason. The generator now always reads the key from the caller. The change
+  regenerates 103 command files in the shell, each with one added line. The shell
+  builds, and a live get and versions by id answer.
+
 - The shell commands that took the wrapper version as the key, such as get, delete and
   versions, take the id now. The recipe and its scripts are regenerated.
 - The notify trigger of the table states the key as the id, so a database that is not
@@ -83,13 +90,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [compute] Key the app version by its id |
+| #3660 | [compute] Key the app version by its id |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The shell commands never read the id | app_version_commands.cpp | Fixed | The generator fault is fixed, with a test, and 103 command files are regenerated. |
+| 2 | delete maps missing to not_found | app_version_service.cpp | Confirmed | The existing switch maps the missing status. |
+| 3 | A malformed id reaches the repository | app_version_service.cpp | No change | The request type is a uuid, so a bad id fails at decode. |
+| 4 | The trigger needs a migration | compute_app_versions_notify_trigger_create.sql | Noted | The repo has create scripts only. A recreate applies it. |
 
 * Result
 

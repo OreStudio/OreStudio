@@ -268,6 +268,8 @@ void trade_link_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
         read_token(req.key.link_type, parsed->positionals[next++], "link_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -532,6 +534,8 @@ void trade_link_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        read_token(req.removal.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
         read_token(req.removal.key.link_type, parsed->positionals[next++], "link_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -640,6 +644,8 @@ void trade_link_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
         read_token(req.key.link_type, parsed->positionals[next++], "link_type");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
@@ -686,6 +692,8 @@ void trade_link_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_link.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        read_token(req.key.trade_link.to_trade_id, parsed->positionals[next++], "to_trade_id");
         read_token(req.key.trade_link.link_type, parsed->positionals[next++], "link_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");

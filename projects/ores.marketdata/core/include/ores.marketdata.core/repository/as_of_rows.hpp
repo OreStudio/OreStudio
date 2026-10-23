@@ -70,7 +70,7 @@ ORES_MARKETDATA_CORE_EXPORT market_observation_entity as_of_observation(const as
 /**
  * @brief The record time an as-of read row carries, from column @p first on.
  *
- * The row's valid_from is the second to last of the eleven observation columns. It is a
+ * The row's valid_from is the tenth of the eleven observation columns. It is a
  * non-nullable bitemporal column, so a read that does not select it is a
  * mistake rather than a null, and this throws, naming @p read.
  *

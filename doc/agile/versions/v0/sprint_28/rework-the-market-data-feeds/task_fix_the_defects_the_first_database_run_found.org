@@ -86,7 +86,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The comment about valid_from is long and unclear | as_of_rows.hpp | Accept | Rewrapped, and it says the tenth of the eleven columns. |
+| 2 | The row test does not pin the order of valid_from and valid_to | as_of rows test | Accept | The full-row test checks both. |
+| 3 | An existing database keeps the old column type | mapping model | Decline | The schema is applied by recreation. |
+| 4 | The web BFF tests were not run | web | Accept | The binding tests pass (21). Ten tests in grid-app-versions and grid-jobs fail because the built wire protocol lacks exports they import, which these changes did not touch. |
 
 * Result
 

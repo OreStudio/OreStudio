@@ -63,6 +63,8 @@ TEST_CASE("an_as_of_row_maps_every_observation_column", tags) {
     CHECK(e.value == "1.0845");
     CHECK_FALSE(e.source.has_value());
     CHECK(e.source_id == "26772cc0-57d6-4fac-be36-2ae75eb56b6b");
+    CHECK(e.valid_from.str() == "2026-10-05 09:00:00");
+    CHECK(e.valid_to.str() == "9999-12-31 23:59:59");
     CHECK(e.oresmd_uri == "oresmd://fx/EUR/USD?type=quote&instrument=fx_spot&quote=rate");
     CHECK(e.observation_datetime == "2026-10-05 09:00:00+00");
 }

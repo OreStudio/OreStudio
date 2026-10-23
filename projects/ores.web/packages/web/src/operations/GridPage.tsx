@@ -53,6 +53,7 @@ import {
     type ScreenGap,
 } from './OperationsParts.js';
 import { GRID_SERIES_QUERY_KEY, GridLoadTab, GridNodeLoad } from './GridSeries.js';
+import { GRID_JOBS_QUERY_KEY, GridJobsTab } from './GridJobs.js';
 import { GRID_USAGE_QUERY_KEY, GridUsageTab } from './GridUsage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -71,7 +72,7 @@ const JOURNEYS: readonly JourneyId[] = [
 ];
 
 /** The tabs of the grid screen, in the order they are drawn. */
-export const GRID_TABS = ['overview', 'usage', 'machines', 'nodes', 'heatmap'] as const;
+export const GRID_TABS = ['overview', 'usage', 'machines', 'nodes', 'heatmap', 'jobs'] as const;
 
 /** Where the grid read's answer is cached, so a test can seed it. */
 export const GRID_QUERY_KEY = ['operations-grid'] as const;
@@ -87,6 +88,7 @@ export const GRID_REFRESH_KEYS: readonly (readonly unknown[])[] = [
     GRID_QUERY_KEY,
     [GRID_SERIES_QUERY_KEY],
     GRID_USAGE_QUERY_KEY,
+    [GRID_JOBS_QUERY_KEY],
 ];
 
 /**
@@ -98,6 +100,7 @@ export const GRID_REFRESH_KEYS: readonly (readonly unknown[])[] = [
 export const TENANT_GRID_REFRESH_KEYS: readonly (readonly unknown[])[] = [
     [GRID_SERIES_QUERY_KEY],
     GRID_USAGE_QUERY_KEY,
+    [GRID_JOBS_QUERY_KEY],
 ];
 
 /** A byte count in GiB, as the node table states what a node fetched. */
@@ -640,7 +643,7 @@ function NodesTab({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactN
 }
 
 /** The tabs a tenant's session and a party's session are offered: their own work only. */
-export const TENANT_GRID_TABS = ['overview', 'usage'] as const;
+export const TENANT_GRID_TABS = ['overview', 'usage', 'jobs'] as const;
 
 /**
  * The grid as a tenant's administrator or a party's member sees it.
@@ -652,7 +655,7 @@ export const TENANT_GRID_TABS = ['overview', 'usage'] as const;
  * only an operator is offered them, and the read of the grid's node list, which
  * they need, is refused to a tenant.
  */
-function TenantGridPage(): ReactNode {
+function TenantGridPage({ mode }: { readonly mode: SessionMode | undefined }): ReactNode {
     const { t } = useTranslation();
     const [range, setRange] = useState<SeriesRange>('1h');
     const { tab, bar } = useTabs({
@@ -676,6 +679,8 @@ function TenantGridPage(): ReactNode {
             {tab === 'overview' && <GridLoadTab range={range} onRange={setRange} />}
 
             {tab === 'usage' && <GridUsageTab />}
+
+            {tab === 'jobs' && <GridJobsTab />}
         </div>
     );
 }
@@ -686,7 +691,7 @@ function TenantGridPage(): ReactNode {
  */
 export function GridPage({ mode }: { readonly mode?: SessionMode } = {}): ReactNode {
     return mode !== undefined && mode !== 'system-administration' ? (
-        <TenantGridPage />
+        <TenantGridPage mode={mode} />
     ) : (
         <OperatorGridPage />
     );
@@ -753,6 +758,8 @@ function OperatorGridPage(): ReactNode {
             {tab === 'nodes' && <NodesTab nodes={view.nodes} />}
 
             {tab === 'heatmap' && <GridNodeLoad range={range} onRange={setRange} />}
+
+            {tab === 'jobs' && <GridJobsTab />}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

@@ -244,6 +244,25 @@ export type { GridNodeRow, GridView } from './operations.js';
 export { SERIES_RANGES, gridSeriesViewSchema, gridUsageViewSchema } from './operations.js';
 export type { GridSeriesView, GridUsageGroup, GridUsageView, SeriesRange } from './operations.js';
 
+// The batches, workunits and results the Jobs tab reads, as the BFF serves
+// them: a page of rows with the count of everything the read matches.
+export {
+    batchPageSchema,
+    batchViewSchema,
+    resultPageSchema,
+    resultViewSchema,
+    workunitPageSchema,
+    workunitViewSchema,
+} from './grid-jobs.js';
+export type {
+    BatchPage,
+    BatchView,
+    ResultPage,
+    ResultView,
+    WorkunitPage,
+    WorkunitView,
+} from './grid-jobs.js';
+
 // The message bus the operations screen reads, as the BFF serves it: the NATS
 // server samples and one row per stream, each the newest sample of the range.
 export { busViewSchema } from './operations.js';

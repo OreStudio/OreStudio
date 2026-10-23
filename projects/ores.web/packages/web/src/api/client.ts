@@ -107,6 +107,12 @@ import {
     gridSeriesViewSchema,
     gridUsageViewSchema,
     gridViewSchema,
+    batchPageSchema,
+    batchViewSchema,
+    resultPageSchema,
+    resultViewSchema,
+    workunitPageSchema,
+    workunitViewSchema,
     busViewSchema,
     logsViewSchema,
     workflowProgressSchema,
@@ -135,6 +141,12 @@ import {
     type ServiceRosterRow,
     type GridSeriesView,
     type GridUsageView,
+    type BatchPage,
+    type BatchView,
+    type ResultPage,
+    type ResultView,
+    type WorkunitPage,
+    type WorkunitView,
     type GridView,
     type SeriesRange,
     type BusView,
@@ -2311,6 +2323,61 @@ export const api = {
     async gridUsage(): Promise<GridUsageView> {
         return gridUsageViewSchema.parse(
             await request('/api/operations/grid/usage', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * One page of the batches the session may see, newest first.
+     *
+     * The call names no tenant and no party. The compute service decides which
+     * rows the session may read.
+     */
+    async gridJobBatches(offset: number, limit: number): Promise<BatchPage> {
+        return batchPageSchema.parse(
+            await request(`/api/operations/grid/jobs/batches?${pageQuery({ offset, limit })}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One page of the workunits of a batch. */
+    async gridJobWorkunits(batchId: string, offset: number, limit: number): Promise<WorkunitPage> {
+        return workunitPageSchema.parse(
+            await request(
+                `/api/operations/grid/jobs/batches/${batchId}/workunits?${pageQuery({ offset, limit })}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** One page of the results of a workunit. */
+    async gridJobResults(workunitId: string, offset: number, limit: number): Promise<ResultPage> {
+        return resultPageSchema.parse(
+            await request(
+                `/api/operations/grid/jobs/workunits/${workunitId}/results?${pageQuery({ offset, limit })}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** One batch by id. */
+    async gridJobBatch(id: string): Promise<BatchView> {
+        return batchViewSchema.parse(
+            await request(`/api/operations/grid/jobs/batches/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One workunit by id. */
+    async gridJobWorkunit(id: string): Promise<WorkunitView> {
+        return workunitViewSchema.parse(
+            await request(`/api/operations/grid/jobs/workunits/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One result by id. */
+    async gridJobResult(id: string): Promise<ResultView> {
+        return resultViewSchema.parse(
+            await request(`/api/operations/grid/jobs/results/${id}`, { method: 'GET' }),
         );
     },
 

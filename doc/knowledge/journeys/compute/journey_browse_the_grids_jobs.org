@@ -180,10 +180,10 @@ whose =status= changes is recorded again and moves to the top of the list.
    as text. The task Let a party member download its own files closes the gap.
 5. *The BFF routes exist.* Six routes under =/api/operations/grid/jobs/= serve the
    paged tree, and the batch route takes =status=, =party= and =find=.
-6. *Node names for tenants.* A result names its host. A tenant administrator
-   or a party member should probably not see the installation's node names.
-   The owner must decide. Until then, the prototype shows the node to the
-   operator only.
+6. *Node names for tenants.* A result names its host. The node belongs to the
+   installation, so only the operator sees its name. A tenant administrator
+   and a party member see "hidden for your role" where the node would be.
+   The reads and the screens follow this rule, and a test pins each role.
 7. *A run in flight has no node.* As in Follow a job, the node is bound when
    the run ends. The details say "not yet known".
 

@@ -398,6 +398,18 @@ describe('the results of a workunit', () => {
         });
     });
 
+    it('withholds the node from a party member and says so', async () => {
+        const { response } = await get(
+            'application',
+            `/api/operations/grid/jobs/workunits/${WORKUNIT}/results`,
+        );
+
+        expect(response.json<{ rows: unknown[] }>().rows[0]).toMatchObject({
+            host_id: null,
+            host_hidden: true,
+        });
+    });
+
     it('withholds the node from one result too', async () => {
         const { response } = await get('tenant', `/api/operations/grid/jobs/results/${RESULT}`);
 

@@ -41,10 +41,10 @@ import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
-import { gridNodePath } from '../shell/paths.js';
+import { gridAppVersionPath, gridJobPath, gridNodePath } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
-import { Button, Detail, Notice, Tag } from '../ui/Primitives.js';
+import { Button, Detail, LinkButton, Notice, Tag } from '../ui/Primitives.js';
 
 /** Where the jobs answers are cached, so a test can seed them and Refresh can read them again. */
 export const GRID_JOBS_QUERY_KEY = 'operations-grid-jobs';
@@ -52,7 +52,7 @@ export const GRID_JOBS_QUERY_KEY = 'operations-grid-jobs';
 /** How many workunits or results a row shows before it pages. */
 export const CHILD_PAGE_SIZE = 5;
 
-type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
+export type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
 
 /** The record kinds the tree holds, as the selection names them in the address. */
 type Kind = 'batch' | 'workunit' | 'result';
@@ -92,7 +92,9 @@ const BATCH_STATUS_TONE: Readonly<Record<string, Tone>> = {
 };
 
 /** result.server_state: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done. */
-const SERVER_STATE: Readonly<Record<number, { readonly name: string; readonly tone: Tone }>> = {
+export const SERVER_STATE: Readonly<
+    Record<number, { readonly name: string; readonly tone: Tone }>
+> = {
     1: { name: 'inactive', tone: 'muted' },
     2: { name: 'unsent', tone: 'neutral' },
     4: { name: 'inProgress', tone: 'accent' },
@@ -100,7 +102,7 @@ const SERVER_STATE: Readonly<Record<number, { readonly name: string; readonly to
 };
 
 /** result.outcome: 1=Success, 3=ClientError, 4=NoReply. Any other value is not set. */
-const OUTCOME: Readonly<Record<number, { readonly name: string; readonly tone: Tone }>> = {
+export const OUTCOME: Readonly<Record<number, { readonly name: string; readonly tone: Tone }>> = {
     1: { name: 'success', tone: 'up' },
     3: { name: 'clientError', tone: 'down' },
     4: { name: 'noReply', tone: 'warn' },
@@ -132,7 +134,7 @@ function useJobsAddress(): {
 }
 
 /** A whole number of at least one from the address, or the fallback. */
-function numberParam(value: string | null, fallback: number): number {
+export function numberParam(value: string | null, fallback: number): number {
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed >= 1 ? parsed : fallback;
 }
@@ -146,7 +148,7 @@ function isRefused(error: unknown): boolean {
 }
 
 /** A read the tab states itself, so the shell raises no banner for it. */
-const QUIET = { quiet: true } as const;
+export const QUIET = { quiet: true } as const;
 
 export function ReadFailure({
     error,
@@ -173,14 +175,14 @@ export function ReadFailure({
     );
 }
 
-function StatusTag({ status }: { readonly status: string }): ReactNode {
+export function StatusTag({ status }: { readonly status: string }): ReactNode {
     const { t } = useTranslation();
     const known = status in BATCH_STATUS_TONE;
     const label = known ? t(`operations.grid.jobs.status.${status}`) : status;
     return <Tag tone={BATCH_STATUS_TONE[status] ?? 'neutral'}>{label}</Tag>;
 }
 
-function ResultTags({ result }: { readonly result: ResultView }): ReactNode {
+export function ResultTags({ result }: { readonly result: ResultView }): ReactNode {
     const { t } = useTranslation();
     const state = SERVER_STATE[result.server_state];
     const outcome = OUTCOME[result.outcome];
@@ -575,7 +577,11 @@ function WorkunitDetails({ workunit }: { readonly workunit: WorkunitView }): Rea
             />
             <Detail
                 label={t('operations.grid.jobs.fields.appVersionId')}
-                value={workunit.app_version_id}
+                value={
+                    <RouteLink to={gridAppVersionPath(workunit.app_version_id)}>
+                        {workunit.app_version_id}
+                    </RouteLink>
+                }
                 mono
             />
             <Detail
@@ -756,6 +762,20 @@ function Details(): ReactNode {
                 {selected.kind === 'workunit' && <WorkunitDetails workunit={selected.data} />}
                 {selected.kind === 'result' && <ResultDetails result={selected.data} />}
             </dl>
+            {selected.kind !== 'batch' && (
+                <div className="mt-4">
+                    <LinkButton
+                        to={gridJobPath(
+                            selected.kind === 'workunit'
+                                ? selected.data.id
+                                : selected.data.workunit_id,
+                        )}
+                        variant="secondary"
+                    >
+                        {t('operations.grid.jobs.follow')}
+                    </LinkButton>
+                </div>
+            )}
         </div>
     );
 }

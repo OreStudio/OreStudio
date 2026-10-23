@@ -8,12 +8,12 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-job-page
-#+pr:
+#+pr: 3658
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,27 +26,30 @@ One page states where a job is, what ran it, and what it produced, and leads to 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
 
 - The page shows the job state with the outcome beside it, and says the node is not yet known while a run is in flight.
-- The page links to the report run that the batch names.
-- The Run statistics panel appears when the run statistics exist, with one row per run.
+- (Moved) The link to the report run lands with the task Show the report run behind a batch. No page and no read for a report run exist.
+- (Not drawn) The Run statistics panel waits for the run statistics, which the models do not store yet. The page draws no stand-in.
 - The fields carry the model's own names: Host ID, External Ref, Batch Recorded At and Received At.
 - The App Version ID links to the app version page.
 - The build follows =doc/prototypes/compute/follow-a-job/=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add the page =/operations/grid/jobs/:workunitId= as =GridJobPage.tsx=. It reads the
+workunit, its batch, up to 50 runs of it and one page of the batch's workunits,
+all through the six BFF routes, and draws the panels of the prototype that the
+models can fill: the header, the runs, the bar for the first run, the jobs of the
+batch, the files, the release and the lineage. The Follow this job link of the
+Jobs tab and the App Version ID links lead here and to the app version page.
 
 * Measurements
 
@@ -60,9 +63,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Job page tests | 10 pass | =npx vitest run src/operations/GridJobPage.test.tsx= in =packages/web= | aa4605e98d plus the working tree |
+| Jobs tab tests with the new links | 17 pass | =npx vitest run src/operations/GridJobs.test.tsx= | aa4605e98d plus the working tree |
+| Job page of a failed run as the tenant administrator | Done, ClientError, the warning, host hidden, 12 jobs of the batch | headless Chrome on =/operations/grid/jobs/:id= | aa4605e98d plus the working tree |
 
 * Notes
+
+- The state comes from the canonical result: a job with one is Done, and a job that
+  ran and failed is Done too, so the outcome sits beside the state.
+- The jobs of the batch panel states Done or Not done from the canonical result of
+  each workunit. A bar per job needs the runs of every job, one read each, so the
+  page draws no timeline for the siblings.
+- The release panel shows the App Version ID as a link. The engine and wrapper
+  versions need an app version read, which the app version page adds.
+- The time bar of a run read 0 s on the check: the engine failed at once.
 
 * Test Scenarios
 
@@ -79,12 +93,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3658 | [web] Build the job page |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed batch read is silent | GridJobPage.tsx | Fixed | The page shows the failure and a retry. |
+| 2 | The header mixes two runs | GridJobPage.tsx | Fixed | The header and the bar speak for the accepted run, else the first. A test covers it. |
+| 3 | Runs past 50 vanish | GridJobPage.tsx | Fixed | A note says how many of the total are shown. |
+| 4 | Magic number for a failed outcome | GridJobPage.tsx | Fixed | The check reads the outcome name. |
+| 5 | The warning fires for any failed run | GridJobPage.tsx | Fixed | The warning follows the accepted run. A test covers it. |
+| 6 | Negative seconds | GridJobPage.tsx | Fixed | The figure is clamped at 0. |
+| 7 | The bar is decorative | GridJobPage.tsx | No change | The hint says the bar has two ends. |
+| 8 | A sibling state ignores the outcome | GridJobPage.tsx | Fixed | A note says a failed job reads Done. |
+| 9 | Paths encode ids | paths.ts | Confirmed | Each path function encodes its id. |
 
 * Result
+
+The job page states where a job is, what ran it and what it produced. It reads the
+state from the canonical result, puts the outcome of the run beside it, and warns
+that a closed batch is not a successful batch. A run in flight states that its node
+and output are not yet known. The Jobs tab links to the page. The link to the
+report run and the run statistics wait for their own tasks.

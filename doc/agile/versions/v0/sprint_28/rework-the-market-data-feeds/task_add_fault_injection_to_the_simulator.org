@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-fault-injection-to-the-simulator
-#+pr:
+#+pr: 3677
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3677][#3677]] | [synthetic] Add fault injection to the simulator |
 
 * Review
 

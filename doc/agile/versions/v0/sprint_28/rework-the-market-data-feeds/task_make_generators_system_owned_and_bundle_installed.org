@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/make-generators-system-owned-and-bundle-installed
-#+pr:
+#+pr: 3676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3676][#3676]] | [synthetic] Make the generators system-owned and install them with the system bundle |
 
 * Review
 

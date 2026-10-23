@@ -20,22 +20,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The simulator lives in ores.marketdata.synthetic, implements the adapter contract, runs as a system service, and starts generators from the demand set.
+The simulator implements the adapter contract, runs as a system service, and starts generators from the demand set. The rename of its component to ores.marketdata.synthetic is the task [[file:task_rename_the_simulator_component.org][Rename the simulator component to ores.marketdata.synthetic]], because a rename of 975 files and of the codegen identity fails for other reasons than a change of behaviour.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
 
-- The component is renamed and builds, and the generators publish adapter ticks with vendor ids.
+- The generators publish adapter ticks with vendor ids.
 - The runner starts and stops generators from the demand set and refuses a second generator for one vendor instrument.
 - The run grant, the run token cache and the restore walk are removed.
 
@@ -45,8 +45,9 @@ The simulator lives in ores.marketdata.synthetic, implements the adapter contrac
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
-The task is two pull requests, because the two halves fail for different reasons and a reviewer reads them
-differently. The first changes behaviour. The second changes names only.
+The task was planned as two pull requests, because the two halves fail for different reasons. The first
+changes behaviour. The second changes names only. The second became its own task when the first was ready to
+merge, so the first pull request closes this task.
 
 *Pull request 1: the adapter.*
 
@@ -71,7 +72,7 @@ differently. The first changes behaviour. The second changes names only.
 6. Test the runner and the tick translation without a server, and the whole path (announce, demand, tick,
    ingest) against the live NATS and the rebuilt database.
 
-*Pull request 2: the name.* Move =projects/ores.synthetic= to =projects/ores.marketdata.synthetic= and change the
+*The name (now its own task).* Move =projects/ores.synthetic= to =projects/ores.marketdata.synthetic= and change the
 component name, the library names, the namespaces, the include paths and the generated files with it. The
 change is a script that runs the move and the regeneration, so the reviewer reruns it.
 
@@ -146,3 +147,16 @@ via its "Verifies task" field.
 | 7 | One run of the real service, adapter and database before merge | PR | decline | Recorded as a limit in the PR and the task notes. The next task starts the generators from the bundle and gives that run a reason to exist. |
 
 * Result
+
+The simulator is an adapter of the market data service. It announces itself as =ore-simulated= of the provider =ore=, with the ORE keys of the FX generators that the system collections hold. It answers each demand set with a generator for every key it can quote, and rejects the others as =unknown_id=. It sends a heartbeat every 5 seconds and announces again every 60 seconds. An FX generator with an adapter target publishes =adapter_tick= on =marketdata.v1.ingress.ore-simulated.<key>=. The runner keeps one generator for each vendor instrument and refuses a second one.
+
+The run grant, the run token cache and the restore walk are removed. The simulator reads vintage prices as the service, which belongs to the system tenant. The collection lost its =run_grant_id= column, and the database was recreated without it.
+
+Against the rebuilt database: the synthetic service (73 cases), api (80), core (61), shell (221), IAM core (304), marketdata service (161) and the 57 pgTAP files pass. The build is green and the web typecheck, format check and 216 tests pass.
+
+Left for other tasks:
+- The old control plane (=start_feed=, =stop_feed=, the folder verbs) still starts a generator by hand and still publishes =market_tick= on its binding subject. The screens task retires it.
+- Rate curve generators stay on the old path, because the catalogue has no vendor rows for the pillars.
+- A vintage price in a tenant collection no longer resolves. The next task makes the generators system-owned.
+- The real market data service, the adapter and a database were not run together.
+- The rename of the component is the task =Rename the simulator component to ores.marketdata.synthetic=.

@@ -50,7 +50,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:BAB5D8D0-76C6-43C5-93A5-D495E03C6378][Meter usage events]] | DONE | 2026-10-23 | 2026-10-23 | Record subscription intervals, demand intervals and delivery counts for each party. |
 | [[id:DAA15D3D-F31E-4FAB-BAAF-37072815F31E][Add rate cards, rating and allocation]] | DONE | 2026-10-23 | 2026-10-23 | Add the rate card on a source, the rating step and the allocation of a source bill to parties. |
 | [[id:B6B90346-B5B7-4B21-88DD-B30C445CC6E6][Model composites and their rights]] | DONE | 2026-10-23 | 2026-10-23 | Add the composite, its inputs and rule, the derived-right check, and the attribution of its use to its input providers. |
-| [[id:2856500E-6771-474E-8899-765761D7A0A5][Move the simulator to ores.marketdata.synthetic as an adapter]] | STARTED | 2026-10-23 | | Rename the synthetic component under market data and make the runner serve a demand set as an adapter. |
+| [[id:2856500E-6771-474E-8899-765761D7A0A5][Move the simulator to ores.marketdata.synthetic as an adapter]] | DONE | 2026-10-23 | 2026-10-23 | Rename the synthetic component under market data and make the runner serve a demand set as an adapter. |
 | [[id:EF8A62C0-B72A-47AC-8976-B29FF2360A42][Make generators system-owned and bundle-installed]] | BACKLOG | | | Move every collection, folder and generator to the system tenant and party and install them with the system bundle. |
 | [[id:8D5C8A02-A6E3-4195-9FD1-140A0293C78B][Remove the marks of the simulator from names, subjects and constraints]] | BACKLOG | | | Remove the synthetic prefix, subjects, constraints and screen marks so that nothing in the system depends on the simulator. |
 | [[id:BC8F67D4-59FD-446B-94A3-F62844F82A53][Add fault injection to the simulator]] | BACKLOG | | | Let the simulator drop, delay, repeat and corrupt ticks and reject ids on request. |
@@ -63,6 +63,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:816F6540-89B4-4847-A289-88A1948DC682][Check a development party and a prelive party side by side]] | BACKLOG | | | Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running. |
 | [[id:292A74E4-36F7-48A2-B67A-7CD17C4E4257][Describe the market data target architecture]] | DONE | 2026-10-22 | 2026-10-22 | Write the architecture pages, diagrams and journeys for the target state, and plan the implementation tasks. |
 | [[id:318A5695-2045-4532-B48C-703B1B86CED0][Fix the defects the first database run found]] | DONE | 2026-10-23 | 2026-10-23 | Fix the catalogue populate, the mapping date types, the as-of source id and a wrong test that a database run showed. |
+| [[id:FD3DF4E8-DD1D-4CC2-96A0-D3DF3624B5A2][Rename the simulator component to ores.marketdata.synthetic]] | BACKLOG | | | Rename the synthetic component to ores.marketdata.synthetic, with the codegen identity, the paths and the namespaces. |
 
 * Decisions
 

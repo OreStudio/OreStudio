@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The ore parameters reach the system tenant through system_core and each tenant t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -84,3 +84,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The ORE parameters (610 rows) and their value domains (5 rows) are two DQ datasets. One generator writes them. Two publish functions write them into the system tenant through system_core and into each tenant through base. The four direct populate scripts are gone. After a provisioning of Acme, the system tenant and the Acme tenant each hold 610 parameters, and the engine settings screens read the documentation of all 15 settings.
+
+The tests that need an ore parameter seed five of their own and no longer read the real data. The double bundle membership is a stopgap, and the capture "One source for reference data that the system and each tenant read" tracks the choice of one source.

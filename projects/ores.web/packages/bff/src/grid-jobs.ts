@@ -18,7 +18,7 @@
  *
  */
 
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     type BatchFilter,
@@ -163,14 +163,19 @@ function idParam(request: FastifyRequest): string {
  * where the session may read the run, and the name of its party, where the session knows
  * the party. The runs are one read for the whole page.
  */
-async function viewsOf(session: LiveSession, batches: readonly Batch[]): Promise<BatchView[]> {
+async function viewsOf(
+    session: LiveSession,
+    batches: readonly Batch[],
+    log: FastifyBaseLogger,
+): Promise<BatchView[]> {
     const runs = await reportRunNames(
         session,
         batches.map((batch) => batch.external_ref),
+        log,
     );
     return batches.map((batch) =>
         toBatchView(batch, {
-            reportRunName: runs.get(batch.external_ref),
+            reportRunName: runs.get(batch.external_ref.toLowerCase()),
             partyName: session.availableParties.find((party) => party.id === batch.party_id)?.name,
         }),
     );
@@ -187,7 +192,7 @@ export function registerGridJobsRoutes(
         const { batches, total } = await answering(() => readBatches(session.client, page, filter));
         return batchPageSchema.parse({
             read_at: toWireTimestamp(new Date()),
-            rows: await viewsOf(session, batches),
+            rows: await viewsOf(session, batches, request.log),
             total,
             ...page,
         });
@@ -200,7 +205,7 @@ export function registerGridJobsRoutes(
         if (batch === null) {
             throw notFound('No batch has this id.');
         }
-        return batchViewSchema.parse((await viewsOf(session, [batch]))[0]);
+        return batchViewSchema.parse((await viewsOf(session, [batch], request.log))[0]);
     });
 
     /** One page of the workunits of one batch. */

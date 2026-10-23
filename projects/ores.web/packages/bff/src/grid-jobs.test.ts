@@ -281,6 +281,31 @@ describe('GET /api/operations/grid/jobs/batches', () => {
         expect(calls.map((call) => call.subject)).toEqual(['compute.v1.batches.list']);
     });
 
+    it('finds the name of a run whose id the batch writes in upper case', async () => {
+        const RUN = 'abcdefab-9999-4999-8999-999999999999';
+        const { response } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/batches?limit=10',
+            {
+                ...ANSWERS,
+                'compute.v1.batches.list': {
+                    result: OK,
+                    batches: [{ ...wireBatch, external_ref: RUN.toUpperCase() }],
+                    total: 1,
+                },
+                'reporting.v1.report_instances.list': {
+                    result: OK,
+                    instances: [{ id: RUN, name: 'NPV 2026-10-23 22:07:58' }],
+                    total: 1,
+                },
+            },
+        );
+
+        expect(response.json<{ rows: unknown[] }>().rows[0]).toMatchObject({
+            report_run_name: 'NPV 2026-10-23 22:07:58',
+        });
+    });
+
     it('serves the batches when the report run read fails', async () => {
         const RUN = '99999999-9999-4999-8999-999999999999';
         const { response } = await get(

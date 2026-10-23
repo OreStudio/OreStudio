@@ -19,7 +19,7 @@
  *
  */
 
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     gridReportRunViewSchema,
@@ -87,6 +87,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function reportRunNames(
     session: LiveSession,
     references: readonly string[],
+    log: FastifyBaseLogger,
 ): Promise<ReadonlyMap<string, string>> {
     const ids = [...new Set(references.filter((reference) => UUID.test(reference)))];
     if (ids.length === 0) {
@@ -94,14 +95,19 @@ export async function reportRunNames(
     }
     try {
         const runs = await readRuns(session, ids);
-        return new Map(runs.map((run) => [text(run['id']), text(run['name'])]));
-    } catch {
+        return new Map(runs.map((run) => [text(run['id']).toLowerCase(), text(run['name'])]));
+    } catch (error) {
+        log.warn({ err: error }, 'The names of the report runs could not be read');
         return new Map();
     }
 }
 
 /** The name of a report definition, or nothing when the session cannot read it. */
-async function readDefinitionName(session: LiveSession, id: string): Promise<string | null> {
+async function readDefinitionName(
+    session: LiveSession,
+    id: string,
+    log: FastifyBaseLogger,
+): Promise<string | null> {
     try {
         const reply = await session.client.callAuthenticated(
             definitionSubjects.list_report_definitions_request,
@@ -116,7 +122,8 @@ async function readDefinitionName(session: LiveSession, id: string): Promise<str
         );
         const name = text(reply.definitions[0]?.['name']);
         return reply.result.outcome === 'ok' && name !== '' ? name : null;
-    } catch {
+    } catch (error) {
+        log.warn({ err: error }, 'The name of the report definition could not be read');
         return null;
     }
 }
@@ -124,6 +131,7 @@ async function readDefinitionName(session: LiveSession, id: string): Promise<str
 async function readHealth(
     session: LiveSession,
     id: string,
+    log: FastifyBaseLogger,
 ): Promise<{ health: GridReportRunView['health']; stateName: string }> {
     try {
         const reply = await session.client.callAuthenticated(
@@ -136,7 +144,8 @@ async function readHealth(
             health: reportHealthWordSchema.safeParse(entry?.['health']).data ?? null,
             stateName: text(entry?.['state_name']),
         };
-    } catch {
+    } catch (error) {
+        log.warn({ err: error }, 'The health of the report run could not be read');
         return { health: null, stateName: '' };
     }
 }
@@ -147,7 +156,11 @@ async function readHealth(
  * The search matches text, so the page of 5 is narrowed by an exact match. A run id is
  * a uuid, so a second batch that merely contains it is not expected.
  */
-async function readBatchId(session: LiveSession, id: string): Promise<string | null> {
+async function readBatchId(
+    session: LiveSession,
+    id: string,
+    log: FastifyBaseLogger,
+): Promise<string | null> {
     try {
         const { batches } = await readBatches(
             session.client,
@@ -155,7 +168,8 @@ async function readBatchId(session: LiveSession, id: string): Promise<string | n
             { find: id },
         );
         return batches.find((batch) => batch.external_ref === id)?.id ?? null;
-    } catch {
+    } catch (error) {
+        log.warn({ err: error }, 'The batch of the report run could not be read');
         return null;
     }
 }
@@ -183,9 +197,9 @@ export function registerGridReportRunRoutes(
                 throw notFound('No report run has this id.');
             }
             const [health, batchId, definitionName] = await Promise.all([
-                readHealth(session, id),
-                readBatchId(session, id),
-                readDefinitionName(session, text(run['definition_id'])),
+                readHealth(session, id, request.log),
+                readBatchId(session, id, request.log),
+                readDefinitionName(session, text(run['definition_id']), request.log),
             ]);
             return gridReportRunViewSchema.parse({
                 id: text(run['id']),

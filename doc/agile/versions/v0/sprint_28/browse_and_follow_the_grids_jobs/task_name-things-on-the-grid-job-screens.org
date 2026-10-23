@@ -81,13 +81,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3696 | Name things on the grid job screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The run name lookup is case-sensitive on the key. | grid-report-runs.ts, grid-jobs.ts | Fixed | Both sides use the lower-case id, and a test writes the reference in upper case. |
+| 2 | The page size may exceed the server's limit cap. | grid-report-runs.ts | No change needed | A batch page holds at most 200 rows and the generated read allows 1000. |
+| 3 | A bare catch hides every error. | grid-report-runs.ts | Fixed | Each of the four reads that decorate a page logs a warning with the error, so a broken lookup differs from a run the session cannot read. |
+| 4 | One more sequential call for each page. | grid-jobs.ts | Skipped | One read for the whole page. A cache can follow if the latency shows. |
+| 5 | Job n depends on the offset and the order. | GridJobs.tsx | No change needed | It is the position in the list, and the tooltip carries the id. |
+| 6 | The party label uses two key namespaces. | GridJobPage.tsx | Skipped | The two keys are the two labels of one field, and both are in use. |
 
 * Result
 

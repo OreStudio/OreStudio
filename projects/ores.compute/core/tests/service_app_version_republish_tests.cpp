@@ -143,3 +143,19 @@ TEST_CASE("the versions of an app are listed without the versions of another app
     std::ranges::sort(engines);
     CHECK(engines == std::vector<std::string>{"1.0", "2.0"});
 }
+
+TEST_CASE("the list of the versions of an app refuses a subtree and an order it cannot serve",
+          tags) {
+    database_helper h;
+    app_version_service service(h.context());
+
+    ores::compute::messaging::list_by_app_id_app_versions_request subtree;
+    subtree.app_id = boost::uuids::random_generator()();
+    subtree.scope = ores::utility::domain::scope::subtree;
+    CHECK(service.list_by_app_id_app_versions(subtree).result.outcome == outcome::invalid);
+
+    ores::compute::messaging::list_by_app_id_app_versions_request unsortable;
+    unsortable.app_id = boost::uuids::random_generator()();
+    unsortable.order.field = "wrapper_version";
+    CHECK(service.list_by_app_id_app_versions(unsortable).result.outcome == outcome::invalid);
+}

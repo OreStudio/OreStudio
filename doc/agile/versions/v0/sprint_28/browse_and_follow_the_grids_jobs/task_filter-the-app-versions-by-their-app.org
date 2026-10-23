@@ -92,7 +92,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The default limit is 100 | grid-app-versions.ts | No change | The wire schema sends a limit of 1000, the most a page holds. |
+| 2 | The sort is within one page | grid-app-versions.ts | No change | The page holds up to 1000 versions of one app, and the sort covers the whole answer. |
+| 3 | The filter and the path both name an app | app_version_protocol.hpp | Noted | The generator emits this shape for every scoped list. |
+| 4 | Unused service helpers | app_version_service.hpp | Noted | The generator emits them for every relation. |
+| 5 | The refusals have no test | service_app_version_republish_tests.cpp | Fixed | A test covers the subtree and the order the list cannot serve. |
 
 * Result
 

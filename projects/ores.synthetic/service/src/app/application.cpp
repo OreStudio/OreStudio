@@ -31,9 +31,9 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.platform/concurrency/stoppable_thread.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/step_subjects.hpp"
@@ -74,15 +74,15 @@ struct simulated_adapter final {
 
 // The simulator serves each source of the catalogue whose kind is simulated, one adapter for each.
 // The simulator is the implementation of that kind, so it is the one place that reads the kind.
+// The catalogue belongs to marketdata, so the sources come through its client.
 std::vector<simulated_adapter>
-make_adapters(const ores::database::context& db_ctx,
+make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& sources,
+              const ores::database::context& db_ctx,
               ores::nats::service::client& nats,
               const feed_kind_registry& registry,
               const ores::synthetic::feed::feed_build_context& build,
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults) {
     std::vector<simulated_adapter> out;
-    const auto sources =
-        ores::marketdata::repository::market_data_source_repository{}.read_latest(db_ctx);
     for (const auto& source : sources) {
         if (source.kind != "simulated")
             continue;
@@ -105,6 +105,81 @@ make_adapters(const ores::database::context& db_ctx,
     }
     return out;
 }
+
+// The adapters of the simulator, started once marketdata answers. The services of an installation
+// start in no fixed order, so the simulator asks again until the catalogue is readable.
+class adapter_fleet final {
+private:
+    static auto& lg() {
+        static auto instance =
+            ores::logging::make_logger("ores.synthetic.service.app.adapter_fleet");
+        return instance;
+    }
+
+public:
+    adapter_fleet(ores::nats::service::client& nats,
+                  ores::nats::service::nats_client& svc_nats,
+                  ores::database::context db_ctx,
+                  const feed_kind_registry& registry,
+                  const ores::synthetic::feed::feed_build_context& build,
+                  std::shared_ptr<ores::synthetic::feed::fault_state> faults)
+        : nats_(nats)
+        , svc_nats_(svc_nats)
+        , db_ctx_(std::move(db_ctx))
+        , registry_(registry)
+        , build_(build)
+        , faults_(std::move(faults))
+        , worker_([this](ores::platform::concurrency::stop_token stop) { run(stop); }) {}
+
+    ~adapter_fleet() {
+        worker_.request_stop();
+        if (worker_.joinable())
+            worker_.join();
+        for (auto& one : adapters_) {
+            one.adapter->stop();
+            one.runner->stop_all();
+        }
+    }
+
+private:
+    void run(ores::platform::concurrency::stop_token stop) {
+        using namespace std::chrono_literals;
+        auto wait = 2s;
+        while (!stop.stop_requested()) {
+            ores::marketdata::client::market_data_client client(svc_nats_);
+            const auto sources = client.list_market_data_sources();
+            if (sources) {
+                adapters_ = make_adapters(*sources, db_ctx_, nats_, registry_, build_, faults_);
+                for (auto& one : adapters_)
+                    one.adapter->start();
+                if (adapters_.empty())
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "The catalogue holds no simulated source, so the simulator serves no "
+                           "adapter.";
+                else
+                    BOOST_LOG_SEV(lg(), info)
+                        << adapters_.size() << " simulated source(s) served as adapters";
+                return;
+            }
+            BOOST_LOG_SEV(lg(), warn)
+                << "The catalogue is not readable yet, so the simulator "
+                   "serves no adapter: "
+                << sources.error() << ". Trying again in " << wait.count() << " s.";
+            ores::platform::concurrency::wait_for(
+                stop, std::chrono::duration_cast<std::chrono::milliseconds>(wait));
+            wait = std::min(wait * 2, std::chrono::seconds(30));
+        }
+    }
+
+    ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& svc_nats_;
+    ores::database::context db_ctx_;
+    const feed_kind_registry& registry_;
+    const ores::synthetic::feed::feed_build_context& build_;
+    std::shared_ptr<ores::synthetic::feed::fault_state> faults_;
+    std::vector<simulated_adapter> adapters_;
+    ores::platform::concurrency::jthread worker_;
+};
 }
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
@@ -180,14 +255,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
-    auto adapters = make_adapters(db_ctx, nats, registry, adapter_build, faults);
-    for (auto& one : adapters)
-        one.adapter->start();
-    if (adapters.empty())
-        BOOST_LOG_SEV(lg(), warn)
-            << "The catalogue holds no simulated source, so the simulator serves no adapter.";
-    else
-        BOOST_LOG_SEV(lg(), info) << adapters.size() << " simulated source(s) served as adapters";
+    adapter_fleet fleet(nats, svc_nats, db_ctx, registry, adapter_build, faults);
 
     co_await ores::service::service::run(
         io_ctx,
@@ -209,10 +277,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
-    for (auto& one : adapters) {
-        one.adapter->stop();
-        one.runner->stop_all();
-    }
     ctrl->shutdown();
     event_source.stop();
     co_return;

@@ -57,6 +57,7 @@ target_link_libraries(${tests_target_name}
         ores.nats.lib
         ores.service.lib
         ores.security.lib
+        ores.storage.core.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ores.openssl_cleanup

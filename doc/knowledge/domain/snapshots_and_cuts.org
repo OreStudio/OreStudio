@@ -118,10 +118,14 @@ that it builds from the series, the coordinate and the time, and a record time e
 own time. When a tick and an observation state the same coordinate at the same instant, the
 observation wins.
 
-A context with no party sees no ticks, because the party policy of the tick table lists
-the parties a session may see. A snapshot that lacks its live values for that reason must
-not look complete. The task "Refuse a tick read with no party" decides whether these reads
-refuse the context or name the missing party.
+A context with no party sees no ticks, because the party policy of the tick table lists the
+parties a session may see. A snapshot, a slice, an evolution or an export that lacks its live
+values for that reason must not look complete. So the handler of each one refuses a session
+that names no party. The reply has =success= false and the sentence of the outcome
+=party_required=, which the history call reports in the same words. The readers do not check,
+because a reader takes the context its caller gives it, and a test can read the observations of
+a tenant through a tenant context. A report run reads with a run token that names one party, so
+it reads the ticks of that party and no others.
 
 These reads value a series at a time. The history of ticks is another question, and
 [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]] answers it.

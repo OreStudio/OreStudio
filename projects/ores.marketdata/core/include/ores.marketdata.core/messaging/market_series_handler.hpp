@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -568,6 +569,11 @@ public:
             auto req = decode<export_market_data_to_storage_request>(msg);
             if (!req) {
                 resp.message = "Failed to decode request.";
+                reply(nats_, msg, resp);
+                return;
+            }
+            if (!names_a_party(ctx)) {
+                resp.message = party_required_message();
                 reply(nats_, msg, resp);
                 return;
             }

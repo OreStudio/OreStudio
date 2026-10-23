@@ -433,6 +433,7 @@ could not read it.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
@@ -454,6 +455,11 @@ could not read it.
             auto req = decode<export_market_data_to_storage_request>(msg);
             if (!req) {
                 resp.message = "Failed to decode request.";
+                reply(nats_, msg, resp);
+                return;
+            }
+            if (!names_a_party(ctx)) {
+                resp.message = party_required_message();
                 reply(nats_, msg, resp);
                 return;
             }

@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/the-adapter-fleet-survives-a-failed-start
-#+pr:
+#+pr: 3690
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3690][#3690]] | [synthetic] Keep the adapter fleet alive through a failed start |
 
 * Review
 

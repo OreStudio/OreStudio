@@ -82,6 +82,8 @@ interface Setting {
     /** The parameter as ORE writes it, which names its ore parameter. */
     readonly ore: string;
     readonly kind: Kind;
+    /** Whether the setting changes the numbers a run computes, and is not only operational. */
+    readonly changesNumbers: boolean;
     readonly options?: readonly string[];
     readonly min?: number;
     readonly max?: number;
@@ -89,8 +91,6 @@ interface Setting {
 
 interface Group {
     readonly id: 'fixings' | 'building' | 'execution';
-    /** Whether a setting in the group changes the numbers a run computes. */
-    readonly changesNumbers: boolean;
     readonly list: string;
     readonly rows: string;
     readonly put: string;
@@ -104,28 +104,54 @@ const OBSERVATION_MODELS = ['None', 'Disable', 'Defer', 'Unregister'] as const;
 export const GROUPS: readonly Group[] = [
     {
         id: 'fixings',
-        changesNumbers: true,
         list: fixingsSubjects.list_engine_settings_fixings_request,
         rows: 'engine_settings_fixings',
         put: fixingsSubjects.put_engine_settings_fixings_request,
         delete: fixingsSubjects.delete_engine_settings_fixings_request,
         versions: fixingsSubjects.list_engine_settings_fixings_versions_request,
         settings: [
-            { column: 'imply_todays_fixings', ore: 'implyTodaysFixings', kind: 'flag' },
-            { column: 'include_todays_cash_flows', ore: 'includeTodaysCashFlows', kind: 'flag' },
+            {
+                column: 'imply_todays_fixings',
+                ore: 'implyTodaysFixings',
+                kind: 'flag',
+                changesNumbers: true,
+            },
+            {
+                column: 'include_todays_cash_flows',
+                ore: 'includeTodaysCashFlows',
+                kind: 'flag',
+                changesNumbers: true,
+            },
             {
                 column: 'include_reference_date_events',
                 ore: 'includeReferenceDateEvents',
                 kind: 'flag',
+                changesNumbers: true,
             },
-            { column: 'enrich_index_fixings', ore: 'enrichIndexFixings', kind: 'flag' },
-            { column: 'ignore_fixing_lag', ore: 'ignoreFixingLag', kind: 'whole', min: 0 },
-            { column: 'ignore_fixing_lead', ore: 'ignoreFixingLead', kind: 'whole', min: 0 },
+            {
+                column: 'enrich_index_fixings',
+                ore: 'enrichIndexFixings',
+                kind: 'flag',
+                changesNumbers: true,
+            },
+            {
+                column: 'ignore_fixing_lag',
+                ore: 'ignoreFixingLag',
+                kind: 'whole',
+                changesNumbers: true,
+                min: 0,
+            },
+            {
+                column: 'ignore_fixing_lead',
+                ore: 'ignoreFixingLead',
+                kind: 'whole',
+                changesNumbers: true,
+                min: 0,
+            },
         ],
     },
     {
         id: 'building',
-        changesNumbers: true,
         list: buildingSubjects.list_engine_settings_building_request,
         rows: 'engine_settings_building',
         put: buildingSubjects.put_engine_settings_building_request,
@@ -136,30 +162,56 @@ export const GROUPS: readonly Group[] = [
                 column: 'observation_model',
                 ore: 'observationModel',
                 kind: 'choice',
+                changesNumbers: false,
                 options: OBSERVATION_MODELS,
             },
-            { column: 'lazy_market_building', ore: 'lazyMarketBuilding', kind: 'flag' },
-            { column: 'build_failed_trades', ore: 'buildFailedTrades', kind: 'flag' },
-            { column: 'continue_on_error', ore: 'continueOnError', kind: 'flag' },
-            { column: 'use_at_par_coupons_curves', ore: 'useAtParCouponsCurves', kind: 'flag' },
-            { column: 'use_at_par_coupons_trades', ore: 'useAtParCouponsTrades', kind: 'flag' },
+            {
+                column: 'lazy_market_building',
+                ore: 'lazyMarketBuilding',
+                kind: 'flag',
+                changesNumbers: false,
+            },
+            {
+                column: 'build_failed_trades',
+                ore: 'buildFailedTrades',
+                kind: 'flag',
+                changesNumbers: true,
+            },
+            {
+                column: 'continue_on_error',
+                ore: 'continueOnError',
+                kind: 'flag',
+                changesNumbers: true,
+            },
+            {
+                column: 'use_at_par_coupons_curves',
+                ore: 'useAtParCouponsCurves',
+                kind: 'flag',
+                changesNumbers: true,
+            },
+            {
+                column: 'use_at_par_coupons_trades',
+                ore: 'useAtParCouponsTrades',
+                kind: 'flag',
+                changesNumbers: true,
+            },
         ],
     },
     {
         id: 'execution',
-        changesNumbers: false,
         list: executionSubjects.list_engine_settings_execution_request,
         rows: 'engine_settings_execution',
         put: executionSubjects.put_engine_settings_execution_request,
         delete: executionSubjects.delete_engine_settings_execution_request,
         versions: executionSubjects.list_engine_settings_execution_versions_request,
         settings: [
-            { column: 'n_threads', ore: 'nThreads', kind: 'whole', min: 1 },
-            { column: 'log_mask', ore: 'logMask', kind: 'whole', min: 0 },
+            { column: 'n_threads', ore: 'nThreads', kind: 'whole', changesNumbers: false, min: 1 },
+            { column: 'log_mask', ore: 'logMask', kind: 'whole', changesNumbers: false, min: 0 },
             {
                 column: 'gzip_compression_level',
                 ore: 'gzipCompressionLevel',
                 kind: 'whole',
+                changesNumbers: false,
                 min: 0,
                 max: 9,
             },
@@ -404,13 +456,14 @@ async function documentation(session: LiveSession): Promise<Readonly<Record<stri
     return {
         groups: GROUPS.map((group) => ({
             id: group.id,
-            changesNumbers: group.changesNumbers,
+            changesNumbers: group.settings.some((setting) => setting.changesNumbers),
             settings: group.settings.map((setting) => {
                 const doc = byName.get(setting.ore);
                 return {
                     column: setting.column,
                     ore: setting.ore,
                     kind: setting.kind,
+                    changesNumbers: setting.changesNumbers,
                     options: setting.options ?? [],
                     min: setting.min ?? null,
                     max: setting.max ?? null,

@@ -4669,6 +4669,140 @@ const pt: SourceCatalogue = {
         },
     },
 
+    // engineSettings:begin
+    engineSettings: {
+        title: 'Configurações do motor',
+        lead: 'As configurações nomeadas com que o motor de risco é executado. Um relatório vincula uma, e vários relatórios podem compartilhá-la.',
+        columns: {
+            name: 'Nome',
+            party: 'Parte',
+            groups: 'Grupos definidos',
+            threads: 'Threads',
+            modifiedBy: 'Alterado por',
+            changed: 'Última alteração',
+        },
+        cell: {
+            groups: '{set} de {count}',
+            default: 'padrão',
+            noDescription: 'Sem descrição.',
+        },
+        add: {
+            title: 'Adicionar configurações do motor',
+            button: 'Adicionar',
+            lead: 'Dê um nome à configuração. Cada configuração começa no padrão do motor, e você define os grupos na página própria dela.',
+            create: 'Adicionar',
+        },
+        fields: {
+            name: 'Nome',
+            description: 'Descrição',
+            party: 'Parte',
+            groupsSet: 'Grupos definidos',
+            boundBy: 'Vinculado por',
+            modifiedBy: 'Alterado por',
+            changed: 'Última alteração',
+        },
+        tabs: {
+            label: 'Configurações do motor',
+            details: 'Detalhes',
+            reports: 'Usado por',
+            history: 'Histórico',
+        },
+        groups: {
+            fixings: {
+                title: 'Fixings e fluxos de caixa',
+                what: 'Quais fixings e quais fluxos contam.',
+            },
+            building: {
+                title: 'Construção do mercado e das operações',
+                what: 'Como o motor constrói o mercado e as operações, e o que faz quando a construção falha.',
+            },
+            execution: {
+                title: 'Execução',
+                what: 'Como o motor é executado, registra e escreve seus arquivos.',
+            },
+        },
+        yes: 'Sim',
+        no: 'Não',
+        changesNumbers: 'Altera os números',
+        operational: 'Operacional',
+        notSet: 'não definido',
+        partVersion: 'versão {version}',
+        edit: 'Editar',
+        save: 'Salvar',
+        documentation: 'Documentação',
+        showDocumentation: 'Mostrar a documentação',
+        hideDocumentation: 'Ocultar a documentação',
+        defaultOption: 'Padrão ({value})',
+        default: 'Padrão: {value}',
+        defaultIs: 'Padrão: {text}',
+        changed: 'alterado',
+        filters: {
+            set: 'Definido nesta configuração',
+            numbers: 'Altera os números',
+            shown: '{shown} de {count} configurações exibidas',
+            none: 'Nenhuma configuração corresponde aos filtros.',
+        },
+        noRow: 'Esta configuração não tem linha para {group}. O motor usa o padrão para cada configuração aqui.',
+        rowBy: 'Última alteração por {who}.',
+        changesTheNumbers: 'Estas configurações alteram os números que uma execução calcula.',
+        reach: {
+            unknown:
+                'Os relatórios que vinculam estas configurações não puderam ser lidos, então o alcance desta alteração é desconhecido.',
+            none: 'Nenhum relatório vincula estas configurações do motor, então esta alteração não alcança nenhuma execução.',
+            some: 'Esta configuração é vinculada por {count} relatórios. Eles são executados com ela a partir da próxima execução.',
+        },
+        conflict:
+            'Estas configurações mudaram desde que você as abriu. Leia-as de novo antes de alterá-las.',
+        reload: 'Ler de novo',
+        noChanges: 'Nenhuma alteração ainda',
+        oneChange: '1 alteração',
+        changes: '{count} alterações',
+        undocumented:
+            'A documentação de {name} não está nos dados, então só o valor dela pode ser exibido.',
+        documentationUnread: 'A documentação das configurações não pôde ser lida: {message}',
+        schema: {
+            xml: 'XML do ORE',
+            format: 'Formato',
+            introduced: 'Introduzido em',
+            removed: 'Removido em',
+        },
+        reports: {
+            lead: 'Uma alteração alcança a próxima execução de cada relatório abaixo. Uma execução já produzida mantém o que usou.',
+            none: 'Nenhum relatório vincula estas configurações do motor. Uma alteração aqui não alcança nenhuma execução.',
+            unread: 'Os relatórios que vinculam estas configurações não puderam ser lidos.',
+            count: '{count} relatórios',
+        },
+        history: {
+            lead: 'Cada versão destas configurações do motor e de seus grupos, da mais recente para a mais antiga. Reverter escreve os valores que um grupo tinha antes de uma alteração como uma nova versão.',
+            central: 'A configuração',
+            created: 'Criado',
+            changed: 'Alterado',
+            version: 'versão {version}',
+            current: 'atual',
+            revert: 'Reverter',
+        },
+        revert: {
+            title: 'Reverter o grupo',
+            lead: 'Isto escreve os valores que o grupo tinha antes da alteração como uma nova versão. O histórico mantém a versão que ela substitui.',
+            nothing: 'O grupo já contém estes valores.',
+        },
+        rename: {
+            title: 'Alterar o nome e a descrição',
+        },
+        delete: {
+            title: 'Excluir {name}',
+            warning:
+                'Isto exclui a configuração e seus grupos. O histórico de uma configuração excluída é mantido.',
+            bound: '{count} relatórios vinculam estas configurações do motor, então elas não podem ser excluídas. Desvincule-os primeiro.',
+        },
+        problem: {
+            whole: '{setting} deve ser um número inteiro.',
+            choice: '{setting} deve ser um dos valores da lista.',
+            min: '{setting} deve ser no mínimo {min}.',
+            max: '{setting} deve ser no máximo {max}.',
+        },
+    },
+    // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
         author: {
@@ -4833,6 +4967,9 @@ const pt: SourceCatalogue = {
             title: 'Relatórios',
             lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
             screens: {
+                engineSettings: 'Configurações do motor',
+                engineSettingsBody:
+                    'Com quais configurações o motor executa os relatórios, para a parte em que você trabalha.',
                 pricingEngines: 'Motores de avaliação',
                 pricingEnginesBody:
                     'Que modelo e que motor avaliam cada produto, para a parte em que trabalha.',
@@ -5048,6 +5185,9 @@ const pt: SourceCatalogue = {
         pricingEnginesRead: 'ver as configurações de motor de avaliação',
         pricingEnginesWrite: 'alterar as configurações de motor de avaliação',
         pricingEnginesDelete: 'remover as configurações de motor de avaliação',
+        engineSettingsRead: 'ver as configurações do motor',
+        engineSettingsWrite: 'alterar as configurações do motor',
+        engineSettingsDelete: 'remover as configurações do motor',
     },
 
     unavailable: {

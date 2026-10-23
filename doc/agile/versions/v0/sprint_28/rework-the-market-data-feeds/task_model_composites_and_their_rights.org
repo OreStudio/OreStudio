@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-composites-and-their-rights
-#+pr:
+#+pr: 3661
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3661][#3661]] | [marketdata] Model composites and their rights |
 
 * Review
 

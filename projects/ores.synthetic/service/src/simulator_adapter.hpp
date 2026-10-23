@@ -62,7 +62,8 @@ struct simulator_adapter_timing final {
 class simulator_adapter final {
 private:
     static auto& lg() {
-        static auto instance = ores::logging::make_logger("ores.synthetic.service.simulator_adapter");
+        static auto instance =
+            ores::logging::make_logger("ores.synthetic.service.simulator_adapter");
         return instance;
     }
 

@@ -49,8 +49,9 @@ auto& lg() {
 // (from its oresmd_uri), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
 //
 // @throws vintage_data_missing_error if no matching observation is found.
-double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
-                                     const ores::synthetic::domain::fx_spot_generation_config& cfg) {
+double
+resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
+                              const ores::synthetic::domain::fx_spot_generation_config& cfg) {
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
                                  ", date=" + cfg.vintage_date + ", datum=" + cfg.oresmd_uri + ".";
 
@@ -224,8 +225,9 @@ void fx_spot_feed::start() {
             }
         },
         [this](const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << published_subject()
-                                       << "' oresmd_uri='" << quote_uri_ << "': " << ex.what();
+            BOOST_LOG_SEV(lg(), error)
+                << "SYNTHETIC PUBLISH FAILED: subject='" << published_subject() << "' oresmd_uri='"
+                << quote_uri_ << "': " << ex.what();
         });
 }
 

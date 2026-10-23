@@ -89,7 +89,8 @@ struct feed_kind_candidate final {
     /** The feed starts from a vintage price, so its start reads marketdata. */
     bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
-    /** The vendor id the feed quotes when it serves an adapter. A kind with no vendor rows leaves it empty. */
+    /** The vendor id the feed quotes when it serves an adapter. A kind with no vendor rows leaves
+     * it empty. */
     std::optional<ores::marketdata::messaging::vendor_id> vendor;
 
     /** Built lazily: only the vintage verb reads it. */

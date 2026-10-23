@@ -63,8 +63,7 @@ inline std::vector<generator_offer> system_generator_offers(const feed_kind_regi
         const auto subject =
             ores::marketdata::domain::adapter_ingress_subject(adapter_id, vendor.external_id);
         out.push_back(generator_offer{
-            .id = vendor,
-            .make = [&registry, &build, target, vendor, subject] {
+            .id = vendor, .make = [&registry, &build, target, vendor, subject] {
                 auto outcome = target.row.candidate.build_input(target.binding_mode);
                 if (!outcome.input)
                     throw std::runtime_error(outcome.skip_reason);

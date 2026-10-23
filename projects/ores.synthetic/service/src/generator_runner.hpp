@@ -74,7 +74,8 @@ struct demand_outcome final {
 class generator_runner final {
 private:
     static auto& lg() {
-        static auto instance = ores::logging::make_logger("ores.synthetic.service.generator_runner");
+        static auto instance =
+            ores::logging::make_logger("ores.synthetic.service.generator_runner");
         return instance;
     }
 

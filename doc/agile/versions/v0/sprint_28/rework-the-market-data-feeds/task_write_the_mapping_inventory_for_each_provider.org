@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-mapping-inventory-for-each-provider
+#+pr: 3662
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Each provider has a reviewed list of vendor instruments, fields, mappings and mi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,12 @@ Each provider has a reviewed list of vendor instruments, fields, mappings and mi
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. List what the current feeds simulate: 26 FX spot pairs and a short-rate curve for 28 currencies.
+2. Write the FX pairs once, in a generator, and derive from that list both the rows the bundle installs and the table of the inventory page, so the two cannot differ.
+3. Write each id in the vendor's notation. Mint none. Mark the rows of markets with a non-deliverable variant for a check against the vendor.
+4. State what is not inventoried: the rate curves, ICE and Tradeweb, and why.
+5. Check the notation against the identifier survey, and add the page to the architecture hub.
 
 * Measurements
 
@@ -76,12 +82,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3662][#3662]] | [marketdata] Write the mapping inventory for each provider |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The temporary table drops on commit before the second insert, under plain psql | vendor instruments populate | Accept | Both inserts and the table are in one do block, as the sibling scripts do. |
+| 2 | A rerun adds a second current mapping if one is re-dated | vendor instruments populate | Accept | The check tests the open mapping of the instrument only. |
+| 3 | The md5 ids are not version 4 uuids | vendor instruments populate | Decline | The ids are only keys. No check reads their version, and the same identity must give the same id. |
+| 4 | The deviation note is empty and not null | vendor instruments populate | Decline | The entity writes an empty note for a row that is not minted, and its test relies on it. |
+| 5 | The LSEG direction of GBP, AUD and NZD | inventory page | Decline | GBP= quotes USD per GBP, so it runs in the direction of the GBP/USD item. |
 
 * Result
+
+The catalogue now installs the 26 FX spot pairs that the simulated feeds quote, in the notation of Bloomberg, LSEG and ORE: 78 vendor instruments and 78 mappings that map the three providers to the same oresmd items. No id is minted. The new populate script derives the id of each vendor instrument from its identity, so a second run writes the same rows. The inventory page lists the rows, says how each id is written, and marks the 6 pairs of currencies with a non-deliverable variant (INR, KRW, TWD, BRL, CLP, COP) as =to confirm=, which is 12 vendor instruments of Bloomberg and LSEG. The notation agrees with the examples of the identifier survey. The SQL schema check, the populate reference check and the documentation checks pass.
+
+Left for later work, and stated on the page:
+- A person with access to the Bloomberg and LSEG screens must confirm the rows marked =to confirm= and the rows marked =standard=. The public documents do not define the notation, so the list is a reviewed proposal and not a verified list.
+- The short-rate curves of 28 currencies have no rows. A curve tick from a vendor adapter is dropped as =unmapped= until the pillar ids are written down.
+- ICE and Tradeweb have no rows, because the feeds simulate nothing in their asset classes and their notation is not public.
+- The populate script did not run against a database, because the worktree =.env= is at version 32.

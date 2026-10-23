@@ -32,6 +32,9 @@
 \echo '--- Market Data Catalogue ---'
 \ir ./marketdata_catalogue_populate.sql
 
+\echo '--- Market Data Vendor Instruments and Mappings ---'
+\ir ./marketdata_vendor_instruments_populate.sql
+
 \echo '--- FX Driver Rates Seed Data: 2016 Vintages ---'
 \ir ./marketdata_fx_driver_rates_populate.sql
 

@@ -40,6 +40,7 @@ One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a 
 |------+-------+-------+-----+-------------|
 | [[id:B418C38D-D16B-4256-9B13-01EEA59A2A28][Record the issues of an end to end run]] | DONE | | 2026-10-21 | The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix. |
 | [[id:9A64C459-EF1D-47B4-B526-73AA6753FEEB][Show a report run in the grid]] | BACKLOG | | | The grid views must show the jobs a report run sends to the grid, to every account that may watch it. |
+| [[id:FC1CEA57-FD12-4ACA-B9FD-9FCE4E4B136A][Export market data without a query per series]] | DONE | | 2026-10-23 | The market data export read each series with its own statements, so a tenant with 306 series needed 38 seconds and the report run timed out at 30. Read the tenant in two statements and log each phase. |
 
 * Decisions
 

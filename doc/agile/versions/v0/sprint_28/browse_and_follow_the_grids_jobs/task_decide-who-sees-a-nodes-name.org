@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ A recorded decision states which roles see a node name on a result, and the scre
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-22                               |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -75,13 +75,15 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3672 | Decide who sees a node's name |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The dates on the task page still say 2026-10-22. | task page | Fixed | Both dates now say 2026-10-23. |
+| 2 | The State and Now cells lose their alignment. | task page | Skipped | The change affects only raw org text. |
+| 3 | A test pins each role. | journey | No change needed | True for the roles that exist. |
 
 * Result
 

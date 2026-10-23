@@ -65,9 +65,11 @@ const std::string export_subject("ores.test.tick_party.export");
 const std::string storage_subject("ores.test.tick_party.export_to_storage");
 
 /// The permissions of the five reads, so that the session check is the only one that can refuse.
-const std::vector<std::string> permissions{"marketdata::curve_snapshots:read",
-                                           "marketdata::observations:read",
-                                           "marketdata::market_observations:read"};
+/// A token carries its permissions in the claim named roles, which is why the fixture hands
+/// this list to mint_token as the roles.
+const std::vector<std::string> read_roles{"marketdata::curve_snapshots:read",
+                                          "marketdata::observations:read",
+                                          "marketdata::market_observations:read"};
 
 /// Each handler runs on the NATS worker thread, as the registrar runs it in the service: one
 /// instance for each inbound message, with the real database context.
@@ -105,7 +107,7 @@ struct handler_fixture {
     }
 
     std::string token(const std::vector<std::string>& visible) {
-        return mint_token(db.tenant_id().to_string(), party, visible, permissions);
+        return mint_token(db.tenant_id().to_string(), party, visible, read_roles);
     }
 
     /// The reply of the handler on @p subject to @p req, decoded as @p Resp.
@@ -156,6 +158,10 @@ TEST_CASE("every_read_of_ticks_refuses_a_session_that_names_no_party", tags) {
     CHECK(stored.message == sentence);
 }
 
+// The reads have no series identity to resolve here, so each one fails for some other reason
+// and the case states only what the party check owes: a session that names a party is not
+// refused with the sentence of party_required. That a party reads its own ticks and no
+// others is shown for the history call over NATS, and for the as-of reads at the repository.
 TEST_CASE("a_session_that_names_a_party_is_not_refused_for_want_of_one", tags) {
     handler_fixture f;
     const auto bearer = f.token({boost::uuids::to_string(f.party)});

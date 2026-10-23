@@ -565,15 +565,15 @@ public:
         }
         const auto& ctx = *ctx_expected;
         export_market_data_to_storage_response resp;
-        if (!names_a_party(ctx)) {
-            resp.message = party_required_message();
-            reply(nats_, msg, resp);
-            return;
-        }
         try {
             auto req = decode<export_market_data_to_storage_request>(msg);
             if (!req) {
                 resp.message = "Failed to decode request.";
+                reply(nats_, msg, resp);
+                return;
+            }
+            if (!names_a_party(ctx)) {
+                resp.message = party_required_message();
                 reply(nats_, msg, resp);
                 return;
             }

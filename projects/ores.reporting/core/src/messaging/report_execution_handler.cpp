@@ -82,8 +82,9 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
     try {
         const auto& codec = ores::nats::default_wire_codec();
         const auto msg = nats.authenticated_request(Req::nats_subject, codec.encode(request));
-        BOOST_LOG_SEV(nats_call_lg(), elapsed_ms() > 5000 ? warn : debug)
-            << Req::nats_subject << " answered in " << elapsed_ms() << " ms";
+        const auto took = elapsed_ms();
+        BOOST_LOG_SEV(nats_call_lg(), took > 5000 ? warn : debug)
+            << Req::nats_subject << " answered in " << took << " ms";
 
         const auto err_it = msg.headers.find("X-Error");
         if (err_it != msg.headers.end()) {

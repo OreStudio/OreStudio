@@ -87,13 +87,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | Export market data without a query per series |
+| 3688 | Export market data without a query per series |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The manual point merge of the bulk as-of read is not tested. | repository tests | Fixed | A new case compares the bulk read with the read for one series before the manual point, between it and a later feed write, and after both. |
+| 2 | A datum with only a tick is not covered. | export tests | No change needed | The export equivalence test has a tick that wins over an observation. A tick-only datum shares the same SQL branch. |
+| 3 | The bulk read holds the whole tenant in memory. | market_observation_repository.hpp | Fixed | The method comment says the answer grows with history. |
+| 4 | The bulk SQL copies the per-series SQL. | market_observation_repository.cpp | Fixed in part | The comment of the bulk read says a change to one is a change to the other. The equivalence tests guard the drift. A shared statement is a larger change. |
+| 5 | nats_call reads the clock twice. | report_execution_handler.cpp | Fixed | The duration is read once. The log line comes before the X-Error check, so a slow call that the server rejects is still logged. |
+| 6 | The tick id must stay identical in both reads. | market_observation_repository.cpp | No change needed | Both statements use the same md5 expression, and the equivalence tests compare the datums. |
 
 * Result
 

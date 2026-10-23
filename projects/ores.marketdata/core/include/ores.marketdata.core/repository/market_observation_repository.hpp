@@ -243,7 +243,8 @@ public:
      *
      * One statement for the whole tenant. A caller that needs the observations of many
      * series asks here, because a statement for each series pays the planner once for
-     * every chunk of the hypertable.
+     * every chunk of the hypertable. The rows are held in memory together, so the size
+     * of the answer grows with the history the tenant keeps.
      */
     std::vector<domain::market_observation> read_latest_all(context ctx);
 
@@ -252,7 +253,9 @@ public:
      *
      * Each series gives what @c read_as_of gives for it: the latest point of each datum at
      * or before the instant, from the observation and tick tables, with a current manual
-     * point owning its datum. A row carries its series in @c series_id.
+     * point owning its datum. A row carries its series in @c series_id. The statement
+     * is that of @c read_as_of_records without its series filter, and a change to one
+     * is a change to the other.
      */
     std::vector<domain::market_observation>
     read_as_of_all(context ctx, const std::chrono::system_clock::time_point& as_of_datetime);

@@ -97,6 +97,7 @@
 #include "ores.shell/app/commands/trading/trade_link_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_party_role_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_state_commands.hpp"
+#include "ores.shell/app/commands/trading/trade_summary_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_type_commands.hpp"
 #include "ores.shell/app/commands/trading/vanilla_swap_instrument_commands.hpp"
 
@@ -181,6 +182,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     trade_link_type_commands::register_commands(root_menu, session);
     trade_party_role_commands::register_commands(root_menu, session);
     trade_state_commands::register_commands(root_menu, session);
+    trade_summary_commands::register_commands(root_menu, session);
     trade_type_commands::register_commands(root_menu, session);
     vanilla_swap_instrument_commands::register_commands(root_menu, session);
 }

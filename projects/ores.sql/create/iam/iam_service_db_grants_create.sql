@@ -239,12 +239,14 @@ select _ores_grant_dml_fn('ores_inbox_notifications_', :'trading_service_user');
 select _ores_grant_dml_fn('ores_inbox_notification_arguments_', :'trading_service_user');
 select _ores_grant_dml_fn('ores_inbox_notification_recipients_', :'trading_service_user');
 select _ores_grant_dml_fn('ores_inbox_notification_deliveries_', :'trading_service_user');
+grant select on ores_trading_trade_summaries_vw to :trading_service_user;
 select _ores_grant_select_fn('ores_inbox_approval_', :'trading_service_user');
 select _ores_grant_select_fn('ores_inbox_notification_kinds_', :'trading_service_user');
 select _ores_grant_select_fn('ores_inbox_notification_channels_', :'trading_service_user');
 select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'trading_service_user');
+select _ores_grant_select_fn('ores_dq_fsm_states_', :'trading_service_user');
 
 -- ---------------------------------------------------------------------------
 -- compute_service: Compute Grid domain service

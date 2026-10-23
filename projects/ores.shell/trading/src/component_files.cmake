@@ -93,6 +93,7 @@ set(files
     "app/commands/trading/trade_link_type_commands.cpp"
     "app/commands/trading/trade_party_role_commands.cpp"
     "app/commands/trading/trade_state_commands.cpp"
+    "app/commands/trading/trade_summary_commands.cpp"
     "app/commands/trading/trade_type_commands.cpp"
     "app/commands/trading/vanilla_swap_instrument_commands.cpp"
 )
@@ -172,6 +173,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_link_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_party_role_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_state_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_summary_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/vanilla_swap_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.trading.hpp"

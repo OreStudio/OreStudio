@@ -28,9 +28,9 @@ Build the read model under the trade list. A row holds the trade or the structur
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Plan written. The trade summary task is absorbed. |
+| Now          | Generator profile and the trade rows of the view are done. Structure rows and the state and request tests remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the =read-model= profile and the view archetype to the generator. |
+| Next         | Add the structure rows to the view. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -83,6 +83,7 @@ task and name that file in the Command column.
 | PostgreSQL version of the dev server | 18.6, and the build links 18.4. =security_invoker= needs 15 or later | =psql --version=, and =PG_VERSION= in the vcpkg =pg_config.h= | ec01ab89e4 |
 | Views that already use =security_invoker= | 8, one for each asset class in =marketdata_series_identity_views_create.sql= | =grep -n security_invoker projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql= | ec01ab89e4 |
 | Code in =sqlgen= that checks a table exists | 0 hits for =information_schema=, =pg_class= and =pg_tables= | =grep -rIn= over the =sqlgen= headers | ec01ab89e4 |
+| Trade summary tests against the view | 10 cases, 26 assertions pass: counterparty, instrument type, book, trade date, authorisation status (not requested, not required), identifier search, id search, paging, sort, total. Not yet tested: the state name, and a row whose request exists | =ores.trading.core.tests "[trade_summary]"= with =.env= loaded | this commit |
 | Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
 | Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 

@@ -33,13 +33,13 @@ A public body such as the ECB or the Federal Reserve publishes rates every day. 
 
 ** The table
 
-=ores_marketdata_published_quotes_tbl= is one table for the whole system. It is a hypertable like the tick table: rows are only added, a correction is a new row, and the reader takes the latest =retrieved_at=. The system tenant owns it, every tenant reads it, and a loader role alone writes it. It has no retention, because the history is kept.
+=ores_marketdata_published_quotes_tbl= is one table for the whole system. It is a hypertable on =ts= with a chunk interval of one year, because daily rows for a small set of series are sparse. Rows are only added, a correction is a new row, and the reader takes the latest =retrieved_at=. The prose calls a row a =published_quote=, and the table name is the longer form. The system tenant owns it, every tenant reads it, and a loader role alone writes it. It has no retention, because the history is kept.
 
 | Column | Meaning |
 |--------+---------|
 | =item_id=, =item_uri= | What the value is, in oresmd notation |
-| =ts= | The valid time the publisher gives. A publisher that gives only a date gets midnight UTC, and =granularity= says =day= or =instant= |
-| =value= | =numeric=, exactly as published |
+| =ts= | The valid time the publisher gives. A publisher that gives only a date gets midnight UTC, and =granularity= says =day= or =instant=. A =day= row is eligible on its own date, whatever the time of the publication, because the clock compares dates and not instants |
+| =value= | =numeric=, exactly as published. A day that the publisher marks as missing (=ND= in H.10, =.= in FRED, an absent day at the ECB) has no row. The loader never stores a null |
 | =source_key= | The id the publisher used, such as =D.USD.EUR.SP00.A= or =DEXUSEU= |
 | =retrieved_at= | The transaction time |
 | =fetch_id= | The HTTP response that produced the row |
@@ -64,7 +64,7 @@ Frankfurter is a fetcher, an access route, and not a publisher. It is asked for 
 
 ** Seeding
 
-The shell command is =quotes seed --publisher ecb --from 2020-01-01 --to today [--items ...] [--refresh]=. It calls one NATS operation, =marketdata.v1.ops.seed_quotes=, which needs the permission =marketdata::quotes:seed=. A load is idempotent on =(publisher, source key, ts)=: a day that is loaded is skipped unless =--refresh= is given. =today= comes from the market clock. The daily top-up is a scheduled job that runs the same operation from the last loaded day to today. No other code fetches.
+The shell command is =quotes seed --publisher ecb --from 2020-01-01 --to today [--items ...] [--refresh]=. It calls one NATS operation, =marketdata.v1.ops.seed_published_quotes=, which needs the permission =marketdata::published_quotes:seed=. The names follow the existing =marketdata::<entity>:<verb>= permissions and =marketdata.v1.ops.<verb>= subjects. A load is idempotent because the loader checks =(publisher, source key, ts)= before it inserts and skips a day that is loaded, unless =--refresh= is given. No unique constraint enforces it, because a refresh adds a second row for the same key and a hypertable unique index must also hold the partition column. =today= comes from the market clock of the capture [[id:CF2FFE22-85E6-4490-B44D-37657F9B76EE][A system clock drives the date the feeds read]]. Until a system clock exists, the host clock gives the date, and neither the seed command nor the daily job waits for it. The daily top-up is a scheduled job that runs the same operation from the last loaded day to today. No other code fetches.
 
 ** How the calibration points at it
 
@@ -73,7 +73,7 @@ A generator config has =price_source= of =fixed= or =published=, and for =publis
 - =quote_policy=: =latest_on_or_before_clock=, or =exact:<date>= for a repeatable run;
 - =quote_window_days=, the window of the volatility.
 
-=published_quote_reader= has =latest(item, on_or_before)= and =window(item, to, days)=. Each returns the value with a provenance handle: publisher, source key, =ts=, =retrieved_at= and fetch. The feed screen shows it: "ECB EUR/USD of 22 Oct, retrieved 23 Oct 06:00 through Frankfurter". A pair that no publisher covers stays =fixed= and says so.
+=published_quote_reader= has =latest(item, on_or_before)= and =window(item, to, days)=. Each returns the value with a provenance handle: publisher, source key, =ts=, =retrieved_at= and fetch. The feed screen shows it: "ECB EUR/USD of 22 Oct, retrieved 23 Oct 06:00 through Frankfurter". A pair that no publisher covers stays =fixed= and says so. A window skips the days that have no row, so a window with gaps holds fewer returns. The log return spans the gap, and the reader reports the number of returns it used.
 
 ** Why not market_observation
 

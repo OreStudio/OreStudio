@@ -36,11 +36,11 @@ The level of a synthetic price comes from a public source that anyone can check,
 * Acceptance
 
 - The task needs the published quotes of the task [[file:task_load_published_quotes_from_the_public_sources.org][Load published quotes from the public sources]]. It loads nothing itself.
-- A generator config carries =price_source= of =fixed= or =published=. For =published= it carries a quote item (an oresmd URI), a policy (=latest_on_or_before_clock= or =exact:<date>=) and a window in days for the volatility. The vintage columns are gone.
+- A generator config carries =price_source= of =fixed= or =published=. For =published= it carries a quote item (an oresmd URI), a policy (=latest_on_or_before_clock= or =exact:<date>=) and a window in days for the volatility. The task drops the vintage columns.
 - A feed starts from the value that the reader returns for the item and the date of the market clock, and its volatility is the spread of the log returns over the window. A cross rate is computed from two stored values and marked derived.
 - A pair with no published quote keeps its fixed level, and the feed screen says so.
 - The feed screen shows the publisher, the source key, the valid time and the time of retrieval of the value a feed started from.
-- The 2016 ORE vintage and the vintage datasets calibrate no generator, and the dependency rows that required them are gone.
+- The 2016 ORE vintage and the vintage datasets calibrate no generator, and the task removes the dependency rows that required them.
 
 * Plan
 

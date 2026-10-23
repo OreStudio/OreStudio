@@ -36,9 +36,9 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 * Acceptance
 
 - The table published_quote is an append-only hypertable owned by the system tenant. Each row has an oresmd item, the valid time, an exact numeric value, the publisher's own key, the time of retrieval and the fetch.
-- The publisher catalogue, the publisher series mapping, the load and the fetch are entities. A publisher cannot be enabled until its terms are read, and the raw body of every fetch is kept in storage with its hash.
+- The publisher catalogue, the publisher series mapping, the load and the fetch are entities. A publisher cannot be enabled until its terms are read. The terms of the Frankfurter route, the Fed and the Treasury are read and recorded on the sources page, with the credit each asks for, before the task seeds them. The page lists no source whose terms are unread when the task closes. The raw body of every fetch is kept in storage with its hash.
 - A fetcher interface has a Frankfurter fetcher, tested on stored payloads, and it asks for one provider at a time. A credential is resolved from a reference and never stored, logged or kept in a URL.
-- The command quotes seed loads a range of a publisher idempotently, a daily job tops it up from the last loaded day to the date of the market clock, and nothing else fetches.
+- The command quotes seed loads a range of a publisher idempotently, a daily job tops it up from the last loaded day to the date of the market clock. Until the system clock exists, both use the host date. Nothing else fetches, and a test shows that no feed code path calls a fetcher.
 - A reader returns the latest value on or before a date and a window with the provenance, and a cross rate is computed there and marked derived.
 - Loading needs no stochastic process, and a test loads and reads with no calibration present.
 

@@ -33,7 +33,6 @@ namespace {
 const std::string tags("[feed_controller]");
 
 using ores::marketdata::domain::IFeed;
-using ores::synthetic::domain::binding_mode;
 using ores::synthetic::feed::producer_subject;
 using ores::synthetic::service::feed_binding_store;
 using ores::synthetic::service::feed_controller;
@@ -143,57 +142,26 @@ struct producer_kinds {
 
 }
 
-TEST_CASE("producer_subject: bound publishes on the source's tick subject, for every kind", tags) {
-    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) ==
+TEST_CASE("producer_subject: a feed publishes on the source's tick subject, for every kind", tags) {
+    CHECK(producer_subject("EUR_USD_GBM") ==
           "synthetic.v1.ops.tick.EUR_USD_GBM");
-    CHECK(producer_subject("usd.sofr", binding_mode::bound) == "synthetic.v1.ops.tick.usd.sofr");
+    CHECK(producer_subject("usd.sofr") == "synthetic.v1.ops.tick.usd.sofr");
 }
 
-TEST_CASE("producer_subject: sandboxed publishes on a distinct subject the "
-          "marketdata ingest loop never subscribes to, for every kind",
-          tags) {
-    const auto bound_subject = producer_subject("EUR_USD_GBM", binding_mode::bound);
-    const auto sandboxed_subject = producer_subject("EUR_USD_GBM", binding_mode::sandboxed);
-
-    CHECK(sandboxed_subject == "synthetic.v1.ops.sandbox_tick.EUR_USD_GBM");
-    CHECK(sandboxed_subject != bound_subject);
-    CHECK(producer_subject("usd.sofr", binding_mode::sandboxed) ==
-          "synthetic.v1.ops.sandbox_tick.usd.sofr");
-    // The ingest loop's one wildcard is "synthetic.v1.ops.tick.>" (see
-    // feed_ingest_loop.cpp) -- the sandboxed subject must not collide with
-    // that prefix under any source_name, or the exclusion isn't real.
-    CHECK(sandboxed_subject.starts_with("synthetic.v1.ops.sandbox_tick."));
-    CHECK_FALSE(bound_subject.starts_with("synthetic.v1.ops.sandbox_tick."));
+TEST_CASE("producer_subject: unsafe characters are replaced", tags) {
+    CHECK(producer_subject("weird name!*>") == "synthetic.v1.ops.tick.weird_name___");
 }
 
-TEST_CASE("producer_subject: same source_name never collides across binding modes, "
-          "for a variety of source names",
-          tags) {
-    const std::vector<std::string> sources{"eur.usd", "eur-usd", "EUR_USD_2", "weird name!*>"};
-    for (const auto& source : sources) {
-        const auto bound = producer_subject(source, binding_mode::bound);
-        const auto sandboxed = producer_subject(source, binding_mode::sandboxed);
-        CHECK(bound != sandboxed);
-    }
-}
-
-TEST_CASE("producer_subject: unsafe characters are still replaced under sandboxed "
-          "binding mode, matching bound's sanitisation",
-          tags) {
-    CHECK(producer_subject("weird name!*>", binding_mode::sandboxed) ==
-          "synthetic.v1.ops.sandbox_tick.weird_name___");
-}
-
-TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike", tags) {
+TEST_CASE("starting a feed creates its feed_binding, for FX and IR alike", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
     const std::vector<std::shared_ptr<IFeed>> feeds{
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
-    REQUIRE(f.ctrl->start(feeds[0], binding_mode::bound, test_bearer) ==
+    REQUIRE(f.ctrl->start(feeds[0], test_bearer) ==
             feed_controller::start_result::started);
-    REQUIRE(f.ctrl->start(feeds[1], binding_mode::bound, test_bearer) ==
+    REQUIRE(f.ctrl->start(feeds[1], test_bearer) ==
             feed_controller::start_result::started);
 
     REQUIRE(f.store->bindings_.size() == 2);
@@ -210,7 +178,7 @@ TEST_CASE("the controller names the running feed that holds a series", tags) {
     controller_fixture f;
 
     const auto fx = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
-    REQUIRE(f.ctrl->start(fx, binding_mode::bound, test_bearer) ==
+    REQUIRE(f.ctrl->start(fx, test_bearer) ==
             feed_controller::start_result::started);
 
     const auto held = f.ctrl->running_source_name_for_series({kinds.fx_oresmd_uri});
@@ -228,24 +196,7 @@ TEST_CASE("the binding a synthetic store creates names a generated producer, for
     CHECK(marketdata_binding_store::binding_for("usd.sofr").producer_kind == "SYNTHETIC");
 }
 
-TEST_CASE("starting a sandboxed feed never creates a feed_binding, for FX and IR alike", tags) {
-    producer_kinds kinds;
-    controller_fixture f;
-
-    REQUIRE(
-        f.ctrl->start(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
-                      binding_mode::sandboxed,
-                      test_bearer) == feed_controller::start_result::started);
-    REQUIRE(
-        f.ctrl->start(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role),
-                      binding_mode::sandboxed,
-                      test_bearer) == feed_controller::start_result::started);
-
-    CHECK(f.store->bindings_.empty());
-    CHECK(f.ctrl->running_count() == 2);
-}
-
-TEST_CASE("starting a bound feed twice does not duplicate its feed_binding, for FX and IR alike",
+TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and IR alike",
           tags) {
     producer_kinds kinds;
     controller_fixture f;
@@ -254,9 +205,9 @@ TEST_CASE("starting a bound feed twice does not duplicate its feed_binding, for 
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     for (const auto& feed : feeds) {
-        REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
+        REQUIRE(f.ctrl->start(feed, test_bearer) ==
                 feed_controller::start_result::started);
-        REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
+        REQUIRE(f.ctrl->start(feed, test_bearer) ==
                 feed_controller::start_result::already_running);
     }
 
@@ -265,33 +216,18 @@ TEST_CASE("starting a bound feed twice does not duplicate its feed_binding, for 
     CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
 }
 
-TEST_CASE("an already-running sandboxed feed is not bound by a re-start, whatever mode it requests",
-          tags) {
-    producer_kinds kinds;
-    controller_fixture f;
-
-    const auto feed = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
-    REQUIRE(f.ctrl->start(feed, binding_mode::sandboxed, test_bearer) ==
-            feed_controller::start_result::started);
-    REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
-            feed_controller::start_result::already_running);
-
-    CHECK(f.store->bindings_.empty());
-}
-
-TEST_CASE("add() binds a feed of every kind through the same gate start() uses", tags) {
+TEST_CASE("add() binds a feed of every kind as start() does", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
     CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
-                      binding_mode::bound,
                       test_bearer));
     CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role),
-                      binding_mode::sandboxed,
                       test_bearer));
 
-    REQUIRE(f.store->bindings_.size() == 1);
+    REQUIRE(f.store->bindings_.size() == 2);
     CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
+    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
 }
 
 TEST_CASE("feeds_conflict: feeds that share a series conflict — both would write points "

@@ -33,7 +33,7 @@ const std::string tags("[provision_step]");
 
 using ores::iam::messaging::classify_step_kind;
 using ores::iam::messaging::parse_lei_hierarchy_arguments;
-using ores::iam::messaging::parse_market_feed_arguments;
+using ores::iam::messaging::parse_market_data_arguments;
 using ores::iam::messaging::parse_photo_arguments;
 using ores::iam::messaging::parse_provision_party_arguments;
 using ores::iam::messaging::parse_publish_bundle_arguments;
@@ -59,7 +59,7 @@ TEST_CASE("the executor classifies each kind it executes into its own action", t
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);
     CHECK(classify_step_kind("set_staff_passwords") == provision_step_action::set_staff_passwords);
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);
-    CHECK(classify_step_kind("start_market_feeds") == provision_step_action::start_market_feeds);
+    CHECK(classify_step_kind("subscribe_market_data") == provision_step_action::subscribe_market_data);
     CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
     CHECK(classify_step_kind("complete_provisioning") ==
           provision_step_action::complete_provisioning);
@@ -230,18 +230,21 @@ TEST_CASE("a photo step's party logo key is optional", tags) {
     CHECK(arguments.party_logo.empty());
 }
 
-TEST_CASE("a market feed step reads its dataset", tags) {
+TEST_CASE("a market data step reads its provider", tags) {
     const auto arguments =
-        parse_market_feed_arguments(R"({"dataset": "synthetic.feeds.bloomberg"})");
+        parse_market_data_arguments(R"({"provider": "ore", "source": "ore-simulated"})");
 
-    CHECK(arguments.dataset == "synthetic.feeds.bloomberg");
+    CHECK(arguments.provider == "ore");
+    CHECK(arguments.source == "ore-simulated");
 }
 
-TEST_CASE("a market feed step that names no dataset is refused", tags) {
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"),
-                      "The step names no 'dataset' argument.");
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"dataset": 7})"),
-                      "The step's argument 'dataset' is not a string.");
+TEST_CASE("a market data step that names no provider is refused", tags) {
+    CHECK_THROWS_WITH(parse_market_data_arguments(R"({})"),
+                      "The step names no 'provider' argument.");
+    CHECK_THROWS_WITH(parse_market_data_arguments(R"({"provider": 7})"),
+                      "The step's argument 'provider' is not a string.");
+    CHECK_THROWS_WITH(parse_market_data_arguments(R"({"provider": "ore"})"),
+                      "The step names no 'source' argument.");
 }
 
 TEST_CASE("a password step reads the password its profile states", tags) {

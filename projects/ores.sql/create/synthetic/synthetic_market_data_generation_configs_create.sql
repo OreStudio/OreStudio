@@ -26,15 +26,11 @@
  *
  * A top-level container that owns one or more typed sub-configurations (FX spot
  * now; vol surface, interest-rate curves later). It is the recipe for how
- * synthetic market data is produced. Carries two orthogonal axes: scope
- * (system/tenant/party) decides the sharing radius -- who consumes the same
- * generated data -- and binding_mode (bound/sandboxed) decides whether
- * that data is authoritative for real feed consumers or reachable only by
- * explicit selection. tenant_id and party_id follow the scope: a system
- * collection belongs to the system tenant and its system party, the party the
- * super administrator works in; a tenant collection belongs to its tenant with
- * no party; a party collection belongs to its tenant and party. A system
- * collection's feeds are the installation's, and every tenant reads them.
+ * synthetic market data is produced. A collection belongs to the system tenant and
+ * its system party, the party the super administrator works in. Every tenant reads
+ * it and only the system tenant writes it, because a simulated feed stands for one
+ * observation in the world and every party must see the same value. See
+ * [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
  */
 
 create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
@@ -42,8 +38,6 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid null,
-    "scope" text not null,
-    "binding_mode" text not null,
     "name" text not null,
     "description" text not null,
     "enabled" boolean not null,
@@ -63,7 +57,7 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ((scope = 'system' and tenant_id = ores_utility_system_tenant_id_fn() and party_id is not null) or (scope = 'tenant' and party_id is null) or (scope = 'party' and party_id is not null))
+    check (party_id is not null)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -90,39 +84,6 @@ begin
     -- Validate provider_code
     NEW.provider_code := ores_synthetic_validate_market_data_provider_fn(NEW.tenant_id, NEW.provider_code);
 
-    -- At most one enabled bound config per *wider-scope-vs-narrower-scope*
-    -- pair. Reject-at-activation: ambiguity must never reach a consumer,
-    -- so a narrower-scope config cannot be enabled while a wider (or
-    -- equal-but-different-owner) one already covers it -- the caller must
-    -- explicitly supersede (disable/retire) it first. sandboxed configs
-    -- never participate; they cannot conflict.
-    --
-    -- Deliberately does NOT block two enabled bound configs at the SAME
-    -- party -- a party legitimately owns several named containers (e.g.
-    -- "Basic" and "Realistic", published from different DQ datasets; see
-    -- this entity's party_id doc comment). This check has no visibility
-    -- into which instruments each container's sub-configs actually cover
-    -- (that information lives one layer down, in fx_spot_generation_config
-    -- et al, which don't exist yet at container-insert time), so it can
-    -- only guard the scope-widening case this story is actually about --
-    -- not per-instrument overlap within one party's own containers.
-    if NEW.enabled and NEW.binding_mode = 'bound' then
-        if exists (
-            select 1 from ores_synthetic_market_data_generation_configs_tbl
-            where id != NEW.id
-              and enabled = true
-              and binding_mode = 'bound'
-              and valid_to = ores_utility_infinity_timestamp_fn()
-              and (
-                  NEW.scope = 'system' or scope = 'system'
-                  or (NEW.scope = 'tenant' and scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
-                  or (scope = 'tenant' and NEW.scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
-              )
-        ) then
-            raise exception 'Conflicting bound synthetic config: another enabled bound config already covers this scope. Supersede (disable or retire) it before activating this one.'
-                using errcode = '23514';
-        end if;
-    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

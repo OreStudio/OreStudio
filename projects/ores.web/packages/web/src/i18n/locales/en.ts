@@ -4194,11 +4194,6 @@ export const en: SourceCatalogue = {
                 state: 'State',
                 shouldRun: 'Should run',
                 stoppedCount: '{count} stopped',
-                bound: 'Bound',
-                sandboxed: 'Sandboxed',
-                system: 'System',
-                systemNote:
-                    "The installation's own feeds. They run once for every tenant, and only the system tenant starts and stops them.",
                 openInTree: 'Open in the feed tree',
                 assetClass: 'Asset class',
             },

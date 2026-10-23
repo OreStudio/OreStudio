@@ -25,7 +25,6 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -150,7 +149,7 @@ private:
  * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
  * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
  * stdevs/weights via process_factory, seeded from random_device; the publish subject is derived
- * from the config's source_name under @p binding_mode via producer_subject().
+ * from the config's source_name via producer_subject().
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation
  * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
@@ -170,8 +169,6 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  ores::synthetic::domain::binding_mode binding_mode =
-                      ores::synthetic::domain::binding_mode::bound,
                   std::optional<adapter_target> adapter = std::nullopt);
 
 }

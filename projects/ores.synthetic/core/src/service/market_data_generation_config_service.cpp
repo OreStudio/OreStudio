@@ -104,8 +104,6 @@ domain::market_data_generation_config
 to_domain(const messaging::market_data_generation_config_write& write) {
     domain::market_data_generation_config v;
     v.id = write.id;
-    v.scope = write.scope;
-    v.binding_mode = write.binding_mode;
     v.name = write.name;
     v.description = write.description;
     v.enabled = write.enabled;

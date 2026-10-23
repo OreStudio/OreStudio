@@ -422,16 +422,13 @@ OreStudio runs the party setup in five phases, shown in the log panel:
    individual trades and positions — and the standard set of
    risk-report definitions (=ore.report_definitions=), since reports
    reference the book/portfolio tree.
-3. *Phase 3: publishing synthetic market data configuration* —
-   publishes the =synthetic_bloomberg= bundle in full: the FX spot
-   and IR curve generation configs of the "Bloomberg" synthetic feeds,
-   and any further asset class added to the bundle in future. Two
-   other sets of synthetic feeds exist -- =synthetic_ore_samples_2016=
-   ("2016 ORE Samples", matching the conventions ORE's own sample data
-   comes from) and =synthetic_uniform_demo= (a simple, non-vintage
-   demo/exercise archetype) -- publish those separately (e.g. via
-   =ores.shell=) if you want them available too. Only one set of
-   feeds should run at once, because two sets tick the same pairs.
+3. *Phase 3: subscribing to market data* — publishes no generator.
+   The generators of the synthetic feeds (Bloomberg, Refinitiv, ICE,
+   Tradeweb, the 2016 ORE samples and the uniform demo) belong to the
+   system tenant, and the system bundle installs them once for every
+   tenant. The step gives each party a subscription to the provider
+   =ore= and a route to its source =ore-simulated=, so the party
+   receives the shared simulated values.
 4. *Phase 4: publishing FX driver rates* — publishes the curated
    =marketdata.reference_vintage_2016_02_05= bundle so the party has
    real market series/observations to browse.

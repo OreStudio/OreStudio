@@ -51,9 +51,7 @@ function folder(
         parent_id: 'root',
         name,
         kind,
-        scope: provider === 'ore' ? 'party' : 'system',
         provider_code: provider,
-        binding_mode: 'bound',
         fx_feeds: fx,
         ir_feeds: ir,
         running_feeds: running,
@@ -86,7 +84,6 @@ describe('the providers of the collections', () => {
         expect(entries.map((entry) => entry.code)).toEqual(['bloomberg', 'ore']);
         expect(entries[0]?.collections).toHaveLength(2);
         expect(totalOf(entries[0]?.totals ?? totalsOf([]))).toBe(56);
-        expect(entries[0]?.bound).toBe(true);
     });
 });
 

@@ -169,7 +169,7 @@ const acmeDemo = {
         { kind: 'provision_party', order: 30 },
         { kind: 'load_staff', order: 40 },
         { kind: 'attach_photos', order: 50 },
-        { kind: 'start_market_feeds', order: 60 },
+        { kind: 'subscribe_market_data', order: 60 },
     ],
     parameters: [],
 };

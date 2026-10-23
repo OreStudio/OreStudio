@@ -142,8 +142,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // it can see, and it starts a generator for each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats};
     generator_runner runner([&registry, &adapter_build, adapter_ctx = db_ctx] {
-        return system_generator_offers(
-            registry, adapter_ctx, adapter_build, std::string(simulator_adapter_id));
+        return system_generator_offers(registry,
+                                       adapter_ctx,
+                                       adapter_build,
+                                       std::string(simulator_adapter_id),
+                                       std::string(simulator_provider_code));
     });
     simulator_adapter adapter(
         nats, runner, std::string(simulator_adapter_id), std::string(simulator_provider_code));

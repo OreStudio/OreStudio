@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-simulator-to-ores-marketdata-synthetic
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The simulator lives in ores.marketdata.synthetic, implements the adapter contrac
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,6 +44,36 @@ The simulator lives in ores.marketdata.synthetic, implements the adapter contrac
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The task is two pull requests, because the two halves fail for different reasons and a reviewer reads them
+differently. The first changes behaviour. The second changes names only.
+
+*Pull request 1: the adapter.*
+
+1. Name the vendor id of a generator. An FX spot generator for the pair =EUR/USD= quotes the ORE key
+   =FX/RATE/EUR/USD= with the field =value=, the notation the catalogue installs for the provider =ore=.
+   Only FX has vendor rows today, so only FX generators are adapter generators. The rate curves keep to the
+   old path until their rows exist.
+2. Let a generator publish an adapter tick. The FX generator takes an optional adapter target: the vendor
+   id and the ingress subject. With a target it publishes =adapter_tick= on
+   =marketdata.v1.ingress.<adapter>.<id token>=. Without one it publishes the old =market_tick=.
+3. Add the runner. It holds the generators that run, keyed by vendor id. It takes the full demand set and
+   answers accepted and rejected ids. It starts the generators the set adds, stops the ones it drops, and
+   refuses a second generator for one vendor instrument. It knows nothing of NATS or of the database, so a
+   unit test drives it.
+4. Add the adapter. It announces the id =ore-simulated= for the provider =ore= with the universe of the
+   generators it can build, answers the demand request on =marketdata.v1.adapters.ore-simulated.demand=, and
+   sends a heartbeat. The generator configs it builds from are the ones the system tenant owns.
+5. Remove the run grant, the run token cache and the restore walk. The feed identity, the restore pass, its
+   retry policy, the restore verb and the run grant column of the collection go. A generator that starts
+   from a vintage price reads marketdata as the service, so a vintage price in a tenant collection no longer
+   resolves. The next task makes the generators system-owned, which is the case that remains.
+6. Test the runner and the tick translation without a server, and the whole path (announce, demand, tick,
+   ingest) against the live NATS and the rebuilt database.
+
+*Pull request 2: the name.* Move =projects/ores.synthetic= to =projects/ores.marketdata.synthetic= and change the
+component name, the library names, the namespaces, the include paths and the generated files with it. The
+change is a script that runs the move and the regeneration, so the reviewer reruns it.
 
 * Measurements
 

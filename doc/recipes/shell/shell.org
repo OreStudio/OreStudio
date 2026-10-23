@@ -1734,30 +1734,6 @@ tangled into the runnable script library
 
 - [[id:C5B268A3-BF5D-50EC-9A77-A81BB844F652][How do I run the subscriptions commands from the shell?]]
 
-* Delivery Counts
-
-- [[id:6A2DAD2C-C948-5FEA-9B6E-EB731CC409EC][How do I run the delivery_counts commands from the shell?]]
-
-* Demand Intervals
-
-- [[id:A1BB2DEE-A705-5B74-9A5F-887F3DB7633C][How do I run the demand_intervals commands from the shell?]]
-
-* Subscription Intervals
-
-- [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]
-
-* Rate Card Components
-
-- [[id:9928C6E3-7B14-5C96-8A69-35733E371659][How do I run the rate_card_components commands from the shell?]]
-
-* Composite Inputs
-
-- [[id:61BFFDA4-C2AD-5C42-92E2-C13029C490AA][How do I run the composite_inputs commands from the shell?]]
-
-* Composites
-
-- [[id:5FFF1AC6-E2D5-585F-9324-0A0DD0F202F1][How do I run the composites commands from the shell?]]
-
 * Engine Settings
 
 - [[id:817F93B3-E2B3-50C3-A6EF-E94062C9F413][How do I run the engine_settings commands from the shell?]]
@@ -1773,3 +1749,27 @@ tangled into the runnable script library
 * Engine Settings Fixings
 
 - [[id:19E6840B-B36B-52AF-9398-50E4FEFCB8EE][How do I run the engine_settings_fixings commands from the shell?]]
+
+* Composite Inputs
+
+- [[id:61BFFDA4-C2AD-5C42-92E2-C13029C490AA][How do I run the composite_inputs commands from the shell?]]
+
+* Composites
+
+- [[id:5FFF1AC6-E2D5-585F-9324-0A0DD0F202F1][How do I run the composites commands from the shell?]]
+
+* Delivery Counts
+
+- [[id:6A2DAD2C-C948-5FEA-9B6E-EB731CC409EC][How do I run the delivery_counts commands from the shell?]]
+
+* Demand Intervals
+
+- [[id:A1BB2DEE-A705-5B74-9A5F-887F3DB7633C][How do I run the demand_intervals commands from the shell?]]
+
+* Rate Card Components
+
+- [[id:9928C6E3-7B14-5C96-8A69-35733E371659][How do I run the rate_card_components commands from the shell?]]
+
+* Subscription Intervals
+
+- [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]

@@ -57,6 +57,8 @@
 \ir ./marketdata_subscriptions_notify_trigger_create.sql
 \ir ./marketdata_routes_create.sql
 \ir ./marketdata_routes_notify_trigger_create.sql
+\ir ./marketdata_rate_card_components_create.sql
+\ir ./marketdata_rate_card_components_notify_trigger_create.sql
 \ir ./marketdata_delivery_counts_create.sql
 \ir ./marketdata_delivery_counts_notify_trigger_create.sql
 \ir ./marketdata_demand_intervals_create.sql

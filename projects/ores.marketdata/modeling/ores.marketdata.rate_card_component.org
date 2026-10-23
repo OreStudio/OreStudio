@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: E5E52DFF-655E-474B-B2CE-5027767FEF45
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.rate_card_component
+#+description: Codegen entity model for the marketdata rate_card_components table; one charge of the rate card of a source: what the vendor charges for, and how much.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: rate_card_component
+#+entity_plural: rate_card_components
+#+entity_title: Rate Card Component
+#+brief: One charge of the rate card of a source: what the vendor charges for, and how much.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A rate card belongs to a source. It is the set of components that apply to the source in a period. Each
+component has a driver, which says what the vendor counts, and a charge for one unit of it. A rating step
+applies the components to the usage events of a period and gives the bill of the source.
+
+A simulated source carries a card of its own with illustrative charges, or published ones where they
+exist. The model is the same for every source, so a simulated source gives a shadow bill with the same
+lines as a live one. The system tenant owns the cards, because the platform owns the vendor contracts.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this component.
+
+** source_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+References =market_data_source.id=: the source whose vendor charges this way. A rate card belongs to a source.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** driver
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+What the charge counts: =fixed_per_period=, =per_instrument=, =per_party=, =per_licence= or =per_thousand_ticks=.
+
+#+begin_src cpp :name generator
+std::string("per_party")
+#+end_src
+
+** licence_right
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:nullable: false
+:default_value: ""
+:no_generator_suffix: true
+:END:
+
+The right a =per_licence= component charges for: =non_display= or =derived=. Empty for every other driver.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:default_value: "USD"
+:END:
+
+The ISO code of the currency the charge is in.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** charge_micros
+:PROPERTIES:
+:type:        bigint
+:cpp_type:    std::int64_t
+:nullable: false
+:default_value: 0
+:END:
+
+What one unit of the driver costs, in millionths of the currency. Whole numbers keep a bill exact: the charge for a count is the count times this number.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100000)
+#+end_src
+
+** effective_from
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:natural_key: true
+:nullable: false
+:END:
+
+When the component starts to apply. A new contract is a new component from a new date, so the old events keep the old charge.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** effective_to
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the component stops to apply, or null while it applies.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_rate_card_components_tbl
+:rls_tenant_isolation:      true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "driver" in ('fixed_per_period', 'per_instrument', 'per_party', 'per_licence', 'per_thousand_ticks') |
+| ("driver" = 'per_licence' and "licence_right" in ('non_display', 'derived')) or ("driver" <> 'per_licence' and "licence_right" = '') |
+| "charge_micros" >= 0 |
+| "currency" ~ '^[A-Z]{3}$' |
+| "effective_to" is null or "effective_to" > "effective_from" |
+
+
+* Insert trigger
+** Validations
+
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: rate_card_component
+:entity_plural_short:   rate_card_components
+:entity_singular_words: rate card component
+:entity_plural_words:   rate card components
+:END:
+
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rat
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/rate_card_component.hpp
+:domain_class:            ores::marketdata::domain::rate_card_component
+:protocol_include:        ores.marketdata.api/messaging/rate_card_component_protocol.hpp
+:collection_name:         rate_card_components
+:key_field:               driver
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field          | label         | widget            | type      | is_key | is_required | placeholder       |
+|----------------+---------------+-------------------+-----------+--------+-------------+-------------------|
+| driver         | Driver        | driverEdit        | line_edit | true   | true        | Enter driver      |
+| licence_right  | Licence right | licenceRightEdit  | line_edit |        |             | non_display or derived |
+| currency       | Currency      | currencyEdit      | line_edit |        | true        | USD               |
+
+*** Columns
+
+| enum_name    | field          | header   | type   | width |
+|--------------+----------------+----------+--------+-------|
+| Driver       | driver         | Driver   | string | 160   |
+| LicenceRight | licence_right  | Licence  | string | 100   |
+| Currency     | currency       | Currency | string | 80    |
+| ChargeMicros | charge_micros  | Charge   | int    | 120   |
+| Version      | version        | Version  | int    | 80    |
+
+* See also
+
+- [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] -- the card these components make.
+

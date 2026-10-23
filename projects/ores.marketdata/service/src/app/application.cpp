@@ -37,6 +37,7 @@
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
+#include "ores.marketdata.service/messaging/bill_handler.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
@@ -49,6 +50,7 @@
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/rate_card_component_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
@@ -172,6 +174,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto subscription_sub =
         mdsm::register_subscription_event_mapping(event_source, event_bus, nats);
     auto route_sub = mdsm::register_route_event_mapping(event_source, event_bus, nats);
+    auto rate_card_component_sub =
+        mdsm::register_rate_card_component_event_mapping(event_source, event_bus, nats);
     auto delivery_count_sub =
         mdsm::register_delivery_count_event_mapping(event_source, event_bus, nats);
     auto demand_interval_sub =
@@ -285,6 +289,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::crm_handler h(n, c, v, crm_bridge);
                                       h.rates(std::move(msg));
                                   }));
+            subs.push_back(n.queue_subscribe(std::string(mm::compute_bill_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::bill_handler h(n, c, v);
+                                                 h.compute(std::move(msg));
+                                             }));
             subs.push_back(
                 n.queue_subscribe(std::string(mm::list_adapter_status_request::nats_subject),
                                   queue,

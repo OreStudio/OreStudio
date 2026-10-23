@@ -48,7 +48,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:E41BD4AC-8603-4E5D-8558-19E9E657EF6B][Add subscriptions and routes]] | DONE | 2026-10-23 | 2026-10-23 | Add the subscription with rights and the route to one source for each provider. |
 | [[id:8354553E-21FB-4785-A8F5-73D95B28DC76][Track adapter state and demand]] | DONE | 2026-10-23 | 2026-10-23 | Track each adapter's state, compute its demand set, and check its universe against the catalogue. |
 | [[id:BAB5D8D0-76C6-43C5-93A5-D495E03C6378][Meter usage events]] | DONE | 2026-10-23 | 2026-10-23 | Record subscription intervals, demand intervals and delivery counts for each party. |
-| [[id:DAA15D3D-F31E-4FAB-BAAF-37072815F31E][Add rate cards, rating and allocation]] | BACKLOG | | | Add the rate card on a source, the rating step and the allocation of a source bill to parties. |
+| [[id:DAA15D3D-F31E-4FAB-BAAF-37072815F31E][Add rate cards, rating and allocation]] | DONE | 2026-10-23 | 2026-10-23 | Add the rate card on a source, the rating step and the allocation of a source bill to parties. |
 | [[id:B6B90346-B5B7-4B21-88DD-B30C445CC6E6][Model composites and their rights]] | BACKLOG | | | Add the composite, its inputs and rule, the derived-right check, and the attribution of its use to its input providers. |
 | [[id:2856500E-6771-474E-8899-765761D7A0A5][Move the simulator to ores.marketdata.synthetic as an adapter]] | BACKLOG | | | Rename the synthetic component under market data and make the runner serve a demand set as an adapter. |
 | [[id:EF8A62C0-B72A-47AC-8976-B29FF2360A42][Make generators system-owned and bundle-installed]] | BACKLOG | | | Move every collection, folder and generator to the system tenant and party and install them with the system bundle. |

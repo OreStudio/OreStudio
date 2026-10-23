@@ -122,9 +122,9 @@ tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& 
 }
 
 std::int16_t tick_coords_repository::resolve(context ctx,
-                                                 const boost::uuids::uuid& party_id,
-                                                 const boost::uuids::uuid& series_id,
-                                                 const std::string& oresmd_uri) {
+                                             const boost::uuids::uuid& party_id,
+                                             const boost::uuids::uuid& series_id,
+                                             const std::string& oresmd_uri) {
     return resolve_all(std::move(ctx), {{party_id, series_id, oresmd_uri}}).front();
 }
 

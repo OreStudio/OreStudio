@@ -19,14 +19,14 @@
  */
 #include "ores.analytics.service/messaging/event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_engine_type_event_registrar.hpp"
-#include "ores.analytics.service/messaging/pricing_model_engine_pair_event_registrar.hpp"
-#include "ores.analytics.service/messaging/pricing_pair_setting_event_registrar.hpp"
-#include "ores.analytics.service/messaging/pricing_model_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_method_event_registrar.hpp"
-#include "ores.analytics.service/messaging/sensitivity_template_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_model_engine_pair_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_model_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_parameter_event_registrar.hpp"
+#include "ores.analytics.service/messaging/pricing_pair_setting_event_registrar.hpp"
+#include "ores.analytics.service/messaging/sensitivity_template_event_registrar.hpp"
 
 namespace ores::analytics::service::messaging {
 

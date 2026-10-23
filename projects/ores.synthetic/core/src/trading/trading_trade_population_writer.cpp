@@ -391,8 +391,8 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
         codec.encode(req));
     const auto error = reply.headers.find("X-Error");
     if (error != reply.headers.end())
-        throw trade_population_write_error(std::format(
-            "Writing bond issue {} was refused: {}", write.security_id, error->second));
+        throw trade_population_write_error(
+            std::format("Writing bond issue {} was refused: {}", write.security_id, error->second));
     auto decoded =
         codec.decode<ores::trading::messaging::put_bond_issue_composite_response>(reply.data);
     if (!decoded)

@@ -34,6 +34,7 @@
 #include "ores.nats/service/subscription.hpp"
 #include <atomic>
 #include <chrono>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -52,6 +53,10 @@ namespace ores::marketdata::service::app {
  * adapter stale when its heartbeat stops. The supervisor sends the full demand set of an adapter
  * when the adapter becomes ready, when it returns from stale, and when a route, a subscription,
  * a source, a vendor instrument or a mapping changes. The set always replaces the last one.
+ *
+ * An adapter id is the name of a source in the catalogue. The demand set of an adapter is the
+ * set of the source of that name, and an announce of an id that no source carries leaves the
+ * adapter with an empty set.
  *
  * The state machine is in the registry and the demand set is computed by @c compute_demand(),
  * both tested without NATS. This class holds the subscriptions, the catalogue snapshot and the
@@ -96,10 +101,15 @@ public:
                       std::chrono::system_clock::time_point now);
 
     /// Computes the demand set of @p adapter_id and sends it, and records the reply.
-    void send_demand(const std::string& adapter_id);
+    /// @return Whether the adapter answered. A failure is logged and the caller sends again.
+    bool send_demand(const std::string& adapter_id);
 
 private:
     struct snapshot;
+
+    /// Owes @p adapter_id a demand set from @p from on.
+    void owe_demand(const std::string& adapter_id,
+                    std::chrono::steady_clock::time_point from = std::chrono::steady_clock::now());
 
     void announce_message(const ores::nats::message& msg);
     void heartbeat_message(const ores::nats::message& msg);
@@ -111,7 +121,10 @@ private:
     adapter_registry registry_;
     mutable std::mutex mu_;
     std::shared_ptr<const snapshot> snapshot_;
-    std::set<std::string> needs_demand_;
+    /// The adapters that are owed a demand set, with the time from which to send it.
+    std::map<std::string, std::chrono::steady_clock::time_point> needs_demand_;
+    /// The adapters whose heartbeat arrived before they announced themselves, reported once.
+    std::set<std::string> unknown_reported_;
     std::atomic<bool> stop_{false};
     std::optional<ores::nats::service::subscription> announce_sub_;
     std::optional<ores::nats::service::subscription> heartbeat_sub_;

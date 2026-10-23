@@ -31,15 +31,24 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
+#include <tuple>
 
 namespace ores::marketdata::service::app {
 
 using namespace ores::logging;
 
+namespace {
+
+constexpr auto demand_retry_delay = std::chrono::seconds(2);
+
+}
+
 /// What the supervisor reads from the database: the demand catalogue and the provider codes.
 struct adapter_supervisor::snapshot {
     demand_catalogue catalogue;
     std::set<std::string> providers;
+    /// The vendor ids of the catalogue as provider, scheme, id and field, for the universe check.
+    std::set<std::tuple<std::string, std::string, std::string, std::string>> ids;
 };
 
 adapter_supervisor::adapter_supervisor(ores::nats::service::client& nats,
@@ -80,6 +89,8 @@ void adapter_supervisor::refresh() {
     next->catalogue.instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     next->catalogue.mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
+    for (const auto& v : next->catalogue.instruments)
+        next->ids.emplace(v.provider_code, v.id_scheme, v.external_id, v.field);
     next->catalogue.routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
     next->catalogue.subscriptions =
         repository::subscription_repository{}.read_latest_all_tenants(ctx_);
@@ -87,7 +98,13 @@ void adapter_supervisor::refresh() {
     std::lock_guard lock(mu_);
     snapshot_ = std::move(next);
     for (const auto& id : registry_.demandable())
-        needs_demand_.insert(id);
+        needs_demand_[id] = std::chrono::steady_clock::now();
+}
+
+void adapter_supervisor::owe_demand(const std::string& adapter_id,
+                                    std::chrono::steady_clock::time_point from) {
+    std::lock_guard lock(mu_);
+    needs_demand_[adapter_id] = from;
 }
 
 std::shared_ptr<const adapter_supervisor::snapshot> adapter_supervisor::current() const {
@@ -108,21 +125,15 @@ adapter_supervisor::on_announce(const messaging::adapter_announce_request& reque
         return snap->providers.contains(provider);
     };
     check.id_known = [&](const std::string& provider, const messaging::vendor_id& id) {
-        return std::ranges::any_of(
-            snap->catalogue.instruments, [&](const domain::market_data_vendor_instrument& v) {
-                return v.provider_code == provider && v.id_scheme == id.id_scheme &&
-                       v.external_id == id.external_id && v.field == id.field;
-            });
+        return snap->ids.contains({provider, id.id_scheme, id.external_id, id.field});
     };
     const auto response = registry_.announce(request, check, now);
     BOOST_LOG_SEV(lg(), response.success ? info : warn)
         << "Adapter '" << request.adapter_id << "' of provider '" << request.provider_code
         << "' announced: " << (response.success ? "ready" : response.message) << " ("
         << response.served_count << " served, " << response.unknown_count << " unknown)";
-    if (response.success) {
-        std::lock_guard lock(mu_);
-        needs_demand_.insert(request.adapter_id);
-    }
+    if (response.success)
+        owe_demand(request.adapter_id);
     return response;
 }
 
@@ -132,8 +143,17 @@ void adapter_supervisor::on_heartbeat(const std::string& adapter_id,
     const auto outcome = registry_.heartbeat(adapter_id, counter, now);
     if (outcome.recovered) {
         BOOST_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' recovered: sending its demand";
-        std::lock_guard lock(mu_);
-        needs_demand_.insert(adapter_id);
+        owe_demand(adapter_id);
+    } else if (!outcome.known) {
+        bool first = false;
+        {
+            std::lock_guard lock(mu_);
+            first = unknown_reported_.insert(adapter_id).second;
+        }
+        if (first)
+            BOOST_LOG_SEV(lg(), warn)
+                << "Heartbeat of adapter '" << adapter_id
+                << "' that has not announced itself: ignored until it announces";
     }
 }
 
@@ -165,7 +185,7 @@ void adapter_supervisor::heartbeat_message(const ores::nats::message& msg) {
     on_heartbeat(*adapter, beat->counter, std::chrono::system_clock::now());
 }
 
-void adapter_supervisor::send_demand(const std::string& adapter_id) {
+bool adapter_supervisor::send_demand(const std::string& adapter_id) {
     const auto snap = current();
     const auto result = compute_demand(snap->catalogue, std::chrono::system_clock::now());
     for (const auto& refused : result.refused) {
@@ -191,16 +211,18 @@ void adapter_supervisor::send_demand(const std::string& adapter_id) {
         if (!response) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to decode the demand reply of '" << adapter_id
                                       << "': " << response.error().what();
-            return;
+            return false;
         }
         registry_.demand_replied(adapter_id, request.ids.size(), *response);
         BOOST_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' accepted "
                                   << response->accepted.size() << " and rejected "
                                   << response->rejected.size() << " of " << request.ids.size()
                                   << " id(s)";
+        return true;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to send the demand to '" << adapter_id
                                   << "': " << e.what();
+        return false;
     }
 }
 
@@ -213,17 +235,28 @@ void adapter_supervisor::monitor_loop() {
         for (const auto& id : registry_.expire(system_clock::now()))
             BOOST_LOG_SEV(lg(), warn) << "Adapter '" << id << "' missed its heartbeat: stale";
 
-        std::set<std::string> due;
+        std::vector<std::string> due;
         {
+            const auto now = std::chrono::steady_clock::now();
             std::lock_guard lock(mu_);
-            due.swap(needs_demand_);
+            for (auto it = needs_demand_.begin(); it != needs_demand_.end();) {
+                if (it->second <= now) {
+                    due.push_back(it->first);
+                    it = needs_demand_.erase(it);
+                } else
+                    ++it;
+            }
         }
         for (const auto& id : due) {
             if (stop_.load(std::memory_order_relaxed))
                 break;
             const auto state = registry_.state_of(id);
-            if (state && *state != adapter_state::stale && *state != adapter_state::rejected)
-                send_demand(id);
+            if (!state || *state == adapter_state::stale || *state == adapter_state::rejected)
+                continue;
+            // A demand that did not arrive is sent again after a wait, because the adapter holds
+            // none until it does.
+            if (!send_demand(id))
+                owe_demand(id, std::chrono::steady_clock::now() + demand_retry_delay);
         }
     }
 }

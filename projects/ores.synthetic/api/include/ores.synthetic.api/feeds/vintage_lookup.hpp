@@ -76,34 +76,36 @@ find_vintage_observation(ores::nats::service::nats_client& auth_nats,
     auto delegated_nats = auth_nats.with_delegation(bearer);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    auto series = md_client.find_series_by_uri(series_uri, party_id);
-    if (!series)
-        return std::unexpected("Failed to look up series for '" + label + "': " + series.error());
-    if (!series->has_value())
-        return std::unexpected(missing_message);
+    auto all_series = md_client.find_series_by_uri(series_uri, party_id);
+    if (!all_series)
+        return std::unexpected("Failed to look up series for '" + label +
+                               "': " + all_series.error());
 
+    // The vintage source and date name one row, so the first match in any series is the row.
     constexpr std::uint32_t page_size = 200;
-    const auto series_id_str = boost::uuids::to_string((*series)->id);
-    std::uint32_t offset = 0;
-    for (;;) {
-        auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
-        if (!observations)
-            return std::unexpected("Failed to look up observations for '" + label +
-                                   "': " + observations.error());
-        for (const auto& obs : *observations) {
-            if (obs.source == vintage_source && obs.oresmd_uri == datum_uri &&
-                date_part(obs.observation_datetime) == vintage_date) {
-                try {
-                    return std::stod(obs.value);
-                } catch (const std::exception& e) {
-                    return std::unexpected("Vintage observation value '" + obs.value +
-                                           "' is not a valid number: " + e.what());
+    for (const auto& series : *all_series) {
+        const auto series_id_str = boost::uuids::to_string(series.id);
+        std::uint32_t offset = 0;
+        for (;;) {
+            auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
+            if (!observations)
+                return std::unexpected("Failed to look up observations for '" + label +
+                                       "': " + observations.error());
+            for (const auto& obs : *observations) {
+                if (obs.source == vintage_source && obs.oresmd_uri == datum_uri &&
+                    date_part(obs.observation_datetime) == vintage_date) {
+                    try {
+                        return std::stod(obs.value);
+                    } catch (const std::exception& e) {
+                        return std::unexpected("Vintage observation value '" + obs.value +
+                                               "' is not a valid number: " + e.what());
+                    }
                 }
             }
+            if (observations->size() < page_size)
+                break;
+            offset += page_size;
         }
-        if (observations->size() < page_size)
-            break;
-        offset += page_size;
     }
     return std::unexpected(missing_message);
 }

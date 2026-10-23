@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: B7F63BF8-8A4B-496B-A930-DC23F929318F
+:END:
+#+title: Task: The adapter fleet survives a failed start
+#+description: Follow-ups of the review of PR 3687 and a restart defect.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/the-adapter-fleet-survives-a-failed-start
+#+pr: 3690
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the simulator start reliably: an exception in the fleet worker must not end the process, a failed start must leave no adapter running, and a vintage read must find its rows when the identity holds series of several providers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The fleet worker catches an error, logs it and tries again.
+- A failed adapter start leaves no adapter running.
+- A restart with ticks already stored starts all 26 Bloomberg generators.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Review of PR #3687 triage:
+- Worker exceptions (point 1) and partial start (point 2): accepted and fixed. The fleet builds and starts into a local vector, stops what started if one start throws, and retries after a backoff.
+- Environments populated before the grant (point 3): accepted in part. A permission error now logs a hint to populate the IAM roles again. No upgrade note is written.
+- Rows published in session time (point 4): declined for now. Only a database that holds a vintage published before #3687 is affected, and the dev flow recreates the database.
+- Cast precision (point 5): checked. =observation_date= is a =date= column in the DQ artefact table.
+- Tests (point 6): not added in this task.
+
+A restart with ticks stored found a second defect. Vintage series (provider =ore=) and tick series (provider =bloomberg=) share one identity, and the vintage read took the first match, so 6 of 26 generators failed to start. The read now scans every series of the identity.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3690][#3690]] | [synthetic] Keep the adapter fleet alive through a failed start |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All 26 Bloomberg generators start on a restart with 10580 ticks stored. The check gate and the unit tests were not run.

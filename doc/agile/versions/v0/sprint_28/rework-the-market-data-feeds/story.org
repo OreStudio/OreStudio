@@ -69,6 +69,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:5CCD3099-EC5D-4F43-A106-33E3F235115B][Write the vendor tickers of the curve pillars]] | BACKLOG | | | Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves. |
 | [[id:BA6015F2-CE25-4289-82EC-5832ECFA67DE][The simulator reads its sources through marketdata]] | DONE | 2026-10-23 | 2026-10-23 | Restore ticking after the vendor-native move. |
 | [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] | BACKLOG | | | A table of what public bodies published, a publisher catalogue with provenance, fetchers, and a seed command, all independent of the calibration. |
+| [[id:B7F63BF8-8A4B-496B-A930-DC23F929318F][The adapter fleet survives a failed start]] | DONE | 2026-10-23 | 2026-10-23 | Follow-ups of the review of PR 3687 and a restart defect. |
 
 * Decisions
 

@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/serve-a-stored-input-or-output-as-a-download
-#+pr:
+#+pr: 3668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ A route streams the stored file after it checks that the caller may read the rec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -98,13 +98,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [web] Serve a stored input or output as a download |
+| #3668 | [web] Serve a stored input or output as a download |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A percent-encoded dot passes the path check | grid-downloads.ts | Fixed | Each segment is decoded and refused for a dot, a slash, a backslash or a control character, and the built address must equal the stated one. Tests cover the cases. |
+| 2 | The file name is under-sanitised | grid-downloads.ts | Fixed | The header has an ASCII fallback and the real name in the extended form. |
+| 3 | The upstream body is not released on an error | grid-downloads.ts | Fixed | The body is cancelled before the failure is thrown. |
+| 4 | No timeout and no redirect policy | grid-downloads.ts | Fixed | The wait for the headers is 15 seconds, and a redirect is an error. |
+| 5 | Content-Length from upstream | grid-downloads.ts | No change | The storage service does not compress its answers. |
+| 6 | DownloadLink lives in the tab module | GridJobs.tsx | Declined | The job page already imports the tab's other shared parts. |
+| 7 | The header limit is not in the server configuration | http_server_options.hpp | Noted | The default is bounded at 64 KB. A configuration entry can follow when a deployment needs another limit. |
 
 * Result
 

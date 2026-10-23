@@ -41,6 +41,9 @@ const idParamsSchema = z.object({
     id: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
 });
 
+/** How long the BFF waits for the storage service to answer with its headers. */
+const HEADER_TIMEOUT_MS = 15_000;
+
 /** Every stored object of the platform lives under this prefix of the storage service. */
 const STORAGE_PREFIX = '/api/v1/storage/';
 
@@ -52,6 +55,28 @@ const STORAGE_PREFIX = '/api/v1/storage/';
  * segment, no query and no fragment, so a bad row cannot reach another route.
  */
 export function storagePath(uri: string): string | null {
+    const path = plainStoragePath(uri);
+    if (path === null) {
+        return null;
+    }
+    // The URL parser reads a percent-encoded dot as a dot segment and collapses it, so
+    // the segments are decoded here and the built address must stay the one stated.
+    const segments = path.slice(STORAGE_PREFIX.length).split('/');
+    for (const segment of segments) {
+        let decoded: string;
+        try {
+            decoded = decodeURIComponent(segment);
+        } catch {
+            return null;
+        }
+        if (decoded === '.' || decoded === '..' || /[/\\\u0000-\u001f\u007f]/.test(decoded)) {
+            return null;
+        }
+    }
+    return new URL(path, 'http://storage.invalid').pathname === path ? path : null;
+}
+
+function plainStoragePath(uri: string): string | null {
     if (!uri.startsWith(STORAGE_PREFIX) || uri.length === STORAGE_PREFIX.length) {
         return null;
     }
@@ -63,6 +88,23 @@ export function storagePath(uri: string): string | null {
         return null;
     }
     return uri;
+}
+
+/**
+ * The Content-Disposition of a download: an ASCII fallback name and the real name in the
+ * extended form, so a name with spaces or accents survives and no character can break the
+ * header.
+ */
+export function dispositionFor(name: string): string {
+    const decoded = (() => {
+        try {
+            return decodeURIComponent(name);
+        } catch {
+            return name;
+        }
+    })();
+    const ascii = decoded.replace(/[^\x20-\x7e]|["\\%;]/g, '_');
+    return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(decoded)}`;
 }
 
 /** The file name a download is saved as: the last segment of the object path. */
@@ -109,24 +151,35 @@ async function stream(
     if (base === null) {
         throw notFound('The deployment has no file service.');
     }
+    // The wait is for the answer's headers only, so a large file is not cut off, and a
+    // redirect is an error, so the token is never sent to another address.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), HEADER_TIMEOUT_MS);
     let upstream: Response;
     try {
         upstream = await fetch(new URL(path, base), {
             headers: { Authorization: `Bearer ${session.client.token}` },
+            redirect: 'error',
+            signal: controller.signal,
         });
+        clearTimeout(timer);
     } catch {
+        clearTimeout(timer);
         throw new HttpFailure(502, {
             code: 'upstream-unavailable',
             message: 'The file service did not answer.',
         });
     }
     if (upstream.status === 404) {
+        await upstream.body?.cancel();
         throw notFound(`The stored ${what} is no longer there.`);
     }
     if (upstream.status === 401 || upstream.status === 403) {
+        await upstream.body?.cancel();
         throw notPermitted(`The file service refused the stored ${what}.`);
     }
     if (!upstream.ok || upstream.body === null) {
+        await upstream.body?.cancel();
         throw new HttpFailure(502, {
             code: 'upstream-unavailable',
             message: `The stored ${what} could not be read.`,
@@ -134,10 +187,7 @@ async function stream(
     }
     reply
         .header('Content-Type', upstream.headers.get('content-type') ?? 'application/octet-stream')
-        .header(
-            'Content-Disposition',
-            `attachment; filename="${downloadName(path).replace(/"/g, '')}"`,
-        )
+        .header('Content-Disposition', dispositionFor(downloadName(path)))
         .header('Cache-Control', 'private, no-store');
     const length = upstream.headers.get('content-length');
     if (length !== null) {

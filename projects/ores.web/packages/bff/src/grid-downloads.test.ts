@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { OresClient, SessionMode } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { downloadName, storagePath } from './grid-downloads.js';
+import { dispositionFor, downloadName, storagePath } from './grid-downloads.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -205,7 +205,9 @@ describe('GET /api/operations/grid/jobs/workunits/:id/input', () => {
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('input-bytes');
         expect(response.headers['content-type']).toBe('application/gzip');
-        expect(response.headers['content-disposition']).toBe('attachment; filename="batch.tar.gz"');
+        expect(response.headers['content-disposition']).toBe(
+            `attachment; filename="batch.tar.gz"; filename*=UTF-8''batch.tar.gz`,
+        );
         expect(response.headers['cache-control']).toBe('private, no-store');
         const [url, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
         expect(url.toString()).toBe(`http://files.test:20200${INPUT}`);
@@ -281,9 +283,7 @@ describe('GET /api/operations/grid/jobs/results/:id/output', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('output-bytes');
-        expect(response.headers['content-disposition']).toBe(
-            'attachment; filename="result.tar.gz"',
-        );
+        expect(response.headers['content-disposition']).toContain('filename="result.tar.gz"');
         expect(response.headers['content-type']).toBe('application/octet-stream');
     });
 
@@ -326,8 +326,34 @@ describe('the object path of a stored file', () => {
         ['/api/v1/storage/a?x=1'],
         ['/api/v1/storage/a#b'],
         ['/api/v1/storage/a\\b'],
+        ['/api/v1/storage/%2e%2e/%2e%2e/auth/x'],
+        ['/api/v1/storage/%2E/a'],
+        ['/api/v1/storage/.%2e/a'],
+        ['/api/v1/storage/a%2fb'],
+        ['/api/v1/storage/a%5cb'],
+        ['/api/v1/storage/a%0d%0ab'],
+        ['/api/v1/storage/%zz'],
         ['http://elsewhere.test/api/v1/storage/a'],
     ])('is nothing for %s', (uri) => {
         expect(storagePath(uri)).toBeNull();
+    });
+});
+
+describe('the name a download is saved as', () => {
+    it('keeps an ASCII fallback and the real name in the extended form', () => {
+        expect(dispositionFor('report one.tar.gz')).toBe(
+            `attachment; filename="report one.tar.gz"; filename*=UTF-8''report%20one.tar.gz`,
+        );
+        expect(dispositionFor('résumé.tar.gz')).toContain('filename="r_sum_.tar.gz"');
+        expect(dispositionFor('résumé.tar.gz')).toContain(
+            "filename*=UTF-8''r%C3%A9sum%C3%A9.tar.gz",
+        );
+    });
+
+    it('lets no character break the header', () => {
+        const header = dispositionFor('a"b;c%d.tar.gz');
+
+        expect(header).toContain('filename="a_b_c_d.tar.gz"');
+        expect(header).not.toMatch(/[\r\n]/);
     });
 });

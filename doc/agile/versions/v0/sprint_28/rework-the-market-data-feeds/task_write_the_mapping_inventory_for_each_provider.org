@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/write-the-mapping-inventory-for-each-provider
-#+pr:
+#+pr: 3662
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3662][#3662]] | [marketdata] Write the mapping inventory for each provider |
 
 * Review
 

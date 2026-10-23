@@ -4699,6 +4699,140 @@ const fr: SourceCatalogue = {
         },
     },
 
+    // engineSettings:begin
+    engineSettings: {
+        title: 'Paramètres du moteur',
+        lead: 'Les paramètres nommés avec lesquels le moteur de risque s’exécute. Un rapport en lie un, et plusieurs rapports peuvent le partager.',
+        columns: {
+            name: 'Nom',
+            party: 'Partie',
+            groups: 'Groupes définis',
+            threads: 'Threads',
+            modifiedBy: 'Modifié par',
+            changed: 'Dernière modification',
+        },
+        cell: {
+            groups: '{set} sur {count}',
+            default: 'défaut',
+            noDescription: 'Aucune description.',
+        },
+        add: {
+            title: 'Ajouter des paramètres du moteur',
+            button: 'Ajouter',
+            lead: 'Nommez la configuration. Chaque paramètre démarre à la valeur par défaut du moteur, et vous définissez les groupes sur sa propre page.',
+            create: 'Ajouter',
+        },
+        fields: {
+            name: 'Nom',
+            description: 'Description',
+            party: 'Partie',
+            groupsSet: 'Groupes définis',
+            boundBy: 'Lié par',
+            modifiedBy: 'Modifié par',
+            changed: 'Dernière modification',
+        },
+        tabs: {
+            label: 'Paramètres du moteur',
+            details: 'Détails',
+            reports: 'Utilisé par',
+            history: 'Historique',
+        },
+        groups: {
+            fixings: {
+                title: 'Fixings et flux de trésorerie',
+                what: 'Quels fixings et quels flux comptent.',
+            },
+            building: {
+                title: 'Construction du marché et des opérations',
+                what: 'Comment le moteur construit le marché et les opérations, et ce qu’il fait quand la construction échoue.',
+            },
+            execution: {
+                title: 'Exécution',
+                what: 'Comment le moteur s’exécute, journalise et écrit ses fichiers.',
+            },
+        },
+        yes: 'Oui',
+        no: 'Non',
+        changesNumbers: 'Change les chiffres',
+        operational: 'Opérationnel',
+        notSet: 'non défini',
+        partVersion: 'version {version}',
+        edit: 'Modifier',
+        save: 'Enregistrer',
+        documentation: 'Documentation',
+        showDocumentation: 'Afficher la documentation',
+        hideDocumentation: 'Masquer la documentation',
+        defaultOption: 'Défaut ({value})',
+        default: 'Défaut : {value}',
+        defaultIs: 'Défaut : {text}',
+        changed: 'modifié',
+        filters: {
+            set: 'Défini dans cette configuration',
+            numbers: 'Change les chiffres',
+            shown: '{shown} paramètres sur {count} affichés',
+            none: 'Aucun paramètre ne correspond aux filtres.',
+        },
+        noRow: 'Cette configuration ne contient aucune ligne pour {group}. Le moteur utilise sa valeur par défaut pour chaque paramètre ici.',
+        rowBy: 'Dernière modification par {who}.',
+        changesTheNumbers: 'Ces paramètres changent les chiffres qu’une exécution calcule.',
+        reach: {
+            unknown:
+                'Les rapports qui lient ces paramètres n’ont pas pu être lus, la portée de ce changement est donc inconnue.',
+            none: 'Aucun rapport ne lie ces paramètres du moteur, ce changement n’atteint donc aucune exécution.',
+            some: 'Cette configuration est liée par {count} rapports. Ils s’exécutent avec elle dès leur prochaine exécution.',
+        },
+        conflict:
+            'Ces paramètres ont changé depuis que vous les avez ouverts. Relisez-les avant de les modifier.',
+        reload: 'Relire',
+        noChanges: 'Aucun changement',
+        oneChange: '1 changement',
+        changes: '{count} changements',
+        undocumented:
+            'La documentation de {name} n’est pas dans les données, seule sa valeur peut donc être affichée.',
+        documentationUnread: 'La documentation des paramètres n’a pas pu être lue : {message}',
+        schema: {
+            xml: 'XML ORE',
+            format: 'Format',
+            introduced: 'Introduit dans',
+            removed: 'Retiré dans',
+        },
+        reports: {
+            lead: 'Un changement atteint la prochaine exécution de chaque rapport ci-dessous. Une exécution déjà produite garde ce avec quoi elle s’est exécutée.',
+            none: 'Aucun rapport ne lie ces paramètres du moteur. Un changement ici n’atteint aucune exécution.',
+            unread: 'Les rapports qui lient ces paramètres n’ont pas pu être lus.',
+            count: '{count} rapports',
+        },
+        history: {
+            lead: 'Chaque version de ces paramètres du moteur et de ses groupes, la plus récente d’abord. Rétablir écrit les valeurs qu’un groupe avait avant un changement comme une nouvelle version.',
+            central: 'La configuration',
+            created: 'Créé',
+            changed: 'Modifié',
+            version: 'version {version}',
+            current: 'actuelle',
+            revert: 'Rétablir',
+        },
+        revert: {
+            title: 'Rétablir le groupe',
+            lead: 'Ceci écrit les valeurs que le groupe avait avant le changement comme une nouvelle version. L’historique conserve la version qu’elle remplace.',
+            nothing: 'Le groupe contient déjà ces valeurs.',
+        },
+        rename: {
+            title: 'Modifier le nom et la description',
+        },
+        delete: {
+            title: 'Supprimer {name}',
+            warning:
+                'Ceci supprime la configuration et ses groupes. L’historique d’une configuration supprimée est conservé.',
+            bound: '{count} rapports lient ces paramètres du moteur, ils ne peuvent donc pas être supprimés. Déliez-les d’abord.',
+        },
+        problem: {
+            whole: '{setting} doit être un nombre entier.',
+            choice: '{setting} doit être l’une des valeurs de la liste.',
+            min: '{setting} doit valoir au moins {min}.',
+            max: '{setting} doit valoir au plus {max}.',
+        },
+    },
+    // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
         author: {
@@ -4863,6 +4997,9 @@ const fr: SourceCatalogue = {
             title: 'Rapports',
             lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
             screens: {
+                engineSettings: 'Paramètres du moteur',
+                engineSettingsBody:
+                    'Avec quels paramètres le moteur exécute les rapports, pour la partie dans laquelle vous travaillez.',
                 pricingEngines: 'Moteurs de valorisation',
                 pricingEnginesBody:
                     'Quel modèle et quel moteur valorisent chaque produit, pour la partie dans laquelle vous travaillez.',
@@ -5078,6 +5215,9 @@ const fr: SourceCatalogue = {
         pricingEnginesRead: 'voir les configurations de moteur de valorisation',
         pricingEnginesWrite: 'changer les configurations de moteur de valorisation',
         pricingEnginesDelete: 'supprimer les configurations de moteur de valorisation',
+        engineSettingsRead: 'voir les paramètres du moteur',
+        engineSettingsWrite: 'modifier les paramètres du moteur',
+        engineSettingsDelete: 'supprimer les paramètres du moteur',
     },
 
     unavailable: {

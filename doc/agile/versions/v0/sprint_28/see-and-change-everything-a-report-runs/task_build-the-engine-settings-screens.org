@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-engine-settings-screens
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A person lists the engine settings configurations of a party and opens one page 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Done.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-22                               |
+| Next         | Run the report with engine settings bound.                  |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -85,3 +85,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The engine settings list and record screens are built from the prototype and the Gemini review. The list searches and orders the configurations and offers Add. The record page has a tab for the details, one for each of the three groups, one for the reports that bind the configuration and one for its history.
+
+A group is read and changed in place. Each setting shows its value, or the default the engine uses when it is not set, with its documentation under it. Edit turns the group into a form, the first option of each control is the default, and Save writes the group alone against the version of its row, with a reason. A group that changed since is a conflict. Simple and Advanced is the shared switch, and Advanced adds the schema panel of the Gemini review: the ORE XML path, the release that introduced the setting, the release that removed it and the format.
+
+What the prototype took from the Gemini review is in the screen: the schema panel, two filters and a count of the changes not yet saved. The filters are Set in this configuration and Changes the numbers. The first replaces Changed from default, because the data holds the default as text and the screen cannot say whether a set value differs from it. The Gemini settings that no ORE release reads are not on the screen.
+
+All the wording of a setting comes from its ore parameter through the BFF. A setting whose ore parameter is missing shows its ORE name and a note, so a gap in the data is visible and not hidden. The History tab reads the versions of the central row and of each group, compares each group version with the one before, and offers Revert, which writes the values from before a change as a new version.
+
+The tabs and the history are tested as a static render from a seeded cache, like the pricing engine screens. The model is tested on its own: the values of a group, the check of a value, the difference a change makes, the filters and the steps of the history. Nothing has run against a live service, because no service of this environment runs. The first run against a deployment should open a configuration, change a group and read the history.

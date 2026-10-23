@@ -53,6 +53,7 @@ export const PATHS = {
     configurations: '/reporting/configurations',
     pricingEngines: '/reporting/pricing-engines',
     pricingEngineAuthoring: '/reporting/pricing-engines/author',
+    engineSettings: '/reporting/engine-settings',
 } as const;
 
 /** The address of the documents of one convention kind. */
@@ -111,6 +112,11 @@ export function reportPath(id: string): string {
 /** The address of one pricing engine configuration's page. */
 export function pricingEnginePath(id: string): string {
     return `${PATHS.pricingEngines}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one engine settings configuration's page. */
+export function engineSettingsPath(id: string): string {
+    return `${PATHS.engineSettings}/${encodeURIComponent(id)}`;
 }
 
 /** The address of one report configuration's page. */

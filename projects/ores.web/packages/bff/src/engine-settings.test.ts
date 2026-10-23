@@ -290,6 +290,14 @@ describe('engine settings routes', () => {
         const imply = groups[0]?.settings.find((setting) => setting.ore === 'implyTodaysFixings');
         expect(imply).toMatchObject({ documented: false, label: '' });
         expect(groups.map((group) => group.changesNumbers)).toEqual([true, true, false]);
+        const observation = groups[1]?.settings.find(
+            (setting) => setting.ore === 'observationModel',
+        );
+        expect(observation).toMatchObject({
+            changesNumbers: false,
+            options: ['None', 'Disable', 'Defer', 'Unregister'],
+        });
+        expect(threads).toMatchObject({ changesNumbers: false, min: 1, max: null });
     });
 
     it('writes a group against the version the person read', async () => {

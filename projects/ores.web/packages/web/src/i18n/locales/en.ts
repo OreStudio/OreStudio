@@ -4631,6 +4631,140 @@ export const en: SourceCatalogue = {
         },
     },
 
+    // engineSettings:begin
+    engineSettings: {
+        title: 'Engine settings',
+        lead: 'The named settings the risk engine runs with. A report binds one, and several reports can share it.',
+        columns: {
+            name: 'Name',
+            party: 'Party',
+            groups: 'Groups set',
+            threads: 'Threads',
+            modifiedBy: 'Changed by',
+            changed: 'Last changed',
+        },
+        cell: {
+            groups: '{set} of {count}',
+            default: 'default',
+            noDescription: 'No description.',
+        },
+        add: {
+            title: 'Add engine settings',
+            button: 'Add',
+            lead: 'Name the configuration. Every setting starts at the engine default, and you set the groups on its own page.',
+            create: 'Add',
+        },
+        fields: {
+            name: 'Name',
+            description: 'Description',
+            party: 'Party',
+            groupsSet: 'Groups set',
+            boundBy: 'Bound by',
+            modifiedBy: 'Changed by',
+            changed: 'Last changed',
+        },
+        tabs: {
+            label: 'Engine settings',
+            details: 'Details',
+            reports: 'Used by',
+            history: 'History',
+        },
+        groups: {
+            fixings: {
+                title: 'Fixings and cash flows',
+                what: 'Which fixings and cash flows count.',
+            },
+            building: {
+                title: 'Market and trade building',
+                what: 'How the engine builds the market and the trades, and what it does when that fails.',
+            },
+            execution: {
+                title: 'Execution',
+                what: 'How the engine runs, logs and writes its files.',
+            },
+        },
+        yes: 'Yes',
+        no: 'No',
+        changesNumbers: 'Changes the numbers',
+        operational: 'Operational',
+        notSet: 'not set',
+        partVersion: 'version {version}',
+        edit: 'Edit',
+        save: 'Save',
+        documentation: 'Documentation',
+        showDocumentation: 'Show documentation',
+        hideDocumentation: 'Hide documentation',
+        defaultOption: 'Default ({value})',
+        default: 'Default: {value}',
+        defaultIs: 'Default: {text}',
+        changed: 'changed',
+        filters: {
+            set: 'Set in this configuration',
+            numbers: 'Changes the numbers',
+            shown: '{shown} of {count} settings shown',
+            none: 'No setting matches the filters.',
+        },
+        noRow: 'This configuration holds no row for {group}. The engine uses its default for every setting here.',
+        rowBy: 'Last changed by {who}.',
+        changesTheNumbers: 'These settings change the numbers a run computes.',
+        reach: {
+            unknown:
+                'The reports that bind these settings could not be read, so the reach of this change is not known.',
+            none: 'No report binds these engine settings, so this change reaches no run.',
+            some: 'This configuration is bound by {count} reports. They run with it from their next run.',
+        },
+        conflict:
+            'These settings changed since you opened them. Read them again before you change them.',
+        reload: 'Read again',
+        noChanges: 'No changes yet',
+        oneChange: '1 change',
+        changes: '{count} changes',
+        undocumented:
+            'The documentation of {name} is not in the data, so only its value can be shown.',
+        documentationUnread: 'The documentation of the settings could not be read: {message}',
+        schema: {
+            xml: 'ORE XML',
+            format: 'Format',
+            introduced: 'Introduced in',
+            removed: 'Removed in',
+        },
+        reports: {
+            lead: 'A change reaches the next run of each report below. A run already produced keeps what it ran with.',
+            none: 'No report binds these engine settings. A change here reaches no run.',
+            unread: 'The reports that bind these settings could not be read.',
+            count: '{count} reports',
+        },
+        history: {
+            lead: 'Every version of these engine settings and of its groups, newest first. Revert writes the values a group had before a change as a new version.',
+            central: 'The configuration',
+            created: 'Created',
+            changed: 'Changed',
+            version: 'version {version}',
+            current: 'current',
+            revert: 'Revert',
+        },
+        revert: {
+            title: 'Revert the group',
+            lead: 'This writes the values the group had before the change as a new version. The history keeps the version it replaces.',
+            nothing: 'The group already holds these values.',
+        },
+        rename: {
+            title: 'Change the name and the description',
+        },
+        delete: {
+            title: 'Delete {name}',
+            warning:
+                'This deletes the configuration and its groups. The history of a deleted configuration is kept.',
+            bound: '{count} reports bind these engine settings, so they cannot be deleted. Unbind them first.',
+        },
+        problem: {
+            whole: '{setting} must be a whole number.',
+            choice: '{setting} must be one of the values on the list.',
+            min: '{setting} must be at least {min}.',
+            max: '{setting} must be at most {max}.',
+        },
+    },
+    // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
         author: {
@@ -4794,6 +4928,9 @@ export const en: SourceCatalogue = {
             title: 'Reporting',
             lead: 'The reports a party runs, and how the latest run of each one went.',
             screens: {
+                engineSettings: 'Engine settings',
+                engineSettingsBody:
+                    'Which settings the engine runs reports with, for the party you work in.',
                 pricingEngines: 'Pricing engines',
                 pricingEnginesBody:
                     'Which model and engine price each product, for the party you work in.',
@@ -5009,6 +5146,9 @@ export const en: SourceCatalogue = {
         pricingEnginesRead: 'see pricing engine configurations',
         pricingEnginesWrite: 'change pricing engine configurations',
         pricingEnginesDelete: 'remove pricing engine configurations',
+        engineSettingsRead: 'see engine settings',
+        engineSettingsWrite: 'change engine settings',
+        engineSettingsDelete: 'remove engine settings',
     },
 
     unavailable: {

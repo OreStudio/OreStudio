@@ -277,6 +277,14 @@ export const CARDS = {
         permission: 'analytics::pricing_model_configs:read',
         screenTitleKey: 'pricingEngines.title',
     },
+    engineSettings: {
+        titleKey: 'reporting.area.screens.engineSettings',
+        bodyKey: 'reporting.area.screens.engineSettingsBody',
+        to: PATHS.engineSettings,
+        icon: 'apps',
+        permission: 'reporting::engine_settings:read',
+        screenTitleKey: 'engineSettings.title',
+    },
     pricingEngineAuthoring: {
         titleKey: 'pricingEngines.workflows.author',
         bodyKey: 'pricingEngines.workflows.authorBody',
@@ -332,7 +340,7 @@ export const AREA_CARDS = {
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'bindings', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
-    reporting: ['reports', 'pricingEngines'],
+    reporting: ['reports', 'pricingEngines', 'engineSettings'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 

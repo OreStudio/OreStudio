@@ -105,6 +105,8 @@ import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ConfigurationPage } from './reporting/ConfigurationPage.js';
+import { EngineSettingsPage } from './engineSettings/EngineSettingsPage.js';
+import { EngineSettingsRecordPage } from './engineSettings/EngineSettingsRecordPage.js';
 import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
 import { PricingEnginePage } from './pricingEngines/PricingEnginePage.js';
 import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
@@ -774,6 +776,30 @@ export function AppRoutes({
                         <PricingEngineJourney />
                     </CardScreen>
                 ))}
+            />
+            <Route
+                path={PATHS.engineSettings}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <EngineSettingsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.engineSettings}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <EngineSettingsRecordPage />
+                    ),
+                    'workspace',
+                )}
             />
             <Route
                 path={`${PATHS.pricingEngines}/:id`}

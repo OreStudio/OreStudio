@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 74F33C8C-AF28-4A6E-812A-A2D443A77E40
+:END:
+#+title: Task: Load published quotes from the public sources
+#+description: A table of what public bodies published, a publisher catalogue with provenance, fetchers, and a seed command, all independent of the calibration.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr: 3685
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system holds what the ECB, the Federal Reserve, the Treasury and other public bodies published, in one append-only table with the chain from every row to the HTTP response and the terms it came under, loaded by a command and a daily job and read through a reader.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The table published_quote is an append-only hypertable owned by the system tenant. Each row has an oresmd item, the valid time, an exact numeric value, the publisher's own key, the time of retrieval and the fetch.
+- The publisher catalogue, the publisher series mapping, the load and the fetch are entities. A publisher cannot be enabled until its terms are read. The terms of the Frankfurter route, the Fed and the Treasury are read and recorded on the sources page, with the credit each asks for, before the task seeds them. The page lists no source whose terms are unread when the task closes. The raw body of every fetch is kept in storage with its hash.
+- A fetcher interface has a Frankfurter fetcher, tested on stored payloads, and it asks for one provider at a time. A credential is resolved from a reference and never stored, logged or kept in a URL.
+- The command quotes seed loads a range of a publisher idempotently, a daily job tops it up from the last loaded day to the date of the market clock. Until the system clock exists, both use the host date. Nothing else fetches, and a test shows that no feed code path calls a fetcher.
+- A reader returns the latest value on or before a date and a window with the provenance, and a cross rate is computed there and marked derived.
+- Loading needs no stochastic process, and a test loads and reads with no calibration present.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3685][#3685]] | [agile] Propose the architecture of the published quotes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -68,6 +68,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] | BACKLOG | | | Each generator config names a free public source that sets its initial value and its volatility, and the feed screen shows when the value was retrieved. |
 | [[id:5CCD3099-EC5D-4F43-A106-33E3F235115B][Write the vendor tickers of the curve pillars]] | BACKLOG | | | Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves. |
 | [[id:BA6015F2-CE25-4289-82EC-5832ECFA67DE][The simulator reads its sources through marketdata]] | DONE | 2026-10-23 | 2026-10-23 | Restore ticking after the vendor-native move. |
+| [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] | BACKLOG | | | A table of what public bodies published, a publisher catalogue with provenance, fetchers, and a seed command, all independent of the calibration. |
 
 * Decisions
 
@@ -84,6 +85,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 - The simulator is native to each vendor and has nothing to do with ORE. A simulated source publishes the ids of its own provider, such as =bbg_ticker= for Bloomberg and =ric= for LSEG, and no simulated source of the provider =ore= exists. Decided on 2026-10-23.
 - A source name says which provider and which instance (=bloomberg-a=). It never says the kind, so no name, subject or id lets the system tell a simulated source from a live one. The kind shows in the =kind= column and as a badge. Decided on 2026-10-23.
 - The level of a synthetic price is calibrated from a free public source named in the generator config, as close to today as the source allows, and the screen shows when it was retrieved. The sources are the ECB euro reference rates and the Federal Reserve H.10 for FX, and the US Treasury par yield curve with the central banks' overnight rates for curves. The 2016 ORE vintage calibrates nothing. See [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. Decided on 2026-10-23.
+- What public bodies published is loaded into one append-only table, =published_quote=, owned by the system tenant, with the chain from each row to its HTTP response and the terms it came under. The loading is independent of the calibration, and a generator config points at an item and a policy that a reader resolves. The item is in oresmd notation, the value is =numeric= as published, the raw bodies are kept, and a credential is resolved from a reference and never stored. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]]. Decided on 2026-10-23.
 - The story Subscribe tenants to provider feeds and prove the browser at scale describes feed bindings and overlaps this story. It needs a decision from Marco.
 
 * Out of scope

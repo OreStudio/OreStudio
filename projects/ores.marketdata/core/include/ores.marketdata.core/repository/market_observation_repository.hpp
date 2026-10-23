@@ -248,6 +248,16 @@ public:
      */
     std::vector<domain::market_observation> read_latest_all(context ctx);
 
+    std::vector<observation_record>
+    read_as_of_records(context ctx,
+                       const boost::uuids::uuid& series_id,
+                       const std::chrono::system_clock::time_point& as_of_datetime);
+
+    std::vector<domain::market_observation>
+    read_as_of(context ctx,
+               const boost::uuids::uuid& series_id,
+               const std::chrono::system_clock::time_point& as_of_datetime);
+
     /**
      * @brief The as-of snapshot of every series of the tenant, in one statement.
      *
@@ -259,16 +269,6 @@ public:
      */
     std::vector<domain::market_observation>
     read_as_of_all(context ctx, const std::chrono::system_clock::time_point& as_of_datetime);
-
-    std::vector<observation_record>
-    read_as_of_records(context ctx,
-                       const boost::uuids::uuid& series_id,
-                       const std::chrono::system_clock::time_point& as_of_datetime);
-
-    std::vector<domain::market_observation>
-    read_as_of(context ctx,
-               const boost::uuids::uuid& series_id,
-               const std::chrono::system_clock::time_point& as_of_datetime);
 
     std::vector<std::vector<domain::market_observation>>
     read_as_of_buckets(context ctx,

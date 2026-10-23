@@ -42,6 +42,7 @@ One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a 
 | [[id:9A64C459-EF1D-47B4-B526-73AA6753FEEB][Show a report run in the grid]] | BACKLOG | | | The grid views must show the jobs a report run sends to the grid, to every account that may watch it. |
 | [[id:FC1CEA57-FD12-4ACA-B9FD-9FCE4E4B136A][Export market data without a query per series]] | DONE | | 2026-10-23 | The market data export read each series with its own statements, so a tenant with 306 series needed 38 seconds and the report run timed out at 30. Read the tenant in two statements and log each phase. |
 | [[id:1FC5ADBC-D550-4111-B736-26A2BDD689E5][Name a slow statement in the service log]] | DONE | | 2026-10-23 | A slow statement hid inside the total of a request. The database executors now log the statement's duration, with the connect, session and statement parts, as a warning from 250 ms. |
+| [[id:887E639C-1733-4FD1-937A-D5D8DF0476CD][Carry the bulk observation reads in the models]] | DONE | | 2026-10-23 | Commit b06ddccb2f hand-edited generated marketdata files, so the component drift gate fails on main. Move the bulk reads and the export handler into their models and regenerate. |
 
 * Decisions
 

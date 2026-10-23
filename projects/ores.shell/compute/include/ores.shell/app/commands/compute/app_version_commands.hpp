@@ -125,6 +125,13 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
+     * @brief by-app-id <app_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     */
+    static void process_by_app_id(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  const std::vector<std::string>& args);
+
+    /**
      * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,

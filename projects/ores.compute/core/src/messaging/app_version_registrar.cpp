@@ -77,6 +77,10 @@ register_app_version_handlers(ores::nats::service::client& nats,
             h->delete_many_app_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_app_id_app_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_app_id_app_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_app_version_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->list_app_version_versions(std::move(msg));
         }));

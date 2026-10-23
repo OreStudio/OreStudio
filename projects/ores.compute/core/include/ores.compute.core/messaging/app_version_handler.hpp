@@ -400,6 +400,54 @@ public:
     }
 
     /**
+     * @brief Serves compute.v1.app_versions.list_by_app_id.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_by_app_id_app_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            app_version_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "compute::app_versions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<list_by_app_id_app_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::app_version_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_app_id_app_versions(*req);
+            BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(app_version_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_app_id_app_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
      * @brief Serves compute.v1.app_versions_versions.list.
      *
      * The adapter decides nothing: it proves the request, checks the

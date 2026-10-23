@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface AppVersionKey {
     id: string;
@@ -57,7 +58,9 @@ export interface AppVersionLookup {
 }
 
 export interface AppVersionsFilter {
+    app_id: string | null;
     id_one_of: string[] | null;
+    app_id_one_of: string[] | null;
 }
 
 export interface AppVersionEvent {
@@ -150,6 +153,21 @@ export interface DeleteManyAppVersionsResponse {
     result: Result;
 }
 
+export interface ListByAppIdAppVersionsRequest {
+    app_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AppVersionsFilter | null;
+}
+
+export interface ListByAppIdAppVersionsResponse {
+    result: Result;
+    app_versions: AppVersion[];
+    total: number;
+}
+
 export interface ListAppVersionVersionsRequest {
     key: AppVersionKey;
     offset: number;
@@ -181,6 +199,7 @@ export const subjects = {
     put_many_app_versions_request: 'compute.v1.app_versions.put_many',
     delete_app_version_request: 'compute.v1.app_versions.delete',
     delete_many_app_versions_request: 'compute.v1.app_versions.delete_many',
+    list_by_app_id_app_versions_request: 'compute.v1.app_versions.list_by_app_id',
     list_app_version_versions_request: 'compute.v1.app_versions_versions.list',
     get_app_version_version_request: 'compute.v1.app_versions_versions.get',
 } as const;
@@ -197,6 +216,7 @@ export const requiresSession = {
     put_many_app_versions_request: true,
     delete_app_version_request: true,
     delete_many_app_versions_request: true,
+    list_by_app_id_app_versions_request: true,
     list_app_version_versions_request: true,
     get_app_version_version_request: true,
 } as const;

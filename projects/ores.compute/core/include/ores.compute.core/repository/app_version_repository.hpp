@@ -124,6 +124,30 @@ public:
     std::optional<domain::app_version>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+    /**
+     * @brief Reads latest app versions filtered by app_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param app_id The app_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::app_version> read_latest_by_app_id(
+        context ctx,
+        const std::string& app_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active app versions filtered by app_id.
+     */
+    std::uint32_t get_total_app_version_count_by_app_id(
+        context ctx,
+        const std::string& app_id,
+        const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of app versions can be ordered by a field.

@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/engine_settings_execution/engine_settings_execution.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+engine_settings_execution set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - system.new_record generated_script

@@ -59,6 +59,7 @@ Nothing in this scenario was run against a live service before this page was wri
 - The list holds the engine settings of every party the selected party can see. For the UK party, expect "UK - Exposure simulation engine settings" and "UK - Valuation and risk engine settings".
 - Write down the Threads value of each row. Expect 4 for the exposure simulation and 1 for valuation and risk.
 - Switch to the group party (Acme Corporation Plc). The list must now hold the settings of all four parties, and the Party column must say which party owns each row.
+- Choose UK in the party filter. Only the two UK rows must remain. Choose All parties to bring the rest back.
 
 *** Result
 
@@ -190,9 +191,23 @@ Nothing in this scenario was run against a live service before this page was wri
 | Status | FAIL |
 | Notes  | A request did not finish; ; Repository error: Executing INSERT failed: ERROR: duplicate key value violates unique constraint "engine_settings_execution_one_per_settings_idx" (PUT /api/reporting/engine-settings/c93b503a-2356-4076-079b-8408d54ae274/groups/execution, request ca4422d6) |
 
+** Read a child party's settings from the group party
+
+- Switch to the group party (Acme Corporation Plc) and open "UK - Valuation and risk engine settings".
+- The page must say that the settings belong to ACME Corporation UK plc, and it must offer "Switch to ACME Corporation UK plc". Edit and Delete must not show on the page header or on a group.
+- Open the History tab. It must say that the history is in the owning party.
+- Choose the switch button. The page must become editable, and the History tab must list the versions.
+
+*** Result
+
+| Field  | Value   |
+|--------+---------|
+| Status | PENDING |
+| Notes  |         |
+
 ** Read the screens in French
 
-- The app has no language selector yet. Open the browser console and run =localStorage.setItem('ores.web.language', 'fr')=, and then reload the page. A browser set to French also works.
+- Open the account menu and choose Français under Language. Every screen must change at once, and the choice must stay after a reload.
 - Reopen the engine settings page. The title, the tab names and the group titles must show French text, with no raw key such as =engineSettings.tabs.history=.
 
 *** Result
@@ -207,6 +222,7 @@ Nothing in this scenario was run against a live service before this page was wri
 - Sign out. Open a staff member who is not an administrator, for example =compass open-as title "senior trader" --location uk=.
 - The Engine settings card must show, and the list must read.
 - Record whether the Add and Edit actions show, and whether a save works.
+- A person who works in one party must see no Party column and no party filter on the list.
 
 *** Result
 

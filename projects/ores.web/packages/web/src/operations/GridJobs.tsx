@@ -41,6 +41,7 @@ import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
+import { useHeld } from '../access/holds.js';
 import { gridAppVersionPath, gridJobPath, gridNodePath } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
@@ -746,6 +747,50 @@ function Tree(): ReactNode {
     );
 }
 
+/** The address that streams the stored input of a workunit or the stored output of a run. */
+export function downloadHref(kind: 'input' | 'output', id: string): string {
+    return kind === 'input'
+        ? `/api/operations/grid/jobs/workunits/${encodeURIComponent(id)}/input`
+        : `/api/operations/grid/jobs/results/${encodeURIComponent(id)}/output`;
+}
+
+/**
+ * A stored file as a link that downloads it.
+ *
+ * The link is the file's own address as the record states it. The route behind it reads
+ * the record first, so a person who may not read the record is refused and gets no byte.
+ * The storage service then checks the person's own read code, so a person who lacks it is
+ * shown the address as text.
+ */
+export function DownloadLink({
+    kind,
+    id,
+    uri,
+}: {
+    readonly kind: 'input' | 'output';
+    readonly id: string;
+    readonly uri: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const held = useHeld();
+    // The storage service checks the read code of the person's own token and holds no
+    // rule for a single record, so the code is bucket-wide. A person without it reads the
+    // address as text and is not offered a link that the service would refuse.
+    if (!held('storage::objects:read')) {
+        return <span className="break-all">{uri}</span>;
+    }
+    return (
+        <a
+            href={downloadHref(kind, id)}
+            download
+            title={t('operations.grid.jobs.download')}
+            className="break-all underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {uri}
+        </a>
+    );
+}
+
 /** A reference that opens another record or screen without leaving the application. */
 function RouteLink({
     to,
@@ -822,7 +867,7 @@ function WorkunitDetails({ workunit }: { readonly workunit: WorkunitView }): Rea
             />
             <Detail
                 label={t('operations.grid.jobs.fields.inputUri')}
-                value={workunit.input_uri}
+                value={<DownloadLink kind="input" id={workunit.id} uri={workunit.input_uri} />}
                 mono
             />
             <Detail
@@ -921,7 +966,13 @@ function ResultDetails({ result }: { readonly result: ResultView }): ReactNode {
             />
             <Detail
                 label={t('operations.grid.jobs.fields.outputUri')}
-                value={orNone(result.output_uri, none)}
+                value={
+                    result.output_uri === null ? (
+                        none
+                    ) : (
+                        <DownloadLink kind="output" id={result.id} uri={result.output_uri} />
+                    )
+                }
                 mono
             />
             <Detail

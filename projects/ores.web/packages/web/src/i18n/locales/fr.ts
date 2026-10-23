@@ -1703,6 +1703,7 @@ const fr: SourceCatalogue = {
                 loadingResults: 'Lecture des résultats...',
                 empty: 'Aucun lot n’a encore été enregistré.',
                 noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
+                download: 'Télécharger le fichier',
                 runsTitle: 'Exécutions avec cette issue',
                 noRuns: 'Aucune exécution n’a pris fin avec cette issue.',
                 ofWorkunit: 'de l’unité de travail {id}',

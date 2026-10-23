@@ -172,9 +172,12 @@ whose =status= changes is recorded again and moves to the top of the list.
    the largest peak memory. The aggregate is a grouped read, not a stored field.
    The prototype draws all three levels in a dashed block labelled "proposed,
    not stored yet".
-4. *No download route.* =input_uri= and =output_uri= name stored objects. The
-   browser has no route to stream them, and the route must check that the
-   caller may read the owning record first.
+4. *Downloads reach the operator and the tenant administrator.* =input_uri= and
+   =output_uri= name stored objects. Two BFF routes stream them after they read the
+   owning record, so a caller who may not read the record gets no byte. The storage
+   service then checks =storage::objects:read= on the person's own token, and that
+   code is bucket-wide. The Member role lacks it, so a party member sees the address
+   as text. The task Let a party member download its own files closes the gap.
 5. *The BFF routes exist.* Six routes under =/api/operations/grid/jobs/= serve the
    paged tree, and the batch route takes =status=, =party= and =find=.
 6. *Node names for tenants.* A result names its host. A tenant administrator

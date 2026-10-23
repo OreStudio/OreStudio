@@ -119,8 +119,26 @@ interface Seeds {
     readonly record?: readonly [kind: string, id: string, value: unknown];
 }
 
-function render(path: string, seeds: Seeds): string {
+function render(
+    path: string,
+    seeds: Seeds,
+    permissions: readonly string[] = ['storage::objects:read'],
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['my-access'], {
+        roles: [
+            {
+                roleId: 'r',
+                name: 'Viewer',
+                description: '',
+                permissionCodes: [...permissions],
+                givenBy: 'system',
+                givenAt: '2026-10-05 09:30:00Z',
+                reasonCode: 'access.initial',
+                commentary: '',
+            },
+        ],
+    });
     if (seeds.batches !== undefined) {
         client.setQueryData(
             [
@@ -387,6 +405,43 @@ describe('the Jobs tab', () => {
         expect(resultHtml).toContain(`href="/operations/grid/jobs/${WORKUNIT_ID}"`);
         expect(workunitHtml).toContain('Follow this job');
         expect(batchHtml).not.toContain('Follow this job');
+    });
+
+    it('links the stored input of a workunit and the stored output of a run to the download routes', () => {
+        const workunitHtml = render(`/?tab=jobs&sel=workunit:${WORKUNIT_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['workunit', WORKUNIT_ID, workunit(WORKUNIT_ID)],
+        });
+        const resultHtml = render(`/?tab=jobs&sel=result:${RESULT_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['result', RESULT_ID, result(RESULT_ID)],
+        });
+        const noOutput = render(`/?tab=jobs&sel=result:${RESULT_ID}`, {
+            batches: TWO_BATCHES,
+            record: ['result', RESULT_ID, result(RESULT_ID, { output_uri: null })],
+        });
+
+        expect(workunitHtml).toContain(
+            `href="/api/operations/grid/jobs/workunits/${WORKUNIT_ID}/input" download=""`,
+        );
+        expect(resultHtml).toContain(
+            `href="/api/operations/grid/jobs/results/${RESULT_ID}/output" download=""`,
+        );
+        expect(noOutput).not.toContain('/output"');
+    });
+
+    it('shows the stored address as text to a person without the storage read code', () => {
+        const html = render(
+            `/?tab=jobs&sel=workunit:${WORKUNIT_ID}`,
+            {
+                batches: TWO_BATCHES,
+                record: ['workunit', WORKUNIT_ID, workunit(WORKUNIT_ID)],
+            },
+            [],
+        );
+
+        expect(html).toContain('/api/v1/storage/ores/compute/input/batch.tar.gz');
+        expect(html).not.toContain('/api/operations/grid/jobs/workunits/');
     });
 
     it('states none for an unset field instead of an empty value', () => {

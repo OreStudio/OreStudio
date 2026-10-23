@@ -62,6 +62,17 @@ struct http_server_options final {
     std::uint64_t max_body_size = 256 * 1024 * 1024;
 
     /**
+     * @brief Maximum accepted size of the request headers, in bytes.
+     *
+     * Beast's default header_limit is 8KB. The access token a session sends in the
+     * Authorization header carries the session's parties and permissions, so a person
+     * who acts for many parties holds a token past 8KB, and the server closed the
+     * connection before it read the request. The limit is raised so such a token is
+     * read, and it stays bounded so a header cannot grow without limit.
+     */
+    std::uint32_t max_header_size = 64 * 1024;
+
+    /**
      * @brief Whether to enable SSL/TLS.
      */
     bool enable_ssl = false;

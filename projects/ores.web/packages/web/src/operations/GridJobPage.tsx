@@ -48,6 +48,7 @@ import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import {
+    DownloadLink,
     GRID_JOBS_QUERY_KEY,
     OUTCOME,
     QUIET,
@@ -457,13 +458,23 @@ function Files({
     return (
         <Panel title={t('operations.grid.job.files.title')}>
             <dl className="space-y-3">
-                <Detail label={t(`${FIELD}.inputUri`)} value={workunit.input_uri} mono />
+                <Detail
+                    label={t(`${FIELD}.inputUri`)}
+                    value={<DownloadLink kind="input" id={workunit.id} uri={workunit.input_uri} />}
+                    mono
+                />
                 <Detail label={t(`${FIELD}.configUri`)} value={workunit.config_uri ?? none} mono />
                 {runs.map((run, index) => (
                     <Detail
                         key={run.id}
                         label={t('operations.grid.job.files.output', { run: index + 1 })}
-                        value={run.output_uri ?? none}
+                        value={
+                            run.output_uri === null ? (
+                                none
+                            ) : (
+                                <DownloadLink kind="output" id={run.id} uri={run.output_uri} />
+                            )
+                        }
                         mono
                     />
                 ))}

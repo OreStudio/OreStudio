@@ -1683,6 +1683,7 @@ export const en: SourceCatalogue = {
                 loadingResults: 'Reading the results...',
                 empty: 'No batch has been recorded yet.',
                 noMatch: 'No batch matches. Clear the filters.',
+                download: 'Download the file',
                 runsTitle: 'Runs with the outcome',
                 noRuns: 'No run ended with this outcome.',
                 ofWorkunit: 'of workunit {id}',

@@ -213,6 +213,7 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<domain::subscription> read_latest_all_tenants(context ctx);
 
 private:
     /**

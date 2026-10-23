@@ -101,3 +101,22 @@ TEST_CASE("no_adapter_subject_carries_a_mark_of_the_source_kind", tags) {
             CHECK(subject.find(mark) == std::string::npos);
     }
 }
+
+TEST_CASE("a_heartbeat_subject_gives_its_adapter_back", tags) {
+    for (const auto& id :
+         {std::string("bloomberg-sim"), std::string("ore sim.1"), std::string("a=b")}) {
+        CAPTURE(id);
+        const auto adapter = adapter_heartbeat_subject_adapter(adapter_heartbeat_subject(id));
+        REQUIRE(adapter.has_value());
+        CHECK(*adapter == id);
+    }
+    CHECK(adapter_heartbeat_subject_all() == "marketdata.v1.adapters.*.heartbeat");
+}
+
+TEST_CASE("a_subject_that_is_not_a_heartbeat_gives_no_adapter", tags) {
+    CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters.announce").has_value());
+    CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters.a.demand").has_value());
+    CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters..heartbeat").has_value());
+    CHECK_FALSE(
+        adapter_heartbeat_subject_adapter("marketdata.v1.adapters.a b.heartbeat").has_value());
+}

@@ -111,10 +111,50 @@ export interface AdapterHeartbeat {
     counter: number;
 }
 
-export const subjects = {} as const;
+/**
+ * @brief The state of one adapter and the last demand it answered.
+ *
+ * The state is announced, ready, serving, stale or rejected. The counts say how the
+ * announced universe compared with the catalogue. The accepted and rejected ids are
+ * those of the last demand reply.
+ */
+export interface AdapterStatus {
+    adapter_id: string;
+    provider_code: string;
+    state: string;
+    last_heartbeat_at: string;
+    heartbeat_counter: number;
+    served_count: number;
+    unknown_count: number;
+    demanded_count: number;
+    accepted: VendorId[];
+    rejected: RejectedId[];
+}
+
+/**
+ * @brief Asks for the state of every adapter the service tracks.
+ *
+ * The request carries nothing.
+ */
+export interface ListAdapterStatusRequest {}
+
+/**
+ * @brief The state of every adapter, in the order of their ids.
+ */
+export interface ListAdapterStatusResponse {
+    adapters: AdapterStatus[];
+    success: boolean;
+    message: string;
+}
+
+export const subjects = {
+    list_adapter_status_request: 'marketdata.v1.ops.list_adapter_status',
+} as const;
 /**
  * Whether a message needs an established session first. An operation that
  * produces the session cannot present one, so a client reads this rather than
  * assuming every call carries a token.
  */
-export const requiresSession = {} as const;
+export const requiresSession = {
+    list_adapter_status_request: true,
+} as const;

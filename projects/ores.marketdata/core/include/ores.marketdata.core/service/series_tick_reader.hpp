@@ -51,6 +51,15 @@ public:
     static constexpr std::size_t max_ticks = 25'000;
 
     /**
+     * @brief The most coordinate URIs one request names.
+     *
+     * The list travels to the store as one array, so an unbounded list would let one request
+     * ask the store to match an unbounded set. A longer list is refused, as the filters of the
+     * list reads are.
+     */
+    static constexpr std::size_t max_coordinates = 1'000;
+
+    /**
      * @brief Reads the ticks @p request names.
      *
      * @param ctx Database context, already scoped to the tenant and the party by the caller.

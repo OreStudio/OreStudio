@@ -41,8 +41,19 @@ series_tick_reader::read(ores::database::context ctx,
         return response;
     }
 
+    if (request.coordinates.size() > max_coordinates) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "coordinates", .limit = std::to_string(max_coordinates)});
+        return response;
+    }
+
     const auto to = request.to_instant.value_or(now);
     if (to < request.from_instant) {
+        // A span with no end runs to now. A client clock a little ahead of the service puts its
+        // start after now, and nothing has ticked after now, so that span is empty and not wrong.
+        if (!request.to_instant)
+            return response;
         response.result = refuse(outcome_code::range_inverted, {.entity = "ticks"});
         return response;
     }

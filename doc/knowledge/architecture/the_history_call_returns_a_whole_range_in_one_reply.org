@@ -25,7 +25,8 @@ returns part of a span as if it were the whole. The client that calls it is desc
 - *From,* the first instant of the span, inclusive.
 - *To,* the end of the span, exclusive. A request without it means now.
 - *The coordinates,* optional. A client that plots one pillar of a curve names it, and the
-  reply holds that coordinate only.
+  reply holds that coordinate only. A request names at most 1,000 coordinates, and a longer
+  list is refused with =filter_too_large=, as the filters of the list reads are.
 
 The request has no count. A caller asks for a span of time, never for "the newest N". A
 span has the same meaning on both tiers, and it is what a chart shows.
@@ -88,12 +89,13 @@ narrower span serves every chart.
 
 ** How the service answers a decision
 
-The service decides three things before it reads: the context has a party, the span does
-not end before it starts, and the span holds no more than the ceiling. It reports each one
-as an outcome in the body, and not as a refusal off the body, because each is a decision
-about the data. The codes are =party_required=, =range_inverted= and =range_too_large=, in
-the outcome catalogue. A span that starts and ends at one instant is empty and is not
-refused. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+The service decides four things before it reads: the context has a party, the request names
+no more than 1,000 coordinates, the span does not end before it starts, and the span holds
+no more than the ceiling. It reports each one as an outcome in the body, and not as a refusal
+off the body, because each is a decision about the data. The codes are =party_required=,
+=filter_too_large=, =range_inverted= and =range_too_large=, in the outcome catalogue. A span that starts and ends at one instant is empty and is not
+refused. A span with no end runs to now, so a start ahead of the clock of the service gives
+an empty reply, because nothing has ticked after now. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
 
 A context with no party gets =party_required= and not an empty reply. The party policy
 of the tick table shows such a context no tick, and an empty reply would look complete.

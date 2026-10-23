@@ -68,7 +68,9 @@ public:
      *
      * The order is by time and then by the number of the coordinate in the series dictionary.
      * The read stops after @p limit ticks, so a caller that asks for one more than its ceiling
-     * can tell that the span holds more.
+     * can tell that the span holds more. The cut is by time alone, so when the span holds more
+     * than @p limit ticks, which ticks of the last instant are in the answer is not defined.
+     * A span that holds no more than @p limit ticks is answered whole.
      *
      * @param coordinates The coordinate URIs to read, or empty for every coordinate.
      */

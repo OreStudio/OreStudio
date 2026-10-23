@@ -80,6 +80,9 @@ task and name that file in the Command column.
 | Tick rows of the Acme tenant, 270 series | 1001105 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_ticks_tbl= | 0078289946 |
 | Ticks of series 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f | 5401 | group by series on =ores_marketdata_ticks_tbl= | 0078289946 |
 | Points that the list returns for that series, limit 2000 | 0, total 0 | =market_observations by-series-id 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f --limit 2000= in =compass shell -f= | 0078289946 |
+| History query, join then order by time and coordinate, one series of 2,000,000 ticks over 23 days, span of 30 days, limit 25,001 | 1,987,210 rows read, external sort of 132 MB, 1,755 ms | =EXPLAIN (ANALYZE)= of the query of =tick_repository::read_range= at that commit, script =evidence/history_query_explain_before.sql.txt= | 51521d1033 |
+| History query, page cut by time before the join, same table | 21 ms, later chunks never executed | the same script with the page cut first | 51521d1033 plus the change of the review |
+| History query, page cut by time before the join, 500,000 ticks of the series and 2,000,000 ticks of 200 other series | 36.6 ms, the series index is read in time order and 22 of 24 chunks are never executed | =evidence/history_query_explain_after.sql.txt=, plan in =evidence/history_query_plan_after.txt= | 51521d1033 plus the change of the review |
 
 * Notes
 

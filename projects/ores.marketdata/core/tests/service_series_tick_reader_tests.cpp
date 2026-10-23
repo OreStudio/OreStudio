@@ -269,6 +269,50 @@ TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_namin
     CHECK(over.values.empty());
 }
 
+TEST_CASE("ticks_of_one_instant_come_in_the_order_of_their_coordinates", tags) {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
+    const auto other_number =
+        tick_coords_repository{}.resolve(o.owner, o.series.party_id, o.series.id, other);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.series.party_id, o.series.id, other_number, t0, 2.0);
+    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(o.owner, span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.coordinates == std::vector<std::string>{o.series.oresmd_uri, other});
+    CHECK(reply.values == std::vector<double>{1.0, 2.0});
+}
+
+TEST_CASE("a_span_with_no_end_that_starts_after_now_is_empty_and_not_refused", tags) {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto t0 = now_second();
+
+    auto request = span(o, t0 + 1min, t0);
+    request.to_instant.reset();
+    const auto reply = series_tick_reader::read(o.owner, request, t0);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("a_request_that_names_too_many_coordinates_is_refused", tags) {
+    database_helper h;
+    const auto o = make_series(h);
+    const auto t0 = now_second();
+
+    auto request = span(o, t0 - 1s, t0 + 1min);
+    for (std::size_t i = 0; i <= series_tick_reader::max_coordinates; ++i)
+        request.coordinates.push_back("oresmd://test/" + std::to_string(i));
+    const auto reply = series_tick_reader::read(o.owner, request);
+
+    CHECK(reply.result.outcome == outcome::invalid);
+    CHECK(reply.result.code == "filter_too_large");
+    CHECK(reply.result.message.find("coordinates") != std::string::npos);
+}
+
 TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     const auto t0 = now_second();
     get_series_ticks_request request;

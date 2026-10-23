@@ -304,6 +304,11 @@ Second round, 2026-10-24. The owner made three more decisions.
    than one, and validation refuses a non-periodic mode for them. A fourth
    task, "Step a value process by the elapsed time", carries this.
 
+Third round, 2026-10-24. The owner decided that all new logic lives in the
+core libraries and that =tick_clock= moves to =ores.analytics.quant=. It has
+only standard library dependencies. The synthetic side keeps the feeds, the
+config columns and the editors, and nothing else.
+
 Findings from the first round:
 
 Two findings changed the design. First, =ores.synthetic.api/feeds/tick_clock.hpp=

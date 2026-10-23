@@ -18,8 +18,9 @@ job: a value process whose =next()= returns a price. The existing =tick_clock=
 holds the second, with one fixed period. This page argues for one change to
 the second job and one to the first.
 
-1. *The tick clock stays the only clock.* It stops reading a constant period
-   and asks an *arrival process* for each gap. Today's behaviour becomes the
+1. *The tick clock stays the only clock, and it moves to the quant library.*
+   It stops reading a constant period and asks an *arrival process* for each
+   gap. Today's behaviour becomes the
    *periodic* arrival process, so a feed can still be fully regular. The
    Poisson and Hawkes processes are two more arrival processes.
 2. *The value process is told how much time has passed.* A bursty clock then
@@ -34,8 +35,8 @@ to describe the code when the code lands.
 
 ** What exists today
 
-The one clock every feed runs on is =tick_clock= in
-=ores.synthetic.api/feeds/tick_clock.hpp=, described in
+The one clock every feed runs on is =tick_clock=. It lives today in
+=ores.synthetic.api/feeds/tick_clock.hpp=, and is described in
 [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][the FX spot producer]]. It takes
 =ticks_per_hour=, turns that into one fixed period, sleeps for the period in
 slices of a hundred milliseconds so that =stop()= is seen quickly, and then runs
@@ -54,9 +55,17 @@ code.
 =tick_clock= keeps everything it does now: the slicing, the stop check, the
 guard around one tick and the count. One thing leaves it, the line that
 computes the period. In its place the clock holds a gap source and asks it for
-the next gap before each sleep. The source is an interface in
-=ores.analytics.quant=, because that library must not depend on the synthetic
-service:
+the next gap before each sleep.
+
+All of this logic lives in =ores.analytics.quant=, the library for the
+mathematics of generation. The clock moves there from the synthetic API. It
+needs only =<chrono>=, =<thread>=, =<atomic>= and =<functional>=, so it keeps the
+rule of that library: no database, no messaging and no logging. The synthetic
+side keeps only the feeds. A feed reads its mode and numbers from the generation
+config, asks the factory for an arrival process, builds a clock around it and
+gives the clock a tick body. Any other consumer, such as a calibration tool or
+=ores.marketdata=, can pace itself the same way without linking the synthetic
+service. The gap source is an interface beside the value process interface:
 
 - =i_arrival_process= has one method, =next_gap()=, that returns the time in
   seconds from the last tick to the next. The process owns its state and its

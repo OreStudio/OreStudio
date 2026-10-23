@@ -35,6 +35,7 @@ A synthetic feed can run in periodic, Poisson or Hawkes mode, set from its confi
 
 * Acceptance
 
+- The feeds build their clock from ores.analytics.quant and keep no clock code of their own.
 - Periodic mode behaves as it does today.
 - The config, the Qt editor and the web editor carry the mode, the branching ratio and the decay, and refuse a branching ratio of one or more.
 

@@ -2,7 +2,7 @@
 :ID: 3CF5D3C2-454C-4F27-B891-BFD4920144EC
 :END:
 #+title: Task: Implement the periodic, Poisson and Hawkes arrival processes
-#+description: Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, inspired by the tick library.
+#+description: Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, move tick_clock beside them, inspired by the tick library.
 #+type: task
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_28:v0:
@@ -35,6 +35,7 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 * Acceptance
 
+- tick_clock moves from ores.synthetic.api into ores.analytics.quant, takes its gaps from an i_arrival_process, and a periodic process reproduces its present behaviour. A test drives it with a fake tick body.
 - Each source file says it is inspired by tick and points at the tick note.
 - Tests check the mean rate, the Fano factor and the time-rescaling test, and that a branching ratio of one or more is refused.
 - The Hawkes note, the tick arrival note and the component overview describe the code as built.

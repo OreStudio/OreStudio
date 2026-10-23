@@ -49,7 +49,8 @@ block, so a =stop()= arriving during a long period is seen promptly and the
 join does not wait out the period.
 
 The period is the same for every tick. Random and bursty gaps are the subject
-of [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]].
+of [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]], which also moves
+the clock into =ores.analytics.quant=.
 
 =stop_flag_= is deliberately not reset at the top of =start()=. A =stop()=
 that lands between the thread spawn and the first loop test would otherwise

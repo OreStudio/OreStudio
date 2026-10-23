@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3678][#3678]] | [agile] Decide the vendor-native simulator and its calibration |
 
 * Review
 

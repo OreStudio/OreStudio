@@ -113,6 +113,7 @@ data, and why the two differ only inside the adapter.
 10. The data format of each provider: [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg]], [[id:A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D][LSEG]], [[id:72848BB7-9ADE-49CF-8D33-008ED7C1DF29][ICE]], [[id:22DDAB03-5CD7-4E14-B1B0-23DB61F2DC95][Tradeweb]] and [[id:810811DC-1F60-4808-A224-1690374CEEC4][ORE]]. The id scheme, the fields and
     the mapping of each, with the vendor's own documents.
 11. [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]]. The rows the bundle installs, which need a check, and what is not inventoried.
+12. [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. The free sources that set the level of the synthetic ticks, their terms, and what is still open.
 
 #+caption: A live adapter and the simulator behind the same contract.
 #+attr_html: :width 100%

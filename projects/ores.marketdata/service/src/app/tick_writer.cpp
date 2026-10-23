@@ -31,7 +31,7 @@ constexpr std::size_t chunk_bytes = 1 << 20;
 
 /// A connection string value, quoted so that a space or a quote in a password reaches libpq
 /// unchanged.
-std::string quoted(const std::string& value) {
+std::string conninfo_value(const std::string& value) {
     std::string out = "'";
     for (const char c : value) {
         if (c == '\'' || c == '\\')
@@ -89,11 +89,11 @@ void tick_writer::write(std::span<const tick_row> rows) {
     if (!conn_) {
         const auto info = std::format("host={} port={} dbname={} user={} password={} "
                                       "options='-c timezone=UTC'",
-                                      quoted(options_.host),
+                                      conninfo_value(options_.host),
                                       options_.port,
-                                      quoted(options_.database),
-                                      quoted(options_.user),
-                                      quoted(options_.password));
+                                      conninfo_value(options_.database),
+                                      conninfo_value(options_.user),
+                                      conninfo_value(options_.password));
         conn_ = PQconnectdb(info.c_str());
         if (PQstatus(conn_) != CONNECTION_OK) {
             const std::string message = PQerrorMessage(conn_);

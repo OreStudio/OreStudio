@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -260,6 +261,18 @@ messaging::feed_binding_write feed_binding_write_of(const domain::feed_binding& 
     write.source_id = binding.source_id;
     write.enabled = binding.enabled;
     return write;
+}
+
+std::expected<std::vector<domain::market_data_source>, std::string>
+market_data_client::list_market_data_sources() {
+    messaging::list_market_data_sources_request req;
+    req.limit = all_rows;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
+    return std::move(resp->sources);
 }
 
 std::expected<bool, std::string>

@@ -197,7 +197,7 @@ begin
             where existing.tenant_id = p_target_tenant_id
               and existing.party_id = v_target_party_id
               and existing.series_id = v_series_id
-              and existing.observation_datetime = r.observation_date::timestamptz
+              and existing.observation_datetime = (r.observation_date::timestamp at time zone 'UTC')
               and existing.oresmd_uri = r.datum_uri
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
@@ -213,7 +213,7 @@ begin
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,
-            r.observation_date::timestamptz, r.datum_uri, r.value::text, r.source,
+            (r.observation_date::timestamp at time zone 'UTC'), r.datum_uri, r.value::text, r.source,
             -- The source ore-import of the provider ore, installed by
             -- marketdata_catalogue_populate.sql.
             '26772cc0-57d6-4fac-be36-2ae75eb56b6b'::uuid,

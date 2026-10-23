@@ -75,7 +75,7 @@ Each generator config carries a calibration entry: the source code, such as =ecb
 
 A source publishes one set of rates for each day, so the system asks for a day only once. A table of daily rates holds each rate with its source, its provider key, its pair or its series, its as-of date and the time of retrieval. A feed that needs a day looks in the table first. A rate that is there is reused. A rate that is not there is fetched, stored, and then reused, by this feed, by every other feed and after a restart.
 
-The date to read comes from a system clock that the feeds check. The clock gives today's date, and the feeds read the latest day that the table or the source has on or before that date. The clock is the subject of the capture [[file:../../agile/product_backlog/inbox/the_system_has_a_system_clock_that_the_feeds_check.org][The system has a system clock that the feeds check]]. Until it exists, the retrieval step reads the date from the host clock.
+The date to read comes from a system clock that the feeds check. The clock gives today's date, and the feeds read the latest day that the table or the source has on or before that date. The clock is the subject of the capture [[id:CF2FFE22-85E6-4490-B44D-37657F9B76EE][A system clock drives the date the feeds read]]. Until it exists, the retrieval step reads the date from the host clock.
 
 The retrieval is a step that is separate from the simulator. The feed screen shows the time of retrieval and the as-of date, so a reader sees how old the level of a feed is. A source that cannot be reached leaves the last stored day in place, and the screen shows its age.
 

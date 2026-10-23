@@ -45,7 +45,7 @@ h -> w : ticks from the window start to now
 w --> h : ticks, with their coordinates
 h -> s : ticks from "from" to the window start\none index probe on series and time
 s --> h : ticks
-h --> c : one reply\ncoordinates once, then time, coordinate and value arrays\nand the as_of time of the read
+h --> c : one reply\ncoordinates once, then time, coordinate and value arrays
 
 c -> c : merge history and buffered live ticks\nby coordinate and time, keep one of a pair
 c -> u : plot the series

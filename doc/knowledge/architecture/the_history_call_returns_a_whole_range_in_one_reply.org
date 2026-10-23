@@ -35,8 +35,10 @@ span has the same meaning on both tiers, and it is what a chart shows.
 - The coordinate URIs of the series come first, once each.
 - The ticks follow as three arrays of equal length: the time, the index of the
   coordinate, and the value. The order is by time, then by coordinate.
-- The =as_of= time of the read ends the reply. Every tick that the pipeline took before
-  that time is in the reply, except what a lane shed under overload.
+
+The reply holds every tick of the span that the window holds or that the store has
+committed. It makes no stronger promise. See the two tiers below for the one case that
+falls between them.
 
 A tick has no id and no source in the reply. A chart needs neither, and each field adds to
 the size of a reply that the client reads whole. The tick table keeps the =source_id= for
@@ -55,8 +57,12 @@ series and time.
 ** The ceiling
 
 The reply is one message, and the broker caps a message at 1 MB. The service declares a
-ceiling of 50,000 ticks for each reply, about 18 bytes for each tick. This is an estimate,
-and the measurement of the first build confirms or changes it.
+ceiling of 25,000 ticks for each reply. A tick costs about 20 bytes in three msgpack
+arrays, because each element carries a type byte: 9 for the time, 1 to 3 for the
+coordinate index and 9 for the value. That is about 500 KB, half the cap, which leaves room
+for the coordinates and the envelope. This is an estimate, and the measurement of the first
+build confirms or changes it. Packing each array as one binary block would cost 8 bytes a
+value and would raise the ceiling.
 
 A span over the ceiling is refused with the same rule as the instant ceiling of the slice
 and the evolution: the answer names the ceiling and the service never truncates. See
@@ -82,7 +88,7 @@ See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
 
 A context with no party gets the no-party outcome and not an empty reply. The party policy
 of the tick table shows such a context no tick, and an empty reply would look complete.
-The as-of reads follow the same rule. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
 
 The read uses the tenant-aware pool. The policies of the tick table decide what the
 session sees, and no role skips them.
@@ -102,10 +108,20 @@ spans, and the service prefers the window for the span that it covers. A span th
 window does not reach comes from the store alone. A restart empties the window, and the
 store then answers the whole span.
 
+A datum that no consumer watches keeps only its last tick in the window. A span for it
+comes from the store alone, and the store trails the lane by one batch. A tick that the
+lane took before the client subscribed, and that the store has not yet committed, is in
+neither the reply nor the buffer. How the lane learns that a datum is watched is open on
+the pipeline page. If the subscription tells it, the window fills from the subscription
+on, and the case shrinks to the ticks of one batch.
+
 ** Open questions
 
-- Does the first build keep the ceiling of 50,000 ticks? The measurement of reply size and
+- Does the first build keep the ceiling of 25,000 ticks? The measurement of reply size and
   of read time decides.
+- Can a tick fall between the store and the window, as the two tiers section describes?
+  The measurement of the batch delay against the first reply decides whether the call
+  must wait for the commit of the batch in flight.
 - Should the reply carry the =source_id=? This page says no. A client that audits a tick
   reads the store.
 

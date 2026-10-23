@@ -62,6 +62,9 @@ between the two calls.
 - *On scroll to an older span.* Call with =to= set to the oldest tick the client holds. The
   reply holds the older span only.
 
+A gap that holds more ticks than the ceiling is refused. The client then calls for the gap
+in several spans, one after the other, and merges each reply.
+
 No call repeats a span that the client holds. Each call returns everything its span holds,
 so a chart never loops on pages.
 

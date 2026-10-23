@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A recorded decision states which roles see a node name on a result, and the scre
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -40,9 +40,7 @@ A recorded decision states which roles see a node name on a result, and the scre
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The BFF already hides the node from every session but the operator, in =mayReadHost=. The plan records that rule as the decision and pins each role with a test. The rule changes in one place if the owner widens it.
 
 * Measurements
 
@@ -59,6 +57,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The owner did not state a rule. This task takes the safe default, operator only, and the story says so. A tenant gains nothing from an installation's node names.
 
 * Test Scenarios
 
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Only the operator sees a node name. The journey and the story state it. A BFF test now pins the party member, beside the operator and the tenant administrator.

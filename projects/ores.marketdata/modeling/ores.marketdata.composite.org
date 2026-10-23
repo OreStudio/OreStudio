@@ -1,0 +1,213 @@
+:PROPERTIES:
+:ID: 35405104-CA57-4709-9655-C1A34F3E15D0
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.composite
+#+description: Codegen entity model for the marketdata composites table; an internal item derived from several quote series by a rule.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: composite
+#+entity_plural: composites
+#+entity_title: Composite
+#+brief: An internal item derived from several quote series by a rule.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A composite is an internal item that the service derives from several quote series by a rule. A blended
+EUR/USD spot from Bloomberg and LSEG is the first case. The composite is published by an internal provider with
+one source of kind =derived=. It has no rate card: its use counts as demand on its inputs.
+
+A party that uses a composite needs the =derived= right on the provider of every input. A composite with a
+missing right gets no values and shows the reason. The rule is named by a code, so a later rule needs no schema
+change. The system tenant owns the rows and every tenant reads them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this composite.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:sortable: true
+:searchable: true
+:END:
+
+The readable name of the composite, such as =eurusd-blend=. It is a label and no code parses it.
+
+#+begin_src cpp :name generator
+std::string("composite-") + std::to_string(faker::number::integer(1, 999999))
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the internal provider that publishes the composite. Its one source has the kind =derived=.
+
+#+begin_src cpp :name generator
+std::string("composite")
+#+end_src
+
+** oresmd_uri
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:END:
+
+The item the composite produces, as its oresmd quote URI. A party reads it as any other item.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
+#+end_src
+
+** rule_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:default_value: "pass_through"
+:no_generator_suffix: true
+:END:
+
+The rule that derives the value from the inputs: =pass_through=, =average= or =median=. A later rule is a new code and no schema change.
+
+#+begin_src cpp :name generator
+std::string("pass_through")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:END:
+
+What the composite is for and who approved the rule.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_composites_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "name" ~ '^[a-z][a-z0-9_-]*$' |
+| "provider_code" <> '' |
+| "oresmd_uri" <> '' |
+| "rule_code" ~ '^[a-z][a-z0-9_]*$' |
+
+
+* Insert trigger
+** Validations
+
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: composite
+:entity_plural_short:   composites
+:entity_singular_words: composite
+:system_tenant_visible: true
+:entity_plural_words:   composites
+:END:
+
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: com
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/composite.hpp
+:domain_class:            ores::marketdata::domain::composite
+:protocol_include:        ores.marketdata.api/messaging/composite_protocol.hpp
+:collection_name:         composites
+:key_field:               name
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label    | widget       | type      | is_key | is_required | placeholder         |
+|---------------+----------+--------------+-----------+--------+-------------+---------------------|
+| name          | Name     | nameEdit     | line_edit | true   | true        | Enter composite name |
+| oresmd_uri    | Item     | itemEdit     | line_edit |        | true        | Enter item URI      |
+| rule_code     | Rule     | ruleEdit     | line_edit |        | true        | pass_through        |
+| description   | Description | descriptionEdit | text_edit |   | true        | Enter a description |
+
+*** Columns
+
+| enum_name  | field      | header | type   | width |
+|------------+------------+--------+--------+-------|
+| Name       | name       | Name   | string | 200   |
+| OresmdUri  | oresmd_uri | Item   | string | 400   |
+| RuleCode   | rule_code  | Rule   | string | 120   |
+| Version    | version    | Version | int   | 80    |
+
+* See also
+
+- [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]] -- the composite this table records.
+

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 61BFFDA4-C2AD-5C42-92E2-C13029C490AA
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the composite_inputs commands from the shell?
+#+description: Every command the composite_inputs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:composite_inputs:
+
+This file documents the composite_inputs resource at the shell, one section per command. Every command is a subcommand of =composite_inputs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 15525AD5-BA5E-53FA-B53F-D0154D387E43
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.list=.
+
+#+name: composite_inputs-list
+#+begin_src ores-shell :tangle composite_inputs-list.ores :exports none
+composite_inputs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 597A2829-2BBE-57A0-BD96-D1214928EA18
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs get <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.get=.
+
+#+name: composite_inputs-get
+#+begin_src ores-shell :tangle composite_inputs-get.ores :exports none
+composite_inputs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5210A8B0-1958-5112-8285-0C14197DFF64
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs get-many <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.get_many=.
+
+#+name: composite_inputs-get-many
+#+begin_src ores-shell :tangle composite_inputs-get-many.ores :exports none
+composite_inputs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C1D0AFC7-8C43-5251-9F57-FEA2D07F97F0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs add <composite_id> <provider_code> <oresmd_uri> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.put=.
+
+#+name: composite_inputs-add
+#+begin_src ores-shell :tangle composite_inputs-add.ores :exports none
+composite_inputs add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C2771FE1-B6D1-552D-ABBD-1CB3B69F1565
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs set <id> <composite_id> <provider_code> <oresmd_uri> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.put=.
+
+#+name: composite_inputs-set
+#+begin_src ores-shell :tangle composite_inputs-set.ores :exports none
+composite_inputs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 344D879B-7090-563E-B83C-47D44010FB17
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs put-many --count <n> <id> <composite_id> <provider_code> <oresmd_uri> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.put_many=.
+
+#+name: composite_inputs-put-many
+#+begin_src ores-shell :tangle composite_inputs-put-many.ores :exports none
+composite_inputs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C64F4D8B-1D1C-589A-BC7A-3DDFE5CD90A9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs delete <oresmd_uri> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.delete=.
+
+#+name: composite_inputs-delete
+#+begin_src ores-shell :tangle composite_inputs-delete.ores :exports none
+composite_inputs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0C8823AF-A2FB-5B93-955B-7A87EC653134
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs delete-many <oresmd_uri> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs.delete_many=.
+
+#+name: composite_inputs-delete-many
+#+begin_src ores-shell :tangle composite_inputs-delete-many.ores :exports none
+composite_inputs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6DB53930-59AE-580B-9F8D-52DA2DD26579
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs versions <oresmd_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs_versions.list=.
+
+#+name: composite_inputs-versions
+#+begin_src ores-shell :tangle composite_inputs-versions.ores :exports none
+composite_inputs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C5FB189F-D67D-555D-89DC-34563B786E87
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+composite_inputs version <oresmd_uri> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.composite_inputs_versions.get=.
+
+#+name: composite_inputs-version
+#+begin_src ores-shell :tangle composite_inputs-version.ores :exports none
+composite_inputs version __none__ --version 1
+#+end_src
+

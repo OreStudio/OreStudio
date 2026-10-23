@@ -1749,3 +1749,11 @@ tangled into the runnable script library
 * Rate Card Components
 
 - [[id:9928C6E3-7B14-5C96-8A69-35733E371659][How do I run the rate_card_components commands from the shell?]]
+
+* Composite Inputs
+
+- [[id:61BFFDA4-C2AD-5C42-92E2-C13029C490AA][How do I run the composite_inputs commands from the shell?]]
+
+* Composites
+
+- [[id:5FFF1AC6-E2D5-585F-9324-0A0DD0F202F1][How do I run the composites commands from the shell?]]

@@ -20,6 +20,8 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "composite_commands_tests.cpp"
+    "composite_input_commands_tests.cpp"
     "delivery_count_commands_tests.cpp"
     "demand_interval_commands_tests.cpp"
     "feed_binding_commands_tests.cpp"

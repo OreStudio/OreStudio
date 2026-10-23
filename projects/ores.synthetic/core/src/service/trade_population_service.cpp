@@ -57,7 +57,6 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
         write.issue_id = slot.issue_id;
 
         writer_.write_trade(write, scope);
-        writer_.write_instrument(write, scope);
 
         ++run.written;
         run.outcomes.push_back(

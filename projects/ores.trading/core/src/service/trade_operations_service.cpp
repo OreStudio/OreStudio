@@ -28,10 +28,12 @@
 #include "ores.trading.core/repository/bond_issue_leg_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
+#include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
@@ -41,6 +43,7 @@
 #include <chrono>
 #include <exception>
 #include <optional>
+#include <rfl.hpp>
 #include <string>
 
 namespace ores::trading::service {
@@ -99,6 +102,25 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
         ores::service::messaging::stamp(row, ctx);
 }
 
+// The kinds the booking writes so far. A batch array of another kind, or a bond
+// row that carries more than the instrument header, names itself in a refusal
+// before anything is written.
+std::vector<std::string> unsupported_instrument_parts(const domain::instrument_batch& batch) {
+    std::vector<std::string> names;
+    rfl::to_view(batch).apply([&](const auto& field) {
+        if (field.name() != "bond_instruments" && !field.value()->empty())
+            names.emplace_back(field.name());
+    });
+    for (const auto& bond : batch.bond_instruments) {
+        if (bond.option || bond.trs || bond.repo || bond.future || bond.ascot_row ||
+            !bond.call_dates.empty() || !bond.conversion_targets.empty()) {
+            names.emplace_back("bond_instruments with a fact row or an issue child");
+            break;
+        }
+    }
+    return names;
+}
+
 }
 
 messaging::book_trade_response
@@ -117,9 +139,21 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     messaging::book_trade_response response;
 
-    // One transaction writes the anchor, the activity, the booking and the
-    // state, so a failure in any of them leaves none of them. A read made
-    // through the transaction joins it without ending it.
+    if (const auto unsupported = unsupported_instrument_parts(request.instruments);
+        !unsupported.empty()) {
+        std::string names;
+        for (const auto& name : unsupported)
+            names += (names.empty() ? "" : ", ") + name;
+        response.result.outcome = outcome::failed;
+        response.result.code = "instrument_not_supported";
+        response.result.message = "Booking writes no instrument yet for: " + names + ".";
+        return response;
+    }
+
+    // One transaction writes the anchor, the activity, the booking, the state,
+    // the identifiers and the instrument, so a failure in any of them leaves
+    // none of them. A read made through the transaction joins it without
+    // ending it.
     unit_of_work uow(ctx_);
     const auto& ctx = uow.ctx();
 
@@ -161,6 +195,32 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     repository::trade_activity_repository{}.write(ctx, activity, must_not_exist);
     repository::trade_booking_repository{}.write(ctx, booking, must_not_exist);
     repository::trade_state_repository{}.write(ctx, state, must_not_exist);
+
+    // The identifiers and the instrument are children of the trade: each write
+    // bumps the trade's version, so they follow the anchor, and the request
+    // below records the version they leave.
+    auto identifiers = request.identifiers;
+    repository::trade_identifier_repository identifier_repository;
+    for (auto& identifier : identifiers) {
+        identifier.trade_id = anchor.id;
+        identifier.trade_activity_id = activity.id;
+        identifier.version = 0;
+        stamp(identifier, ctx_);
+        identifier_repository.write(ctx, identifier, must_not_exist);
+    }
+
+    auto bonds = request.instruments.bond_instruments;
+    repository::bond_instrument_repository bond_repository;
+    for (auto& bond : bonds) {
+        auto& row = bond.instrument;
+        row.identity.trade_id = anchor.id;
+        row.identity.trade_type_code = anchor.trade_type;
+        row.identity.trade_activity_id = activity.id;
+        row.identity.version = 0;
+        stamp(row.identity, ctx_);
+        stamp(row.audit, ctx_);
+        bond_repository.write(ctx, row, must_not_exist);
+    }
 
     // A trade booked live in a real book awaits Operations. The request joins
     // this transaction, so a trade is never live without one.

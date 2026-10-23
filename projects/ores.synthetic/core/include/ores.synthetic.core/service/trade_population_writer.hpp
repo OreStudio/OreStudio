@@ -116,18 +116,12 @@ public:
     read_trade(const boost::uuids::uuid& trade_id) = 0;
 
     /**
-     * @brief Books the trade: its anchor, its booking and its state, and its
-     * Internal identifier in the same run.
+     * @brief Books the trade: its anchor, its booking, its state, its Internal
+     * identifier and its instrument, in one call. The security the instrument
+     * names is created first, the first time the run sees it.
      */
     virtual void write_trade(const trade_population_write& write,
                              const domain::trade_generation_scope& scope) = 0;
-
-    /**
-     * @brief Writes the trade's instrument and, the first time the issue is
-     * seen in a run, the issue's own rows.
-     */
-    virtual void write_instrument(const trade_population_write& write,
-                                  const domain::trade_generation_scope& scope) = 0;
 };
 
 }

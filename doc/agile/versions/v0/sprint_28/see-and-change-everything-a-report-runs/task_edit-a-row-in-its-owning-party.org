@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/engine-settings-party-and-form-fixes
-#+pr:
+#+pr: 3691
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3691][#3691]] | [web] Edit engine settings in their owning party |
 
 * Review
 

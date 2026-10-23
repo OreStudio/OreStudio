@@ -91,8 +91,7 @@ public:
 
     /**
      * @brief The NATS subject this feed publishes its ticks on, derived from
-     * its source_name and binding_mode: "synthetic.v1.ops.tick.<source>" for a
-     * bound feed, the sandbox prefix for a sandboxed one.
+     * its source_name: "synthetic.v1.ops.tick.<source>".
      */
     virtual const std::string& nats_subject() const = 0;
 

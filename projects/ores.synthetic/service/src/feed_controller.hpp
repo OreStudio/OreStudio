@@ -45,10 +45,9 @@ namespace ores::synthetic::service {
  * @brief The marketdata feed_binding store a feed_controller binds started
  * feeds into.
  *
- * A seam, not an abstraction: the controller owns the one rule "a bound feed
- * is bound, a sandboxed feed is not" and the store owns the marketdata
- * round-trip that carries it out, so tests can drive the rule without a live
- * marketdata service.
+ * A seam, not an abstraction: the controller owns the one rule "a started feed
+ * is bound" and the store owns the marketdata round-trip that carries it out,
+ * so tests can drive the rule without a live marketdata service.
  */
 class feed_binding_store {
 public:

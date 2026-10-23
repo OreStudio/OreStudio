@@ -82,7 +82,8 @@ begin
     -- publish into the system tenant names none.
     if v_target_party_id is null and p_target_tenant_id = ores_utility_system_tenant_id_fn() then
         select id into v_target_party_id
-        from ores_refdata_read_system_party_fn(p_target_tenant_id) limit 1;
+        from ores_refdata_read_system_party_fn(p_target_tenant_id)
+        order by id limit 1;
     end if;
     if v_target_party_id is null then
         raise exception 'p_params.party_id is required to publish market data observations';

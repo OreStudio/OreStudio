@@ -50,8 +50,7 @@ auto& lg() {
 //
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
-                                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                                     const std::string& run_token) {
+                                     const ores::synthetic::domain::fx_spot_generation_config& cfg) {
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
                                  ", date=" + cfg.vintage_date + ", datum=" + cfg.oresmd_uri + ".";
 
@@ -67,7 +66,7 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
             .value();
 
     const auto found = find_vintage_observation(auth_nats,
-                                                run_token,
+                                                {},
                                                 series_uri,
                                                 datum_uri,
                                                 cfg.vintage_source,
@@ -88,7 +87,6 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode,
-                  const std::string& run_token,
                   std::optional<adapter_target> adapter) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
@@ -117,7 +115,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     // gmm_initial_price (0 for vintage configs, per the check constraint); "fixed" uses the
     // stored value as-is. See make_fx_spot_feed's doc comment for the vintage semantics.
     const double initial_price = cfg.price_source == "vintage" ?
-                                     resolve_vintage_initial_price(auth_nats, cfg, run_token) :
+                                     resolve_vintage_initial_price(auth_nats, cfg) :
                                      cfg.gmm_initial_price;
 
     // Persistent random_device so the OS entropy pool is not re-seeded between rapid

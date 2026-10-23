@@ -72,7 +72,7 @@ ores::nats::service::nats_client& auth_nats() {
 }
 
 feed_build_context make_build_context() {
-    return feed_build_context{nats(), auth_nats(), {}};
+    return feed_build_context{nats(), auth_nats()};
 }
 
 gmm_component make_component(double mean, double stdev, double weight) {

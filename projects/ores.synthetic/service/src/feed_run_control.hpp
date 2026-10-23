@@ -64,10 +64,8 @@ struct stop_outcome {
  * series another running feed holds) and the same counts. Every registered kind is
  * present in the result, whether or not a feed of it was wanted.
  *
- * @p build carries the clients every builder shares, and each feed gets its own run token
- * from the controller's identity. @p bearer is the token of the person who starts the
- * feeds, or empty for a restore. It gives the consent and subscribes the person's party,
- * and the feeds do not run as the person.
+ * @p build carries the clients every builder shares. @p bearer is the token of the person who
+ * starts the feeds. It subscribes the person's party, and the feeds do not run as the person.
  */
 inline start_outcome start_feeds(const feed_kind_registry& registry,
                                  feed_controller& ctrl,
@@ -98,14 +96,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
             continue;
         }
         try {
-            const auto token = ctrl.identity().run_token_for(target, ctx, bearer);
-            if (!token) {
-                skip(token.error());
-                continue;
-            }
-            auto context = build;
-            context.run_token = *token;
-            auto attempt = registry.make_feed(target, context);
+            auto attempt = registry.make_feed(target, build);
             if (!attempt.feed) {
                 skip(attempt.failure);
                 continue;

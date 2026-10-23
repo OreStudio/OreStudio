@@ -111,7 +111,6 @@ to_domain(const messaging::market_data_generation_config_write& write) {
     v.enabled = write.enabled;
     v.dataset_id = write.dataset_id;
     v.provider_code = write.provider_code;
-    v.run_grant_id = write.run_grant_id;
     return v;
 }
 

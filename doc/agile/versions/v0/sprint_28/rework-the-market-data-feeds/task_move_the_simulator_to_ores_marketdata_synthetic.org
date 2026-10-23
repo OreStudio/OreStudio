@@ -91,6 +91,31 @@ task and name that file in the Command column.
 
 * Notes
 
+*Pull request 1 (the adapter).* The simulator serves the market data service as the adapter =ore-simulated=
+of the provider =ore=. It announces the ORE keys of the FX generators that the system collections hold,
+answers each demand set with a generator for every key it can quote, and sends a heartbeat every 5 seconds.
+The announce repeats every 60 seconds, so a market data service that restarts learns the adapter again.
+An FX generator with an adapter target publishes =adapter_tick= on =marketdata.v1.ingress.ore-simulated.<key>=.
+The runner keeps one generator for each vendor instrument: of two configs that quote one pair, the config
+with the lower id wins and the other is logged.
+
+The run grant, the run token cache and the restore walk are gone from the simulator. The feed identity,
+the restore pass, its retry policy, the =restore_feeds= verb, the provisioning call to it and the
+=run_grant_id= column of the collection are removed, and the database was recreated without the column. A
+generator that starts from a vintage price reads marketdata as the service, which belongs to the system
+tenant. A vintage price in a tenant collection no longer resolves; the next task makes the generators
+system-owned.
+
+What this pull request does not do:
+
+- The old control plane stays. =start_feed=, =stop_feed= and the folder verbs still start a generator by
+  hand, and that generator still publishes =market_tick= on its binding subject. The screens task retires
+  them with the bindings screen.
+- Rate curve generators are not adapter generators. The catalogue has no vendor rows for the curve pillars,
+  so a curve generator keeps the old path.
+- The adapter was tested against a fake market data service and the real FX generator on live NATS. A run
+  of the real market data service, the adapter and a database together was not made.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -433,7 +433,6 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
     target.container_enabled = found->second.enabled;
     target.binding_mode = found->second.binding_mode;
     target.container_scope = found->second.scope;
-    target.run_grant_id = found->second.run_grant_id;
     return target;
 }
 

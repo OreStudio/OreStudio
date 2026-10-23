@@ -114,8 +114,6 @@ struct feed_start_target final {
     domain::scope container_scope = domain::scope::party;
     bool container_found = false;
     bool container_enabled = false;
-    /** The run grant the container holds: the consent its feeds run under. */
-    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief The one startability gate: the row and its container are both

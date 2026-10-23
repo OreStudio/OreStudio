@@ -19,6 +19,9 @@
  */
 #include "../src/generator_runner.hpp"
 #include "../src/simulator_adapter.hpp"
+#include "../src/simulator_offers.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.testing/test_database_manager.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -29,12 +32,14 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <atomic>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -405,4 +410,110 @@ TEST_CASE("the adapter announces again until the service answers", tags + "[adap
 
     CHECK(eventually([&] { return adapter.announced(); }));
     adapter.stop();
+}
+
+namespace {
+
+namespace svc = ores::synthetic::service;
+
+const auto system_container = boost::uuids::string_generator()("aaaaaaaa-0000-0000-0000-000000000001");
+const auto party_container = boost::uuids::string_generator()("bbbbbbbb-0000-0000-0000-000000000002");
+
+svc::feed_kind_candidate fx_candidate(const std::string& id,
+                                      const boost::uuids::uuid& container,
+                                      const std::string& pair,
+                                      bool enabled = true) {
+    svc::feed_kind_candidate c;
+    c.feed_config_id = id;
+    c.container_id = container;
+    c.source_name = "test." + id;
+    c.display_name = pair;
+    c.enabled = enabled;
+    if (!pair.empty())
+        c.vendor = ore_id(pair);
+    c.build_input = [](ores::synthetic::domain::binding_mode) {
+        return svc::feed_build_outcome{
+            .input = ores::synthetic::feed::feed_build_input{
+                ores::synthetic::feed::fx_spot_feed_build_input{}},
+            .skip_reason = {}};
+    };
+    return c;
+}
+
+}
+
+TEST_CASE("the offers are the startable system configs that have a vendor id", tags + "[offers]") {
+    std::vector<ores::synthetic::feed::adapter_target> built;
+    ores::synthetic::feed::feed_factory factory;
+    factory.register_kind(
+        std::string(ores::synthetic::feed::fx_spot_feed_kind),
+        [&built](const auto&, const auto& input) -> std::shared_ptr<domain::IFeed> {
+            built.push_back(
+                *std::get<ores::synthetic::feed::fx_spot_feed_build_input>(input).adapter);
+            return std::make_shared<idle_generator>(std::make_shared<generator_counters>());
+        });
+
+    const auto containers = [] {
+        std::vector<ores::synthetic::domain::market_data_generation_config> out;
+        ores::synthetic::domain::market_data_generation_config sys;
+        sys.id = system_container;
+        sys.enabled = true;
+        sys.scope = ores::synthetic::domain::scope::system;
+        out.push_back(sys);
+        ores::synthetic::domain::market_data_generation_config party;
+        party.id = party_container;
+        party.enabled = true;
+        party.scope = ores::synthetic::domain::scope::party;
+        out.push_back(party);
+        return out;
+    };
+    svc::feed_kind_registry registry(svc::feed_kind_registry::deps{
+        .factory = &factory,
+        .folder_subtree = [](const auto&, const auto&) {
+            return std::set<boost::uuids::uuid>{};
+        },
+        .container_by_id = [](const auto&, const auto&) {
+            return std::optional<ores::synthetic::domain::market_data_generation_config>{};
+        },
+        .containers = [containers](const auto&) { return containers(); }});
+
+    svc::feed_kind kind;
+    kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
+    kind.config_permission = "synthetic::fx_spot_generation_configs:read";
+    kind.candidates = [](const auto&, const std::string&) {
+        return std::vector{fx_candidate("1", system_container, "EUR/USD"),
+                           fx_candidate("2", system_container, ""),
+                           fx_candidate("3", party_container, "GBP/USD"),
+                           fx_candidate("4", system_container, "USD/JPY", false),
+                           fx_candidate("5", system_container, "EUR/USD")};
+    };
+    kind.simulate_subject = "ores.test.fx.simulate";
+    kind.decode_simulate = [](const auto&) { return std::optional<svc::feed_simulate_envelope>{}; };
+    kind.reply_simulate = [](auto&, const auto&, const auto&) {};
+    registry.register_kind(std::move(kind));
+
+    const auto opts = ores::testing::test_database_manager::make_database_options();
+    const auto ctx = ores::database::context_factory::make_context(
+        ores::database::context_factory::configuration{.database_options = opts,
+                                                       .pool_size = 1,
+                                                       .num_attempts = 1,
+                                                       .wait_time_in_seconds = 1,
+                                                       .service_account = opts.user});
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
+    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+
+    const auto offers = svc::system_generator_offers(registry, ctx, build, "ore-simulated");
+
+    REQUIRE(offers.size() == 2);
+    CHECK(offers[0].id.external_id == "FX/RATE/EUR/USD");
+    CHECK(offers[1].id.external_id == "FX/RATE/EUR/USD");
+
+    // The runner keeps the first of the two and builds one generator.
+    generator_runner runner([&] { return svc::system_generator_offers(registry, ctx, build, "ore-simulated"); });
+    CHECK(runner.universe().size() == 1);
+    runner.apply({ore_id("EUR/USD")});
+    REQUIRE(built.size() == 1);
+    CHECK(built.front().id.external_id == "FX/RATE/EUR/USD");
+    CHECK(built.front().subject == domain::adapter_ingress_subject("ore-simulated", "FX/RATE/EUR/USD"));
 }

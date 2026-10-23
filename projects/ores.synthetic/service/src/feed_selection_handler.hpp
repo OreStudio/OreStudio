@@ -132,7 +132,7 @@ private:
             const auto label = std::to_string(wanted.size()) + " selected feeds";
             if (starting) {
                 const auto bearer = ores::nats::service::extract_bearer(msg);
-                const ores::synthetic::feed::feed_build_context build{nats_, auth_nats_, {}};
+                const ores::synthetic::feed::feed_build_context build{nats_, auth_nats_};
                 const auto outcome = start_feeds(
                     registry_,
                     *ctrl_,

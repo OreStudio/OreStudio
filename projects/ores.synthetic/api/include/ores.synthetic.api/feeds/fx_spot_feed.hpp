@@ -154,7 +154,7 @@ private:
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation
  * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
- * via @p auth_nats delegated to the run token @p run_token, overriding the stored gmm_initial_price
+ * through @p auth_nats as the service itself, overriding the stored gmm_initial_price
  * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
  * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves, replacing the vintage
  * lookup the deleted client-supplied-params path of feed_controller::start() used to perform.
@@ -172,7 +172,6 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode =
                       ores::synthetic::domain::binding_mode::bound,
-                  const std::string& run_token = {},
                   std::optional<adapter_target> adapter = std::nullopt);
 
 }

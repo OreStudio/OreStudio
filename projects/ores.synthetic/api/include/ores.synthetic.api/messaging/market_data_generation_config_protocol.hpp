@@ -48,7 +48,6 @@ struct market_data_generation_config_write {
     bool enabled;
     std::optional<boost::uuids::uuid> dataset_id;
     std::string provider_code;
-    std::optional<boost::uuids::uuid> run_grant_id;
 };
 
 struct market_data_generation_config_change {

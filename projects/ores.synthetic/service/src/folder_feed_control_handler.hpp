@@ -111,13 +111,10 @@ public:
         try {
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
-            // Forwarded so delegated service-to-service lookups (vintage
-            // resolution inside the IR producer builder) run in the caller's
-            // own tenant/party context — without it, the lookups silently run
-            // as this service's own system-tenant identity, which cannot see
-            // another tenant's market_observation rows (RLS).
+            // The caller's token binds the feeds it starts to the caller's party. The feeds
+            // themselves read marketdata as this service.
             const auto bearer = ores::nats::service::extract_bearer(msg);
-            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, {}};
+            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_};
 
             const auto outcome = start_feeds(
                 registry_,

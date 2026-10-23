@@ -172,24 +172,6 @@ scope, so every feed has a provider. Its feeds' source names start
 std::string("bloomberg")
 #+end_src
 
-** run_grant_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
-:END:
-
-The collection's standing consent to run. It is the IAM run grant that every
-feed of this collection acts under, whoever or whatever starts the feed. The
-first Start of the collection by a person creates it, and a restart of the
-service reuses it. It is not a credential: the service exchanges it for a run
-token at each start. IAM owns the grant, so this column is not a checked foreign
-key. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]].
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 * SQL
 
 ** Flags

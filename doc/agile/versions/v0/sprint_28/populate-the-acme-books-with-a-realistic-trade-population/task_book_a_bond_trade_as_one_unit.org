@@ -103,7 +103,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A trade type with no route to the bond table fails in the database, not by name. | trade_operations_service.cpp | Accepted as a follow-up | A test now records the current behaviour. The generated writer task routes by the trade type catalogue and adds the pre-check. |
+| 2 | The fact-row check is a hard-coded field list. | trade_operations_service.cpp | Accepted, fixed | The check now walks every member of the bond row by reflection. It also closed a gap: =option_data= and 14 other optional members were accepted and dropped. The refusal names the member. |
+| 3 | Two identifiers of one scheme fail with a database error. | trade_operations_service.cpp | Declined | The transaction rolls back cleanly and the case is minor. |
+| 4 | A comment on the =ctx_= stamp. | trade_operations_service.cpp | Accepted | The comment says the stamp takes the actor from the caller's context. |
+| 5 | Does =stamp= overwrite the writer's =modified_by= and =performed_by=? | trading_trade_population_writer.cpp | Answered | Yes, by design. =stamp= takes both from the caller's context. The anchor and the booking behave the same. |
+| 6 | Is the TypeScript file generated? | trade_operations_protocol.ts | Answered | Yes. Codegen made it, and the drift sweep was clean. |
 
 * Result
 

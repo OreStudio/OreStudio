@@ -105,18 +105,40 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
 // The kinds the booking writes so far. A batch array of another kind, or a bond
 // row that carries more than the instrument header, names itself in a refusal
 // before anything is written.
+/**
+ * @brief True when a member of a bond row holds data: an engaged optional or a
+ * string or a vector that is not empty.
+ */
+template <typename T>
+bool holds_data(const T& value) {
+    if constexpr (requires { value.has_value(); })
+        return value.has_value();
+    else if constexpr (requires { value.empty(); })
+        return !value.empty();
+    else
+        return false;
+}
+
 std::vector<std::string> unsupported_instrument_parts(const domain::instrument_batch& batch) {
     std::vector<std::string> names;
     rfl::to_view(batch).apply([&](const auto& field) {
         if (field.name() != "bond_instruments" && !field.value()->empty())
             names.emplace_back(field.name());
     });
+    // Booking writes the header of a bond row. Every other member that can
+    // hold data, apart from the issue, which the caller has stored already,
+    // belongs to a writer that does not exist yet.
     for (const auto& bond : batch.bond_instruments) {
-        if (bond.option || bond.trs || bond.repo || bond.future || bond.ascot_row ||
-            !bond.call_dates.empty() || !bond.conversion_targets.empty()) {
-            names.emplace_back("bond_instruments with a fact row or an issue child");
+        bool refused = false;
+        rfl::to_view(bond).apply([&](const auto& field) {
+            const std::string_view name = field.name();
+            if (name != "instrument" && name != "issue" && holds_data(*field.value())) {
+                names.emplace_back("bond_instruments." + std::string(name));
+                refused = true;
+            }
+        });
+        if (refused)
             break;
-        }
     }
     return names;
 }
@@ -198,7 +220,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     // The identifiers and the instrument are children of the trade: each write
     // bumps the trade's version, so they follow the anchor, and the request
-    // below records the version they leave.
+    // below records the version they leave. The stamp takes the actor from the
+    // caller's context, so the modified_by and performed_by of a request do not stand.
     auto identifiers = request.identifiers;
     repository::trade_identifier_repository identifier_repository;
     for (auto& identifier : identifiers) {

@@ -466,3 +466,26 @@ TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
     CHECK(response.result.code == "instrument_not_supported");
     CHECK(response.result.message.contains("bond_instruments"));
 }
+
+TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.bond_instruments.front().option_data.emplace();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("bond_instruments.option_data"));
+}
+
+TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_the_database", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.anchor.trade_type = "Swap";
+
+    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+
+    const auto id = boost::uuids::to_string(req.anchor.id);
+    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
+}

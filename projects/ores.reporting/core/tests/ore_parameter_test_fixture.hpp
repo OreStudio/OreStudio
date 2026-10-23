@@ -45,7 +45,8 @@ namespace ores::reporting::tests {
  * @return The ids of the parameters that were written.
  */
 inline std::vector<boost::uuids::uuid>
-write_system_parameters(const ores::database::context& party_ctx, const std::string& db_user,
+write_system_parameters(const ores::database::context& party_ctx,
+                        const std::string& db_user,
                         ores::utility::generation::generation_context& gen,
                         std::size_t count = 5) {
     const auto system_ctx =

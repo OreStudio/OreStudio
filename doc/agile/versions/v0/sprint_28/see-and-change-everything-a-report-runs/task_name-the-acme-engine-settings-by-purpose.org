@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/name-engine-settings-and-fix-the-scenario
-#+pr:
+#+pr: 3689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3689][#3689]] | [acme] Name the engine settings by purpose |
 
 * Review
 

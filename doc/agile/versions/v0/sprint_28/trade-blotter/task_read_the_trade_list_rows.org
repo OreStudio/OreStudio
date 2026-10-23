@@ -38,8 +38,8 @@ Build the read model under the trade list. A row holds the trade or the structur
 - One query returns trade rows and structure rows.
 - The query pages, sorts and filters in the service.
 - A row names the authorisation status.
-- One read states one =as_of=, and the state and the booking in a row come from that instant.
-- The generator supports a read-model entity that has no table. It reads from a set-returning SQL function that takes =as_of=.
+- The summary reads the current state of every part. It offers no =as_of=. A later task adds =as_of= when a screen needs it.
+- The generator supports a read-model entity whose relation is a view, with no events and no history.
 - The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
 - The identifier search is measured on a large list. A trigram index is added if the scan is too slow.
 - A portfolio scope over more than 1000 books is refused by the client, never truncated.
@@ -57,8 +57,8 @@ Decision (2026-10-22): this task absorbs the trade summary task. The summary ent
 
 Steps, once the decision is made:
 
-1. Generator: support a read-model entity that has no table. It reads from a set-returning SQL function that takes =as_of=. This is the main risk of the task, so measure it first.
-2. SQL function: one row for each trade, with the book, the current state, the booking, the counterparty, the instrument type and the identifiers as one search text.
+1. Generator: a profile =read-model= for an entity whose relation is a view. It drops the events, the notify trigger and the history files, and it emits =create view= from a select in the model. The view uses =security_invoker=, so the tenant policies of the base tables apply.
+2. SQL view: one row for each trade, with the book, the current state, the booking, the counterparty, the instrument type and the identifiers as one search text.
 3. Add the authorisation status to the row. Read it from the =trade_authorisation_request= detail row and the inbox request status, for the trade version that is current at =as_of=.
 4. Add the structure rows. A structure row has no state, notional or version of its own. It carries the count of its trades. It matches a filter when one of its trades does.
 5. Declare the model, then generate the protocol, repository, service, handler and TypeScript twin.
@@ -77,7 +77,9 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Files one table-backed entity generates | 41 (4 SQL, 34 C++, 2 TypeScript, 1 recipe) | =codegen.sh generate --model projects/ores.trading/modeling/ores.trading.trade_authorisation_request.org --address <ores.sql, ores.cpp, ores.ts, ores.doc> --dry-run= | 2b8f31b18c |
-| Facets a read model never needs | 10: SQL create and drop for a table, notify trigger create and drop, event, event registrar, eventing test, history provider and its registrar, history field mapper | the same dry-run, read against the protocol rules for a read model | 2b8f31b18c |
+| Facets a read model never needs, first count | 10 (superseded by the next row) | the same dry-run | 2b8f31b18c |
+| Facets the profile =read-only-current-state= already drops | 5 history files: the history provider and its registrar, the field mapper pair. The profile gates them in =generate.py= (=_NO_TEMPORAL_HISTORY_ARCHETYPES=) | dry-run of =ores.iam.login_info.org=, which binds the profile | 25d8ad99f1 |
+| Facets still wrong for a view | 6: table create and drop, notify trigger create and drop, event, event registrar. The event pair and the eventing test already have a gate set (=_STAGING_ONLY_EVENTING_FACETS=) | the same dry-run, read against =generate.py= | 25d8ad99f1 |
 | Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
 | Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 
@@ -85,7 +87,7 @@ task and name that file in the Command column.
 
 ** The generator gap, measured
 
-The table is not only in the SQL facet. The entity struct carries =tablename=. The repository reads it with =sqlgen::read= and builds the filter, the order, the page and the total on it. The history, event and notify facets all assume a table with a version timeline. The =read_only= flag removes the write verbs and no facet. No model opts a facet out today.
+The table is not only in the SQL facet. The entity struct carries =tablename=. The repository reads it with =sqlgen::read= and builds the filter, the order, the page and the total on it. The history, event and notify facets all assume a table with a version timeline. The =read_only= flag removes the write verbs and no facet. The profile =read-only-current-state= (reference: =ores.iam.login_info=) removes the write verbs, the version read and the five history files, so the measured gap is smaller than the first count. No model opts a facet out today.
 
 There is one precedent for a function-backed read: the hierarchy read calls =<table>_hierarchy_fn= with raw SQL and maps the columns by hand. It does not filter, order or page, so it cannot carry a list.
 
@@ -93,7 +95,7 @@ Three ways to close the gap:
 
 | Option | What it changes | Risk |
 |--------+-----------------+------|
-| A. A view as the table | The SQL facet emits =create view= from a select in the model. The entity =tablename= names the view. The generated repository, filter, order, page and total work unchanged. The ten facets above are switched off for a read model. The view carries no =as_of=, so the entity does not offer it. The specification allows this: a read model that cannot honour =as_of= does not offer it. | Low. It is inferred that =sqlgen::read= accepts a view. It is not yet tested. |
+| A. A view as the table | The SQL facet emits =create view= from a select in the model. The entity =tablename= names the view. The generated repository, filter, order, page and total work unchanged. A new profile =read-model= binds =read_only= and =current_state=, adds the view, and reuses the existing gate set that drops the event facets and the notify trigger. The view carries no =as_of=, so the entity does not offer it. The specification allows this: a read model that cannot honour =as_of= does not offer it. | Low. It is inferred that =sqlgen::read= accepts a view. It is not yet tested. |
 | B. A function, and =as_of= | A view cannot take =as_of=. A function can, but =sqlgen= cannot read from a function with an argument, so the repository must build the filter, order and page as raw SQL. | High. It duplicates the filter record in SQL. |
 | C. A view and a session setting | The view reads a transaction-local setting for the instant. It needs the setting and the read on one connection. | Medium. A read outside a unit of work opens its own connection. |
 

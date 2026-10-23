@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-jobs-tab
-#+pr:
+#+pr: 3655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ The Jobs tab of the grid screen shows the paged tree and the details panel for t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -100,13 +100,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [web] Build the Jobs tab |
+| #3655 | [web] Build the Jobs tab |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A div inside a list is invalid markup | GridJobs.tsx | Fixed | Each row holds its children inside its list item. A test checks it. |
+| 2 | A page past the last gives a blank tree | GridJobs.tsx | Fixed | The tree says so and offers the first page. A test covers it. |
+| 3 | A link opens a record outside the open tree | GridJobs.tsx | Partly fixed | A missing record states its own message. The tree does not reveal the target. |
+| 4 | Unchecked casts in the details panel | GridJobs.tsx | Fixed | The query returns a record tagged with its kind. |
+| 5 | A collapse changes the selection | GridJobs.tsx | Fixed | Only an open selects. |
+| 6 | Short ids can collide | GridJobs.tsx | Fixed | The full id is the row title. |
+| 7 | parseSelection order | GridJobs.tsx | Fixed | The colon check comes first. |
 
 * Result
 

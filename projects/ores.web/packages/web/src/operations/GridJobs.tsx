@@ -70,9 +70,12 @@ export function parseSelection(value: string | null): Selection | null {
         return null;
     }
     const at = value.indexOf(':');
+    if (at < 0) {
+        return null;
+    }
     const kind = KINDS.find((candidate) => candidate === value.slice(0, at));
     const id = value.slice(at + 1);
-    return kind === undefined || at < 0 || id === '' ? null : { kind, id };
+    return kind === undefined || id === '' ? null : { kind, id };
 }
 
 /**
@@ -157,6 +160,9 @@ export function ReadFailure({
         return <Notice tone="warn">{t('operations.grid.jobs.refused')}</Notice>;
     }
     const message = error instanceof Error ? error.message : '';
+    if (error instanceof ApiFailure && error.status === 404) {
+        return <Notice tone="warn">{message}</Notice>;
+    }
     return (
         <Notice tone="error">
             <span>{t('operations.grid.jobs.error', { message })}</span>{' '}
@@ -190,27 +196,37 @@ function ResultTags({ result }: { readonly result: ResultView }): ReactNode {
     );
 }
 
-/** One row of the tree: a button that selects the record and, for a parent, opens it. */
+/**
+ * One row of the tree: a button that selects the record and, for a parent, opens it.
+ *
+ * The children of an open row sit inside its list item, so the list nests as the
+ * tree does. The full id is the row's title, because the label is only its start.
+ */
 function TreeRow({
     label,
+    title,
     note,
     tags,
     twist,
     selected,
     onClick,
+    children,
 }: {
     readonly label: string;
+    readonly title?: string | undefined;
     readonly note?: string | undefined;
     readonly tags?: ReactNode;
     /** Open or closed for a parent, and nothing for a leaf. */
     readonly twist?: 'open' | 'closed';
     readonly selected: boolean;
     readonly onClick: () => void;
+    readonly children?: ReactNode;
 }): ReactNode {
     return (
         <li>
             <button
                 type="button"
+                title={title}
                 aria-expanded={twist === undefined ? undefined : twist === 'open'}
                 aria-current={selected ? 'true' : undefined}
                 className={`flex w-full items-center justify-between gap-3 rounded px-2 py-1.5 text-left text-sm hover:bg-bg-hover ${
@@ -229,6 +245,7 @@ function TreeRow({
                     {tags}
                 </span>
             </button>
+            {children}
         </li>
     );
 }
@@ -244,10 +261,45 @@ function showingText(
     return t(key, { first, last, total });
 }
 
+/** The way back when an address names a page past the last one. */
+function PastTheLastPage({
+    param,
+    address,
+}: {
+    readonly param: string;
+    readonly address: ReturnType<typeof useJobsAddress>;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <p className="px-2 text-xs text-ink-muted">
+            {t('operations.grid.jobs.pastTheLastPage')}{' '}
+            <Button size="sm" onClick={() => address.set({ [param]: null })}>
+                {t('operations.grid.jobs.firstPage')}
+            </Button>
+        </p>
+    );
+}
+
+/** Opens a parent that is closed and closes one that is open, naming the one opened. */
+function toggled(
+    open: ReadonlySet<string>,
+    id: string,
+    select: string,
+): Readonly<Record<string, string | null>> {
+    const next = new Set(open);
+    if (next.has(id)) {
+        next.delete(id);
+        return { open: [...next].join(',') };
+    }
+    next.add(id);
+    return { open: [...next].join(','), sel: select };
+}
+
 function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
     const { t } = useTranslation();
     const address = useJobsAddress();
-    const page = numberParam(address.params.get(`rp.${workunit.id}`), 1);
+    const param = `rp.${workunit.id}`;
+    const page = numberParam(address.params.get(param), 1);
     const offset = (page - 1) * CHILD_PAGE_SIZE;
     const results = useQuery({
         queryKey: [GRID_JOBS_QUERY_KEY, 'results', workunit.id, offset],
@@ -268,7 +320,11 @@ function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNod
     }
     const rows = results.data.rows;
     if (rows.length === 0) {
-        return <p className="px-2 text-xs text-ink-muted">{t('operations.grid.jobs.noResults')}</p>;
+        return results.data.total > 0 ? (
+            <PastTheLastPage param={param} address={address} />
+        ) : (
+            <p className="px-2 text-xs text-ink-muted">{t('operations.grid.jobs.noResults')}</p>
+        );
     }
     return (
         <>
@@ -277,6 +333,7 @@ function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNod
                     <TreeRow
                         key={result.id}
                         label={result.id.slice(0, 8)}
+                        title={result.id}
                         tags={<ResultTags result={result} />}
                         selected={selection?.kind === 'result' && selection.id === result.id}
                         onClick={() => address.set({ sel: `result:${result.id}` })}
@@ -298,9 +355,7 @@ function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNod
                             results.data.total,
                         )}
                         onMove={(next) =>
-                            address.set({
-                                [`rp.${workunit.id}`]: String(next / CHILD_PAGE_SIZE + 1),
-                            })
+                            address.set({ [param]: String(next / CHILD_PAGE_SIZE + 1) })
                         }
                     />
                 </div>
@@ -312,7 +367,8 @@ function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNod
 function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
     const { t } = useTranslation();
     const address = useJobsAddress();
-    const page = numberParam(address.params.get(`wp.${batch.id}`), 1);
+    const param = `wp.${batch.id}`;
+    const page = numberParam(address.params.get(param), 1);
     const offset = (page - 1) * CHILD_PAGE_SIZE;
     const workunits = useQuery({
         queryKey: [GRID_JOBS_QUERY_KEY, 'workunits', batch.id, offset],
@@ -334,38 +390,32 @@ function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
     }
     const rows = workunits.data.rows;
     if (rows.length === 0) {
-        return (
+        return workunits.data.total > 0 ? (
+            <PastTheLastPage param={param} address={address} />
+        ) : (
             <p className="px-2 text-xs text-ink-muted">{t('operations.grid.jobs.noWorkunits')}</p>
         );
     }
-    const toggle = (workunit: WorkunitView): void => {
-        const next = new Set(open);
-        if (next.has(workunit.id)) {
-            next.delete(workunit.id);
-        } else {
-            next.add(workunit.id);
-        }
-        address.set({ open: [...next].join(','), sel: `workunit:${workunit.id}` });
-    };
     return (
         <>
             <ul className="ml-6 border-l border-line-subtle pl-2">
                 {rows.map((workunit) => (
-                    <div key={workunit.id}>
-                        <TreeRow
-                            label={workunit.id.slice(0, 8)}
-                            note={t('operations.grid.jobs.workunitNote', {
-                                priority: workunit.priority,
-                                redundancy: workunit.target_redundancy,
-                            })}
-                            twist={open.has(workunit.id) ? 'open' : 'closed'}
-                            selected={
-                                selection?.kind === 'workunit' && selection.id === workunit.id
-                            }
-                            onClick={() => toggle(workunit)}
-                        />
+                    <TreeRow
+                        key={workunit.id}
+                        label={workunit.id.slice(0, 8)}
+                        title={workunit.id}
+                        note={t('operations.grid.jobs.workunitNote', {
+                            priority: workunit.priority,
+                            redundancy: workunit.target_redundancy,
+                        })}
+                        twist={open.has(workunit.id) ? 'open' : 'closed'}
+                        selected={selection?.kind === 'workunit' && selection.id === workunit.id}
+                        onClick={() =>
+                            address.set(toggled(open, workunit.id, `workunit:${workunit.id}`))
+                        }
+                    >
                         {open.has(workunit.id) && <ResultRows workunit={workunit} />}
-                    </div>
+                    </TreeRow>
                 ))}
             </ul>
             {workunits.data.total > CHILD_PAGE_SIZE && (
@@ -383,7 +433,7 @@ function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
                             workunits.data.total,
                         )}
                         onMove={(next) =>
-                            address.set({ [`wp.${batch.id}`]: String(next / CHILD_PAGE_SIZE + 1) })
+                            address.set({ [param]: String(next / CHILD_PAGE_SIZE + 1) })
                         }
                     />
                 </div>
@@ -416,31 +466,29 @@ function Tree(): ReactNode {
     if (batches.data.total === 0) {
         return <Notice>{t('operations.grid.jobs.empty')}</Notice>;
     }
-    const toggle = (batch: BatchView): void => {
-        const next = new Set(open);
-        if (next.has(batch.id)) {
-            next.delete(batch.id);
-        } else {
-            next.add(batch.id);
-        }
-        address.set({ open: [...next].join(','), sel: `batch:${batch.id}` });
-    };
     return (
         <>
-            <ul>
-                {rows.map((batch) => (
-                    <div key={batch.id}>
+            {rows.length === 0 ? (
+                <PastTheLastPage param="page" address={address} />
+            ) : (
+                <ul>
+                    {rows.map((batch) => (
                         <TreeRow
+                            key={batch.id}
                             label={batch.external_ref}
+                            title={batch.id}
                             tags={<StatusTag status={batch.status} />}
                             twist={open.has(batch.id) ? 'open' : 'closed'}
                             selected={selection?.kind === 'batch' && selection.id === batch.id}
-                            onClick={() => toggle(batch)}
-                        />
-                        {open.has(batch.id) && <WorkunitRows batch={batch} />}
-                    </div>
-                ))}
-            </ul>
+                            onClick={() =>
+                                address.set(toggled(open, batch.id, `batch:${batch.id}`))
+                            }
+                        >
+                            {open.has(batch.id) && <WorkunitRows batch={batch} />}
+                        </TreeRow>
+                    ))}
+                </ul>
+            )}
             <Pager
                 offset={offset}
                 shown={rows.length}
@@ -658,23 +706,29 @@ function ResultDetails({ result }: { readonly result: ResultView }): ReactNode {
     );
 }
 
+/** The record the details panel draws, tagged with the kind that says which it is. */
+type SelectedRecord =
+    | { readonly kind: 'batch'; readonly data: BatchView }
+    | { readonly kind: 'workunit'; readonly data: WorkunitView }
+    | { readonly kind: 'result'; readonly data: ResultView };
+
 function Details(): ReactNode {
     const { t } = useTranslation();
     const address = useJobsAddress();
     const selection = parseSelection(address.params.get('sel'));
     const record = useQuery({
         queryKey: [GRID_JOBS_QUERY_KEY, 'record', selection?.kind, selection?.id],
-        queryFn: async (): Promise<BatchView | WorkunitView | ResultView> => {
+        queryFn: async (): Promise<SelectedRecord> => {
             if (selection === null) {
                 throw new Error('No record is selected.');
             }
             switch (selection.kind) {
                 case 'batch':
-                    return api.gridJobBatch(selection.id);
+                    return { kind: 'batch', data: await api.gridJobBatch(selection.id) };
                 case 'workunit':
-                    return api.gridJobWorkunit(selection.id);
+                    return { kind: 'workunit', data: await api.gridJobWorkunit(selection.id) };
                 case 'result':
-                    return api.gridJobResult(selection.id);
+                    return { kind: 'result', data: await api.gridJobResult(selection.id) };
             }
         },
         enabled: selection !== null,
@@ -692,18 +746,15 @@ function Details(): ReactNode {
             <p className="text-sm text-ink-muted">{t('operations.grid.jobs.details.loading')}</p>
         );
     }
+    const selected = record.data;
     return (
         <div>
             <p className="text-xs text-ink-faint">{t('operations.grid.jobs.fields.id')}</p>
-            <p className="mb-3 break-all font-mono text-sm">{record.data.id}</p>
+            <p className="mb-3 break-all font-mono text-sm">{selected.data.id}</p>
             <dl className="grid gap-3 sm:grid-cols-2">
-                {selection.kind === 'batch' && <BatchDetails batch={record.data as BatchView} />}
-                {selection.kind === 'workunit' && (
-                    <WorkunitDetails workunit={record.data as WorkunitView} />
-                )}
-                {selection.kind === 'result' && (
-                    <ResultDetails result={record.data as ResultView} />
-                )}
+                {selected.kind === 'batch' && <BatchDetails batch={selected.data} />}
+                {selected.kind === 'workunit' && <WorkunitDetails workunit={selected.data} />}
+                {selected.kind === 'result' && <ResultDetails result={selected.data} />}
             </dl>
         </div>
     );

@@ -1695,6 +1695,8 @@ const pt: SourceCatalogue = {
                 empty: 'Ainda não foi registado nenhum lote.',
                 noWorkunits: 'Este lote não tem unidades de trabalho.',
                 noResults: 'Esta unidade de trabalho não tem resultados.',
+                pastTheLastPage: 'Esta página está depois da última.',
+                firstPage: 'Voltar à primeira página',
                 error: 'Não foi possível ler os trabalhos. {message}',
                 retry: 'Tentar de novo',
                 refused: 'O seu perfil não pode ler os trabalhos.',

@@ -1684,6 +1684,8 @@ export const en: SourceCatalogue = {
                 empty: 'No batch has been recorded yet.',
                 noWorkunits: 'This batch has no workunits.',
                 noResults: 'This workunit has no results.',
+                pastTheLastPage: 'This page is past the last one.',
+                firstPage: 'Back to the first page',
                 error: 'The jobs could not be read. {message}',
                 retry: 'Try again',
                 refused: 'Your role cannot read jobs.',

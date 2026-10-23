@@ -1704,6 +1704,8 @@ const fr: SourceCatalogue = {
                 empty: 'Aucun lot n’a encore été enregistré.',
                 noWorkunits: 'Ce lot n’a aucune unité de travail.',
                 noResults: 'Cette unité de travail n’a aucun résultat.',
+                pastTheLastPage: 'Cette page est après la dernière.',
+                firstPage: 'Retour à la première page',
                 error: 'Les travaux n’ont pas pu être lus. {message}',
                 retry: 'Réessayer',
                 refused: 'Votre rôle ne peut pas lire les travaux.',

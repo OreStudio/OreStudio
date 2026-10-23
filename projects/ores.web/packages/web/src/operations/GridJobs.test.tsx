@@ -110,6 +110,7 @@ function pageOf<Row>(rows: readonly Row[], total = rows.length, offset = 0, limi
 
 interface Seeds {
     readonly batches?: BatchPage;
+    readonly batchOffset?: number;
     readonly workunits?: WorkunitPage;
     readonly results?: ResultPage;
     readonly record?: readonly [kind: string, id: string, value: unknown];
@@ -118,7 +119,10 @@ interface Seeds {
 function render(path: string, seeds: Seeds): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     if (seeds.batches !== undefined) {
-        client.setQueryData([GRID_JOBS_QUERY_KEY, 'batches', 0, 15], seeds.batches);
+        client.setQueryData(
+            [GRID_JOBS_QUERY_KEY, 'batches', seeds.batchOffset ?? 0, 15],
+            seeds.batches,
+        );
     }
     if (seeds.workunits !== undefined) {
         client.setQueryData([GRID_JOBS_QUERY_KEY, 'workunits', BATCH_ID, 0], seeds.workunits);
@@ -127,10 +131,10 @@ function render(path: string, seeds: Seeds): string {
         client.setQueryData([GRID_JOBS_QUERY_KEY, 'results', WORKUNIT_ID, 0], seeds.results);
     }
     if (seeds.record !== undefined) {
-        client.setQueryData(
-            [GRID_JOBS_QUERY_KEY, 'record', seeds.record[0], seeds.record[1]],
-            seeds.record[2],
-        );
+        client.setQueryData([GRID_JOBS_QUERY_KEY, 'record', seeds.record[0], seeds.record[1]], {
+            kind: seeds.record[0],
+            data: seeds.record[2],
+        });
     }
     const element: ReactNode = <GridJobsTab />;
     return renderToStaticMarkup(
@@ -159,6 +163,27 @@ describe('the Jobs tab', () => {
 
         expect(html).toContain('No batch has been recorded yet.');
         expect(html).not.toContain('Batches 1 to');
+    });
+
+    it('nests the children of an open row inside its list item', () => {
+        const html = render(`/?tab=jobs&open=${BATCH_ID}`, {
+            batches: TWO_BATCHES,
+            workunits: pageOf([workunit(WORKUNIT_ID)], 1, 0, 5),
+        });
+
+        expect(html).not.toMatch(/<ul[^>]*><div/);
+        expect(html).toMatch(/<\/button><ul[^>]*>.*<\/ul><\/li>/);
+    });
+
+    it('offers the first page again when the address names a page past the last', () => {
+        const html = render('/?tab=jobs&page=99', {
+            batches: pageOf([], 2, 1470),
+            batchOffset: 1470,
+        });
+
+        expect(html).toContain('This page is past the last one.');
+        expect(html).toContain('Back to the first page');
+        expect(html).not.toContain('No batch has been recorded yet.');
     });
 
     it('prompts for a selection until one is made', () => {

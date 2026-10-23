@@ -26,12 +26,22 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
 #include <map>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <vector>
 
 namespace ores::database::repository {
+
+/**
+ * @brief The duration, in milliseconds, from which a read is logged as a warning.
+ *
+ * A read below it logs at debug level. A read at or above it names itself and its
+ * duration in the service log, so a slow statement does not hide in the total of a
+ * request.
+ */
+inline constexpr long long slow_statement_ms = 250;
 
 /**
  * @brief Executes a read query and maps the results to domain objects.
@@ -75,11 +85,16 @@ std::vector<DomainType> execute_read_query(context ctx,
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
+    const auto began = std::chrono::steady_clock::now();
     const auto r = ctx.active_transaction() ? query(*ctx.active_transaction()) :
                                               session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg);
 
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << r->size();
+    const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::steady_clock::now() - began)
+                          .count();
+    BOOST_LOG_SEV(lg, took >= slow_statement_ms ? warn : debug)
+        << operation_desc << ". Total: " << r->size() << " in " << took << " ms";
     return std::forward<MapperFunc>(mapper)(*r);
 }
 

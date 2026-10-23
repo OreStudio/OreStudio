@@ -70,6 +70,13 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:BA6015F2-CE25-4289-82EC-5832ECFA67DE][The simulator reads its sources through marketdata]] | DONE | 2026-10-23 | 2026-10-23 | Restore ticking after the vendor-native move. |
 | [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] | BACKLOG | | | A table of what public bodies published, a publisher catalogue with provenance, fetchers, and a seed command, all independent of the calibration. |
 | [[id:B7F63BF8-8A4B-496B-A930-DC23F929318F][The adapter fleet survives a failed start]] | DONE | 2026-10-23 | 2026-10-23 | Follow-ups of the review of PR 3687 and a restart defect. |
+| [[id:E5AEC5A1-7C42-4FA0-B25B-EC0A6F314271][Plan the market data tenancy and the ticking guarantee]] | DONE | 2026-10-24 | 2026-10-24 | A plan that fixes the ownership of routes, the fragile control plane, the invisible failures and the missing end to end test. |
+| [[id:6FB56C53-3582-4ACE-BE9D-DF0B175BBB5B][Read routes through a role-scoped policy]] | BACKLOG | | | Replace the system-tenant widening of routes and subscriptions with a select-only policy for the marketdata service role. |
+| [[id:51A7DF59-52C9-4F25-90FD-72D7B4755CCD][Add a provisioning to ticks smoke check]] | BACKLOG | | | One script that provisions a tenant on a fresh database and asserts that ticks arrive. |
+| [[id:0BA09EFB-9E28-457A-9471-5AD18F77F016][Make the demand self-correcting and visible]] | BACKLOG | | | Refresh the supervisor snapshot on a timer as well as on events, and show demand and ingest health in one status. |
+| [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]] | BACKLOG | | | Run the demand, the ingest and the vintage tests with routes and subscriptions in a tenant that is not the system tenant. |
+| [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] | BACKLOG | | | Today the ingest writes one copy of a tick for each party that routes to the source. Decide if one shared copy with entitlement at read time is better. |
+| [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] | BACKLOG | | | The simulator builds its adapters once, at start. A new simulated source needs a restart. |
 
 * Decisions
 

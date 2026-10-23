@@ -65,6 +65,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:D1D8273D-DC95-4C69-8FBE-FCD8F30B9FB6][Wait on the backoff in the failed copy test]] | BACKLOG | | | The test of a failed copy sleeps a fixed 1500 ms for the store backoff and assumes the queue drops no tick, so it can fail on a loaded machine. |
 | [[id:0913264D-CBED-4995-A91D-10F42A60EC57][Run a quiet loop in one thread]] | STARTED | 2026-10-22 | | At a slow rate the three stages add about 8 ms to the median wait of a tick and about 25 ms to the p99, because each handoff wakes another thread. |
 | [[id:B466DF8C-E7EF-4046-A577-1AF120C991A7][Interrupt a wait on a portable stop]] | BACKLOG | | | A thread that waits on a stop state wakes at once on a stop on every platform, and Apple's libc++ uses a fallback that the unit tests also run on Linux. |
+| [[id:C663B2A3-98A4-410F-B9BD-97336E5A264D][Move the macOS nightly build to macos-26]] | DONE | 2026-10-23 | 2026-10-23 | The macOS nightly build runs on macos-26 with Xcode 26, and its log shows which C++20 library fallbacks the toolchain no longer needs. |
 
 * Decisions
 

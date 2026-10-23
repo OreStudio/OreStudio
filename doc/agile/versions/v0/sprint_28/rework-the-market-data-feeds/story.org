@@ -62,6 +62,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:A712C3E7-ED5C-4E71-B6FB-5D1932354F6D][Add a replay adapter]] | BACKLOG | | | Add an adapter that replays recorded vendor ticks as a source of kind replay. |
 | [[id:816F6540-89B4-4847-A289-88A1948DC682][Check a development party and a prelive party side by side]] | BACKLOG | | | Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running. |
 | [[id:292A74E4-36F7-48A2-B67A-7CD17C4E4257][Describe the market data target architecture]] | DONE | 2026-10-22 | 2026-10-22 | Write the architecture pages, diagrams and journeys for the target state, and plan the implementation tasks. |
+| [[id:318A5695-2045-4532-B48C-703B1B86CED0][Fix the defects the first database run found]] | DONE | 2026-10-23 | 2026-10-23 | Fix the catalogue populate, the mapping date types, the as-of source id and a wrong test that a database run showed. |
 
 * Decisions
 

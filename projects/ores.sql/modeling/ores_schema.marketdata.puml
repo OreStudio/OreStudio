@@ -239,9 +239,9 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * vendor_instrument_id : uuid <<FK>>
-        * effective_from : timestamp
+        * effective_from : timestamptz
         * oresmd_uri : text
-          effective_to : timestamp
+          effective_to : timestamptz
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

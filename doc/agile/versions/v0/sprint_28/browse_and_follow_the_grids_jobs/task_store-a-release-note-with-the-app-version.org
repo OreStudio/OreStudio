@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/store-a-release-note-with-the-app-version
-#+pr:
+#+pr: 3651
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ An app version holds a release note as text, written by the same call that publi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -89,13 +89,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [compute] Store a release note with the app version |
+| #3651 | [compute] Store a release note with the app version |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The table output shows no note | app_version_table.cpp | Declined | The shell prints the list as JSON, which carries the note. The table is generated and the generator did not change it. |
+| 2 | Add and set take the note as one token | app_version_commands.cpp | Declined | A follow-up may add a file flag there. |
+| 3 | A directory path opens and reads empty | compute_commands.cpp | Fixed | The command now checks for a regular file. |
+| 4 | No unit test for the keep-on-republish rule | compute_commands.cpp | Declined | The live check covers it. |
 
 * Result
 

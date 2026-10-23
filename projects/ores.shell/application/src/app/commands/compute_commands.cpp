@@ -276,7 +276,7 @@ void compute_commands::process_publish_package(std::ostream& out,
     std::optional<std::string> release_note;
     if (const auto note_file = parsed->flag("release-note-file"); !note_file.empty()) {
         std::ifstream in(note_file);
-        if (!in) {
+        if (!std::filesystem::is_regular_file(note_file) || !in) {
             fail(out) << "Release note file not found: " << note_file << std::endl;
             return;
         }

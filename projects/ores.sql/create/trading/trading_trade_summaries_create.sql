@@ -43,7 +43,7 @@ select
     t.counterparty_id,
     b.book_id,
     t.trade_type as instrument_type,
-    st.name as status,
+    ores_trading_status_name_fn(ts.status_id) as status,
     case
         when ar.state_code is not null then ar.state_code
         when t.booking_nature = 'actual' then 'not_requested'
@@ -61,9 +61,6 @@ left join ores_trading_trade_states_tbl ts
   on ts.tenant_id = t.tenant_id
  and ts.trade_id = t.id
  and ts.valid_to = ores_utility_infinity_timestamp_fn()
-left join ores_dq_fsm_states_tbl st
-  on st.id = ts.status_id
- and st.valid_to = ores_utility_infinity_timestamp_fn()
 left join lateral (
     select r.state_code
     from ores_trading_trade_authorisation_requests_tbl a
@@ -84,4 +81,33 @@ left join lateral (
       and i.trade_id = t.id
       and i.valid_to = ores_utility_infinity_timestamp_fn()
 ) ids on true
-where t.valid_to = ores_utility_infinity_timestamp_fn();
+where t.valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select
+    s.tenant_id,
+    s.id,
+    'structure'::text as row_kind,
+    s.party_id,
+    s.counterparty_id,
+    null::uuid as book_id,
+    s.kind as instrument_type,
+    null::text as status,
+    'not_applicable'::text as authorisation_status,
+    null::date as trade_date,
+    coalesce(m.member_count, 0)::integer as trade_count,
+    s.id::text || ' ' || coalesce(m.id_values, '') as search_text
+from ores_trading_structures_tbl s
+left join lateral (
+    select
+        count(distinct sm.trade_id) as member_count,
+        string_agg(i.id_value, ' ' order by i.id_type) as id_values
+    from ores_trading_structure_members_tbl sm
+    left join ores_trading_trade_identifiers_tbl i
+      on i.tenant_id = sm.tenant_id
+     and i.trade_id = sm.trade_id
+     and i.valid_to = ores_utility_infinity_timestamp_fn()
+    where sm.tenant_id = s.tenant_id
+      and sm.structure_id = s.id
+      and sm.valid_to = ores_utility_infinity_timestamp_fn()
+) m on true
+where s.valid_to = ores_utility_infinity_timestamp_fn();

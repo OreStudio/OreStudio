@@ -35,10 +35,12 @@
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
+#include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -203,4 +205,33 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
     REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
 
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
+}
+
+TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting_request", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
+    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+
+    const auto rows = ores::trading::repository::trade_summary_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.anchor.id));
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().row_kind == "trade");
+    CHECK(rows.front().status == std::optional<std::string>{"live"});
+    CHECK(rows.front().book_id == std::optional<boost::uuids::uuid>{f.book_id});
+    CHECK(rows.front().authorisation_status == "waiting");
+}
+
+TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
+    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+
+    const auto rows = ores::trading::repository::trade_summary_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.anchor.id));
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().authorisation_status == "not_required");
 }

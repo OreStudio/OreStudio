@@ -67,6 +67,24 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
+-- The name of a state of the trade_status machine. The states are system
+-- reference data that a tenant's own policy does not show, so a list reads
+-- the name through this function.
+create or replace function ores_trading_status_name_fn(
+    p_status_id uuid
+)
+returns text as $$
+begin
+    return (
+        select s.name
+        from ores_dq_fsm_states_tbl s
+        where s.tenant_id = ores_utility_system_tenant_id_fn()
+          and s.id = p_status_id
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 -- Whether an actual trade in the given status may sit in a virtual book. A
 -- test or a hypothetical always may; an actual trade only while it is a draft.
 create or replace function ores_trading_status_may_be_virtual_fn(

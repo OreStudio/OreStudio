@@ -246,7 +246,6 @@ select _ores_grant_select_fn('ores_inbox_notification_channels_', :'trading_serv
 select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'trading_service_user');
-select _ores_grant_select_fn('ores_dq_fsm_states_', :'trading_service_user');
 
 -- ---------------------------------------------------------------------------
 -- compute_service: Compute Grid domain service

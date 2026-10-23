@@ -317,11 +317,6 @@
 # links, and a policy runs with the privileges of the caller.
 - ores_iam_account_parties_
 
-# The trade summary view names the state of a trade from the state table of the
-# trade status machine. The view is security_invoker, so the caller reads the
-# state table itself.
-- ores_dq_fsm_states_
-
 ** Select tables
 
 # A view is not a table, so the prefix grants above do not reach it.

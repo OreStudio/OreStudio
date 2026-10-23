@@ -28,9 +28,9 @@ Build the read model under the trade list. A row holds the trade or the structur
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Generator profile and the trade rows of the view are done. Structure rows and the state and request tests remain. |
+| Now          | The view holds trade and structure rows. Tests cover state, request, structure and every filter. The identifier search is not measured on a large list yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the structure rows to the view. |
+| Next         | Measure the identifier search on a large list; run the local check gate. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -38,6 +38,7 @@ Build the read model under the trade list. A row holds the trade or the structur
 - One query returns trade rows and structure rows.
 - The query pages, sorts and filters in the service.
 - A row names the authorisation status.
+- A structure row matches a search through any of its trades. It has no book, state, date or authorisation status, so a filter on one of those columns leaves it out.
 - The summary reads the current state of every part. It offers no =as_of=. A later task adds =as_of= when a screen needs it.
 - The generator supports a read-model entity whose relation is a view, with no events and no history.
 - The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
@@ -60,7 +61,7 @@ Steps, once the decision is made:
 1. Generator: a profile =read-model= for an entity whose relation is a view. It drops the events, the notify trigger and the history files, and it emits =create view= from a select in the model. The view uses =security_invoker=, so the tenant policies of the base tables apply.
 2. SQL view: one row for each trade, with the book, the current state, the booking, the counterparty, the instrument type and the identifiers as one search text.
 3. Add the authorisation status to the row. Read it from the =trade_authorisation_request= detail row and the inbox request status, for the trade version that is current at =as_of=.
-4. Add the structure rows. A structure row has no state, notional or version of its own. It carries the count of its trades. It matches a filter when one of its trades does.
+4. Add the structure rows. A structure row has no state, notional or version of its own. It carries the count of its trades. It matches a search when one of its trades does. A filter on a column only a trade has leaves it out.
 5. Declare the model, then generate the protocol, repository, service, handler and TypeScript twin.
 6. Repository tests for each filter, the search, the total, =as_of= and the structure rows.
 
@@ -83,7 +84,7 @@ task and name that file in the Command column.
 | PostgreSQL version of the dev server | 18.6, and the build links 18.4. =security_invoker= needs 15 or later | =psql --version=, and =PG_VERSION= in the vcpkg =pg_config.h= | ec01ab89e4 |
 | Views that already use =security_invoker= | 8, one for each asset class in =marketdata_series_identity_views_create.sql= | =grep -n security_invoker projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql= | ec01ab89e4 |
 | Code in =sqlgen= that checks a table exists | 0 hits for =information_schema=, =pg_class= and =pg_tables= | =grep -rIn= over the =sqlgen= headers | ec01ab89e4 |
-| Trade summary tests against the view | 10 cases, 26 assertions pass: counterparty, instrument type, book, trade date, authorisation status (not requested, not required), identifier search, id search, paging, sort, total. Not yet tested: the state name, and a row whose request exists | =ores.trading.core.tests "[trade_summary]"= with =.env= loaded | this commit |
+| Trade summary tests against the view | 15 cases, 44 assertions pass: counterparty, instrument type, book, trade date, authorisation status (waiting, not requested, not required), state name, identifier and id search, structure rows and their trade count, structure found by a member identifier, paging, sort, total | =ores.trading.core.tests "[trade_summary],the_summary*"= with =.env= loaded | this commit |
 | Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
 | Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 

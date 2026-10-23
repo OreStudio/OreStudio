@@ -28,11 +28,15 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.trading.api/domain/booking_nature.hpp"
+#include "ores.trading.api/generators/structure_generator.hpp"
+#include "ores.trading.api/generators/structure_member_generator.hpp"
 #include "ores.trading.api/generators/trade_activity_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/messaging/trade_summary_protocol.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
@@ -144,6 +148,27 @@ struct fixture {
         id.id_type = type;
         id.id_value = value;
         ores::trading::repository::trade_identifier_repository().write(ctx, id);
+    }
+
+    uuid write_package(const std::vector<uuid>& members) {
+        auto gen = ores::testing::make_generation_context(h);
+        auto st = ores::trading::generators::generate_synthetic_structure(gen);
+        st.party_id = *ctx.party_id();
+        st.counterparty_id = counterparty;
+        st.kind = "Package";
+        st.template_code = "";
+        st.parent_structure_id = boost::uuids::uuid{};
+        ores::trading::repository::structure_repository().write(ctx, st);
+        int sequence = 1;
+        for (const auto& trade_id : members) {
+            auto m = ores::trading::generators::generate_synthetic_structure_member(gen);
+            m.trade_id = trade_id;
+            m.structure_id = st.id;
+            m.role = "leg";
+            m.sequence_number = sequence++;
+            ores::trading::repository::structure_member_repository().write(ctx, m);
+        }
+        return st.id;
     }
 
     std::vector<ores::trading::domain::trade_summary>
@@ -298,4 +323,47 @@ TEST_CASE("only the listed columns sort the summary", tags) {
     CHECK(up[1].id == swap);
 
     CHECK_THROWS_AS(f.read(on(f.counterparty), {.field = "search_text"}), std::invalid_argument);
+}
+
+TEST_CASE("a structure is a row of the same list, with the count of its trades", tags) {
+    fixture f;
+    const auto a = f.write("Swap", f.counterparty);
+    const auto b = f.write("Swap", f.counterparty);
+    const auto package = f.write_package({a, b});
+
+    auto filter = on(f.counterparty);
+    filter.row_kind = "structure";
+    const auto rows = f.read(filter);
+
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].id == package);
+    CHECK(rows[0].instrument_type == "Package");
+    CHECK(rows[0].trade_count == 2);
+    CHECK_FALSE(rows[0].status.has_value());
+    CHECK_FALSE(rows[0].book_id.has_value());
+
+    CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b, package}));
+}
+
+TEST_CASE("a search finds a structure through an identifier of one of its trades", tags) {
+    fixture f;
+    const auto a = f.write("Swap", f.counterparty);
+    const auto b = f.write("Swap", f.counterparty);
+    f.write_identifier(a, "UTI", "QQ-Member-9");
+    const auto package = f.write_package({a, b});
+
+    auto filter = on(f.counterparty);
+    filter.search = "qq-member";
+    CHECK(ids(f.read(filter)) == sorted({a, package}));
+}
+
+TEST_CASE("a filter on a column only a trade has leaves the structure out", tags) {
+    fixture f;
+    const auto a = f.write("Swap", f.counterparty);
+    f.write_booking(a, year_month_day{year{2025} / 1 / 15});
+    f.write_package({a});
+
+    auto filter = on(f.counterparty);
+    filter.book_id = std::optional<uuid>{f.book};
+    CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
 }

@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: fix/market-data-database-build
-#+pr:
+#+pr: 3669
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3669][#3669]] | [marketdata] Fix the defects the first database run found |
 
 * Review
 

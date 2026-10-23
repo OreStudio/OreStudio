@@ -11,7 +11,7 @@
 
 * Summary
 
-A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, read through the Frankfurter API, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The terms of some sources are read from the official pages. The terms of the Treasury and of most Bank of England series are still open.
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, read through the Frankfurter API, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The table in "What was read, and when" says which terms were read from an official page and which were not.
 
 * Detail
 
@@ -29,6 +29,23 @@ The synthetic ticks are native to the vendor: a Bloomberg generator sends Bloomb
 | [[https://www.newyorkfed.org/privacy/termsofuse][New York Fed SOFR]] | The overnight USD rate. | The New York Fed markets data. | A licence to use, copy, distribute and modify for business purposes. A reference rate needs the stated notice and disclaimer, a label on any modified data, and no claim of endorsement. SOFR is calculated from data that DTCC Solutions licenses. |
 | [[https://www.bankofengland.co.uk/markets/sonia-benchmark][Bank of England SONIA]] | The overnight GBP rate. | The statistical database, by 10:00 on the next business day. | The Bank's [[https://www.bankofengland.co.uk/legal][legal page]] puts the database under the Open Government Licence. Its exact credit line is stated for SONIA only: "SONIA and/or SONIA Compounded Index data licensed under the Open Government Licence v3.0 and copyright the Governor and Company of the Bank of England". |
 | ECB €STR | The overnight EUR rate. | The ECB statistics. | The ECB usage policy above. |
+
+** What was read, and when
+
+On 2026-10-23 the pages below were read from the official site. The rows of the table that rest on any other page say so.
+
+| Terms | Read from | State |
+|-------+-----------+-------|
+| ECB statistics usage policy | the ECB usage policy page | read |
+| Federal Reserve Board content | the Board disclaimer page | read |
+| FRED API | the FRED terms page | read |
+| New York Fed content and reference rates | the New York Fed terms page | read |
+| Bank of England | a search summary of the Bank's legal page, not the page | not read |
+| US Treasury | the feed page and an archived copy of the old policy | not read |
+| Frankfurter | the repository and the documentation | licence page not read |
+| Each Frankfurter provider | the list of terms pages in =/v2/providers= | not read, and some have none |
+
+A source in the last four rows blocks the storing of its values until its terms page is read and the result is written here.
 
 ** Frankfurter as the access route for FX
 
@@ -48,15 +65,21 @@ Two things are not settled. The licence page of Frankfurter was not read, becaus
 - Whether the Treasury feed carries a current licence. The next step is to read the current site policy of the Treasury.
 - Which series of the Bank of England database other than SONIA fall under the Open Government Licence.
 - Whether the FRED terms allow a copy of a series in a stored snapshot. The H.10 notes of each series say whether the word "Copyright" appears. The other route is the Board's own H.10 download, which the Board's public domain notice covers.
-- Which of the 26 FX pairs the ECB and the H.10 do not cover. The pairs that no source covers keep a fixed level, and the config says so.
+- Which of the 26 FX pairs of [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][the mapping inventory]] the ECB and the H.10 do not cover. The pairs that no source covers keep a fixed level, and the config says so.
 
 ** How a generator uses a source
 
 Each generator config carries a calibration entry: the source code, such as =ecb.eurofxref=, =fed.h10= or =ust.par_yield=, and a window for the volatility. The initial value is the latest value that the source has published. The volatility is the spread of the log returns over the window.
 
-The value is retrieved by a step that is separate from the simulator. The step writes the value with the time it was retrieved and the as-of date of the source. The feed screen shows both, so a reader sees how old the level of a feed is. A source that cannot be reached leaves the last stored value in place, and the screen shows its age.
+** The daily rates are asked for once
 
-A copy of a source's statistics keeps the credit and the notice that its terms ask for, and a modified value is labelled as modified. The rule for the ECB is the strictest: a statistic that is changed after retrieval, such as a cross rate, is a derived value, and the config says it is derived.
+A source publishes one set of rates for each day, so the system asks for a day only once. A table of daily rates holds each rate with its source, its provider key, its pair or its series, its as-of date and the time of retrieval. A feed that needs a day looks in the table first. A rate that is there is reused. A rate that is not there is fetched, stored, and then reused, by this feed, by every other feed and after a restart.
+
+The date to read comes from a system clock that the feeds check. The clock gives today's date, and the feeds read the latest day that the table or the source has on or before that date. The clock is the subject of the capture [[file:../../agile/product_backlog/inbox/the_system_has_a_system_clock_that_the_feeds_check.org][The system has a system clock that the feeds check]]. Until it exists, the retrieval step reads the date from the host clock.
+
+The retrieval is a step that is separate from the simulator. The feed screen shows the time of retrieval and the as-of date, so a reader sees how old the level of a feed is. A source that cannot be reached leaves the last stored day in place, and the screen shows its age.
+
+A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So the step stores each ECB value exactly as the ECB published it, with the credit "Source: ECB statistics". A cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from the two stored values. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
 
 ** What this replaces
 

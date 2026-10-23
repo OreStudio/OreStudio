@@ -2,7 +2,7 @@
 :ID: 10E479D2-990E-4627-95A2-1DA0FA5D68D5
 :END:
 #+title: A chart reads a series with one history call and one live subscription
-#+description: How a client plots a series: it subscribes to the live subject, makes one history call that returns every tick of the range in one reply, and merges the two by coordinate and time itself.
+#+description: How a client plots a series: it subscribes to the live subject, makes one history call for the span it shows, and merges the two by coordinate and time itself.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:ticks:reads:architecture:
@@ -11,27 +11,21 @@
 
 * Summary
 
-A client plots a series with two separate calls. The first is a live subscription that
-delivers each new tick. The second is a history call that returns every tick of a
-time range in one reply. The client subscribes first, calls for the history second, and
-merges the two itself by coordinate and time. The server never merges history with the
-live stream for a client.
-
-The history call is the one read of ticks. The list of observations does not return
-ticks. A tick is an immutable fact in the tick table. An observation is a curated,
-bitemporal row in the observation table. The two have different keys, different
-corrections and different costs, so they have different reads.
+A client plots a series with two separate calls. A live subscription delivers each new
+tick, and [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][the history call]] returns every tick
+of a span in one reply. The client subscribes first, calls second, and merges the two
+itself by coordinate and time. The server never merges history with the live stream for
+a client, because that merge would put a read of the store on the live path.
 
 * Detail
 
-** The rule
+** The claim
 
-1. *One call for the past.* The history call returns all ticks of the requested range
-   in one reply. It has no pages and no cursor.
-2. *One subscription for the future.* The live subject delivers each new tick. It
-   carries no history.
-3. *The client merges.* The client joins the two by coordinate and time. The server
-   does not know which ticks the client holds from the stream.
+The merge belongs to the client. The server cannot know which ticks a client already
+holds from the stream. A merge on the server would also make the live path wait for the
+store, and [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][the pipeline]] forbids that: a
+chart reads the newest value at once, whatever the database does. So the two reads stay
+apart, and each one can fail without the other.
 
 #+caption: A chart opens, stays open, reconnects and scrolls back.
 #+attr_html: :width 100%
@@ -40,142 +34,48 @@ corrections and different costs, so they have different reads.
 Source: [[proj:doc/knowledge/architecture/a_chart_reads_a_series_in_two_calls.puml][=a_chart_reads_a_series_in_two_calls.puml=]].
 Regenerate with =plantuml -tpng doc/knowledge/architecture/a_chart_reads_a_series_in_two_calls.puml=.
 
-** The live subscription
+** The order of the two calls
 
-The live subject names the series in its tokens, so the broker sends the client the
-ticks of that series and no others. See [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]].
-The lane conflates the stream: it publishes the newest tick of a datum once in each
-class interval. The stream can therefore skip ticks that the history holds. A chart
-buckets its points, so the skipped ticks change nothing that it shows.
+The client subscribes before it asks for the history, and it buffers each live tick until
+the reply arrives. A tick that arrives between the two calls is then in the buffer and not
+lost. The live subject names the series in its tokens, so the broker sends only the ticks
+of that series. The lane conflates that stream, so it can skip ticks that the history
+holds. A chart buckets its points, so the skipped ticks change nothing that it shows.
 
-The client subscribes before it asks for the history. It buffers each live tick until
-the history reply arrives. A tick that arrives between the two calls is then in the
-buffer, and not lost.
+** The merge
 
-** The history call
-
-The call is =marketdata.v1.ops.get_series_ticks=. It is a request and a reply.
-
-*** The request
-
-- *The series,* named as the live subject names it.
-- *From,* the first instant of the range, inclusive.
-- *To,* the end of the range, exclusive. A request without it means now.
-- *The coordinates,* optional. A client that plots one pillar of a curve names it, and
-  the reply holds that coordinate only.
-
-The request has no count. A client asks for a span of time, never for "the newest N".
-A span of time has the same meaning on both tiers, and it is what a chart shows.
-
-*** The reply
-
-The reply holds all the ticks of the range, in one message.
-
-- The coordinate URIs of the series come first, once each.
-- The ticks follow as three arrays of equal length: the time, the index of the
-  coordinate, and the value. The order is by time, then by coordinate.
-- The =as_of= time of the read ends the reply. Every tick that the pipeline took before
-  that time is in the reply, except what a lane shed under overload.
-
-A tick has no id and no source in the reply. A chart needs neither, and each field adds
-to the size of a reply that the client reads whole. The tick table keeps the =source_id=
-for audit.
-
-A series that does not exist yet, or a range with no tick, gives an empty reply and
-success. An empty series is a normal state, as it is for the snapshot.
-
-*** The ceiling
-
-The reply is one message, and the broker caps a message at 1 MB. The service declares a
-ceiling of 50,000 ticks for each reply, about 18 bytes for each tick. This is an
-estimate, and the measurement of the first build confirms or changes it. A range that
-holds more ticks is refused, and the refusal names the ceiling. The service never
-truncates a range, because a client that asked for a day and received an hour would read
-the answer as complete. The same rule holds for the instant ceiling of the slice and the
-evolution. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
-
-*** The refusals
-
-- A context with no party is refused. The party policy of the tick table shows such a
-  context no tick, and an empty answer would look complete.
-- A range with =from= after =to=, or a bound that is not a time, is refused.
-- A range over the ceiling is refused, as above.
-
-The read uses the tenant-aware pool. The policies of the tick table decide what the
-session sees. No role skips them.
-
-*** Two tiers behind one reply
-
-The lane keeps a window of recent ticks in memory. The store holds the rest. The
-service answers a range from both and sends one reply:
-
-- The span from the start of the window to now comes from the window.
-- The span before the window comes from the tick table, in one probe of the index on
-  series and time.
-
-The client cannot know where the window starts, so the service joins the two tiers
-inside the one reply. The join is not a merge of two sources of the same span. The
-window and the store cover different spans, and the service prefers the window for the
-span that it covers. A range that the window does not reach is answered from the store
-alone. A restart empties the window, and the store then answers the whole range.
-
-** The merge on the client
-
-The key of a tick is its coordinate and its time. A tick is immutable, so two ticks
-with one key are the same tick. The client keeps one of a pair.
+The key of a tick is its coordinate and its time. A tick is immutable, so two ticks with
+one key are the same tick, and the client keeps one of a pair.
 
 1. Put the ticks of the history reply in the series.
 2. Add each buffered live tick that the series does not hold.
 3. Add each later live tick as it arrives.
 
-The overlap between the reply and the buffer is harmless. It is the safe side of the
-race between the two calls.
+The overlap between the reply and the buffer is harmless. It is the safe side of the race
+between the two calls.
 
 ** What a chart does
 
 - *On open.* Subscribe, then call for the span the chart shows, then merge.
-- *On reconnect.* Subscribe again, then call with =from= set to the newest tick the
-  client holds. The reply holds the missed span.
-- *On scroll to an older span.* Call with =to= set to the oldest tick the client holds.
-  The reply holds the older span only.
+- *On reconnect.* Subscribe again, then call with =from= set to the newest tick the client
+  holds. The reply holds the missed span.
+- *On scroll to an older span.* Call with =to= set to the oldest tick the client holds. The
+  reply holds the older span only.
 
-No call repeats a span that the client holds. Each call returns everything its span
-holds, so a chart never loops on pages.
+No call repeats a span that the client holds. Each call returns everything its span holds,
+so a chart never loops on pages.
 
-** What this read does not do
+** Where the other reads stand
 
-- *It does not list observations.* The observation list returns curated, imported and
-  manual points. It never returns a tick, and a screen of a live series calls the
-  history read. See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
-- *It does not value a series at a date.* The as-of reads, the snapshot, the slice, the
-  evolution and the ORE export read the tick table and the observation table, and take
-  the latest value of each coordinate. That is a question of valuation. This read is a
-  question of history. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
-- *It does not stream.* The live subscription is the stream.
-
-** Why one reply and not pages
-
-A client that opens a chart wants the whole span at once. Pages add round trips, a
-cursor that the server must keep correct while ticks arrive, and a partial chart that
-the user sees filling. A time cursor over a hypertable is cheap, but the reply still
-costs a trip for each page. One reply costs one trip and one index probe. The ceiling
-protects the broker, and it states its limit in the refusal.
-
-** Open questions
-
-- Does the first build keep the ceiling of 50,000 ticks? The measurement of reply size
-  and of the read time decides.
-- Does a result larger than the message cap need a path? The package design hands a
-  large body over as an object in storage and sends only its reference. A history call
-  could do the same above the ceiling. This page does not state it, because a client
-  that needs it can narrow the range today.
-- Should the reply carry the =source_id=? The page says no. A client that audits a tick
-  reads the store.
+A tick is not an observation, so the list of observations never returns one. See
+[[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+The value of a series at a date is a question of valuation, and the as-of reads answer it.
+See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]]. A chart needs neither:
+it needs the history of ticks, and the live stream.
 
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — completes: the lane, the window and the live subject that this read uses.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the observation table that this read does not list.
-- [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — contrasts: the as-of reads that value a series at a date.
+- [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]] — completes: the contract of the call that this client makes.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — completes: the live subject, the conflation and the window that the two calls read.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — completes: the tick that the live subscription delivers.

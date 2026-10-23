@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7BDCD4E1-9E23-47C3-8D15-055132C0ED84
+:END:
+#+title: Use compass pr verbs, not raw gh
+#+description: Merge, create, check and record pull requests with compass pr, which carries the guard rails and conventions, and not with gh.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+Merge a PR with compass pr merge, open it with compass pr create, read CI with compass pr checks, and record it on its task with compass pr record. Do not use gh pr merge, gh pr create or a typed head SHA.
+
+*Why:* compass pr merge refuses unresolved threads, red CI and blocking branch protection, and states what --force bypasses. Raw gh pr merge skipped all of it, and a head SHA typed from memory was wrong.
+
+*How to apply:* Whenever a PR is merged, opened, edited or checked. Run compass bare, with no pipe or redirect. Use gh only for reading that compass does not cover.

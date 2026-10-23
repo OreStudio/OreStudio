@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A client reads the ticks of a series with one history call, =marketdata.v1.ops.get_series_ticks=, and one live subscription. The call returns every tick of a time range in one reply. The client merges the reply with its live ticks. The design is in [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+A client reads the ticks of a series with one history call, =marketdata.v1.ops.get_series_ticks=, and one live subscription. The call returns every tick of a time range in one reply. The client merges the reply with its live ticks. The design is in [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]] and [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 
 * Status
 

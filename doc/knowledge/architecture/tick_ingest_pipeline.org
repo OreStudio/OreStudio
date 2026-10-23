@@ -223,10 +223,8 @@ the ring, so the window is as fresh as the live path and does not wait for the s
 - *How a read reaches it.* The lane worker is the only writer of the window. A read
   is a request that the lane worker answers between two cycles from the window of
   its own lane. The reader never touches the window, so the single writer rule holds.
-- *Where it ends.* A span older than the window comes from the store. The service
-  joins the two inside one reply, because the client cannot know where the window
-  starts. The client merges that reply with its live ticks, by coordinate and time. See
-  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+- *Where it ends.* A span older than the window comes from the store, and the history
+  call joins the two in one reply. See [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 - *What it can differ on.* The window holds every tick that the lane took, and the
   store may hold fewer when a lane is catching up or shedding. A reader that sees both
   prefers the window for the span that it covers.
@@ -619,9 +617,8 @@ Hedgr repository, shows how a real consumer reads the pipeline.
   carries it without an acknowledgement. The cost grows with the number of parties
   that watch a source.
 - *Hedgr seeds a chart with one history call.* On open, on reconnect and on a manual
-  refresh it asks for a span of time, and it merges the reply with its live ticks by
-  coordinate and time. The service answers the span from the recent window of the lane
-  and from the store, in one reply.
+  refresh it asks for a span of time and merges the reply with its live ticks. See
+  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 - *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
   it is full. Its source comment gives the reason: a tick is worth less than the
   progress of the dispatch thread, and the chart shows the points it did receive.
@@ -1128,5 +1125,6 @@ a burst of ticks at a chosen rate and times the drain.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
 - [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]], how a client reads the window and the store.
+- [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]], the contract of that read.
 - [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]], the source of the fan-out.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub for this cluster.

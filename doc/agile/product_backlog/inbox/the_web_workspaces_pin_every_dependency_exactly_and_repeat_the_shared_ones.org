@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 24C0F5D0-2046-41EB-B2C5-86A57EC1F86B
+:END:
+#+title: The web workspaces pin every dependency exactly and repeat the shared ones
+#+description: Every package.json under projects/ores.web pins a third-party dependency to an exact version, and zod, vitest, tsx and @types/node are declared in several packages. A bump of one declaration leaves two copies of a library in the tree, and zod 4.6.6 in one package and 4.6.5 in the others made the bff typecheck run out of memory.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The package files of the web workspaces declare 38 third-party dependencies, and 29 of
+them are exact versions with no range. Four dependencies are declared in more than one
+package:
+
+| Dependency | Where it is declared | Specifications |
+|------------+----------------------+----------------|
+| zod        | bff, contracts, web, wire-protocol | =4.6.5= in each |
+| vitest     | bff, contracts, org, web, wire-protocol | =5.0.1= in four, =^5.0.1= in one |
+| tsx        | the root and bff | =^4.23.13= at the root, =4.23.13= in bff |
+| @types/node | the root, contracts and org | =^22.20.0= in each |
+
+The lock file records one resolution for each dependency. When one declaration moves and
+the others stay, npm resolves a second copy of the library for the package that moved.
+
+* Why
+
+A second copy of zod broke a local check of PR 3684 on 23 October 2026. Dependabot raised
+zod to 4.6.6 in =packages/contracts= only. The lock file then held 4.6.5 at the root and a nested
+=packages/contracts/node_modules/zod= at 4.6.6. The package =contracts= exports schemas that
+=bff= and =web= consume, so the type checker compared two copies of the same types. The
+=tsc --build= of =bff= ran out of heap at about 4 GB after 57 seconds. With all four pins at
+4.6.6 the lock file held one copy and the whole web check passed in 103.7 seconds.
+
+Each bump of a shared library therefore needs the same edit in every package that declares
+it, and a tool that edits one package at a time makes the mismatch. Exact pins are also not
+needed for reproducibility, because the lock file already fixes every version.
+
+Direction, for the story that picks this up. The idiomatic scheme for npm workspaces has four
+parts:
+
+1. A caret range in each =package.json=, and the exact version only in =package-lock.json=. A bump is
+   then a change to the lock file, made with =npm update=.
+2. Tooling that several workspaces use (typescript, vitest, tsx, prettier, @types/node) is
+   declared once, in the root =package.json=, and the workspaces do not repeat it.
+3. A library that two workspaces import has the same range in both. A package that exposes
+   another library's types, as =contracts= exposes zod, may state it as a peer dependency.
+4. A check fails on an exact pin, on a tool declared in a workspace, and on one library with two
+   ranges. The README of =projects/ores.web= states the rule and the way to update a dependency.
+
+The change must keep every version that the lock file resolves today, so it moves no
+dependency.
+
+* References
+
+- =projects/ores.web/package.json= and =projects/ores.web/packages/*/package.json=.
+- PR 3684, the zod bump of =contracts=, which needed the three other pins and a lock file refresh.
+- PR 3683, which refreshed the lock file for fastify and found the range of vite in the lock file
+  (=^8.3.4=) out of step with the pin in =packages/web/package.json= (=8.3.4=).
+
+* See also
+
+- [[id:D59BCDDC-D1C8-4C2D-B172-EA709BFE3361][A bump of one web package.json leaves the lock file stale until main builds]] — the
+  companion capture: how a bump reaches main with a lock file that npm ci refuses.

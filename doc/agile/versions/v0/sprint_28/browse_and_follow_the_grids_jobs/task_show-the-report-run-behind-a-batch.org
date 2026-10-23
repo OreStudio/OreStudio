@@ -75,13 +75,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | Show the report run behind a batch |
+| 3675 | Show the report run behind a batch |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A bare catch hides expired-session and network errors in the health and batch reads. | grid-report-runs.ts | Skipped | The run read comes first on the same session, so an expired session fails there. The two reads are decorations by design. |
+| 2 | State why a page of 5 batches is enough. | grid-report-runs.ts | Fixed | A comment says the exact match narrows the page and a uuid is unlikely to repeat. |
+| 3 | The trail keeps the short id when the read fails. | GridReportRunPage.tsx | No change needed | The bot calls it acceptable. |
+| 4 | The report link may lead to a 404 when the definition is hidden. | GridReportRunPage.tsx | Skipped | The run and its definition share a party, so the policy shows both or neither. |
+| 5 | The run read ignores a result that is not an exact match. | grid-report-runs.ts | No change needed | The id filter narrows the read to one row. |
+| 6 | A test where the health read fails would pin the decoration. | grid-report-runs.test.ts | No change needed | The third test already removes both reads. |
 
 * Result
 

@@ -88,7 +88,12 @@ async function readHealth(
     }
 }
 
-/** The batch that names the run in its External Ref, when the session sees one. */
+/**
+ * The batch that names the run in its External Ref, when the session sees one.
+ *
+ * The search matches text, so the page of 5 is narrowed by an exact match. A run id is
+ * a uuid, so a second batch that merely contains it is not expected.
+ */
 async function readBatchId(session: LiveSession, id: string): Promise<string | null> {
     try {
         const { batches } = await readBatches(

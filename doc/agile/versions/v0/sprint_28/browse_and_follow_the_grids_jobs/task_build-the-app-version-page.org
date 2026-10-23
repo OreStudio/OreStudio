@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-app-version-page
-#+pr:
+#+pr: 3663
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ The web client shows one app version with its release note, its platforms and pa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -100,13 +100,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [web] Build the app version page |
+| #3663 | [web] Build the app version page |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The write reads the row again | grid-app-versions.ts | Fixed | A comment says the version is the guard. |
+| 2 | A conflict leaves the editor with a stale version | GridAppVersionPage.tsx | Fixed | The editor offers Reload the note, which reads the page again and takes the note. |
+| 3 | A background refetch and the draft | GridAppVersionPage.tsx | No change | The draft keeps the editor's text, as a draft should. |
+| 4 | The sibling list reads the whole catalogue | grid-app-versions.ts | Task added | The task Filter the app versions by their app carries it. |
+| 5 | The mode stands for the super administrator | grid-app-versions.ts | Fixed | A comment says the mode is a shortcut and the service is the guard. |
+| 6 | A key in the note list | GridAppVersionPage.tsx | No change | The keys are unique. |
+| 7 | An unknown platform reads inactive | grid-app-versions.ts | Declined | The platform read lists every platform, so none is unknown today. |
 
 * Result
 

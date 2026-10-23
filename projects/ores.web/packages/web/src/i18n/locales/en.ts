@@ -1825,6 +1825,7 @@ export const en: SourceCatalogue = {
                     help: 'Plain text, up to {limit} characters. A line that starts with "## " is a heading and a line that starts with "- " is an item.',
                     conflict:
                         'Someone changed this note after you opened it. Reload the page to read it, then edit again.',
+                    reload: 'Reload the note',
                 },
                 packages: {
                     title: 'Packages',

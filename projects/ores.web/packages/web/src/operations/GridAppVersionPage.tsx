@@ -161,6 +161,17 @@ function NoteEditor({
         },
     });
     const conflict = save.error instanceof ApiFailure && save.error.status === 409;
+    // After a conflict the draft is not the latest note, so the editor reads the page
+    // again and takes the note as it stands, which also gives the next save its version.
+    const reload = async (): Promise<void> => {
+        const fresh = await queries.fetchQuery({
+            queryKey: [APP_VERSION_QUERY_KEY, page.version.id],
+            queryFn: () => api.gridAppVersion(page.version.id),
+            staleTime: 0,
+        });
+        setText(fresh.version.release_note);
+        save.reset();
+    };
     return (
         <div className="space-y-3">
             <Textarea
@@ -176,6 +187,14 @@ function NoteEditor({
             {save.isError && (
                 <Notice tone="error">
                     {conflict ? t('operations.grid.appVersion.note.conflict') : save.error.message}
+                    {conflict && (
+                        <>
+                            {' '}
+                            <Button size="sm" onClick={() => void reload()}>
+                                {t('operations.grid.appVersion.note.reload')}
+                            </Button>
+                        </>
+                    )}
                 </Notice>
             )}
             <div className="flex gap-2">

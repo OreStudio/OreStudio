@@ -53,7 +53,13 @@ const noteBodySchema = z
     })
     .strict();
 
-/** Only an operator in system administration writes the catalogue. */
+/**
+ * Only an operator in system administration writes the catalogue.
+ *
+ * The mode is a shortcut that spares a call and lets the page withhold the control. It
+ * is not the guard: the compute service checks the write code of the role and the
+ * tenant of the row, and refuses any other writer.
+ */
 function mayWrite(session: LiveSession): boolean {
     return session.mode === 'system-administration';
 }

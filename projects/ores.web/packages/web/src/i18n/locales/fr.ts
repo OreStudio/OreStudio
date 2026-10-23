@@ -1845,6 +1845,7 @@ const fr: SourceCatalogue = {
                     help: 'Texte brut, jusqu’à {limit} caractères. Une ligne qui commence par "## " est un titre et une ligne qui commence par "- " est un élément.',
                     conflict:
                         'Quelqu’un a modifié cette note après votre ouverture. Rechargez la page pour la lire, puis modifiez à nouveau.',
+                    reload: 'Recharger la note',
                 },
                 packages: {
                     title: 'Paquets',

@@ -411,6 +411,9 @@ export async function writeReleaseNote(
     id: string,
     input: { readonly releaseNote: string; readonly version: number; readonly commentary: string },
 ): Promise<AppVersion | null> {
+    // The put replaces the whole row, so the fields the page does not edit are read
+    // again here. The version the editor read is the guard: a change by anyone since
+    // moves the version, and the write is then refused whatever these fields hold.
     const current = await readAppVersion(caller, id);
     if (current === null) {
         return null;

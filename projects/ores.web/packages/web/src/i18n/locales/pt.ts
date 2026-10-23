@@ -1836,6 +1836,7 @@ const pt: SourceCatalogue = {
                     help: 'Texto simples, até {limit} caracteres. Uma linha que começa por "## " é um título e uma linha que começa por "- " é um item.',
                     conflict:
                         'Alguém alterou esta nota depois de a abrir. Recarregue a página para a ler e edite de novo.',
+                    reload: 'Recarregar a nota',
                 },
                 packages: {
                     title: 'Pacotes',

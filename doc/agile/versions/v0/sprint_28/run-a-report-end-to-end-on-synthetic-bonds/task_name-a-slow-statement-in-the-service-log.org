@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 1FC5ADBC-D550-4111-B736-26A2BDD689E5
+:END:
+#+title: Task: Name a slow statement in the service log
+#+description: A slow statement hid inside the total of a request. The database executors now log the statement's duration, with the connect, session and statement parts, as a warning from 250 ms.
+#+type: task
+#+level: s1
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/name-a-slow-statement-in-the-service-log
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A read that takes 250 ms or more names itself and its duration in the service log, with where the time went.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- A read of 250 ms or more logs a warning with its description and duration.
+- The executor that opens its own connection logs the connect, session and statement parts.
+- A read below the threshold logs at debug level only.
+
+* Plan
+
+The task before this one removed the slow export and inferred its cause from the plan of one statement. This task measures the cause. The two executors that run a read, =execute_read_query= and =execute_parameterized_multi_column_query=, time each read. A read of 250 ms or more logs a warning with its description and duration. The executor that opens its own connection also splits the time into the connection, the session settings and the statement. A read below the threshold logs at debug level.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Chunks of the observation table | 163, of which ACME's rows sit in 13 | =compass db sql= on =timescaledb_information.chunks= | 2a0b529f5a |
+| Share of observation rows from other tenants | 483,790 of 485,767 (99.6%), 22 tenants, 2016-01 to 2035-03 | =compass db sql=, =group by tenant_id = ACME= | 2a0b529f5a |
+| One-row read, as the log now splits it | 13 to 16 ms connect, 2 ms session, 32 to 73 ms statement | =ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_LEVEL=debug ores.marketdata.core.tests read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives= | this branch |
+| Statements of the old export | about 918 (3 for each of 306 series) | the export loop before the previous task | 2a0b529f5a |
+| Time of the old export, estimated from the two rows above | about 42 s | 918 x (14 + 2 + about 30 ms) | |
+| Time of the old export, observed | 38 s | the service log of instance 18fe9858 | 2a0b529f5a |
+
+* Notes
+
+The cause of the 38 seconds is now measured. A statement of the old export took 32 to 73 ms in the database even for one row, because the planner works through every chunk of the observation table, and the table has 163 of them. The executor also opened a connection for each statement, 13 to 16 ms. A statement for each series, three per series, over 306 series, is about 42 seconds. The export took 38.
+
+The chunk count is not ACME's. ACME's rows sit in 13 monthly chunks. 22 other tenants hold 99.6% of the rows, and their dates run from 2016 to 2035. They are the rows the C++ test suites write into this database, with random dates. So the same code on a database without that residue plans over 13 chunks, and the old export would likely have passed. This is an inference and has not been run. The code still did a statement for each series, so the test residue exposed a defect that was already there.
+
+Seen on the way and handed on:
+
+- The usage recorder, the feed ingest loop and the usage planner write =modified_by= as the text =ores.marketdata.service=. After bootstrap the database accepts only the name of an account. The service account is =ores_swift_curie_marketdata_service=, which the service already holds as =db_opts.user=. So the recorder fails every flush, with 19,910 delivery counts waiting.
+- =gather_trades= and =gather_market_data= have no =consumes=, so they run side by side. When one fails, the other can already have started, and it logs "cannot move from failed to running". It is by design and harmless, but the log says ERROR.
+- The database schema fingerprint differs from the checkout, so the database needs a recreate before the soak.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| TBD | Name a slow statement in the service log |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A read of 250 ms or more now names itself and its duration in the service log. The executor that opens its own connection says how the time split. A run of the NPV report on the instrumented services completed in 12 s with the export at 214 ms, and no read crossed the threshold. The timing line was seen at debug level in a test, so the warning level is by the same code path but has not been seen to fire.

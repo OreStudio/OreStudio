@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-composites-and-their-rights
+#+pr: 3661
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A composite item derives from several quote series by a pluggable rule, needs th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,13 @@ A composite item derives from several quote series by a pluggable rule, needs th
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Model a composite and its inputs as entities owned by the system tenant: the output item, the internal provider, the rule code, and each input with its provider, item and position.
+2. Install the internal provider composite and its one derived source in the catalogue, with a fixed id.
+3. Put the rule behind an interface with a pass-through rule, and add an average and a median, so a later rule is a new class and a new code and no schema change.
+4. Check the derived right on the provider of every input, and give a composite with a missing right no value and the reason.
+5. Make the inputs of a composite count as demand on their own providers, through the demand policy, so the demand set and the usage intervals include them.
+6. Test the rules, the rights check, the reasons and the demand without a database.
 
 * Measurements
 
@@ -76,12 +83,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3661][#3661]] | [marketdata] Model composites and their rights |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two composites for one item merge their inputs | composite model | Accept | A unique index on the item of the current composite. |
+| 2 | Two inputs can share a position | composite_input model | Accept | A unique index on the composite and the position. |
+| 3 | composite_id has no foreign key | composite_input model | Decline | The tables of this component keep none, and the resolver ignores an input with no composite. |
+| 4 | A value that is not a number reaches a rule | composite_engine | Accept | Such an input value is no value, and a test shows it. |
+| 5 | The reason text is built by an awkward concatenation | composite_engine | Accept | A small join builds the provider list. |
 
 * Result
+
+A composite is an internal item that the service derives from the quote series of several providers by a rule. =composite= and =composite_input= are entities owned by the system tenant and readable by every tenant, with history. The catalogue installs the internal provider composite and its one derived source. =composite_rule= is the interface of a rule, with the codes pass_through, average and median, and an unknown code gives no rule. =evaluate_composite= gives a composite no value and a reason when the party lacks the derived right on the provider of any input, when the rule is unknown, or when no input has a value. =composite_input_resolver= feeds the demand policy, so the inputs of a composite are demanded from their own providers and appear in the demand set and in the demand intervals that the metering writes, and a composite has no rate card of its own. Twelve composite cases pass with the earlier service tests. The build passes.
+
+Left for later tasks:
+- The ingest loop does not recompute a composite when an input series stores a value, and no value is stored under the composite provider yet. The evaluation is a function that the loop will call.
+- A party states no requirement, so no party demands a composite until the requirement model exists. The demand policy takes the requirements, and the test shows the inputs join the demand.
+- The rule governance of the blend, its approval, is not modelled.
+- Nothing ran against a database, because the worktree =.env= is at version 32.

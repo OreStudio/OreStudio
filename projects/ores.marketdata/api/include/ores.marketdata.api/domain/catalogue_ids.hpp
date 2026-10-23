@@ -61,6 +61,19 @@ inline constexpr std::string_view ore_simulated_source = "a94c20bb-09c4-48d3-b91
  */
 inline constexpr std::string_view ore_derived_source = "437b14be-6443-4492-b421-a51ce34f318a";
 
+/**
+ * @brief The id of the source composite-derived, of kind derived.
+ *
+ * The values of a composite are stored under this source. The catalogue populate script installs
+ * the row.
+ */
+inline constexpr std::string_view composite_provider = "composite";
+inline constexpr std::string_view composite_derived_source = "615e89cb-6a9c-46fb-beac-5b6d9b47a8ec";
+
+inline boost::uuids::uuid composite_derived_source_id() {
+    return boost::uuids::string_generator{}(std::string(composite_derived_source));
+}
+
 inline boost::uuids::uuid ore_import_source_id() {
     return boost::uuids::string_generator{}(std::string(ore_import_source));
 }

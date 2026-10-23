@@ -21,8 +21,9 @@
 /**
  * Market Data Catalogue Population Script
  *
- * Installs the providers the system names and the three sources of the provider
- * ore. The system tenant owns the rows and every tenant reads them. The source
+ * Installs the providers the system names, the three sources of the provider ore and the one
+ * source of the provider composite. The system tenant owns the rows and every tenant reads them.
+ * The source
  * ids are fixed, because the ORE import and the DQ publish name their source
  * by id: ore-import below is the id that the publish function and the C++
  * catalogue_ids header carry.
@@ -53,7 +54,10 @@ values
      4, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
     (ores_utility_system_tenant_id_fn(), 'ore', 0, 'ORE', 'reference',
      'The Open Source Risk Engine. Its quote keys are an open notation.',
-     5, current_user, current_user, 'system.initial_load', 'Initial population of providers')
+     5, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
+    (ores_utility_system_tenant_id_fn(), 'composite', 0, 'Composite', 'reference',
+     'The internal provider of the items that the service derives from the quote series of other providers.',
+     6, current_user, current_user, 'system.initial_load', 'Initial population of providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
@@ -76,6 +80,10 @@ values
     ('437b14be-6443-4492-b421-a51ce34f318a', ores_utility_system_tenant_id_fn(), 0,
      'ore-derived', 'ore', 'derived', false,
      'The values that the service computes from other series, such as a bootstrapped curve.',
+     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+    ('615e89cb-6a9c-46fb-beac-5b6d9b47a8ec', ores_utility_system_tenant_id_fn(), 0,
+     'composite-derived', 'composite', 'derived', true,
+     'The values that the service computes from the inputs of a composite.',
      current_user, current_user, 'system.initial_load', 'Initial population of sources')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()

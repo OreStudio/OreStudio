@@ -38,6 +38,8 @@
 #include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
 #include "ores.marketdata.service/messaging/bill_handler.hpp"
+#include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
@@ -174,6 +176,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto subscription_sub =
         mdsm::register_subscription_event_mapping(event_source, event_bus, nats);
     auto route_sub = mdsm::register_route_event_mapping(event_source, event_bus, nats);
+    auto composite_input_sub =
+        mdsm::register_composite_input_event_mapping(event_source, event_bus, nats);
+    auto composite_sub = mdsm::register_composite_event_mapping(event_source, event_bus, nats);
     auto rate_card_component_sub =
         mdsm::register_rate_card_component_event_mapping(event_source, event_bus, nats);
     auto delivery_count_sub =

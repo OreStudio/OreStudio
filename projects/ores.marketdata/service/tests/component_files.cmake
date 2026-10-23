@@ -23,6 +23,7 @@ set(files
     "app_adapter_registry_tests.cpp"
     "app_adapter_tick_translator_tests.cpp"
     "app_billing_tests.cpp"
+    "app_composite_engine_tests.cpp"
     "app_crm_ingest_bridge_tests.cpp"
     "app_delivery_meter_tests.cpp"
     "app_demand_calculator_tests.cpp"

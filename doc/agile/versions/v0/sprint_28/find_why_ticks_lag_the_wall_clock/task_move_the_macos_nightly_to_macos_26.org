@@ -26,11 +26,11 @@ Run the macOS nightly build on the macos-26 runner with Xcode 26, so that Apple'
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -85,3 +85,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The macOS nightly build runs on =macos-26= with Xcode 26. The disk cleanup
+keeps Xcode 26. A new step prints the clang version and the =jthread=,
+=stop_token= and =atomic_shared_ptr= feature macros. No run on =macos-26= has
+happened yet. The first run shows which fallbacks in =ores.platform= can go.

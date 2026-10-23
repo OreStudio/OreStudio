@@ -226,6 +226,35 @@ The report definitions to stop firing.
  */
 #+end_src
 
+** publish_ore_parameter_value_domains_from_dq_request
+:PROPERTIES:
+:subject: reporting.v1.ops.publish_ore_parameter_value_domains_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter value domains.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request, and
+ * declared the same way: the SQL function name the handler derives from the
+ * subject depends on the spelling.
+ */
+#+end_src
+
+** publish_ore_parameters_from_dq_request
+:PROPERTIES:
+:subject: reporting.v1.ops.publish_ore_parameters_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter documentation.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request. The
+ * value domains publish first, because the dataset depends on theirs.
+ */
+#+end_src
+
 ** gather_trades_request
 :PROPERTIES:
 :subject: reporting.v1.ops.gather_trades

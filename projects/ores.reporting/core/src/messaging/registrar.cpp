@@ -367,6 +367,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_report_definitions_from_dq_request::nats_subject,
             publish_risk_report_configs_from_dq_request::nats_subject,
             publish_engine_settings_from_dq_request::nats_subject,
+            publish_ore_parameter_value_domains_from_dq_request::nats_subject,
+            publish_ore_parameters_from_dq_request::nats_subject,
         };
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)

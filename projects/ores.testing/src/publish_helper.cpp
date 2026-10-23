@@ -55,6 +55,39 @@ bool publish_dataset(const ores::database::context& ctx,
     return !counts.empty() && counts.front() != "0";
 }
 
+bool publish_with_dependencies(const ores::database::context& ctx,
+                               const std::string& tenant,
+                               const std::string& dataset_code) {
+    const auto dependencies = ores::database::repository::execute_parameterized_string_query(
+        ctx,
+        "SELECT dependency_code FROM ores_dq_dataset_dependencies_tbl"
+        " WHERE dataset_code = $1 AND tenant_id = ores_utility_system_tenant_id_fn()"
+        " AND valid_to = ores_utility_infinity_timestamp_fn() ORDER BY dependency_code",
+        {dataset_code},
+        lg(),
+        "Reading the dependencies of " + dataset_code);
+    for (const auto& dependency : dependencies)
+        if (!publish_with_dependencies(ctx, tenant, dependency))
+            return false;
+
+    // The artefact type names the subject, for example
+    // reporting.v1.ops.publish_ore_parameters_from_dq, and the function is the
+    // subject's component and operation: ores_reporting_publish_ore_parameters_from_dq_fn.
+    const auto functions = ores::database::repository::execute_parameterized_string_query(
+        ctx,
+        "SELECT 'ores_' || split_part(t.target_subject, '.', 1) || '_' ||"
+        " split_part(t.target_subject, '.', 4) || '_fn'"
+        " FROM ores_dq_datasets_tbl d JOIN ores_dq_artefact_types_tbl t"
+        " ON t.code = d.artefact_type AND t.tenant_id = d.tenant_id"
+        " AND t.valid_to = ores_utility_infinity_timestamp_fn()"
+        " WHERE d.code = $1 AND d.valid_to = ores_utility_infinity_timestamp_fn()"
+        " AND t.target_subject IS NOT NULL",
+        {dataset_code},
+        lg(),
+        "Reading the publish function of " + dataset_code);
+    return !functions.empty() && publish_dataset(ctx, tenant, dataset_code, functions.front());
+}
+
 bool publish_refdata_dataset(const ores::database::context& ctx,
                              const std::string& tenant,
                              const std::string& dataset_code,

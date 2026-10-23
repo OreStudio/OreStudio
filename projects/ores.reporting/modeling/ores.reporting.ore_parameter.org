@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter
 #+description: Codegen entity model for the reporting =ore_parameter= table. The vocabulary of an ORE document: which leaves a schema accepts, and what each value means.

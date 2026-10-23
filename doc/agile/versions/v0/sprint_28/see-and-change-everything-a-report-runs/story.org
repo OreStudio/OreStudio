@@ -50,6 +50,7 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 | [[id:4F8E9B3F-8742-46D3-B273-DC265CA60A0E][Build the engine settings screens]] | DONE | 2026-10-23 | 2026-10-23 | Build the engine settings list and configuration page from the agreed prototype, reading the documentation from ore_parameter. |
 | [[id:FE68C87D-E576-4A7C-8052-7B049A9A0FB2][Serve the engine settings]] | DONE | 2026-10-23 | 2026-10-23 | Serve the engine settings and the ore parameters over NATS and the BFF, with the permissions a person needs, so the screens have something to read and write. |
 | [[id:6CAD1673-5A02-4319-BD36-9560FF8B5C6A][Test the engine settings]] | STARTED | | | Walk the engine settings screens against a running environment as an Acme user and record what works and what does not. |
+| [[id:403386BD-F99F-48CD-88EF-C17B868BA87E][Publish the ore parameters through DQ]] | STARTED | | | Stage the ore parameters and their value domains as DQ datasets and publish them to the system tenant and to every tenant, as currencies are. |
 
 * Analysis
 

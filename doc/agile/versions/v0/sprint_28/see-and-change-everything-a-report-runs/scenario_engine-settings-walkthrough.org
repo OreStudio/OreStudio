@@ -23,7 +23,7 @@ Do these steps yourself, in this order, before you open the web client.
 - Start the services with =compass services start=. Check that =ores.reporting.service=, =ores.http.server= and =ores.web.service= run.
 - Provision Acme with =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=. The run must finish with no failed step.
 - Check that Acme holds engine settings: =compass sql -- -c "select name from ores_reporting_engine_settings_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by name"= must list seven names, for example =UK - Standard engine settings=. If it lists none, the publish of the Acme bundle did not reach the reporting tables. Record this in the notes and stop.
-- Copy the parameter documentation into the Acme tenant: =compass sql -- -v target_code=acme_corporation -f doc/agile/versions/v0/sprint_28/see-and-change-everything-a-report-runs/copy_ore_parameters_to_tenant.sql=. The command must print =parameters_in_tenant= with a number above 600. Step 4 needs it. The parameter rows belong to the system tenant, and no provisioning step copies them to another tenant yet.
+- Check that the Acme tenant holds the parameter documentation: =compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl p join ores_iam_tenants_tbl t on t.id = p.tenant_id where t.code = 'acme_corporation' and p.valid_to = ores_utility_infinity_timestamp_fn()"=. The count must be 610. The =base= bundle that provisioning publishes carries the parameters and their value domains. If the count is 0, the publish of =base= did not reach the reporting service. Record this in the notes and stop.
 - Open the web client as the tenant administrator: =compass open-as tenant_admin=.
 
 Nothing in this scenario was run against a live service before this page was written. A failure can come from the screens, the BFF, the reporting service or the data. Write down which layer you think failed.
@@ -87,7 +87,7 @@ Nothing in this scenario was run against a live service before this page was wri
 - On the Execution tab, choose "Show documentation" on the threads setting.
 - The panel must show a label, a help text, a description and the default. The description must be more than one short sentence.
 - Switch the panel to Advanced. It must show the ORE XML path, the format and the release in which ORE introduced the setting.
-- The text "The documentation of ... is not in the data" must not appear. If it appears, the copy script did not run, or it ran for another tenant.
+- The text "The documentation of ... is not in the data" must not appear. If it appears, the Acme tenant holds no parameter rows. Run the check in "Before you start" again.
 
 *** Result
 

@@ -152,6 +152,7 @@ The definition of a parameter has an id that differs between databases, so a dat
 :table:         ores_reporting_ore_parameters_tbl
 :target_column: id
 :use_system_tenant: true
+:system_dataset: ore.parameters
 :parent_entity: ore_parameter
 :nullable:      false
 :error_message: Invalid ore_parameter_id: %. No active ore parameter found with this id.

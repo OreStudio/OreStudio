@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: A5B4097A-0FF4-4855-9BBE-D7461FC096F5
+:END:
+#+title: One source for reference data that the system and each tenant read
+#+description: Reference data such as the ore parameters and currencies sits in both system_core and base because some readers check the system tenant and others check the tenant. Choose one source and make every reader use it.
+#+type: capture
+#+level: cross
+#+filetags: :dq:reference_data:tenancy:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give each kind of reference data one source. Today the data that both the system and each tenant need sits in two bundles. The bundle =system_core= writes it into the system tenant. The bundle =base= writes a copy into every tenant. Currencies, and now the ORE parameters and their value domains, follow this pattern. Choose one source for each kind, and change every reader to use it.
+
+* Why
+
+Two copies of one dataset can drift apart, and a person cannot tell which copy a reader sees. The reason for the split is the readers. Some code checks the system tenant's rows. The trigger on =configuration_parameters=, the risk report publish function and =run_document_service.cpp= do this for the ORE parameters. The screens read the caller's tenant, and row-level security hides the system tenant's rows from them.
+
+The coding schemes show the opposite choice. They are in =system_core= only, and every validator reads the system tenant. The comment in =dq_dataset_bundle_member_populate.sql= explains that a tenant copy was a dead duplicate.
+
+Two options exist for the ORE parameters. In the first, every reader checks the caller's tenant, and only =base= carries the data. In the second, a read of the system tenant's rows becomes a supported path for tenant users, and only =system_core= carries it. The second needs a way to widen row-level security, and the gate =rls-widenings= forbids that today. The first needs the three readers rewritten.
+
+* References
+
+- =projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql=
+- =projects/ores.sql/create/reporting/reporting_configuration_parameters_create.sql=
+- =projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql=
+- =projects/ores.reporting/core/src/service/run_document_service.cpp=
+
+* See also
+
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]]
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]]

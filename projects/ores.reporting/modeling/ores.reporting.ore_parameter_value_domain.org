@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9D4B7E13-2A85-4C69-B3F7-5E8C0A1D4932
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter_value_domain
 #+description: Codegen entity model for the reporting =ore_parameter_value_domain= table. What a parameter value is, and what it refers to when it names something.

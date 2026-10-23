@@ -46,6 +46,7 @@
 #include "ores.reporting.api/messaging/configuration_analytic_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/service/configuration_analytic_parameter_service.hpp"
+#include "ores.testing/publish_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_reporting_configuration_analytics_tbl): the parent may live in
 // another component, so its own component names the headers. A system-tenant parent is read rather
@@ -242,8 +243,17 @@ TEST_CASE("write_configuration_analytic_parameter_publishes_an_event", tags) {
     // tenant.
     {
         ores::reporting::repository::ore_parameter_repository ore_parameter_id_catalogue_repo;
-        const auto ore_parameter_id_catalogue = ore_parameter_id_catalogue_repo.read_latest(
-            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        auto ore_parameter_id_catalogue = ore_parameter_id_catalogue_repo.read_latest(system_ctx);
+        // The build stages the catalogue and publishes nothing, so the test
+        // publishes the dataset, and the datasets it depends on, when the
+        // system tenant holds no row yet.
+        if (ore_parameter_id_catalogue.empty()) {
+            REQUIRE(ores::testing::publish_with_dependencies(
+                party_ctx, ores::utility::uuid::tenant_id::system().to_string(), "ore.parameters"));
+            ore_parameter_id_catalogue = ore_parameter_id_catalogue_repo.read_latest(system_ctx);
+        }
         REQUIRE_FALSE(ore_parameter_id_catalogue.empty());
         v.ore_parameter_id = ore_parameter_id_catalogue.front().id;
     }

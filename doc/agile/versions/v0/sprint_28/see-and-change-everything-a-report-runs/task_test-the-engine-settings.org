@@ -69,7 +69,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:B8D70FF1-E3D9-4FF9-9134-BA64F82E106D][Walk the engine settings screens as an Acme user]] | PENDING | Run after a rebuild. Needs the parameter copy script. |
+| [[id:B8D70FF1-E3D9-4FF9-9134-BA64F82E106D][Walk the engine settings screens as an Acme user]] | PENDING | Run after a rebuild and a provisioning of Acme. |
 
 * PRs
 

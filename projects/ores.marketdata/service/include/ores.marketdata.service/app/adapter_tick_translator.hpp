@@ -24,6 +24,7 @@
 #    pragma once
 #endif
 
+#include "ores.marketdata.api/domain/adapter_limits.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
@@ -92,10 +93,10 @@ struct translated_tick {
 class ORES_MARKETDATA_SERVICE_EXPORT adapter_tick_translator {
 public:
     /// The age beyond which a tick is stale.
-    static constexpr std::chrono::milliseconds max_tick_age{5000};
+    static constexpr std::chrono::milliseconds max_tick_age = domain::adapter_limits::max_tick_age;
 
     /// The largest absolute value a tick may carry.
-    static constexpr double max_abs_value = 1e12;
+    static constexpr double max_abs_value = domain::adapter_limits::max_abs_value;
 
     adapter_tick_translator(std::vector<domain::market_data_source> sources,
                             std::vector<domain::market_data_vendor_instrument> instruments,

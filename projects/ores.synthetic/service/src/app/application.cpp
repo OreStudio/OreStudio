@@ -141,15 +141,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The simulator is an adapter of the market data service. It serves the system collections
     // it can see, and it starts a generator for each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats};
-    generator_runner runner([&registry, &adapter_build, adapter_ctx = db_ctx] {
+    const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
+    generator_runner runner([&registry, &adapter_build, adapter_ctx = db_ctx, faults] {
         return system_generator_offers(registry,
                                        adapter_ctx,
                                        adapter_build,
                                        std::string(simulator_adapter_id),
-                                       std::string(simulator_provider_code));
+                                       std::string(simulator_provider_code),
+                                       faults);
     });
-    simulator_adapter adapter(
-        nats, runner, std::string(simulator_adapter_id), std::string(simulator_provider_code));
+    simulator_adapter adapter(nats,
+                              runner,
+                              std::string(simulator_adapter_id),
+                              std::string(simulator_provider_code),
+                              {},
+                              faults);
     adapter.start();
 
     co_await ores::service::service::run(
@@ -157,10 +163,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, &svc_nats, &registry](auto& n, auto c, auto v) {
+        [ctrl, faults, &svc_nats, &registry](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, c, v, registry);
+                n, svc_nats, ctrl, faults, c, v, registry);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

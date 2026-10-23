@@ -28,6 +28,7 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include <memory>
 #include <optional>
@@ -46,6 +47,8 @@ namespace ores::synthetic::feed {
 struct adapter_target final {
     ores::marketdata::messaging::vendor_id id;
     std::string subject;
+    /// The faults in force. Empty means none is ever injected.
+    std::shared_ptr<const fault_state> faults;
 };
 
 /// The id scheme of an ORE quote key, and the field its one value is in.
@@ -142,6 +145,7 @@ private:
     tick_clock clock_;
     std::string nats_subject_;
     std::optional<adapter_target> adapter_;
+    std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
 };
 
 /**

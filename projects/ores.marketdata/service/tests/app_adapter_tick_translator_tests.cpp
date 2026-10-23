@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/adapter_limits.hpp"
 #include "ores.marketdata.service/app/adapter_tick_translator.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -197,6 +198,25 @@ TEST_CASE("a_tick_older_than_the_age_limit_is_stale", tags) {
 
     REQUIRE_FALSE(out.has_value());
     CHECK(out.error() == adapter_tick_drop::stale);
+}
+
+TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies", tags) {
+    // The simulator injects its faults from these limits, so a tick one step beyond them is
+    // dropped for exactly the reason the fault is meant to show.
+    using ores::marketdata::domain::adapter_limits;
+    catalogue c;
+    auto sut = c.translator();
+
+    const auto beyond_range = sut.translate(
+        "bloomberg-live", c.tick(std::to_string(adapter_limits::max_abs_value * 10)), c.now);
+    REQUIRE_FALSE(beyond_range.has_value());
+    CHECK(beyond_range.error() == adapter_tick_drop::out_of_range);
+
+    auto delayed = c.tick();
+    delayed.vendor_time = c.now - adapter_limits::max_tick_age - 1ms;
+    const auto beyond_age = sut.translate("bloomberg-live", delayed, c.now);
+    REQUIRE_FALSE(beyond_age.has_value());
+    CHECK(beyond_age.error() == adapter_tick_drop::stale);
 }
 
 TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", tags) {

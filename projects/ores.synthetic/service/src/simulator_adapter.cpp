@@ -31,16 +31,19 @@ using namespace ores::logging;
 namespace messaging = ores::marketdata::messaging;
 namespace domain = ores::marketdata::domain;
 
-simulator_adapter::simulator_adapter(ores::nats::service::client& nats,
-                                     generator_runner& runner,
-                                     std::string adapter_id,
-                                     std::string provider_code,
-                                     simulator_adapter_timing timing)
+simulator_adapter::simulator_adapter(
+    ores::nats::service::client& nats,
+    generator_runner& runner,
+    std::string adapter_id,
+    std::string provider_code,
+    simulator_adapter_timing timing,
+    std::shared_ptr<const ores::synthetic::feed::fault_state> faults)
     : nats_(nats)
     , runner_(runner)
     , adapter_id_(std::move(adapter_id))
     , provider_code_(std::move(provider_code))
-    , timing_(timing) {}
+    , timing_(timing)
+    , faults_(std::move(faults)) {}
 
 simulator_adapter::~simulator_adapter() {
     stop();
@@ -72,14 +75,24 @@ messaging::adapter_announce_request simulator_adapter::announcement() const {
 
 messaging::adapter_demand_response
 simulator_adapter::on_demand(const messaging::adapter_demand_request& request) {
-    const auto outcome = runner_.apply(request.ids);
     messaging::adapter_demand_response response;
+    // A not entitled rejection runs no generator and rejects every id.
+    if (faults().not_entitled) {
+        runner_.apply({});
+        for (const auto& id : request.ids)
+            response.rejected.push_back(messaging::rejected_id{id, "not_entitled"});
+        return response;
+    }
+    const auto outcome = runner_.apply(request.ids);
     response.accepted = outcome.accepted;
     response.rejected = outcome.rejected;
     return response;
 }
 
 void simulator_adapter::demand_message(const ores::nats::message& msg) {
+    // A lost connection answers nothing, so the service sees a demand that did not arrive.
+    if (faults().connection_lost)
+        return;
     auto request =
         ores::nats::default_wire_codec().decode<messaging::adapter_demand_request>(msg.data);
     if (!request) {
@@ -127,7 +140,20 @@ void simulator_adapter::loop() {
     constexpr auto slice = std::chrono::milliseconds(50);
     auto next_announce = clock::now();
     auto next_heartbeat = clock::now();
+    ores::synthetic::feed::fault_plan seen = faults();
     while (!stop_.load(std::memory_order_relaxed)) {
+        // A change of the plan announces the adapter again, so the service sends the demand
+        // set again. A generator that a fault stopped starts again without the author's help.
+        if (const auto plan = faults(); !(plan == seen)) {
+            seen = plan;
+            next_announce = clock::now();
+        }
+        // A lost connection sends nothing, so the service makes the adapter stale. The
+        // announce and the heartbeat resume when the fault is off.
+        if (faults().connection_lost) {
+            std::this_thread::sleep_for(slice);
+            continue;
+        }
         if (clock::now() >= next_announce) {
             const auto ok = announce();
             announced_.store(ok, std::memory_order_relaxed);

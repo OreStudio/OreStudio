@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/read-live-ticks-from-the-tick-table
-#+pr: 3679
+#+pr: 3681
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -158,6 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3681][#3681]] | [marketdata] Add the history call: every tick of a span in one reply |
 | [[https://github.com/OreStudio/OreStudio/pull/3679][#3679]] | [marketdata] Document the tick read: one history call and one live subscription |
 
 * Review

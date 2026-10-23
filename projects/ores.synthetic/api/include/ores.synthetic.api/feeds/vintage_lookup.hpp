@@ -81,6 +81,7 @@ find_vintage_observation(ores::nats::service::nats_client& auth_nats,
         return std::unexpected("Failed to look up series for '" + label +
                                "': " + all_series.error());
 
+    // The vintage source and date name one row, so the first match in any series is the row.
     constexpr std::uint32_t page_size = 200;
     for (const auto& series : *all_series) {
         const auto series_id_str = boost::uuids::to_string(series.id);

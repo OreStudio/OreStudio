@@ -145,16 +145,21 @@ private:
     // Builds and starts every adapter before any is kept, so a failed start leaves none running.
     void start_all(const std::vector<ores::marketdata::domain::market_data_source>& sources) {
         auto built = make_adapters(sources, db_ctx_, nats_, registry_, build_, faults_);
-        std::size_t started = 0;
+        std::size_t attempted = 0;
         try {
             for (auto& one : built) {
+                ++attempted;
                 one.adapter->start();
-                ++started;
             }
         } catch (...) {
-            for (std::size_t i = 0; i < started; ++i) {
-                built[i].adapter->stop();
-                built[i].runner->stop_all();
+            // The adapter that threw is stopped too, because it may be half started.
+            for (std::size_t i = 0; i < attempted; ++i) {
+                try {
+                    built[i].adapter->stop();
+                    built[i].runner->stop_all();
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn) << "An adapter did not stop cleanly: " << e.what();
+                }
             }
             throw;
         }
@@ -178,13 +183,11 @@ private:
                 if (sources) {
                     start_all(*sources);
                     return;
-                } else {
-                    failure = sources.error();
-                    if (failure.find("denied") != std::string::npos)
-                        failure += " (an environment populated before the grant of "
-                                   "market_data_sources:read needs the IAM roles populated "
-                                   "again)";
                 }
+                failure = sources.error();
+                if (failure.find("denied") != std::string::npos)
+                    failure += " (an environment populated before the grant of "
+                               "market_data_sources:read needs the IAM roles populated again)";
             } catch (const std::exception& e) {
                 failure = e.what();
             }

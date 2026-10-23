@@ -73,14 +73,14 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <wrapper_version>
+     * @brief get <id>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <wrapper_version>
+     * @brief get-many <id>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -111,28 +111,28 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <wrapper_version> <reason> <commentary> [--version <n>]
+     * @brief delete <id> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <wrapper_version> <reason> <commentary>
+     * @brief delete-many <id> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <wrapper_version> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <wrapper_version> --version <n>
+     * @brief version <id> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

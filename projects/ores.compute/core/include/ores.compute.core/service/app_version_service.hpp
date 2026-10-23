@@ -133,19 +133,6 @@ public:
     std::optional<domain::app_version> get_app_version(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a single app version by the key the model
-     * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
-     *
-     * @return The app version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::app_version>
-    get_app_version_by_wrapper_version(const std::string& wrapper_version);
-
-    /**
      * @brief Retrieves a batch of app versions by primary key.
      */
     std::vector<domain::app_version> get_app_versions(const std::vector<std::string>& ids);
@@ -181,11 +168,9 @@ public:
     /**
      * @brief Retrieves all historical versions of a app version.
      *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::app_version> get_app_version_history(const std::string& key);
+    std::vector<domain::app_version> get_app_version_history(const std::string& id);
 
 private:
     context ctx_;

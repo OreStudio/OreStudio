@@ -215,45 +215,6 @@ std::vector<domain::app_version> app_version_repository::read_latest(context ctx
         "Reading latest app version by id.");
 }
 
-std::vector<domain::app_version>
-app_version_repository::read_latest_by_wrapper_version(context ctx,
-                                                       const std::string& wrapper_version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version by wrapper_version: "
-                               << wrapper_version;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<app_version_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                             "wrapper_version"_c == wrapper_version && "valid_to"_c == max.value());
-
-    return execute_read_query<app_version_entity, domain::app_version>(
-        ctx,
-        query,
-        [](const auto& entities) { return app_version_mapper::map(entities); },
-        lg(),
-        "Reading latest app version by wrapper_version.");
-}
-
-std::vector<domain::app_version>
-app_version_repository::read_any_by_wrapper_version(context ctx,
-                                                    const std::string& wrapper_version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any app version by wrapper_version: " << wrapper_version;
-    const auto tid = ctx.tenant_id().to_string();
-    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<app_version_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                             "wrapper_version"_c == wrapper_version) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
-
-    return execute_read_query<app_version_entity, domain::app_version>(
-        ctx,
-        query,
-        [](const auto& entities) { return app_version_mapper::map(entities); },
-        lg(),
-        "Reading any app version by wrapper_version.");
-}
-
 
 std::vector<domain::app_version> app_version_repository::read_all(context ctx,
                                                                   const std::string& id) {

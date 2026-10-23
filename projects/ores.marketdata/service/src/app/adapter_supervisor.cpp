@@ -95,10 +95,14 @@ void adapter_supervisor::refresh() {
     next->catalogue.subscriptions =
         repository::subscription_repository{}.read_latest_all_tenants(ctx_);
 
-    std::lock_guard lock(mu_);
-    snapshot_ = std::move(next);
-    for (const auto& id : registry_.demandable())
-        needs_demand_[id] = std::chrono::steady_clock::now();
+    {
+        std::lock_guard lock(mu_);
+        snapshot_ = next;
+        for (const auto& id : registry_.demandable())
+            needs_demand_[id] = std::chrono::steady_clock::now();
+    }
+    if (listener_)
+        listener_(next->catalogue, std::chrono::system_clock::now());
 }
 
 void adapter_supervisor::owe_demand(const std::string& adapter_id,

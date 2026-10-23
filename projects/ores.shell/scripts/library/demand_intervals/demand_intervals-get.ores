@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/demand_intervals/demand_interval.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+demand_intervals get __none__

@@ -30,6 +30,7 @@
 #include "ores.marketdata.service/app/adapter_tick_translator.hpp"
 #include "ores.marketdata.service/app/batch_handoff.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
 #include "ores.marketdata.service/app/store_backoff.hpp"
 #include "ores.marketdata.service/app/tick_age.hpp"
@@ -145,6 +146,16 @@ public:
                      std::shared_ptr<tick_writer> tick_writer = nullptr,
                      bool pipelined = true);
     ~feed_ingest_loop();
+
+    /**
+     * @brief Counts the ticks that the loop delivers to each party in @p meter.
+     *
+     * The call comes before start(). The loop adds the deliveries of a batch with one call, so
+     * the cost at tick time is one addition in memory for each party and item of the batch.
+     */
+    void set_delivery_meter(std::shared_ptr<delivery_meter> meter) {
+        meter_ = std::move(meter);
+    }
 
     void start();
 
@@ -288,6 +299,7 @@ private:
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     std::shared_ptr<tick_writer> tick_writer_;
+    std::shared_ptr<delivery_meter> meter_;
     const bool pipelined_;
     mutable std::mutex mu_;
     std::optional<ores::nats::service::subscription> tick_sub_;

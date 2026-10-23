@@ -1733,3 +1733,15 @@ tangled into the runnable script library
 * Subscriptions
 
 - [[id:C5B268A3-BF5D-50EC-9A77-A81BB844F652][How do I run the subscriptions commands from the shell?]]
+
+* Delivery Counts
+
+- [[id:6A2DAD2C-C948-5FEA-9B6E-EB731CC409EC][How do I run the delivery_counts commands from the shell?]]
+
+* Demand Intervals
+
+- [[id:A1BB2DEE-A705-5B74-9A5F-887F3DB7633C][How do I run the demand_intervals commands from the shell?]]
+
+* Subscription Intervals
+
+- [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]

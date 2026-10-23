@@ -561,6 +561,9 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
     }
 
     std::vector<std::vector<std::byte>> payloads(ticks.size());
+    // The deliveries of this batch, by consumer and item. The views point into the ticks of the
+    // batch, which outlive this function.
+    std::map<std::pair<const tick_target*, std::string_view>, std::int64_t> delivered;
     for (const auto& it : items) {
         if (!it.stored && !it.unavailable)
             continue;
@@ -601,10 +604,29 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             payload = ores::nats::default_wire_codec().encode(tick);
         try {
             nats_.publish(it.target->subject, payload);
+            if (meter_)
+                ++delivered[{it.target, tick.oresmd_uri}];
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to republish a tick on '" << it.target->subject << "': " << e.what();
         }
+    }
+
+    if (meter_ && !delivered.empty()) {
+        const auto period = delivery_meter::hour_of(now);
+        std::vector<delivery_entry> counts;
+        counts.reserve(delivered.size());
+        for (const auto& [at, count] : delivered) {
+            const auto& b = at.first->binding;
+            counts.push_back({delivery_key{b.tenant_id,
+                                           b.party_id,
+                                           b.provider_code,
+                                           b.source_id,
+                                           std::string(at.second),
+                                           period},
+                              count});
+        }
+        meter_->add_many(counts);
     }
 
     batches_.fetch_add(1, std::memory_order_relaxed);

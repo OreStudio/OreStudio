@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6A2DAD2C-C948-5FEA-9B6E-EB731CC409EC
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the delivery_counts commands from the shell?
+#+description: Every command the delivery_counts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:delivery_counts:
+
+This file documents the delivery_counts resource at the shell, one section per command. Every command is a subcommand of =delivery_counts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: FFF9E227-AE5E-581E-A8A2-50CB01AD2949
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.list=.
+
+#+name: delivery_counts-list
+#+begin_src ores-shell :tangle delivery_counts-list.ores :exports none
+delivery_counts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 281D6E49-6D56-52FE-983C-3D30F585419F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts get <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.get=.
+
+#+name: delivery_counts-get
+#+begin_src ores-shell :tangle delivery_counts-get.ores :exports none
+delivery_counts get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 59888187-72E6-549A-8FDE-7656ABA292DA
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts get-many <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.get_many=.
+
+#+name: delivery_counts-get-many
+#+begin_src ores-shell :tangle delivery_counts-get-many.ores :exports none
+delivery_counts get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D396A5BD-81FA-5560-A3A0-56F284B14879
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts add <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.put=.
+
+#+name: delivery_counts-add
+#+begin_src ores-shell :tangle delivery_counts-add.ores :exports none
+delivery_counts add 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: CC302D8B-66F5-589B-9113-553159A20E41
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts set <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.put=.
+
+#+name: delivery_counts-set
+#+begin_src ores-shell :tangle delivery_counts-set.ores :exports none
+delivery_counts set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DBED43BC-F619-5BBF-85B3-0632BBBEE42B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts put-many --count <n> <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.put_many=.
+
+#+name: delivery_counts-put-many
+#+begin_src ores-shell :tangle delivery_counts-put-many.ores :exports none
+delivery_counts put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: FC5FB76B-3CC1-5049-A1FA-1E9BEA404322
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts delete <oresmd_uri> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.delete=.
+
+#+name: delivery_counts-delete
+#+begin_src ores-shell :tangle delivery_counts-delete.ores :exports none
+delivery_counts delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 202736C8-8E2B-57B6-8F25-7EABD58DF46C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts delete-many <oresmd_uri> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts.delete_many=.
+
+#+name: delivery_counts-delete-many
+#+begin_src ores-shell :tangle delivery_counts-delete-many.ores :exports none
+delivery_counts delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1EC7AA9B-09A5-5742-B00B-E278C9E3E273
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts versions <oresmd_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts_versions.list=.
+
+#+name: delivery_counts-versions
+#+begin_src ores-shell :tangle delivery_counts-versions.ores :exports none
+delivery_counts versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0276D5D1-8FB8-53A1-862B-7AB9856C77F9
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+delivery_counts version <oresmd_uri> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.delivery_counts_versions.get=.
+
+#+name: delivery_counts-version
+#+begin_src ores-shell :tangle delivery_counts-version.ores :exports none
+delivery_counts version __none__ --version 1
+#+end_src
+

@@ -34,6 +34,7 @@
 #include "ores.nats/service/subscription.hpp"
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -87,6 +88,14 @@ public:
     /// Reads the catalogue again and sends every adapter its demand set again.
     void refresh();
 
+    /// Called with the catalogue after each read of it, so a listener can record what changed.
+    /// The call comes before start().
+    void set_catalogue_listener(
+        std::function<void(const demand_catalogue&, std::chrono::system_clock::time_point)>
+            listener) {
+        listener_ = std::move(listener);
+    }
+
     /// The state of every adapter, in the order of their ids.
     [[nodiscard]] std::vector<messaging::adapter_status> status() const;
 
@@ -125,6 +134,7 @@ private:
     std::map<std::string, std::chrono::steady_clock::time_point> needs_demand_;
     /// The adapters whose heartbeat arrived before they announced themselves, reported once.
     std::set<std::string> unknown_reported_;
+    std::function<void(const demand_catalogue&, std::chrono::system_clock::time_point)> listener_;
     std::atomic<bool> stop_{false};
     std::optional<ores::nats::service::subscription> announce_sub_;
     std::optional<ores::nats::service::subscription> heartbeat_sub_;

@@ -83,6 +83,7 @@ package "compute" #EDE7F6 {
         * wrapper_version : text
         * engine_version : text
         * min_ram_mb : integer
+        * release_note : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

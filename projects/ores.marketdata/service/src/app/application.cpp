@@ -33,10 +33,14 @@
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/adapter_supervisor.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
+#include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
@@ -48,6 +52,7 @@
 #include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/subscription_interval_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_event.hpp"
@@ -136,6 +141,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto ingest =
         std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge, ticks);
     auto supervisor = std::make_shared<adapter_supervisor>(nats, make_context(cfg.database));
+    auto meter = std::make_shared<delivery_meter>();
+    auto usage = std::make_shared<usage_recorder>(make_context(cfg.database), meter);
+    ingest->set_delivery_meter(meter);
+    supervisor->set_catalogue_listener(
+        [usage](const demand_catalogue& catalogue, std::chrono::system_clock::time_point now) {
+            usage->sync(catalogue, now);
+        });
 
     namespace ev = ores::eventing;
     namespace mdm = ores::marketdata::messaging;
@@ -160,6 +172,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto subscription_sub =
         mdsm::register_subscription_event_mapping(event_source, event_bus, nats);
     auto route_sub = mdsm::register_route_event_mapping(event_source, event_bus, nats);
+    auto delivery_count_sub =
+        mdsm::register_delivery_count_event_mapping(event_source, event_bus, nats);
+    auto demand_interval_sub =
+        mdsm::register_demand_interval_event_mapping(event_source, event_bus, nats);
+    auto subscription_interval_sub =
+        mdsm::register_subscription_interval_event_mapping(event_source, event_bus, nats);
     auto market_series_sub =
         mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
     auto market_fixing_sub =
@@ -288,12 +306,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                              }));
             return subs;
         },
-        [&nats, ingest, supervisor](boost::asio::io_context& ioc) {
+        [&nats, ingest, supervisor, usage](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
             ingest->start();
             supervisor->start();
+            usage->start();
         });
 
     event_source.stop();

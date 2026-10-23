@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: A1BB2DEE-A705-5B74-9A5F-887F3DB7633C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the demand_intervals commands from the shell?
+#+description: Every command the demand_intervals submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:demand_intervals:
+
+This file documents the demand_intervals resource at the shell, one section per command. Every command is a subcommand of =demand_intervals=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2E12CB2A-C45F-5F34-9548-D15A07296DAA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.list=.
+
+#+name: demand_intervals-list
+#+begin_src ores-shell :tangle demand_intervals-list.ores :exports none
+demand_intervals list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7B23B650-E4A1-5CE3-9805-42D8664CC8F3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals get <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.get=.
+
+#+name: demand_intervals-get
+#+begin_src ores-shell :tangle demand_intervals-get.ores :exports none
+demand_intervals get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C9FD082A-BFF0-5720-B25B-A091D4203154
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals get-many <oresmd_uri>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.get_many=.
+
+#+name: demand_intervals-get-many
+#+begin_src ores-shell :tangle demand_intervals-get-many.ores :exports none
+demand_intervals get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D7B9DB55-0B2E-54E0-A5FC-41085AEC7A9C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals add <party_id> <provider_code> <oresmd_uri> <interval_from> <source_id> <interval_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.put=.
+
+#+name: demand_intervals-add
+#+begin_src ores-shell :tangle demand_intervals-add.ores :exports none
+demand_intervals add 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 146544BF-6731-5C70-82D8-5C8155A3BC0C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals set <id> <party_id> <provider_code> <oresmd_uri> <interval_from> <source_id> <interval_to> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.put=.
+
+#+name: demand_intervals-set
+#+begin_src ores-shell :tangle demand_intervals-set.ores :exports none
+demand_intervals set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 10061372-78FA-505D-ACC0-ADB17F648391
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals put-many --count <n> <id> <party_id> <provider_code> <oresmd_uri> <interval_from> <source_id> <interval_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.put_many=.
+
+#+name: demand_intervals-put-many
+#+begin_src ores-shell :tangle demand_intervals-put-many.ores :exports none
+demand_intervals put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BF2678A4-DFAD-50D6-84CF-75601D37A5CB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals delete <oresmd_uri> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.delete=.
+
+#+name: demand_intervals-delete
+#+begin_src ores-shell :tangle demand_intervals-delete.ores :exports none
+demand_intervals delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F2F16AE8-7E71-5060-B88A-7B060C8F01E7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals delete-many <oresmd_uri> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals.delete_many=.
+
+#+name: demand_intervals-delete-many
+#+begin_src ores-shell :tangle demand_intervals-delete-many.ores :exports none
+demand_intervals delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 790E0653-092C-5E1E-B702-B267B10DAD8A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals versions <oresmd_uri> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals_versions.list=.
+
+#+name: demand_intervals-versions
+#+begin_src ores-shell :tangle demand_intervals-versions.ores :exports none
+demand_intervals versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 457B5641-62F4-5500-BF6D-5D37864292FA
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+demand_intervals version <oresmd_uri> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.demand_intervals_versions.get=.
+
+#+name: demand_intervals-version
+#+begin_src ores-shell :tangle demand_intervals-version.ores :exports none
+demand_intervals version __none__ --version 1
+#+end_src
+

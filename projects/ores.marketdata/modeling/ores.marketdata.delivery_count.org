@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: 648E0819-8013-4D38-981D-911B023535B5
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.delivery_count
+#+description: Codegen entity model for the marketdata delivery_counts table; how many ticks of an item the fan-out delivered to a party in an hour.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: delivery_count
+#+entity_plural: delivery_counts
+#+entity_title: Delivery Count
+#+brief: How many ticks of an item the fan-out delivered to a party in an hour.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A delivery count is a fact about usage. The fan-out counts the ticks it delivers to each party for each item
+and writes the counts in batches. A count holds no price. The only cost at tick time is one increment in
+memory, and one row is written for each party, item and hour at each write.
+
+A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this count.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+The party that used the feed. Set from the service that records the event and enforced by row level security, so a party administrator reads only the events of the party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the provider whose feed the event is about.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** source_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:filterable: true
+:nullable: false
+:END:
+
+References =market_data_source.id=: the source that served the party when the event happened. A rate card is on the source, so the rating step needs it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** oresmd_uri
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:nullable: false
+:END:
+
+The item whose ticks were delivered, as its oresmd quote URI.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
+#+end_src
+
+** period_start
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:natural_key: true
+:nullable: false
+:END:
+
+The start of the hour the ticks were delivered in.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** flushed_at
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:natural_key: true
+:nullable: false
+:END:
+
+When the service wrote the count. The counts of one hour that were written at different times are separate rows, and the rating step adds them.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** deliveries
+:PROPERTIES:
+:type:        bigint
+:cpp_type:    std::int64_t
+:nullable: false
+:default_value: 0
+:END:
+
+How many ticks of the item the fan-out delivered to the party in the hour, since the last write.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 1000)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_delivery_counts_tbl
+:rls_tenant_isolation:      true
+:rls_party_isolation:       true
+:rls_system_tenant_visible:      true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "provider_code" <> '' |
+| "oresmd_uri" <> '' |
+| "deliveries" >= 0 |
+
+
+* Insert trigger
+** Validations
+
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: delivery_count
+:entity_plural_short:   delivery_counts
+:entity_singular_words: delivery count
+:entity_plural_words:   delivery counts
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: E033C7C4-19A5-4A9F-8A85-64EEE4213E8B
+:END:
+
+Reads the latest delivery counts across all tenants. The service that meters usage reads the intervals
+that are open for every party, so it cannot filter on one tenant. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::delivery_count> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::delivery_count>
+delivery_count_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<delivery_count_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<delivery_count_entity, domain::delivery_count>(
+        ctx,
+        query,
+        [](const auto& entities) { return delivery_count_mapper::map(entities); },
+        lg(),
+        "Reading latest delivery counts across all tenants");
+}
+#+end_src
+
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: del
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/delivery_count.hpp
+:domain_class:            ores::marketdata::domain::delivery_count
+:protocol_include:        ores.marketdata.api/messaging/delivery_count_protocol.hpp
+:collection_name:         delivery_counts
+:key_field:               oresmd_uri
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field      | label | widget   | type      | is_key | is_required | placeholder    |
+|------------+-------+----------+-----------+--------+-------------+----------------|
+| oresmd_uri | Item  | itemEdit | line_edit | true   | true        | Enter item URI |
+
+*** Columns
+
+| enum_name     | field          | header     | type   | width |
+|---------------+----------------+------------+--------+-------|
+| OresmdUri     | oresmd_uri     | Item       | string | 400   |
+| ProviderCode  | provider_code  | Provider   | string | 140   |
+| Deliveries    | deliveries     | Deliveries | int    | 100   |
+| Version       | version        | Version    | int    | 80    |
+
+* See also
+
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] -- the events this table records.
+

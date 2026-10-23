@@ -57,5 +57,11 @@
 \ir ./marketdata_subscriptions_notify_trigger_create.sql
 \ir ./marketdata_routes_create.sql
 \ir ./marketdata_routes_notify_trigger_create.sql
+\ir ./marketdata_delivery_counts_create.sql
+\ir ./marketdata_delivery_counts_notify_trigger_create.sql
+\ir ./marketdata_demand_intervals_create.sql
+\ir ./marketdata_demand_intervals_notify_trigger_create.sql
+\ir ./marketdata_subscription_intervals_create.sql
+\ir ./marketdata_subscription_intervals_notify_trigger_create.sql
 
 \ir ./marketdata_publish_from_dq_create.sql

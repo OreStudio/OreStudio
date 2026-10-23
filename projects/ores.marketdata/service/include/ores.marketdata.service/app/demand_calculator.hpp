@@ -31,6 +31,7 @@
 #include "ores.marketdata.api/domain/subscription.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <functional>
@@ -77,6 +78,23 @@ struct refused_demand {
 };
 
 /**
+ * @brief What one route demands: the items of its party and the vendor ids that name them.
+ *
+ * A route whose party holds no right to the provider is not entitled, and demands nothing.
+ */
+struct party_demand {
+    ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
+    boost::uuids::uuid party_id;
+    std::string provider_code;
+    boost::uuids::uuid source_id;
+    /// The name of the source, which is the id of its adapter.
+    std::string adapter_id;
+    bool entitled = false;
+    /// The vendor ids that name each item, by the oresmd URI of the item.
+    std::map<std::string, std::vector<messaging::vendor_id>> items;
+};
+
+/**
  * @brief The demand set of each adapter, and the parties refused.
  */
 struct demand_result {
@@ -85,6 +103,17 @@ struct demand_result {
     std::map<std::string, std::vector<messaging::vendor_id>> by_adapter;
     std::vector<refused_demand> refused;
 };
+
+/**
+ * @brief Computes what each route demands, one entry for each route whose source the catalogue
+ * holds.
+ *
+ * The rules are those of @c compute_demand(), which sums this by adapter.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<party_demand>
+compute_party_demand(const demand_catalogue& catalogue,
+                     std::chrono::system_clock::time_point now,
+                     const demand_policy& policy = {});
 
 /**
  * @brief Computes the demand set of each adapter.

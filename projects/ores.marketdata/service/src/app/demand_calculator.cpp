@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.service/app/demand_calculator.hpp"
 #include <algorithm>
+#include <set>
 #include <tuple>
 
 namespace ores::marketdata::service::app {
@@ -45,11 +46,9 @@ bool same(const messaging::vendor_id& a, const messaging::vendor_id& b) {
 
 }
 
-demand_result compute_demand(const demand_catalogue& catalogue,
-                             std::chrono::system_clock::time_point now,
-                             const demand_policy& policy) {
-    demand_result result;
-
+std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue,
+                                               std::chrono::system_clock::time_point now,
+                                               const demand_policy& policy) {
     // The vendor ids of each provider, by the item that a mapping that holds names.
     std::map<std::string, std::map<std::string, std::vector<messaging::vendor_id>>> by_item;
     for (const auto& mapping : catalogue.mappings) {
@@ -64,44 +63,62 @@ demand_result compute_demand(const demand_catalogue& catalogue,
             {instrument->id_scheme, instrument->external_id, instrument->field});
     }
 
+    std::vector<party_demand> out;
     for (const auto& route : catalogue.routes) {
         const auto source =
             std::ranges::find(catalogue.sources, route.source_id, &domain::market_data_source::id);
         if (source == catalogue.sources.end())
             continue;
-        auto& demanded = result.by_adapter[source->name];
 
-        const auto entitled =
+        party_demand demand;
+        demand.tenant_id = route.tenant_id;
+        demand.party_id = route.party_id;
+        demand.provider_code = route.provider_code;
+        demand.source_id = route.source_id;
+        demand.adapter_id = source->name;
+        demand.entitled =
             std::ranges::any_of(catalogue.subscriptions, [&](const domain::subscription& s) {
                 return s.tenant_id == route.tenant_id && s.party_id == route.party_id &&
                        s.provider_code == route.provider_code && has_a_right(s);
             });
-        if (!entitled) {
-            result.refused.push_back({source->name, route.party_id, "not_entitled"});
-            continue;
-        }
-
-        const auto items = by_item.find(route.provider_code);
-        if (items == by_item.end())
-            continue;
-
-        std::set<std::string> wanted;
-        const auto restricted = policy.requirements ?
-                                    policy.requirements(route.party_id, route.provider_code) :
-                                    std::nullopt;
-        if (restricted) {
-            for (const auto& uri : *restricted) {
-                wanted.insert(uri);
-                if (policy.composite_inputs)
-                    for (const auto& input : policy.composite_inputs(uri))
-                        wanted.insert(input);
+        if (demand.entitled) {
+            const auto items = by_item.find(route.provider_code);
+            if (items != by_item.end()) {
+                std::set<std::string> wanted;
+                const auto restricted =
+                    policy.requirements ? policy.requirements(route.party_id, route.provider_code) :
+                                          std::nullopt;
+                if (restricted) {
+                    for (const auto& uri : *restricted) {
+                        wanted.insert(uri);
+                        if (policy.composite_inputs)
+                            for (const auto& input : policy.composite_inputs(uri))
+                                wanted.insert(input);
+                    }
+                }
+                for (const auto& [uri, ids] : items->second) {
+                    if (!restricted || wanted.contains(uri))
+                        demand.items.emplace(uri, ids);
+                }
             }
         }
-        for (const auto& [uri, ids] : items->second) {
-            if (restricted && !wanted.contains(uri))
-                continue;
-            demanded.insert(demanded.end(), ids.begin(), ids.end());
+        out.push_back(std::move(demand));
+    }
+    return out;
+}
+
+demand_result compute_demand(const demand_catalogue& catalogue,
+                             std::chrono::system_clock::time_point now,
+                             const demand_policy& policy) {
+    demand_result result;
+    for (const auto& demand : compute_party_demand(catalogue, now, policy)) {
+        auto& demanded = result.by_adapter[demand.adapter_id];
+        if (!demand.entitled) {
+            result.refused.push_back({demand.adapter_id, demand.party_id, "not_entitled"});
+            continue;
         }
+        for (const auto& [uri, ids] : demand.items)
+            demanded.insert(demanded.end(), ids.begin(), ids.end());
     }
 
     for (auto& [adapter, ids] : result.by_adapter) {

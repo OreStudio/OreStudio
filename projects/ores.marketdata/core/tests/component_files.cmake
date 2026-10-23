@@ -24,6 +24,8 @@ set(files
     "datum_ore_index_codec_tests.cpp"
     "datum_ore_key_codec_tests.cpp"
     "datum_oresmd_uri_codec_tests.cpp"
+    "delivery_count_eventing_integration_tests.cpp"
+    "demand_interval_eventing_integration_tests.cpp"
     "feed_binding_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_mapping_eventing_integration_tests.cpp"
@@ -59,4 +61,5 @@ set(files
     "service_series_slice_reader_tests.cpp"
     "service_series_snapshot_reader_tests.cpp"
     "subscription_eventing_integration_tests.cpp"
+    "subscription_interval_eventing_integration_tests.cpp"
 )

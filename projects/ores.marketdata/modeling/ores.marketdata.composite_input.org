@@ -114,6 +114,14 @@ faker::number::integer(0, 5)
 | "oresmd_uri" <> '' |
 | "position" >= 0 |
 
+** Indexes
+
+| name     | columns                          | unique | current_only | where_extra |
+|----------+----------------------------------+--------+--------------+-------------|
+| position | tenant_id, composite_id, position | true   | true         |             |
+
+Two inputs of a composite never share a place, so the order a rule reads does not depend on the order the rows come back in.
+
 
 * Insert trigger
 ** Validations

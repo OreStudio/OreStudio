@@ -80,6 +80,10 @@ create index if not exists composites_tenant_idx
 on "ores_marketdata_composites_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists composites_item_idx
+on "ores_marketdata_composites_tbl" (tenant_id, oresmd_uri)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_marketdata_composites_insert_fn()
 returns trigger as $$
 declare

@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.service/app/composite_engine.hpp"
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 #include <set>
 
@@ -122,17 +123,19 @@ composite_value evaluate_composite(const domain::composite& composite,
 
     const auto missing = missing_derived_rights(inputs, subscriptions_of_party);
     if (!missing.empty()) {
-        out.reason = "The party lacks the derived right on the provider of an input: ";
-        for (std::size_t i = 0; i < missing.size(); ++i)
-            out.reason += (i == 0 ? "" : ", ") + missing[i];
-        out.reason += ".";
+        std::string providers;
+        for (const auto& provider : missing)
+            providers += (providers.empty() ? "" : ", ") + provider;
+        out.reason =
+            "The party lacks the derived right on the provider of an input: " + providers + ".";
         return out;
     }
 
     std::vector<double> values;
     for (const auto* input : in_position_order(inputs)) {
         const auto found = latest.find({input->provider_code, input->oresmd_uri});
-        if (found != latest.end())
+        // A value that is not a number is no value, so no rule sees one.
+        if (found != latest.end() && std::isfinite(found->second))
             values.push_back(found->second);
     }
     out.value = rule->evaluate(values);

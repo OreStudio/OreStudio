@@ -131,6 +131,14 @@ std::string(faker::lorem::sentence())
 | "oresmd_uri" <> '' |
 | "rule_code" ~ '^[a-z][a-z0-9_]*$' |
 
+** Indexes
+
+| name | columns              | unique | current_only | where_extra |
+|------+----------------------+--------+--------------+-------------|
+| item | tenant_id, oresmd_uri | true   | true         |             |
+
+One current composite produces an item, so the inputs of two composites never merge.
+
 
 * Insert trigger
 ** Validations

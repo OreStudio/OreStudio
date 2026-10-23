@@ -24,6 +24,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <string>
 #include <tuple>
 
@@ -254,4 +255,29 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs", tags)
 
     const auto states = demand_states(compute_party_demand(c, now, policy));
     CHECK(states.size() == 2);
+}
+
+TEST_CASE("an_input_value_that_is_not_a_number_is_no_value", tags) {
+    world w;
+    const std::vector subscriptions{world::subscription("bloomberg", true),
+                                    world::subscription("lseg", true)};
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double inf = std::numeric_limits<double>::infinity();
+
+    const auto one_good =
+        evaluate_composite(w.composite,
+                           w.inputs,
+                           subscriptions,
+                           {{{"bloomberg", bbg_eur}, nan}, {{"lseg", lseg_eur}, 1.10}});
+    REQUIRE(one_good.value.has_value());
+    CHECK(*one_good.value == 1.10);
+
+    w.composite.rule_code = "median";
+    const auto none_good =
+        evaluate_composite(w.composite,
+                           w.inputs,
+                           subscriptions,
+                           {{{"bloomberg", bbg_eur}, nan}, {{"lseg", lseg_eur}, inf}});
+    CHECK_FALSE(none_good.value.has_value());
+    CHECK(none_good.reason == "No input has a value.");
 }

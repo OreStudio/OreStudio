@@ -53,6 +53,8 @@
 #include "ores.marketdata.core/messaging/provider_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.marketdata.core/messaging/rate_card_component_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/rate_card_component_registrar.hpp"
 #include "ores.marketdata.core/messaging/route_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/route_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
@@ -112,6 +114,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_data_mapping_handlers(nats, ctx, verifier));
     fold(register_subscription_handlers(nats, ctx, verifier));
     fold(register_route_handlers(nats, ctx, verifier));
+    fold(register_rate_card_component_handlers(nats, ctx, verifier));
     fold(register_delivery_count_handlers(nats, ctx, verifier));
     fold(register_demand_interval_handlers(nats, ctx, verifier));
     fold(register_subscription_interval_handlers(nats, ctx, verifier));
@@ -277,6 +280,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_market_data_mapping_history_provider(hist_registry);
         register_subscription_history_provider(hist_registry);
         register_route_history_provider(hist_registry);
+        register_rate_card_component_history_provider(hist_registry);
         register_delivery_count_history_provider(hist_registry);
         register_demand_interval_history_provider(hist_registry);
         register_subscription_interval_history_provider(hist_registry);

@@ -1745,3 +1745,7 @@ tangled into the runnable script library
 * Subscription Intervals
 
 - [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]
+
+* Rate Card Components
+
+- [[id:9928C6E3-7B14-5C96-8A69-35733E371659][How do I run the rate_card_components commands from the shell?]]

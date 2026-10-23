@@ -81,8 +81,41 @@ on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+\echo '--- Market Data Rate Cards ---'
+
+-- Illustrative charges for the sources of the provider ore. A real contract replaces them with
+-- its own components. The simulated source carries a card of the same shape, so a party that
+-- runs on it sees the bill the same use would cost on a live source.
+insert into ores_marketdata_rate_card_components_tbl (
+    id, tenant_id, version, source_id, driver, licence_right, currency, charge_micros,
+    effective_from, modified_by, performed_by, change_reason_code, change_commentary
+)
+select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, s.source_id, c.driver,
+       c.licence_right, 'USD', c.charge_micros, timestamptz '2026-01-01 00:00:00+00',
+       current_user, current_user, 'system.initial_load', 'Initial population of rate cards'
+from (values
+    ('26772cc0-57d6-4fac-be36-2ae75eb56b6b'::uuid),
+    ('a94c20bb-09c4-48d3-b91a-d66322322d60'::uuid)
+) as s(source_id)
+cross join (values
+    ('fixed_per_period',   '',            100000000::bigint),
+    ('per_instrument',     '',                50000::bigint),
+    ('per_party',          '',             10000000::bigint),
+    ('per_licence',        'non_display',   5000000::bigint),
+    ('per_licence',        'derived',       8000000::bigint),
+    ('per_thousand_ticks', '',                20000::bigint)
+) as c(driver, licence_right, charge_micros)
+where not exists (
+    select 1 from ores_marketdata_rate_card_components_tbl x
+    where x.tenant_id = ores_utility_system_tenant_id_fn()
+      and x.source_id = s.source_id
+      and x.driver = c.driver
+      and x.licence_right = c.licence_right
+      and x.valid_to = ores_utility_infinity_timestamp_fn()
+);
+
 -- Summary
-select 'marketdata_providers' as entity, count(*) as count
+select 'marketdata_providers' as entity, count(*) as count as entity, count(*) as count
 from ores_marketdata_providers_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn()

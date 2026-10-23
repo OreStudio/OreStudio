@@ -654,3 +654,10 @@ How many times the compute grid runs one workunit, so that the results can be co
 :END:
 
 The result the grid accepted as the answer for a workunit. It is the workunit's =canonical_result_id= column, and it is empty until the workunit holds as many finished results as its target redundancy. Acceptance does not check the outcome, so a result that failed can still be canonical. A workunit has no status column: a workunit is done when it has a canonical result. See [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]].
+
+* Release note
+:PROPERTIES:
+:ID: FBBCDC57-844F-4402-9E50-42A3215FB09E
+:END:
+
+The text that says what changed in one release of a compute application. A release is one engine build and one wrapper build, packaged for several platforms, so the note belongs to the app version and not to a package. It is the app version's =release_note= column, and an empty note means none was written. The shell's =compute publish-package= writes it from a file with =--release-note-file=, and a republish without a file keeps the stored note.

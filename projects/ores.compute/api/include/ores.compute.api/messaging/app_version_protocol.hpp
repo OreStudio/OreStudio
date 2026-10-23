@@ -45,6 +45,7 @@ struct app_version_write {
     std::string wrapper_version;
     std::string engine_version;
     int min_ram_mb;
+    std::string release_note;
 };
 
 struct app_version_change {

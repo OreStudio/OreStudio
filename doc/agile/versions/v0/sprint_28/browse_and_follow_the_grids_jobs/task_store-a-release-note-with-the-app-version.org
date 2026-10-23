@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ An app version holds a release note as text, written by the same call that publi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Done. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge the PR. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -42,9 +42,11 @@ An app version holds a release note as text, written by the same call that publi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add =release_note= to the app_version model as a text column that defaults to
+the empty string, and regenerate the C++, SQL, TypeScript and shell recipe
+files. Add =--release-note-file= to =compute publish-package=. The command reads
+the file and writes the note with the version. A republish without the flag
+keeps the stored note. Add the glossary entry.
 
 * Measurements
 
@@ -58,9 +60,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| App version after a publish with a note file | the note is stored and listed | =compute publish-package ... --release-note-file= then =app_versions list= as =super_admin= | aa4605e98d plus the working tree |
+| App version after a republish without a note file | the stored note is unchanged | the same command without the flag, wrapper version 2.0.0 | aa4605e98d plus the working tree |
+| Shell and API unit tests | 2 suites pass | =ctest -R "ores.shell.compute.tests\|ores.compute.api.tests"= | aa4605e98d plus the working tree |
 
 * Notes
+
+- The service reads the version precondition of an app version by =wrapper_version=
+  alone, because that is the model's key field. Two versions that share a wrapper
+  version, such as the two ORE builds with wrapper 1.0.0, read each other's row. A
+  second republish of such a version fails with a version conflict. This is not
+  new: the key was already so. The check used wrapper version 2.0.0 for a clean
+  row. The task Key the app version by its app, engine and wrapper versions
+  records the gap.
 
 * Test Scenarios
 
@@ -77,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| TBD | [compute] Store a release note with the app version |
 
 * Review
 
@@ -86,3 +98,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An app version holds a release note as text. =compute publish-package= writes it
+from the file named by =--release-note-file=, and a republish without the flag
+keeps the stored note. The generated read returns the note, and the wire type
+carries it. The glossary defines the term.

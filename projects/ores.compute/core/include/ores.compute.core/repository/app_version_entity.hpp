@@ -49,6 +49,7 @@ struct app_version_entity {
     std::string wrapper_version;
     std::string engine_version;
     int min_ram_mb = 0;
+    std::string release_note;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

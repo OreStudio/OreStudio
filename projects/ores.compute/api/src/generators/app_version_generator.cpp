@@ -47,6 +47,7 @@ domain::app_version generate_synthetic_app_version(utility::generation::generati
     r.app_id = ctx.generate_uuid();
     r.wrapper_version = std::string(faker::word::noun());
     r.engine_version = std::string(faker::word::noun());
+    r.release_note = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

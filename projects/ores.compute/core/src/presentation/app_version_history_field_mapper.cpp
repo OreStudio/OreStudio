@@ -43,6 +43,7 @@ render_app_version_fields(const domain::app_version& v) {
     fields.push_back({.name = "Wrapper Version", .value = v.wrapper_version});
     fields.push_back({.name = "Engine Version", .value = v.engine_version});
     fields.push_back({.name = "Min Ram Mb", .value = std::to_string(v.min_ram_mb)});
+    fields.push_back({.name = "Release Note", .value = v.release_note});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -28,9 +28,9 @@ Build the read model under the trade list. A row holds the trade or the structur
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | The view holds trade and structure rows. Tests cover state, request, structure and every filter. The identifier search is not measured on a large list yet. |
+| Now          | The view holds trade and structure rows. Tests cover state, request, structure and every filter. The list takes about 4 s a page at 100,000 trades. |
 | Waiting on   | Nothing.                               |
-| Next         | Measure the identifier search on a large list; run the local check gate. |
+| Next         | Decide how to meet the speed of a list of 100,000 trades; run the local check gate. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ Build the read model under the trade list. A row holds the trade or the structur
 - The summary reads the current state of every part. It offers no =as_of=. A later task adds =as_of= when a screen needs it.
 - The generator supports a read-model entity whose relation is a view, with no events and no history.
 - The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
-- The identifier search is measured on a large list. A trigram index is added if the scan is too slow.
+- The identifier search is measured on a large list. A trigram index is added if the scan is too slow. Measured: about 2.7 s at 100,000 trades. A trigram index needs a stored column, so it waits on the decision in the notes.
 - A portfolio scope over more than 1000 books is refused by the client, never truncated.
 - A repository test covers each filter, the search and the total.
 
@@ -85,6 +85,8 @@ task and name that file in the Command column.
 | Views that already use =security_invoker= | 8, one for each asset class in =marketdata_series_identity_views_create.sql= | =grep -n security_invoker projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql= | ec01ab89e4 |
 | Code in =sqlgen= that checks a table exists | 0 hits for =information_schema=, =pg_class= and =pg_tables= | =grep -rIn= over the =sqlgen= headers | ec01ab89e4 |
 | Trade summary tests against the view | 15 cases, 44 assertions pass: counterparty, instrument type, book, trade date, authorisation status (waiting, not requested, not required), state name, identifier and id search, structure rows and their trade count, structure found by a member identifier, paging, sort, total | =ores.trading.core.tests "[trade_summary],the_summary*"= with =.env= loaded | this commit |
+| Search on 102,432 trades, before the request index | 10.0 s for an identifier search; 8.6 s for a count. The request lookup scanned every request of the tenant for each trade (6.9 million buffer hits) | =measure.sql= in the scratchpad: 32 provisioned trades copied 3,200 times in one rolled-back transaction, then =explain (analyze)= on =ores_trading_trade_summaries_vw= | c0cb9a8abe |
+| Search on 102,432 trades, after the request index | 2.7 s for an identifier search; 4.0 s for a page of 50 sorted by instrument type. Most of the time is the identifier aggregate (about 0.013 ms a trade) and the joins; the sort is 0.4 s. A view cannot push the page limit below the sort, so every row is built for every page. The copies carry no bookings or states, so the joins are cheaper than in real data | the same script, with the index =trade_authorisation_requests_trade_idx= | this commit |
 | Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
 | Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 

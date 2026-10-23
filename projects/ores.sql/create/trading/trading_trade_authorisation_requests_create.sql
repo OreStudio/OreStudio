@@ -69,6 +69,10 @@ create index if not exists trade_authorisation_requests_tenant_idx
 on "ores_trading_trade_authorisation_requests_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists trade_authorisation_requests_trade_idx
+on "ores_trading_trade_authorisation_requests_tbl" (tenant_id, trade_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_trading_trade_authorisation_requests_insert_fn()
 returns trigger as $$
 declare

@@ -31,6 +31,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "tick_handler_support.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -54,53 +55,21 @@ namespace {
 
 const std::string tags("[series_ticks_handler][integration]");
 
-const std::string test_secret("series-ticks-test-secret");
-const std::string test_issuer("ores.iam.test");
-const std::string test_audience("ores.marketdata.service");
 const std::string test_subject("ores.test.series_ticks.get");
 const std::string read_permission("marketdata::market_observations:read");
 
 using namespace std::chrono_literals;
 using ores::marketdata::messaging::get_series_ticks_request;
 using ores::marketdata::messaging::get_series_ticks_response;
+using ores::marketdata::tests::mint_token;
+using ores::marketdata::tests::system_party_of_the_test_tenant;
+using ores::marketdata::tests::test_audience;
+using ores::marketdata::tests::test_issuer;
+using ores::marketdata::tests::test_secret;
 using ores::utility::domain::outcome;
 
 std::chrono::system_clock::time_point now_second() {
     return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-}
-
-/// The System party that every test tenant holds, which the token validates against.
-boost::uuids::uuid system_party_of_the_test_tenant(ores::testing::scoped_database_helper& h) {
-    auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
-        h.context(),
-        "SELECT id::text FROM ores_refdata_parties_tbl "
-        "WHERE party_category = 'System' AND valid_to = ores_utility_infinity_timestamp_fn() "
-        "LIMIT 1",
-        {},
-        lg,
-        "finding the system party of the test tenant");
-    REQUIRE(!rows.empty());
-    REQUIRE(rows.front().front().has_value());
-    return boost::uuids::string_generator()(*rows.front().front());
-}
-
-/// Mints a token that the handler's verifier accepts.
-std::string mint_token(const std::string& tenant_id,
-                       const boost::uuids::uuid& party_id,
-                       const std::vector<std::string>& visible_party_ids,
-                       const std::vector<std::string>& roles) {
-    auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
-    auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
-    claims.subject = "series-ticks-test";
-    claims.issuer = test_issuer;
-    claims.audience = test_audience;
-    claims.tenant_id = tenant_id;
-    claims.party_id = boost::uuids::to_string(party_id);
-    claims.visible_party_ids = visible_party_ids;
-    claims.roles = roles;
-    return *signer.create_token(claims);
 }
 
 /// The handler runs on the NATS worker thread, as the registrar runs it in the service: one

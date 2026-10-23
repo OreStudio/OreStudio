@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -81,6 +82,12 @@ public:
             const auto as_of = std::chrono::system_clock::now();
             get_curve_snapshot_response resp;
             resp.as_of = as_of;
+            if (!names_a_party(req_ctx)) {
+                resp.success = false;
+                resp.message = party_required_message();
+                reply(nats_, msg, resp);
+                return;
+            }
             try {
                 resp = service::series_snapshot_reader::read(req_ctx, *req, as_of);
             } catch (const std::exception& e) {

@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/series_slice_reader.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -79,6 +80,12 @@ public:
         }
         if (auto req = decode<get_series_slice_request>(msg)) {
             get_series_slice_response resp;
+            if (!names_a_party(req_ctx)) {
+                resp.success = false;
+                resp.message = party_required_message();
+                reply(nats_, msg, resp);
+                return;
+            }
             try {
                 resp = service::series_slice_reader::read(req_ctx, *req);
             } catch (const std::exception& e) {

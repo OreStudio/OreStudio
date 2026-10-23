@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/read-live-ticks-from-the-tick-table
-#+pr: 3679
+#+pr: 3681
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -28,9 +28,9 @@ A client reads the ticks of a series with one history call, =marketdata.v1.ops.g
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | The design is written. No code changed.  |
+| Now          | The store tier of the call is built and tested. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the call from the page.          |
+| Next         | The window tier, the shell and the screens, and a read of the 45. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -38,7 +38,8 @@ A client reads the ticks of a series with one history call, =marketdata.v1.ops.g
 - The call returns all ticks of a range in one reply, with the coordinates stated once and the time, coordinate and value as arrays. A test states the reply for a range that holds ticks of two coordinates.
 - The call has no pages and no count. A range over the ceiling is refused and the refusal names the ceiling, and a test states it.
 - A context with no party is refused, and a test states it.
-- A range that the window covers and a range that only the store holds both return their ticks in one reply, and a test states each.
+- A range that only the store holds returns its ticks in one reply, and a test states it. Done.
+- A range that the window covers returns its ticks from the window in the same reply, and a test states it. Open: the lane window is not built, so the call answers from the store alone.
 - The observation list returns no tick, and its wire comment and the shell help say so.
 - The shell and the screens of a live series call the history read.
 - The cause of the count of 45 in the reporting environment is found and written in the task.
@@ -50,14 +51,18 @@ page, the series and observation page, the snapshots page and the ingest loop pa
 code follows the page.
 
 1. Model the request and the reply as an operation type, so that the generator writes the
-   wire types.
+   wire types. Done: =get_series_ticks_request= and =get_series_ticks_response= in the
+   operations model, with the TypeScript twin.
 2. Add a tick reader to the repository: one probe on series and time, joined to the
-   coordinate dictionary, for a range, with an optional coordinate.
+   coordinate dictionary, for a range, with an optional coordinate. Done:
+   =tick_repository::read_range=.
 3. Add the handler. It refuses a context with no party, checks the range and the
    ceiling, and answers from the store. The window joins the answer when the lane window
-   is built.
-4. Point the shell and the screens of a live series at the call.
-5. State in the observation list that it returns no tick.
+   is built. Done for the store: =series_tick_reader= and =series_ticks_handler=, and three
+   outcomes in the catalogue.
+4. Point the shell and the screens of a live series at the call. Open.
+5. State in the observation list that it returns no tick. Done in the model of the
+   observation. The shell help has no text of its own to change.
 
 * Measurements
 
@@ -75,6 +80,9 @@ task and name that file in the Command column.
 | Tick rows of the Acme tenant, 270 series | 1001105 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_ticks_tbl= | 0078289946 |
 | Ticks of series 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f | 5401 | group by series on =ores_marketdata_ticks_tbl= | 0078289946 |
 | Points that the list returns for that series, limit 2000 | 0, total 0 | =market_observations by-series-id 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f --limit 2000= in =compass shell -f= | 0078289946 |
+| History query, join then order by time and coordinate, one series of 2,000,000 ticks over 23 days, span of 30 days, limit 25,001 | 1,987,210 rows read, external sort of 132 MB, 1,755 ms | =EXPLAIN (ANALYZE)= of the query of =tick_repository::read_range= at that commit, script =evidence/history_query_explain_before.sql.txt= | 51521d1033 |
+| History query, page cut by time before the join, same table | 21 ms, later chunks never executed | the same script with the page cut first | 51521d1033 plus the change of the review |
+| History query, page cut by time before the join, 500,000 ticks of the series and 2,000,000 ticks of 200 other series | 36.6 ms, the series index is read in time order and 22 of 24 chunks are never executed | =evidence/history_query_explain_after.sql.txt=, plan in =evidence/history_query_plan_after.txt= | 51521d1033 plus the change of the review |
 
 * Notes
 
@@ -115,6 +123,21 @@ The writers that still create observation rows are =import_service=,
 keying fed would keep its rows, and the list would show those and no tick. This is a
 guess. The database of the reporting environment, or a query of its series, would settle it.
 
+** What the build found
+
+- Every instant has one wire shape, a text of 27 characters. A text instant for each tick
+  would take more than twice the bytes of a gap, so the reply carries the first instant and
+  a gap in microseconds for each tick. Page B states it.
+- The ceiling is 25,000 ticks. A tick takes about 15 bytes in the three arrays, which is
+  about 375 KB for a full reply against the 1 MB cap. The estimate is not measured against
+  a real reply yet.
+- The unit tests drive the reader against the database with a party session. Each of four
+  mutants fails a test: the party check removed, the ceiling test off by one, the
+  upper bound made inclusive, and the coordinate filter ignored.
+- A codec round trip of the request and the reply passes with the default wire codec.
+- A request with no token to the live subject answers =X-Error: unauthorized=, so the
+  service serves the subject. No authenticated call over NATS has run yet.
+
 ** Decision
 
 The observation list stays a list of observations. Ticks are a different kind of fact, with
@@ -138,6 +161,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3681][#3681]] | [marketdata] Add the history call: every tick of a span in one reply |
 | [[https://github.com/OreStudio/OreStudio/pull/3679][#3679]] | [marketdata] Document the tick read: one history call and one live subscription |
 
 * Review

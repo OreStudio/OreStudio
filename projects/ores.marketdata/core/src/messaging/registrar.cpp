@@ -66,6 +66,7 @@
 #include "ores.marketdata.core/messaging/series_evolution_handler.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
+#include "ores.marketdata.core/messaging/series_ticks_handler.hpp"
 #include "ores.marketdata.core/messaging/subscription_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
@@ -173,6 +174,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             series_slice_handler h(nats, ctx, verifier);
                                             h.get_slice(std::move(msg));
+                                        }));
+
+    // Every tick of one series in a span of time, in one reply.
+    subs.push_back(nats.queue_subscribe(std::string(get_series_ticks_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_ticks_handler h(nats, ctx, verifier);
+                                            h.get_ticks(std::move(msg));
                                         }));
 
     // Typed series identity: resolves a series from the identity fields a

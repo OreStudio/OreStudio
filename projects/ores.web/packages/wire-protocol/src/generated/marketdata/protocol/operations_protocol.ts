@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { MarketSeries } from '../domain/market_series.js';
+import type { Result } from '../../../utility/protocol.js';
 
 /**
  * @brief One typed identity field of a series, as the caller gives it.
@@ -1064,6 +1065,37 @@ export interface MarketTick {
 }
 
 /**
+ * @brief Asks for every tick of one series in a span of time.
+ *
+ * The span is half open: it holds a tick at from_instant and none at to_instant. The
+ * request has no count and no page, because a span of time means the same on every tier
+ * that answers it. A span that holds more ticks than the ceiling is refused, never cut.
+ */
+export interface GetSeriesTicksRequest {
+    series_id: string;
+    from_instant: string;
+    to_instant: string | null;
+    coordinates: string[];
+}
+
+/**
+ * @brief Every tick of a span of one series.
+ *
+ * The coordinates come first, once each. The times follow as the first instant and a gap in
+ * microseconds from the previous tick, because every instant has one wire shape and a text
+ * instant for each tick would take more than twice the bytes of a gap. The three arrays have
+ * the same length, and the order is by time and then by coordinate.
+ */
+export interface GetSeriesTicksResponse {
+    result: Result;
+    coordinates: string[];
+    first_instant: string | null;
+    gaps_us: number[];
+    coordinate_indexes: number[];
+    values: number[];
+}
+
+/**
  * @brief Asks what each feed binding of the caller has written.
  *
  * The request carries nothing. A party reads only its own bindings and its own
@@ -1120,6 +1152,7 @@ export const subjects = {
     clear_manual_point_request: 'marketdata.v1.ops.clear_manual_point',
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
+    get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
     list_feed_binding_activity_request: 'marketdata.v1.ops.list_feed_binding_activity',
 } as const;
 /**
@@ -1150,5 +1183,6 @@ export const requiresSession = {
     clear_manual_point_request: true,
     export_market_data_request: true,
     market_tick: false,
+    get_series_ticks_request: true,
     list_feed_binding_activity_request: true,
 } as const;

@@ -38,6 +38,7 @@ tenant.
 #include <vector>
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #+end_src
 
 * Messages
@@ -2865,6 +2866,113 @@ bindings.
 #+begin_src cpp :name comment
 /** The producer, unique within a tenant; its feed bindings name the consumers. */
 #+end_src
+
+** get_series_ticks_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_series_ticks
+:response: get_series_ticks_response
+:END:
+
+Asks for every tick of one series in a span of time, in one reply. A client that plots a live
+series makes this call once for the span it shows and subscribes to the live subject for the
+ticks that follow; it merges the two itself.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every tick of one series in a span of time.
+ *
+ * The span is half open: it holds a tick at from_instant and none at to_instant. The
+ * request has no count and no page, because a span of time means the same on every tier
+ * that answers it. A span that holds more ticks than the ceiling is refused, never cut.
+ */
+#+end_src
+
+*** series_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The series, by the id that the series catalogue returns.
+
+*** from_instant
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The first instant of the span, inclusive.
+
+*** to_instant
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The end of the span, exclusive. Null means now.
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The coordinate URIs to read, or empty for every coordinate of the series. A client that
+plots one pillar of a curve names it.
+
+** get_series_ticks_response
+
+Every tick of the span, as parallel arrays that state the coordinates and the first instant once.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every tick of a span of one series.
+ *
+ * The coordinates come first, once each. The times follow as the first instant and a gap in
+ * microseconds from the previous tick, because every instant has one wire shape and a text
+ * instant for each tick would take more than twice the bytes of a gap. The three arrays have
+ * the same length, and the order is by time and then by coordinate.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+How the call ended. The refusals of a span are outcomes here: a session with no party, a span
+that ends before it starts, and a span over the ceiling, which names the ceiling.
+
+*** coordinates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The coordinate URIs that the ticks use, once each. A tick names one by its index.
+
+*** first_instant
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The time of the first tick, or null when the span holds none.
+
+*** gaps_us
+:PROPERTIES:
+:cpp_type: std::vector<std::int64_t>
+:END:
+
+For each tick, the microseconds since the previous tick. The gap of the first tick is zero.
+
+*** coordinate_indexes
+:PROPERTIES:
+:cpp_type: std::vector<int>
+:END:
+
+For each tick, the index of its coordinate in =coordinates=.
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+
+For each tick, its value.
 
 ** list_feed_binding_activity_request
 :PROPERTIES:

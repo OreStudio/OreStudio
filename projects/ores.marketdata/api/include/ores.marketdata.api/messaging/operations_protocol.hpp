@@ -27,6 +27,7 @@
 
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <map>
@@ -1275,6 +1276,46 @@ struct market_tick {
     std::chrono::system_clock::time_point observation_time;
     /** The producer, unique within a tenant; its feed bindings name the consumers. */
     std::string source;
+};
+
+/**
+ * @brief Asks for every tick of one series in a span of time.
+ *
+ * The span is half open: it holds a tick at from_instant and none at to_instant. The
+ * request has no count and no page, because a span of time means the same on every tier
+ * that answers it. A span that holds more ticks than the ceiling is refused, never cut.
+ */
+struct get_series_ticks_request {
+    using response_type = struct get_series_ticks_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_series_ticks";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid series_id;
+    std::chrono::system_clock::time_point from_instant;
+    std::optional<std::chrono::system_clock::time_point> to_instant;
+    std::vector<std::string> coordinates;
+};
+
+/**
+ * @brief Every tick of a span of one series.
+ *
+ * The coordinates come first, once each. The times follow as the first instant and a gap in
+ * microseconds from the previous tick, because every instant has one wire shape and a text
+ * instant for each tick would take more than twice the bytes of a gap. The three arrays have
+ * the same length, and the order is by time and then by coordinate.
+ */
+struct get_series_ticks_response {
+    ores::utility::domain::result result;
+    std::vector<std::string> coordinates;
+    std::optional<std::chrono::system_clock::time_point> first_instant;
+    std::vector<std::int64_t> gaps_us;
+    std::vector<int> coordinate_indexes;
+    std::vector<double> values;
 };
 
 /**

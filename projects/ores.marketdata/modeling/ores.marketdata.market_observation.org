@@ -247,13 +247,14 @@ The import names a series by its ORE market data key and datum URI, where the st
 :list_by_order_by:     observation_datetime desc
 :END:
 
-Every real caller lists observations scoped to one series (tick-level
-volumes make an unfiltered list impractical) — generates a dedicated,
-paginated =list_by_series_id= endpoint (protocol/repository/service/
+Every real caller lists observations scoped to one series — generates a
+dedicated, paginated =list_by_series_id= endpoint (protocol/repository/service/
 registrar) instead of an optional filter bolted onto the generic
-=.list= endpoint. Default page size is 1000 (vs the usual 100):
-market data is high-volume tick data, not user-managed reference rows.
-Ordered by =observation_datetime desc= (not the facet's usual primary-key
+=.list= endpoint. The list returns observations: the points that people and
+processes state. It never returns a tick, because the ingest writes ticks to
+the tick table and a tick has no id, no source and no correction. A client that
+wants ticks calls =marketdata.v1.ops.get_series_ticks=. Default page size is 1000
+(vs the usual 100). Ordered by =observation_datetime desc= (not the facet's usual primary-key
 order): a fully random UUID id has no correlation to time, so the
 default order would silently return an arbitrary subset rather than
 the most recent observations whenever a series exceeds the page limit

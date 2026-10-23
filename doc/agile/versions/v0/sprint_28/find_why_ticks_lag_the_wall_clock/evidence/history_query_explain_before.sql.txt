@@ -1,0 +1,33 @@
+\set ON_ERROR_STOP on
+select set_config('app.current_tenant_id', 'aaaaaaaa-0000-0000-0000-000000000001', false);
+select set_config('app.visible_party_ids', '{bbbbbbbb-0000-0000-0000-000000000001}', false);
+
+insert into ores_marketdata_tick_coords_tbl (tenant_id, party_id, series_id, coord, oresmd_uri)
+values ('aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001',
+        'cccccccc-0000-0000-0000-000000000001', 1, 'oresmd://explain/spot');
+
+insert into ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, source_id)
+select 'aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001',
+       'cccccccc-0000-0000-0000-000000000001',
+       now() - interval '23 days' + n * interval '1 second', 1, n::float8,
+       'dddddddd-0000-0000-0000-000000000001'
+from generate_series(0, 1999999) as n;
+
+analyze ores_marketdata_ticks_tbl;
+
+select count(*) as ticks_inserted from ores_marketdata_ticks_tbl
+where series_id = 'cccccccc-0000-0000-0000-000000000001';
+
+explain (analyze, buffers, timing off, summary on)
+SELECT (extract(epoch FROM t.ts) * 1000000)::bigint::text, c.oresmd_uri, t.value::text
+FROM ores_marketdata_ticks_tbl t
+JOIN ores_marketdata_tick_coords_tbl c
+  ON c.series_id = t.series_id AND c.coord = t.coord AND c.party_id = t.party_id
+WHERE t.series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid
+  AND t.ts >= (now() - interval '30 days') AND t.ts < now()
+  AND (cardinality('{}'::text[]) = 0 OR c.oresmd_uri = ANY('{}'::text[]))
+ORDER BY t.ts, t.coord
+LIMIT 25001;
+
+delete from ores_marketdata_ticks_tbl where series_id = 'cccccccc-0000-0000-0000-000000000001';
+delete from ores_marketdata_tick_coords_tbl where series_id = 'cccccccc-0000-0000-0000-000000000001';

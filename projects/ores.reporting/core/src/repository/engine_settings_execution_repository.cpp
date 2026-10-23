@@ -25,12 +25,14 @@
 #include "ores.reporting.core/repository/engine_settings_execution_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/engine_settings_execution.hpp"
 #include "ores.reporting.api/domain/engine_settings_execution_json_io.hpp" // IWYU pragma: keep.
+#include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_execution_entity.hpp"
 #include "ores.reporting.core/repository/engine_settings_execution_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -43,7 +45,9 @@
 #include <initializer_list>
 #include <optional>
 #include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
 #include <sqlgen/limit.hpp>
 #include <sqlgen/literals.hpp>
 #include <sqlgen/offset.hpp>
@@ -53,6 +57,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -87,6 +92,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
         throw std::invalid_argument("A list of engine settings execution cannot be ordered by " +
                                     order.field + ".");
     return make_order({order.field}, order.descending, {"id"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::engine_settings_execution_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->engine_settings_id)
+        r.push_back(equals("engine_settings_id", filter_value(*filter->engine_settings_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->engine_settings_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->engine_settings_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("engine_settings_id", std::move(values)));
+    }
+    return all_of(std::move(r));
 }
 
 }
@@ -249,7 +280,8 @@ engine_settings_execution_repository::read_latest_by_engine_settings_id(
     const std::string& engine_settings_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::engine_settings_execution_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings execution. engine_settings_id: "
                                << engine_settings_id << " offset: " << offset
                                << " limit: " << limit;
@@ -265,7 +297,7 @@ engine_settings_execution_repository::read_latest_by_engine_settings_id(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        std::nullopt,
+        filter_condition(filter),
         [](const auto& entities) { return engine_settings_execution_mapper::map(entities); },
         lg(),
         "Reading latest engine settings execution by engine_settings_id.");
@@ -273,7 +305,9 @@ engine_settings_execution_repository::read_latest_by_engine_settings_id(
 
 std::uint32_t engine_settings_execution_repository::
     get_total_engine_settings_execution_count_by_engine_settings_id(
-        context ctx, const std::string& engine_settings_id) {
+        context ctx,
+        const std::string& engine_settings_id,
+        const std::optional<messaging::engine_settings_execution_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active engine settings execution count. engine_settings_id: "
         << engine_settings_id;
@@ -285,7 +319,11 @@ std::uint32_t engine_settings_execution_repository::
                              "valid_to"_c == max.value());
 
     return execute_count_query<engine_settings_execution_entity>(
-        ctx, query, std::nullopt, lg(), "Counting engine settings execution by engine_settings_id");
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting engine settings execution by engine_settings_id");
 }
 
 
@@ -350,12 +388,13 @@ void engine_settings_execution_repository::remove(context ctx, const std::string
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::engine_settings_execution>
-engine_settings_execution_repository::read_latest(context ctx,
-                                                  std::uint32_t offset,
-                                                  std::uint32_t limit,
-                                                  const ores::utility::domain::order& order,
-                                                  const std::optional<std::string>& as_of) {
+std::vector<domain::engine_settings_execution> engine_settings_execution_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::engine_settings_execution_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings execution with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
@@ -367,14 +406,16 @@ engine_settings_execution_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return engine_settings_execution_mapper::map(entities); },
         lg(),
         "Reading latest engine settings execution with pagination.");
 }
 
 std::uint32_t engine_settings_execution_repository::get_total_engine_settings_execution_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    context ctx,
+    const std::optional<messaging::engine_settings_execution_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active engine settings execution count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -384,7 +425,7 @@ std::uint32_t engine_settings_execution_repository::get_total_engine_settings_ex
     return execute_count_query<engine_settings_execution_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), std::nullopt),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         lg(),
         "Counting engine settings execution");
 }

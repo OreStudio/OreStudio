@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/engine_settings.hpp"
+#include "ores.reporting.api/messaging/engine_settings_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -153,18 +154,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::engine_settings>
-    read_latest_by_configuration_id(context ctx,
-                                    const std::string& configuration_id,
-                                    std::uint32_t offset,
-                                    std::uint32_t limit,
-                                    const ores::utility::domain::order& order = {});
+    std::vector<domain::engine_settings> read_latest_by_configuration_id(
+        context ctx,
+        const std::string& configuration_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::engine_settings_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active engine settings filtered by configuration_id.
      */
-    std::uint32_t get_total_settings_count_by_configuration_id(context ctx,
-                                                               const std::string& configuration_id);
+    std::uint32_t get_total_settings_count_by_configuration_id(
+        context ctx,
+        const std::string& configuration_id,
+        const std::optional<messaging::engine_settings_filter>& filter = std::nullopt);
 
 
     /**
@@ -188,6 +192,7 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
+                const std::optional<messaging::engine_settings_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
@@ -195,8 +200,10 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active engine settings
      */
-    std::uint32_t get_total_settings_count(context ctx,
-                                           const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t get_total_settings_count(
+        context ctx,
+        const std::optional<messaging::engine_settings_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a engine settings by closing its temporal validity.

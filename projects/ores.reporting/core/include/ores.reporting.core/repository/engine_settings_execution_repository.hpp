@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/engine_settings_execution.hpp"
+#include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -134,19 +135,22 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::engine_settings_execution>
-    read_latest_by_engine_settings_id(context ctx,
-                                      const std::string& engine_settings_id,
-                                      std::uint32_t offset,
-                                      std::uint32_t limit,
-                                      const ores::utility::domain::order& order = {});
+    std::vector<domain::engine_settings_execution> read_latest_by_engine_settings_id(
+        context ctx,
+        const std::string& engine_settings_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::engine_settings_execution_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active engine settings execution filtered by
      * engine_settings_id.
      */
     std::uint32_t get_total_engine_settings_execution_count_by_engine_settings_id(
-        context ctx, const std::string& engine_settings_id);
+        context ctx,
+        const std::string& engine_settings_id,
+        const std::optional<messaging::engine_settings_execution_filter>& filter = std::nullopt);
 
 
     /**
@@ -182,12 +186,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::engine_settings_execution>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {},
-                const std::optional<std::string>& as_of = std::nullopt);
+    std::vector<domain::engine_settings_execution> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::engine_settings_execution_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active engine settings execution.
@@ -195,7 +200,9 @@ public:
      * @return Total number of active engine settings execution
      */
     std::uint32_t get_total_engine_settings_execution_count(
-        context ctx, const std::optional<std::string>& as_of = std::nullopt);
+        context ctx,
+        const std::optional<messaging::engine_settings_execution_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a engine settings execution by closing its temporal validity.

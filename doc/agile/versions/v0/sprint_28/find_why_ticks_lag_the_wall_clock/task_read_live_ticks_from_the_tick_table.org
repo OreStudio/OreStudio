@@ -57,9 +57,49 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Observation rows of the Acme tenant, fresh database | 0 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_market_observations_tbl= where =valid_to= is infinity | 0078289946 |
+| Tick rows of the Acme tenant, 270 series | 1001105 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_ticks_tbl= | 0078289946 |
+| Ticks of series 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f | 5401 | group by series on =ores_marketdata_ticks_tbl= | 0078289946 |
+| Points that the list returns for that series, limit 2000 | 0, total 0 | =market_observations by-series-id 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f --limit 2000= in =compass shell -f= | 0078289946 |
 
 * Notes
+
+** Finding
+
+The reported defect is real, and a fresh database shows it in its plain form. The list
+and the count of a series read =ores_marketdata_market_observations_tbl= only. Since
+c5ca60e3f6 the ingest writes live ticks to =ores_marketdata_ticks_tbl= only, so a live
+series lists no point at all.
+
+** Readers that already merge the tick table
+
+=read_latest_for_series=, =read_as_of_records=, =read_as_of_buckets= and =read_instants=
+in =market_observation_repository.cpp= read both tables. The as-of reader takes the
+latest tick of each coordinate, so it gives one point for each coordinate and not a window
+of points.
+
+** Readers that read the observation table only
+
+- =read_latest_by_series_id= and =get_total_market_observation_count_by_series_id=. The
+  =market_observations by-series-id= call and the series list use them.
+- =read_latest(ctx, offset, limit, order, filter)= and its count, and =read_latest(ctx, ids)=.
+- =series_snapshot_reader=, =series_evolution_reader=, =series_slice_reader=,
+  =curve_pillar_reader= and =curve_republish_service= have no reference to the tick table.
+  Each needs a check on whether it must read live ticks.
+- =ore_export_service= has one reference to ticks. It needs a check as well.
+
+** The count of 45
+
+Not explained. The fresh database has no observation row, so it cannot show the number.
+The writers that still create observation rows are =import_service=,
+=manual_point_service= and =curve_republish_service=. A series that an ORE import or hand
+keying fed would keep its rows, and the list would show those and no tick. This is a
+guess. The database of the reporting environment, or a query of its series, would settle it.
+
+** Overlap
+
+The backlog task "List live ticks with the observations of a series" has the same cause and
+a wider acceptance on paging, order and filters. Decide which of the two tasks stays.
 
 * Test Scenarios
 

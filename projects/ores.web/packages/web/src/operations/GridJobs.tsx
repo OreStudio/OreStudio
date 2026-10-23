@@ -33,7 +33,7 @@
  * a shared link shows the same screen.
  */
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
@@ -44,10 +44,12 @@ import type { Translator } from '../i18n/translate.js';
 import { gridAppVersionPath, gridJobPath, gridNodePath } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
-import { Button, Detail, LinkButton, Notice, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Input, LinkButton, Notice, Select, Tag } from '../ui/Primitives.js';
 
 /** Where the jobs answers are cached, so a test can seed them and Refresh can read them again. */
 export const GRID_JOBS_QUERY_KEY = 'operations-grid-jobs';
+
+const FIELDS = 'operations.grid.jobs.fields';
 
 /** How many workunits or results a row shows before it pages. */
 export const CHILD_PAGE_SIZE = 5;
@@ -444,15 +446,139 @@ function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
     );
 }
 
+/** What narrows the batch list, from the address. Every member is empty when unset. */
+export interface BatchFilterParams {
+    readonly find: string;
+    readonly status: string;
+    readonly party: string;
+}
+
+/** The statuses a batch holds, as the batch model lists them. */
+export const BATCH_STATUSES: readonly string[] = [
+    'open',
+    'dispatched',
+    'processing',
+    'assimilating',
+    'closed',
+];
+
+export function batchFilterOf(params: URLSearchParams): BatchFilterParams {
+    return {
+        find: params.get('find') ?? '',
+        status: params.get('status') ?? '',
+        party: params.get('party') ?? '',
+    };
+}
+
+export function isFiltered(filter: BatchFilterParams): boolean {
+    return filter.find !== '' || filter.status !== '' || filter.party !== '';
+}
+
+/** One party a person may pick to narrow the list. */
+export interface PartyChoice {
+    readonly id: string;
+    readonly name: string;
+}
+
+/**
+ * The finder bar: a part of the reference, a status and a party.
+ *
+ * A search or a pick states itself in the address and starts again from the first
+ * page, so a link reopens the same list. The parties are those the session acts for,
+ * so a person who reads one party is offered no choice of parties.
+ */
+function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const filter = batchFilterOf(address.params);
+    const [text, setText] = useState(filter.find);
+    // The address can change outside the form: Back, or a link opened in this tab.
+    useEffect(() => setText(filter.find), [filter.find]);
+    const apply = (patch: Readonly<Record<string, string | null>>): void =>
+        address.set({ ...patch, page: null });
+    return (
+        <form
+            className="flex flex-wrap items-end gap-3"
+            onSubmit={(event) => {
+                event.preventDefault();
+                apply({ find: text.trim() });
+            }}
+        >
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t('operations.grid.jobs.finder.find')}
+                <Input
+                    type="search"
+                    value={text}
+                    placeholder={t('operations.grid.jobs.finder.placeholder')}
+                    onChange={(event) => setText(event.target.value)}
+                />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t(`${FIELDS}.status`)}
+                <Select
+                    value={filter.status}
+                    onChange={(event) => apply({ status: event.target.value })}
+                >
+                    <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                    {BATCH_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                            {t(`operations.grid.jobs.status.${status}`)}
+                        </option>
+                    ))}
+                </Select>
+            </label>
+            {parties.length > 1 && (
+                <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                    {t('operations.grid.jobs.finder.party')}
+                    <Select
+                        value={filter.party}
+                        onChange={(event) => apply({ party: event.target.value })}
+                    >
+                        <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                        {parties.map((party) => (
+                            <option key={party.id} value={party.id}>
+                                {party.name}
+                            </option>
+                        ))}
+                    </Select>
+                </label>
+            )}
+            <Button type="submit" variant="secondary">
+                {t('operations.grid.jobs.finder.search')}
+            </Button>
+            <Button
+                type="button"
+                variant="ghost"
+                disabled={!isFiltered(filter) && text === ''}
+                onClick={() => {
+                    setText('');
+                    apply({ find: null, status: null, party: null });
+                }}
+            >
+                {t('operations.grid.jobs.finder.clear')}
+            </Button>
+        </form>
+    );
+}
+
 function Tree(): ReactNode {
     const { t } = useTranslation();
     const address = useJobsAddress();
     const size = numberParam(address.params.get('size'), DEFAULT_PAGE_SIZE);
     const page = numberParam(address.params.get('page'), 1);
     const offset = (page - 1) * size;
+    const filter = batchFilterOf(address.params);
     const batches = useQuery({
-        queryKey: [GRID_JOBS_QUERY_KEY, 'batches', offset, size],
-        queryFn: () => api.gridJobBatches(offset, size),
+        queryKey: [
+            GRID_JOBS_QUERY_KEY,
+            'batches',
+            offset,
+            size,
+            filter.find,
+            filter.status,
+            filter.party,
+        ],
+        queryFn: () => api.gridJobBatches(offset, size, filter),
         meta: QUIET,
     });
     const open = openIds(address.params);
@@ -466,7 +592,15 @@ function Tree(): ReactNode {
     }
     const rows = batches.data.rows;
     if (batches.data.total === 0) {
-        return <Notice>{t('operations.grid.jobs.empty')}</Notice>;
+        return (
+            <Notice>
+                {t(
+                    isFiltered(filter)
+                        ? 'operations.grid.jobs.noMatch'
+                        : 'operations.grid.jobs.empty',
+                )}
+            </Notice>
+        );
     }
     return (
         <>
@@ -781,29 +915,38 @@ function Details(): ReactNode {
 }
 
 /** The Jobs tab. */
-export function GridJobsTab(): ReactNode {
+export function GridJobsTab({
+    parties = [],
+}: {
+    readonly parties?: readonly PartyChoice[];
+}): ReactNode {
     const { t } = useTranslation();
     const address = useJobsAddress();
     const selection = parseSelection(address.params.get('sel'));
     return (
-        <div className="grid gap-6 lg:grid-cols-2">
-            <section aria-label={t('operations.grid.jobs.treeTitle')}>
-                <h2 className="mb-3 text-sm font-medium">{t('operations.grid.jobs.treeTitle')}</h2>
-                <Tree />
-            </section>
-            <section aria-label={t('operations.grid.jobs.details.record')}>
-                <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-medium">
-                        {t(`operations.grid.jobs.details.${selection?.kind ?? 'record'}`)}
+        <div className="space-y-6">
+            <Finder parties={parties} />
+            <div className="grid gap-6 lg:grid-cols-2">
+                <section aria-label={t('operations.grid.jobs.treeTitle')}>
+                    <h2 className="mb-3 text-sm font-medium">
+                        {t('operations.grid.jobs.treeTitle')}
                     </h2>
-                    {selection !== null && (
-                        <Tag small tone="muted">
-                            {t('operations.grid.jobs.details.readOnly')}
-                        </Tag>
-                    )}
-                </div>
-                <Details />
-            </section>
+                    <Tree />
+                </section>
+                <section aria-label={t('operations.grid.jobs.details.record')}>
+                    <div className="mb-3 flex items-center justify-between">
+                        <h2 className="text-sm font-medium">
+                            {t(`operations.grid.jobs.details.${selection?.kind ?? 'record'}`)}
+                        </h2>
+                        {selection !== null && (
+                            <Tag small tone="muted">
+                                {t('operations.grid.jobs.details.readOnly')}
+                            </Tag>
+                        )}
+                    </div>
+                    <Details />
+                </section>
+            </div>
         </div>
     );
 }

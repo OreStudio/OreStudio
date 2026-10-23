@@ -44,6 +44,7 @@ UUID primary key for the batch.
 :type:     uuid
 :cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
+:filterable: true
 :END:
 
 The party that submitted the batch, copied from the session when the batch is created. NULL for work that predates the party scope.
@@ -53,6 +54,7 @@ The party that submitted the batch, copied from the session when the batch is cr
 :type:         text
 :cpp_type:     std::string
 :natural_key:  true
+:searchable:   true
 :END:
 
 External reference linking this batch to the originating finance system or project.
@@ -63,9 +65,10 @@ External reference linking this batch to the originating finance system or proje
 :cpp_type: std::string
 :nullable: false
 :default:  'open'
+:filterable: true
 :END:
 
-Lifecycle status: open, processing, assimilating, or closed.
+Lifecycle status: open, dispatched, processing, assimilating, or closed. The dispatch command writes dispatched when it has created the batch's workunits.
 
 * SQL
 

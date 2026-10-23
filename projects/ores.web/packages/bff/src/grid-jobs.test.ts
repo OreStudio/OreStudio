@@ -184,6 +184,33 @@ async function get(mode: SessionMode, url: string, answers: Answers = ANSWERS, a
     return { response, calls };
 }
 
+describe('GET /api/operations/grid/jobs/batches filters', () => {
+    it('sends the status, the party and the reference to the read and states them in the filter', async () => {
+        const party = '99999999-9999-4999-8999-999999999999';
+        const { response, calls } = await get(
+            'tenant-administration',
+            `/api/operations/grid/jobs/batches?status=closed&party=${party}&find=soak`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { status: 'closed', party_id: party, search: 'soak' },
+        });
+    });
+
+    it('sets no condition for a reference that is only spaces or empty', async () => {
+        const { response, calls } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/batches?find=%20%20&status=closed',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { status: 'closed', party_id: null, search: null },
+        });
+    });
+});
+
 describe('GET /api/operations/grid/jobs/batches', () => {
     it('serves a page of batches with the total and the page it was asked for', async () => {
         const { response, calls } = await get(
@@ -228,7 +255,10 @@ describe('GET /api/operations/grid/jobs/batches', () => {
         ['a negative offset', '?offset=-1'],
         ['an empty offset', '?offset='],
         ['an empty limit', '?limit='],
-        ['a field the read does not take', '?status=closed'],
+        ['a field the read does not take', '?colour=red'],
+        ['a party that is not a uuid', '?party=acme'],
+        ['a status past 32 characters', `?status=${'x'.repeat(33)}`],
+        ['a reference past 256 characters', `?find=${'x'.repeat(257)}`],
     ])('refuses %s before any call goes out', async (_name, query) => {
         const { response, calls } = await get(
             'tenant-administration',

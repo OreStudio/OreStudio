@@ -43,6 +43,7 @@ import {
 const NIL = '00000000-0000-0000-0000-000000000000';
 const EPOCH = '1970-01-01 00:00:00.000000Z';
 const TENANT = '11111111-1111-4111-8111-111111111111';
+const PARTY = '99999999-9999-4999-8999-999999999999';
 const BATCH = '22222222-2222-4222-8222-222222222222';
 const WORKUNIT = '33333333-3333-4333-8333-333333333333';
 const RESULT = '44444444-4444-4444-8444-444444444444';
@@ -127,10 +128,26 @@ describe('readBatches', () => {
             offset: 20,
             limit: 10,
             order: { field: '', descending: false },
-            filter: null,
+            filter: { status: null, party_id: null, search: null },
         });
         expect(page.total).toBe(41);
         expect(page.batches.map((batch) => batch.id)).toEqual([BATCH]);
+    });
+
+    it('sends the status, the party and the reference the person asked for', async () => {
+        const { caller, calls } = callerAnswering({
+            'compute.v1.batches.list': { result: OK, batches: [], total: 0 },
+        });
+
+        await readBatches(
+            caller,
+            { offset: 0, limit: 25 },
+            { status: 'closed', partyId: PARTY, find: 'soak' },
+        );
+
+        expect(calls[0]?.body).toMatchObject({
+            filter: { status: 'closed', party_id: PARTY, search: 'soak' },
+        });
     });
 
     it('raises the outcome the service stated when it refuses the read', async () => {

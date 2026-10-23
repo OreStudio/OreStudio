@@ -132,7 +132,14 @@ const pageFields = {
 export const listBatchesRequestSchema = z.object({
     ...pageFields,
     filter: z
-        .object({ id_one_of: z.array(z.string()).nullable() })
+        .object({
+            party_id: z.string().nullable().default(null),
+            status: z.string().nullable().default(null),
+            id_one_of: z.array(z.string()).nullable().default(null),
+            party_id_one_of: z.array(z.string()).nullable().default(null),
+            status_one_of: z.array(z.string()).nullable().default(null),
+            search: z.string().nullable().default(null),
+        })
         .nullable()
         .default(null),
     as_of: z.string().nullable().default(null),
@@ -346,6 +353,17 @@ export function requireOk(
     throw new GridJobsRefusedError(subject, result.outcome as GridJobsRefusal, result.message);
 }
 
+/**
+ * What narrows the batch list. A status and a party are equals conditions and the
+ * reference is a contains match that ignores case. The compute service applies them
+ * with the row-level policy, so a filter can only narrow what the session may see.
+ */
+export interface BatchFilter {
+    readonly status?: string | undefined;
+    readonly partyId?: string | undefined;
+    readonly find?: string | undefined;
+}
+
 /** The page the caller asked for. */
 export interface JobPageRequest {
     readonly offset: number;
@@ -365,10 +383,18 @@ export interface JobPageRequest {
 export async function readBatches(
     caller: AuthenticatedCaller,
     page: JobPageRequest,
+    filter: BatchFilter = {},
 ): Promise<{ readonly batches: readonly Batch[]; readonly total: number }> {
     const reply = await caller.callAuthenticated(
         GRID_JOB_SUBJECTS.listBatches,
-        listBatchesRequestSchema.parse(page),
+        listBatchesRequestSchema.parse({
+            ...page,
+            filter: {
+                status: filter.status ?? null,
+                party_id: filter.partyId ?? null,
+                search: filter.find ?? null,
+            },
+        }),
         listBatchesReplySchema,
     );
     requireOk(GRID_JOB_SUBJECTS.listBatches, reply.result);

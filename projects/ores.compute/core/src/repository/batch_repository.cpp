@@ -118,12 +118,31 @@ filter_condition(const std::optional<messaging::batches_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->party_id)
+        r.push_back(*filter->party_id ? equals("party_id", filter_value(**filter->party_id)) :
+                                        is_null("party_id"));
+    if (filter->status)
+        r.push_back(equals("status", filter_value(*filter->status)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->party_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("party_id", std::move(values)));
+    }
+    if (filter->status_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->status_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("status", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"external_ref"}, *filter->search));
     return all_of(std::move(r));
 }
 

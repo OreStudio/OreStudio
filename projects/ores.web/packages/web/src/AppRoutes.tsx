@@ -562,7 +562,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <GridPage mode={view.mode} />
+                        <GridPage mode={view.mode} parties={view.availableParties} />
                     ),
                     'workspace',
                 )}

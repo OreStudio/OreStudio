@@ -2334,9 +2334,19 @@ export const api = {
      * The call names no tenant and no party. The compute service decides which
      * rows the session may read.
      */
-    async gridJobBatches(offset: number, limit: number): Promise<BatchPage> {
+    async gridJobBatches(
+        offset: number,
+        limit: number,
+        filter: { readonly find?: string; readonly status?: string; readonly party?: string } = {},
+    ): Promise<BatchPage> {
+        const query = new URLSearchParams(pageQuery({ offset, limit }));
+        for (const [name, value] of Object.entries(filter)) {
+            if (value !== undefined && value !== '') {
+                query.set(name, value);
+            }
+        }
         return batchPageSchema.parse(
-            await request(`/api/operations/grid/jobs/batches?${pageQuery({ offset, limit })}`, {
+            await request(`/api/operations/grid/jobs/batches?${query.toString()}`, {
                 method: 'GET',
             }),
         );

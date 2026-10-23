@@ -21,6 +21,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
+    type BatchFilter,
     batchPageSchema,
     batchViewSchema,
     GridJobsRefusedError,
@@ -67,10 +68,19 @@ const pageQuerySchema = z
     })
     .strict();
 
+/** What narrows the batch list: a status, a party and part of the reference. */
+const batchQuerySchema = pageQuerySchema.extend({
+    status: z.string().trim().min(1).max(32).optional(),
+    party: z.uuid().optional(),
+    find: z.string().trim().max(256).optional(),
+});
+
 const idParamsSchema = z.object({
     id: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
 });
 
+const BATCH_REFUSED =
+    'The batch list takes a page, a status of up to 32 characters, a party id and up to 256 characters of the reference.';
 const PAGE_REFUSED = `The jobs read takes an offset of 0 or more and a limit of 1 to ${PAGE_MAX}.`;
 
 /**
@@ -103,6 +113,25 @@ async function answering<T>(read: () => Promise<T>): Promise<T> {
     }
 }
 
+function batchRequest(request: FastifyRequest): {
+    page: { offset: number; limit: number };
+    filter: BatchFilter;
+} {
+    const parsed = batchQuerySchema.safeParse(request.query ?? {});
+    if (!parsed.success) {
+        throw invalidRequest(BATCH_REFUSED);
+    }
+    const { offset, limit, status, party, find } = parsed.data;
+    return {
+        page: { offset, limit },
+        filter: {
+            status,
+            partyId: party,
+            find: find === '' ? undefined : find,
+        },
+    };
+}
+
 function pageRequest(request: FastifyRequest): { offset: number; limit: number } {
     const parsed = pageQuerySchema.safeParse(request.query ?? {});
     if (!parsed.success) {
@@ -126,8 +155,8 @@ export function registerGridJobsRoutes(
     /** One page of the batches the session may see, newest first. */
     server.get('/api/operations/grid/jobs/batches', async (request) => {
         const session = requireSession(request);
-        const page = pageRequest(request);
-        const { batches, total } = await answering(() => readBatches(session.client, page));
+        const { page, filter } = batchRequest(request);
+        const { batches, total } = await answering(() => readBatches(session.client, page, filter));
         return batchPageSchema.parse({
             read_at: toWireTimestamp(new Date()),
             rows: batches.map(toBatchView),

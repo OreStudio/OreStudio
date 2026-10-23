@@ -123,7 +123,7 @@ where not exists (
 );
 
 -- Summary
-select 'marketdata_providers' as entity, count(*) as count as entity, count(*) as count
+select 'marketdata_providers' as entity, count(*) as count
 from ores_marketdata_providers_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn()

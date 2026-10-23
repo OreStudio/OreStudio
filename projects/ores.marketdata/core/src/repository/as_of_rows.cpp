@@ -28,8 +28,8 @@ namespace ores::marketdata::repository {
 
 namespace {
 
-constexpr std::size_t observation_columns = 10;
-constexpr std::size_t valid_from_column = 8;
+constexpr std::size_t observation_columns = 11;
+constexpr std::size_t valid_from_column = 9;
 
 }
 
@@ -49,8 +49,9 @@ as_of_observation(const as_of_row& row, std::size_t first, std::string_view read
     e.oresmd_uri = row[first + 5].value_or("");
     e.value = row[first + 6].value_or("");
     e.source = row[first + 7];
-    e.valid_from = row[first + 8].value_or("");
-    e.valid_to = row[first + 9].value_or("");
+    e.source_id = row[first + 8].value_or("");
+    e.valid_from = row[first + 9].value_or("");
+    e.valid_to = row[first + 10].value_or("");
     return e;
 }
 

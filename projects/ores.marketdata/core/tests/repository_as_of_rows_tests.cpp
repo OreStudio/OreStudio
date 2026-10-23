@@ -41,6 +41,7 @@ as_of_row observation_columns() {
             std::string("oresmd://fx/EUR/USD?type=quote&instrument=fx_spot&quote=rate"),
             std::string("1.0845"),
             std::nullopt,
+            std::string("26772cc0-57d6-4fac-be36-2ae75eb56b6b"),
             std::string("2026-10-05 09:00:00+00"),
             std::string("9999-12-31 23:59:59+00")};
 }
@@ -61,6 +62,7 @@ TEST_CASE("an_as_of_row_maps_every_observation_column", tags) {
     CHECK(e.series_id == "series");
     CHECK(e.value == "1.0845");
     CHECK_FALSE(e.source.has_value());
+    CHECK(e.source_id == "26772cc0-57d6-4fac-be36-2ae75eb56b6b");
     CHECK(e.oresmd_uri == "oresmd://fx/EUR/USD?type=quote&instrument=fx_spot&quote=rate");
     CHECK(e.observation_datetime == "2026-10-05 09:00:00+00");
 }
@@ -70,7 +72,7 @@ TEST_CASE("a_short_as_of_row_is_refused", tags) {
     row.pop_back();
 
     CHECK_THROWS_WITH(as_of_observation(row, 0, "read_as_of"),
-                      ContainsSubstring("read_as_of: a row has 9 columns, expected 10"));
+                      ContainsSubstring("read_as_of: a row has 10 columns, expected 11"));
 }
 
 TEST_CASE("a_bucket_row_with_no_ordinal_is_refused", tags) {

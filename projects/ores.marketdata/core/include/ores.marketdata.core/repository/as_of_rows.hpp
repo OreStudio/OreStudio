@@ -57,7 +57,7 @@ struct observation_record final {
 /**
  * @brief The observation an as-of read row carries, from column @p first on.
  *
- * The ten observation columns run from @p first in table order. A row with
+ * The eleven observation columns run from @p first in table order. A row with
  * fewer columns would leave a curve snapshot short a pillar with no sign, so it
  * throws, naming @p read.
  *
@@ -70,7 +70,7 @@ ORES_MARKETDATA_CORE_EXPORT market_observation_entity as_of_observation(const as
 /**
  * @brief The record time an as-of read row carries, from column @p first on.
  *
- * The row's valid_from is the last of the ten observation columns. It is a
+ * The row's valid_from is the second to last of the eleven observation columns. It is a
  * non-nullable bitemporal column, so a read that does not select it is a
  * mistake rather than a null, and this throws, naming @p read.
  *

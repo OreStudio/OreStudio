@@ -30,7 +30,7 @@ Build the read model under the trade list. A row holds the trade or the structur
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
 | Now          | The view holds trade and structure rows. Tests cover state, request, structure and every filter. The list takes about 4 s a page at 100,000 trades. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide how to meet the speed of a list of 100,000 trades; run the local check gate. |
+| Next         | Run the local check gate, then close the task. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ Build the read model under the trade list. A row holds the trade or the structur
 - The summary reads the current state of every part. It offers no =as_of=. A later task adds =as_of= when a screen needs it.
 - The generator supports a read-model entity whose relation is a view, with no events and no history.
 - The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
-- The identifier search is measured on a large list. A trigram index is added if the scan is too slow. Measured: about 2.7 s at 100,000 trades. A trigram index needs a stored column, so it waits on the decision in the notes.
+- The identifier search is measured on a large list. A trigram index is added if the scan is too slow. Measured: about 2.7 s at 100,000 trades. A trigram index needs a stored column, so it is not added. Decision (2026-10-24): accept the view. The capture [[id:66157B83-53BD-476E-8F49-2D0EE45921BD][Materialise the trade summary row for very large lists]] holds the stored row for a tenant past about 20,000 live trades.
 - A portfolio scope over more than 1000 books is refused by the client, never truncated.
 - A repository test covers each filter, the search and the total.
 

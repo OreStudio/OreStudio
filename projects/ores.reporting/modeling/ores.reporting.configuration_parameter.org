@@ -120,12 +120,25 @@ The order the document wrote the parameter in.
 :table:         ores_reporting_ore_parameters_tbl
 :target_column: id
 :use_system_tenant: true
-:system_dataset: ore.parameters
 :parent_entity: ore_parameter
 :nullable:      false
 :error_message: Invalid ore_parameter_id: %. No active ore parameter found with this id.
 :list_by:       true
 :END:
+
+The insert checks the parameter under the system tenant, and the database build
+publishes no parameter. The eventing integration test writes five parameters of
+its own into the system tenant, and a value domain for them, and names the first.
+The test does not read the real parameters.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ore_parameter_test_fixture.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    v.ore_parameter_id =
+        ores::reporting::tests::write_system_parameters(party_ctx, h.db_user(), ctx).front();
+#+end_src
 
 * Insert trigger
 

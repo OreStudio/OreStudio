@@ -4738,12 +4738,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 or any(item.get('use_system_tenant')
                        for item in fk.get('parent_required_fks') or [])
                 for fk in fks)
-            # A system-tenant parent a dataset stages is published by the
-            # test when the system tenant holds none, so the test includes
-            # the publish helper.
-            domain_entity['has_system_dataset_fks'] = any(
-                fk.get('use_system_tenant') and fk.get('system_dataset')
-                for fk in fks)
             domain_entity['seed_party'] = any(
                 fk.get('parent_is_party') or fk.get('parent_requires_party')
                 or any(item.get('requires_party')

@@ -54,24 +54,6 @@ ORES_TESTING_EXPORT bool publish_dataset(const ores::database::context& ctx,
                                          const std::string& publish_function);
 
 /**
- * @brief Publishes a staged dataset and the datasets it depends on.
- *
- * The publication service orders a bundle by the dataset dependencies and calls the
- * function each dataset's artefact type names. This does the same for one dataset: it
- * publishes the datasets it depends on first, then the dataset, each through the function
- * its artefact type's subject names. A test that reads published reference data states the
- * dataset it needs and nothing else.
- *
- * @param ctx The database context.
- * @param tenant The tenant to publish into.
- * @param dataset_code The dataset to publish, such as "ore.parameters".
- * @return True when the dataset exists and every publish ran.
- */
-ORES_TESTING_EXPORT bool publish_with_dependencies(const ores::database::context& ctx,
-                                                   const std::string& tenant,
-                                                   const std::string& dataset_code);
-
-/**
  * @brief Publishes a refdata dataset by its entity name.
  *
  * Shorthand for publish_dataset() with the refdata function-name convention:

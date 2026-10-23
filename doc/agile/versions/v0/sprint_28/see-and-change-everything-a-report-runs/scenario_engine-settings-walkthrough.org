@@ -71,7 +71,7 @@ Nothing in this scenario was run against a live service before this page was wri
 
 - Open "UK - Valuation and risk engine settings" from the list.
 - The page must show the tabs Details, Fixings and cash flows, Market and trade building, Execution, Used by and History.
-- On Details, the description must state what the settings are for: valuation, sensitivity and regulatory reports, one thread per run.
+- On Details, the description must state what the settings are for: valuation, risk, regulatory and monitoring reports, one thread per run.
 - Open Execution. Threads must read 1. The log mask must read 31.
 - Open Fixings and cash flows. The setting implyTodaysFixings must read No, and it must not say "default".
 

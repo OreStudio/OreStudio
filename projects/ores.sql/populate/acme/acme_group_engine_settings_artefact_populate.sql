@@ -53,7 +53,7 @@ begin
         dataset_id, tenant_id, id, version, party_id, name, description, configuration_id
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ad04ef07-42af-5ad4-b26c-019007e25972', 0, '00000000-0000-0000-0000-000000000000', 'Group - Valuation and risk engine settings', 'Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.', '86661e4d-844f-51f6-b369-9cd1a13c92d5');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ad04ef07-42af-5ad4-b26c-019007e25972', 0, '00000000-0000-0000-0000-000000000000', 'Group - Valuation and risk engine settings', 'Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.', '86661e4d-844f-51f6-b369-9cd1a13c92d5');
 
     delete from ores_dq_engine_settings_fixings_artefact_tbl
     where dataset_id = v_dataset_id;

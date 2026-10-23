@@ -54,7 +54,7 @@ begin
     )
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '90729646-c246-59c0-af89-31293f020674', 0, '00000000-0000-0000-0000-000000000000', 'HK - Exposure simulation engine settings', 'Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. A simulation is the heaviest run, so it uses 4 threads.', 'a733a396-0c59-5c21-969a-09398e74dec8'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5e196c22-802e-5d15-90a7-6825dc32f058', 0, '00000000-0000-0000-0000-000000000000', 'HK - Valuation and risk engine settings', 'Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.', '78bd8732-df04-5584-952d-3e3ac2757a37');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5e196c22-802e-5d15-90a7-6825dc32f058', 0, '00000000-0000-0000-0000-000000000000', 'HK - Valuation and risk engine settings', 'Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.', '78bd8732-df04-5584-952d-3e3ac2757a37');
 
     delete from ores_dq_engine_settings_fixings_artefact_tbl
     where dataset_id = v_dataset_id;

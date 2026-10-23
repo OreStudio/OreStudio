@@ -5,7 +5,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "Group - Valuation and risk engine settings",
-    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "description": "Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.",
     "configuration_id": "86661e4d-844f-51f6-b369-9cd1a13c92d5"
   },
   {
@@ -23,7 +23,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "UK - Valuation and risk engine settings",
-    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "description": "Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.",
     "configuration_id": "19115ff5-1dd4-59ac-84d6-c0e8e9860388"
   },
   {
@@ -41,7 +41,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "US - Valuation and risk engine settings",
-    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "description": "Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.",
     "configuration_id": "d9025930-0636-5cdf-af21-4a1f8667dfd6"
   },
   {
@@ -59,7 +59,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "HK - Valuation and risk engine settings",
-    "description": "Settings for the valuation, sensitivity and regulatory reports. Each run uses one thread.",
+    "description": "Settings for the valuation, risk, regulatory and monitoring reports. Each run uses 1 thread.",
     "configuration_id": "78bd8732-df04-5584-952d-3e3ac2757a37"
   }
 ]

@@ -347,14 +347,23 @@ def risk_report_configs(definitions, portfolios):
 
 # What each kind of run is for. The name says the purpose, and the description says
 # what the settings change, so a person choosing between them need not read the reports
-# that bind them.
+# that bind them. The thread counts are constants the execution rows also use.
+STANDARD_THREADS = 1
+SIMULATION = True
+STANDARD = False
 PURPOSES = {
-    True: ("Exposure simulation",
-           "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. "
-           "A simulation is the heaviest run, so it uses {threads} threads."),
-    False: ("Valuation and risk",
-            "Settings for the valuation, sensitivity and regulatory reports. "
-            "Each run uses one thread."),
+    SIMULATION: (
+        "Exposure simulation",
+        "Settings for the exposure simulation reports: CVA, DVA, FVA and Exposure. "
+        "A simulation is the heaviest run, so it uses {threads} threads.",
+        SIMULATION_THREADS,
+    ),
+    STANDARD: (
+        "Valuation and risk",
+        "Settings for the valuation, risk, regulatory and monitoring reports. "
+        "Each run uses {threads} thread.",
+        STANDARD_THREADS,
+    ),
 }
 
 
@@ -373,9 +382,9 @@ def engine_settings(definitions):
             if d["company_code"] != company:
                 continue
             name = engine_settings_name(company, d["name"])
-            used.setdefault(name, (d["name"], []))[1].append(d["name"])
+            used.setdefault(name, d["name"])
         for name in sorted(used):
-            first, reports = used[name]
+            first = used[name]
             simulation = "simulation" in analytics_of(first)
             settings_id = documents.new_uuid(f"engine_settings:{company}:{name}")
             central.append({
@@ -384,14 +393,14 @@ def engine_settings(definitions):
                 "version": 0,
                 "party_id": documents.NO_PARTY,
                 "name": name,
-                "description": PURPOSES[simulation][1].format(threads=SIMULATION_THREADS),
+                "description": PURPOSES[simulation][1].format(threads=PURPOSES[simulation][2]),
                 "configuration_id": documents.new_uuid(f"engine_settings_header:{company}:{name}"),
             })
             for rows, part, values in (
                     (fixings, "fixings", ENGINE_FIXINGS),
                     (building, "building", ENGINE_BUILDING),
                     (execution, "execution",
-                     {**ENGINE_EXECUTION, "n_threads": SIMULATION_THREADS if simulation else 1})):
+                     {**ENGINE_EXECUTION, "n_threads": PURPOSES[simulation][2]})):
                 rows.append({
                     "company_code": company,
                     "id": documents.new_uuid(f"engine_settings_{part}:{company}:{name}"),

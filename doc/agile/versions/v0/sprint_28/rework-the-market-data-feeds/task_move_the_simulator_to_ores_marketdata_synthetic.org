@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/move-the-simulator-to-ores-marketdata-synthetic
-#+pr:
+#+pr: 3674
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3674][#3674]] | [synthetic] Serve the market data service as the ore-simulated adapter |
 
 * Review
 

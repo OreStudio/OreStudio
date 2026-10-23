@@ -87,7 +87,6 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  ores::synthetic::domain::binding_mode binding_mode,
                   std::optional<adapter_target> adapter) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
@@ -138,7 +137,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     return std::make_shared<fx_spot_feed>(nats,
                                           cfg.oresmd_uri,
                                           cfg.source_name,
-                                          producer_subject(cfg.source_name, binding_mode),
+                                          producer_subject(cfg.source_name),
                                           std::move(process),
                                           static_cast<double>(cfg.ticks_per_hour),
                                           std::move(adapter));

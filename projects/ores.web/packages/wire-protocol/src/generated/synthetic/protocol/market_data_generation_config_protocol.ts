@@ -34,8 +34,6 @@ export interface MarketDataGenerationConfigKey {
 
 export interface MarketDataGenerationConfigWrite {
     id: string;
-    scope: string;
-    binding_mode: string;
     name: string;
     description: string;
     enabled: boolean;

@@ -21,7 +21,6 @@
 #define ORES_SYNTHETIC_API_FEEDS_PRODUCER_SUBJECT_HPP
 
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include <cctype>
 #include <string>
 #include <string_view>
@@ -29,31 +28,23 @@
 namespace ores::synthetic::feed {
 
 /**
- * @brief Build every producer's publish subject from source_name and
- * binding_mode. '.' is kept (it is the NATS hierarchy separator and source
- * names are dotted), but any character that is not a safe subject token —
- * whitespace, wildcards ('*', '>'), or non-alphanumerics other than '.', '_',
- * '-' — is replaced with '_' so a stray value cannot produce surprise routing
- * or a publish error.
+ * @brief Build every producer's publish subject from its source_name. '.' is kept (it is the
+ * NATS hierarchy separator and source names are dotted), but any character that is not a safe
+ * subject token (whitespace, wildcards '*' and '>', and anything other than alphanumerics, '.',
+ * '_' and '-') is replaced with '_' so a stray value cannot produce surprise routing or a
+ * publish error.
  *
- * A sandboxed feed publishes under "synthetic.v1.ops.sandbox_tick." rather than
- * "synthetic.v1.ops.tick.<source>", which the marketdata ingest loop never
- * subscribes to, so its ticks cannot be stored whatever bindings exist. This
- * is the one subject builder for every asset class; a producer supplies only
- * its source_name and binding_mode.
+ * This is the one subject builder for every asset class: the marketdata ingest loop subscribes
+ * "synthetic.v1.ops.tick.<source>" for each binding that names the source.
  */
-inline std::string producer_subject(std::string_view source_name,
-                                    ores::synthetic::domain::binding_mode binding_mode) {
+inline std::string producer_subject(std::string_view source_name) {
     std::string token;
     token.reserve(source_name.size());
     for (unsigned char c : source_name) {
         const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
         token += safe ? static_cast<char>(c) : '_';
     }
-    const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ?
-               std::string(ores::marketdata::domain::synthetic_sandbox_tick_subject) + "." + token :
-               ores::marketdata::domain::synthetic_tick_subject_for(token);
+    return ores::marketdata::domain::synthetic_tick_subject_for(token);
 }
 
 }

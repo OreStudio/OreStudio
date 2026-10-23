@@ -2,28 +2,24 @@
 :ID: 8771702C-0BC4-4955-8D7E-DDBE2497D5B3
 :END:
 #+title: ores.synthetic.market_data_generation_config
-#+description: Codegen entity model for the synthetic market_data_generation_config table; a named, party-scoped recipe for generating synthetic market data.
+#+description: Codegen entity model for the synthetic market_data_generation_config table; a named, system-owned recipe for generating synthetic market data.
 #+type: ores.codegen.entity
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: market_data_generation_config
 #+entity_plural: market_data_generation_configs
 #+entity_title: Market Data Generation Config
-#+brief: A named, party-scoped recipe for generating synthetic market data.
+#+brief: A named, system-owned recipe for generating synthetic market data.
 #+created: 2026-06-30
 #+updated: 2026-06-30
 
 A top-level container that owns one or more typed sub-configurations (FX spot
 now; vol surface, interest-rate curves later). It is the recipe for how
-synthetic market data is produced. Carries two orthogonal axes: =scope=
-(system/tenant/party) decides the sharing radius -- who consumes the same
-generated data -- and =binding_mode= (bound/sandboxed) decides whether
-that data is authoritative for real feed consumers or reachable only by
-explicit selection. =tenant_id= and =party_id= follow the scope: a system
-collection belongs to the system tenant and its system party, the party the
-super administrator works in; a tenant collection belongs to its tenant with
-no party; a party collection belongs to its tenant and party. A system
-collection's feeds are the installation's, and every tenant reads them.
+synthetic market data is produced. A collection belongs to the system tenant and
+its system party, the party the super administrator works in. Every tenant reads
+it and only the system tenant writes it, because a simulated feed stands for one
+observation in the world and every party must see the same value. See
+[[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
 
 * Flags
 :PROPERTIES:
@@ -51,54 +47,13 @@ Surrogate UUID uniquely identifying this configuration.
 :nullable: true
 :END:
 
-Owning party (legal entity) this configuration belongs to: the party for
-=party= scope, the system tenant's system party for =system= scope, and null
-for =tenant= scope. Not a natural key: a party
-can legitimately own several containers (e.g. "Basic" and "Realistic"
-published from different DQ datasets), so no uniqueness is enforced
-beyond the surrogate =id=.
+The system tenant's system party, which owns every collection. Not a natural
+key: the system can hold several collections (such as "Basic" and "Realistic"
+published from different DQ datasets), so no uniqueness is enforced beyond the
+surrogate =id=.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
-#+end_src
-
-** scope
-:PROPERTIES:
-:type:          text
-:cpp_type:      domain::scope
-:is_enum:       true
-:nullable:      false
-:default_value: party
-:END:
-
-Sharing radius: who consumes the same generated data. =system= sets the
-system tenant and its system party, =tenant= sets =tenant_id= only, =party=
-sets both. Orthogonal to =binding_mode=.
-
-#+begin_src cpp :name generator
-// Always party-scoped in generated test data, matching the party_id
-// generator above always producing a value -- a tenant-scoped row would
-// need a null party_id and a system-scoped one the system tenant, which
-// this per-column generator has no way to coordinate with. Real tenant/system-scoped configs are
-// created explicitly, not through the synthetic data generator.
-domain::scope::party
-#+end_src
-
-** binding_mode
-:PROPERTIES:
-:type:          text
-:cpp_type:      domain::binding_mode
-:is_enum:       true
-:nullable:      false
-:default_value: bound
-:END:
-
-Whether this configuration's generated data is authoritative for real
-feed consumers (=bound=) or reachable only by explicit selection
-(=sandboxed=, never resolved into the bound feed). Orthogonal to =scope=.
-
-#+begin_src cpp :name generator
-domain::binding_mode::bound
 #+end_src
 
 ** name
@@ -164,8 +119,8 @@ std::nullopt
 :END:
 
 The simulated market data provider this collection stands for
-(=market_data_provider.code=), such as =bloomberg= or =ore=. Required at every
-scope, so every feed has a provider. Its feeds' source names start
+(=market_data_provider.code=), such as =bloomberg= or =ore=. Required, so every
+feed has a provider. Its feeds' source names start
 =synthetic.<provider_code>.=.
 
 #+begin_src cpp :name generator
@@ -181,14 +136,13 @@ std::string("bloomberg")
 
 ** Checks
 
-Ties =scope= to =tenant_id= and =party_id= so the invariant the
-conflict-guard trigger (and the RLS policies) rely on can never be
-violated by a malformed row -- system sets the system tenant and its
-system party, tenant leaves the party null, party sets it.
+A collection holds a party, the system party for the installation's own. The
+row-level security policies let every tenant read a collection and let a session
+write only its own tenant's, which is the system tenant for the installation's.
 
-| expression                                                                                                    |
-|----------------------------------------------------------------------------------------------------------------|
-| (scope = 'system' and tenant_id = ores_utility_system_tenant_id_fn() and party_id is not null) or (scope = 'tenant' and party_id is null) or (scope = 'party' and party_id is not null) |
+| expression          |
+|---------------------|
+| party_id is not null |
 
 * Validation function
 :PROPERTIES:
@@ -203,50 +157,6 @@ system party, tenant leaves the party null, party sets it.
 | column        | validation_function                            |
 |---------------+------------------------------------------------|
 | provider_code | ores_synthetic_validate_market_data_provider_fn |
-
-Cross-row conflict check (not a per-column FK validation, so it does not
-fit the table above): at most one enabled =bound= config may be active
-per scope. Reject-at-activation, not resolve-at-read -- see the story's
-=Decisions= for why (compass show 9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277).
-=sandboxed= configs never participate; they are excluded from the check
-entirely.
-
-#+begin_src sql :name reject_conflicting_bound_scope :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
-    -- At most one enabled bound config per *wider-scope-vs-narrower-scope*
-    -- pair. Reject-at-activation: ambiguity must never reach a consumer,
-    -- so a narrower-scope config cannot be enabled while a wider (or
-    -- equal-but-different-owner) one already covers it -- the caller must
-    -- explicitly supersede (disable/retire) it first. sandboxed configs
-    -- never participate; they cannot conflict.
-    --
-    -- Deliberately does NOT block two enabled bound configs at the SAME
-    -- party -- a party legitimately owns several named containers (e.g.
-    -- "Basic" and "Realistic", published from different DQ datasets; see
-    -- this entity's party_id doc comment). This check has no visibility
-    -- into which instruments each container's sub-configs actually cover
-    -- (that information lives one layer down, in fx_spot_generation_config
-    -- et al, which don't exist yet at container-insert time), so it can
-    -- only guard the scope-widening case this story is actually about --
-    -- not per-instrument overlap within one party's own containers.
-    if NEW.enabled and NEW.binding_mode = 'bound' then
-        if exists (
-            select 1 from ores_synthetic_market_data_generation_configs_tbl
-            where id != NEW.id
-              and enabled = true
-              and binding_mode = 'bound'
-              and valid_to = ores_utility_infinity_timestamp_fn()
-              and (
-                  NEW.scope = 'system' or scope = 'system'
-                  or (NEW.scope = 'tenant' and scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
-                  or (scope = 'tenant' and NEW.scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
-              )
-        ) then
-            raise exception 'Conflicting bound synthetic config: another enabled bound config already covers this scope. Supersede (disable or retire) it before activating this one.'
-                using errcode = '23514';
-        end if;
-    end if;
-
-#+end_src
 
 * C++
 
@@ -272,8 +182,6 @@ policy still decides which system rows a tenant sees and who may write them.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include "ores.synthetic.api/domain/binding_mode.hpp"
-#include "ores.synthetic.api/domain/scope.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
@@ -296,8 +204,6 @@ policy still decides which system rows a tenant sees and who may write them.
 | column         | header        |
 |----------------+---------------|
 | name           | Name          |
-| scope          | Scope         |
-| binding_mode   | Binding       |
 | provider_code  | Provider      |
 | enabled        | Enabled       |
 | description    | Description   |
@@ -338,8 +244,6 @@ policy still decides which system rows a tenant sees and who may write them.
 |-------------+--------------+--------------+-----------+-------+-------------------+---------------------------------|
 | Name        | name         | Name         | string    | 200   |                   |                                 |
 | Description | description  | Description  | string    | 300   |                   |                                 |
-| Scope       | scope        | Scope        | string    | 90    | scopeLabel        |           |
-| BindingMode | binding_mode | Binding Mode | string    | 100   | bindingModeLabel  |     |
 | Provider    | provider_code | Provider    | string    | 110   |                   |                                 |
 | Enabled     | enabled      | Enabled      | bool      | 80    |                   |                                 |
 | Version     | version      | Version      | int       | 80    |                   |                                 |

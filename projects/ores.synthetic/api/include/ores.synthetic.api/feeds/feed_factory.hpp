@@ -59,8 +59,6 @@ struct feed_build_context final {
 struct fx_spot_feed_build_input final {
     ores::synthetic::domain::fx_spot_generation_config config;
     std::vector<ores::synthetic::domain::gmm_component> components;
-    ores::synthetic::domain::binding_mode binding_mode =
-        ores::synthetic::domain::binding_mode::bound;
     /// Set when the generator serves an adapter: the vendor id it quotes and the subject it uses.
     std::optional<adapter_target> adapter;
 };
@@ -77,8 +75,6 @@ struct ir_curve_feed_build_input final {
     std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
     std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition> definitions;
     ir_curve_refdata_context refctx;
-    ores::synthetic::domain::binding_mode binding_mode =
-        ores::synthetic::domain::binding_mode::bound;
 };
 
 /**

@@ -23,22 +23,16 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
-drop policy if exists folders_party_isolation_policy on "ores_synthetic_folders_tbl";
 drop policy if exists folders_tenant_isolation_policy on "ores_synthetic_folders_tbl";
 
-drop policy if exists ir_curve_template_entries_party_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
 drop policy if exists ir_curve_template_entries_tenant_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
 
-drop policy if exists ir_curve_generation_configs_party_isolation_policy on "ores_synthetic_ir_curve_generation_configs_tbl";
 drop policy if exists ir_curve_generation_configs_tenant_isolation_policy on "ores_synthetic_ir_curve_generation_configs_tbl";
 
-drop policy if exists gmm_components_party_isolation_policy on "ores_synthetic_gmm_components_tbl";
 drop policy if exists gmm_components_tenant_isolation_policy on "ores_synthetic_gmm_components_tbl";
 
-drop policy if exists fx_spot_generation_configs_party_isolation_policy on "ores_synthetic_fx_spot_generation_configs_tbl";
 drop policy if exists fx_spot_generation_configs_tenant_isolation_policy on "ores_synthetic_fx_spot_generation_configs_tbl";
 
-drop policy if exists market_data_generation_configs_party_isolation_policy on "ores_synthetic_market_data_generation_configs_tbl";
 drop policy if exists market_data_generation_configs_tenant_isolation_policy on "ores_synthetic_market_data_generation_configs_tbl";
 
 drop policy if exists yield_curve_process_types_tenant_isolation_policy on "ores_synthetic_yield_curve_process_types_tbl";
@@ -46,7 +40,4 @@ drop policy if exists market_data_providers_tenant_isolation_policy on "ores_syn
 
 drop policy if exists yield_curve_process_parameter_definitions_tenant_isolation_policy on "ores_synthetic_process_parameter_definitions_tbl";
 
-drop policy if exists ir_curve_generation_config_process_parameter_values_party_isolation_policy on "ores_synthetic_config_process_parameter_values_tbl";
 drop policy if exists ir_curve_generation_config_process_parameter_values_tenant_isolation_policy on "ores_synthetic_config_process_parameter_values_tbl";
-
-drop function if exists ores_synthetic_is_system_collection_fn(uuid);

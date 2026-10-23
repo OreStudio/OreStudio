@@ -3487,9 +3487,9 @@ export const en: SourceCatalogue = {
         'Attach the photographs': 'Attach the photographs',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Gives the accounts their photographs, and the tenant's party its logo.",
-        'Start the market feeds': 'Start the market feeds',
-        "Starts the synthetic market data the tenant's curves and prices are built from.":
-            "Starts the synthetic market data the tenant's curves and prices are built from.",
+        'Subscribe to market data': 'Subscribe to market data',
+        "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
+            "Gives each party of the tenant a subscription to a provider and a route to the provider's source.",
         'Generate the trades': 'Generate the trades',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
@@ -4194,11 +4194,6 @@ export const en: SourceCatalogue = {
                 state: 'State',
                 shouldRun: 'Should run',
                 stoppedCount: '{count} stopped',
-                bound: 'Bound',
-                sandboxed: 'Sandboxed',
-                system: 'System',
-                systemNote:
-                    "The installation's own feeds. They run once for every tenant, and only the system tenant starts and stops them.",
                 openInTree: 'Open in the feed tree',
                 assetClass: 'Asset class',
             },

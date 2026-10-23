@@ -66,8 +66,6 @@ returns table (
 ) as $$
 declare
     v_party_id uuid;
-    v_scope text := 'party';
-    v_binding_mode text := 'bound';
     v_config_id uuid;
     v_config_name text;
     v_provider_code text;
@@ -106,22 +104,14 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- A caller that names a party publishes a party collection into it. A caller that
-    -- names none publishes a system collection: the installation's own feeds of one
-    -- provider, kept in the system tenant under its system party and run once there.
-    v_party_id := (p_params ->> 'party_id')::uuid;
+    -- The generators belong to the system tenant and its system party. A tenant's own
+    -- setup never writes them: the system bundle installs them and every tenant reads them.
+    if p_target_tenant_id <> ores_utility_system_tenant_id_fn() then
+        raise exception 'Synthetic feeds are published into the system tenant only, not into %', p_target_tenant_id;
+    end if;
+    select id into v_party_id from ores_refdata_read_system_party_fn(p_target_tenant_id) limit 1;
     if v_party_id is null then
-        if p_target_tenant_id <> ores_utility_system_tenant_id_fn() then
-            raise exception 'p_params.party_id is required to publish a synthetic feeds dataset into a tenant';
-        end if;
-        select id into v_party_id from ores_refdata_read_system_party_fn(p_target_tenant_id) limit 1;
-        if v_party_id is null then
-            raise exception 'The system tenant has no system party to hold the system feeds of %', v_dataset_name;
-        end if;
-        -- Sandboxed: the collection conflict guard allows one enabled bound system
-        -- collection at a time, and a provider's feeds are not a tenant's source of truth.
-        v_scope := 'system';
-        v_binding_mode := 'sandboxed';
+        raise exception 'The system tenant has no system party to hold the feeds of %', v_dataset_name;
     end if;
 
     if p_mode = 'replace_all' then
@@ -190,10 +180,9 @@ begin
         v_deleted := v_deleted_fx + v_deleted_ir;
     end if;
 
-    -- Resolve (or create) the ONE container for this (tenant, party, dataset),
-    -- shared by every asset class this dataset contains. Keyed by dataset_id,
-    -- not just (tenant, party): a party can run several feeds datasets
-    -- (e.g. "2016 ORE Samples" alongside "Bloomberg") side by side, each
+    -- Resolve (or create) the ONE container for this dataset, shared by every asset
+    -- class this dataset contains. Keyed by dataset_id: the system holds several feeds
+    -- datasets (e.g. "2016 ORE Samples" alongside "Bloomberg") side by side, each
     -- published from its own dataset, and each must get its own container --
     -- not be silently merged into whichever one happened to publish first.
     select id into v_config_id
@@ -229,16 +218,13 @@ begin
 
     if v_config_id is null then
         v_config_id := gen_random_uuid();
-        -- A party publish creates a party-owned, bound container: consolidating
-        -- several parties onto one wider-scope container is a separate, explicit
-        -- operation. The exclusivity trigger only blocks scope-widening conflicts, not
-        -- several bound configs at one party, so a party may publish more than one
-        -- feeds dataset. A system publish (above) creates a sandboxed system container.
+        -- The container belongs to the system party. The system holds one container for
+        -- each feeds dataset.
         insert into ores_synthetic_market_data_generation_configs_tbl (
-            tenant_id, id, version, party_id, scope, binding_mode, name, description, enabled,
+            tenant_id, id, version, party_id, name, description, enabled,
             dataset_id, provider_code, modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            p_target_tenant_id, v_config_id, 0, v_party_id, v_scope, v_binding_mode,
+            p_target_tenant_id, v_config_id, 0, v_party_id,
             v_config_name,
             'Published from DQ dataset: ' || v_dataset_name,
             true, p_dataset_id, v_provider_code,

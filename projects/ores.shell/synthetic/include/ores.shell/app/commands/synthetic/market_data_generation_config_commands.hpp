@@ -87,24 +87,23 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <provider_code>
-     * <reason> <commentary>
+     * @brief add <name> <description> <enabled> <dataset_id> <provider_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id>
-     * <provider_code> <reason> <commentary> [--version <n>]
+     * @brief set <id> <name> <description> <enabled> <dataset_id> <provider_code> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <scope> <binding_mode> <name> <description> <enabled>
-     * <dataset_id> <provider_code> <reason> <commentary>
+     * @brief put-many --count <n> <id> <name> <description> <enabled> <dataset_id> <provider_code>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

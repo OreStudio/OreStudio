@@ -209,8 +209,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         values,
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
-    const ir_curve_refdata_context& refctx,
-    ores::synthetic::domain::binding_mode binding_mode) {
+    const ir_curve_refdata_context& refctx) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -243,7 +242,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // than computed here.
     return std::make_shared<ir_curve_feed>(nats,
                                            cfg.source_name,
-                                           producer_subject(cfg.source_name, binding_mode),
+                                           producer_subject(cfg.source_name),
                                            cfg.currency_code,
                                            ir_curve_index_tenor(cfg),
                                            cfg.role,

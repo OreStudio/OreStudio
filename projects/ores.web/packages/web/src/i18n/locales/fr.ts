@@ -3528,9 +3528,9 @@ const fr: SourceCatalogue = {
         'Attach the photographs': 'Joindre les photographies',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",
-        'Start the market feeds': 'Démarrer les flux de marché',
-        "Starts the synthetic market data the tenant's curves and prices are built from.":
-            'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        'Subscribe to market data': "S'abonner aux données de marché",
+        "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
+            'Donne à chaque entité du locataire un abonnement à un fournisseur et une route vers la source du fournisseur.',
         'Generate the trades': 'Générer les transactions',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
@@ -4251,11 +4251,6 @@ const fr: SourceCatalogue = {
                 state: 'État',
                 shouldRun: 'Devraient tourner',
                 stoppedCount: '{count} arrêtés',
-                bound: 'Lié',
-                sandboxed: 'Isolé',
-                system: 'Système',
-                systemNote:
-                    "Les flux de l'installation. Ils tournent une fois pour tous les locataires, et seul le locataire système les démarre et les arrête.",
                 openInTree: "Ouvrir dans l'arbre des flux",
                 assetClass: "Classe d'actifs",
             },

@@ -28,7 +28,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 #include <string>
 #include <vector>
 
@@ -42,8 +41,6 @@ render_market_data_generation_config_fields(const domain::market_data_generation
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Party ID",
                       .value = v.party_id ? boost::uuids::to_string(*v.party_id) : std::string{}});
-    fields.push_back({.name = "Scope", .value = rfl::enum_to_string(v.scope)});
-    fields.push_back({.name = "Binding Mode", .value = rfl::enum_to_string(v.binding_mode)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});

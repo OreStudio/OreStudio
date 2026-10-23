@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/make-generators-system-owned-and-bundle-installed
+#+pr: 3676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every collection, folder and generator belongs to the system tenant and system p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,22 @@ Every collection, folder and generator belongs to the system tenant and system p
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Remove the =scope= and the =binding_mode= columns of the collection, the conflict trigger that reads them, and
+   the code that reads them. A collection is the installation's, so the question "whose is it" has one answer.
+2. Replace the hand-written row-level security of the generator tables. Every tenant reads a generator row, and
+   only a session of the system tenant writes it. The two helper functions that ask whether a collection is a
+   system one go, because every collection is.
+3. Make the DQ publish write the system tenant only. It takes no party and no mode.
+4. Move the Bloomberg, ORE samples and uniform demo datasets into the system bundle, so the system bundle
+   installs every provider's feeds.
+5. Offer a collection to an adapter only when the collection names the adapter's provider. The adapter of
+   =ore-simulated= serves the collections of the provider =ore= and no other, because a Bloomberg collection
+   quotes Bloomberg ids that this adapter does not publish.
+6. Change the Acme profile. The tenant publishes no generator. A provisioning step gives each party a
+   subscription to the provider =ore= and a route to the source =ore-simulated=, and the step that bound
+   parties to generators and started them is removed.
+7. Test with the pgTAP files that state the new policy, and with the suites on a rebuilt database.
 
 * Measurements
 
@@ -76,12 +92,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3676][#3676]] | [synthetic] Make the generators system-owned and install them with the system bundle |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No migration for the dropped columns | synthetic_market_data_generation_configs_create.sql | decline | The project builds its database from the create scripts and the populate scripts, and the story recreates it at each task. No long-lived database holds the old columns. |
+| 2 | Stale comments name the sandbox subject | feed_controller.hpp, i_feed.hpp | accept | Both comments are rewritten. The sandbox prefix is not behaviour any more. |
+| 3 | The Acme profile fixes the pair ore and ore-simulated | iam_seed_profiles_populate.sql | accept | A pgTAP test asserts that the catalogue holds the source. |
+| 4 | The system publish with vintage dependencies is untested | system_core | accept | A pgTAP test publishes the vintage observations and the Bloomberg feeds into the system tenant with no party named. A publish through the services is still not run. |
+| 5 | limit 1 without order by in the party lookup | marketdata_publish_from_dq_create.sql | accept | The lookup orders by id. |
+| 6 | A tenant user may still edit collections | shell scripts | decline | The policy lets a session write its own tenant's rows and never the system's. The permission that gates the commands is the next task's concern, with the names and the screens. |
+| 7 | No negative test for a tenant write | tests | decline | The policy has the shape of the catalogue tables, whose tenant write is tested in the catalogue suite. |
+| 8 | The web check cannot run npm ci | web | decline | The lock file mismatch is on main and unrelated. |
 
 * Result
+
+Every collection, folder and generator belongs to the system tenant and the system party. A collection no longer has a =scope= or a =binding_mode=, and the code that read them is gone. The row-level security of the generator tables is one shape: every tenant reads a row and a session writes only its own tenant's rows. The two helper functions that asked whether a collection is a system one are removed.
+
+The DQ publish of synthetic feeds writes the system tenant only and refuses a tenant. The system bundle installs the Bloomberg, ORE samples and uniform demo feeds with the Refinitiv, ICE and Tradeweb feeds, and the three tenant bundles that published them are removed. The publish of market data observations defaults to the system party for a system publish, because the vintage prices of those feeds are published with them.
+
+The step =start_market_feeds= is now =subscribe_market_data=. It gives each party of the tenant a subscription to the provider the step names and a route to the source it names, and it starts nothing. The Acme profile publishes no generator and subscribes its parties to the provider =ore= and its source =ore-simulated=.
+
+The ownership of a start is the owning tenant of the collection: only the system tenant starts or stops a system feed. The adapter of =ore-simulated= offers only the collections that name the provider =ore=, so a Bloomberg collection is never served under ORE keys.
+
+Against the rebuilt database: pgTAP 56 files, synthetic service 69 cases, api 80, core 61, shell 221, IAM core 304 and api 134, marketdata service 161 and core 271, web 1946 tests. The local check gate passes 44 of 45 checks. The failing one is =web=, whose =npm ci= stops because =package-lock.json= on main disagrees with =package.json= on =fastify=.
+
+Left for other tasks:
+- Only the provider =ore= has a simulated source. A Bloomberg, Refinitiv, ICE or Tradeweb collection exists in the system tenant, and no adapter serves it until the catalogue holds a simulated source of that provider.
+- Rate curve generators still have no vendor rows, so the Acme parties get FX values from the adapter and no curves from it.
+- The publish of the system bundle with its vintage dependencies into the system tenant was checked for the Bloomberg dataset in SQL, and not by a bundle publish through the services.
+- The old control plane (=start_feed=, =stop_feed=, the folder verbs) is unchanged and is retired with the screens.

@@ -115,8 +115,7 @@ public:
             return;
         }
 
-        if (target->container_scope == ores::synthetic::domain::scope::system &&
-            !feed_kind_registry::is_system_caller(req_ctx)) {
+        if (target->container_is_system && !feed_kind_registry::is_system_caller(req_ctx)) {
             reply(
                 nats_,
                 msg,
@@ -136,7 +135,7 @@ public:
                 reply(nats_, msg, resp);
                 return;
             }
-            reply_start_outcome(msg, resp, std::move(attempt.feed), target->binding_mode, bearer);
+            reply_start_outcome(msg, resp, std::move(attempt.feed), bearer);
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();
@@ -299,11 +298,10 @@ private:
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
                              std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                             ores::synthetic::domain::binding_mode binding_mode,
                              const std::string& bearer) {
         const auto source_name = feed->source_name();
         const auto series = feed->series_uris();
-        const auto result = ctrl_->start(std::move(feed), binding_mode, bearer);
+        const auto result = ctrl_->start(std::move(feed), bearer);
 
         switch (result) {
             case feed_controller::start_result::started:

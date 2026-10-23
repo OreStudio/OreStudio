@@ -22,10 +22,8 @@
  * System feeds and the provider catalogue are read by every tenant and written by the
  * system tenant only.
  *
- * A system collection belongs to the system tenant and its system party, and
- * so do its feeds and their mixtures. A tenant reads them; it reads no feed of
- * a party collection the system tenant holds, and it cannot change a system
- * feed.
+ * A collection belongs to the system tenant and its system party, and so do its
+ * feeds and their mixtures. A tenant reads them and it cannot change a system feed.
  *
  * Run as ORES_TEST_DB_USER, never as the owner role, which bypasses row-level
  * security: pg_prove -d <database> test/synthetic_system_feed_visibility_test.sql
@@ -33,7 +31,7 @@
 
 begin;
 
-select plan(8);
+select plan(7);
 
 -- The configs below name the ORE provider, so the catalogue must hold it
 -- before the first insert reaches the validator that reads it.
@@ -49,9 +47,7 @@ insert into ores_synthetic_market_data_providers_tbl (
 create temporary table t_ids on commit drop as
 select
     '7a000000-0000-4000-8000-000000000001'::uuid as system_collection,
-    '7a000000-0000-4000-8000-000000000002'::uuid as party_collection,
     '7a000000-0000-4000-8000-000000000003'::uuid as system_feed,
-    '7a000000-0000-4000-8000-000000000004'::uuid as party_feed,
     '7a000000-0000-4000-8000-000000000005'::uuid as system_component;
 
 create temporary table t_other on commit drop as
@@ -73,17 +69,12 @@ where tenant_id = ores_utility_system_tenant_id_fn()
 limit 1;
 
 insert into ores_synthetic_market_data_generation_configs_tbl (
-    id, tenant_id, version, party_id, scope, binding_mode, name, description,
+    id, tenant_id, version, party_id, name, description,
     enabled, dataset_id, provider_code, modified_by, performed_by,
     change_reason_code, change_commentary
 )
-select i.system_collection, ores_utility_system_tenant_id_fn(), 0, p.id, 'system',
-       'sandboxed', 'visibility_test_system', 'test', false, null::uuid, 'ore',
-       current_user, current_user, 'system.test', 'visibility test'
-from t_ids i, t_system_party p
-union all
-select i.party_collection, ores_utility_system_tenant_id_fn(), 0, p.id, 'party',
-       'sandboxed', 'visibility_test_party', 'test', false, null::uuid, 'ore',
+select i.system_collection, ores_utility_system_tenant_id_fn(), 0, p.id,
+       'visibility_test_system', 'test', false, null::uuid, 'ore',
        current_user, current_user, 'system.test', 'visibility test'
 from t_ids i, t_system_party p;
 
@@ -96,12 +87,6 @@ insert into ores_synthetic_fx_spot_generation_configs_tbl (
 )
 select i.system_feed, ores_utility_system_tenant_id_fn(), 0, p.id, i.system_collection,
        'EUR', 'USD', 'synthetic.generic.visibility.eurusd', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', 'fixed', 1.1,
-       60, 'geometric', false, false, '', '', null::uuid, 'fx',
-       current_user, current_user, 'system.test', 'visibility test'
-from t_ids i, t_system_party p
-union all
-select i.party_feed, ores_utility_system_tenant_id_fn(), 0, p.id, i.party_collection,
-       'GBP', 'USD', 'synthetic.visibility.gbpusd', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD', 'fixed', 1.3,
        60, 'geometric', false, false, '', '', null::uuid, 'fx',
        current_user, current_user, 'system.test', 'visibility test'
 from t_ids i, t_system_party p;
@@ -142,7 +127,7 @@ insert into ores_synthetic_market_data_providers_tbl (
 where exists(select 1 from t_other);
 
 select case when not exists(select 1 from t_other)
-    then skip('no other active tenant is provisioned', 7)
+    then skip('no other active tenant is provisioned', 6)
     else collect_tap(
         ok(exists(select 1 from ores_synthetic_market_data_generation_configs_tbl
                   where id = (select system_collection from t_ids)),
@@ -153,9 +138,6 @@ select case when not exists(select 1 from t_other)
         ok(exists(select 1 from ores_synthetic_gmm_components_tbl
                   where id = (select system_component from t_ids)),
            'a tenant reads a system feed''s mixture'),
-        ok(not exists(select 1 from ores_synthetic_fx_spot_generation_configs_tbl
-                      where id = (select party_feed from t_ids)),
-           'a tenant reads no feed of a party collection the system tenant holds'),
         throws_ok(
             format($$insert into ores_synthetic_fx_spot_generation_configs_tbl (
                 id, tenant_id, version, party_id, config_id, base_currency_code,

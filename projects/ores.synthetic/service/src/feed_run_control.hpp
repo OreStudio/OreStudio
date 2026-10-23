@@ -90,8 +90,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 << "Skipping " << c.display_name << " under " << scope_label << " — " << reason;
         };
         // A system feed runs once for every tenant, so only the system tenant starts it.
-        if (target.container_scope == ores::synthetic::domain::scope::system &&
-            !feed_kind_registry::is_system_caller(ctx)) {
+        if (target.container_is_system && !feed_kind_registry::is_system_caller(ctx)) {
             skip("a system feed starts only in the system tenant.");
             continue;
         }
@@ -102,8 +101,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 continue;
             }
             std::string conflicting_source_name;
-            if (ctrl.add(
-                    std::move(attempt.feed), target.binding_mode, bearer, &conflicting_source_name))
+            if (ctrl.add(std::move(attempt.feed), bearer, &conflicting_source_name))
                 ++counts.started;
             else if (conflicting_source_name.empty())
                 // A concurrent start of the same config landed between this loop's

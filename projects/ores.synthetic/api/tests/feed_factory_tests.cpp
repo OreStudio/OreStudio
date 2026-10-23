@@ -43,7 +43,6 @@ namespace {
 
 const std::string tags("[feed_factory]");
 
-using ores::synthetic::domain::binding_mode;
 using ores::synthetic::domain::fx_spot_generation_config;
 using ores::synthetic::domain::gmm_component;
 using ores::synthetic::domain::ir_curve_generation_config;
@@ -231,7 +230,6 @@ TEST_CASE("make_default_feed_factory registers both kinds", tags) {
 TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", tags) {
     const auto factory = make_default_feed_factory();
     auto input = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
-    input.binding_mode = binding_mode::bound;
 
     const auto feed = factory.make(std::string(fx_spot_feed_kind), make_build_context(), input);
 
@@ -338,27 +336,17 @@ TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index teno
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
-TEST_CASE("factory::make derives the producer subject from the build input's binding_mode, "
-          "for every kind",
-          tags) {
+TEST_CASE("factory::make derives the producer subject from the source name, for every kind", tags) {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
 
     auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
-    fx.binding_mode = binding_mode::bound;
     CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
           "synthetic.v1.ops.tick.eur_usd_test");
-    fx.binding_mode = binding_mode::sandboxed;
-    CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
-          "synthetic.v1.ops.sandbox_tick.eur_usd_test");
 
     auto ir = ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
-    ir.binding_mode = binding_mode::bound;
     CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
           "synthetic.v1.ops.tick.usd_sofr_test");
-    ir.binding_mode = binding_mode::sandboxed;
-    CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
-          "synthetic.v1.ops.sandbox_tick.usd_sofr_test");
 }
 
 TEST_CASE("factory::make rejects an unknown kind", tags) {

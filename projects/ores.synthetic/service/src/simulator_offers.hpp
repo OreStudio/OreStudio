@@ -36,17 +36,20 @@ namespace ores::synthetic::service {
 /**
  * @brief The generators the simulator offers an adapter, from the system collections it can see.
  *
- * An offer is a startable config of a kind that has a vendor id, in a collection that the system
- * tenant owns. The offers come in the order of the config ids, so when two configs quote one
- * instrument the same one wins at each read. Each offer builds its generator with the target of
- * the adapter, so the generator publishes adapter ticks on the ingress subject of its id.
+ * An offer is a startable config of a kind that has a vendor id, in a collection that names the
+ * provider of the adapter. A collection of another provider quotes that provider's ids, which
+ * this adapter does not publish. The offers come in the order of the config ids, so when two
+ * configs quote one instrument the same one wins at each read. Each offer builds its generator with
+ * the target of the adapter, so the generator publishes adapter ticks on the ingress subject of its
+ * id.
  *
  * @param ctx A context of the system tenant, which sees the system collections.
  */
 inline std::vector<generator_offer> system_generator_offers(const feed_kind_registry& registry,
                                                             const ores::database::context& ctx,
                                                             const feed::feed_build_context& build,
-                                                            const std::string& adapter_id) {
+                                                            const std::string& adapter_id,
+                                                            const std::string& provider_code) {
     auto targets = registry.targets(ctx);
     std::ranges::sort(targets, [](const auto& a, const auto& b) {
         return a.row.candidate.feed_config_id < b.row.candidate.feed_config_id;
@@ -54,8 +57,8 @@ inline std::vector<generator_offer> system_generator_offers(const feed_kind_regi
     std::vector<generator_offer> out;
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
-        if (!target.startable() || !candidate.vendor ||
-            target.container_scope != ores::synthetic::domain::scope::system)
+        if (!target.startable() || !candidate.vendor || !target.container_is_system ||
+            target.container_provider_code != provider_code)
             continue;
         if (target.row.kind->kind != feed::fx_spot_feed_kind)
             continue;
@@ -64,7 +67,7 @@ inline std::vector<generator_offer> system_generator_offers(const feed_kind_regi
             ores::marketdata::domain::adapter_ingress_subject(adapter_id, vendor.external_id);
         out.push_back(generator_offer{
             .id = vendor, .make = [&registry, &build, target, vendor, subject] {
-                auto outcome = target.row.candidate.build_input(target.binding_mode);
+                auto outcome = target.row.candidate.build_input();
                 if (!outcome.input)
                     throw std::runtime_error(outcome.skip_reason);
                 std::get<feed::fx_spot_feed_build_input>(*outcome.input).adapter =

@@ -21,10 +21,9 @@
 /**
  * A provider's feeds dataset publishes as a system collection.
  *
- * synthetic.feeds.refinitiv, published into the system tenant with no party named, becomes
- * a sandboxed system collection held by the system party, with its folders and its feeds.
- * Another tenant reads the collection, its folders and its feeds, and a dataset published
- * into a tenant with no party is refused.
+ * synthetic.feeds.refinitiv, published into the system tenant, becomes a system collection
+ * held by the system party, with its folders and its feeds. Another tenant reads the
+ * collection, its folders and its feeds, and a dataset published into a tenant is refused.
  *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/synthetic_provider_feeds_publish_test.sql
  */
@@ -61,20 +60,20 @@ select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
 select lives_ok(
     format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
         (select id from t_dataset where code = 'synthetic.feeds.refinitiv')),
-    'the Refinitiv feeds dataset publishes into the system tenant with no party named'
+    'the Refinitiv feeds dataset publishes into the system tenant'
 );
 
 create temporary table t_collection on commit drop as
-select c.id, c.scope, c.binding_mode, c.provider_code, c.name, c.party_id
+select c.id, c.provider_code, c.name, c.party_id
 from ores_synthetic_market_data_generation_configs_tbl c
 where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.dataset_id = (select id from t_dataset where code = 'synthetic.feeds.refinitiv')
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select results_eq(
-    $$select scope, binding_mode, provider_code, name from t_collection$$,
-    $$values ('system'::text, 'sandboxed'::text, 'refinitiv'::text, 'Refinitiv'::text)$$,
-    'the dataset publishes one sandboxed system collection that stands for Refinitiv'
+    $$select provider_code, name from t_collection$$,
+    $$values ('refinitiv'::text, 'Refinitiv'::text)$$,
+    'the dataset publishes one system collection that stands for Refinitiv'
 );
 
 select is(
@@ -112,7 +111,7 @@ select throws_ok(
         (select id from t_other)),
     null,
     null,
-    'a dataset published into a tenant with no party named is refused'
+    'a dataset published into a tenant is refused'
 );
 
 select set_config('app.current_tenant_id', (select id::text from t_other), true);

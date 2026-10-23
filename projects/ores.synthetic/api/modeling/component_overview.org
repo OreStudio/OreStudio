@@ -47,8 +47,7 @@ template resolver.
 
 * Outputs
 
-- Domain headers for the nine entities, plus the =scope= and =binding_mode=
-  enums, with JSON and table I/O.
+- Domain headers for the nine entities, with JSON and table I/O.
 - Per-entity data generators used by tests and seeds.
 - NATS protocol headers for entity CRUD and history, feed configuration and
   control, simulation, and preview requests, including the shared

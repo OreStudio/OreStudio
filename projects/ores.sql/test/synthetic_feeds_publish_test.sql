@@ -21,7 +21,7 @@
  * A synthetic feeds dataset publishes as one collection of feeds.
  *
  * synthetic.feeds.bloomberg publishes through the one publish path for
- * synthetic feeds, into the party it names. Every feed row names the
+ * synthetic feeds, into the system tenant under its system party. Every feed row names the
  * bloomberg provider, so the collection stands for Bloomberg and every feed's
  * source name starts synthetic.bloomberg. The pairs the Federal Reserve H.10
  * release quotes start from its vintage; the others start at a fixed level.
@@ -52,14 +52,13 @@ select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
 select lives_ok(
-    format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', jsonb_build_object('party_id', %L))$$,
-        (select id from t_dataset where code = 'synthetic.feeds.bloomberg'),
-        (select id from t_party)),
-    'the Bloomberg feeds dataset publishes into the party it names'
+    format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
+        (select id from t_dataset where code = 'synthetic.feeds.bloomberg')),
+    'the Bloomberg feeds dataset publishes into the system tenant'
 );
 
 create temporary table t_collection on commit drop as
-select c.id, c.scope, c.binding_mode, c.provider_code, c.name
+select c.id, c.provider_code, c.name
 from ores_synthetic_market_data_generation_configs_tbl c
 where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.party_id = (select id from t_party)
@@ -67,9 +66,9 @@ where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select results_eq(
-    $$select scope, binding_mode, provider_code, name from t_collection$$,
-    $$values ('party'::text, 'bound'::text, 'bloomberg'::text, 'Bloomberg'::text)$$,
-    'the dataset publishes one bound party collection that stands for Bloomberg'
+    $$select provider_code, name from t_collection$$,
+    $$values ('bloomberg'::text, 'Bloomberg'::text)$$,
+    'the dataset publishes one system collection that stands for Bloomberg'
 );
 
 select is(
@@ -154,10 +153,10 @@ select is(
 
 -- A collection made by hand has no folders; its first feed makes them.
 insert into ores_synthetic_market_data_generation_configs_tbl (
-    id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled,
+    id, tenant_id, version, party_id, name, description, enabled,
     dataset_id, provider_code, modified_by, performed_by, change_reason_code, change_commentary
 ) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
-    'party', 'sandboxed', 'Placement Test', 'test', true, null, 'ore',
+    'Placement Test', 'test', true, null, 'ore',
     current_user, current_user, 'system.test', 'placement test';
 
 insert into ores_synthetic_ir_curve_generation_configs_tbl (

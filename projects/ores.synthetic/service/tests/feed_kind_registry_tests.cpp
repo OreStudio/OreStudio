@@ -74,6 +74,7 @@ const std::string test_audience("ores.synthetic.service");
 const std::string stub_kind_name("stub");
 const std::string stub_permission("synthetic::stub_generation_configs:read");
 const std::string stub_container("11111111-1111-1111-1111-111111111111");
+const std::string stub_tenant("66666666-6666-6666-6666-666666666666");
 const std::string stub_id("22222222-2222-2222-2222-222222222222");
 const std::string stub_other_id("33333333-3333-3333-3333-333333333333");
 const std::string stub_folder("44444444-4444-4444-4444-444444444444");
@@ -178,7 +179,7 @@ stub_candidate(const std::string& id, const std::string& source, const std::stri
         a.datum_uri = "oresmd://fx/EURUSD?type=quote&instrument=spot";
         return a;
     };
-    c.build_input = [](ores::synthetic::domain::binding_mode) {
+    c.build_input = []() {
         return ores::synthetic::service::feed_build_outcome{
             .input =
                 ores::synthetic::feed::feed_build_input{
@@ -227,10 +228,12 @@ stub_containers() {
     return containers;
 }
 
-// Moves the one container to another scope, as a system collection would be.
-void set_stub_scope(ores::synthetic::domain::scope scope) {
+// Moves the one container to the system tenant, or back to a tenant's own.
+void set_stub_owner(bool system) {
     for (auto& [_, c] : stub_containers())
-        c.scope = scope;
+        c.tenant_id = system ?
+                          ores::utility::uuid::tenant_id::system() :
+                          ores::utility::uuid::tenant_id::from_uuid(uuid_of(stub_tenant)).value();
 }
 
 std::shared_ptr<ores::synthetic::service::feed_kind_registry>
@@ -240,7 +243,7 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
     ores::synthetic::domain::market_data_generation_config container;
     container.id = uuid_of(stub_container);
     container.enabled = true;
-    container.binding_mode = ores::synthetic::domain::binding_mode::sandboxed;
+    container.tenant_id = ores::utility::uuid::tenant_id::from_uuid(uuid_of(stub_tenant)).value();
     containers.emplace(container.id, container);
 
     auto registry = std::make_shared<ores::synthetic::service::feed_kind_registry>(
@@ -420,7 +423,7 @@ TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory", 
     REQUIRE(targets.size() == 2);
     for (const auto& target : targets)
         CHECK(target.startable());
-    CHECK(targets.front().binding_mode == ores::synthetic::domain::binding_mode::sandboxed);
+    CHECK_FALSE(targets.front().container_is_system);
 
     stub_builds = 0;
     const auto attempt = registry->make_feed(targets.front(), bctx);
@@ -606,12 +609,12 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     };
 
-    // In a party collection the caller's tenant may start and stop the feed.
+    // In a tenant's own collection the caller's tenant may start and stop the feed.
     start();
     REQUIRE(f.ctrl->running_count() == 1);
 
     // Once the collection is a system collection, a tenant may no longer stop it ...
-    set_stub_scope(ores::synthetic::domain::scope::system);
+    set_stub_owner(true);
     stop();
     CHECK(f.ctrl->running_count() == 1);
     f.ctrl->stop();
@@ -622,7 +625,7 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
     CHECK(f.ctrl->running_count() == 0);
 
     // Naming no feed would stop every feed the service runs, so a tenant may not ask for it.
-    set_stub_scope(ores::synthetic::domain::scope::party);
+    set_stub_owner(false);
     start();
     REQUIRE(f.ctrl->running_count() == 1);
     {

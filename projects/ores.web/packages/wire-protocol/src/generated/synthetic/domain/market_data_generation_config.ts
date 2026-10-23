@@ -35,8 +35,6 @@ export interface MarketDataGenerationConfig {
     tenant_id: string;
     id: string;
     party_id: string | null;
-    scope: string;
-    binding_mode: string;
     name: string;
     description: string;
     enabled: boolean;

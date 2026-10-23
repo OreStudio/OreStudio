@@ -36,7 +36,7 @@ It is throwaway, with no service and no build step. Open the
 ** The question
 
 A collection is a =market_data_generation_config=: a name, a description, an
-enabled flag, a party, a scope, a binding mode and a dataset of origin, and it
+enabled flag, the system party, a provider and a dataset of origin, and it
 owns the typed FX and IR feeds beneath it. In the tree the same rows are the
 Collection nodes, and the folder-scoped start request names one node.
 

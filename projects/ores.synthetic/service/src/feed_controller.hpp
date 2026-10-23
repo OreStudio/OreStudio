@@ -24,7 +24,6 @@
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -46,10 +45,9 @@ namespace ores::synthetic::service {
  * @brief The marketdata feed_binding store a feed_controller binds started
  * feeds into.
  *
- * A seam, not an abstraction: the controller owns the one rule "a bound feed
- * is bound, a sandboxed feed is not" and the store owns the marketdata
- * round-trip that carries it out, so tests can drive the rule without a live
- * marketdata service.
+ * A seam, not an abstraction: the controller owns the one rule "a started feed
+ * is bound" and the store owns the marketdata round-trip that carries it out,
+ * so tests can drive the rule without a live marketdata service.
  */
 class feed_binding_store {
 public:
@@ -106,8 +104,7 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  * producers (fx_spot_feed, ir_curve_feed) differ only in what they
  * publish, not in how they are owned.
  *
- * Two paths register a feed, both taking the feed's binding_mode and the
- * caller's bearer token:
+ * Two paths register a feed, both taking the caller's bearer token:
  *   - add() — the config-driven path (auto-start at boot, the folder
  *     cascade): the caller has already built the feed from persisted
  *     config via the factory, including any vintage resolution the
@@ -116,9 +113,8 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  *   - start(IFeed) — the on-demand path (the per-config control-plane),
  *     reporting already_running when that source is already up.
  *
- * Both create the feed's marketdata feed_binding once the feed is running,
- * from one gate: a bound feed is bound, a sandboxed feed never is. Nothing
- * branches on the asset class — a feed arrives as IFeed and its kind is
+ * Both create the feed's marketdata feed_binding once the feed is running.
+ * Nothing branches on the asset class — a feed arrives as IFeed and its kind is
  * irrelevant here.
  *
  * At most one feed runs at a time for any series (see feeds_conflict):
@@ -168,12 +164,9 @@ public:
      * performed, so this path does no vintage check and no process
      * construction.
      *
-     * @p binding_mode is the mode the caller built the feed with, and it
-     * drives the bind below: =bound= creates or confirms the feed_binding on
+     * The bind creates or confirms the feed_binding on
      * "synthetic.v1.ops.tick.<source>", the subject the marketdata ingest loop
-     * subscribes; =sandboxed= publishes on the sandbox prefix instead and
-     * never gains a binding, because a binding naming this source would
-     * claim ingestion happens on the bound subject when it does not.
+     * subscribes.
      *
      * @p caller_bearer_token is the requesting end-user's token, forwarded to
      * marketdata as X-Delegated-Authorization so the binding is created in
@@ -187,7 +180,6 @@ public:
      * the holder's source_name).
      */
     bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-             ores::synthetic::domain::binding_mode binding_mode,
              const std::string& caller_bearer_token = {},
              std::string* out_conflicting_source_name = nullptr) {
         const auto source_name = feed->source_name();
@@ -206,12 +198,12 @@ public:
                     *out_conflicting_source_name = *conflict;
                 return false;
             }
-            start_running(std::move(feed), binding_mode);
+            start_running(std::move(feed));
         }
         // Binding creation is a blocking marketdata round-trip, so it runs
         // after mu_ is released rather than inside the critical section every
         // other start()/stop()/running_count()/list() call shares.
-        bind_feed(source_name, binding_mode, caller_bearer_token);
+        bind_feed(source_name, caller_bearer_token);
         return true;
     }
 
@@ -221,29 +213,22 @@ public:
      * Use running_source_name_for_series() to build an actionable
      * message when this returns oresmd_conflict.
      *
-     * @p binding_mode and @p caller_bearer_token mean what they mean in add():
-     * the mode the caller built the feed with decides whether a feed_binding
-     * is created, and the token is the session that binding belongs to. A
-     * re-start of an already-running feed still confirms its binding, so a
-     * feed whose row was deleted by hand regains it on the next start.
+     * @p caller_bearer_token means what it means in add(): the session that
+     * the feed_binding belongs to. A re-start of an already-running feed still
+     * confirms its binding, so a feed whose row was deleted by hand regains it
+     * on the next start.
      */
     start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                       ores::synthetic::domain::binding_mode binding_mode,
                        const std::string& caller_bearer_token = {}) {
         const auto source_name = feed->source_name();
         bool already_running = false;
         {
             std::lock_guard lock(mu_);
             already_running = feeds_.contains(source_name);
-            if (already_running) {
-                // An already-running feed keeps the mode it is running with,
-                // not this call's argument: a caller that does not know the
-                // feed is sandboxed must not bind it.
-                binding_mode = feeds_.at(source_name).binding_mode;
-            } else {
+            if (!already_running) {
                 if (find_conflict(*feed, source_name))
                     return start_result::oresmd_conflict;
-                start_running(std::move(feed), binding_mode);
+                start_running(std::move(feed));
             }
         }
         // Runs outside mu_ (a blocking marketdata round-trip): binding inside
@@ -251,7 +236,7 @@ public:
         // running_count()/list() call for the round-trip's duration. It runs
         // on both outcomes, so a feed whose binding row was deleted by hand
         // regains it on the next start.
-        bind_feed(source_name, binding_mode, caller_bearer_token);
+        bind_feed(source_name, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
     }
 
@@ -331,17 +316,12 @@ public:
     }
 
 private:
-    // The one binding rule, applied by every start path: a bound feed is
-    // bound, a sandboxed feed never is. Skipped when there is no caller
+    // The one binding rule, applied by every start path. Skipped when there is no caller
     // bearer token — an internal start with no end-user session has no party
     // to bind under. A store failure is logged, not thrown: the feed itself
     // has already started either way, and the missing binding is visible (no
     // ticks reach the CRM/market series) rather than silently wrong.
-    void bind_feed(const std::string& source_name,
-                   ores::synthetic::domain::binding_mode binding_mode,
-                   const std::string& caller_bearer_token) {
-        if (binding_mode != ores::synthetic::domain::binding_mode::bound)
-            return;
+    void bind_feed(const std::string& source_name, const std::string& caller_bearer_token) {
         if (caller_bearer_token.empty())
             return;
         const auto saved = bindings().save_if_absent(source_name, caller_bearer_token);
@@ -389,11 +369,6 @@ private:
     struct running_feed {
         std::shared_ptr<ores::marketdata::domain::IFeed> feed;
         std::thread thread;
-        // The mode this feed is running with. A re-start of an already-running
-        // source is gated on this, not on the re-start call's argument, so a
-        // caller unaware the feed is sandboxed cannot bind it.
-        ores::synthetic::domain::binding_mode binding_mode =
-            ores::synthetic::domain::binding_mode::bound;
     };
 
     static void join_and_clear(running_feed& rf) {
@@ -405,13 +380,11 @@ private:
 
     // Emplace a feed as running, spawn its tick thread, and start the
     // status thread on the first feed. Caller must already hold mu_.
-    void start_running(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                       ores::synthetic::domain::binding_mode binding_mode) {
+    void start_running(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
         const auto key = feed->source_name();
         auto* raw = feed.get();
         running_feed rf;
         rf.feed = std::move(feed);
-        rf.binding_mode = binding_mode;
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(key, std::move(rf));
         BOOST_LOG_SEV(lg(), ores::logging::info) << "SYNTHETIC START: source='" << key << "' — now "

@@ -202,17 +202,6 @@ export function DashboardTab(): ReactNode {
                                         <span className="font-medium">
                                             {providerName(entry.code, facts)}
                                         </span>{' '}
-                                        {entry.system && (
-                                            <span
-                                                title={t(
-                                                    'marketdata.synthetic.dashboard.systemNote',
-                                                )}
-                                            >
-                                                <Tag tone="accent">
-                                                    {t('marketdata.synthetic.dashboard.system')}
-                                                </Tag>
-                                            </span>
-                                        )}{' '}
                                         {facts.has(entry.code) && (
                                             <Tag tone="muted">
                                                 {t(
@@ -278,13 +267,6 @@ export function DashboardTab(): ReactNode {
                             {providerName(provider.code, facts)}
                         </h2>
                         <StateTag totals={provider.totals} />
-                        <Tag tone="muted">
-                            {t(
-                                provider.bound
-                                    ? 'marketdata.synthetic.dashboard.bound'
-                                    : 'marketdata.synthetic.dashboard.sandboxed',
-                            )}
-                        </Tag>
                         <Link
                             className="text-sm text-accent hover:text-accent-bright"
                             to={`${PATHS.synthetic}?tab=tree&node=${encodeURIComponent(providerKey(provider.code))}`}

@@ -304,8 +304,6 @@ package "synthetic" #F9FBE7 {
         --
         * version : integer
           party_id : uuid <<FK>>
-        * scope : text
-        * binding_mode : text
         * name : text
         * description : text
         * enabled : boolean
@@ -326,15 +324,11 @@ package "synthetic" #F9FBE7 {
     Market Data Generation Config Table
     A top-level container that owns one or more typed sub-configurations (FX spot
     now; vol surface, interest-rate curves later). It is the recipe for how
-    synthetic market data is produced. Carries two orthogonal axes: scope
-    (system/tenant/party) decides the sharing radius -- who consumes the same
-    generated data -- and binding_mode (bound/sandboxed) decides whether
-    that data is authoritative for real feed consumers or reachable only by
-    explicit selection. tenant_id and party_id follow the scope: a system
-    collection belongs to the system tenant and its system party, the party the
-    super administrator works in; a tenant collection belongs to its tenant with
-    no party; a party collection belongs to its tenant and party. A system
-    collection's feeds are the installation's, and every tenant reads them.
+    synthetic market data is produced. A collection belongs to the system tenant and
+    its system party, the party the super administrator works in. Every tenant reads
+    it and only the system tenant writes it, because a simulated feed stands for one
+    observation in the world and every party must see the same value. See
+    [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
     end note
 
     entity ores_synthetic_market_data_providers_tbl <<temporal>> #C6F0D8 {

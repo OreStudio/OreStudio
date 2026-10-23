@@ -99,7 +99,7 @@ inline constexpr std::string_view provision_party_step_kind = "provision_party";
 inline constexpr std::string_view load_staff_step_kind = "load_staff";
 inline constexpr std::string_view set_staff_passwords_step_kind = "set_staff_passwords";
 inline constexpr std::string_view attach_photos_step_kind = "attach_photos";
-inline constexpr std::string_view start_market_feeds_step_kind = "start_market_feeds";
+inline constexpr std::string_view subscribe_market_data_step_kind = "subscribe_market_data";
 inline constexpr std::string_view generate_trades_step_kind = "generate_trades";
 
 /// The step kinds the notation knows. A kind that is not here is a code change:
@@ -115,7 +115,7 @@ inline constexpr std::string_view provision_step_kinds[] = {system_provision_ste
                                                             load_staff_step_kind,
                                                             set_staff_passwords_step_kind,
                                                             attach_photos_step_kind,
-                                                            start_market_feeds_step_kind,
+                                                            subscribe_market_data_step_kind,
                                                             generate_trades_step_kind};
 
 /// The bundle the system-provisioning step publishes. Its members are the
@@ -188,9 +188,10 @@ struct step_kind_words {
         return {"Attach the photographs",
                 "Gives the accounts their photographs, and the tenant's party its logo.",
                 write_step_timeout};
-    if (kind == start_market_feeds_step_kind)
-        return {"Start the market feeds",
-                "Starts the synthetic market data the tenant's curves and prices are built from.",
+    if (kind == subscribe_market_data_step_kind)
+        return {"Subscribe to market data",
+                "Gives each party of the tenant a subscription to a provider and a route to the "
+                "provider's source.",
                 orchestrating_step_timeout};
     if (kind == generate_trades_step_kind)
         return {"Generate the trades",
@@ -222,15 +223,16 @@ struct step_kind_words {
 /// notation; this list states which of its kinds have an executor here, so a
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
-inline constexpr std::string_view provision_executed_step_kinds[] = {system_provision_step_kind,
-                                                                     publish_bundle_step_kind,
-                                                                     import_lei_hierarchy_step_kind,
-                                                                     provision_party_step_kind,
-                                                                     load_staff_step_kind,
-                                                                     set_staff_passwords_step_kind,
-                                                                     attach_photos_step_kind,
-                                                                     start_market_feeds_step_kind,
-                                                                     generate_trades_step_kind};
+inline constexpr std::string_view provision_executed_step_kinds[] = {
+    system_provision_step_kind,
+    publish_bundle_step_kind,
+    import_lei_hierarchy_step_kind,
+    provision_party_step_kind,
+    load_staff_step_kind,
+    set_staff_passwords_step_kind,
+    attach_photos_step_kind,
+    subscribe_market_data_step_kind,
+    generate_trades_step_kind};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.
@@ -412,15 +414,15 @@ make_step(const provision_tenant_workflow_request& run,
         return {load_staff_step_kind};
     if (kind == attach_photos_step_kind)
         return {load_staff_step_kind, provision_party_step_kind};
-    // The feeds bind every party the tenant holds, so the parties the import
-    // creates must exist first; a party created after the step is never bound.
-    if (kind == start_market_feeds_step_kind)
+    // The step subscribes every party the tenant holds, so the parties the import
+    // creates must exist first; a party created after the step is never subscribed.
+    if (kind == subscribe_market_data_step_kind)
         return {provision_party_step_kind, publish_bundle_step_kind};
     // A trade names a book, a counterparty and the person who entered it, so
     // the books and the staff must exist first, and it is booked against the
-    // market the feeds have already started.
+    // market data the parties already subscribe to.
     if (kind == generate_trades_step_kind)
-        return {load_staff_step_kind, start_market_feeds_step_kind};
+        return {load_staff_step_kind, subscribe_market_data_step_kind};
     if (kind == start_tenant_setup_step_kind)
         return {system_provision_step_kind};
     return {};

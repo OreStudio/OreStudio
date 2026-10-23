@@ -338,7 +338,7 @@ ores-shell> Loading script: .../how_do_i_provision_the_system_with_acme_corporat
   [3/6] provision_party: completed
   [4/6] load_staff: completed
   [5/6] attach_photos: completed
-  [6/6] start_market_feeds: completed
+  [6/6] subscribe_market_data: completed
 ✓ All 6 step(s) completed.
 ✓ System provisioned. Tenant 'Acme Corporation'.
 Next: logout, then: login tenant_admin@acme_corporation <password>  — the tenant is ready to work in.

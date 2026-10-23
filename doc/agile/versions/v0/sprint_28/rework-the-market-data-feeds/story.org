@@ -64,6 +64,8 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:292A74E4-36F7-48A2-B67A-7CD17C4E4257][Describe the market data target architecture]] | DONE | 2026-10-22 | 2026-10-22 | Write the architecture pages, diagrams and journeys for the target state, and plan the implementation tasks. |
 | [[id:318A5695-2045-4532-B48C-703B1B86CED0][Fix the defects the first database run found]] | DONE | 2026-10-23 | 2026-10-23 | Fix the catalogue populate, the mapping date types, the as-of source id and a wrong test that a database run showed. |
 | [[id:FD3DF4E8-DD1D-4CC2-96A0-D3DF3624B5A2][Rename the simulator component to ores.marketdata.synthetic]] | BACKLOG | | | Rename the synthetic component to ores.marketdata.synthetic, with the codegen identity, the paths and the namespaces. |
+| [[id:78B28D99-C3D0-4576-B4F0-15AB2440832D][Make the simulator native to each vendor]] | BACKLOG | | | One simulated source for each vendor provider, publishing that vendor's own ids under a neutral source name, and no simulated source of the provider ore. |
+| [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] | BACKLOG | | | Each generator config names a free public source that sets its initial value and its volatility, and the feed screen shows when the value was retrieved. |
 
 * Decisions
 
@@ -77,6 +79,9 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 - The cost model records usage as events and prices it later with a rate card on the source. The platform pays the vendors and allocates the cost to parties, splitting a fixed fee equally among active subscribers. A simulated source has a simulated rate card and gives a shadow bill. Decided on 2026-10-22.
 - The simulator stops at the adapter seam. It imitates vendor data and failure behaviour, and it does not imitate vendor protocols. Decided on 2026-10-22.
 - ores.synthetic splits into ores.marketdata.synthetic and ores.trading.synthetic. Decided on 2026-10-22.
+- The simulator is native to each vendor and has nothing to do with ORE. A simulated source publishes the ids of its own provider, such as =bbg_ticker= for Bloomberg and =ric= for LSEG, and no simulated source of the provider =ore= exists. Decided on 2026-10-23.
+- A source name says which provider and which instance (=bloomberg-a=). It never says the kind, so no name, subject or id lets the system tell a simulated source from a live one. The kind shows in the =kind= column and as a badge. Decided on 2026-10-23.
+- The level of a synthetic price is calibrated from a free public source named in the generator config, as close to today as the source allows, and the screen shows when it was retrieved. The sources are the ECB euro reference rates and the Federal Reserve H.10 for FX, and the US Treasury par yield curve with the central banks' overnight rates for curves. The 2016 ORE vintage calibrates nothing. See [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]. Decided on 2026-10-23.
 - The story Subscribe tenants to provider feeds and prove the browser at scale describes feed bindings and overlaps this story. It needs a decision from Marco.
 
 * Out of scope

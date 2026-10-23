@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F
+:END:
+#+title: Synthetic prices are calibrated from free public sources
+#+description: Which free public sources set the initial values and the volatility of the synthetic ticks, what each source's terms say, and what is still unchecked.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:calibration:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The terms of some sources are read from the official pages. The terms of the Treasury and of most Bank of England series are still open.
+
+* Detail
+
+** Why a calibration source and not a vendor
+
+The synthetic ticks are native to the vendor: a Bloomberg generator sends Bloomberg ids. The level of the price has no link to the vendor. The level comes from the world, so it comes from a public source that anyone can check. The calibration source is a property of the generator config, and it does not depend on the provider.
+
+** The sources
+
+| Source | Gives | Access | Terms |
+|--------+-------+--------+-------|
+| [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ECB euro foreign exchange reference rates]] | About 30 currencies against the euro, daily since 1999. A USD pair comes from the EUR cross. | CSV, XML and HTML, updated about 16:00 CET. | [[https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html][Free for any use]] if the source is quoted ("Source: ECB statistics") and the statistics are not modified. Third-party data needs the originator's permission. The rates are for information only. |
+| [[https://www.federalreserve.gov/releases/h10/][Federal Reserve H.10]], read through the [[https://fred.stlouisfed.org/docs/api/terms_of_use.html][FRED API]] | USD against the main currencies, daily. | A FRED API key. | The Board's own content is [[https://www.federalreserve.gov/disclaimer.htm][in the public domain]], and the Board asks for a credit. The FRED terms add: a series whose notes say "Copyright" needs the owner's permission, an application must show the non-endorsement notice, and the terms do not say whether storing series is allowed. |
+| [[https://home.treasury.gov/treasury-daily-interest-rate-xml-feed][US Treasury daily par yield curve]] | The USD curve from 1 month to 30 years, since 1990. | GET on =/resource-center/data-chart-center/interest-rates/pages/xml= with =data=daily_treasury_yield_curve= and a year or a month. The first 300 rows come by default. | The feed page states no terms. An archived copy of the old Treasury policy says that work of federal employees carries no copyright and may be copied freely, with a credit requested. The current policy page was not found. |
+| [[https://www.newyorkfed.org/privacy/termsofuse][New York Fed SOFR]] | The overnight USD rate. | The New York Fed markets data. | A licence to use, copy, distribute and modify for business purposes. A reference rate needs the stated notice and disclaimer, a label on any modified data, and no claim of endorsement. SOFR is calculated from data that DTCC Solutions licenses. |
+| [[https://www.bankofengland.co.uk/markets/sonia-benchmark][Bank of England SONIA]] | The overnight GBP rate. | The statistical database, by 10:00 on the next business day. | The Bank's [[https://www.bankofengland.co.uk/legal][legal page]] puts the database under the Open Government Licence. Its exact credit line is stated for SONIA only: "SONIA and/or SONIA Compounded Index data licensed under the Open Government Licence v3.0 and copyright the Governor and Company of the Bank of England". |
+| ECB €STR | The overnight EUR rate. | The ECB statistics. | The ECB usage policy above. |
+
+** What this page does not settle
+
+- Whether the Treasury feed carries a current licence. The next step is to read the current site policy of the Treasury.
+- Which series of the Bank of England database other than SONIA fall under the Open Government Licence.
+- Whether the FRED terms allow a copy of a series in a stored snapshot. The H.10 notes of each series say whether the word "Copyright" appears. The other route is the Board's own H.10 download, which the Board's public domain notice covers.
+- Which of the 26 FX pairs the ECB and the H.10 do not cover. The pairs that no source covers keep a fixed level, and the config says so.
+
+** How a generator uses a source
+
+Each generator config carries a calibration entry: the source code, such as =ecb.eurofxref=, =fed.h10= or =ust.par_yield=, and a window for the volatility. The initial value is the latest value that the source has published. The volatility is the spread of the log returns over the window.
+
+The value is retrieved by a step that is separate from the simulator. The step writes the value with the time it was retrieved and the as-of date of the source. The feed screen shows both, so a reader sees how old the level of a feed is. A source that cannot be reached leaves the last stored value in place, and the screen shows its age.
+
+A copy of a source's statistics keeps the credit and the notice that its terms ask for, and a modified value is labelled as modified. The rule for the ECB is the strictest: a statistic that is changed after retrieval, such as a cross rate, is a derived value, and the config says it is derived.
+
+** What this replaces
+
+The 2016 ORE sample vintage no longer calibrates any generator. The datasets that depend on it are replaced when the sources are in place. The uniform demo is not calibrated from any source: its exaggerated volatility is the point, and it keeps fixed levels.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: who owns the configs that carry the calibration entry.
+- [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]] — completes: the vendor ids the calibrated generators publish.

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 589DD051-92EB-4CAA-B4AE-06CBD24A9D21
+:END:
+#+title: Story: Add a Hawkes tick arrival process to analytics.quant
+#+description: A synthetic feed can draw the times of its ticks from a self-exciting Hawkes point process, ported from the tick library (BSD 3-clause, the tick developers, CMAP), so bursts of ticks follow bursts of ticks as they do in a live market.
+#+type: story
+#+level: s2
+#+filetags: :quant:synthetic:hawkes:tick:sprint_28:v0:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Know what the tick library does, what the port into ores.analytics.quant needs, and where the process fits in the generator design, before any code changes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-23                               |
+
+* Acceptance
+
+- The analysis names each tick source file the port needs, its dependencies and its licence terms.
+- The analysis says where an arrival process fits beside the value processes of the generator library.
+- The analysis gives the port size and the risks, and the owner chooses the interface.
+- The attribution to the tick developers is settled before any ported code lands.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0CE719C2-C3F1-4CDC-BD00-0286526ACC50][Scaffold story: Add a Hawkes tick arrival process to analytics.quant]] | STARTED | 2026-10-23 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D02DB9B0-C62A-4DDA-B64E-2A720BC324B4][Analyse the tick Hawkes simulation and the cost of the port]] | STARTED | 2026-10-23 | | Initial task for: Add a Hawkes tick arrival process to analytics.quant |
+
+* Decisions
+
+* Out of scope
+
+-

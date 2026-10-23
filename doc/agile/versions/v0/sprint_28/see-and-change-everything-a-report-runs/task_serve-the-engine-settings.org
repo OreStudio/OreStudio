@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/serve-the-engine-settings
-#+pr:
+#+pr: 3653
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3653][#3653]] | [reporting] Serve the engine settings and the ore parameters |
 
 * Review
 

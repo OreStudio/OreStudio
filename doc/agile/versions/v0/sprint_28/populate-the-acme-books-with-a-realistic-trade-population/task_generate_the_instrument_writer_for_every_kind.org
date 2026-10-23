@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/generate-the-instrument-writer-for-every-kind
-#+pr:
+#+pr: 3700
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3700][#3700]] | [trading] Generate the instrument writer for every kind |
 
 * Review
 

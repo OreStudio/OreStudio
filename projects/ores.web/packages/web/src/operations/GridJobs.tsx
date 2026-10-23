@@ -33,7 +33,7 @@
  * a shared link shows the same screen.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
@@ -453,7 +453,7 @@ export interface BatchFilterParams {
     readonly party: string;
 }
 
-/** The statuses a batch holds: the four the model lists and dispatched. */
+/** The statuses a batch holds, as the batch model lists them. */
 export const BATCH_STATUSES: readonly string[] = [
     'open',
     'dispatched',
@@ -492,6 +492,8 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
     const address = useJobsAddress();
     const filter = batchFilterOf(address.params);
     const [text, setText] = useState(filter.find);
+    // The address can change outside the form: Back, or a link opened in this tab.
+    useEffect(() => setText(filter.find), [filter.find]);
     const apply = (patch: Readonly<Record<string, string | null>>): void =>
         address.set({ ...patch, page: null });
     return (

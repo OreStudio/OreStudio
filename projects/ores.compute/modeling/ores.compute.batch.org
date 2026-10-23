@@ -68,7 +68,7 @@ External reference linking this batch to the originating finance system or proje
 :filterable: true
 :END:
 
-Lifecycle status: open, processing, assimilating, or closed.
+Lifecycle status: open, dispatched, processing, assimilating, or closed. The dispatch command writes dispatched when it has created the batch's workunits.
 
 * SQL
 

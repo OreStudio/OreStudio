@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/filter-the-batch-list-on-the-server
-#+pr:
+#+pr: 3665
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ The batch list read takes a status, a party and a reference, and returns only th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -93,13 +93,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [compute] Filter the batch list on the server |
+| #3665 | [compute] Filter the batch list on the server |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The status list differs from the model | ores.compute.batch.org | Fixed | The model now lists dispatched, which the dispatch command writes, and the files it drives are regenerated. |
+| 2 | No filter for a batch with no party | grid-jobs.ts | Noted | A null party reads as no filter. The generated branch for no party is reachable by the service only. |
+| 3 | The BFF takes any status text | grid-jobs.ts | Declined | A status that does not exist gives the no-match notice, which is harmless. |
+| 4 | The finder text ignores a changed address | GridJobs.tsx | Fixed | The text follows the address. |
+| 5 | The limits of the new members have no test | batch_service.cpp | Declined | The generator emits them for every entity, and its tests cover them. |
 
 * Result
 

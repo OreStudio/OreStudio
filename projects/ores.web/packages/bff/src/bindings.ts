@@ -97,7 +97,8 @@ async function complete(
         party_id: existing === undefined ? partyOf(session) : String(existing['party_id']),
         source_name: stated.source_name,
         producer_kind: SYNTHETIC,
-        provider_code: existing === undefined ? SIMULATED_PROVIDER : String(existing['provider_code']),
+        provider_code:
+            existing === undefined ? SIMULATED_PROVIDER : String(existing['provider_code']),
         source_id: existing === undefined ? SIMULATED_SOURCE_ID : String(existing['source_id']),
         enabled: stated.enabled,
     } satisfies FeedBindingWrite;

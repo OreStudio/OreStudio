@@ -32,7 +32,13 @@
 #include "ores.reporting.core/messaging/configuration_analytic_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_building_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_execution_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_fixings_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_domain_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
@@ -388,6 +394,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_configuration_analytic_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_analytic_type_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // ----------------------------------------------------------------
+    // ORE parameters and engine settings (generated CRUD handlers). The engine
+    // settings screens read the documentation of each setting from the ORE
+    // parameters, and read and write the settings of a configuration through
+    // the central row and its three parts.
+    // ----------------------------------------------------------------
+    for (auto& sub : register_engine_settings_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_engine_settings_building_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_engine_settings_execution_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_engine_settings_fixings_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_value_domain_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     return subs;

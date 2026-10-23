@@ -118,11 +118,17 @@ returns table (action text, record_count bigint)
   says so in its comment. It returns one row per action it took: =inserted=, =updated=,
   =skipped= or =deleted=, each with its count.
 - It is idempotent. A repeat publish of the same dataset changes nothing it
-  already wrote.
+  already wrote. A function that upserts compares a row it holds with the staged
+  row and skips the row when the values match, so a repeat publish adds no
+  version. The older functions rewrite every row; do not copy that.
 - It closes a row with =clock_timestamp()=, as the tables' triggers and delete
   rules do, never with =current_timestamp=: a row written earlier in the same
   transaction would otherwise get a =valid_to= before its =valid_from=.
-- Installation data refuses any target but the system tenant.
+- Installation data refuses any target but the system tenant. Reference data
+  that every tenant reads, such as the ORE parameters, is a member of both
+  =system_core= and =base=, so its function writes to the system tenant and to
+  each tenant. That doubles the data on purpose until readers use one source; see
+  [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]].
 - It reads =p_params= only for what the bundle publication passes, such as the
   party a party-scoped publish writes for.
 - It writes the owning tables directly, so it is listed in the entity-writes
@@ -148,8 +154,9 @@ returns table (action text, record_count bigint)
       function.
 - [ ] The publish function follows the contract above and is in the
       entity-writes baseline.
-- [ ] A pgTAP test publishes the dataset, publishes it again in =insert_only=
-      and =replace_all= in the same transaction, and checks the rows.
+- [ ] A pgTAP test publishes the dataset, publishes it again in =upsert=,
+      =insert_only= and =replace_all= in the same transaction, and checks the
+      rows.
 
 ** Legacy patterns
 

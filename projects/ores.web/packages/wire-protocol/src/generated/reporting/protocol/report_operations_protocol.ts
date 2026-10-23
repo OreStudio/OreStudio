@@ -87,6 +87,23 @@ export interface PublishRiskReportConfigsFromDqRequest {}
  */
 export interface PublishEngineSettingsFromDqRequest {}
 
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter value domains.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request, and
+ * declared the same way: the SQL function name the handler derives from the
+ * subject depends on the spelling.
+ */
+export interface PublishOreParameterValueDomainsFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter documentation.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request. The
+ * value domains publish first, because the dataset depends on theirs.
+ */
+export interface PublishOreParametersFromDqRequest {}
+
 export interface GatherTradesRequest {
     report_instance_id: string;
     definition_id: string;
@@ -271,6 +288,9 @@ export const subjects = {
     publish_risk_report_configs_from_dq_request:
         'reporting.v1.ops.publish_risk_report_configs_from_dq',
     publish_engine_settings_from_dq_request: 'reporting.v1.ops.publish_engine_settings_from_dq',
+    publish_ore_parameter_value_domains_from_dq_request:
+        'reporting.v1.ops.publish_ore_parameter_value_domains_from_dq',
+    publish_ore_parameters_from_dq_request: 'reporting.v1.ops.publish_ore_parameters_from_dq',
     gather_trades_request: 'reporting.v1.ops.gather_trades',
     gather_market_data_request: 'reporting.v1.ops.gather_market_data',
     assemble_bundle_request: 'reporting.v1.ops.assemble_bundle',
@@ -295,6 +315,8 @@ export const requiresSession = {
     publish_report_definitions_from_dq_request: true,
     publish_risk_report_configs_from_dq_request: true,
     publish_engine_settings_from_dq_request: true,
+    publish_ore_parameter_value_domains_from_dq_request: true,
+    publish_ore_parameters_from_dq_request: true,
     gather_trades_request: true,
     gather_market_data_request: true,
     assemble_bundle_request: true,

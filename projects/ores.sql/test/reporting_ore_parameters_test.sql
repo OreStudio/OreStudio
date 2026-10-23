@@ -18,7 +18,7 @@
  *
  */
 /**
- * pgTAP tests for the keys of the ore parameters.
+ * pgTAP tests for the keys of the ore parameters in the staged dataset ore.parameters.
  *
  * A row documents one leaf of an ORE XML document. The schema name and the
  * XPath say which leaf, and for ore.xsd the scope, subtype and name say the
@@ -39,8 +39,10 @@ select plan(5);
 create temporary table t_parameters on commit drop as
 select d.scope, d.subtype, d.name, d.schema_name, d.xpath, d.label, d.help,
        d.description, d.default_text, d.format, d.introduced_in, d.removed_in
-from ores_reporting_ore_parameters_tbl d
-where d.valid_to = ores_utility_infinity_timestamp_fn();
+from ores_dq_ore_parameters_artefact_tbl d
+where d.dataset_id = (select id from ores_dq_datasets_tbl
+                      where code = 'ore.parameters'
+                        and valid_to = ores_utility_infinity_timestamp_fn());
 
 select is_empty(
     $$select name from t_parameters

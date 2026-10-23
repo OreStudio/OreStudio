@@ -22,8 +22,9 @@
  * Reporting Component Dataset Dependencies
  *
  * The generic report definitions are published after the instrument conventions
- * they resolve. The risk report configurations are Acme's own datasets, and
- * their dependencies are declared with them.
+ * they resolve, and the ore parameters after their value domains. The risk
+ * report configurations are Acme's own datasets, and their dependencies are
+ * declared with them.
  *
  * This script is idempotent.
  */
@@ -36,4 +37,9 @@ BEGIN
     -- bundle display_order already puts them in the right order.
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.report_definitions', 'ore.conventions', 'convention_source');
+
+    -- A parameter names the value domain of its value, and the insert checks
+    -- the domain, so the domains publish first.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.parameters', 'ore.parameter_value_domains', 'value_domains');
 END $$;

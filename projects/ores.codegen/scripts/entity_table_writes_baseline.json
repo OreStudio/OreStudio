@@ -698,6 +698,18 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_reporting_publish_ore_parameter_value_domains_from_dq_fn",
+      "file": "projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql",
+      "reason": "publishes the value domains the dq catalogue defines into the tenant, the publish-from-dq pattern beside it"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_reporting_publish_ore_parameters_from_dq_fn",
+      "file": "projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql",
+      "reason": "publishes the ore parameter documentation the dq catalogue defines into the tenant, the publish-from-dq pattern beside it"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_synthetic_publish_feeds_from_dq_fn",
       "file": "projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql",
       "reason": "predates the check"

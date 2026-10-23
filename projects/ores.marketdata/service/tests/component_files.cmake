@@ -20,8 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app_adapter_registry_tests.cpp"
     "app_adapter_tick_translator_tests.cpp"
     "app_crm_ingest_bridge_tests.cpp"
+    "app_demand_calculator_tests.cpp"
     "app_feed_ingest_loop_tests.cpp"
     "app_feed_series_tests.cpp"
     "app_tick_batch_tests.cpp"

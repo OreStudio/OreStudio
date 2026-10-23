@@ -64,6 +64,31 @@ inline std::string adapter_heartbeat_subject(std::string_view adapter_id) {
         .append(".heartbeat");
 }
 
+/// The subject that covers the heartbeat of every adapter. The service subscribes once to it.
+inline std::string adapter_heartbeat_subject_all() {
+    return std::string(adapter_subject_base).append(".*.heartbeat");
+}
+
+/**
+ * @brief The adapter id in a heartbeat subject, or nothing for a subject that
+ * @c adapter_heartbeat_subject() could not have built.
+ */
+inline std::optional<std::string> adapter_heartbeat_subject_adapter(std::string_view subject) {
+    const std::string prefix = std::string(adapter_subject_base) + ".";
+    constexpr std::string_view suffix = ".heartbeat";
+    const auto at = subject.find(prefix);
+    if (at == std::string_view::npos)
+        return std::nullopt;
+    const auto rest = subject.substr(at + prefix.size());
+    if (!rest.ends_with(suffix) || rest.size() <= suffix.size())
+        return std::nullopt;
+    const auto token = rest.substr(0, rest.size() - suffix.size());
+    auto adapter = subject_token_text(token);
+    if (!adapter || adapter->empty())
+        return std::nullopt;
+    return adapter;
+}
+
 /**
  * @brief The subject a tick of @p external_id travels on when @p adapter_id publishes it.
  *

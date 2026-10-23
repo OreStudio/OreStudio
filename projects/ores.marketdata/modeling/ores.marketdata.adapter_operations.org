@@ -296,6 +296,142 @@ The opaque id of the adapter.
 
 A number that rises by one for each heartbeat.
 
+** adapter_status
+
+One adapter as the service sees it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state of one adapter and the last demand it answered.
+ *
+ * The state is announced, ready, serving, stale or rejected. The counts say how the
+ * announced universe compared with the catalogue. The accepted and rejected ids are
+ * those of the last demand reply.
+ */
+#+end_src
+
+*** adapter_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The opaque id of the adapter.
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The provider the adapter announced.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The state of the adapter.
+
+*** last_heartbeat_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+When the last heartbeat arrived, or when the adapter announced if none has.
+
+*** heartbeat_counter
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+The counter of the last heartbeat.
+
+*** served_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The ids of the universe that the catalogue holds.
+
+*** unknown_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The ids of the universe that the catalogue does not hold.
+
+*** demanded_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The ids in the last demand set.
+
+*** accepted
+:PROPERTIES:
+:cpp_type: std::vector<vendor_id>
+:END:
+
+The ids the adapter accepted in its last reply.
+
+*** rejected
+:PROPERTIES:
+:cpp_type: std::vector<rejected_id>
+:END:
+
+The ids the adapter rejected in its last reply, with the reason.
+
+** list_adapter_status_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_adapter_status
+:response: list_adapter_status_response
+:END:
+
+Asks for the state of every adapter.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the state of every adapter the service tracks.
+ *
+ * The request carries nothing.
+ */
+#+end_src
+
+** list_adapter_status_response
+
+The adapters, in the order of their ids.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state of every adapter, in the order of their ids.
+ */
+#+end_src
+
+*** adapters
+:PROPERTIES:
+:cpp_type: std::vector<adapter_status>
+:END:
+
+One entry for each adapter.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the read succeeded.
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason when the read failed. Empty on success.
+
 * See also
 
 - [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — the contract these messages carry.

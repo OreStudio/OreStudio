@@ -121,6 +121,52 @@ struct adapter_heartbeat {
     std::uint64_t counter = 0;
 };
 
+/**
+ * @brief The state of one adapter and the last demand it answered.
+ *
+ * The state is announced, ready, serving, stale or rejected. The counts say how the
+ * announced universe compared with the catalogue. The accepted and rejected ids are
+ * those of the last demand reply.
+ */
+struct adapter_status {
+    std::string adapter_id;
+    std::string provider_code;
+    std::string state;
+    std::chrono::system_clock::time_point last_heartbeat_at;
+    std::uint64_t heartbeat_counter = 0;
+    std::uint32_t served_count = 0;
+    std::uint32_t unknown_count = 0;
+    std::uint32_t demanded_count = 0;
+    std::vector<vendor_id> accepted;
+    std::vector<rejected_id> rejected;
+};
+
+/**
+ * @brief Asks for the state of every adapter the service tracks.
+ *
+ * The request carries nothing.
+ */
+struct list_adapter_status_request {
+    using response_type = struct list_adapter_status_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_adapter_status";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The state of every adapter, in the order of their ids.
+ */
+struct list_adapter_status_response {
+    std::vector<adapter_status> adapters;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

@@ -20,10 +20,13 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/adapter_registry.cpp"
+    "app/adapter_supervisor.cpp"
     "app/adapter_tick_translator.cpp"
     "app/application.cpp"
     "app/crm_ingest_bridge.cpp"
     "app/curve_republish_service.cpp"
+    "app/demand_calculator.cpp"
     "app/feed_ingest_loop.cpp"
     "app/host.cpp"
     "app/tick_plan.cpp"
@@ -48,6 +51,8 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/adapter_registry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/adapter_supervisor.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/adapter_tick_translator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/application_exception.hpp"
@@ -55,6 +60,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/batch_size.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/crm_ingest_bridge.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/curve_republish_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/demand_calculator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/drop_oldest_queue.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/feed_ingest_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/host.hpp"
@@ -66,6 +72,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/adapter_status_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/crm_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/curve_republish_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"

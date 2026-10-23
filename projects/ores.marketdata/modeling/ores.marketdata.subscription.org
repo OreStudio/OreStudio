@@ -155,6 +155,36 @@ false
 :entity_plural_words:   subscriptions
 :END:
 
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 8E4B1D26-3A7C-4F59-B0D2-6C9A5E1F7B43
+:END:
+
+Reads the latest subscriptions across all tenants. The service computes the demand of an
+adapter from the parties of every tenant, so it cannot filter on one. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::subscription> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::subscription>
+subscription_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<subscription_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<subscription_entity, domain::subscription>(
+        ctx,
+        query,
+        [](const auto& entities) { return subscription_mapper::map(entities); },
+        lg(),
+        "Reading latest subscriptions across all tenants");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

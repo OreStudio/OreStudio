@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-generators-system-owned-and-bundle-installed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every collection, folder and generator belongs to the system tenant and system p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,6 +44,22 @@ Every collection, folder and generator belongs to the system tenant and system p
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Remove the =scope= and the =binding_mode= columns of the collection, the conflict trigger that reads them, and
+   the code that reads them. A collection is the installation's, so the question "whose is it" has one answer.
+2. Replace the hand-written row-level security of the generator tables. Every tenant reads a generator row, and
+   only a session of the system tenant writes it. The two helper functions that ask whether a collection is a
+   system one go, because every collection is.
+3. Make the DQ publish write the system tenant only. It takes no party and no mode.
+4. Move the Bloomberg, ORE samples and uniform demo datasets into the system bundle, so the system bundle
+   installs every provider's feeds.
+5. Offer a collection to an adapter only when the collection names the adapter's provider. The adapter of
+   =ore-simulated= serves the collections of the provider =ore= and no other, because a Bloomberg collection
+   quotes Bloomberg ids that this adapter does not publish.
+6. Change the Acme profile. The tenant publishes no generator. A provisioning step gives each party a
+   subscription to the provider =ore= and a route to the source =ore-simulated=, and the step that bound
+   parties to generators and started them is removed.
+7. Test with the pgTAP files that state the new policy, and with the suites on a rebuilt database.
 
 * Measurements
 

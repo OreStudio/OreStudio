@@ -191,9 +191,8 @@ private:
             } catch (const std::exception& e) {
                 failure = e.what();
             }
-            BOOST_LOG_SEV(lg(), warn)
-                << "The simulator serves no adapter yet: " << failure << ". Trying again in "
-                << wait.count() << " s.";
+            BOOST_LOG_SEV(lg(), warn) << "The simulator serves no adapter yet: " << failure
+                                      << ". Trying again in " << wait.count() << " s.";
             ores::platform::concurrency::wait_for(
                 stop, std::chrono::duration_cast<std::chrono::milliseconds>(wait));
             wait = std::min(wait * 2, std::chrono::seconds(30));

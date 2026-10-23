@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-rate-cards-rating-and-allocation
-#+pr:
+#+pr: 3659
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3659][#3659]] | [marketdata] Add rate cards, rating and allocation |
 
 * Review
 

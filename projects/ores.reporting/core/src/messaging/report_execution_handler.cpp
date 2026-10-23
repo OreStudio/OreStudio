@@ -250,15 +250,14 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
             const auto book_type =
                 config_repo.regulatory_book_type_of(tenant_ctx, req.definition_id);
             const std::string err =
-                book_type ?
-                    "Report has no books to read: it reads " + *book_type +
-                        " books only, and the risk report configuration has no such book "
-                        "or portfolio in scope. Add a portfolio or book of that type to "
-                        "the scope before running." :
-                    "Report has no trades: the risk report configuration "
-                    "has no books or portfolios in scope. Please add at least "
-                    "one portfolio or book to the report definition before "
-                    "running.";
+                book_type ? "Report has no books to read: it reads " + *book_type +
+                                " books only, and the risk report configuration has no such book "
+                                "or portfolio in scope. Add a portfolio or book of that type to "
+                                "the scope before running." :
+                            "Report has no trades: the risk report configuration "
+                            "has no books or portfolios in scope. Please add at least "
+                            "one portfolio or book to the report definition before "
+                            "running.";
             mark_instance_failed(req.tenant_id, req.report_instance_id, err);
             wf->fail(err);
             ack.accept();

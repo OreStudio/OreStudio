@@ -218,8 +218,7 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
 
     // The answer for an issue the store already holds: equal terms are
     // already_exists, and other terms are content_differs. Neither writes.
-    const auto answer_if_stored =
-        [&](const ores::database::context& ctx)
+    const auto answer_if_stored = [&](const ores::database::context& ctx)
         -> std::optional<messaging::put_bond_issue_composite_response> {
         repository::bond_issue_repository issues;
         const auto stored = issues.read_latest(ctx, issue_key);
@@ -283,12 +282,13 @@ messaging::put_bond_issue_composite_response trade_operations_service::put_bond_
         create_rows(conversion_target_repository, ctx, conversion_targets, must_not_exist);
 
         uow.commit();
-        BOOST_LOG_SEV(lg(), info)
-            << "Created bond issue " << issue_key << " with " << legs.size() << " legs, "
-            << amounts.size() << " amounts, " << rates.size() << " rates, " << schedules.size()
-            << " schedules, " << schedule_dates.size() << " schedule dates, "
-            << amortizations.size() << " amortisations, " << call_dates.size()
-            << " call dates and " << conversion_targets.size() << " conversion targets.";
+        BOOST_LOG_SEV(lg(), info) << "Created bond issue " << issue_key << " with " << legs.size()
+                                  << " legs, " << amounts.size() << " amounts, " << rates.size()
+                                  << " rates, " << schedules.size() << " schedules, "
+                                  << schedule_dates.size() << " schedule dates, "
+                                  << amortizations.size() << " amortisations, " << call_dates.size()
+                                  << " call dates and " << conversion_targets.size()
+                                  << " conversion targets.";
         return response;
     } catch (const std::exception&) {
         // A parallel write of the same issue can pass the read above and fail

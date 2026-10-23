@@ -42,7 +42,12 @@ import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { useHeld } from '../access/holds.js';
-import { gridAppVersionPath, gridJobPath, gridNodePath } from '../shell/paths.js';
+import {
+    gridAppVersionPath,
+    gridJobPath,
+    gridNodePath,
+    gridReportRunPath,
+} from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Detail, Input, LinkButton, Notice, Select, Tag } from '../ui/Primitives.js';
@@ -404,10 +409,10 @@ function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
     return (
         <>
             <ul className="ml-6 border-l border-line-subtle pl-2">
-                {rows.map((workunit) => (
+                {rows.map((workunit, index) => (
                     <TreeRow
                         key={workunit.id}
-                        label={workunit.id.slice(0, 8)}
+                        label={t('operations.grid.jobs.jobLabel', { n: offset + index + 1 })}
                         title={workunit.id}
                         note={t('operations.grid.jobs.workunitNote', {
                             priority: workunit.priority,
@@ -714,8 +719,9 @@ function Tree(): ReactNode {
                     {rows.map((batch) => (
                         <TreeRow
                             key={batch.id}
-                            label={batch.external_ref}
+                            label={batch.report_run_name ?? batch.external_ref}
                             title={batch.id}
+                            note={batch.party_name ?? undefined}
                             tags={<StatusTag status={batch.status} />}
                             twist={open.has(batch.id) ? 'open' : 'closed'}
                             selected={selection?.kind === 'batch' && selection.id === batch.id}
@@ -819,14 +825,35 @@ function BatchDetails({ batch }: { readonly batch: BatchView }): ReactNode {
     const none = t('operations.grid.jobs.none');
     return (
         <>
+            {batch.report_run_name !== null && (
+                <Detail
+                    label={t('operations.grid.jobs.fields.reportRun')}
+                    value={
+                        <RouteLink to={gridReportRunPath(batch.external_ref)}>
+                            {batch.report_run_name}
+                        </RouteLink>
+                    }
+                />
+            )}
             <Detail
                 label={t('operations.grid.jobs.fields.externalRef')}
                 value={batch.external_ref}
+                mono={batch.report_run_name !== null}
             />
             <Detail
-                label={t('operations.grid.jobs.fields.partyId')}
-                value={orNone(batch.party_id, none)}
-                mono
+                label={
+                    batch.party_name === null
+                        ? t('operations.grid.jobs.fields.partyId')
+                        : t('operations.grid.jobs.fields.party')
+                }
+                value={
+                    batch.party_name === null ? (
+                        orNone(batch.party_id, none)
+                    ) : (
+                        <span title={batch.party_id ?? undefined}>{batch.party_name}</span>
+                    )
+                }
+                mono={batch.party_name === null}
             />
             <Detail
                 label={t('operations.grid.jobs.fields.status')}

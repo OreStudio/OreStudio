@@ -54,6 +54,7 @@ import { GitWorkTreeSource, type WorkTreeSource } from './agile/work-trees.js';
 import { FileScenarioStore } from './scenarios/file-scenario-store.js';
 import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
+import { registerGridAppVersionRoutes } from './grid-app-versions.js';
 import { registerGridJobsRoutes } from './grid-jobs.js';
 import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
@@ -2693,6 +2694,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         resolveBroker(site.configuration, site.environment).subjectPrefix,
     );
     registerGridJobsRoutes(server, requireSession);
+    registerGridAppVersionRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.

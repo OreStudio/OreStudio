@@ -172,6 +172,14 @@ export type {
     WorkunitView,
 } from './grid-jobs.js';
 export {
+    RELEASE_NOTE_MAX,
+    appVersionPageViewSchema,
+    readAppVersion,
+    readAppVersionPage,
+    writeReleaseNote,
+} from './grid-app-versions.js';
+export type { AppVersionPageView } from './grid-app-versions.js';
+export {
     ACCESS_SUBJECTS,
     deleteRole,
     giveRole,

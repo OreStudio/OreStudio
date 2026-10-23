@@ -1802,6 +1802,53 @@ export const en: SourceCatalogue = {
                     result: 'Result {id}, run {run},',
                 },
             },
+            appVersion: {
+                title: 'App version',
+                description:
+                    'One build of the compute catalogue: its release note, its packages and the other versions of its app.',
+                loading: 'Reading the app version...',
+                build: {
+                    title: 'Build',
+                    app: 'App',
+                    engine: 'Engine Version',
+                    wrapper: 'Wrapper Version',
+                    minRam: 'Min RAM MB',
+                    mib: '{value} MB',
+                },
+                note: {
+                    title: 'Release Note',
+                    none: 'This release has no note. A super administrator writes it.',
+                    edit: 'Edit',
+                    save: 'Save the note',
+                    cancel: 'Cancel',
+                    label: 'Release note',
+                    help: 'Plain text, up to {limit} characters. A line that starts with "## " is a heading and a line that starts with "- " is an item.',
+                    conflict:
+                        'Someone changed this note after you opened it. Reload the page to read it, then edit again.',
+                },
+                packages: {
+                    title: 'Packages',
+                    count: {
+                        one: '{count} package',
+                        other: '{count} packages',
+                    },
+                    none: 'This version has no package, so its jobs never run: the wrapper has nothing to download.',
+                    platform: 'Platform',
+                    state: 'State',
+                    active: 'active',
+                    inactive: 'inactive',
+                    uri: 'Package URI',
+                    sha256: 'SHA-256',
+                },
+                versions: {
+                    title: 'Versions of {app}',
+                    count: {
+                        one: '{count} version',
+                        other: '{count} versions',
+                    },
+                    here: '(this version)',
+                },
+            },
             tenantDescription:
                 'The load, throughput and outcomes of the work you may see, over time, and the capacity of the installation.',
             usage: {

@@ -1822,6 +1822,53 @@ const fr: SourceCatalogue = {
                     result: 'Résultat {id}, exécution {run},',
                 },
             },
+            appVersion: {
+                title: 'Version de l’application',
+                description:
+                    'Une version du catalogue de calcul : sa note de version, ses paquets et les autres versions de son application.',
+                loading: 'Lecture de la version...',
+                build: {
+                    title: 'Build',
+                    app: 'Application',
+                    engine: 'Version du moteur',
+                    wrapper: 'Version de l’enveloppe',
+                    minRam: 'RAM min. (Mo)',
+                    mib: '{value} Mo',
+                },
+                note: {
+                    title: 'Note de version',
+                    none: 'Cette version n’a pas de note. Un super administrateur l’écrit.',
+                    edit: 'Modifier',
+                    save: 'Enregistrer la note',
+                    cancel: 'Annuler',
+                    label: 'Note de version',
+                    help: 'Texte brut, jusqu’à {limit} caractères. Une ligne qui commence par "## " est un titre et une ligne qui commence par "- " est un élément.',
+                    conflict:
+                        'Quelqu’un a modifié cette note après votre ouverture. Rechargez la page pour la lire, puis modifiez à nouveau.',
+                },
+                packages: {
+                    title: 'Paquets',
+                    count: {
+                        one: '{count} paquet',
+                        other: '{count} paquets',
+                    },
+                    none: 'Cette version n’a aucun paquet, donc ses travaux ne s’exécutent jamais : l’enveloppe n’a rien à télécharger.',
+                    platform: 'Plateforme',
+                    state: 'État',
+                    active: 'active',
+                    inactive: 'inactive',
+                    uri: 'URI du paquet',
+                    sha256: 'SHA-256',
+                },
+                versions: {
+                    title: 'Versions de {app}',
+                    count: {
+                        one: '{count} version',
+                        other: '{count} versions',
+                    },
+                    here: '(cette version)',
+                },
+            },
             tenantDescription:
                 'La charge, le débit et les résultats du travail que vous pouvez voir, dans le temps, et la capacité de l’installation.',
             usage: {

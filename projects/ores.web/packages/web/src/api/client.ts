@@ -107,6 +107,7 @@ import {
     gridSeriesViewSchema,
     gridUsageViewSchema,
     gridViewSchema,
+    appVersionPageViewSchema,
     batchPageSchema,
     batchViewSchema,
     resultPageSchema,
@@ -141,6 +142,7 @@ import {
     type ServiceRosterRow,
     type GridSeriesView,
     type GridUsageView,
+    type AppVersionPageView,
     type BatchPage,
     type BatchView,
     type ResultPage,
@@ -2378,6 +2380,33 @@ export const api = {
     async gridJobResult(id: string): Promise<ResultView> {
         return resultViewSchema.parse(
             await request(`/api/operations/grid/jobs/results/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One app version with its packages and the other versions of its app. */
+    async gridAppVersion(id: string): Promise<AppVersionPageView> {
+        return appVersionPageViewSchema.parse(
+            await request(`/api/operations/grid/app-versions/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Replaces the release note of an app version.
+     *
+     * The call states the version the editor read, so a note edited since is refused
+     * and not overwritten. The answer is the page as it stands after the write.
+     */
+    async saveReleaseNote(
+        id: string,
+        releaseNote: string,
+        version: number,
+    ): Promise<AppVersionPageView> {
+        return appVersionPageViewSchema.parse(
+            await request(`/api/operations/grid/app-versions/${id}/release-note`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ release_note: releaseNote, version }),
+            }),
         );
     },
 

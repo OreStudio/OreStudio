@@ -1813,6 +1813,53 @@ const pt: SourceCatalogue = {
                     result: 'Resultado {id}, execução {run},',
                 },
             },
+            appVersion: {
+                title: 'Versão da aplicação',
+                description:
+                    'Uma versão do catálogo de cálculo: a sua nota de versão, os seus pacotes e as outras versões da sua aplicação.',
+                loading: 'A ler a versão...',
+                build: {
+                    title: 'Build',
+                    app: 'Aplicação',
+                    engine: 'Versão do motor',
+                    wrapper: 'Versão do invólucro',
+                    minRam: 'RAM mín. (MB)',
+                    mib: '{value} MB',
+                },
+                note: {
+                    title: 'Nota de versão',
+                    none: 'Esta versão não tem nota. Um super administrador escreve-a.',
+                    edit: 'Editar',
+                    save: 'Guardar a nota',
+                    cancel: 'Cancelar',
+                    label: 'Nota de versão',
+                    help: 'Texto simples, até {limit} caracteres. Uma linha que começa por "## " é um título e uma linha que começa por "- " é um item.',
+                    conflict:
+                        'Alguém alterou esta nota depois de a abrir. Recarregue a página para a ler e edite de novo.',
+                },
+                packages: {
+                    title: 'Pacotes',
+                    count: {
+                        one: '{count} pacote',
+                        other: '{count} pacotes',
+                    },
+                    none: 'Esta versão não tem pacote, por isso os seus trabalhos nunca executam: o invólucro não tem nada para descarregar.',
+                    platform: 'Plataforma',
+                    state: 'Estado',
+                    active: 'ativa',
+                    inactive: 'inativa',
+                    uri: 'URI do pacote',
+                    sha256: 'SHA-256',
+                },
+                versions: {
+                    title: 'Versões de {app}',
+                    count: {
+                        one: '{count} versão',
+                        other: '{count} versões',
+                    },
+                    here: '(esta versão)',
+                },
+            },
             tenantDescription:
                 'A carga, o débito e os resultados do trabalho que pode ver, ao longo do tempo, e a capacidade da instalação.',
             usage: {

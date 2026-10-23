@@ -336,7 +336,7 @@ export class GridJobsRefusedError extends OperationFailedError {
     }
 }
 
-function requireOk(
+export function requireOk(
     subject: string,
     result: { readonly outcome: string; readonly message: string },
 ): void {

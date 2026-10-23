@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The web client shows one app version with its release note, its platforms and pa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Done. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge the PR. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -42,9 +42,19 @@ The web client shows one app version with its release note, its platforms and pa
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two BFF routes and one page.
+
+- =GET /api/operations/grid/app-versions/:id= reads the version, its app's name, its
+  packages joined to their platforms, and the versions of its app, newest first. It
+  states =may_write=, true for an operator in system administration.
+- =PUT /api/operations/grid/app-versions/:id/release-note= writes the note through the
+  generated put, with the version the editor read and the change reason
+  =common.non_material_update=. Any role but the operator is refused before a call
+  goes out. A stale version is refused as a conflict.
+- =GridAppVersionPage.tsx= draws the build, the note (a line that starts with "## "
+  is a heading and a line that starts with "- " is an item), the packages with a
+  warning when there are none, and the other versions. The job page's release panel
+  now states the engine and wrapper version.
 
 * Measurements
 
@@ -58,9 +68,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| BFF tests for the app version routes | 12 pass | =npx vitest run src/grid-app-versions.test.ts= in =packages/bff= | aa4605e98d plus the working tree |
+| App version page tests | 9 pass | =npx vitest run src/operations/GridAppVersionPage.test.tsx= in =packages/web= | aa4605e98d plus the working tree |
+| Note write as super_admin, then the same version again | version 5, then 409 | =PUT .../release-note= twice | aa4605e98d plus the working tree |
+| Note write as the tenant administrator | 403, and may_write false on the read | the same route | aa4605e98d plus the working tree |
+| The page as super_admin | build, note, packages, versions, Edit | headless Chrome | aa4605e98d plus the working tree |
 
 * Notes
+
+- The generated read has no filter by app, so the page reads the catalogue's versions
+  and keeps those of the app. A catalogue holds a handful per app.
+- A change needs a seeded change reason. =common.correction= is not one, and the first
+  write failed on it. The note edit uses =common.non_material_update=.
+- =compute publish-package= states Min RAM MB as 0 when it republishes, so a version
+  seeded with 512 shows 0 after a republish. This is older than the task.
+- A tenant administrator reads the system tenant's versions, because the model makes
+  them visible to every tenant, and cannot write them.
 
 * Test Scenarios
 
@@ -77,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| TBD | [web] Build the app version page |
 
 * Review
 
@@ -86,3 +109,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The app version page shows one build of the compute catalogue with its release note,
+its packages and the other versions of its app. Every signed-in role reads it, and the
+super administrator edits the note, with the version read as the guard. A version with
+no package says its jobs never run. The job page links to it.

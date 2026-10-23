@@ -26,6 +26,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { GridJobPage, canonicalRun, focusRun, secondsBetween } from './GridJobPage.js';
+import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
 
 /**
@@ -106,6 +107,9 @@ function render(wu: WorkunitView, runs: readonly ResultView[]): string {
         [GRID_JOBS_QUERY_KEY, 'workunits', BATCH_ID, 0, 15],
         page([wu, workunit({ id: SIBLING_ID, canonical_result_id: null })]),
     );
+    client.setQueryData([APP_VERSION_QUERY_KEY, APP_VERSION_ID], {
+        version: { engine_version: '1.8.17.0', wrapper_version: '1.0.0' },
+    });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -194,6 +198,7 @@ describe('the job page', () => {
 
         expect(html).toContain(`sel=batch%3A${BATCH_ID}`);
         expect(html).toContain(`href="/operations/grid/app-versions/${APP_VERSION_ID}"`);
+        expect(html).toContain('1.8.17.0');
         expect(html).toContain(`href="/operations/grid/jobs/${SIBLING_ID}"`);
         expect(html).toContain('(this job)');
     });

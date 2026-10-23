@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The shell and the screens that list the observations of a series show the live t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Replaced by the task that adds the history call. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | None.                                  |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -40,6 +40,13 @@ The shell and the screens that list the observations of a series show the live t
 - A tick has no id or source in the tick table, and the list says what it shows in their place.
 
 * Plan
+
+Abandoned on 2026-10-23. The goal asked the list of observations to return ticks, with the
+paging, order and filters of both tables. A tick has no id and no source, and it has no
+correction. A merged list gives it a made-up id, and the count over the tick table costs
+more than a page is worth. The reads are separate instead. The task "Read the ticks of a
+series with one history call" adds the tick read, and the list of observations stays a list
+of observations. See [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the

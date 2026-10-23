@@ -61,6 +61,10 @@ task and name that file in the Command column.
 
 * Notes
 
+The snapshots page now says which contexts see ticks, which meets the third acceptance
+line. It leaves the choice between a refusal and a named missing party to this task. The
+history call answers a context with no party with an outcome in the body.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

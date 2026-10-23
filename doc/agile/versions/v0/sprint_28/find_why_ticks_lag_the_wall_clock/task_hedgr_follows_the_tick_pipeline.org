@@ -38,7 +38,7 @@ Hedgr filters the whole party tick subtree on the client, its live tick carries 
 - Hedgr subscribes for each watched series, after the live subject has tokens, and it no longer decodes the ticks of series that it does not watch.
 - A live tick of a series with coordinates, such as the pillars of a curve, reaches the bucket of its own coordinate, checked against a live curve.
 - The bucket ring overwrites its oldest bucket when it is full, and it counts the drops.
-- Hedgr seeds a chart from the recent window, and it reads the store only for the span before it.
+- Hedgr seeds a chart with one history call for a span of time, subscribes to the live subject before it calls, and merges the reply with its live ticks by coordinate and time.
 
 * Plan
 

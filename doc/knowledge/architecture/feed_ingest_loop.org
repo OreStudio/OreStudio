@@ -38,8 +38,10 @@ The stages, in order:
 3. *Check quality.* See [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]].
 4. *Resolve the parties.* The loop finds every party routed to the tick's
    source for that provider. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
-5. *Store.* One observation for each party in the series
-   (item, provider, party). See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+5. *Store.* One row in the tick table for each party, in the series
+   (item, provider, party). The loop writes no observation row for a tick. A client reads
+   the ticks with the history call. See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and
+   [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 6. *Compose.* A composite item that uses this series is recomputed. See
    [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
 7. *Deliver and meter.* The loop delivers the tick on each party stream and
@@ -71,8 +73,8 @@ The stages, in order:
 
 The loop caches the mapping and the routes. The service refreshes the cache
 when a mapping or a route changes, from the change events of those entities.
-The observation table sends no change notification, because a tick changes
-many times each second and the party stream carries each value.
+The tick table has no change trigger and sends no notification, because a tick
+arrives many times each second and the party stream carries each value.
 
 ** How an adapter becomes a source
 
@@ -101,4 +103,5 @@ a registered hook.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][One service owns market data between the vendors and the parties]] — completes: the service around the loop.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — completes: the per-party tick this loop delivers.
+- [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]] — completes: how a client reads the ticks this loop stores.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — completes: a proposal that replaces the serial loop with lanes and a ring.

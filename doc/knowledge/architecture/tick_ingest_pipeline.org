@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
 #+created: 2026-10-20
-#+updated: 2026-10-22
+#+updated: 2026-10-23
 
 * Summary
 
@@ -23,7 +23,8 @@ waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
 of each datum, it drops ticks that are too old, and it never lets a consumer wait
 for the store. Work is split into lanes. Each lane has one writer thread, a bounded
 ring buffer, a window of recent ticks in memory, and a batch write to the store.
-Charts and late joiners read the window and not the store. The design follows the
+A chart or a late joiner makes one history call. The window answers the recent span from
+memory, and the store answers the rest. The design follows the
 LMAX Disruptor where that helps, and it sets the rest aside.
 
 The target is tens of thousands of ticks each second, across every asset class and
@@ -214,16 +215,16 @@ the ring, so the window is as fresh as the live path and does not wait for the s
   the last 600 ticks or the last 10 minutes, whichever is smaller. A datum with no
   watcher keeps only its last tick, so the memory use follows the number of watched
   datums and not the number of all datums.
-- *Who reads it.* A consumer that joins late asks for the last value of a datum. A
-  chart that opens or reconnects asks for the recent ticks of a series. The lane that
-  owns the datum answers both from memory, and the store takes no part. The read checks
-  the tenant and the party of the caller against the routes of the datum, as any
-  read of the store does.
+- *Who reads it.* The history call reads it. A chart that opens or reconnects, and a
+  consumer that joins late, call for the ticks of a span that ends now. The lane that
+  owns the datum answers the part of the span that the window covers from memory. The
+  read checks the tenant and the party of the caller against the routes of the datum,
+  as any read of the store does.
 - *How a read reaches it.* The lane worker is the only writer of the window. A read
   is a request that the lane worker answers between two cycles from the window of
   its own lane. The reader never touches the window, so the single writer rule holds.
-- *Where it ends.* A request for data older than the window goes to the store. The
-  reader merges by time, as Hedgr already does for a backfill and a live point.
+- *Where it ends.* A span older than the window comes from the store, and the history
+  call joins the two in one reply. See [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 - *What it can differ on.* The window holds every tick that the lane took, and the
   store may hold fewer when a lane is catching up or shedding. A reader that sees both
   prefers the window for the span that it covers.
@@ -615,16 +616,17 @@ Hedgr repository, shows how a real consumer reads the pipeline.
   for each route. Its cost is small compared with a commit, because core NATS
   carries it without an acknowledgement. The cost grows with the number of parties
   that watch a source.
-- *Hedgr seeds a chart from the store.* On open, on reconnect and on a manual
-  refresh it asks for the newest 2,000 points of a series. The recent window of the
-  lane serves the part that it covers from memory, and the store serves the rest.
+- *Hedgr seeds a chart with one history call.* On open, on reconnect and on a manual
+  refresh it asks for a span of time and merges the reply with its live ticks. See
+  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 - *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
   it is full. Its source comment gives the reason: a tick is worth less than the
   progress of the dispatch thread, and the chart shows the points it did receive.
   The freshness rule says to overwrite the oldest. The two rules differ only when the
   frame loop stalls by more than 4,096 buckets, but they should agree.
 - *The reconnect gap.* Hedgr loses the ticks between a drop and a reconnect, and it
-  fills the gap with a backfill read. The recent window serves that read from memory.
+  fills the gap with a history call from its newest tick. The recent window serves the
+  recent part of that call from memory.
 
 ** How tick systems are built in practice
 
@@ -1061,9 +1063,9 @@ a burst of ticks at a chosen rate and times the drain.
    of a loaded system. The ten-fold gain is a target and not a result until step 0
    confirms it.
 2. *Lanes, the ring, the age gate, the overload states and the recent window.*
-   Add a read operation for the last value and for the recent ticks of a series, and
+   Add the history call, which the window and the store answer in one reply, and
    split the live subject into tokens. Move Hedgr to both: a subscription for each
-   watched series, and a read of the window. Acceptance: a burst of ten times the sustained rate leaves
+   watched series, and a history call. Acceptance: a burst of ten times the sustained rate leaves
    no backlog after the burst ends. The lag of the live path stays below the age
    limit at all times. A chart opens from the window in under 100 ms and does not
    read the store for the span that the window covers.
@@ -1122,5 +1124,7 @@ a burst of ticks at a chosen rate and times the drain.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the code this note proposes to change.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
+- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]], how a client reads the window and the store.
+- [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]], the contract of that read.
 - [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]], the source of the fan-out.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub for this cluster.

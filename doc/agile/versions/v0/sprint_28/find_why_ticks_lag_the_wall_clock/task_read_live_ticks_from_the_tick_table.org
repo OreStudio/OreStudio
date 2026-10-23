@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: B7CA8A2C-4478-4F25-9298-60DE3945C6EB
+:END:
+#+title: Task: Read the ticks of a series with one history call
+#+description: A client that plots a live series gets no ticks, because the observation list reads the observation table and the ingest writes ticks to the tick table only. Add one history call that returns every tick of a range in one reply.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch: feature/read-live-ticks-from-the-tick-table
+#+pr: 3679
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A client reads the ticks of a series with one history call, =marketdata.v1.ops.get_series_ticks=, and one live subscription. The call returns every tick of a time range in one reply. The client merges the reply with its live ticks. The design is in [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]] and [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | The design is written. No code changed.  |
+| Waiting on   | Nothing.                               |
+| Next         | Build the call from the page.          |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The call returns all ticks of a range in one reply, with the coordinates stated once and the time, coordinate and value as arrays. A test states the reply for a range that holds ticks of two coordinates.
+- The call has no pages and no count. A range over the ceiling is refused and the refusal names the ceiling, and a test states it.
+- A context with no party is refused, and a test states it.
+- A range that the window covers and a range that only the store holds both return their ticks in one reply, and a test states each.
+- The observation list returns no tick, and its wire comment and the shell help say so.
+- The shell and the screens of a live series call the history read.
+- The cause of the count of 45 in the reporting environment is found and written in the task.
+
+* Plan
+
+The documents come first, and they are done: the new page, and the changes to the pipeline
+page, the series and observation page, the snapshots page and the ingest loop page. The
+code follows the page.
+
+1. Model the request and the reply as an operation type, so that the generator writes the
+   wire types.
+2. Add a tick reader to the repository: one probe on series and time, joined to the
+   coordinate dictionary, for a range, with an optional coordinate.
+3. Add the handler. It refuses a context with no party, checks the range and the
+   ceiling, and answers from the store. The window joins the answer when the lane window
+   is built.
+4. Point the shell and the screens of a live series at the call.
+5. State in the observation list that it returns no tick.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Observation rows of the Acme tenant, fresh database | 0 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_market_observations_tbl= where =valid_to= is infinity | 0078289946 |
+| Tick rows of the Acme tenant, 270 series | 1001105 | =compass sql= with =app.current_tenant_id= set, count on =ores_marketdata_ticks_tbl= | 0078289946 |
+| Ticks of series 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f | 5401 | group by series on =ores_marketdata_ticks_tbl= | 0078289946 |
+| Points that the list returns for that series, limit 2000 | 0, total 0 | =market_observations by-series-id 0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f --limit 2000= in =compass shell -f= | 0078289946 |
+
+* Notes
+
+** Finding
+
+The reported defect is real, and a fresh database shows it in its plain form. The list
+and the count of a series read =ores_marketdata_market_observations_tbl= only. Since
+c5ca60e3f6 the ingest writes live ticks to =ores_marketdata_ticks_tbl= only, so a live
+series lists no point at all.
+
+** Readers that already merge the tick table
+
+=read_latest_for_series=, =read_as_of_records=, =read_as_of_buckets= and =read_instants=
+in =market_observation_repository.cpp= read both tables. The as-of reader takes the
+latest tick of each coordinate, so it gives one point for each coordinate and not a window
+of points.
+
+** Readers that read the observation table only, and keep doing so
+
+- =read_latest_by_series_id= and =get_total_market_observation_count_by_series_id=. The
+  =market_observations by-series-id= call and the series list use them.
+- =read_latest(ctx, offset, limit, order, filter)= and its count, and =read_latest(ctx, ids)=.
+
+** Readers that already take ticks
+
+=series_snapshot_reader= calls =read_as_of_records=. =series_slice_reader= and
+=series_evolution_reader= call =read_instants=. =curve_pillar_reader= and
+=curve_republish_service= call =read_as_of=. =ore_export_service= reads both tables
+itself. All of them reach the tick table through the repository, and no change to them
+is needed. Only the list family above reads the observation table alone, and it keeps
+doing so.
+
+** The count of 45
+
+Not explained. The fresh database has no observation row, so it cannot show the number.
+The writers that still create observation rows are =import_service=,
+=manual_point_service= and =curve_republish_service=. A series that an ORE import or hand
+keying fed would keep its rows, and the list would show those and no tick. This is a
+guess. The database of the reporting environment, or a query of its series, would settle it.
+
+** Decision
+
+The observation list stays a list of observations. Ticks are a different kind of fact, with
+a different key and a different cost, so they get their own read. The backlog task "List
+live ticks with the observations of a series" asked for a merged list and is abandoned in
+favour of this task. A client makes two calls, one for history and one for new ticks, and
+merges them itself. A reply holds the whole range, with no pages.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3679][#3679]] | [marketdata] Document the tick read: one history call and one live subscription |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

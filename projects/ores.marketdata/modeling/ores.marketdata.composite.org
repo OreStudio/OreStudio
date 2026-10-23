@@ -167,7 +167,6 @@ One current composite produces an item, so the inputs of two composites never me
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

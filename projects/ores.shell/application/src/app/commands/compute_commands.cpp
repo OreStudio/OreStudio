@@ -45,6 +45,9 @@
 #include <chrono>
 #include <cli/cli.h>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <optional>
 #include <ostream>
 #include <thread>
 #include <unordered_set>
@@ -228,6 +231,7 @@ void compute_commands::process_publish_package(std::ostream& out,
                    {{.name = "file", .requires_value = true, .default_value = ""},
                     {.name = "wrapper-version", .requires_value = true, .default_value = "1.0.0"},
                     {.name = "min-ram-mb", .requires_value = true, .default_value = "0"},
+                    {.name = "release-note-file", .requires_value = true, .default_value = ""},
                     {.name = "http-base-url",
                      .requires_value = true,
                      .default_value = default_http_base_url()}});
@@ -238,7 +242,8 @@ void compute_commands::process_publish_package(std::ostream& out,
     if (parsed->positionals.size() != 3) {
         fail(out) << "Usage: compute publish-package <app_name> <engine_version> "
                      "<platform_code> [--file <path>] [--wrapper-version <v>] "
-                     "[--min-ram-mb <n>] [--http-base-url <url>]"
+                     "[--min-ram-mb <n>] [--release-note-file <path>] "
+                     "[--http-base-url <url>]"
                   << std::endl;
         return;
     }
@@ -265,6 +270,17 @@ void compute_commands::process_publish_package(std::ostream& out,
     if (!std::filesystem::exists(file)) {
         fail(out) << "Package file not found: " << file << std::endl;
         return;
+    }
+
+    // An empty value means the caller wrote no note, and a republish keeps the stored one.
+    std::optional<std::string> release_note;
+    if (const auto note_file = parsed->flag("release-note-file"); !note_file.empty()) {
+        std::ifstream in(note_file);
+        if (!std::filesystem::is_regular_file(note_file) || !in) {
+            fail(out) << "Release note file not found: " << note_file << std::endl;
+            return;
+        }
+        release_note = std::string(std::istreambuf_iterator<char>(in), {});
     }
 
     const auto platform_id = resolve_platform_id(out, session, platform_code);
@@ -324,6 +340,8 @@ void compute_commands::process_publish_package(std::ostream& out,
     ver.wrapper_version = wrapper_version;
     ver.engine_version = engine_version;
     ver.min_ram_mb = min_ram_mb;
+    ver.release_note =
+        release_note ? *release_note : (existing_version ? existing_version->release_note : "");
 
     compute::messaging::put_app_version_request ver_req;
     ver_req.change.write.id = ver.id;
@@ -331,6 +349,7 @@ void compute_commands::process_publish_package(std::ostream& out,
     ver_req.change.write.wrapper_version = ver.wrapper_version;
     ver_req.change.write.engine_version = ver.engine_version;
     ver_req.change.write.min_ram_mb = ver.min_ram_mb;
+    ver_req.change.write.release_note = ver.release_note;
     ver_req.intent.reason_code = reason_code;
     ver_req.intent.commentary = commentary;
     if (existing_version) {

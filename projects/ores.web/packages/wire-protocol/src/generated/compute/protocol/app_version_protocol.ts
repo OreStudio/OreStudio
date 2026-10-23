@@ -38,6 +38,7 @@ export interface AppVersionWrite {
     wrapper_version: string;
     engine_version: string;
     min_ram_mb: number;
+    release_note: string;
 }
 
 export interface AppVersionChange {

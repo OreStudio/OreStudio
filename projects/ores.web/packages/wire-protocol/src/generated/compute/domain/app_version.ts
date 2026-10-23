@@ -38,6 +38,7 @@ export interface AppVersion {
     wrapper_version: string;
     engine_version: string;
     min_ram_mb: number;
+    release_note: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

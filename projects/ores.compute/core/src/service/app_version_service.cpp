@@ -105,6 +105,7 @@ domain::app_version to_domain(const messaging::app_version_write& write) {
     v.wrapper_version = write.wrapper_version;
     v.engine_version = write.engine_version;
     v.min_ram_mb = write.min_ram_mb;
+    v.release_note = write.release_note;
     return v;
 }
 

@@ -75,6 +75,18 @@ Version of the underlying engine, e.g. 'ORE-Studio-7.1'.
 
 Minimum RAM in MB required by the node to run this app version.
 
+** release_note
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Release note of the release this app version belongs to, as plain text. One
+release is one engine build and one wrapper build, packaged for several
+platforms, and one note describes it. An empty note means none was written.
+
 * Foreign keys
 
 ** app_id

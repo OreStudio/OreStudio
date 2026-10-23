@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-job-page
-#+pr:
+#+pr: 3658
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ One page states where a job is, what ran it, and what it produced, and leads to 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -93,13 +93,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [web] Build the job page |
+| #3658 | [web] Build the job page |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed batch read is silent | GridJobPage.tsx | Fixed | The page shows the failure and a retry. |
+| 2 | The header mixes two runs | GridJobPage.tsx | Fixed | The header and the bar speak for the accepted run, else the first. A test covers it. |
+| 3 | Runs past 50 vanish | GridJobPage.tsx | Fixed | A note says how many of the total are shown. |
+| 4 | Magic number for a failed outcome | GridJobPage.tsx | Fixed | The check reads the outcome name. |
+| 5 | The warning fires for any failed run | GridJobPage.tsx | Fixed | The warning follows the accepted run. A test covers it. |
+| 6 | Negative seconds | GridJobPage.tsx | Fixed | The figure is clamped at 0. |
+| 7 | The bar is decorative | GridJobPage.tsx | No change | The hint says the bar has two ends. |
+| 8 | A sibling state ignores the outcome | GridJobPage.tsx | Fixed | A note says a failed job reads Done. |
+| 9 | Paths encode ids | paths.ts | Confirmed | Each path function encodes its id. |
 
 * Result
 

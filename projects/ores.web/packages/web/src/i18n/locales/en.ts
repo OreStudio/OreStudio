@@ -1765,6 +1765,7 @@ export const en: SourceCatalogue = {
                     },
                     run: 'Run',
                     canonical: '(canonical)',
+                    truncated: 'Showing the first {limit} of {total} runs.',
                 },
                 time: {
                     title: 'Where the time went',
@@ -1783,6 +1784,7 @@ export const en: SourceCatalogue = {
                     here: '(this job)',
                     state: 'State',
                     showing: 'Jobs {first} to {last} of {total}',
+                    note: 'The state is read from the canonical result. A job that ran and failed reads Done, so open it to read the outcome.',
                 },
                 files: {
                     title: 'Files',

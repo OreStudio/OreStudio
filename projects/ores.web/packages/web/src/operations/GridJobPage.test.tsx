@@ -25,7 +25,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { GridJobPage, canonicalRun, secondsBetween } from './GridJobPage.js';
+import { GridJobPage, canonicalRun, focusRun, secondsBetween } from './GridJobPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
 
 /**
@@ -209,6 +209,15 @@ describe('the job page', () => {
         expect(html).toContain('(canonical)');
     });
 
+    it('warns only when the accepted run failed, not when another run did', () => {
+        const html = render(workunit({ target_redundancy: 2 }), [
+            run({ id: 'c0000000-0000-4000-8000-000000000002', outcome: 3, output_uri: null }),
+            run(),
+        ]);
+
+        expect(html).not.toContain('A closed batch is not a successful batch.');
+    });
+
     it('says the report behind a batch is not a checked relationship', () => {
         const html = render(workunit(), [run()]);
 
@@ -222,6 +231,21 @@ describe('the helpers of the job page', () => {
 
         expect(canonicalRun(workunit(), runs)?.id).toBe(RESULT_ID);
         expect(canonicalRun(workunit({ canonical_result_id: null }), runs)).toBeUndefined();
+    });
+
+    it('speaks for the accepted run, and for the first when none is accepted', () => {
+        const other = run({ id: 'other' });
+        const runs = [other, run()];
+
+        expect(focusRun(workunit(), runs)?.id).toBe(RESULT_ID);
+        expect(focusRun(workunit({ canonical_result_id: null }), runs)?.id).toBe('other');
+        expect(focusRun(workunit(), [])).toBeUndefined();
+    });
+
+    it('never counts a negative number of seconds', () => {
+        expect(secondsBetween('2026-10-13 02:27:38.000000Z', '2026-10-13 02:27:28.000000Z')).toBe(
+            0,
+        );
     });
 
     it('counts the seconds from a write to the arrival of the output', () => {

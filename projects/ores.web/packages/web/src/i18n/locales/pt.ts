@@ -1776,6 +1776,7 @@ const pt: SourceCatalogue = {
                     },
                     run: 'Execução',
                     canonical: '(canónica)',
+                    truncated: 'São mostradas as primeiras {limit} de {total} execuções.',
                 },
                 time: {
                     title: 'Para onde foi o tempo',
@@ -1794,6 +1795,7 @@ const pt: SourceCatalogue = {
                     here: '(este trabalho)',
                     state: 'Estado',
                     showing: 'Trabalhos {first} a {last} de {total}',
+                    note: 'O estado lê-se no resultado canónico. Um trabalho que executou e falhou lê-se Concluído, por isso abra-o para ler o desfecho.',
                 },
                 files: {
                     title: 'Ficheiros',

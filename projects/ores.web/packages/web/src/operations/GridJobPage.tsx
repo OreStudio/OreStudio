@@ -101,6 +101,19 @@ export function canonicalRun(
     return runs.find((run) => run.id === workunit.canonical_result_id);
 }
 
+/** The run the page speaks for: the accepted one, else the first. */
+export function focusRun(
+    workunit: WorkunitView,
+    runs: readonly ResultView[],
+): ResultView | undefined {
+    return canonicalRun(workunit, runs) ?? runs[0];
+}
+
+/** A run that ended in a client error. */
+function failed(run: ResultView | undefined): boolean {
+    return run !== undefined && OUTCOME[run.outcome]?.name === 'clientError';
+}
+
 function OutcomeTag({ run }: { readonly run: ResultView }): ReactNode {
     const { t } = useTranslation();
     const outcome = OUTCOME[run.outcome];
@@ -163,9 +176,8 @@ function Header({
     readonly runs: readonly ResultView[];
 }): ReactNode {
     const { t, language } = useTranslation();
-    const first = runs[0];
+    const first = focusRun(workunit, runs);
     const none = t('operations.grid.jobs.none');
-    const failed = runs.some((run) => run.outcome === 3);
     return (
         <Panel
             title={t('operations.grid.job.title')}
@@ -208,7 +220,9 @@ function Header({
                     mono
                 />
             </dl>
-            {failed && <Notice tone="warn">{t('operations.grid.job.failedNote')}</Notice>}
+            {failed(canonicalRun(workunit, runs)) && (
+                <Notice tone="warn">{t('operations.grid.job.failedNote')}</Notice>
+            )}
         </Panel>
     );
 }
@@ -298,18 +312,19 @@ function RunsTable({
 
 /** The seconds between two instants, or null when the run has not arrived. */
 export function secondsBetween(recordedAt: string, receivedAt: string | null): number | null {
-    return receivedAt === null
-        ? null
-        : Math.round(
-              (parseTimestamp(receivedAt).getTime() - parseTimestamp(recordedAt).getTime()) / 1000,
-          );
+    if (receivedAt === null) {
+        return null;
+    }
+    const milliseconds =
+        parseTimestamp(receivedAt).getTime() - parseTimestamp(recordedAt).getTime();
+    return Math.max(0, Math.round(milliseconds / 1000));
 }
 
 /** One bar for the first run, from its row being written to its output arriving. */
 function TimeBar({ run }: { readonly run: ResultView }): ReactNode {
     const { t, language } = useTranslation();
     const seconds = secondsBetween(run.recorded_at, run.received_at);
-    const tone = seconds === null ? 'bg-accent/40' : run.outcome === 3 ? 'bg-down' : 'bg-up';
+    const tone = seconds === null ? 'bg-accent/40' : failed(run) ? 'bg-down' : 'bg-up';
     return (
         <Panel
             title={t('operations.grid.job.time.title')}
@@ -378,6 +393,7 @@ function SiblingJobs({ workunit }: { readonly workunit: WorkunitView }): ReactNo
             title={t('operations.grid.job.siblings.title')}
             note={plural('operations.grid.job.siblings.count', total, { total })}
         >
+            <p className="text-xs text-ink-faint">{t('operations.grid.job.siblings.note')}</p>
             <table className="w-full text-sm">
                 <thead className="text-left text-xs text-ink-faint">
                     <tr>
@@ -571,14 +587,27 @@ export function GridJobPage(): ReactNode {
             {workunit.isError && (
                 <ReadFailure error={workunit.error} onRetry={() => void workunit.refetch()} />
             )}
+            {batch.isError && (
+                <ReadFailure error={batch.error} onRetry={() => void batch.refetch()} />
+            )}
             {workunit.isSuccess && runs.isError && (
                 <ReadFailure error={runs.error} onRetry={() => void runs.refetch()} />
             )}
             {workunit.isSuccess && runs.isSuccess && (
                 <>
+                    {runs.data.total > RUNS_READ_LIMIT && (
+                        <Notice tone="warn">
+                            {t('operations.grid.job.runs.truncated', {
+                                limit: RUNS_READ_LIMIT,
+                                total: runs.data.total,
+                            })}
+                        </Notice>
+                    )}
                     <Header workunit={workunit.data} batch={batch.data} runs={runs.data.rows} />
                     <RunsTable workunit={workunit.data} runs={runs.data.rows} />
-                    {runs.data.rows[0] !== undefined && <TimeBar run={runs.data.rows[0]} />}
+                    {focusRun(workunit.data, runs.data.rows) !== undefined && (
+                        <TimeBar run={focusRun(workunit.data, runs.data.rows) as ResultView} />
+                    )}
                     <SiblingJobs workunit={workunit.data} />
                     <Files workunit={workunit.data} runs={runs.data.rows} />
                     <Release workunit={workunit.data} />

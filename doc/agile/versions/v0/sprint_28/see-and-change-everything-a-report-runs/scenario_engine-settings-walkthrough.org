@@ -138,9 +138,11 @@ Nothing in this scenario was run against a live service before this page was wri
 
 ** Read the history and revert
 
-- Open the History tab. The newest entry must be the change to 2 threads. The entries must show who changed it and when.
-- Choose Revert on that entry. The dialog must say that the values go back as a new version.
-- Confirm. The Execution tab must show 1 thread again. The History tab must now hold one more entry, and the old entries must stay.
+- Open the History tab. It must draw the shared timeline: the event chart, the entries grouped by day, one header line for each entry, the note on its own line and a collapsed detail. The newest version of each record carries the "Current version" emblem.
+- The newest entry must be the change to 2 threads. Its detail must show Threads from 1 to 2. The versions that only counted a change of a group must not appear.
+- Choose Revert on an older version of the Execution group. The dialog must say that the values that version held go back as a new version.
+- Confirm. The Execution tab must show the values of that version. The History tab must now hold one more entry, and the old entries must stay.
+- The newest version must offer no Revert.
 
 *** Result
 

@@ -54,6 +54,10 @@ import { DeleteDialog, LeavingFooter, RecordHeader, useCloseGuard } from '../ref
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
 import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { api } from '../api/client.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { orderTimeline, wireTimestamp, type TimelineEvent } from '@ores/wire-protocol/browser';
 import { useActingPartyId, useSwitchParty } from '../session/SessionProvider.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -944,7 +948,65 @@ function ChangeList({
     );
 }
 
-/** Every version of the configuration and of its groups, newest first, with a revert for a group. */
+const HISTORY_ENTITY = 'ores.reporting.engine_settings';
+
+/** The entity type a history entry carries, so the timeline pairs the versions of one record. */
+function entityOf(kind: EngineHistoryEntry['kind']): string {
+    return kind === 'central' ? HISTORY_ENTITY : `${HISTORY_ENTITY}_${kind}`;
+}
+
+/**
+ * The history as the entries the shared timeline draws. A group's entry carries the
+ * label and the value of each setting, and the configuration's carries its name and
+ * description, so the timeline shows each change as the difference it made. A
+ * version that only moved the configuration's version number, because a group
+ * changed, carries the same fields as the one before it and the timeline leaves it out.
+ */
+function eventsOf(
+    document: EngineDocument,
+    steps: readonly Step[],
+    groups: readonly EngineGroup[],
+    t: Translate,
+): TimelineEvent[] {
+    return steps.map(({ entry }) => {
+        const group = groups.find((candidate) => candidate.id === entry.kind);
+        const values = entry.values;
+        let fields: { name: string; value: string }[] = [];
+        if (values !== null && entry.kind === 'central') {
+            fields = [
+                { name: t('engineSettings.fields.name'), value: String(values['name'] ?? '') },
+                {
+                    name: t('engineSettings.fields.description'),
+                    value: String(values['description'] ?? ''),
+                },
+            ];
+        } else if (values !== null && group !== undefined) {
+            fields = group.settings.map((setting) => ({
+                name: labelOf(setting),
+                value:
+                    valueLabel(values[setting.column] ?? null, t) ??
+                    t('engineSettings.default', { value: shortDefault(setting.defaultText) }),
+            }));
+        }
+        return {
+            entityType: entityOf(entry.kind),
+            entityId: entry.kind === 'central' ? document.id : `${document.id}:${entry.kind}`,
+            kind: entry.version === 1 ? 'raised' : 'changed',
+            at: wireTimestamp(entry.recordedAt),
+            actor: entry.modifiedBy,
+            version: entry.version,
+            reasonCode: entry.changeReason,
+            commentary: entry.changeCommentary,
+            fields,
+        };
+    });
+}
+
+/**
+ * Every version of the configuration and of its groups, drawn by the shared
+ * timeline as the entity screen specification draws a history. A group's version
+ * older than the current one offers Revert to a person who may write.
+ */
 function HistoryTab({
     document,
     groups,
@@ -955,6 +1017,9 @@ function HistoryTab({
     readonly mayWrite: boolean;
 }): ReactNode {
     const { t } = useTranslation();
+    const holds = useHolds();
+    const pictureOf = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const history = useQuery({
         queryKey: historyKey(document.id),
         queryFn: () => engineSettings.history(document.id),
@@ -972,96 +1037,62 @@ function HistoryTab({
         return <Notice tone="error">{history.error.message}</Notice>;
     }
     const steps = stepsOf(history.data);
+    const stepOf = (event: TimelineEvent): Step | undefined =>
+        steps.find(
+            (step) =>
+                entityOf(step.entry.kind) === event.entityType &&
+                step.entry.version === event.version,
+        );
+    const groupOf = (step: Step): EngineGroup | undefined =>
+        groups.find((candidate) => candidate.id === step.entry.kind);
     return (
-        <section className="card space-y-3 p-4">
-            <h2 className="text-sm font-medium">{t('engineSettings.tabs.history')}</h2>
-            <p className="text-sm text-ink-muted">{t('engineSettings.history.lead')}</p>
-            <ol className="space-y-4">
-                {steps.map((step) => (
-                    <HistoryStep
-                        key={`${step.entry.kind}-${String(step.entry.version)}`}
-                        step={step}
-                        group={groups.find((candidate) => candidate.id === step.entry.kind)}
-                        mayRevert={mayWrite}
-                        onRevert={() => setReverting(step)}
-                    />
-                ))}
-            </ol>
+        <div className="space-y-3">
+            <Timeline
+                timeline={{
+                    subject: 'engine_settings',
+                    id: document.id,
+                    events: orderTimeline(eventsOf(document, steps, groups, t)),
+                    gaps: [],
+                }}
+                hideUnchanged
+                recordName={(event) =>
+                    event.entityType === HISTORY_ENTITY
+                        ? t('engineSettings.history.central')
+                        : t(
+                              `engineSettings.groups.${event.entityType.slice(HISTORY_ENTITY.length + 1)}.title`,
+                          )
+                }
+                actorPath={actorPathFor(holds('iam::accounts:read'))}
+                actorPicture={pictureOf}
+                isService={isService}
+                renderActions={(event) => {
+                    const step = stepOf(event);
+                    const group = step === undefined ? undefined : groupOf(step);
+                    if (!mayWrite || step === undefined || group === undefined) {
+                        return undefined;
+                    }
+                    return revertValues(group, step) === null ? undefined : (
+                        <div className="mt-2 flex justify-end">
+                            <Button size="sm" icon="revert" onClick={() => setReverting(step)}>
+                                {t('engineSettings.history.revert')}
+                            </Button>
+                        </div>
+                    );
+                }}
+            />
             {reverting !== null && (
                 <RevertDialog
                     document={document}
-                    group={groups.find((candidate) => candidate.id === reverting.entry.kind)}
+                    group={groupOf(reverting)}
                     step={reverting}
                     onClose={() => setReverting(null)}
                 />
             )}
-        </section>
+        </div>
     );
 }
 
-function HistoryStep({
-    step,
-    group,
-    mayRevert,
-    onRevert,
-}: {
-    readonly step: Step;
-    readonly group: EngineGroup | undefined;
-    readonly mayRevert: boolean;
-    readonly onRevert: () => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const entry: EngineHistoryEntry = step.entry;
-    const what =
-        entry.kind === 'central'
-            ? t('engineSettings.history.central')
-            : t(`engineSettings.groups.${entry.kind}.title`);
-    const changes =
-        group === undefined || entry.values === null
-            ? []
-            : differenceOf(
-                  group,
-                  step.previous === null
-                      ? defaultsOf(group)
-                      : draftFromValues(group, step.previous),
-                  draftFromValues(group, entry.values),
-              );
-    const revert = group === undefined ? null : revertValues(group, step);
-    return (
-        <li className="space-y-1 border-l-2 border-line pl-3">
-            <div className="flex flex-wrap items-baseline gap-2 text-sm">
-                <Tag tone={step.first ? 'up' : 'neutral'} small>
-                    {step.first
-                        ? t('engineSettings.history.created')
-                        : t('engineSettings.history.changed')}
-                </Tag>
-                <span className="font-medium">{what}</span>
-                <span className="text-xs text-ink-faint">
-                    {t('engineSettings.history.version', { version: String(entry.version) })}
-                </span>
-                {step.current && (
-                    <Tag tone="accent" small>
-                        {t('engineSettings.history.current')}
-                    </Tag>
-                )}
-            </div>
-            <div className="text-xs text-ink-faint">
-                {entry.modifiedBy} · <RelativeTime at={entry.recordedAt} /> · {entry.changeReason}
-                {entry.changeCommentary !== '' && ` · “${entry.changeCommentary}”`}
-            </div>
-            {group !== undefined && changes.length > 0 && (
-                <ChangeList group={group} changes={changes} />
-            )}
-            {mayRevert && revert !== null && (
-                <Button size="sm" variant="ghost" icon="revert" onClick={onRevert}>
-                    {t('engineSettings.history.revert')}
-                </Button>
-            )}
-        </li>
-    );
-}
-
-/** Writes the values a group had before a step as a new version, with a reason. */
+/** Writes the values a group held at an earlier version as a new version, with a reason. */
 function RevertDialog({
     document,
     group,

@@ -494,6 +494,46 @@ describe('engine settings routes', () => {
         expect(calls.some((call) => call.subject.endsWith('.delete'))).toBe(false);
     });
 
+    it('states the name and the description in each version of the configuration, and the values of a group', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...reads,
+            'reporting.v1.engine_settings_versions.list': {
+                result: ok,
+                versions: [
+                    { ...central, version: 3, name: 'HK standard', description: 'Newer' },
+                    { ...central, version: 2, name: 'HK standard', description: 'Older' },
+                ],
+            },
+            'reporting.v1.engine_settings_execution_versions.list': {
+                result: ok,
+                versions: [execution],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/engine-settings/${SETTINGS_ID}/history`,
+        );
+        expect(response.statusCode).toBe(200);
+        const entries = response.json().entries;
+        expect(entries.filter((entry: { kind: string }) => entry.kind === 'central')).toEqual([
+            expect.objectContaining({
+                version: 3,
+                values: { name: 'HK standard', description: 'Newer' },
+            }),
+            expect.objectContaining({
+                version: 2,
+                values: { name: 'HK standard', description: 'Older' },
+            }),
+        ]);
+        expect(entries.find((entry: { kind: string }) => entry.kind === 'execution')).toMatchObject(
+            {
+                values: { n_threads: 4 },
+            },
+        );
+    });
+
     describe('from a party that does not own the configuration', () => {
         const GROUP_PARTY = { id: '0b0b0b0b-1111-4222-8333-555555555555', name: 'Acme Group' };
 

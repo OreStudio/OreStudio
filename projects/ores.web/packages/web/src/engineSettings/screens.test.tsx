@@ -23,7 +23,12 @@ import type { QueryClient } from '@tanstack/react-query';
 import { Route } from 'react-router';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TranslationProvider } from '../i18n/Provider.js';
-import type { EngineDocument, EngineDocumentation, EngineSummary } from '../api/engineSettings.js';
+import type {
+    EngineDocument,
+    EngineDocumentation,
+    EngineHistoryEntry,
+    EngineSummary,
+} from '../api/engineSettings.js';
 import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
@@ -34,6 +39,7 @@ import {
     EngineSettingsRecordPage,
     SettingRow,
     engineSettingsKey,
+    historyKey,
 } from './EngineSettingsRecordPage.js';
 
 const acting = vi.hoisted(() => ({
@@ -234,6 +240,7 @@ function record(
     tab = '',
     document: EngineDocument = DOCUMENT,
     parties = TWO_PARTIES,
+    history: readonly EngineHistoryEntry[] | undefined = undefined,
 ): string {
     return renderRecords(
         `/reporting/engine-settings/${HK}${tab === '' ? '' : `?tab=${tab}`}`,
@@ -243,6 +250,9 @@ function record(
             client.setQueryData(['my-access'], accessOf(codes));
             client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(engineSettingsKey(HK), document);
+            if (history !== undefined) {
+                client.setQueryData(historyKey(HK), history);
+            }
             client.setQueryData(DOCUMENTATION_KEY, DOCUMENTATION);
         },
     );
@@ -455,5 +465,64 @@ describe('a setting being changed', () => {
         const html = row(null);
         expect(html).toContain('aria-invalid="false"');
         expect(html).not.toContain('role="alert"');
+    });
+});
+
+describe('the history of a configuration', () => {
+    const version = (
+        kind: EngineHistoryEntry['kind'],
+        number: number,
+        at: string,
+        values: EngineHistoryEntry['values'],
+    ): EngineHistoryEntry => ({
+        kind,
+        version: number,
+        modifiedBy: 'analyst',
+        recordedAt: at,
+        changeReason: 'common.correction',
+        changeCommentary: `change ${String(number)}`,
+        values,
+    });
+    const HISTORY = [
+        version('central', 1, '2026-10-18 09:00:00.000000Z', {
+            name: 'HK standard',
+            description: 'What the Hong Kong reports share',
+        }),
+        version('execution', 1, '2026-10-18 09:01:00.000000Z', {
+            n_threads: 1,
+            log_mask: null,
+            gzip_compression_level: null,
+        }),
+        version('execution', 2, '2026-10-19 09:00:00.000000Z', {
+            n_threads: 4,
+            log_mask: null,
+            gzip_compression_level: null,
+        }),
+        version('central', 2, '2026-10-19 09:00:00.000000Z', {
+            name: 'HK standard',
+            description: 'What the Hong Kong reports share',
+        }),
+    ];
+
+    it('draws the shared timeline: the chart, one entry for each change and the system toggle', () => {
+        const text = textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY));
+        expect(text).toContain('Execution');
+        expect(text).toContain('The configuration');
+        expect(text).toContain('change 2');
+        expect(text).toContain('Threads');
+    });
+
+    it('leaves out the version of the configuration that only counted a change of a group', () => {
+        const text = textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY));
+        expect(text.match(/change 2/g)?.length).toBe(1);
+    });
+
+    it('offers Revert on a version older than the current one, and only to a person who may write', () => {
+        expect(textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY))).toContain(
+            'Revert',
+        );
+        expect(textOf(record(READ, 'history', DOCUMENT, TWO_PARTIES, HISTORY))).not.toContain(
+            'Revert',
+        );
     });
 });

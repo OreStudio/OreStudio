@@ -669,7 +669,10 @@ export function registerEngineSettingsRoutes(
             recordedAt: text(version['recorded_at']),
             changeReason: text(version['change_reason_code']),
             changeCommentary: text(version['change_commentary']),
-            values: kind === 'central' ? null : valuesOf(groupOf(kind), version),
+            values:
+                kind === 'central'
+                    ? { name: text(version['name']), description: text(version['description']) }
+                    : valuesOf(groupOf(kind), version),
         });
         return {
             entries: [

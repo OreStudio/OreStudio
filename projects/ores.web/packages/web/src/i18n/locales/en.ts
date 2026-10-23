@@ -4785,17 +4785,12 @@ export const en: SourceCatalogue = {
             count: '{count} reports',
         },
         history: {
-            lead: 'Every version of these engine settings and of its groups, newest first. Revert writes the values a group had before a change as a new version.',
             central: 'The configuration',
-            created: 'Created',
-            changed: 'Changed',
-            version: 'version {version}',
-            current: 'current',
             revert: 'Revert',
         },
         revert: {
             title: 'Revert the group',
-            lead: 'This writes the values the group had before the change as a new version. The history keeps the version it replaces.',
+            lead: 'This writes the values the group held at this version as a new version. The history keeps the version it replaces.',
             nothing: 'The group already holds these values.',
         },
         rename: {

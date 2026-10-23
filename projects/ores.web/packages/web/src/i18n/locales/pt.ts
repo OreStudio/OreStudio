@@ -4825,17 +4825,12 @@ const pt: SourceCatalogue = {
             count: '{count} relatórios',
         },
         history: {
-            lead: 'Cada versão destas configurações do motor e de seus grupos, da mais recente para a mais antiga. Reverter escreve os valores que um grupo tinha antes de uma alteração como uma nova versão.',
             central: 'A configuração',
-            created: 'Criado',
-            changed: 'Alterado',
-            version: 'versão {version}',
-            current: 'atual',
             revert: 'Reverter',
         },
         revert: {
             title: 'Reverter o grupo',
-            lead: 'Isto escreve os valores que o grupo tinha antes da alteração como uma nova versão. O histórico mantém a versão que ela substitui.',
+            lead: 'Isto grava como nova versão os valores que o grupo tinha nesta versão. O histórico mantém a versão que ela substitui.',
             nothing: 'O grupo já contém estes valores.',
         },
         rename: {

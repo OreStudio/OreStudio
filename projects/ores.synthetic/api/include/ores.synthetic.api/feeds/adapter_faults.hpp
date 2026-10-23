@@ -48,6 +48,8 @@ struct fault_plan final {
     bool out_of_range = false;
     bool not_entitled = false;
 
+    bool operator==(const fault_plan&) const = default;
+
     /// Whether any fault is on.
     [[nodiscard]] bool any() const {
         return connection_lost || tick_delay.count() > 0 || repeat_ticks || out_of_range ||
@@ -80,13 +82,21 @@ private:
  * @brief The ticks a generator publishes for the tick it made, under @p plan.
  *
  * @p previous is the last tick the generator made. It is replaced by @p tick, so a repeated
- * tick is the one before the tick that was just made.
+ * tick is the one before the tick that was just made. The repeat is the tick as the generator
+ * made it, without the delay or the out of range value, so the service drops it for its older
+ * vendor time and for no other reason.
+ *
+ * A lost connection delivers no tick at all.
  */
 [[nodiscard]] inline std::vector<ores::marketdata::messaging::adapter_tick>
 faulted_ticks(const fault_plan& plan,
               ores::marketdata::messaging::adapter_tick tick,
               std::optional<ores::marketdata::messaging::adapter_tick>& previous) {
     const auto made = tick;
+    if (plan.connection_lost) {
+        previous = made;
+        return {};
+    }
     if (plan.out_of_range)
         tick.value =
             std::format("{}", ores::marketdata::domain::adapter_limits::max_abs_value * 10);

@@ -140,7 +140,14 @@ void simulator_adapter::loop() {
     constexpr auto slice = std::chrono::milliseconds(50);
     auto next_announce = clock::now();
     auto next_heartbeat = clock::now();
+    ores::synthetic::feed::fault_plan seen = faults();
     while (!stop_.load(std::memory_order_relaxed)) {
+        // A change of the plan announces the adapter again, so the service sends the demand
+        // set again. A generator that a fault stopped starts again without the author's help.
+        if (const auto plan = faults(); !(plan == seen)) {
+            seen = plan;
+            next_announce = clock::now();
+        }
         // A lost connection sends nothing, so the service makes the adapter stale. The
         // announce and the heartbeat resume when the fault is off.
         if (faults().connection_lost) {

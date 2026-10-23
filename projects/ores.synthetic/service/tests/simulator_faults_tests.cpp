@@ -115,6 +115,14 @@ TEST_CASE("a delay fault sends a vendor time older than the age limit", tags) {
     CHECK(now - out.front().vendor_time > domain::adapter_limits::max_tick_age);
 }
 
+TEST_CASE("a lost connection delivers no tick", tags) {
+    std::optional<messaging::adapter_tick> previous;
+    fault_plan plan;
+    plan.connection_lost = true;
+
+    CHECK(faulted_ticks(plan, tick_at(std::chrono::system_clock::now(), "1.25"), previous).empty());
+}
+
 TEST_CASE("a repeat fault sends the tick before the new one again, with its older vendor time",
           tags) {
     std::optional<messaging::adapter_tick> previous;
@@ -201,6 +209,13 @@ TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is of
 
     faults->set(fault_plan{});
     CHECK(eventually([&] { return beats > 0 && announces > 0; }));
+
+    // A change of the plan announces the adapter again, so the service sends its demand again.
+    const auto before = announces.load();
+    fault_plan entitled_off;
+    entitled_off.not_entitled = true;
+    faults->set(entitled_off);
+    CHECK(eventually([&] { return announces > before; }));
     adapter.stop();
 }
 

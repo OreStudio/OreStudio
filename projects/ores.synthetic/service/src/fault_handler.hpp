@@ -113,7 +113,19 @@ public:
 
 private:
     static std::string describe(const ores::synthetic::messaging::set_faults_request& request) {
-        return plan_of(request).any() ? "faults on" : "no fault on";
+        std::string on;
+        const auto add = [&on](bool active, const char* name) {
+            if (!active)
+                return;
+            on += on.empty() ? "" : ", ";
+            on += name;
+        };
+        add(request.connection_lost, "connection_lost");
+        add(request.tick_delay_ms > 0, "tick_delay");
+        add(request.repeat_ticks, "repeat_ticks");
+        add(request.out_of_range, "out_of_range");
+        add(request.not_entitled, "not_entitled");
+        return on.empty() ? "no fault on" : "faults on: " + on;
     }
 
     ores::nats::service::client& nats_;

@@ -446,6 +446,22 @@ function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
     );
 }
 
+/**
+ * The outcomes a person may ask for, as codes: 1 Success, 3 ClientError, 4 NoReply and
+ * 0 for a run with no outcome yet.
+ */
+export const OUTCOME_CODES: readonly number[] = [1, 3, 4, 0];
+
+/** The outcome code the address asks for, or nothing when it asks for none. */
+export function outcomeOf(params: URLSearchParams): number | null {
+    const raw = params.get('outcome');
+    if (raw === null) {
+        return null;
+    }
+    const code = Number(raw);
+    return OUTCOME_CODES.includes(code) ? code : null;
+}
+
 /** What narrows the batch list, from the address. Every member is empty when unset. */
 export interface BatchFilterParams {
     readonly find: string;
@@ -491,6 +507,7 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
     const { t } = useTranslation();
     const address = useJobsAddress();
     const filter = batchFilterOf(address.params);
+    const outcome = outcomeOf(address.params);
     const [text, setText] = useState(filter.find);
     // The address can change outside the form: Back, or a link opened in this tab.
     useEffect(() => setText(filter.find), [filter.find]);
@@ -508,6 +525,7 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
                 {t('operations.grid.jobs.finder.find')}
                 <Input
                     type="search"
+                    disabled={outcome !== null}
                     value={text}
                     placeholder={t('operations.grid.jobs.finder.placeholder')}
                     onChange={(event) => setText(event.target.value)}
@@ -517,6 +535,7 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
                 {t(`${FIELDS}.status`)}
                 <Select
                     value={filter.status}
+                    disabled={outcome !== null}
                     onChange={(event) => apply({ status: event.target.value })}
                 >
                     <option value="">{t('operations.grid.jobs.finder.any')}</option>
@@ -532,6 +551,7 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
                     {t('operations.grid.jobs.finder.party')}
                     <Select
                         value={filter.party}
+                        disabled={outcome !== null}
                         onChange={(event) => apply({ party: event.target.value })}
                     >
                         <option value="">{t('operations.grid.jobs.finder.any')}</option>
@@ -543,21 +563,103 @@ function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): Reac
                     </Select>
                 </label>
             )}
-            <Button type="submit" variant="secondary">
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t(`${FIELDS}.outcome`)}
+                <Select
+                    value={outcome === null ? '' : String(outcome)}
+                    onChange={(event) => apply({ outcome: event.target.value, sel: null })}
+                >
+                    <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                    {OUTCOME_CODES.map((code) => (
+                        <option key={code} value={String(code)}>
+                            {OUTCOME[code] === undefined
+                                ? t('operations.grid.jobs.outcomeNotSet')
+                                : t(`operations.grid.jobs.outcome.${OUTCOME[code].name}`)}
+                        </option>
+                    ))}
+                </Select>
+            </label>
+            <Button type="submit" variant="secondary" disabled={outcome !== null}>
                 {t('operations.grid.jobs.finder.search')}
             </Button>
             <Button
                 type="button"
                 variant="ghost"
-                disabled={!isFiltered(filter) && text === ''}
+                disabled={!isFiltered(filter) && text === '' && outcome === null}
                 onClick={() => {
                     setText('');
-                    apply({ find: null, status: null, party: null });
+                    apply({ find: null, status: null, party: null, outcome: null });
                 }}
             >
                 {t('operations.grid.jobs.finder.clear')}
             </Button>
         </form>
+    );
+}
+
+/**
+ * The runs that ended with the outcome the address asks for, one page at a time.
+ *
+ * A run belongs to a workunit and the workunit to a batch, and the tree opens by
+ * batch. So this answer is a flat list: each row selects the run, and Follow this job
+ * leads to the job page, which names the batch.
+ */
+function OutcomeList({ outcome }: { readonly outcome: number }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const size = numberParam(address.params.get('size'), DEFAULT_PAGE_SIZE);
+    const page = numberParam(address.params.get('page'), 1);
+    const offset = (page - 1) * size;
+    const runs = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'by-outcome', outcome, offset, size],
+        queryFn: () => api.gridJobResultsByOutcome(outcome, offset, size),
+        meta: QUIET,
+    });
+    const selection = parseSelection(address.params.get('sel'));
+
+    if (runs.isError) {
+        return <ReadFailure error={runs.error} onRetry={() => void runs.refetch()} />;
+    }
+    if (runs.isPending) {
+        return <p className="text-sm text-ink-muted">{t('operations.grid.jobs.loadingResults')}</p>;
+    }
+    const rows = runs.data.rows;
+    if (runs.data.total === 0) {
+        return <Notice>{t('operations.grid.jobs.noRuns')}</Notice>;
+    }
+    return (
+        <>
+            <ul>
+                {rows.map((run) => (
+                    <TreeRow
+                        key={run.id}
+                        label={run.id.slice(0, 8)}
+                        title={run.id}
+                        note={t('operations.grid.jobs.ofWorkunit', {
+                            id: run.workunit_id.slice(0, 8),
+                        })}
+                        tags={<ResultTags result={run} />}
+                        selected={selection?.kind === 'result' && selection.id === run.id}
+                        onClick={() => address.set({ sel: `result:${run.id}` })}
+                    />
+                ))}
+            </ul>
+            <Pager
+                offset={offset}
+                shown={rows.length}
+                total={runs.data.total}
+                pageSize={size}
+                showing={showingText(
+                    t,
+                    'operations.grid.jobs.resultsShowing',
+                    offset,
+                    rows.length,
+                    runs.data.total,
+                )}
+                onMove={(next) => address.set({ page: String(Math.floor(next / size) + 1) })}
+                onPageSize={(next) => address.set({ size: String(next), page: null })}
+            />
+        </>
     );
 }
 
@@ -923,15 +1025,18 @@ export function GridJobsTab({
     const { t } = useTranslation();
     const address = useJobsAddress();
     const selection = parseSelection(address.params.get('sel'));
+    const outcome = outcomeOf(address.params);
+    const listTitle =
+        outcome === null
+            ? t('operations.grid.jobs.treeTitle')
+            : t('operations.grid.jobs.runsTitle');
     return (
         <div className="space-y-6">
             <Finder parties={parties} />
             <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-label={t('operations.grid.jobs.treeTitle')}>
-                    <h2 className="mb-3 text-sm font-medium">
-                        {t('operations.grid.jobs.treeTitle')}
-                    </h2>
-                    <Tree />
+                <section aria-label={listTitle}>
+                    <h2 className="mb-3 text-sm font-medium">{listTitle}</h2>
+                    {outcome === null ? <Tree /> : <OutcomeList outcome={outcome} />}
                 </section>
                 <section aria-label={t('operations.grid.jobs.details.record')}>
                     <div className="mb-3 flex items-center justify-between">

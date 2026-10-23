@@ -35,6 +35,8 @@ import {
     type GetResultResponse,
     type ListByWorkunitIdResultsRequest,
     type ListByWorkunitIdResultsResponse,
+    type ListResultsRequest,
+    type ListResultsResponse,
 } from './generated/compute/protocol/result_protocol.js';
 import {
     subjects as workunitSubjects,
@@ -179,6 +181,34 @@ export const listResultsByWorkunitReplySchema = z.object({
     total: z.int().nonnegative().default(0),
 }) satisfies z.ZodType<ListByWorkunitIdResultsResponse>;
 
+/**
+ * `list_results_request`, sent on `compute.v1.results.list`.
+ *
+ * The list reads every run the session may see. A filter by outcome narrows it. The
+ * result model states no default order, so a read that wants newest first asks for the
+ * recording time, which the model declares sortable.
+ */
+export const listResultsRequestSchema = z.object({
+    ...pageFields,
+    filter: z
+        .object({
+            workunit_id: z.string().nullable().default(null),
+            outcome: z.int().nullable().default(null),
+            id_one_of: z.array(z.string()).nullable().default(null),
+            workunit_id_one_of: z.array(z.string()).nullable().default(null),
+            outcome_one_of: z.array(z.int()).nullable().default(null),
+        })
+        .nullable()
+        .default(null),
+    as_of: z.string().nullable().default(null),
+}) satisfies z.ZodType<ListResultsRequest>;
+
+export const listResultsReplySchema = z.object({
+    result: decidedResultSchema,
+    results: z.array(resultSchema).default([]),
+    total: z.int().nonnegative().default(0),
+}) satisfies z.ZodType<ListResultsResponse>;
+
 export const getWorkunitRequestSchema = z.object({
     key: z.object({ id: z.string() }),
 }) satisfies z.ZodType<GetWorkunitRequest>;
@@ -202,6 +232,7 @@ export const GRID_JOB_SUBJECTS = {
     listBatches: batchSubjects.list_batches_request,
     listWorkunitsByBatch: workunitSubjects.list_by_batch_id_workunits_request,
     getWorkunit: workunitSubjects.get_workunit_request,
+    listResults: resultSubjects.list_results_request,
     listResultsByWorkunit: resultSubjects.list_by_workunit_id_results_request,
     getResult: resultSubjects.get_result_request,
 } as const;
@@ -465,6 +496,30 @@ export async function readResultsOfWorkunit(
         listResultsByWorkunitReplySchema,
     );
     requireOk(GRID_JOB_SUBJECTS.listResultsByWorkunit, reply.result);
+    return { results: reply.results, total: reply.total };
+}
+
+/**
+ * One page of the runs that ended with an outcome, newest first.
+ *
+ * This answers which of the runs failed. The outcome is a code: 1 is Success, 3 is
+ * ClientError, 4 is NoReply, and 0 is a run that has no outcome yet.
+ */
+export async function readResultsByOutcome(
+    caller: AuthenticatedCaller,
+    outcome: number,
+    page: JobPageRequest,
+): Promise<{ readonly results: readonly Result[]; readonly total: number }> {
+    const reply = await caller.callAuthenticated(
+        GRID_JOB_SUBJECTS.listResults,
+        listResultsRequestSchema.parse({
+            ...page,
+            order: { field: 'recorded_at', descending: true },
+            filter: { outcome },
+        }),
+        listResultsReplySchema,
+    );
+    requireOk(GRID_JOB_SUBJECTS.listResults, reply.result);
     return { results: reply.results, total: reply.total };
 }
 

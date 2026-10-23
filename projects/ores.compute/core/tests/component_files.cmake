@@ -32,6 +32,7 @@ set(files
     "repository_batch_filter_tests.cpp"
     "repository_batch_stated_order_tests.cpp"
     "repository_compute_telemetry_repository_tests.cpp"
+    "repository_result_outcome_filter_tests.cpp"
     "repository_work_ledger_repository_tests.cpp"
     "repository_work_tenant_repository_tests.cpp"
     "repository_work_total_repository_tests.cpp"

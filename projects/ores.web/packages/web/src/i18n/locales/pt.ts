@@ -1694,6 +1694,9 @@ const pt: SourceCatalogue = {
                 loadingResults: 'A ler os resultados...',
                 empty: 'Ainda não foi registado nenhum lote.',
                 noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
+                runsTitle: 'Execuções com o desfecho',
+                noRuns: 'Nenhuma execução terminou com este desfecho.',
+                ofWorkunit: 'da unidade de trabalho {id}',
                 finder: {
                     find: 'Procurar',
                     placeholder: 'parte da referência do lote',

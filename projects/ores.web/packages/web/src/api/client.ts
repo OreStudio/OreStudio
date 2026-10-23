@@ -2372,6 +2372,26 @@ export const api = {
         );
     },
 
+    /**
+     * One page of the runs that ended with an outcome, newest first.
+     *
+     * An outcome of 3 reads the runs that failed. The call names no tenant and no party:
+     * the compute service decides which runs the session may see.
+     */
+    async gridJobResultsByOutcome(
+        outcome: number,
+        offset: number,
+        limit: number,
+    ): Promise<ResultPage> {
+        const query = new URLSearchParams(pageQuery({ offset, limit }));
+        query.set('outcome', String(outcome));
+        return resultPageSchema.parse(
+            await request(`/api/operations/grid/jobs/results?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
     /** One batch by id. */
     async gridJobBatch(id: string): Promise<BatchView> {
         return batchViewSchema.parse(

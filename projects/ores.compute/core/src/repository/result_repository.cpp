@@ -120,6 +120,8 @@ filter_condition(const std::optional<messaging::results_filter>& filter) {
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->workunit_id)
         r.push_back(equals("workunit_id", filter_value(*filter->workunit_id)));
+    if (filter->outcome)
+        r.push_back(equals("outcome", filter_value(*filter->outcome)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -131,6 +133,12 @@ filter_condition(const std::optional<messaging::results_filter>& filter) {
         for (const auto& v : *filter->workunit_id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("workunit_id", std::move(values)));
+    }
+    if (filter->outcome_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->outcome_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("outcome", std::move(values)));
     }
     return all_of(std::move(r));
 }

@@ -151,14 +151,12 @@ whose =status= changes is recorded again and moves to the top of the list.
 * What is missing
 
 1. *Filters on the batch list are partial.* The list narrows by status, by party and
-   by a part of the reference, on the server. A filter by outcome is still missing,
-   and so is one by date.
-2. *No way to find failed results.* "Which of the 1268 failed?" has no read.
-   =read_by_state= filters on =server_state=, and every stored result is Done,
-   so the failed ones are not separable. A read by =outcome=, and a way from a
-   result to its batch, would answer it. Until then the person opens batches
-   and reads each result's =outcome=. The screen shows no per-batch job or
-   failure count, because the models hold none.
+   by a part of the reference, on the server. A filter by date is still missing.
+2. *Finding the failed runs is flat.* A read by =outcome= lists the runs that ended with
+   a code, newest first, and each run leads to its job page, which names its batch. The
+   Jobs tab draws it as a flat list. It does not prune the tree to the batches that
+   hold such a run, because the models hold no count of failures per batch. The batch
+   and the outcome filters do not combine.
 3. *No run statistics on the result.* The result holds no start time, no end
    time, no input or output size and no memory figure. The wrapper measures the
    run's duration and the bytes it fetched and uploaded, but it only sums them

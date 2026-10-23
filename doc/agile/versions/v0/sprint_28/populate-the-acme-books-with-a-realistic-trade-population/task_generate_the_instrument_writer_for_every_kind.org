@@ -67,7 +67,8 @@ task and name that file in the Command column.
 | Synthetic core suite | passed on a fresh database. On the first run, 6 cases failed with a not-null error on =scope=, because the database was older than the checkout. | =./compass.sh test run -- -R ores.synthetic.core.tests= | the task commit |
 | Drift and lint checks | clean: paste-block symbols, test-case reachability, handler permissions, cmake sources, catalogue sweep, misspell | the checks of =compass-pr-raise= step 1 | the task commit |
 | Trades on a provisioned Acme tenant | 32 trades, each with an identifier, a bond instrument, a state and a booking; trade version 5 | =./compass.sh db sql= with a distinct count of each table | the task commit |
-| Full suite | not run | | |
+| Full suite | 93 of 96 passed. =ores.marketdata.service.tests= (two =wait_until= timeouts), =ores.synthetic.service.tests= (=simulator_adapter_tests.cpp:450=) and =ores.reporting.core.tests= (row-level security on =ores_reporting_ore_parameters_tbl=) failed. | =./compass.sh test run= | the task commit |
+| The three failing suites on clean main | The same three failures, the same assertions. This branch does not cause them. | =./compass.sh test run -- -R <suite>= for each | main 1e5e696458 |
 
 * Notes
 
@@ -107,4 +108,4 @@ via its "Verifies task" field.
 
 A swap trade with its header and two legs books, exports and books back to the same legs. An FX forward trade books with its instrument. The 32 trades of a provisioned Acme tenant stay whole.
 
-Not done: a bond row's remainder members (fact rows, schedules, legs, option block) have no writer, and the service refuses them by name. The round trip is proved for one family with children, not for every kind. I did not run the full suite.
+Not done: a bond row's remainder members (fact rows, schedules, legs, option block) have no writer, and the service refuses them by name. The round trip is proved for one family with children, not for every kind. Three suites fail in the full run, and they fail the same way on a clean main.

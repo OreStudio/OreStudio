@@ -11,7 +11,7 @@
 
 * Summary
 
-A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The terms of some sources are read from the official pages. The terms of the Treasury and of most Bank of England series are still open.
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, read through the Frankfurter API, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The terms of some sources are read from the official pages. The terms of the Treasury and of most Bank of England series are still open.
 
 * Detail
 
@@ -29,6 +29,19 @@ The synthetic ticks are native to the vendor: a Bloomberg generator sends Bloomb
 | [[https://www.newyorkfed.org/privacy/termsofuse][New York Fed SOFR]] | The overnight USD rate. | The New York Fed markets data. | A licence to use, copy, distribute and modify for business purposes. A reference rate needs the stated notice and disclaimer, a label on any modified data, and no claim of endorsement. SOFR is calculated from data that DTCC Solutions licenses. |
 | [[https://www.bankofengland.co.uk/markets/sonia-benchmark][Bank of England SONIA]] | The overnight GBP rate. | The statistical database, by 10:00 on the next business day. | The Bank's [[https://www.bankofengland.co.uk/legal][legal page]] puts the database under the Open Government Licence. Its exact credit line is stated for SONIA only: "SONIA and/or SONIA Compounded Index data licensed under the Open Government Licence v3.0 and copyright the Governor and Company of the Bank of England". |
 | ECB €STR | The overnight EUR rate. | The ECB statistics. | The ECB usage policy above. |
+
+** Frankfurter as the access route for FX
+
+[[https://github.com/lineofflight/frankfurter][Frankfurter]] is an open source (MIT) exchange rate API. It reads the daily rates of about 105 central banks and official sources, among them the ECB, the Federal Reserve through FRED, the BIS and the central banks of Taiwan, Chile and Brazil. Its [[https://frankfurter.dev][documentation]] says the rates go back to 1948, that there are no quotas but requests are rate-limited, and that storing daily data locally is encouraged. A call to =/v2/rates= returns the latest, a past date or a time series, as JSON, CSV or NDJSON. The hosted API is =api.frankfurter.dev=, and a Docker image runs it on our own host with a SQLite file. Some providers need a free key of their own, such as FRED.
+
+It answers the coverage gap, because one client reads the pairs that neither the ECB nor the H.10 carries. A call to =/v2/providers= lists a terms page for most providers, and some providers have none.
+
+Three rules keep the provenance honest:
+- The retrieval step asks for one provider at a time and never takes the blended rate. The blended rate is Frankfurter's own calculation, and it hides which bank the number comes from. Each stored value keeps the provider key, so the credit and the terms of that provider apply.
+- The hosted service is a convenience. The step reads the address from a setting, so a team can point it at its own Frankfurter in Docker without a change of code.
+- Frankfurter is the route for FX only. The Treasury curve and the overnight rates are read from their own sources.
+
+Two things are not settled. The licence page of Frankfurter was not read, because its address redirects. The terms of each provider are the ones its own page states.
 
 ** What this page does not settle
 

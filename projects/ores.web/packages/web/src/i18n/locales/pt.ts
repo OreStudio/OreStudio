@@ -1819,12 +1819,31 @@ const pt: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Linhagem',
-                    batchVia:
-                        'O lote nomeia uma execução de relatório na sua referência externa, aqui {ref}. O modelo não a declara como relação, e ainda não existe página de execução de relatório. Um lote enviado pela shell contém uma cadeia de operador e não tem relatório por trás.',
+                    reportRun: 'Abrir a execução de relatório nomeada pela referência externa',
+                    noReport:
+                        'Nenhum relatório está por trás deste lote. A shell enviou-o, e a sua referência externa é uma cadeia de operador.',
                     workunit: 'Unidade de trabalho {id} (este trabalho)',
                     viaBatch: 'por batch_id',
                     result: 'Resultado {id}, execução {run},',
                 },
+            },
+            reportRun: {
+                title: 'Execução de relatório',
+                description:
+                    'A execução de um relatório que enviou um lote: o seu estado, as suas horas e o lote que criou.',
+                loading: 'A ler a execução de relatório...',
+                run: 'Execução',
+                name: 'Nome',
+                kind: 'Tipo',
+                state: 'Estado',
+                startedAt: 'Início',
+                completedAt: 'Fim',
+                output: 'Saída',
+                links: 'Ligações',
+                report: 'Abrir o relatório',
+                batch: 'Abrir o lote',
+                noBatch: 'Nenhum lote desta execução é visível para si.',
+                notProduction: 'Esta execução é do tipo {kind}, não uma execução de produção.',
             },
             appVersion: {
                 title: 'Versão da aplicação',

@@ -704,3 +704,7 @@ export {
     timelineSchema,
 } from './timeline.js';
 export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';
+
+export { gridReportRunViewSchema } from './grid-report-runs.js';
+export type { GridReportRunView } from './grid-report-runs.js';
+export { reportHealthWordSchema } from './reporting.js';

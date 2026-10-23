@@ -63,6 +63,7 @@ import { EvolutionPage } from './market/EvolutionPage.js';
 import { SeriesPage } from './market/SeriesPage.js';
 import { GridNodePage } from './operations/GridNodePage.js';
 import { GridAppVersionPage } from './operations/GridAppVersionPage.js';
+import { GridReportRunPage } from './operations/GridReportRunPage.js';
 import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
@@ -565,6 +566,18 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <GridPage mode={view.mode} parties={view.availableParties} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/report-runs/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridReportRunPage />
                     ),
                     'workspace',
                 )}

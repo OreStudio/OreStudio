@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The job page links to the report run that dispatched its batch, where a report d
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -40,9 +40,7 @@ The job page links to the report run that dispatched its batch, where a report d
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The reporting service reads a run by id through its list filter =id_one_of=, so no model changes. The BFF serves =GET /api/operations/grid/report-runs/:id= with the run, its health word and the batch that names it. The web gets the page =/operations/grid/report-runs/:id=. The job page links to it when the batch's =external_ref= is an id, and states that no report is behind the batch when it is not.
 
 * Measurements
 
@@ -60,6 +58,8 @@ task and name that file in the Command column.
 
 * Notes
 
+The health word and the batch are decorations. A failed read of either leaves the cell empty and does not fail the page. The operator gets a 404 for a run, because the run belongs to a tenant party. The sample run in the dev database has no state, so the page reads "No word" for it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| TBD | Show the report run behind a batch |
 
 * Review
 
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The job page links to a report run page for a batch named by a run id. A batch the shell dispatched says no report is behind it. A live check as four accounts found that the party member and the tenant administrator read the run, the member of another party gets 404, and the operator gets 404. The BFF has six tests for the route and the web has four for the page and two for the link. The TypeScript suites pass.

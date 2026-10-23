@@ -186,6 +186,12 @@ whose =status= changes is recorded again and moves to the top of the list.
    The reads and the screens follow this rule, and a test pins each role.
 7. *A run in flight has no node.* As in Follow a job, the node is bound when
    the run ends. The details say "not yet known".
+8. *A report run has a page.* A batch names its report run in its =external_ref=.
+   When the reference is an id, the job page links to the page of that run. The BFF
+   reads the run with the person's own session, so a person who may not see the
+   run's party gets the answer for a run that does not exist, and so does the
+   operator, who works outside the tenant. A batch the shell dispatched holds an
+   operator string, and the page says no report is behind it.
 
 * Related journeys
 

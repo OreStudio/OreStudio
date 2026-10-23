@@ -102,6 +102,7 @@ function render(
     wu: WorkunitView,
     runs: readonly ResultView[],
     permissions: readonly string[] = ['storage::objects:read'],
+    shownBatch: BatchView = batch,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], {
@@ -119,7 +120,7 @@ function render(
         ],
     });
     client.setQueryData([GRID_JOBS_QUERY_KEY, 'job', WORKUNIT_ID], wu);
-    client.setQueryData([GRID_JOBS_QUERY_KEY, 'job-batch', BATCH_ID], batch);
+    client.setQueryData([GRID_JOBS_QUERY_KEY, 'job-batch', BATCH_ID], shownBatch);
     client.setQueryData([GRID_JOBS_QUERY_KEY, 'job-runs', WORKUNIT_ID], page(runs, 50));
     client.setQueryData(
         [GRID_JOBS_QUERY_KEY, 'workunits', BATCH_ID, 0, 15],
@@ -148,6 +149,24 @@ describe('the job page', () => {
         expect(html).toContain('>Done<');
         expect(html).toContain('>Success<');
         expect(html).not.toContain('A closed batch is not a successful batch.');
+    });
+
+    it('links a batch named by a report run id to the page of that run', () => {
+        const runId = 'a1b2c3d4-0000-4000-8000-000000000009';
+        const html = render(workunit(), [run()], ['storage::objects:read'], {
+            ...batch,
+            external_ref: runId,
+        });
+
+        expect(html).toContain(`/operations/grid/report-runs/${runId}`);
+        expect(html).not.toContain('No report is behind this batch.');
+    });
+
+    it('says no report is behind a batch that the shell dispatched', () => {
+        const html = render(workunit(), [run()]);
+
+        expect(html).toContain('No report is behind this batch.');
+        expect(html).not.toContain('/operations/grid/report-runs/');
     });
 
     it('says a job that ran and failed is done, and warns that a closed batch is not a success', () => {
@@ -253,12 +272,6 @@ describe('the job page', () => {
         ]);
 
         expect(html).not.toContain('A closed batch is not a successful batch.');
-    });
-
-    it('says the report behind a batch is not a checked relationship', () => {
-        const html = render(workunit(), [run()]);
-
-        expect(html).toContain('The model does not state this as a relationship');
     });
 });
 

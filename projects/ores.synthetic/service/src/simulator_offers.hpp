@@ -38,9 +38,10 @@ namespace ores::synthetic::service {
  *
  * An offer is a startable config of a kind that has a vendor id, in a collection that names the
  * provider of the adapter. A collection of another provider quotes that provider's ids, which
- * this adapter does not publish. The offers come in the order of the config ids, so when two configs quote one
- * instrument the same one wins at each read. Each offer builds its generator with the target of
- * the adapter, so the generator publishes adapter ticks on the ingress subject of its id.
+ * this adapter does not publish. The offers come in the order of the config ids, so when two
+ * configs quote one instrument the same one wins at each read. Each offer builds its generator with
+ * the target of the adapter, so the generator publishes adapter ticks on the ingress subject of its
+ * id.
  *
  * @param ctx A context of the system tenant, which sees the system collections.
  */

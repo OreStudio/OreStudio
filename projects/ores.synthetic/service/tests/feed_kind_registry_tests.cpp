@@ -231,8 +231,9 @@ stub_containers() {
 // Moves the one container to the system tenant, or back to a tenant's own.
 void set_stub_owner(bool system) {
     for (auto& [_, c] : stub_containers())
-        c.tenant_id = system ? ores::utility::uuid::tenant_id::system() :
-                               ores::utility::uuid::tenant_id::from_uuid(uuid_of(stub_tenant)).value();
+        c.tenant_id = system ?
+                          ores::utility::uuid::tenant_id::system() :
+                          ores::utility::uuid::tenant_id::from_uuid(uuid_of(stub_tenant)).value();
 }
 
 std::shared_ptr<ores::synthetic::service::feed_kind_registry>

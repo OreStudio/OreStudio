@@ -336,8 +336,7 @@ TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index teno
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
-TEST_CASE("factory::make derives the producer subject from the source name, for every kind",
-          tags) {
+TEST_CASE("factory::make derives the producer subject from the source name, for every kind", tags) {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
 

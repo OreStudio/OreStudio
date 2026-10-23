@@ -48,10 +48,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
-#include "ores.marketdata.api/messaging/route_protocol.hpp"
-#include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/route_protocol.hpp"
+#include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -1234,9 +1234,10 @@ private:
     /// names and a route to the source it names. The generators belong to the system,
     /// so the tenant publishes none and starts none: the parties take the shared
     /// simulated stream through their subscriptions and routes.
-    void subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
-                                    const ores::iam::workflow::provision_tenant_step_command& command,
-                                    const step_actor& actor) {
+    void
+    subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command,
+                               const step_actor& actor) {
         const auto arguments = parse_market_data_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
@@ -1261,8 +1262,8 @@ private:
             offset += page_size;
         }
 
-        wf.complete(rfl::json::write(
-            provision_step_result{.kind = command.kind, .parties = subscribed}));
+        wf.complete(
+            rfl::json::write(provision_step_result{.kind = command.kind, .parties = subscribed}));
     }
 
     /// A client that speaks as one party over the connection this handler
@@ -1880,8 +1881,9 @@ private:
         if (subscriptions.result.outcome != ores::utility::domain::outcome::ok)
             throw std::runtime_error("The subscriptions of party " + party_text +
                                      " were not read: " + subscriptions.result.message);
-        const bool has_subscription = std::ranges::any_of(
-            subscriptions.subscriptions, [&](const auto& s) { return s.provider_code == provider; });
+        const bool has_subscription =
+            std::ranges::any_of(subscriptions.subscriptions,
+                                [&](const auto& s) { return s.provider_code == provider; });
         if (!has_subscription) {
             marketdata::messaging::put_subscription_request put;
             put.change.write.id = uuid_gen();
@@ -1892,7 +1894,8 @@ private:
             put.change.write.derived = true;
             put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             put.intent.reason_code = "system.new_record";
-            put.intent.commentary = "Created by provisioning: the party takes the shared market data";
+            put.intent.commentary =
+                "Created by provisioning: the party takes the shared market data";
             const auto saved = party_client.request(put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The subscription of party " + party_text + " to '" +
@@ -1915,7 +1918,8 @@ private:
             put.change.write.source_id = source_id;
             put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             put.intent.reason_code = "system.new_record";
-            put.intent.commentary = "Created by provisioning: the party takes the shared market data";
+            put.intent.commentary =
+                "Created by provisioning: the party takes the shared market data";
             const auto saved = party_client.request(put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The route of party " + party_text + " to '" + provider +

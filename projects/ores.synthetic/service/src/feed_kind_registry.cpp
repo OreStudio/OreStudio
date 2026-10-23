@@ -431,9 +431,8 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
     target.container_found = true;
     target.container_enabled = found->second.enabled;
     target.container_provider_code = found->second.provider_code;
-    target.container_is_system =
-        found->second.tenant_id.to_string() ==
-        ores::database::service::tenant_context::system_tenant_id;
+    target.container_is_system = found->second.tenant_id.to_string() ==
+                                 ores::database::service::tenant_context::system_tenant_id;
     return target;
 }
 

@@ -3512,9 +3512,9 @@ const pt: SourceCatalogue = {
         'Attach the photographs': 'Anexar as fotografias',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             'Dá as fotografias às contas e o logótipo à entidade do inquilino.',
-        'Start the market feeds': 'Iniciar os fluxos de mercado',
-        "Starts the synthetic market data the tenant's curves and prices are built from.":
-            'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        'Subscribe to market data': 'Subscrever os dados de mercado',
+        "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
+            'Dá a cada entidade do inquilino uma subscrição de um fornecedor e uma rota para a fonte do fornecedor.',
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',

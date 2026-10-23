@@ -360,10 +360,9 @@ private:
 
         // A system feed is the system tenant's to start, so another tenant does not count it
         // among the feeds that should run.
-        const std::string runnable =
-            feed_kind_registry::is_system_caller(ctx) ?
-                std::string() :
-                " and tenant_id <> ores_utility_system_tenant_id_fn()";
+        const std::string runnable = feed_kind_registry::is_system_caller(ctx) ?
+                                         std::string() :
+                                         " and tenant_id <> ores_utility_system_tenant_id_fn()";
         for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
                                   "ores_synthetic_ir_curve_generation_configs_tbl"}) {
             add(query(ctx,

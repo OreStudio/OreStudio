@@ -190,7 +190,8 @@ struct step_kind_words {
                 write_step_timeout};
     if (kind == subscribe_market_data_step_kind)
         return {"Subscribe to market data",
-                "Gives each party of the tenant a subscription to a provider and a route to the provider's source.",
+                "Gives each party of the tenant a subscription to a provider and a route to the "
+                "provider's source.",
                 orchestrating_step_timeout};
     if (kind == generate_trades_step_kind)
         return {"Generate the trades",
@@ -222,15 +223,16 @@ struct step_kind_words {
 /// notation; this list states which of its kinds have an executor here, so a
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
-inline constexpr std::string_view provision_executed_step_kinds[] = {system_provision_step_kind,
-                                                                     publish_bundle_step_kind,
-                                                                     import_lei_hierarchy_step_kind,
-                                                                     provision_party_step_kind,
-                                                                     load_staff_step_kind,
-                                                                     set_staff_passwords_step_kind,
-                                                                     attach_photos_step_kind,
-                                                                     subscribe_market_data_step_kind,
-                                                                     generate_trades_step_kind};
+inline constexpr std::string_view provision_executed_step_kinds[] = {
+    system_provision_step_kind,
+    publish_bundle_step_kind,
+    import_lei_hierarchy_step_kind,
+    provision_party_step_kind,
+    load_staff_step_kind,
+    set_staff_passwords_step_kind,
+    attach_photos_step_kind,
+    subscribe_market_data_step_kind,
+    generate_trades_step_kind};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.

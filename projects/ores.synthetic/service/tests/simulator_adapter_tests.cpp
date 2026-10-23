@@ -492,7 +492,8 @@ svc::feed_kind_candidate fx_candidate(const std::string& id,
 
 }
 
-TEST_CASE("the offers are the startable system configs of the provider that have a vendor id", tags + "[offers]") {
+TEST_CASE("the offers are the startable system configs of the provider that have a vendor id",
+          tags + "[offers]") {
     std::vector<ores::synthetic::feed::adapter_target> built;
     ores::synthetic::feed::feed_factory factory;
     factory.register_kind(
@@ -514,10 +515,10 @@ TEST_CASE("the offers are the startable system configs of the provider that have
         tenant_owned.id = party_container;
         tenant_owned.enabled = true;
         tenant_owned.provider_code = "ore";
-        tenant_owned.tenant_id = ores::utility::uuid::tenant_id::from_uuid(
-                                     boost::uuids::string_generator()(
-                                         "cccccccc-0000-0000-0000-000000000003"))
-                                     .value();
+        tenant_owned.tenant_id =
+            ores::utility::uuid::tenant_id::from_uuid(
+                boost::uuids::string_generator()("cccccccc-0000-0000-0000-000000000003"))
+                .value();
         out.push_back(tenant_owned);
         ores::synthetic::domain::market_data_generation_config other_provider;
         other_provider.id = other_provider_container;
@@ -573,9 +574,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
 
     // The runner keeps the first of the two and builds one generator.
     generator_runner runner(
-        [&] {
-            return svc::system_generator_offers(registry, ctx, build, "ore-simulated", "ore");
-        });
+        [&] { return svc::system_generator_offers(registry, ctx, build, "ore-simulated", "ore"); });
     CHECK(runner.universe().size() == 1);
     runner.apply({ore_id("EUR/USD")});
     REQUIRE(built.size() == 1);

@@ -143,8 +143,7 @@ struct producer_kinds {
 }
 
 TEST_CASE("producer_subject: a feed publishes on the source's tick subject, for every kind", tags) {
-    CHECK(producer_subject("EUR_USD_GBM") ==
-          "synthetic.v1.ops.tick.EUR_USD_GBM");
+    CHECK(producer_subject("EUR_USD_GBM") == "synthetic.v1.ops.tick.EUR_USD_GBM");
     CHECK(producer_subject("usd.sofr") == "synthetic.v1.ops.tick.usd.sofr");
 }
 
@@ -159,10 +158,8 @@ TEST_CASE("starting a feed creates its feed_binding, for FX and IR alike", tags)
     const std::vector<std::shared_ptr<IFeed>> feeds{
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
-    REQUIRE(f.ctrl->start(feeds[0], test_bearer) ==
-            feed_controller::start_result::started);
-    REQUIRE(f.ctrl->start(feeds[1], test_bearer) ==
-            feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(feeds[0], test_bearer) == feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(feeds[1], test_bearer) == feed_controller::start_result::started);
 
     REQUIRE(f.store->bindings_.size() == 2);
     CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
@@ -178,8 +175,7 @@ TEST_CASE("the controller names the running feed that holds a series", tags) {
     controller_fixture f;
 
     const auto fx = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
-    REQUIRE(f.ctrl->start(fx, test_bearer) ==
-            feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(fx, test_bearer) == feed_controller::start_result::started);
 
     const auto held = f.ctrl->running_source_name_for_series({kinds.fx_oresmd_uri});
     REQUIRE(held.has_value());
@@ -196,8 +192,7 @@ TEST_CASE("the binding a synthetic store creates names a generated producer, for
     CHECK(marketdata_binding_store::binding_for("usd.sofr").producer_kind == "SYNTHETIC");
 }
 
-TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and IR alike",
-          tags) {
+TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and IR alike", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
@@ -205,10 +200,8 @@ TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     for (const auto& feed : feeds) {
-        REQUIRE(f.ctrl->start(feed, test_bearer) ==
-                feed_controller::start_result::started);
-        REQUIRE(f.ctrl->start(feed, test_bearer) ==
-                feed_controller::start_result::already_running);
+        REQUIRE(f.ctrl->start(feed, test_bearer) == feed_controller::start_result::started);
+        REQUIRE(f.ctrl->start(feed, test_bearer) == feed_controller::start_result::already_running);
     }
 
     REQUIRE(f.store->bindings_.size() == 2);

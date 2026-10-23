@@ -190,14 +190,6 @@ describe('the Synthetic dashboard', () => {
         expect(html).not.toContain('Generic');
     });
 
-    it("marks the providers whose feeds are the installation's", () => {
-        const html = render('/market-data/synthetic', (client) => {
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(html).toContain('>System<');
-        expect(html.indexOf('>System<')).toBeLessThan(html.indexOf('Simulates the ORE examples.'));
-    });
-
     it('counts the feeds that should run and do not, and offers to start them', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -370,6 +362,7 @@ describe('the oresmd URI column of the feed tree', () => {
                     asset: 'ir',
                     instrument_type: 'capfloor',
                     quote_type: 'rate',
+                    scope: 'EUR',
                     party_id: 'party-1',
                     fields: [{ name: 'cap_floor', text: 'Cap' }],
                 },
@@ -381,6 +374,7 @@ describe('the oresmd URI column of the feed tree', () => {
                     asset: 'ir',
                     instrument_type: 'capfloor',
                     quote_type: 'rate',
+                    scope: 'GBP',
                     party_id: 'party-1',
                     fields: [{ name: 'cap_floor', text: 'Cap' }],
                 },

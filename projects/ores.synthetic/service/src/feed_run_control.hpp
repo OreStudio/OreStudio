@@ -101,8 +101,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 continue;
             }
             std::string conflicting_source_name;
-            if (ctrl.add(
-                    std::move(attempt.feed), bearer, &conflicting_source_name))
+            if (ctrl.add(std::move(attempt.feed), bearer, &conflicting_source_name))
                 ++counts.started;
             else if (conflicting_source_name.empty())
                 // A concurrent start of the same config landed between this loop's

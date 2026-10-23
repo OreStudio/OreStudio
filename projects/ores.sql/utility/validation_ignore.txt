@@ -398,6 +398,16 @@ RLS_001 ores_reporting_report_type_configuration_types_tbl
 # template from the function that publishes it.
 RLS_002 ores_dq_*_artefact_tbl
 
+# Synthetic generators — the system party owns every collection, folder and feed, and every
+# tenant reads them. A feed stands for one observation in the world, so no party may be
+# outside the readers of a generator. Tenant isolation is the whole policy.
+RLS_002 ores_synthetic_market_data_generation_configs_tbl
+RLS_002 ores_synthetic_folders_tbl
+RLS_002 ores_synthetic_fx_spot_generation_configs_tbl
+RLS_002 ores_synthetic_gmm_components_tbl
+RLS_002 ores_synthetic_ir_curve_generation_configs_tbl
+RLS_002 ores_synthetic_ir_curve_template_entries_tbl
+
 # IAM auth events — auth log; party_id records the session context for
 # debugging, not for data isolation. The whole log is tenant-scoped.
 RLS_002 ores_iam_auth_events_tbl

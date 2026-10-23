@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/plan-the-market-data-tenancy-and-ticking-guarantee
-#+pr:
+#+pr: 3698
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3698][#3698]] | [doc] Plan the market data tenancy and the ticking guarantee |
 
 * Review
 

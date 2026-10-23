@@ -26,11 +26,11 @@ The generated app version list takes an app id, and the app version page reads o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -62,6 +62,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- This is the last PR of the story, so every gate ran on the final tree (see the table).
+  Three things outside the task surfaced and are fixed in the PR: main could not build
+  the database until it merged PR 3669, three marketdata domain models declared an unused
+  =<optional>=, which a codegen test flagged, and the shell scripts of the engine settings
+  recipes were never committed.
+
 - No schema change, so no recreate is needed. The list is a read by an existing column.
 - The shell gains the verb =app_versions by-app-id=, and the recipe and scripts are regenerated.
 
@@ -80,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| TBD | [compute] Filter the app versions by their app |
+| #3670 | [compute] Filter the app versions by their app |
 
 * Review
 

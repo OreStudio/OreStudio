@@ -101,13 +101,6 @@ const wireOlder = {
     recorded_at: '2026-10-22 08:00:00.000000Z',
 };
 
-const wireOtherApp = {
-    ...wireOlder,
-    id: '77777777-7777-4777-8777-777777777777',
-    app_id: '88888888-8888-4888-8888-888888888888',
-    recorded_at: '2026-10-24 08:00:00.000000Z',
-};
-
 const platform = (id: string, code: string, active: boolean) => ({
     ...audit,
     id,
@@ -132,10 +125,10 @@ type Answers = Readonly<Record<string, unknown>>;
 
 const ANSWERS: Answers = {
     'compute.v1.app_versions.get': { result: OK, app_version: wireVersion },
-    'compute.v1.app_versions.list': {
+    'compute.v1.app_versions.list_by_app_id': {
         result: OK,
-        app_versions: [wireOlder, wireVersion, wireOtherApp],
-        total: 3,
+        app_versions: [wireOlder, wireVersion],
+        total: 2,
     },
     'compute.v1.apps.list': {
         result: OK,

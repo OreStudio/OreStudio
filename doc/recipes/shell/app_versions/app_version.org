@@ -180,6 +180,27 @@ It is addressed at =compute.v1.app_versions.delete_many=.
 app_versions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
+** =by-app-id=
+:PROPERTIES:
+:ID: 7FB5DAA2-98DF-5FE8-BFB3-7CCD28F0EA68
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+app_versions by-app-id <app_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =compute.v1.app_versions.list_by_app_id=.
+
+#+name: app_versions-by-app-id
+#+begin_src ores-shell :tangle app_versions-by-app-id.ores :exports none
+app_versions by-app-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
 ** =versions=
 :PROPERTIES:
 :ID: 3520FCED-59B6-5002-9EF2-A777CF0EEA51

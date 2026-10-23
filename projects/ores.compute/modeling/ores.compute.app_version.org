@@ -100,6 +100,7 @@ platforms, and one note describes it. An empty note means none was written.
 :target_column: id
 :nullable:      false
 :error_message: Invalid app_id: %. No active app found with this id.
+:list_by:       true
 :END:
 
 * SQL

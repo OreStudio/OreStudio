@@ -89,6 +89,8 @@ public:
     delete_app_version(const messaging::delete_app_version_request& request);
     messaging::delete_many_app_versions_response
     delete_many_app_versions(const messaging::delete_many_app_versions_request& request);
+    messaging::list_by_app_id_app_versions_response
+    list_by_app_id_app_versions(const messaging::list_by_app_id_app_versions_request& request);
     messaging::list_app_version_versions_response
     list_app_version_versions(const messaging::list_app_version_versions_request& request);
     messaging::get_app_version_version_response
@@ -110,6 +112,27 @@ public:
      * @return Total number of active app versions.
      */
     std::uint32_t count_app_versions();
+
+
+    /**
+     * @brief Lists app versions filtered by app_id, with pagination.
+     *
+     * @param app_id The app_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching app versions for the requested page.
+     */
+    std::vector<domain::app_version> list_app_versions_by_app_id(const std::string& app_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active app versions filtered by app_id.
+     *
+     * @param app_id The app_id to filter by.
+     * @return Total number of matching app versions.
+     */
+    std::uint32_t count_app_versions_by_app_id(const std::string& app_id);
 
 
     /**

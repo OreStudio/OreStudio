@@ -126,6 +126,12 @@ app_version_service::list_app_versions(const messaging::list_app_versions_reques
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->app_id_one_of &&
+        request.filter->app_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "app_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -140,6 +146,37 @@ app_version_service::list_app_versions(const messaging::list_app_versions_reques
     response.app_versions = repo_.read_latest(
         ctx_, request.offset, request.limit, request.order, request.filter, as_of);
     response.total = repo_.get_total_app_version_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_app_id_app_versions_response app_version_service::list_by_app_id_app_versions(
+    const messaging::list_by_app_id_app_versions_request& request) {
+    messaging::list_by_app_id_app_versions_response response;
+    if (!request.order.field.empty() &&
+        !repository::app_version_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "app versions", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->app_id_one_of &&
+        request.filter->app_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "app_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "app versions"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.app_id);
+    response.app_versions = repo_.read_latest_by_app_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_app_version_count_by_app_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -381,6 +418,18 @@ std::vector<domain::app_version> app_version_service::list_app_versions(std::uin
 std::uint32_t app_version_service::count_app_versions() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total app versions count";
     return repo_.get_total_app_version_count(ctx_);
+}
+
+
+std::vector<domain::app_version> app_version_service::list_app_versions_by_app_id(
+    const std::string& app_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing app versions by app_id: " << app_id;
+    return repo_.read_latest_by_app_id(ctx_, app_id, offset, limit);
+}
+
+std::uint32_t app_version_service::count_app_versions_by_app_id(const std::string& app_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total app versions count by app_id: " << app_id;
+    return repo_.get_total_app_version_count_by_app_id(ctx_, app_id);
 }
 
 

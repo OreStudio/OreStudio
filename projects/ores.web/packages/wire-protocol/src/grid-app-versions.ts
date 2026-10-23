@@ -39,8 +39,8 @@ import {
     subjects as appVersionSubjects,
     type GetAppVersionRequest,
     type GetAppVersionResponse,
-    type ListAppVersionsRequest,
-    type ListAppVersionsResponse,
+    type ListByAppIdAppVersionsRequest,
+    type ListByAppIdAppVersionsResponse,
     type PutAppVersionRequest,
     type PutAppVersionResponse,
 } from './generated/compute/protocol/app_version_protocol.js';
@@ -149,17 +149,18 @@ export const listAppsReplySchema = z.object({
     total: z.int().nonnegative().default(0),
 }) satisfies z.ZodType<ListAppsResponse>;
 
-export const listAppVersionsRequestSchema = z.object({
+export const listVersionsOfAppRequestSchema = z.object({
+    app_id: z.string(),
+    scope: z.enum(['direct', 'subtree']).default('direct'),
     ...pageFields,
-    filter: idFilter,
-    as_of: z.string().nullable().default(null),
-}) satisfies z.ZodType<ListAppVersionsRequest>;
+    filter: z.null().default(null),
+}) satisfies z.ZodType<ListByAppIdAppVersionsRequest>;
 
-export const listAppVersionsReplySchema = z.object({
+export const listVersionsOfAppReplySchema = z.object({
     result: decidedResultSchema,
     app_versions: z.array(appVersionSchema).default([]),
     total: z.int().nonnegative().default(0),
-}) satisfies z.ZodType<ListAppVersionsResponse>;
+}) satisfies z.ZodType<ListByAppIdAppVersionsResponse>;
 
 export const getAppVersionRequestSchema = z.object({
     key: z.object({ id: z.string() }),
@@ -221,7 +222,7 @@ export const putAppVersionReplySchema = z.object({
 /** The subjects the reads and the write travel on, from the generated protocols. */
 export const GRID_APP_VERSION_SUBJECTS = {
     getAppVersion: appVersionSubjects.get_app_version_request,
-    listAppVersions: appVersionSubjects.list_app_versions_request,
+    listVersionsOfApp: appVersionSubjects.list_by_app_id_app_versions_request,
     putAppVersion: appVersionSubjects.put_app_version_request,
     listApps: appSubjects.list_apps_request,
     listPlatforms: platformSubjects.list_platforms_request,
@@ -301,27 +302,20 @@ async function readApp(caller: AuthenticatedCaller, id: string): Promise<App | n
     return reply.apps[0] ?? null;
 }
 
-/**
- * Every version of an app, newest first.
- *
- * The generated read has no filter by app, so the page reads the catalogue's
- * versions and keeps those of the app. The catalogue holds a handful per app.
- */
+/** Every version of an app, newest first. */
 async function readVersionsOfApp(
     caller: AuthenticatedCaller,
     appId: string,
 ): Promise<readonly AppVersion[]> {
     const reply = await caller.callAuthenticated(
-        GRID_APP_VERSION_SUBJECTS.listAppVersions,
-        listAppVersionsRequestSchema.parse({}),
-        listAppVersionsReplySchema,
+        GRID_APP_VERSION_SUBJECTS.listVersionsOfApp,
+        listVersionsOfAppRequestSchema.parse({ app_id: appId }),
+        listVersionsOfAppReplySchema,
     );
-    requireOk(GRID_APP_VERSION_SUBJECTS.listAppVersions, reply.result);
-    return reply.app_versions
-        .filter((candidate) => candidate.app_id === appId)
-        .sort((a, b) =>
-            a.recorded_at < b.recorded_at ? 1 : a.recorded_at > b.recorded_at ? -1 : 0,
-        );
+    requireOk(GRID_APP_VERSION_SUBJECTS.listVersionsOfApp, reply.result);
+    return [...reply.app_versions].sort((a, b) =>
+        a.recorded_at < b.recorded_at ? 1 : a.recorded_at > b.recorded_at ? -1 : 0,
+    );
 }
 
 async function readPackages(

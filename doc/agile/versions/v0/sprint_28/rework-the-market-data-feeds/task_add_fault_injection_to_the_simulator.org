@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-fault-injection-to-the-simulator
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A simulator author can inject connection loss, delay, repeated ticks, out-of-ran
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -85,3 +85,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A simulator author injects five faults through one request, =synthetic.v1.ops.set_faults=. The request replaces the whole plan, only a session of the system tenant that may run feeds sends it, and every fault is off by default and after a restart. Each fault goes through the adapter contract:
+- A lost connection sends no announce, no heartbeat and no demand reply, so the service makes the adapter stale. The adapter resumes when the fault is off.
+- A delay gives each tick a vendor time older than the delay. A delay beyond the age limit makes the service drop the tick as =stale=.
+- A repeat sends the tick before the new one again, with its older vendor time, so the service drops it as =out_of_order=.
+- An out of range value makes each tick carry a value ten times the largest the service accepts, so the service drops it as =out_of_range=.
+- A not entitled rejection rejects every id of a demand set as =not_entitled= and stops the generators.
+
+The limits the service applies are now in =ores.marketdata.api= (=adapter_limits=), and the translator and the faults read them from there. A translator test sends a tick one step beyond each limit and shows the drop reason. The fault tests show the tick that each fault makes, the rejection reason and the silence of a lost connection.
+
+Against the rebuilt database: synthetic service 77 cases and marketdata service 162 cases pass.
+
+Left for other tasks:
+- No screen and no shell command sets the faults yet. The screens task and the shell task add them.
+- Only the FX generators carry faults. The curve generators publish on the old path.
+- The adapter state =stale= after a lost connection is shown by the registry tests of the market data service, and not by a run of the real service with the simulator.

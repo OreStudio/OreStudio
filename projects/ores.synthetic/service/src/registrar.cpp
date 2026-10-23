@@ -18,6 +18,7 @@
  *
  */
 #include "registrar.hpp"
+#include "fault_handler.hpp"
 #include "feed_config_handler.hpp"
 #include "feed_overview_handler.hpp"
 #include "feed_selection_handler.hpp"
@@ -39,6 +40,7 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::nats::service::nats_client& auth_nats,
                              std::shared_ptr<feed_controller> ctrl,
+                             std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              const feed_kind_registry& registry) {
@@ -71,6 +73,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
             feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry);
             h.list(std::move(msg));
         }));
+
+    subs.push_back(nats.queue_subscribe(std::string(set_faults_request::nats_subject),
+                                        queue,
+                                        [&nats, faults, ctx, verifier](ores::nats::message msg) {
+                                            fault_handler h(nats, faults, ctx, verifier);
+                                            h.set_faults(std::move(msg));
+                                        }));
 
     // One simulate subscription per registered kind: the subject and the
     // kind string both come from the registration, so a new kind needs no

@@ -27,6 +27,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,11 +46,13 @@ namespace ores::synthetic::service {
  *
  * @param ctx A context of the system tenant, which sees the system collections.
  */
-inline std::vector<generator_offer> system_generator_offers(const feed_kind_registry& registry,
-                                                            const ores::database::context& ctx,
-                                                            const feed::feed_build_context& build,
-                                                            const std::string& adapter_id,
-                                                            const std::string& provider_code) {
+inline std::vector<generator_offer>
+system_generator_offers(const feed_kind_registry& registry,
+                        const ores::database::context& ctx,
+                        const feed::feed_build_context& build,
+                        const std::string& adapter_id,
+                        const std::string& provider_code,
+                        std::shared_ptr<const feed::fault_state> faults = {}) {
     auto targets = registry.targets(ctx);
     std::ranges::sort(targets, [](const auto& a, const auto& b) {
         return a.row.candidate.feed_config_id < b.row.candidate.feed_config_id;
@@ -66,12 +69,12 @@ inline std::vector<generator_offer> system_generator_offers(const feed_kind_regi
         const auto subject =
             ores::marketdata::domain::adapter_ingress_subject(adapter_id, vendor.external_id);
         out.push_back(generator_offer{
-            .id = vendor, .make = [&registry, &build, target, vendor, subject] {
+            .id = vendor, .make = [&registry, &build, target, vendor, subject, faults] {
                 auto outcome = target.row.candidate.build_input();
                 if (!outcome.input)
                     throw std::runtime_error(outcome.skip_reason);
                 std::get<feed::fx_spot_feed_build_input>(*outcome.input).adapter =
-                    feed::adapter_target{.id = vendor, .subject = subject};
+                    feed::adapter_target{.id = vendor, .subject = subject, .faults = faults};
                 return registry.factory().make(target.row.kind->kind, build, *outcome.input);
             }});
     }

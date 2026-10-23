@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include <memory>
 #include <optional>
 #include <vector>
@@ -40,7 +41,8 @@ namespace ores::synthetic::service {
  *   synthetic.v1.ops.start_feed  — starts a feed by config_id, any registered kind (auth + RBAC)
  *   synthetic.v1.ops.stop_feed   — stops a running feed by config_id or source_name
  *   synthetic.v1.feed_configs.list   — lists running feed source_names, every kind
- *   one <kind>.simulate subject per registered kind — batch dry-run sample paths (auth + RBAC)
+ *   synthetic.v1.ops.set_faults  — replaces the faults the simulator injects (system tenant; auth +
+ * RBAC) one <kind>.simulate subject per registered kind — batch dry-run sample paths (auth + RBAC)
  *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (IR only; auth + RBAC)
  */
 class registrar {
@@ -49,6 +51,7 @@ public:
     register_handlers(ores::nats::service::client& nats,
                       ores::nats::service::nats_client& auth_nats,
                       std::shared_ptr<feed_controller> ctrl,
+                      std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       const feed_kind_registry& registry);

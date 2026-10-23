@@ -26,9 +26,11 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <thread>
@@ -72,7 +74,8 @@ public:
                       generator_runner& runner,
                       std::string adapter_id,
                       std::string provider_code,
-                      simulator_adapter_timing timing = {});
+                      simulator_adapter_timing timing = {},
+                      std::shared_ptr<const ores::synthetic::feed::fault_state> faults = {});
     ~simulator_adapter();
 
     simulator_adapter(const simulator_adapter&) = delete;
@@ -91,6 +94,11 @@ public:
     [[nodiscard]] ores::marketdata::messaging::adapter_demand_response
     on_demand(const ores::marketdata::messaging::adapter_demand_request& request);
 
+    /** The faults in force: none when the adapter holds no fault state. */
+    [[nodiscard]] ores::synthetic::feed::fault_plan faults() const {
+        return faults_ ? faults_->get() : ores::synthetic::feed::fault_plan{};
+    }
+
     /** Whether the last announce succeeded. */
     [[nodiscard]] bool announced() const {
         return announced_.load(std::memory_order_relaxed);
@@ -106,6 +114,7 @@ private:
     std::string adapter_id_;
     std::string provider_code_;
     simulator_adapter_timing timing_;
+    std::shared_ptr<const ores::synthetic::feed::fault_state> faults_;
     std::atomic<bool> stop_{false};
     std::atomic<bool> announced_{false};
     std::uint64_t counter_ = 0;

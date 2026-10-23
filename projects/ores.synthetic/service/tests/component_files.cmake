@@ -29,4 +29,5 @@ set(files
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"
     "simulator_adapter_tests.cpp"
+    "simulator_faults_tests.cpp"
 )

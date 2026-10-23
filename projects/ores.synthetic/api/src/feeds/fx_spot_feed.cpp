@@ -205,7 +205,9 @@ void fx_spot_feed::start() {
                 tick.value = value;
                 tick.vendor_time = now;
                 tick.sequence = clock_.publish_count() + 1;
-                nats_.publish(adapter_->subject, codec.encode(tick));
+                const auto plan = adapter_->faults ? adapter_->faults->get() : fault_plan{};
+                for (const auto& out : faulted_ticks(plan, tick, previous_tick_))
+                    nats_.publish(adapter_->subject, codec.encode(out));
                 return value;
             }
             ores::marketdata::messaging::market_tick tick;

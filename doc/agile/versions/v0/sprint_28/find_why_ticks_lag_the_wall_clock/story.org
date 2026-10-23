@@ -67,7 +67,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:B466DF8C-E7EF-4046-A577-1AF120C991A7][Interrupt a wait on a portable stop]] | BACKLOG | | | A thread that waits on a stop state wakes at once on a stop on every platform, and Apple's libc++ uses a fallback that the unit tests also run on Linux. |
 | [[id:C663B2A3-98A4-410F-B9BD-97336E5A264D][Move the macOS nightly build to macos-26]] | DONE | 2026-10-23 | 2026-10-23 | The macOS nightly build runs on macos-26 with Xcode 26, and its log shows which C++20 library fallbacks the toolchain no longer needs. |
 | [[id:B7CA8A2C-4478-4F25-9298-60DE3945C6EB][Read the ticks of a series with one history call]] | STARTED | 2026-10-23 | | A client that plots a live series gets no ticks, because the observation list reads the observation table and the ingest writes ticks to the tick table only. Add one history call that returns every tick of a range in one reply. |
-| [[id:11FC42FC-92EA-471E-BC7C-8AE9245928F3][Refresh the web lock file for fastify 5.12.6]] | STARTED | 2026-10-23 | | Dependabot PR 3649 raised fastify to 5.12.6 in packages/bff/package.json and left package-lock.json at 5.12.5, so npm ci fails and every full build stops at Installing ores.web dependencies. |
+| [[id:11FC42FC-92EA-471E-BC7C-8AE9245928F3][Refresh the web lock file for fastify 5.12.6]] | DONE | 2026-10-23 | 2026-10-23 | Dependabot PR 3649 raised fastify to 5.12.6 in packages/bff/package.json and left package-lock.json at 5.12.5, so npm ci fails and every full build stops at Installing ores.web dependencies. |
 
 * Decisions
 

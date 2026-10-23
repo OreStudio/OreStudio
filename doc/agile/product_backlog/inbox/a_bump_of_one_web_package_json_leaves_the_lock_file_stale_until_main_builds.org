@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: D59BCDDC-D1C8-4C2D-B172-EA709BFE3361
+:END:
+#+title: A bump of one web package.json leaves the lock file stale until main builds
+#+description: A dependency bump that edits one package.json under projects/ores.web and not the root package-lock.json passes review, merges, and fails npm ci in every full build. Fastify 5.12.6 did it on 23 October and zod 4.6.6 would do it next. The TypeScript gate that runs npm ci runs only after a merge.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The web workspaces share one lock file, =projects/ores.web/package-lock.json=. A pull request
+that changes a version in one =package.json= must change the lock file in the same commit,
+and the pull requests that bump a package one at a time do not. Nothing refuses such a pull
+request before it merges:
+
+- The pull requests of the bumps had no checks. =gh pr checks= reported none for PR 3649 and
+  PR 3684.
+- The TypeScript workflow runs =npm ci=, the typecheck and the tests, and it triggers only on a
+  push to =main= and on a manual run. It never sees the pull request.
+- The full C++ build runs the same =npm ci= as its step =Installing ores.web dependencies=. It
+  stops there, so no test of any language runs.
+
+* Why
+
+The fastify bump of 23 October shows the cost. PR 3649 raised fastify to 5.12.6 in
+=packages/bff/package.json= and merged at 13:13 UTC with the lock file at 5.12.5. The Linux
+release job of run 39959540017 stopped at =npm ci= with =lock file's fastify@5.12.5 does not
+satisfy fastify@5.12.6=. That run had built 7,983 of 8,096 steps, and no test ran. Every later
+full build should stop at the same step until PR 3683 refreshed the lock file. One Linux run
+shows it, and no other platform was checked. The refresh also found that the lock file kept the range =^8.3.4= for vite while
+=packages/web/package.json= pinned 8.3.4, so the lock file had been stale since an earlier bump.
+PR 3684, the zod bump, fails the same way.
+
+The source of the npm pull requests is not clear. =.github/dependabot.yml= has an entry for
+GitHub Actions only, yet the pull requests are titled "in /projects/ores.web/packages/bff"
+and "in /projects/ores.web/packages/contracts", one for each package directory. They may come
+from a setting of the repository. The story must find out where, because the fix depends on it.
+
+Direction, for the story that picks this up:
+
+1. Make the lock file check run on the pull request, so that a stale lock file is a red check and
+   not a broken main. =npm ci --dry-run= in =projects/ores.web= is enough.
+2. Make a bump touch the lock file in the same change. Pointing the source of the npm
+   pull requests at the workspace root, =/projects/ores.web=, with its updates grouped, lets one
+   pull request change every package.json and the lock file together.
+3. Keep exact pins out of the package files, as the companion capture describes, so that a bump
+   of a dependency inside its range changes the lock file alone.
+
+* References
+
+- PR 3649, the fastify bump, merged at 13:13 UTC on 23 October 2026.
+- PR 3683, the lock file refresh that unblocked the build.
+- PR 3684, the zod bump, which needed three more pins and a lock file refresh.
+- Run 39959540017 of the Continuous Linux workflow, the job =linux-clang-release-ninja=.
+- =.github/workflows/typescript.yml= and =.github/dependabot.yml=.
+
+* See also
+
+- [[id:24C0F5D0-2046-41EB-B2C5-86A57EC1F86B][The web workspaces pin every dependency exactly and repeat the shared ones]] — the companion
+  capture: why a bump of one pin leaves two copies of a library.

@@ -44,6 +44,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { gridAppVersionPath, gridBatchPath, gridJobPath, gridNodePath } from '../shell/paths.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
+import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import {
@@ -473,9 +474,14 @@ function Files({
 
 function Release({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
     const { t } = useTranslation();
+    const version = useQuery({
+        queryKey: [APP_VERSION_QUERY_KEY, workunit.app_version_id],
+        queryFn: () => api.gridAppVersion(workunit.app_version_id),
+        meta: QUIET,
+    });
     return (
         <Panel title={t('operations.grid.job.release.title')}>
-            <dl>
+            <dl className="grid gap-3 sm:grid-cols-3">
                 <Detail
                     label={t(`${FIELD}.appVersionId`)}
                     value={
@@ -485,6 +491,18 @@ function Release({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
                     }
                     mono
                 />
+                {version.isSuccess && (
+                    <>
+                        <Detail
+                            label={t('operations.grid.appVersion.build.engine')}
+                            value={version.data.version.engine_version}
+                        />
+                        <Detail
+                            label={t('operations.grid.appVersion.build.wrapper')}
+                            value={version.data.version.wrapper_version}
+                        />
+                    </>
+                )}
             </dl>
         </Panel>
     );

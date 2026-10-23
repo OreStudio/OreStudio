@@ -263,6 +263,16 @@ export type {
     WorkunitView,
 } from './grid-jobs.js';
 
+// The app version page: one build of the compute catalogue with its release note,
+// its packages and the other versions of its app.
+export { RELEASE_NOTE_MAX, appVersionPageViewSchema } from './grid-app-versions.js';
+export type {
+    AppVersionPageView,
+    AppVersionView,
+    PackageView,
+    SiblingVersionView,
+} from './grid-app-versions.js';
+
 // The message bus the operations screen reads, as the BFF serves it: the NATS
 // server samples and one row per stream, each the newest sample of the range.
 export { busViewSchema } from './operations.js';

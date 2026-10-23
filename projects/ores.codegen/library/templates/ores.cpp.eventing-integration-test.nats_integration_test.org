@@ -302,10 +302,10 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // tenant.
     {
         ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{column}}_catalogue_repo;
+{{#system_dataset}}
         const auto system_ctx =
             party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
         auto {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(system_ctx);
-{{#system_dataset}}
         // The build stages the catalogue and publishes nothing, so the test
         // publishes the dataset, and the datasets it depends on, when the
         // system tenant holds no row yet.
@@ -315,6 +315,10 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
                 "{{system_dataset}}"));
             {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(system_ctx);
         }
+{{/system_dataset}}
+{{^system_dataset}}
+        const auto {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
 {{/system_dataset}}
         REQUIRE_FALSE({{column}}_catalogue.empty());
         v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{{parent_target_prefix}}}{{target_column}};

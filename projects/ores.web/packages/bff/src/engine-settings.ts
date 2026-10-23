@@ -30,7 +30,7 @@ import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/rep
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
-import { HttpFailure, invalidRequest, notFound } from './errors.js';
+import { HttpFailure, invalidRequest, notFound, otherParty } from './errors.js';
 import {
     input,
     intentSchema,
@@ -366,6 +366,27 @@ async function readCentral(
     return central;
 }
 
+/**
+ * Refuses a configuration that another party owns.
+ *
+ * The service reads and writes a part under the party of the session, so from a
+ * parent party the part is not found and a write would add a second one. The
+ * session sees the configuration in a list, which spans its child parties, so the
+ * refusal says whose it is and leaves the switch to the person.
+ */
+function requireOwningParty(
+    session: LiveSession,
+    central: Readonly<Record<string, unknown>>,
+): void {
+    const owner = text(central['party_id']);
+    if (session.party === undefined || session.party.id === owner) {
+        return;
+    }
+    throw otherParty(
+        session.availableParties.find((party) => party.id === owner)?.name ?? 'another party',
+    );
+}
+
 /** The reports that bind a configuration, by the binding that names it. */
 async function readBoundReports(
     session: LiveSession,
@@ -615,6 +636,7 @@ export function registerEngineSettingsRoutes(
         const session = requireSession(request);
         const id = paramId(request);
         const central = await readCentral(session, id);
+        requireOwningParty(session, central);
         const centralVersions = await readAll(
             session,
             settingsSubjects.list_engine_settings_versions_request,
@@ -689,6 +711,7 @@ export function registerEngineSettingsRoutes(
         const id = paramId(request);
         const body = input(updateSchema, request.body);
         const central = await readCentral(session, id);
+        requireOwningParty(session, central);
         const updated = await putCentral(
             session,
             {
@@ -710,7 +733,7 @@ export function registerEngineSettingsRoutes(
         const group = groupOf(input(groupSchema, (request.params as { group: string }).group));
         const body = input(groupBodySchema, request.body);
         const values = input(valuesSchema(group), body.values);
-        await readCentral(session, id);
+        requireOwningParty(session, await readCentral(session, id));
         const existing = (await readParts(session, [id])).get(group.id)?.[0];
         const rowId = existing === undefined ? randomUUID() : text(existing['id']);
         const result = await write(session, group.put, {
@@ -734,6 +757,7 @@ export function registerEngineSettingsRoutes(
         const id = paramId(request);
         const body = input(removalSchema, request.body);
         const central = await readCentral(session, id);
+        requireOwningParty(session, central);
         const reports = await readBoundReports(session, text(central['configuration_id']));
         if (reports.length > 0) {
             throw new HttpFailure(409, {

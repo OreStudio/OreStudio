@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/engine-settings-party-and-form-fixes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person who sees a child party's engine settings from the group party reads the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF refuses the history, the rename, the delete and a group save of a configuration that another party owns. The answer is a 409 with the code other-party and the name of the owner, in place of a not-found or a repository error. The record page reads the owner from the record. When it is not the party the session acts in, the page draws a notice that names the owner, offers a button that switches to it, removes Edit and Delete, and says that the history is in the owning party. A test in the BFF and in the web client covers each.

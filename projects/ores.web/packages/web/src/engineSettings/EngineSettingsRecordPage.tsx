@@ -52,6 +52,7 @@ import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { DeleteDialog, LeavingFooter, RecordHeader, useCloseGuard } from '../refdata/records.js';
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
+import { useActingPartyId, useSwitchParty } from '../session/SessionProvider.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath } from '../shell/paths.js';
@@ -89,6 +90,7 @@ import {
     visibleSettings,
     type Change,
     type Draft,
+    type Problem,
     type EngineGroup,
     type Filters,
     type Step,
@@ -141,6 +143,15 @@ export function EngineSettingsRecordPage(): ReactNode {
         queryKey: engineSettingsKey(id),
         queryFn: () => engineSettings.read(id),
         meta: { quiet: true },
+    });
+    const acting = useActingPartyId();
+    const switchParty = useSwitchParty();
+    const owner = open.data?.partyId;
+    const switchToOwner = useMutation({
+        mutationFn: async () => {
+            await switchParty?.(owner ?? '');
+        },
+        onSuccess: () => queries.invalidateQueries(),
     });
     const documentation = useQuery({
         queryKey: DOCUMENTATION_KEY,
@@ -202,6 +213,12 @@ export function EngineSettingsRecordPage(): ReactNode {
     }
 
     const document = open.data;
+    // A configuration is read and written under the party that owns it, so a person
+    // who sees it from a parent party reads it and changes it only after switching.
+    const foreign = acting !== undefined && acting !== document.partyId;
+    const mayChange = mayWrite && !foreign;
+    const mayRemove = mayDelete && !foreign;
+    const ownerName = document.partyName === '' ? document.partyId : document.partyName;
     const group = documentation.data?.groups.find((candidate) => candidate.id === tabs.tab);
     const reload = (): void => {
         void queries.invalidateQueries({ queryKey: engineSettingsKey(id) });
@@ -215,15 +232,35 @@ export function EngineSettingsRecordPage(): ReactNode {
                 recordKey={shortId(document.id)}
                 version={document.version}
                 subdued
-                access={mayWrite}
+                access={mayChange}
                 own={<RefreshButton onClick={reload} load={load} news={news} />}
-                onEdit={mayWrite ? () => setDialog('rename') : undefined}
-                onDelete={mayDelete ? () => setDialog('delete') : undefined}
+                onEdit={mayChange ? () => setDialog('rename') : undefined}
+                onDelete={mayRemove ? () => setDialog('delete') : undefined}
             />
+            {foreign && (
+                <Notice tone="info">
+                    <span>{t('engineSettings.otherParty.notice', { party: ownerName })}</span>{' '}
+                    <Button
+                        variant="ghost"
+                        pending={switchToOwner.isPending}
+                        onClick={() => switchToOwner.mutate()}
+                    >
+                        {t('engineSettings.otherParty.switch', { party: ownerName })}
+                    </Button>
+                    {switchToOwner.isError && (
+                        <span role="alert">
+                            {' '}
+                            {t('engineSettings.otherParty.failed', {
+                                message: switchToOwner.error.message,
+                            })}
+                        </span>
+                    )}
+                </Notice>
+            )}
             {tabs.bar}
             {tabs.tab === 'details' && <DetailsTab document={document} />}
             {group !== undefined && (
-                <GroupTab key={group.id} document={document} group={group} mayWrite={mayWrite} />
+                <GroupTab key={group.id} document={document} group={group} mayWrite={mayChange} />
             )}
             {GROUP_TABS.has(tabs.tab) && group === undefined && documentation.isPending && (
                 <p className="text-sm text-ink-muted" role="status">
@@ -238,13 +275,18 @@ export function EngineSettingsRecordPage(): ReactNode {
                 </Notice>
             )}
             {tabs.tab === 'reports' && <ReportsTab document={document} />}
-            {tabs.tab === 'history' && (
-                <HistoryTab
-                    document={document}
-                    groups={documentation.data?.groups ?? []}
-                    mayWrite={mayWrite}
-                />
-            )}
+            {tabs.tab === 'history' &&
+                (foreign ? (
+                    <Notice tone="info">
+                        {t('engineSettings.otherParty.history', { party: ownerName })}
+                    </Notice>
+                ) : (
+                    <HistoryTab
+                        document={document}
+                        groups={documentation.data?.groups ?? []}
+                        mayWrite={mayChange}
+                    />
+                ))}
             {dialog === 'rename' && (
                 <RenameDialog document={document} onClose={() => setDialog(null)} />
             )}
@@ -364,7 +406,7 @@ function GroupTab({
                       return [setting.column, value === 'invalid' ? null : value];
                   }),
               );
-    const problems =
+    const found =
         editing === null
             ? []
             : group.settings.flatMap((setting) => {
@@ -373,13 +415,21 @@ function GroupTab({
                       editing[setting.column] ?? '',
                       labelOf(setting),
                   );
-                  return problem === null ? [] : [problem];
+                  return problem === null ? [] : [{ column: setting.column, problem }];
               });
+    const problems = found.map((entry) => entry.problem);
+    const problemOfColumn = new Map(found.map((entry) => [entry.column, entry.problem]));
     const changes = draft === null ? [] : changedColumns(group, saved, draft);
     const reason = useReason('amend', changes.length > 0);
     const missing = reason.needsCommentary && commentary.trim() === '';
     const reach = document.reports === null ? null : document.reports.length;
     const visible = visibleSettings(group, saved, filters);
+    // A problem shows beside its field. A field a filter hides cannot show it, so
+    // the group states that one, or Save would be disabled with no reason.
+    const shownColumns = new Set(visible.map((setting) => setting.column));
+    const hiddenProblems = found
+        .filter((entry) => !shownColumns.has(entry.column))
+        .map((entry) => entry.problem);
     const allOpen = visible.length > 0 && visible.every((setting) => opened.has(setting.column));
     const leave = (): void => {
         setEditing(null);
@@ -505,6 +555,7 @@ function GroupTab({
                             saved={saved[setting.column] ?? null}
                             text={editing === null ? null : (editing[setting.column] ?? '')}
                             changed={changes.includes(setting.column)}
+                            problem={problemOfColumn.get(setting.column) ?? null}
                             open={opened.has(setting.column)}
                             mode={mode}
                             onToggle={() => toggle(setting.column)}
@@ -555,7 +606,7 @@ function GroupTab({
                             </Button>
                         </Notice>
                     )}
-                    {problems.map((problem) => (
+                    {hiddenProblems.map((problem) => (
                         <Notice key={problem.key + JSON.stringify(problem.params)} tone="error">
                             {t(problem.key, problem.params)}
                         </Notice>
@@ -625,11 +676,12 @@ function FilterChip({
 }
 
 /** One setting: its label, its value or its control, and its documentation. */
-function SettingRow({
+export function SettingRow({
     setting,
     saved,
     text,
     changed,
+    problem,
     open,
     mode,
     onToggle,
@@ -641,6 +693,8 @@ function SettingRow({
     /** The text of the control while the group is being changed, else null. */
     readonly text: string | null;
     readonly changed: boolean;
+    /** What is wrong with the text typed for this setting, drawn beside the control. */
+    readonly problem: Problem | null;
     readonly open: boolean;
     readonly mode: EditingMode;
     readonly onToggle: () => void;
@@ -678,14 +732,22 @@ function SettingRow({
                             <span className="font-mono text-xs">{shown}</span>
                         )
                     ) : (
-                        <Control
-                            setting={setting}
-                            label={label}
-                            text={text}
-                            unset={unset}
-                            onText={onText}
-                            onFocus={onFocus}
-                        />
+                        <>
+                            <Control
+                                setting={setting}
+                                label={label}
+                                text={text}
+                                unset={unset}
+                                invalid={problem !== null}
+                                onText={onText}
+                                onFocus={onFocus}
+                            />
+                            {problem !== null && (
+                                <p role="alert" className="mt-1 text-xs text-down">
+                                    {t(problem.key, problem.params)}
+                                </p>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
@@ -710,6 +772,7 @@ function Control({
     label,
     text,
     unset,
+    invalid,
     onText,
     onFocus,
 }: {
@@ -717,6 +780,7 @@ function Control({
     readonly label: string;
     readonly text: string;
     readonly unset: string;
+    readonly invalid: boolean;
     readonly onText: (text: string) => void;
     readonly onFocus: () => void;
 }): ReactNode {
@@ -725,6 +789,7 @@ function Control({
         return (
             <Input
                 aria-label={label}
+                aria-invalid={invalid}
                 inputMode="numeric"
                 value={text}
                 placeholder={unset}
@@ -743,6 +808,7 @@ function Control({
     return (
         <Select
             aria-label={label}
+            aria-invalid={invalid}
             value={text}
             onFocus={onFocus}
             onChange={(event) => onText(event.target.value)}

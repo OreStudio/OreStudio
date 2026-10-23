@@ -91,6 +91,7 @@ export const en: SourceCatalogue = {
             refdata: 'Reference data',
             access: 'My access',
             whereIWork: 'Where I work',
+            language: 'Language',
             changeParty: 'Change party',
             changePartyFailed: 'The party could not be changed.',
             changePartyHint: 'Choose the party to act for.',
@@ -4747,6 +4748,13 @@ export const en: SourceCatalogue = {
             none: 'No setting matches the filters.',
         },
         noRow: 'This configuration holds no row for {group}. The engine uses its default for every setting here.',
+        allParties: 'All parties',
+        otherParty: {
+            notice: 'These engine settings belong to {party}. You act in another party, so you can read them but not change them.',
+            switch: 'Switch to {party}',
+            history: 'The history is available in the owning party. Switch to {party} to read it.',
+            failed: 'Could not switch party: {message}',
+        },
         rowBy: 'Last changed by {who}.',
         changesTheNumbers: 'These settings change the numbers a run computes.',
         reach: {

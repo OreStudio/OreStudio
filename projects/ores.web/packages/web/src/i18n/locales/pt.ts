@@ -90,6 +90,7 @@ const pt: SourceCatalogue = {
             refdata: 'Dados de referência',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
+            language: 'Idioma',
             changeParty: 'Mudar de parte',
             changePartyFailed: 'Não foi possível mudar de parte.',
             changePartyHint: 'Escolha a parte em nome da qual atua.',
@@ -4786,6 +4787,14 @@ const pt: SourceCatalogue = {
             none: 'Nenhuma configuração corresponde aos filtros.',
         },
         noRow: 'Esta configuração não tem linha para {group}. O motor usa o padrão para cada configuração aqui.',
+        allParties: 'Todas as partes',
+        otherParty: {
+            notice: 'Estas configurações do motor pertencem a {party}. Você atua noutra parte, por isso pode lê-las mas não alterá-las.',
+            switch: 'Mudar para {party}',
+            history:
+                'O histórico está disponível na parte proprietária. Mude para {party} para lê-lo.',
+            failed: 'Não foi possível mudar de parte: {message}',
+        },
         rowBy: 'Última alteração por {who}.',
         changesTheNumbers: 'Estas configurações alteram os números que uma execução calcula.',
         reach: {

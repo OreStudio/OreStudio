@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/engine-settings-party-and-form-fixes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person on the group party sees which party owns each row and filters the list 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A shared hook, usePartyScope, reads the parties the account works in. When there is more than one, a list shows the owning party column and a party filter, and with one party it shows neither. The engine settings list and the reports list use it. The pricing engines list has its own party column and is left to its own story.

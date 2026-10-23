@@ -26,9 +26,10 @@ import type { Account, MyParty, SessionMode } from '@ores/wire-protocol/browser'
 import type { EnvironmentView } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { LANGUAGE_INFO, isLanguage } from '../i18n/languages.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { Button, Dialog, Notice, Select } from '../ui/Primitives.js';
 import { PartyChoice } from '../ui/PartyChoice.js';
 import { useDismiss } from '../ui/useDismiss.js';
 import { useHeld } from '../access/holds.js';
@@ -240,7 +241,7 @@ function AccountMenu({
     readonly onSignOut: () => void;
     readonly self: Account | null | undefined;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language, setLanguage, languages } = useTranslation();
     const [open, setOpen] = useState(false);
     const [changing, setChanging] = useState(false);
     const [failure, setFailure] = useState('');
@@ -323,6 +324,26 @@ function AccountMenu({
                     <Link to="/security" role="menuitem" className={item} onClick={close}>
                         {t('nav.security')}
                     </Link>
+                </div>
+                <div className="border-b border-line px-2 py-1.5">
+                    <label className="block text-xs text-ink-faint">
+                        {t('shell.menu.language')}
+                        <Select
+                            className="mt-1 py-1"
+                            value={language}
+                            onChange={(event) => {
+                                if (isLanguage(event.target.value)) {
+                                    setLanguage(event.target.value);
+                                }
+                            }}
+                        >
+                            {languages.map((code) => (
+                                <option key={code} value={code}>
+                                    {LANGUAGE_INFO[code].name}
+                                </option>
+                            ))}
+                        </Select>
+                    </label>
                 </div>
                 {mayChange && (
                     <div className="border-b border-line py-1.5">

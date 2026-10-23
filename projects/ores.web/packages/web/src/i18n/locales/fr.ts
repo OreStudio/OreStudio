@@ -85,6 +85,7 @@ const fr: SourceCatalogue = {
             refdata: 'Données de référence',
             access: 'Mes accès',
             whereIWork: 'Où je travaille',
+            language: 'Langue',
             changeParty: 'Changer de partie',
             changePartyFailed: 'La partie n’a pas pu être changée.',
             changePartyHint: 'Choisissez la partie pour laquelle agir.',
@@ -4817,6 +4818,14 @@ const fr: SourceCatalogue = {
             none: 'Aucun paramètre ne correspond aux filtres.',
         },
         noRow: 'Cette configuration ne contient aucune ligne pour {group}. Le moteur utilise sa valeur par défaut pour chaque paramètre ici.',
+        allParties: 'Toutes les parties',
+        otherParty: {
+            notice: 'Ces paramètres du moteur appartiennent à {party}. Vous agissez dans une autre partie, vous pouvez donc les lire mais pas les modifier.',
+            switch: 'Passer à {party}',
+            history:
+                "L'historique est disponible dans la partie propriétaire. Passez à {party} pour le lire.",
+            failed: 'Impossible de changer de partie : {message}',
+        },
         rowBy: 'Dernière modification par {who}.',
         changesTheNumbers: 'Ces paramètres changent les chiffres qu’une exécution calcule.',
         reach: {

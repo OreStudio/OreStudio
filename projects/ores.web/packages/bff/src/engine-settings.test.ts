@@ -53,9 +53,19 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const ok = { outcome: 'ok', code: '', message: '' };
 
+const HK_PARTY = {
+    id: '0a12c57f-1111-4222-8333-444444444444',
+    name: 'ACME Corporation HK',
+    partyCategory: 'Operational',
+    businessCenterCode: 'HKHK',
+};
+
 type Replies = Readonly<Record<string, unknown>>;
 
-function buildTestServer(replies: Replies): {
+function buildTestServer(
+    replies: Replies,
+    actingParty?: { readonly id: string; readonly name: string },
+): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
@@ -78,9 +88,33 @@ function buildTestServer(replies: Replies): {
             return undefined;
         },
     } as unknown as OresClient;
+    const party = actingParty && {
+        id: actingParty.id,
+        name: actingParty.name,
+        partyCategory: 'Operational',
+        businessCenterCode: 'GBLO',
+    };
     const session = sessions.create({
         client,
-        session: null,
+        session: party
+            ? {
+                  kind: 'active',
+                  token: 'token',
+                  accountId: '11111111-1111-1111-1111-111111111111',
+                  tenantId: '44444444-4444-4444-4444-444444444444',
+                  tenantName: 'Acme',
+                  tenantBootstrapping: false,
+                  version: 'v0.0.25 (test)',
+                  database: { fingerprint: '', environment: '', commit: '', created: '' },
+                  username: 'analyst',
+                  email: 'analyst@acme.example',
+                  party,
+                  availableParties: [party, HK_PARTY],
+                  accessLifetimeSeconds: 1800,
+                  passwordResetRequired: false,
+                  sessionId: '33333333-3333-3333-3333-333333333333',
+              }
+            : null,
         username: 'analyst',
         email: 'analyst@acme.example',
         accountId: '11111111-1111-1111-1111-111111111111',
@@ -88,7 +122,7 @@ function buildTestServer(replies: Replies): {
         tenantName: 'Acme',
         mode: 'tenant-administration',
         version: 'v0.0.25 (test)',
-        availableParties: [],
+        availableParties: party ? [party, HK_PARTY] : [],
         accessLifetimeSeconds: 1800,
         passwordResetRequired: false,
         sessionId: '33333333-3333-3333-3333-333333333333',
@@ -458,5 +492,76 @@ describe('engine settings routes', () => {
         );
         expect(response.statusCode).toBe(409);
         expect(calls.some((call) => call.subject.endsWith('.delete'))).toBe(false);
+    });
+
+    describe('from a party that does not own the configuration', () => {
+        const GROUP_PARTY = { id: '0b0b0b0b-1111-4222-8333-555555555555', name: 'Acme Group' };
+
+        it.each([
+            [
+                'reads its history',
+                'GET',
+                `/api/reporting/engine-settings/${SETTINGS_ID}/history`,
+                undefined,
+            ],
+            [
+                'saves a group',
+                'PUT',
+                `/api/reporting/engine-settings/${SETTINGS_ID}/groups/execution`,
+                {
+                    version: 2,
+                    values: { n_threads: 2, log_mask: null, gzip_compression_level: null },
+                    intent: INTENT,
+                },
+            ],
+            [
+                'renames it',
+                'PUT',
+                `/api/reporting/engine-settings/${SETTINGS_ID}`,
+                { name: 'Renamed', description: '', version: 4, intent: INTENT },
+            ],
+            [
+                'deletes it',
+                'DELETE',
+                `/api/reporting/engine-settings/${SETTINGS_ID}`,
+                { intent: INTENT },
+            ],
+        ] as const)(
+            'refuses a person who %s and names the owner',
+            async (_name, method, url, body) => {
+                const { server, sessionId, calls } = buildTestServer(reads, GROUP_PARTY);
+                const response = await send(server, sessionId, method, url, body);
+                expect(response.statusCode).toBe(409);
+                expect(response.json()).toEqual({
+                    code: 'other-party',
+                    message:
+                        'This record belongs to ACME Corporation HK. Switch to that party to change it.',
+                });
+                expect(
+                    calls.filter(
+                        (call) => call.subject.endsWith('.put') || call.subject.endsWith('.delete'),
+                    ),
+                ).toEqual([]);
+            },
+        );
+
+        it('lets the owning party write as before', async () => {
+            const { server, sessionId } = buildTestServer(
+                { ...reads, 'reporting.v1.engine_settings_execution.put': { result: ok } },
+                { id: HK_PARTY.id, name: HK_PARTY.name },
+            );
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                `/api/reporting/engine-settings/${SETTINGS_ID}/groups/execution`,
+                {
+                    version: 2,
+                    values: { n_threads: 8, log_mask: null, gzip_compression_level: 6 },
+                    intent: INTENT,
+                },
+            );
+            expect(response.statusCode).toBe(200);
+        });
     });
 });

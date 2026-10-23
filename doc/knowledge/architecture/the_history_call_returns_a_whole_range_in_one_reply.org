@@ -21,7 +21,7 @@ returns part of a span as if it were the whole. The client that calls it is desc
 
 ** The request
 
-- *The series,* named as the live subject names it.
+- *The series,* named by its series id, the id that the series catalogue returns.
 - *From,* the first instant of the span, inclusive.
 - *To,* the end of the span, exclusive. A request without it means now.
 - *The coordinates,* optional. A client that plots one pillar of a curve names it, and the
@@ -33,8 +33,15 @@ span has the same meaning on both tiers, and it is what a chart shows.
 ** The reply
 
 - The coordinate URIs of the series come first, once each.
-- The ticks follow as three arrays of equal length: the time, the index of the
-  coordinate, and the value. The order is by time, then by coordinate.
+- The first instant of the reply follows, in the wire shape that every instant takes. See
+  [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]].
+- The ticks follow as three arrays of equal length: the gap in microseconds from the
+  previous tick, the index of the coordinate, and the value. The first gap runs from the
+  first instant. The order is by time, then by coordinate.
+
+A gap is a duration and not an instant, so the rule that every instant has one wire shape
+holds. An instant in that shape takes 27 characters, and a gap of seconds takes 5 bytes.
+The client adds the gaps up to get each time.
 
 The reply holds every tick of the span that the window holds or that the store has
 committed. It makes no stronger promise. See the two tiers below for the one case that
@@ -57,10 +64,10 @@ series and time.
 ** The ceiling
 
 The reply is one message, and the broker caps a message at 1 MB. The service declares a
-ceiling of 25,000 ticks for each reply. A tick costs about 20 bytes in three msgpack
-arrays, because each element carries a type byte: 9 for the time, 1 to 3 for the
-coordinate index and 9 for the value. That is about 500 KB, half the cap, which leaves room
-for the coordinates and the envelope. This is an estimate, and the measurement of the first
+ceiling of 25,000 ticks for each reply. A tick costs about 15 bytes in three msgpack
+arrays, because each element carries a type byte: 5 for a gap of seconds, 1 to 3 for the
+coordinate index and 9 for the value. That is about 375 KB, little more than a third of
+the cap, which leaves room for the coordinates and the envelope. This is an estimate, and the measurement of the first
 build confirms or changes it. Packing each array as one binary block would cost 8 bytes a
 value and would raise the ceiling.
 
@@ -81,12 +88,14 @@ narrower span serves every chart.
 
 ** How the service answers a decision
 
-The service decides three things before it reads: the context has a party, the span is
-valid, and the span holds no more than the ceiling. It reports each one as an outcome in
-the body, and not as a refusal off the body, because each is a decision about the data.
-See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+The service decides three things before it reads: the context has a party, the span does
+not end before it starts, and the span holds no more than the ceiling. It reports each one
+as an outcome in the body, and not as a refusal off the body, because each is a decision
+about the data. The codes are =party_required=, =range_inverted= and =range_too_large=, in
+the outcome catalogue. A span that starts and ends at one instant is empty and is not
+refused. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
 
-A context with no party gets the no-party outcome and not an empty reply. The party policy
+A context with no party gets =party_required= and not an empty reply. The party policy
 of the tick table shows such a context no tick, and an empty reply would look complete.
 The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
 
@@ -122,6 +131,9 @@ on, and the case shrinks to the ticks of one batch.
 - Can a tick fall between the store and the window, as the two tiers section describes?
   The measurement of the batch delay against the first reply decides whether the call
   must wait for the commit of the batch in flight.
+- The live subject names a series by the percent-encoded series URI, and this call names
+  it by id. The client reads both from the series catalogue. Should the live subject carry
+  the id instead, so that one name serves both calls?
 - Should the reply carry the =source_id=? This page says no. A client that audits a tick
   reads the store.
 

@@ -63,6 +63,7 @@ set(files
     "service_series_shape_tests.cpp"
     "service_series_slice_reader_tests.cpp"
     "service_series_snapshot_reader_tests.cpp"
+    "service_series_tick_reader_tests.cpp"
     "subscription_eventing_integration_tests.cpp"
     "subscription_interval_eventing_integration_tests.cpp"
 )

@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -88,6 +89,9 @@ struct feed_kind_candidate final {
     /** The feed starts from a vintage price, so its start reads marketdata. */
     bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
+    /** The vendor id the feed quotes when it serves an adapter. A kind with no vendor rows leaves
+     * it empty. */
+    std::optional<ores::marketdata::messaging::vendor_id> vendor;
 
     /** Built lazily: only the vintage verb reads it. */
     std::function<feed_vintage_anchor()> vintage_anchor;
@@ -111,8 +115,6 @@ struct feed_start_target final {
     domain::scope container_scope = domain::scope::party;
     bool container_found = false;
     bool container_enabled = false;
-    /** The run grant the container holds: the consent its feeds run under. */
-    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief The one startability gate: the row and its container are both

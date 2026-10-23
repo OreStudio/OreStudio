@@ -120,38 +120,6 @@ struct list_feeds_response {
     std::vector<std::string> running_source_names;
 };
 
-/**
- * @brief Request one restore pass for the caller's tenant.
- *
- * The pass starts every enabled auto-start feed that the caller's context sees
- * and that is not running, the system feeds included when the caller belongs to
- * the system tenant. It carries no person's consent: a feed that starts from a
- * vintage price runs under the run grant its collection holds. The pass makes
- * one try for each feed and does not try again.
- */
-struct restore_feeds_request {
-    using response_type = struct restore_feeds_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ops.restore_feeds";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
-
-/**
- * @brief How many feeds the pass started, and why each of the others failed.
- */
-struct restore_feeds_response {
-    bool success = false;
-    std::string message;
-    std::uint32_t started = 0;
-    /** @brief One line for each feed that failed: its name, then the reason. */
-    std::vector<std::string> failures;
-};
-
 }
 
 #endif

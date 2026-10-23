@@ -29,6 +29,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -47,14 +48,8 @@ namespace ores::synthetic::feed {
  */
 struct feed_build_context final {
     ores::nats::service::client& nats;
+    /// The service's own identity. A vintage lookup runs as the system tenant through it.
     ores::nats::service::nats_client& auth_nats;
-    /**
-     * @brief The run token of the feed's collection, forwarded as X-Delegated-Authorization on
-     * the delegated lookups of a vintage resolution, so they run in the tenant and party of the
-     * collection's run grant whoever starts the feed. Empty for a feed that starts from a fixed
-     * price.
-     */
-    std::string run_token;
 };
 
 /**
@@ -66,6 +61,8 @@ struct fx_spot_feed_build_input final {
     std::vector<ores::synthetic::domain::gmm_component> components;
     ores::synthetic::domain::binding_mode binding_mode =
         ores::synthetic::domain::binding_mode::bound;
+    /// Set when the generator serves an adapter: the vendor id it quotes and the subject it uses.
+    std::optional<adapter_target> adapter;
 };
 
 /**

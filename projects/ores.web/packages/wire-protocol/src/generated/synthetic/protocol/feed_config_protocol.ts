@@ -82,33 +82,10 @@ export interface ListFeedsResponse {
     running_source_names: string[];
 }
 
-/**
- * @brief Request one restore pass for the caller's tenant.
- *
- * The pass starts every enabled auto-start feed that the caller's context sees
- * and that is not running, the system feeds included when the caller belongs to
- * the system tenant. It carries no person's consent: a feed that starts from a
- * vintage price runs under the run grant its collection holds. The pass makes
- * one try for each feed and does not try again.
- */
-export interface RestoreFeedsRequest {}
-
-/**
- * @brief How many feeds the pass started, and why each of the others failed.
- */
-export interface RestoreFeedsResponse {
-    success: boolean;
-    message: string;
-    started: number;
-    /** @brief One line for each feed that failed: its name, then the reason. */
-    failures: string[];
-}
-
 export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
-    restore_feeds_request: 'synthetic.v1.ops.restore_feeds',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -119,5 +96,4 @@ export const requiresSession = {
     start_feed_request: true,
     stop_feed_request: true,
     list_feeds_request: true,
-    restore_feeds_request: true,
 } as const;

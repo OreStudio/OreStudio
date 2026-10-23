@@ -143,7 +143,7 @@ void market_data_generation_config_commands::register_commands(cli::Menu& root_m
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <scope> <binding_mode> <name> <description> <enabled> <dataset_id> <provider_code> "
-        "<run_grant_id> <reason> <commentary>");
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +151,7 @@ void market_data_generation_config_commands::register_commands(cli::Menu& root_m
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <scope> <binding_mode> <name> <description> <enabled> <dataset_id> "
-        "<provider_code> <run_grant_id> <reason> <commentary> [--version <n>]");
+        "<provider_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void market_data_generation_config_commands::register_commands(cli::Menu& root_m
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <scope> <binding_mode> <name> <description> <enabled> "
-        "<dataset_id> <provider_code> <run_grant_id> <reason> <commentary>");
+        "<dataset_id> <provider_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +353,8 @@ void market_data_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -366,7 +366,6 @@ void market_data_generation_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         read_token(req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
         read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
-        read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -409,8 +408,8 @@ void market_data_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -422,7 +421,6 @@ void market_data_generation_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         read_token(req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
         read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
-        read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -476,8 +474,8 @@ void market_data_generation_config_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -491,7 +489,6 @@ void market_data_generation_config_commands::process_put_many(
             read_token(change.write.enabled, parsed->positionals[next++], "enabled");
             read_token(change.write.dataset_id, parsed->positionals[next++], "dataset_id");
             read_token(change.write.provider_code, parsed->positionals[next++], "provider_code");
-            read_token(change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -30,7 +30,6 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
-#include "restore_feeds_handler.hpp"
 #include "simulate_handler.hpp"
 #include "vintage_validity_handler.hpp"
 
@@ -40,7 +39,6 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::nats::service::nats_client& auth_nats,
                              std::shared_ptr<feed_controller> ctrl,
-                             std::shared_ptr<feed_restorer> restorer,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              const feed_kind_registry& registry) {
@@ -73,14 +71,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry);
             h.list(std::move(msg));
         }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(restore_feeds_request::nats_subject),
-                             queue,
-                             [&nats, restorer, ctx, verifier, &registry](ores::nats::message msg) {
-                                 restore_feeds_handler h(nats, restorer, ctx, verifier, registry);
-                                 h.restore(std::move(msg));
-                             }));
 
     // One simulate subscription per registered kind: the subject and the
     // kind string both come from the registration, so a new kind needs no

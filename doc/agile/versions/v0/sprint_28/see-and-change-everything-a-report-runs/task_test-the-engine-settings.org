@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-23
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person runs the engine settings scenario against a live environment and record
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scenario ran once in the browser, as the tenant administrator at the group party, and once for a senior trader. Seven of 13 steps passed. Six failed: four from one defect (a row of a child party cannot be changed or read in history from the group party), one from a wrong expectation about the list, and one because the app has no language selector. A walk of the same operations through the API from a UK session passed. Each failure has a follow-up task in the story. The task is done because the scenario ran and every failure is captured; the story stays open for the follow-up tasks.

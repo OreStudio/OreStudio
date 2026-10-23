@@ -30,8 +30,8 @@ Build the read model under the trade list. A row holds the trade or the structur
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
 | Now          | Plan written. The trade summary task is absorbed. |
 | Waiting on   | Nothing.                               |
-| Next         | Measure the generator gap for a table-less read model. |
-| Last touched | 2026-10-22                               |
+| Next         | Add the =read-model= profile and the view archetype to the generator. |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -80,6 +80,9 @@ task and name that file in the Command column.
 | Facets a read model never needs, first count | 10 (superseded by the next row) | the same dry-run | 2b8f31b18c |
 | Facets the profile =read-only-current-state= already drops | 5 history files: the history provider and its registrar, the field mapper pair. The profile gates them in =generate.py= (=_NO_TEMPORAL_HISTORY_ARCHETYPES=) | dry-run of =ores.iam.login_info.org=, which binds the profile | 25d8ad99f1 |
 | Facets still wrong for a view | 6: table create and drop, notify trigger create and drop, event, event registrar. The event pair and the eventing test already have a gate set (=_STAGING_ONLY_EVENTING_FACETS=) | the same dry-run, read against =generate.py= | 25d8ad99f1 |
+| PostgreSQL version of the dev server | 18.6, and the build links 18.4. =security_invoker= needs 15 or later | =psql --version=, and =PG_VERSION= in the vcpkg =pg_config.h= | ec01ab89e4 |
+| Views that already use =security_invoker= | 8, one for each asset class in =marketdata_series_identity_views_create.sql= | =grep -n security_invoker projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql= | ec01ab89e4 |
+| Code in =sqlgen= that checks a table exists | 0 hits for =information_schema=, =pg_class= and =pg_tables= | =grep -rIn= over the =sqlgen= headers | ec01ab89e4 |
 | Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
 | Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 
@@ -95,7 +98,7 @@ Three ways to close the gap:
 
 | Option | What it changes | Risk |
 |--------+-----------------+------|
-| A. A view as the table | The SQL facet emits =create view= from a select in the model. The entity =tablename= names the view. The generated repository, filter, order, page and total work unchanged. A new profile =read-model= binds =read_only= and =current_state=, adds the view, and reuses the existing gate set that drops the event facets and the notify trigger. The view carries no =as_of=, so the entity does not offer it. The specification allows this: a read model that cannot honour =as_of= does not offer it. | Low. It is inferred that =sqlgen::read= accepts a view. It is not yet tested. |
+| A. A view as the table | The SQL facet emits =create view= from a select in the model. The entity =tablename= names the view. The generated repository, filter, order, page and total work unchanged. A new profile =read-model= binds =read_only= and =current_state=, adds the view, and reuses the existing gate set that drops the event facets and the notify trigger. The view carries no =as_of=, so the entity does not offer it. The specification allows this: a read model that cannot honour =as_of= does not offer it. | Low. =sqlgen= emits a plain select on the name and never inspects the catalogue, so a view reads like a table. The view is not yet read through generated code. |
 | B. A function, and =as_of= | A view cannot take =as_of=. A function can, but =sqlgen= cannot read from a function with an argument, so the repository must build the filter, order and page as raw SQL. | High. It duplicates the filter record in SQL. |
 | C. A view and a session setting | The view reads a transaction-local setting for the instant. It needs the setting and the read on one connection. | Medium. A read outside a unit of work opens its own connection. |
 

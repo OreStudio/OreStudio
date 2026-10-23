@@ -41,6 +41,11 @@ CREATE_DIR = REPO_ROOT / "projects" / "ores.sql" / "create"
 
 AUDIT = "under audit in 'Audit the policies that let the system tenant read every tenant'"
 
+USAGE = (
+    "the platform pays the vendors for the usage of every tenant, so the system tenant reads "
+    "the usage events of all of them"
+)
+
 EXCEPTIONS = {
     "job_definitions_tenant_isolation_policy": AUDIT,
     "job_definitions_party_isolation_policy": AUDIT,
@@ -53,6 +58,9 @@ EXCEPTIONS = {
     "workflow_instances_tenant_isolation_policy": AUDIT,
     "workflow_batch_links_tbl_tenant_isolation_policy": AUDIT,
     "feed_bindings_tbl_tenant_isolation_policy": AUDIT,
+    "subscription_intervals_tbl_tenant_isolation_policy": USAGE,
+    "demand_intervals_tbl_tenant_isolation_policy": USAGE,
+    "delivery_counts_tbl_tenant_isolation_policy": USAGE,
 }
 
 POLICY_RE = re.compile(r"create\s+policy\s+(\w+)\s+on\s+(\w+)(.*?);", re.I | re.S)

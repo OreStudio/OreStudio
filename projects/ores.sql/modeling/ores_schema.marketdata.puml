@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 19
+Tables: 22
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,6 +41,68 @@ end note
 ' ==================== marketdata (Market Data (Quotes, Fixings, Series)) ====================
 '
 package "marketdata" #E3F2FD {
+    entity ores_marketdata_delivery_counts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * period_start : timestamptz
+        * flushed_at : timestamptz
+        * source_id : uuid <<FK>>
+        * deliveries : bigint
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_delivery_counts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Delivery Count Table
+    A delivery count is a fact about usage. The fan-out counts the ticks it delivers to each party for each item
+    and writes the counts in batches. A count holds no price. The only cost at tick time is one increment in
+    memory, and one row is written for each party, item and hour at each write.
+    A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+    end note
+
+    entity ores_marketdata_demand_intervals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * interval_from : timestamptz
+        * source_id : uuid <<FK>>
+          interval_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_demand_intervals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Demand Interval Table
+    A demand interval is a fact about usage. It records that one item was in the demand set of a party, and
+    so was published by the source that served the party, from one time to another. Demand is a control
+    signal for the adapter and a billing fact for the vendor: a live adapter pays for the items in the set.
+    The service opens an interval when an item enters the demand of a party and closes it when the item
+    leaves, or when the party stops being served by the source.
+    end note
+
     entity ores_marketdata_feed_binding_activity_tbl  #F7E5FF {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
@@ -666,6 +728,40 @@ package "marketdata" #E3F2FD {
     The reader rejects an empty table, because an empty table aborts the
     first import that reads it and the message should name the table rather
     than the first series it met.
+    end note
+
+    entity ores_marketdata_subscription_intervals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * interval_from : timestamptz
+        * source_id : uuid <<FK>>
+        * display : boolean
+        * non_display : boolean
+        * derived : boolean
+          interval_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_subscription_intervals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Subscription Interval Table
+    A subscription interval is a fact about usage. It records that a party held a subscription to a provider
+    with given rights and was routed to a source, from one time to another. It holds no price. A rating
+    step applies the rate card of the source to the interval later, so a new contract can price old facts.
+    The service opens an interval when a route and its subscription come to hold together and closes it
+    when either changes or ends. A change of the source or of the rights closes one interval and opens the
+    next. A party administrator reads the intervals of the party and the system tenant reads all of them.
     end note
 
     entity ores_marketdata_subscriptions_tbl <<temporal>> #C6F0D8 {

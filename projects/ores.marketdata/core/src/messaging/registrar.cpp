@@ -23,6 +23,10 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/publish_operation_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
+#include "ores.marketdata.core/messaging/delivery_count_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
+#include "ores.marketdata.core/messaging/demand_interval_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/demand_interval_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
@@ -57,6 +61,8 @@
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.marketdata.core/messaging/subscription_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/subscription_interval_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_registrar.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
@@ -106,6 +112,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_data_mapping_handlers(nats, ctx, verifier));
     fold(register_subscription_handlers(nats, ctx, verifier));
     fold(register_route_handlers(nats, ctx, verifier));
+    fold(register_delivery_count_handlers(nats, ctx, verifier));
+    fold(register_demand_interval_handlers(nats, ctx, verifier));
+    fold(register_subscription_interval_handlers(nats, ctx, verifier));
     fold(register_observation_lineage_handlers(nats, ctx, verifier));
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
     fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
@@ -268,6 +277,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_market_data_mapping_history_provider(hist_registry);
         register_subscription_history_provider(hist_registry);
         register_route_history_provider(hist_registry);
+        register_delivery_count_history_provider(hist_registry);
+        register_demand_interval_history_provider(hist_registry);
+        register_subscription_interval_history_provider(hist_registry);
         register_observation_lineage_history_provider(hist_registry);
         register_series_classification_rule_history_provider(hist_registry);
 

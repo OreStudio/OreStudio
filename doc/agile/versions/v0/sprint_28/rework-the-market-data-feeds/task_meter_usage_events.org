@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/meter-usage-events
+#+pr: 3657
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The service records subscription intervals, demand intervals and batched deliver
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -44,6 +44,13 @@ The service records subscription intervals, demand intervals and batched deliver
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Model the three events as entities with history and row-level security by party: the subscription interval, the demand interval and the delivery count. None holds a price.
+2. Let the system tenant read the events of every tenant, with the widening listed in the register that audits such policies.
+3. Plan the intervals as a pure comparison of the state now with the intervals that are open: open what is new, close what ended or changed, leave the rest.
+4. Write the intervals after each read of the catalogue, so they cost nothing at tick time.
+5. Count deliveries in memory in the fan-out, one addition for each party and item of a batch, and write the counts in batches every 30 seconds and at stop.
+6. Test the planner and the meter without a database.
 
 * Measurements
 
@@ -76,12 +83,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3657][#3657]] | [marketdata] Meter usage events |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every event is stamped system.initial_load | usage_planner, usage_recorder | Accept | An opened interval and a count carry system.new_record, and a closed interval carries system.update. |
+| 2 | Counts can be lost at shutdown | usage_recorder, application | Accept | The recorder reports the counts left in the meter after its last flush. The loop stops after the recorder, so a late count is possible and now visible. |
+| 3 | Memory grows while the store is down | delivery_meter | Accept | A flush that fails warns when more than 100000 counts wait. |
+| 4 | The meter key allocates on each comparison | delivery_meter, usage_planner | Accept | The keys compare the tenant uuid and not its text. |
+| 5 | Intervals stay open across downtime | usage_recorder | Defer | The service cannot know when the adapter or the party stopped. A stop that closes the intervals, or a sweep at start, is a later change with the rating step. |
 
 * Result
+
+The service records usage as events, with no price. Three entities hold them, each with history and row-level security by party: the subscription interval, the demand interval and the delivery count. The system tenant reads the events of every tenant, and the widening is listed in the register with its reason. =usage_planner= compares the state now with the open intervals: it opens what is new, closes what ended, and closes one interval and opens the next when the source or the rights change. =usage_recorder= writes the intervals after each read of the catalogue, so they cost nothing at tick time. =delivery_meter= counts the deliveries of the fan-out in memory, one addition for each party and item of a batch, and the recorder writes the counts every 30 seconds and at stop, and puts a count back in the meter when the store does not answer. Fifty-one service test cases pass, including the planner and the meter. The build of the service and the core tests passes.
+
+Left for later tasks:
+- The recorder and the count flush were not run against a database, because the worktree =.env= is at version 32.
+- A party administrator reads the events through the generated list calls under the party isolation policy. No usage screen exists yet; the screens task builds it.
+- The access record, a person viewing the data, is not modelled. The page marks it as later.
+- A delivery is counted when the loop publishes it, whether or not the store accepted the tick.

@@ -27,7 +27,9 @@
 #include "ores.reporting.core/repository/ore_parameter_value_domain_repository.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -54,6 +56,9 @@ write_system_parameters(const ores::database::context& party_ctx,
 
     auto domain = ores::reporting::generators::generate_synthetic_ore_parameter_value_domain(gen);
     domain.change_reason_code = "system.test";
+    // The generator draws the code from a few words and a counter, so two runs
+    // against one database could meet; a random uuid cannot.
+    domain.code = "test-" + boost::uuids::to_string(boost::uuids::random_generator()());
     ores::reporting::repository::ore_parameter_value_domain_repository().write(system_ctx, domain);
 
     std::vector<boost::uuids::uuid> ids;
@@ -62,6 +67,10 @@ write_system_parameters(const ores::database::context& party_ctx,
         auto parameter = ores::reporting::generators::generate_synthetic_ore_parameter(gen);
         parameter.change_reason_code = "system.test";
         parameter.ore_parameter_value_domain_code = domain.code;
+        // The key of a parameter is its schema and XPath, which the generator
+        // draws from a few words, so the test states both from the id.
+        parameter.name = "test-" + boost::uuids::to_string(parameter.id);
+        parameter.xpath = "/test/" + parameter.name;
         parameters.write(system_ctx, parameter);
         ids.push_back(parameter.id);
     }

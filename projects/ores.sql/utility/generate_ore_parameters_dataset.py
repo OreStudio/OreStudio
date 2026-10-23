@@ -27,6 +27,10 @@ writes them to the tenant that the bundle names.
     generate_ore_parameters_dataset.py --check  fail if the seed differs
 
 Every parameter needs a complete text. The generator fails when one has none.
+
+The XPath of a leaf is its identity. The id of a parameter derives from it, so a leaf that
+is renamed or moved is a new parameter in every tenant, and the old row stays until a
+replace-all publish closes it.
 """
 
 import argparse
@@ -203,7 +207,10 @@ def main():
         return 1
     content = render(all_rows)
     if args.check:
-        current = open(SEED).read() if os.path.exists(SEED) else ""
+        current = ""
+        if os.path.exists(SEED):
+            with open(SEED) as f:
+                current = f.read()
         if current != content:
             print(f"{SEED} no longer matches the texts; regenerate it.", file=sys.stderr)
             return 1

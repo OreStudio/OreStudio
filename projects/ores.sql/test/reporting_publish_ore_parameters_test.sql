@@ -25,6 +25,7 @@
  * bundle names:
  * - The value domains and the parameters receive the rows the datasets stage
  * - A parameter keeps the id its dataset gives it
+ * - A repeat publish skips every row whose values are unchanged
  * - An insert-only publish skips every row the tenant holds
  * - A replace-all publish closes rows written earlier in the same transaction
  * - A parameter whose value domain is not published is refused
@@ -34,7 +35,7 @@
 
 begin;
 
-select plan(7);
+select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -94,6 +95,14 @@ select is_empty(
               and p.id = a.id and p.xpath = a.xpath and p.name = a.name
               and p.valid_to = ores_utility_infinity_timestamp_fn())$$,
     'every parameter keeps the id and the XPath its dataset gives it');
+
+select results_eq(
+    format($$select action, record_count::int from ores_reporting_publish_ore_parameters_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
+        (select id from t_parameters)),
+    format($$values ('skipped'::text, %s)$$,
+        (select count(*) from ores_dq_ore_parameters_artefact_tbl
+         where dataset_id = (select id from t_parameters))),
+    'a repeat publish skips every parameter whose values are unchanged and adds no version');
 
 select results_eq(
     format($$select action from ores_reporting_publish_ore_parameters_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,

@@ -376,6 +376,7 @@ declare
     v_dataset_name text;
     r record;
     v_exists boolean;
+    v_unchanged boolean;
     v_new_version integer;
 begin
     -- A publish is an upsert by design: it replaces the row it finds.
@@ -423,6 +424,22 @@ begin
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 
+        select exists (
+            select 1 from ores_reporting_ore_parameter_value_domains_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and (existing.name, existing.storage_kind, existing.referenced_entity)
+                  is not distinct from (r.name, r.storage_kind, r.referenced_entity)
+        ) into v_unchanged;
+
+        -- A row the tenant holds with the same values is left alone, so a
+        -- repeat publish adds no version.
+        if v_unchanged then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
         if p_mode = 'insert_only' and v_exists then
             v_skipped := v_skipped + 1;
             continue;
@@ -463,7 +480,10 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the ORE parameter value domains a dataset stages into the target tenant,
- each replacing the row the tenant holds under its code.';
+ each replacing the row the tenant holds under its code. A row with the same values
+ is skipped, so a repeat publish adds no version. An upsert never closes a domain a
+ later dataset version drops. A replace_all closes every current row of the target
+ tenant, because the dataset is the only writer of the table.';
 
 -- =============================================================================
 -- Ore Parameters: reporting.v1.ops.publish_ore_parameters_from_dq
@@ -487,6 +507,7 @@ declare
     v_dataset_name text;
     r record;
     v_exists boolean;
+    v_unchanged boolean;
     v_new_version integer;
 begin
     -- A publish is an upsert by design: it replaces the row it finds.
@@ -546,6 +567,22 @@ begin
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 
+        select exists (
+            select 1 from ores_reporting_ore_parameters_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.id = r.id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and (existing.scope, existing.subtype, existing.name, existing.schema_name, existing.xpath, existing.position, existing.ore_parameter_value_domain_code, existing.is_required, existing.label, existing.help, existing.description, existing.default_text, existing.format, existing.introduced_in, existing.removed_in)
+                  is not distinct from (r.scope, r.subtype, r.name, r.schema_name, r.xpath, r.position, r.ore_parameter_value_domain_code, r.is_required, r.label, r.help, r.description, r.default_text, r.format, r.introduced_in, r.removed_in)
+        ) into v_unchanged;
+
+        -- A row the tenant holds with the same values is left alone, so a
+        -- repeat publish adds no version.
+        if v_unchanged then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
         if p_mode = 'insert_only' and v_exists then
             v_skipped := v_skipped + 1;
             continue;
@@ -592,5 +629,9 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_reporting_publish_ore_parameters_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the ORE parameter documentation a dataset stages into the target tenant,
- each replacing the row the tenant holds under its id. The value domains are
- published first, because the insert checks the domain of each parameter.';
+ each replacing the row the tenant holds under its id. A row with the same values
+ is skipped, so a repeat publish adds no version. The value domains are published
+ first, because the insert checks the domain of each parameter. An upsert never
+ closes a parameter that a later dataset version drops. A replace_all closes every
+ current row of the target tenant, because the dataset is the only writer of the
+ table. The id comes from the XPath of the leaf, so a renamed leaf is a new row.';

@@ -238,6 +238,71 @@ describe('GET /api/operations/grid/jobs/batches', () => {
         });
     });
 
+    it('names a batch by the report run that made it and by its party', async () => {
+        const RUN = '99999999-9999-4999-8999-999999999999';
+        const { response, calls } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/batches?limit=10',
+            {
+                ...ANSWERS,
+                'compute.v1.batches.list': {
+                    result: OK,
+                    batches: [{ ...wireBatch, external_ref: RUN, party_id: SYSTEM_TENANT }],
+                    total: 1,
+                },
+                'reporting.v1.report_instances.list': {
+                    result: OK,
+                    instances: [{ id: RUN, name: 'NPV 2026-10-23 22:07:58' }],
+                    total: 1,
+                },
+            },
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json<{ rows: unknown[] }>().rows[0]).toMatchObject({
+            external_ref: RUN,
+            report_run_name: 'NPV 2026-10-23 22:07:58',
+            party_name: 'System',
+        });
+        const read = calls.find((call) => call.subject === 'reporting.v1.report_instances.list');
+        expect(read?.body).toMatchObject({ filter: { id_one_of: [RUN] } });
+    });
+
+    it('reads no report run for a reference that is text, and leaves the names empty', async () => {
+        const { response, calls } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/batches?limit=10',
+        );
+
+        expect(response.json<{ rows: unknown[] }>().rows[0]).toMatchObject({
+            report_run_name: null,
+            party_name: null,
+        });
+        expect(calls.map((call) => call.subject)).toEqual(['compute.v1.batches.list']);
+    });
+
+    it('serves the batches when the report run read fails', async () => {
+        const RUN = '99999999-9999-4999-8999-999999999999';
+        const { response } = await get(
+            'tenant-administration',
+            '/api/operations/grid/jobs/batches?limit=10',
+            {
+                ...ANSWERS,
+                'compute.v1.batches.list': {
+                    result: OK,
+                    batches: [{ ...wireBatch, external_ref: RUN }],
+                    total: 1,
+                },
+            },
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json<{ rows: unknown[] }>().rows[0]).toMatchObject({
+            external_ref: RUN,
+            report_run_name: null,
+        });
+    });
+
     it('reads the first 25 when the address names no page', async () => {
         const { response } = await get(
             'tenant-administration',

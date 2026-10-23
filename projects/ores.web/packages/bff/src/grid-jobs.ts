@@ -22,6 +22,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     type BatchFilter,
+    type BatchView,
     batchPageSchema,
     batchViewSchema,
     GridJobsRefusedError,
@@ -41,7 +42,9 @@ import {
     workunitPageSchema,
     workunitViewSchema,
 } from '@ores/wire-protocol';
+import type { Batch } from '@ores/wire-protocol/generated/compute/domain/batch';
 import { invalidRequest, notFound, notPermitted } from './errors.js';
+import { reportRunNames } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -155,6 +158,24 @@ function idParam(request: FastifyRequest): string {
     return parsed.data.id;
 }
 
+/**
+ * The batches as a screen reads them: each with the name of the report run that made it,
+ * where the session may read the run, and the name of its party, where the session knows
+ * the party. The runs are one read for the whole page.
+ */
+async function viewsOf(session: LiveSession, batches: readonly Batch[]): Promise<BatchView[]> {
+    const runs = await reportRunNames(
+        session,
+        batches.map((batch) => batch.external_ref),
+    );
+    return batches.map((batch) =>
+        toBatchView(batch, {
+            reportRunName: runs.get(batch.external_ref),
+            partyName: session.availableParties.find((party) => party.id === batch.party_id)?.name,
+        }),
+    );
+}
+
 export function registerGridJobsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -166,7 +187,7 @@ export function registerGridJobsRoutes(
         const { batches, total } = await answering(() => readBatches(session.client, page, filter));
         return batchPageSchema.parse({
             read_at: toWireTimestamp(new Date()),
-            rows: batches.map(toBatchView),
+            rows: await viewsOf(session, batches),
             total,
             ...page,
         });
@@ -179,7 +200,7 @@ export function registerGridJobsRoutes(
         if (batch === null) {
             throw notFound('No batch has this id.');
         }
-        return batchViewSchema.parse(toBatchView(batch));
+        return batchViewSchema.parse((await viewsOf(session, [batch]))[0]);
     });
 
     /** One page of the workunits of one batch. */

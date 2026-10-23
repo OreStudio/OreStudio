@@ -49,6 +49,8 @@ const PARTY_ID = 'd1111111-0000-4000-8000-000000000001';
 const batch: BatchView = {
     id: BATCH_ID,
     external_ref: 'order-e',
+    report_run_name: null,
+    party_name: null,
     party_id: PARTY_ID,
     status: 'closed',
     modified_by: 'tenant_admin',

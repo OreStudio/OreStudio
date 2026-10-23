@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 018356B7-4EE4-46E8-8636-391512377021
+:END:
+#+title: Task: Name things on the grid job screens
+#+description: The Jobs tab, the job page and the report run page show UUIDs where a person needs names. A report-driven batch reads as its run id, a party as its id, and the link to the report as 'Open the report'.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/name-things-on-the-grid-job-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads the batch, the party and the report by name, and the id stays one click or one hover away.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- A batch made by a report run shows the run's name in the tree and in the details, with a link to the run.
+- A party reads by name where the session knows it.
+- The report run page names the report and the party, and a failed run that made no batch says so.
+- The job page shows the app version by its engine version, with its id in a tooltip.
+
+* Plan
+
+The BFF adds two names to a batch: the name of the report run that made it, read in one statement for the page from the reporting service, and the name of its party, from the parties the session knows. The report run page gains the report's name and the party's name. The web shows them where it showed ids, and keeps each id in a tooltip or in the details. The model's own field names stay the labels of an id, as the approved prototypes state, so a row that holds an id keeps its model header.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found by looking at the screens with a real report run: the Jobs tab read =9abaf1a1-6624-45b1-b42b-bacbd4a3270d= where it could read "NPV 2026-10-23 22:07:58". A report run is named by the reporting service, so the batch needs one read of the runs of the page, and a failed read leaves the names out and does not fail the page.
+
+I first changed the job page's App Version ID row to read as the version. Two tests failed, because the prototypes use the model's own field names. The Release panel already states the engine and wrapper versions beside the id, so I put the row back.
+
+The operator reads no report run name, because a run belongs to a tenant party. The party name is known only for the parties the session acts for, so the operator sees party ids.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A batch made by a report run reads by the run's name in the tree, the details and the job page, with a link to the run. A party reads by name where the session knows it. A job reads as "Job n" with its id in the tooltip. The report run page names the report and the party, and a failed run says it made no batch. The BFF has three new tests and the web has five. The TypeScript suites pass, and the screens were checked live as the UK party's administrator.

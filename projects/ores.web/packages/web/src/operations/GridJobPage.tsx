@@ -200,12 +200,14 @@ function Header({
             </div>
             <dl className="grid gap-3 sm:grid-cols-3">
                 <Detail
-                    label={t(`${FIELD}.externalRef`)}
+                    label={t('operations.grid.job.batchName')}
                     value={
                         batch === undefined ? (
                             none
                         ) : (
-                            <PageLink to={gridBatchPath(batch.id)}>{batch.external_ref}</PageLink>
+                            <PageLink to={gridBatchPath(batch.id)}>
+                                {batch.report_run_name ?? batch.external_ref}
+                            </PageLink>
                         )
                     }
                 />
@@ -213,7 +215,21 @@ function Header({
                     label={t('operations.grid.job.batchStatus')}
                     value={batch === undefined ? none : <StatusTag status={batch.status} />}
                 />
-                <Detail label={t(`${FIELD}.partyId`)} value={batch?.party_id ?? none} mono />
+                <Detail
+                    label={
+                        batch?.party_name == null
+                            ? t(`${FIELD}.partyId`)
+                            : t('operations.grid.jobs.fields.party')
+                    }
+                    value={
+                        batch?.party_name == null ? (
+                            (batch?.party_id ?? none)
+                        ) : (
+                            <span title={batch.party_id ?? undefined}>{batch.party_name}</span>
+                        )
+                    }
+                    mono={batch?.party_name == null}
+                />
                 <Detail label={t(`${FIELD}.hostId`)} value={<NodeCell run={first} />} mono />
                 <Detail
                     label={t('operations.grid.job.batchRecordedAt')}
@@ -551,7 +567,9 @@ function Lineage({
             <ol className="space-y-2 text-sm">
                 {batch !== undefined && (
                     <li>
-                        <PageLink to={gridBatchPath(batch.id)}>{batch.external_ref}</PageLink>
+                        <PageLink to={gridBatchPath(batch.id)}>
+                            {batch.report_run_name ?? batch.external_ref}
+                        </PageLink>
                         <p className="text-xs text-ink-faint">
                             {UUID.test(batch.external_ref) ? (
                                 <PageLink to={gridReportRunPath(batch.external_ref)}>

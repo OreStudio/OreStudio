@@ -58,7 +58,9 @@ function batch(id: string, ref: string, status = 'closed'): BatchView {
     return {
         id,
         external_ref: ref,
+        report_run_name: null,
         party_id: PARTY_ID,
+        party_name: null,
         status,
         modified_by: 'tenant_admin',
         recorded_at: '2026-10-13 02:27:27.000000Z' as BatchView['recorded_at'],
@@ -368,6 +370,48 @@ describe('the Jobs tab', () => {
         }
         expect(html).toContain('order-e');
         expect(html).toContain('Read only');
+    });
+
+    it('reads a batch by the report run that made it, with its party beside it', () => {
+        const RUN = 'a1b2c3d4-0000-4000-8000-000000000009';
+        const named = {
+            ...batch(BATCH_ID, RUN),
+            report_run_name: 'NPV 2026-10-23 22:07:58',
+            party_name: 'ACME Corporation UK plc',
+        };
+        const html = render('/?tab=jobs', { batches: pageOf([named], 1) });
+
+        expect(html).toContain('NPV 2026-10-23 22:07:58');
+        expect(html).toContain('ACME Corporation UK plc');
+        expect(html).not.toContain(`>${RUN}<`);
+    });
+
+    it('links the report run in the details of a batch and names its party', () => {
+        const RUN = 'a1b2c3d4-0000-4000-8000-000000000009';
+        const named = {
+            ...batch(BATCH_ID, RUN),
+            report_run_name: 'NPV 2026-10-23 22:07:58',
+            party_name: 'ACME Corporation UK plc',
+        };
+        const html = render(`/?tab=jobs&sel=batch:${BATCH_ID}`, {
+            batches: pageOf([named], 1),
+            record: ['batch', BATCH_ID, named],
+        });
+
+        expect(html).toContain(`/operations/grid/report-runs/${RUN}`);
+        expect(html).toContain('Report run');
+        expect(html).toContain('>Party<');
+        expect(html).not.toContain('Party ID');
+    });
+
+    it('numbers the jobs of an open batch and keeps their ids in the tooltip', () => {
+        const html = render(`/?tab=jobs&open=${BATCH_ID}`, {
+            batches: TWO_BATCHES,
+            workunits: pageOf([workunit(WORKUNIT_ID)], 1, 0, 5),
+        });
+
+        expect(html).toContain('Job 1');
+        expect(html).toContain(`title="${WORKUNIT_ID}"`);
     });
 
     it('links a workunit to its batch and its canonical result', () => {

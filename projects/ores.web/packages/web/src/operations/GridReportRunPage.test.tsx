@@ -46,7 +46,9 @@ function runView(overrides: Partial<GridReportRunView> = {}): GridReportRunView 
         name: 'nightly_instance',
         description: 'A nightly run',
         definition_id: DEFINITION_ID,
+        definition_name: 'NPV',
         party_id: 'd1111111-0000-4000-8000-000000000001',
+        party_name: 'ACME Corporation UK plc',
         kind: 'production',
         state_name: 'Running',
         health: 'running',
@@ -101,6 +103,21 @@ describe('the report run page', () => {
 
         expect(html).toContain('No batch of this run is visible to you.');
         expect(html).not.toContain('open=');
+    });
+
+    it('names the report and the party', () => {
+        const html = render(runView());
+
+        expect(html).toContain('Open the report NPV');
+        expect(html).toContain('ACME Corporation UK plc');
+    });
+
+    it('says a failed run made no batch, and a run with none visible is not called failed', () => {
+        const failed = render(runView({ health: 'failed', batch_id: null }));
+        const hidden = render(runView({ health: 'running', batch_id: null }));
+
+        expect(failed).toContain('This run made no batch.');
+        expect(hidden).toContain('No batch of this run is visible to you.');
     });
 
     it('warns when the run is not a production run', () => {

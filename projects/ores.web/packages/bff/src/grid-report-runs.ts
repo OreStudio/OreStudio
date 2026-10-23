@@ -27,6 +27,7 @@ import {
     reportHealthWordSchema,
     type GridReportRunView,
 } from '@ores/wire-protocol';
+import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, refusal, resultSchema, row, text } from './refdata-calls.js';
@@ -44,20 +45,24 @@ import type { LiveSession } from './sessions.js';
 
 const idParamsSchema = z.object({ id: z.uuid() });
 
-async function readRun(session: LiveSession, id: string): Promise<Record<string, unknown> | null> {
+/** The runs of the ids named that the session may read. */
+async function readRuns(
+    session: LiveSession,
+    ids: readonly string[],
+): Promise<readonly Record<string, unknown>[]> {
     const reply = await session.client.callAuthenticated(
         instanceSubjects.list_report_instances_request,
         {
             filter: {
                 definition_id: null,
                 kind: null,
-                id_one_of: [id],
+                id_one_of: [...ids],
                 definition_id_one_of: null,
                 kind_one_of: null,
             },
             as_of: null,
             offset: 0,
-            limit: 1,
+            limit: ids.length,
             order: NO_ORDER,
         },
         z.looseObject({ result: resultSchema, instances: z.array(row).default([]) }),
@@ -65,7 +70,55 @@ async function readRun(session: LiveSession, id: string): Promise<Record<string,
     if (reply.result.outcome !== 'ok') {
         throw refusal(reply.result);
     }
-    return reply.instances[0] ?? null;
+    return reply.instances;
+}
+
+async function readRun(session: LiveSession, id: string): Promise<Record<string, unknown> | null> {
+    return (await readRuns(session, [id]))[0] ?? null;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * The name of each report run that the references name, for the references that are run
+ * ids the session may read. A reference that is text, or a run the session cannot see, is
+ * left out. A failed read leaves every name out and does not fail the page.
+ */
+export async function reportRunNames(
+    session: LiveSession,
+    references: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    const ids = [...new Set(references.filter((reference) => UUID.test(reference)))];
+    if (ids.length === 0) {
+        return new Map();
+    }
+    try {
+        const runs = await readRuns(session, ids);
+        return new Map(runs.map((run) => [text(run['id']), text(run['name'])]));
+    } catch {
+        return new Map();
+    }
+}
+
+/** The name of a report definition, or nothing when the session cannot read it. */
+async function readDefinitionName(session: LiveSession, id: string): Promise<string | null> {
+    try {
+        const reply = await session.client.callAuthenticated(
+            definitionSubjects.list_report_definitions_request,
+            {
+                filter: { party_id: null, id_one_of: [id], party_id_one_of: null, search: null },
+                as_of: null,
+                offset: 0,
+                limit: 1,
+                order: NO_ORDER,
+            },
+            z.looseObject({ result: resultSchema, definitions: z.array(row).default([]) }),
+        );
+        const name = text(reply.definitions[0]?.['name']);
+        return reply.result.outcome === 'ok' && name !== '' ? name : null;
+    } catch {
+        return null;
+    }
 }
 
 async function readHealth(
@@ -129,16 +182,21 @@ export function registerGridReportRunRoutes(
             if (run === null) {
                 throw notFound('No report run has this id.');
             }
-            const [health, batchId] = await Promise.all([
+            const [health, batchId, definitionName] = await Promise.all([
                 readHealth(session, id),
                 readBatchId(session, id),
+                readDefinitionName(session, text(run['definition_id'])),
             ]);
             return gridReportRunViewSchema.parse({
                 id: text(run['id']),
                 name: text(run['name']),
                 description: text(run['description']),
                 definition_id: text(run['definition_id']),
+                definition_name: definitionName,
                 party_id: text(run['party_id']),
+                party_name:
+                    session.availableParties.find((party) => party.id === text(run['party_id']))
+                        ?.name ?? null,
                 kind: text(run['kind']),
                 state_name: health.stateName,
                 health: health.health,

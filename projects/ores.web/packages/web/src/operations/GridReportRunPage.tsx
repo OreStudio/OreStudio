@@ -74,6 +74,16 @@ function Run({ run }: { readonly run: GridReportRunView }): ReactNode {
             <dl className="grid gap-3 sm:grid-cols-3">
                 <Detail label={t(`${FIELD}.name`)} value={run.name} />
                 <Detail label={t(`${FIELD}.kind`)} value={run.kind} />
+                <Detail
+                    label={t(`${FIELD}.party`)}
+                    value={
+                        run.party_name === null ? (
+                            run.party_id
+                        ) : (
+                            <span title={run.party_id}>{run.party_name}</span>
+                        )
+                    }
+                />
                 <Detail label={t(`${FIELD}.state`)} value={run.state_name || none} />
                 <Detail
                     label={t(`${FIELD}.startedAt`)}
@@ -112,11 +122,19 @@ function Links({ run }: { readonly run: GridReportRunView }): ReactNode {
             <h2 className="text-lg font-medium">{t(`${FIELD}.links`)}</h2>
             <ul className="space-y-1 text-sm">
                 <li>
-                    <PageLink to={reportPath(run.definition_id)}>{t(`${FIELD}.report`)}</PageLink>
+                    <PageLink to={reportPath(run.definition_id)}>
+                        {run.definition_name === null
+                            ? t(`${FIELD}.report`)
+                            : t(`${FIELD}.reportNamed`, { name: run.definition_name })}
+                    </PageLink>
                 </li>
                 <li>
                     {run.batch_id === null ? (
-                        <span className="text-ink-faint">{t(`${FIELD}.noBatch`)}</span>
+                        <span className="text-ink-faint">
+                            {run.health === 'failed'
+                                ? t(`${FIELD}.noBatchFailed`)
+                                : t(`${FIELD}.noBatch`)}
+                        </span>
                     ) : (
                         <PageLink to={gridBatchPath(run.batch_id)}>{t(`${FIELD}.batch`)}</PageLink>
                     )}

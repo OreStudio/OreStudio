@@ -237,11 +237,21 @@ export const GRID_JOB_SUBJECTS = {
     getResult: resultSubjects.get_result_request,
 } as const;
 
-/** One batch as a screen reads it. */
+/**
+ * One batch as a screen reads it.
+ *
+ * A batch made by a report run names the run in its External Ref, as an id. When the
+ * session may read that run, `report_run_name` is the run's name, so a screen reads
+ * the batch by what made it. `party_name` is the party's name when the session knows
+ * the party. Both are `null` when the session cannot say, and a screen then falls
+ * back on the External Ref or the id.
+ */
 export const batchViewSchema = z.object({
     id: z.string(),
     external_ref: z.string(),
+    report_run_name: z.string().nullable(),
     party_id: z.string().nullable(),
+    party_name: z.string().nullable(),
     status: z.string(),
     modified_by: z.string(),
     recorded_at: wireTimestampSchema,
@@ -306,11 +316,19 @@ const orNull = (value: string): string | null => (value === '' ? null : value);
 const idOrNull = (value: string): string | null =>
     value === '' || value === NIL_UUID ? null : value;
 
-export function toBatchView(batch: Batch): BatchView {
+/** What a screen reads a batch by, beyond its own columns. */
+export interface BatchNames {
+    readonly reportRunName?: string | undefined;
+    readonly partyName?: string | undefined;
+}
+
+export function toBatchView(batch: Batch, names: BatchNames = {}): BatchView {
     return batchViewSchema.parse({
         id: batch.id,
         external_ref: batch.external_ref,
+        report_run_name: names.reportRunName ?? null,
         party_id: batch.party_id === NIL_UUID ? null : batch.party_id,
+        party_name: names.partyName ?? null,
         status: batch.status,
         modified_by: batch.modified_by,
         recorded_at: batch.recorded_at,

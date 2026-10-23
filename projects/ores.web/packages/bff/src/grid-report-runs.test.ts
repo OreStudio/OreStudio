@@ -119,6 +119,11 @@ const ANSWERS: Answers = {
         health: [{ report_instance_id: RUN, health: 'running', state_name: 'Running' }],
     },
     'compute.v1.batches.list': { result: OK, batches: [wireBatch(RUN)], total: 1 },
+    'reporting.v1.report_definitions.list': {
+        result: OK,
+        definitions: [{ id: DEFINITION, name: 'NPV' }],
+        total: 1,
+    },
 };
 
 function buildTestServer(mode: SessionMode, answers: Answers = ANSWERS) {
@@ -194,6 +199,8 @@ describe('GET /api/operations/grid/report-runs/:id', () => {
             state_name: 'Running',
             batch_id: BATCH,
             completed_at: null,
+            definition_name: 'NPV',
+            party_name: null,
         });
         expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: [RUN] }, limit: 1 });
     });

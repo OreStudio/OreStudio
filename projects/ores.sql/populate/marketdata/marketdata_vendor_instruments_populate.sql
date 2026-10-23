@@ -30,11 +30,16 @@
  * providers ICE and Tradeweb, have no rows yet.
  *
  * The ids of the vendor instruments are derived from their identity, so a rerun writes the same
- * rows. This script is idempotent.
+ * rows. An instrument that already has a current mapping gets no second one, whatever its date.
+ * This script is idempotent.
  */
 
 \echo '--- Market Data Vendor Instruments and Mappings ---'
 
+-- The temporary table lives inside one block, because psql runs each statement in a transaction
+-- of its own and a table that drops on commit would be gone before the second insert.
+do $$
+begin
 create temporary table t_fx_inventory (
     provider_code text, id_scheme text, external_id text, field text, oresmd_uri text
 ) on commit drop;
@@ -157,9 +162,9 @@ where not exists (
     select 1 from ores_marketdata_market_data_mappings_tbl m
     where m.tenant_id = ores_utility_system_tenant_id_fn()
       and m.vendor_instrument_id = v.id
-      and m.effective_from = timestamptz '2026-01-01 00:00:00+00'
       and m.valid_to = ores_utility_infinity_timestamp_fn()
 );
+end $$;
 
 -- Summary
 select 'marketdata_vendor_instruments' as entity, count(*) as count

@@ -88,7 +88,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The temporary table drops on commit before the second insert, under plain psql | vendor instruments populate | Accept | Both inserts and the table are in one do block, as the sibling scripts do. |
+| 2 | A rerun adds a second current mapping if one is re-dated | vendor instruments populate | Accept | The check tests the open mapping of the instrument only. |
+| 3 | The md5 ids are not version 4 uuids | vendor instruments populate | Decline | The ids are only keys. No check reads their version, and the same identity must give the same id. |
+| 4 | The deviation note is empty and not null | vendor instruments populate | Decline | The entity writes an empty note for a row that is not minted, and its test relies on it. |
+| 5 | The LSEG direction of GBP, AUD and NZD | inventory page | Decline | GBP= quotes USD per GBP, so it runs in the direction of the GBP/USD item. |
 
 * Result
 

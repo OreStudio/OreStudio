@@ -112,8 +112,11 @@ Nothing in this scenario was run against a live service before this page was wri
 
 - On the Execution tab, choose Edit. Change threads from 1 to 2.
 - The page must show "1 change". The control must show the new value.
-- Choose Save. The page must leave edit mode and show threads as 2.
+- Choose Save. The page must leave edit mode. It must not reload by itself: it still shows the values it read.
+- Refresh must turn gold and pulse four times, because the save made the data change. Its tooltip must say that the data changed.
+- Choose Refresh. The page must show threads as 2, and the time under Refresh must change.
 - The "version" label of the group must rise by one.
+- Open another tab and come back. The tab must not read again and must keep what it showed.
 - Check the database: =compass sql -- -c "select n_threads, version from ores_reporting_engine_settings_execution_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by valid_from desc limit 3"=. One row must show 2.
 
 *** Result

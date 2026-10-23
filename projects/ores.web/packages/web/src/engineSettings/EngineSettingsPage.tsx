@@ -41,7 +41,7 @@ import {
     type ListSource,
     type PageRequest,
 } from '../refdata/RecordList.js';
-import { NEW_RECORD_REASON, useCloseGuard, LeavingFooter } from '../refdata/records.js';
+import { NEW_RECORD_REASON, markStale, useCloseGuard, LeavingFooter } from '../refdata/records.js';
 import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -190,7 +190,7 @@ function AddDialog({ onClose }: { readonly onClose: () => void }): ReactNode {
                 intent: { reason_code: NEW_RECORD_REASON, commentary: '' },
             }),
         onSuccess: async (document) => {
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [['records', 'engine-settings']]);
             onClose();
             void navigate(engineSettingsPath(document.id));
         },

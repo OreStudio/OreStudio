@@ -38,6 +38,7 @@ import {
     DOCUMENTATION_KEY,
     EngineSettingsRecordPage,
     SettingRow,
+    engineWatches,
     engineSettingsKey,
     historyKey,
 } from './EngineSettingsRecordPage.js';
@@ -524,5 +525,30 @@ describe('the history of a configuration', () => {
         expect(textOf(record(READ, 'history', DOCUMENT, TWO_PARTIES, HISTORY))).not.toContain(
             'Revert',
         );
+    });
+});
+
+describe('what the page listens to', () => {
+    it('names its own configuration, so another configuration does not turn Refresh gold', () => {
+        expect(engineWatches('HK standard')[0]).toEqual({
+            component: 'reporting',
+            entity: 'engine_settings',
+            record: { name: 'HK standard' },
+        });
+    });
+
+    it('hears every change of a group, which is keyed by something else', () => {
+        expect(engineWatches('HK standard').slice(1)).toEqual([
+            { component: 'reporting', entity: 'engine_settings_fixings' },
+            { component: 'reporting', entity: 'engine_settings_building' },
+            { component: 'reporting', entity: 'engine_settings_execution' },
+        ]);
+    });
+
+    it('hears any configuration until the page knows which one it shows', () => {
+        expect(engineWatches(undefined)[0]).toEqual({
+            component: 'reporting',
+            entity: 'engine_settings',
+        });
     });
 });

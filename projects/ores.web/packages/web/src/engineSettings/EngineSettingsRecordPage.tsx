@@ -33,7 +33,7 @@
  * setting, so the wording is edited in the data.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -47,10 +47,18 @@ import {
 import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
+import { type WatchedEntity } from '../events/EntityEvents.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { DeleteDialog, LeavingFooter, RecordHeader, useCloseGuard } from '../refdata/records.js';
+import { TabPane } from '../refdata/parties.js';
+import {
+    DeleteDialog,
+    LeavingFooter,
+    RecordHeader,
+    markStale,
+    useCloseGuard,
+} from '../refdata/records.js';
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
 import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { api } from '../api/client.js';
@@ -77,7 +85,6 @@ import {
     Textarea,
 } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
-import { ENGINE_SETTINGS_EVENTS } from './EngineSettingsPage.js';
 import {
     NO_FILTERS,
     changedColumns,
@@ -109,6 +116,25 @@ export function engineSettingsKey(id: string): readonly unknown[] {
 
 /** Where the documentation is cached. It does not change while a person works. */
 export const DOCUMENTATION_KEY = ['engine-settings-documentation'] as const;
+
+/**
+ * What the page shows, for the change news to be heard about it. The configuration
+ * is named by its key, so the page does not turn Refresh gold for another
+ * configuration. A group is keyed by something else and makes the page stale for any
+ * configuration's group.
+ */
+export function engineWatches(name: string | undefined): readonly WatchedEntity[] {
+    return [
+        {
+            component: 'reporting',
+            entity: 'engine_settings',
+            ...(name === undefined ? {} : { record: { name } }),
+        },
+        { component: 'reporting', entity: 'engine_settings_fixings' },
+        { component: 'reporting', entity: 'engine_settings_building' },
+        { component: 'reporting', entity: 'engine_settings_execution' },
+    ];
+}
 
 /** Where the history of one configuration is cached. */
 export function historyKey(id: string): readonly unknown[] {
@@ -179,7 +205,7 @@ export function EngineSettingsRecordPage(): ReactNode {
         meta: { quiet: true },
     });
     const load = useLoadState([['engine-settings', id]]);
-    const news = useEntityChanges([ENGINE_SETTINGS_EVENTS], load);
+    const news = useEntityChanges(engineWatches(open.data?.name), load);
     const tabs = useTabs({
         label: t('engineSettings.tabs.label'),
         tabs: TABS,
@@ -190,6 +216,12 @@ export function EngineSettingsRecordPage(): ReactNode {
                     : `engineSettings.groups.${tab}.title`,
             ),
     });
+    // A tab the person has opened stays drawn and is hidden while another is open,
+    // so leaving a tab never unmounts its reads and what was typed in it is kept.
+    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([tabs.tab]));
+    useEffect(() => {
+        setSeen((before) => (before.has(tabs.tab) ? before : new Set(before).add(tabs.tab)));
+    }, [tabs.tab]);
     const trail = [...area, { label: t('engineSettings.title'), to: PATHS.engineSettings }];
 
     if (open.isPending) {
@@ -238,10 +270,14 @@ export function EngineSettingsRecordPage(): ReactNode {
     const mayChange = mayWrite && !foreign;
     const mayRemove = mayDelete && !foreign;
     const ownerName = document.partyName === '' ? document.partyId : document.partyName;
-    const group = documentation.data?.groups.find((candidate) => candidate.id === tabs.tab);
     const reload = (): void => {
         void queries.invalidateQueries({ queryKey: engineSettingsKey(id) });
     };
+    const pane = (name: string, children: ReactNode): ReactNode => (
+        <TabPane name={name} tab={tabs.tab} seen={seen}>
+            {children}
+        </TabPane>
+    );
 
     return (
         <div className="space-y-4">
@@ -279,25 +315,37 @@ export function EngineSettingsRecordPage(): ReactNode {
                 </Notice>
             )}
             {tabs.bar}
-            {tabs.tab === 'details' && <DetailsTab document={document} />}
-            {group !== undefined && (
-                <GroupTab key={group.id} document={document} group={group} mayWrite={mayChange} />
-            )}
-            {GROUP_TABS.has(tabs.tab) && group === undefined && documentation.isPending && (
-                <p className="text-sm text-ink-muted" role="status">
-                    {t('common.loading')}
-                </p>
-            )}
-            {GROUP_TABS.has(tabs.tab) && documentation.isError && (
-                <Notice tone="error">
-                    {t('engineSettings.documentationUnread', {
-                        message: documentation.error.message,
-                    })}
-                </Notice>
-            )}
-            {tabs.tab === 'reports' && <ReportsTab document={document} />}
-            {tabs.tab === 'history' &&
-                (foreign ? (
+            {pane('details', <DetailsTab document={document} />)}
+            {GROUP_IDS.map((groupId) => {
+                const group = documentation.data?.groups.find(
+                    (candidate) => candidate.id === groupId,
+                );
+                return pane(
+                    groupId,
+                    group !== undefined ? (
+                        <GroupTab
+                            key={group.id}
+                            document={document}
+                            group={group}
+                            mayWrite={mayChange}
+                        />
+                    ) : documentation.isError ? (
+                        <Notice tone="error">
+                            {t('engineSettings.documentationUnread', {
+                                message: documentation.error.message,
+                            })}
+                        </Notice>
+                    ) : (
+                        <p className="text-sm text-ink-muted" role="status">
+                            {t('common.loading')}
+                        </p>
+                    ),
+                );
+            })}
+            {pane('reports', <ReportsTab document={document} />)}
+            {pane(
+                'history',
+                foreign ? (
                     <Notice tone="info">
                         {t('engineSettings.otherParty.history', { party: ownerName })}
                     </Notice>
@@ -307,7 +355,8 @@ export function EngineSettingsRecordPage(): ReactNode {
                         groups={documentation.data?.groups ?? []}
                         mayWrite={mayChange}
                     />
-                ))}
+                ),
+            )}
             {dialog === 'rename' && (
                 <RenameDialog document={document} onClose={() => setDialog(null)} />
             )}
@@ -340,7 +389,7 @@ export function EngineSettingsRecordPage(): ReactNode {
     );
 }
 
-const GROUP_TABS: ReadonlySet<string> = new Set(['fixings', 'building', 'execution']);
+const GROUP_IDS = ['fixings', 'building', 'execution'] as const;
 
 /** The name, who holds the configuration, how much of it is set and who reaches it. */
 function DetailsTab({ document }: { readonly document: EngineDocument }): ReactNode {
@@ -471,8 +520,7 @@ function GroupTab({
             );
         },
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             leave();
         },
         onError: (error) => setConflict(error instanceof ApiFailure && error.status === 409),
@@ -1129,8 +1177,7 @@ function RevertDialog({
             );
         },
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             onClose();
         },
     });
@@ -1200,8 +1247,7 @@ function RenameDialog({
                 intent: { reason_code: reason.code, commentary: commentary.trim() },
             }),
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             onClose();
         },
     });

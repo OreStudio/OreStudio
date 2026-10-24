@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: E8AAAAAC-F562-4F57-AC12-FC88E8EF5741
+:END:
+#+title: Story: Atomise every convention onto the central entity — the remaining work
+#+description: Pilot the atomised entity shape with tenor basis swap, then convert every remaining convention onto one central convention row plus its kind-specific parts, one convention per PR.
+#+type: story
+#+level: s2
+#+filetags: :refdata:conventions:data_oriented_design:codegen:sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Tenor basis swap is rebuilt on the central convention row and the composite parent-and-parts pattern, with the family get and put generated. Each remaining convention follows in its own PR, and no convention type or row holds the whole convention.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started. Split from [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]], which closed in sprint 28 with its done tasks.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- Tenor basis swap is a central convention row plus tenor_basis_swap_pay_receive and tenor_basis_swap_long_short child entities, with the parent version bumped on any part write.
+- The generic put writes the central row and the family put writes the central row and the parts in one transaction, and each family get mirrors its put.
+- The nine conventions of the cluster and the other kinds each convert in their own PR, with no aggregate type or nested member left.
+- The Windows translation unit pressure is gone, because no unit reflects a wide entity type.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:293E7326-A3A2-48E5-AD05-2EEA68C4E362][Build the composite family get and put]] | BACKLOG | | | Generate the family get, get_many, put and put_many for a composite entity, so one round trip reads a central row with its parts at one instant and one transaction writes them together. Prove the generated operations on an existing composite before the convention pilot depends on them. The generic get and put stay as they are, and the family names follow the codegen pattern library. |
+
+* Decisions
+
+- Split from [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: E22DB287-81A9-4845-957D-705D081834CE
+:END:
+#+title: Task: Add the input documents the exposure reports read with DQ support
+#+description: Store the counterparty information, netting set definitions, collateral balances, calendar adjustment, currency configuration, reference data and IBOR fallback documents and publish them through DQ.
+#+type: task
+#+level: s1
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-12
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The exposure, SA-CCR and XVA analytics read documents that the platform holds as entities or holds nowhere: the counterparty information and the netting set definitions come from the counterparties, netting sets and CSAs that ACME already publishes, and the collateral balances have no home. The calendar adjustment, currency configuration, reference data and IBOR fallback documents are optional inputs. Decide for each whether it is a configuration document that a definition binds or a file the export derives from existing data, store what needs storing, and add the DQ support.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. |
+| Next         | Decide, for each of the seven documents, whether it is bound as a configuration or derived from existing entities. |
+| Last touched | 2026-10-12                               |
+
+* Acceptance
+
+- For each of the seven documents the task records whether it is bound as a configuration or derived from existing entities, with the reason.
+- Each document the export needs has its content stored or derivable, and a mapper that round trips the ORE samples.
+- The collateral balances have an entity, a store and DQ staging, and ACME publishes balances for the CSAs it holds.
+- The reports that read these documents export them, and the exported documents validate against the ORE schema.
+
+* Plan
+
+1. For the counterparty information and the netting set definitions, check whether the counterparties, netting sets and CSAs that ACME publishes can produce the documents. If so, derive them at export and record that they need no configuration.
+2. Model the collateral balances, which have no home, with a store and DQ staging, and publish balances for the CSAs.
+3. Decide the calendar adjustment, currency configuration, reference data and IBOR fallback documents. Each is optional, so store one only when a report needs it.
+4. Add mappers that round trip the ORE samples for each document stored.
+5. Validate the exported documents against the ORE schema.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The SA-CCR analytic reads the netting set definitions and the collateral balances. Both are needed by the reports that now run =saccr=: SA-CCR Exposure, Leverage Ratio, Large Exposures, the group consolidated exposure reports and the board risk dashboard.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

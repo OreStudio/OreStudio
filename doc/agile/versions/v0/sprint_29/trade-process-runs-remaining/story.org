@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: A01A9EC4-4436-4A15-BBF7-FF46BD62443A
+:END:
+#+title: Story: Trace a process run and the trade groups it creates — the remaining work
+#+description: A process that acts on a set of trades must be traceable, so it can be undone or repeated. Record each run with an identity and a state machine, name the process it is a run of, and let the trade groups its inputs and outputs carry the run's key. Waits on one process with a real client.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Record one run of a process over a set of trades: its identity, its
+state machine, the process it is a run of, and the trade groups that
+carry what the run read and what it wrote. The record is what lets a
+process be undone or repeated.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started. Split from [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]], which closed in sprint 28 with its done tasks. |
+| Waiting on    | One process with a real client, the funding roll or the spot sweep, to settle the run model against. |
+| Next          | Triage into a sprint.          |
+| Last touched  | 2026-10-24 |
+
+* Acceptance
+
+- The process enumeration is seeded, so a run names which process ran.
+- A run has an identity and a state machine over its evolution.
+- A trade group carries a foreign key to its run, and its membership names each trade and the role it played.
+- One detail table per kind of run records what that kind of run records.
+- An ORE import is one run.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:703C2FB3-F211-46F7-925D-4B2DA4C9E35A][Add the process run record]] | BACKLOG | | | Seed the process enumeration and add the run table with its identity, its process and its state machine. |
+| [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] | BACKLOG | | | Add the trade group a run creates and the membership that names each trade it read or wrote and the role it played. |
+| [[id:610BCC5C-073D-4FF0-86D3-0EAA4727306A][Add the run detail tables]] | BACKLOG | | | Add one detail table per kind of run, keyed by the run, for the facts that kind records. |
+| [[id:6165BF44-FAB9-4B94-B9FA-71292E0853AC][Record an ORE import as one run]] | BACKLOG | | | Make an ORE import one run, with every imported trade in its group and an import detail row keyed by the run. |
+
+* Decisions
+
+- Split from [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

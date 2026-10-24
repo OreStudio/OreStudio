@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 40FF1BFA-3D50-45FE-88D0-A48CD8AA9770
+:END:
+#+title: Task: Add the recent window and its read operation
+#+description: Step 2 of the tick ingest pipeline: each lane keeps recent ticks in memory, and a read operation serves them.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/recent-window-and-its-read-operation
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A chart that opens, and a consumer that joins late, read recent values from memory. The lane keeps the last tick of every datum, and a bounded run of recent ticks for a datum that a consumer watches.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The history call, =get_series_ticks=, answers the part of a range that the window covers from memory, and it checks the tenant and the party of the caller against the bindings.
+- A range that starts before the window is answered from the window and the store in one reply. The client never sees the join, and it merges the reply with its live ticks by coordinate and time.
+- The lane learns which datums are watched, by a subscription, a request, or a setting.
+- A chart opens from the window in under 100 ms and does not read the store for the span that the window covers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

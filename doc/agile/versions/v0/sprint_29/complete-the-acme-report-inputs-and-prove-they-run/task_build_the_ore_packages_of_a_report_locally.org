@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: FC4E53B5-C38E-4B30-9363-E8DC5F459F0D
+:END:
+#+title: Task: Build the ORE packages of a report locally
+#+description: Shell commands that build, on the developer's machine, exactly the packages the compute grid would receive for a report, and fetch the packages of an earlier report instance.
+#+type: task
+#+level: s1
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_29:v0:
+#+owner: marco
+#+branch: feature/build-the-ore-packages-of-a-report-locally
+#+pr: 3395
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-24
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A developer can take a report and get, on disk, every package the compute grid would receive for it, laid out as the ORE samples are (Input and the data files), so the package can be inspected and run in ORE locally. Two commands do this. One builds the packages fresh from a report definition by running a temporary report instance of a new package kind: it runs the real gather and prepare steps, with the definition's own run grant, and stops before the compute grid. The other fetches the packages a past report instance stored.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] |
+| Now          | The kind lookup, the package chain and the build-packages and fetch-packages commands are written. The branch is rebased onto sprint 28 main and awaits a build. |
+| Waiting on   | Nothing.                               |
+| Next         | Build on linux-clang-release-ninja, then prove the packages on the ACME reports. |
+| Last touched | 2026-10-13                               |
+
+* Acceptance
+
+- A report instance has a kind, held in a lookup table: production, which prepares, computes and records, and package, which prepares and stops. Every existing instance is production.
+- A package instance runs the real gather, package and finalise steps and no compute step, so the packages are the ones the grid would receive. No gather step has a flag that changes its behaviour for a package instance.
+- A package instance neither blocks nor waits behind a production instance of the same definition. The scheduler creates production instances only, and a default listing shows production instances.
+- The command ore build-packages, given a report definition id and an output folder, runs a package instance, waits for it, then downloads every tarball the instance stored and unpacks each into its own folder under the output folder. It reports the instance it made.
+- The command ore fetch-packages, given a report instance id and an output folder, downloads and unpacks every package a past instance stored, and says so clearly when the instance stored none.
+- A package built for an ACME report has Input/ore.xml and the documents, the portfolio and the market data where the run document names them, and validates against the ORE schema.
+- A command removes package instances and their stored packages older than a given age.
+
+* Plan
+
+1. Model the kind of a report instance. Add a lookup =report_instance_kind= with the codes =production= and =package=, and a column on =report_instance= that refers to it and defaults to =production=. Generate the layers from the models and seed the lookup.
+2. Make the kind count where instances are counted. The in-flight check that the concurrency policy uses ignores =package= instances. The scheduler creates =production= instances only. The default instance listing shows =production= instances.
+3. Let a trigger name the kind. =trigger_report_instance_request= gains the kind, with =production= as its default, and the response returns the instance it created.
+4. Add the package chain to the report execution workflow. A =package= instance gets the steps gather trades, gather market data, assemble bundle, prepare ORE package and finalise. The steps are the real ones and none of them has a flag for a package instance.
+5. Add =ore build-packages=. It triggers a =package= instance of a definition, waits until the instance reaches a terminal state, lists the stored packages by the instance's storage prefix, downloads each and unpacks each into its own folder under the output folder. A failed instance reports its output message.
+6. Add =ore fetch-packages=. It does the listing, download and unpacking for any instance, and says so when the instance stored none.
+7. Add a clean-up command for =package= instances and their stored packages older than a given age.
+8. Prove it on the ACME reports: build the packages for each definition, check the layout, and validate =ore.xml= against the ORE schema.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The model has no notion of the kind of a run. The closest concepts are at the wrong level. =pre_processing= and =post_processing= are the standing recipe of a definition. =trigger_run_id= says which scheduler trigger created an instance. The FSM states =cancelled= and =skipped= mark runs that never executed. The concurrency policy counts every instance of a definition that has not reached a terminal state, so a temporary instance would block a real run.
+
+The decision is to model the kind on the instance. A package build is a real =report_instance= row with the kind =package=. The gather steps already use the instance id for the run token scope, the storage keys, the state changes and the failure marking, so a =package= instance reuses all of that unchanged and the steps need no flag. The definition's own run grant gives the package the data the real run would see.
+
+A temporary instance is made from a definition, because its data is gathered fresh. It cannot rebuild the exact packages of a past instance, because the market data and the trades have changed since. The tarballs a past instance stored are in storage, and =ore fetch-packages= downloads those.
+
+The packages of one instance are a list, because the submit step takes a list of tarball URIs. Today the prepare step stores one. The commands list the stored objects by prefix, so they take several when a later task splits a run into batches.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3395][#3395]] | [agile] Raise the missing workflow completion signal |
+| [[https://github.com/OreStudio/OreStudio/pull/3391][#3391]] | [agile] File the eight defects against their own story |
+| [[https://github.com/OreStudio/OreStudio/pull/3380][#3380]] | [agile] Raise the intraday reports task |
+| [[https://github.com/OreStudio/OreStudio/pull/3378][#3378]] | [agile] Raise the report errors table |
+| [[https://github.com/OreStudio/OreStudio/pull/3376][#3376]] | [synthetic] Add the trade generation config source to the cmake list |
+| [[https://github.com/OreStudio/OreStudio/pull/3363][#3363]] | [agile] Close the two generator prerequisites |
+| [[https://github.com/OreStudio/OreStudio/pull/3361][#3361]] | [seeder] Read the ACME tradeable counterparties from GLEIF |
+| [[https://github.com/OreStudio/OreStudio/pull/3360][#3360]] | [codegen] Regenerate the two handlers main left stale |
+| [[https://github.com/OreStudio/OreStudio/pull/3359][#3359]] | [agile] Close the streamed-steps task, which #3355 fixed |
+| [[https://github.com/OreStudio/OreStudio/pull/3356][#3356]] | [agile] Raise the stream follow-ups the verification exposed |
+| [[https://github.com/OreStudio/OreStudio/pull/3349][#3349]] | [agile] State the story's counts truthfully and close the versioning task |
+| [[https://github.com/OreStudio/OreStudio/pull/3346][#3346]] | [iam] Give a published account its employing party |
+| [[https://github.com/OreStudio/OreStudio/pull/3345][#3345]] | [agile] Raise the two datetime defects the versioning work exposed |
+| [[https://github.com/OreStudio/OreStudio/pull/3344][#3344]] | [trading] Bump the trade's version from every bond part write |
+| [[https://github.com/OreStudio/OreStudio/pull/3335][#3335]] | [agile] Scaffold the ACME trade population story |
+| [[https://github.com/OreStudio/OreStudio/pull/3330][#3330]] | [agile] Close the trigger story |
+| [[https://github.com/OreStudio/OreStudio/pull/3322][#3322]] | [agile] Raise the two mop-up tasks for the trigger story |
+| [[https://github.com/OreStudio/OreStudio/pull/3318][#3318]] | [doc] Regenerate the shell recipe inventory |
+| [[https://github.com/OreStudio/OreStudio/pull/3317][#3317]] | [reporting] Send the kind on a scheduled report trigger |
+| [[https://github.com/OreStudio/OreStudio/pull/3315][#3315]] | [reporting] Admit a report run through the trigger that records it |
+| [[https://github.com/OreStudio/OreStudio/pull/3313][#3313]] | [agile] Open the story for the report trigger model |
+| [[https://github.com/OreStudio/OreStudio/pull/3309][#3309]] | [doc] Capture the names found that claim to be generated |
+| [[https://github.com/OreStudio/OreStudio/pull/3308][#3308]] | [doc] Standardise every name an entity derives |
+| [[https://github.com/OreStudio/OreStudio/pull/3307][#3307]] | [doc] State the entity naming convention and gather an entities hub |
+| [[https://github.com/OreStudio/OreStudio/pull/3299][#3299]] | [reporting] Name a run's data files in the run document |
+| [[https://github.com/OreStudio/OreStudio/pull/3295][#3295]] | [reporting] Complete the ACME report inputs and prove they run |
+| [[https://github.com/OreStudio/OreStudio/pull/3283][#3283]] | [reporting] Build and fetch a report's ORE packages locally |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

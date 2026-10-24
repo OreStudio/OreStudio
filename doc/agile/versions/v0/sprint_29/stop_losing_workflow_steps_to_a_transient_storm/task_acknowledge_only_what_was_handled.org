@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: CBD63566-6739-4C2D-89DA-3003A11E705B
+:END:
+#+title: Task: Acknowledge a message only once it has been handled
+#+description: The JetStream subscription auto-acks when the handler returns, and on_msg destroys the natsMsg before invoking the handler, so nothing can acknowledge after the work is done. A handler that throws is acked and the command is gone. Move the acknowledgement behind an RAII guard that settles when the handler finishes.
+#+type: task
+#+level: s1
+#+filetags: :stop_losing_workflow_steps_to_a_transient_storm:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:03F84BC2-3F45-43EA-8924-FEA9246A1A9C][Stop the workflow from losing steps to a transient storm]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the acknowledgement mean that a handler finished with the message, not that a handler was called with it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:03F84BC2-3F45-43EA-8924-FEA9246A1A9C][Stop the workflow from losing steps to a transient storm]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- The natsMsg outlives the handler, so an ack can follow the work.
+- A handler that throws is not acknowledged, so the message is redelivered.
+- A handler signals failure through the guard rather than by returning, and the default on an untouched guard is to acknowledge.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* What was actually wrong
+
+=client.cpp:239= states it plainly: "JetStream subscriptions auto-ack by
+default (ManualAck is false)". Returning from the handler is the
+acknowledgement, and =on_msg= catches every exception and returns, so a
+handler that throws acknowledges the message it failed on.
+
+It is worse than an unused guarantee. =on_msg= destroys the =natsMsg= *before*
+calling the handler:
+
+#+begin_src cpp
+message m = extract_message(msg);
+natsMsg_Destroy(msg);
+msg = nullptr;
+cl->handler(std::move(m));
+#+end_src
+
+So by the time a handler could decide it had done enough work, there is no
+message handle left to acknowledge. Manual acknowledgement cannot be added
+without changing that order, which is why this is a task rather than a flag.
+
+* Design
+
+The acknowledgement becomes an RAII guard owned by the client, so the default
+is right and forgetting it is impossible.
+
+- =on_msg= keeps the =natsMsg= alive, builds the guard from it, calls the
+  handler, and lets the guard settle on the way out of every path, including
+  the catch blocks.
+- The guard acknowledges in its destructor unless the handler settled it
+  otherwise. A handler that wants a redelivery calls =fail()=, which naks so
+  the server redelivers at once rather than after the ack wait.
+- A handler that throws leaves the guard unsettled, and the catch block naks
+  it. That is the case the auto-ack gets wrong today.
+- The guard reaches the handler either as a member of =ores::nats::message= or
+  as a second handler parameter. Whichever is chosen has to be uniform, because
+  every JetStream handler is written against it.
+
+This belongs with the redelivery bound. A =nak= retries immediately, so with
+=max_deliver= unlimited a message that always fails becomes a hot loop; the
+experiment that proved redelivery was exactly that loop until it was stopped.

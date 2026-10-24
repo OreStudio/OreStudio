@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: C62FBCB2-DE3A-4F05-972B-2B59F4B5372D
+:END:
+#+title: Task: Show when a dialog's record was loaded, everywhere
+#+description: Task for: Keep the record screens up to date
+#+type: task
+#+level: s1
+#+filetags: :keep_the_record_screens_up_to_date-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/keep-the-record-screens-up-to-date
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-11
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AAAB325D-DF76-41D9-AEE4-70F54060760A][Keep the record screens up to date — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Dialog takes a loadedAt and the three person dialogs pass it. The generic RecordDialog has eight callers, and the role, request and classification dialogs read a record too. Each caller passes the arrival time of the read its record came from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AAAB325D-DF76-41D9-AEE4-70F54060760A][Keep the record screens up to date — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-11                               |
+
+* Acceptance
+
+- Every dialog over a loaded record states when the record was loaded.
+- A dialog over no record states nothing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

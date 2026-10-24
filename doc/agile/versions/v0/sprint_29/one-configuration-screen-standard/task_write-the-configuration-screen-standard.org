@@ -26,11 +26,11 @@ One standard page states the words, the list, the record page, the sections, the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The draft PR is open and waits on the sign-off of #3720. |
+| Now          | Nothing. |
 | Waiting on   | The owner's sign-off of the journeys and prototypes. |
-| Next         | Sign-off of #3720, then review and merge this PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -154,3 +154,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in #3721. The configuration screen standard states the words and the name
+of each of the 19 kinds, the family and its slots, the list, the record page with
+the fixed tab order (Details, Global parameters, the sections, Used by, History),
+the group and collection shapes, the documentation contract, the value in force
+and the read/write rule, the reach, the history, the per-section lifecycle, the
+import and export, the related-configuration rule, the states, the access rule,
+how to add a kind and the conformance table.
+
+It is wired into the UX hub, the screen review checklist (14 lines) and the menu
+structure.

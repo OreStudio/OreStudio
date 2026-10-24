@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/reconcile-the-binding-stories-and-docs
-#+pr: 3728
+#+pr: 3729
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3729][#3729]] | [agile] Mark the reconciliation task done |
 | [[https://github.com/OreStudio/OreStudio/pull/3728][#3728]] | [agile] Reconcile the binding record |
 
 * Review

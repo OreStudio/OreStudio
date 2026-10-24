@@ -291,19 +291,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace domain #F2F2F2 {
-            class feed_binding <<struct>> {
-                +version : int
-                +tenant_id : utility::uuid::tenant_id
-                +id : boost::uuids::uuid
-                +party_id : boost::uuids::uuid
-                +source_name : string
-                +enabled : bool
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +recorded_at : chrono::system_clock::time_point
-            }
             class i_feed {
                 +i_feed()
                 +~i_feed()
@@ -397,122 +384,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace messaging #F2F2F2 {
-            class feed_binding_key <<struct>> {
-                +source_name : string
-            }
-            class feed_binding_write <<struct>> {
-                +id : boost::uuids::uuid
-                +party_id : boost::uuids::uuid
-                +source_name : string
-                +enabled : bool
-            }
-            class feed_binding_change <<struct>> {
-                +write : feed_binding_write
-                +precondition : ores::utility::domain::precondition
-            }
-            class feed_binding_removal <<struct>> {
-                +key : feed_binding_key
-                +precondition : ores::utility::domain::precondition
-            }
-            class feed_binding_lookup <<struct>> {
-                +key : feed_binding_key
-                +feed_binding : optional<ores::marketdata::domain::feed_binding>
-            }
-            class feed_bindings_filter <<struct>> {
-                +id_one_of : optional<vector<boost::uuids::uuid>>
-            }
-            class feed_binding_event <<struct>> {
-                +event_id : boost::uuids::uuid
-                +key : feed_binding_key
-                +action : string
-                +version : uint32_t
-                +occurred_at : chrono::system_clock::time_point
-                +correlation_id : optional<string>
-            }
-            class feed_binding_version_key <<struct>> {
-                +feed_binding : feed_binding_key
-                +version : uint32_t
-            }
-            class feed_binding_versions_filter <<struct>> {
-                +version : optional<uint32_t>
-                +from_version : optional<uint32_t>
-                +to_version : optional<uint32_t>
-            }
-            class list_feed_bindings_request <<struct>> {
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-                +filter : optional<feed_bindings_filter>
-                +as_of : optional<string>
-            }
-            class list_feed_bindings_response <<struct>> {
-                +result : ores::utility::domain::result
-                +feed_bindings : vector<ores::marketdata::domain::feed_binding>
-                +total : uint64_t
-            }
-            class get_feed_binding_request <<struct>> {
-                +key : feed_binding_key
-            }
-            class get_feed_binding_response <<struct>> {
-                +result : ores::utility::domain::result
-                +feed_binding : optional<ores::marketdata::domain::feed_binding>
-            }
-            class get_many_feed_bindings_request <<struct>> {
-                +keys : vector<feed_binding_key>
-            }
-            class get_many_feed_bindings_response <<struct>> {
-                +result : ores::utility::domain::result
-                +entries : vector<feed_binding_lookup>
-            }
-            class put_feed_binding_request <<struct>> {
-                +change : feed_binding_change
-                +intent : ores::utility::domain::change_intent
-            }
-            class put_feed_binding_response <<struct>> {
-                +result : ores::utility::domain::result
-                +feed_binding : optional<ores::marketdata::domain::feed_binding>
-            }
-            class put_many_feed_bindings_request <<struct>> {
-                +changes : vector<feed_binding_change>
-                +intent : ores::utility::domain::change_intent
-            }
-            class put_many_feed_bindings_response <<struct>> {
-                +result : ores::utility::domain::result
-                +feed_bindings : vector<ores::marketdata::domain::feed_binding>
-            }
-            class delete_feed_binding_request <<struct>> {
-                +removal : feed_binding_removal
-                +intent : ores::utility::domain::change_intent
-            }
-            class delete_feed_binding_response <<struct>> {
-                +result : ores::utility::domain::result
-            }
-            class delete_many_feed_bindings_request <<struct>> {
-                +removals : vector<feed_binding_removal>
-                +intent : ores::utility::domain::change_intent
-            }
-            class delete_many_feed_bindings_response <<struct>> {
-                +result : ores::utility::domain::result
-            }
-            class list_feed_binding_versions_request <<struct>> {
-                +key : feed_binding_key
-                +offset : uint32_t
-                +limit : uint32_t
-                +order : ores::utility::domain::order
-                +filter : optional<feed_binding_versions_filter>
-            }
-            class list_feed_binding_versions_response <<struct>> {
-                +result : ores::utility::domain::result
-                +versions : vector<ores::marketdata::domain::feed_binding>
-                +total : uint64_t
-            }
-            class get_feed_binding_version_request <<struct>> {
-                +key : feed_binding_version_key
-            }
-            class get_feed_binding_version_response <<struct>> {
-                +result : ores::utility::domain::result
-                +version : optional<ores::marketdata::domain::feed_binding>
-            }
             class market_fixing_key <<struct>> {
                 +id : boost::uuids::uuid
             }
@@ -1340,8 +1211,6 @@ ores::marketdata::datum::schema_row *-- ores::marketdata::datum::field
 ores::marketdata::datum::schema_row *-- ores::marketdata::datum::field_spec
 ores::marketdata::datum::schema_row *-- ores::marketdata::datum::instrument_type
 ores::marketdata::messaging::compute_curve_response *-- ores::marketdata::messaging::computed_curve_point
-ores::marketdata::messaging::delete_feed_binding_request *-- ores::marketdata::messaging::feed_binding_removal
-ores::marketdata::messaging::delete_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_removal
 ores::marketdata::messaging::delete_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_removal
 ores::marketdata::messaging::delete_many_market_observations_request *-- ores::marketdata::messaging::market_observation_removal
 ores::marketdata::messaging::delete_many_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_class_removal
@@ -1354,22 +1223,10 @@ ores::marketdata::messaging::delete_market_series_asset_class_request *-- ores::
 ores::marketdata::messaging::delete_market_series_request *-- ores::marketdata::messaging::market_series_removal
 ores::marketdata::messaging::delete_observation_lineage_request *-- ores::marketdata::messaging::observation_lineage_removal
 ores::marketdata::messaging::delete_series_classification_rule_request *-- ores::marketdata::messaging::series_classification_rule_removal
-ores::marketdata::messaging::feed_binding_change *-- ores::marketdata::messaging::feed_binding_write
-ores::marketdata::messaging::feed_binding_event *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::feed_binding_lookup *-- ores::marketdata::domain::feed_binding
-ores::marketdata::messaging::feed_binding_lookup *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::feed_binding_removal *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::feed_binding_version_key *-- ores::marketdata::messaging::feed_binding_key
 ores::marketdata::messaging::get_crm_rate_response *-- ores::marketdata::messaging::crm_rate_item
 ores::marketdata::messaging::get_crm_rates_response *-- ores::marketdata::messaging::crm_rate_item
 ores::marketdata::messaging::get_curve_snapshot_buckets_response *-- ores::marketdata::domain::market_observation
 ores::marketdata::messaging::get_curve_snapshot_response *-- ores::marketdata::domain::market_observation
-ores::marketdata::messaging::get_feed_binding_request *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::get_feed_binding_response *-- ores::marketdata::domain::feed_binding
-ores::marketdata::messaging::get_feed_binding_version_request *-- ores::marketdata::messaging::feed_binding_version_key
-ores::marketdata::messaging::get_feed_binding_version_response *-- ores::marketdata::domain::feed_binding
-ores::marketdata::messaging::get_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::get_many_feed_bindings_response *-- ores::marketdata::messaging::feed_binding_lookup
 ores::marketdata::messaging::get_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_key
 ores::marketdata::messaging::get_many_market_fixings_response *-- ores::marketdata::messaging::market_fixing_lookup
 ores::marketdata::messaging::get_many_market_observations_request *-- ores::marketdata::messaging::market_observation_key
@@ -1405,11 +1262,6 @@ ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classe
 ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_response *-- ores::marketdata::domain::market_series_asset_class
 ores::marketdata::messaging::list_by_series_id_market_observations_request *-- ores::marketdata::messaging::market_observations_filter
 ores::marketdata::messaging::list_by_series_id_market_observations_response *-- ores::marketdata::domain::market_observation
-ores::marketdata::messaging::list_feed_binding_versions_request *-- ores::marketdata::messaging::feed_binding_key
-ores::marketdata::messaging::list_feed_binding_versions_request *-- ores::marketdata::messaging::feed_binding_versions_filter
-ores::marketdata::messaging::list_feed_binding_versions_response *-- ores::marketdata::domain::feed_binding
-ores::marketdata::messaging::list_feed_bindings_request *-- ores::marketdata::messaging::feed_bindings_filter
-ores::marketdata::messaging::list_feed_bindings_response *-- ores::marketdata::domain::feed_binding
 ores::marketdata::messaging::list_market_fixings_request *-- ores::marketdata::messaging::market_fixings_filter
 ores::marketdata::messaging::list_market_fixings_response *-- ores::marketdata::domain::market_fixing
 ores::marketdata::messaging::list_market_observations_request *-- ores::marketdata::messaging::market_observations_filter
@@ -1456,10 +1308,6 @@ ores::marketdata::messaging::observation_lineage_lookup *-- ores::marketdata::do
 ores::marketdata::messaging::observation_lineage_lookup *-- ores::marketdata::messaging::observation_lineage_key
 ores::marketdata::messaging::observation_lineage_removal *-- ores::marketdata::messaging::observation_lineage_key
 ores::marketdata::messaging::observation_lineage_version_key *-- ores::marketdata::messaging::observation_lineage_key
-ores::marketdata::messaging::put_feed_binding_request *-- ores::marketdata::messaging::feed_binding_change
-ores::marketdata::messaging::put_feed_binding_response *-- ores::marketdata::domain::feed_binding
-ores::marketdata::messaging::put_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_change
-ores::marketdata::messaging::put_many_feed_bindings_response *-- ores::marketdata::domain::feed_binding
 ores::marketdata::messaging::put_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_change
 ores::marketdata::messaging::put_many_market_fixings_response *-- ores::marketdata::domain::market_fixing
 ores::marketdata::messaging::put_many_market_observations_request *-- ores::marketdata::messaging::market_observation_change
@@ -1599,7 +1447,6 @@ note as OresMarketdataDomainIo
     operator<<(ostream& s, const T& v) : ostream&
     convert_to_table(const vector<T>& v) : string
     operator<<(ostream& s, const vector<T>& v) : ostream&
-    Uniform codegen boilerplate, and not drawn. T is feed_binding,
     market_fixing, market_observation, market_series,
     market_series_asset_class, observation_lineage or
     series_classification_rule.
@@ -1607,8 +1454,6 @@ end note
 
 note as OresMarketdataGenerators
     Free functions in ores::marketdata::generators:
-    generate_synthetic_feed_binding(ctx) : domain::feed_binding
-    generate_synthetic_feed_bindings(n, ctx) : vector<domain::feed_binding>
     generate_synthetic_market_fixing(ctx) : domain::market_fixing
     generate_synthetic_market_fixings(n, ctx) : vector<domain::market_fixing>
     generate_synthetic_market_observation(ctx) : domain::market_observation

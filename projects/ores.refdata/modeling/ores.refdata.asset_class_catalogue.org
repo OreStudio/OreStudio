@@ -13,7 +13,7 @@ Two lists answer two different questions about an asset, and the repository
 kept a hand-written copy of each in dozens of places. The refdata product
 taxonomy answers what a trade or a market series *is*; it is FK-validated by
 =ores_refdata_validate_asset_class_code_fn= and is what
-=market_series_asset_classes=, =feed_bindings=, =series_classification_rules=
+=market_series_asset_classes=, =series_classification_rules=
 and =instrument_codes= check against. The oresmd market-data namespace answers
 which key grammar a market-data item is written in, and it is what an
 =oresmd_uri='s authority carries.

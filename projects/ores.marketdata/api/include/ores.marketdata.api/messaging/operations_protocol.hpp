@@ -1278,7 +1278,7 @@ struct market_tick {
     std::string value;
     /** When the value was observed. */
     std::chrono::system_clock::time_point observation_time;
-    /** The producer, unique within a tenant; its feed bindings name the consumers. */
+    /** The producer, unique within a tenant; its routes name the consumers. */
     std::string source;
 };
 

@@ -71,20 +71,6 @@ namespace ores #F2F2F2 {
                 +get_snapshot(ores::nats::message msg) : void
                 +get_snapshot_buckets(ores::nats::message msg) : void
             }
-            class feed_binding_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                +list_feed_bindings(ores::nats::message msg) : void
-                +get_feed_binding(ores::nats::message msg) : void
-                +get_many_feed_bindings(ores::nats::message msg) : void
-                +put_feed_binding(ores::nats::message msg) : void
-                +put_many_feed_bindings(ores::nats::message msg) : void
-                +delete_feed_binding(ores::nats::message msg) : void
-                +delete_many_feed_bindings(ores::nats::message msg) : void
-                +list_feed_binding_versions(ores::nats::message msg) : void
-                +get_feed_binding_version(ores::nats::message msg) : void
-            }
             class import_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -189,52 +175,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace repository #F2F2F2 {
-            class feed_binding_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +version : int
-                +party_id : string
-                +source_name : string
-                +enabled : bool
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +valid_from : db_timestamp
-                +valid_to : db_timestamp
-            }
-            class feed_binding_mapper {
-                -lg() : [[nodiscard]] static auto&
-                +map(const feed_binding_entity& v) : domain::feed_binding
-                +map(const domain::feed_binding& v) : feed_binding_entity
-                +map(const vector<feed_binding_entity>& v) : vector<domain::feed_binding>
-                +map(const vector<domain::feed_binding>& v) : vector<feed_binding_entity>
-            }
-            class feed_binding_repository {
-                -lg() : [[nodiscard]] static auto&
-                +sql() : string
-                +write(context ctx, const domain::feed_binding& v) : void
-                +write(context ctx, const vector<domain::feed_binding>& v) : void
-                +write(context ctx, const domain::feed_binding& v, const ores::utility::domain::precondition& claim) : void
-                +write(context ctx, const vector<domain::feed_binding>& v, const vector<ores::utility::domain::precondition>& claims) : void
-                +read_latest(context ctx) : vector<domain::feed_binding>
-                +read_latest(context ctx, const string& id) : vector<domain::feed_binding>
-                +read_latest(context ctx, const vector<string>& ids) : vector<domain::feed_binding>
-                +read_latest_by_source_name(context ctx, const string& source_name) : vector<domain::feed_binding>
-                +read_any_by_source_name(context ctx, const string& source_name) : vector<domain::feed_binding>
-                +read_all(context ctx, const string& id) : vector<domain::feed_binding>
-                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::feed_binding>
-                +is_sortable(string_view field) : bool
-                +get_total_feed_binding_count(context ctx, const optional<messaging::feed_bindings_filter>& filter, const optional<string>& as_of) : uint32_t
-                +remove(context ctx, const string& id) : void
-                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
-                +remove(context ctx, const vector<string>& ids) : void
-                +read_latest_all_tenants(context ctx) : vector<domain::feed_binding>
-                -replace_claim(context ctx, const domain::feed_binding& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::feed_binding& v, const ores::utility::domain::precondition& claim) : domain::feed_binding
-            }
             class market_fixing_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
@@ -511,33 +451,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace service #F2F2F2 {
-            class feed_binding_service {
-                -ctx_ : context
-                -repo_ : repository::feed_binding_repository
-                -lg() : [[nodiscard]] static auto&
-                +feed_binding_service(context ctx)
-                +list_feed_bindings(const messaging::list_feed_bindings_request& request) : messaging::list_feed_bindings_response
-                +get_feed_binding(const messaging::get_feed_binding_request& request) : messaging::get_feed_binding_response
-                +get_many_feed_bindings(const messaging::get_many_feed_bindings_request& request) : messaging::get_many_feed_bindings_response
-                +put_feed_binding(const messaging::put_feed_binding_request& request) : messaging::put_feed_binding_response
-                +put_many_feed_bindings(const messaging::put_many_feed_bindings_request& request) : messaging::put_many_feed_bindings_response
-                +delete_feed_binding(const messaging::delete_feed_binding_request& request) : messaging::delete_feed_binding_response
-                +delete_many_feed_bindings(const messaging::delete_many_feed_bindings_request& request) : messaging::delete_many_feed_bindings_response
-                +list_feed_binding_versions(const messaging::list_feed_binding_versions_request& request) : messaging::list_feed_binding_versions_response
-                +get_feed_binding_version(const messaging::get_feed_binding_version_request& request) : messaging::get_feed_binding_version_response
-                +list_feed_bindings(uint32_t offset, uint32_t limit) : vector<domain::feed_binding>
-                +count_feed_bindings() : uint32_t
-                +get_feed_binding_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::feed_binding>
-                +get_feed_binding(const boost::uuids::uuid& id) : optional<domain::feed_binding>
-                +get_feed_binding_by_source_name(const string& source_name) : optional<domain::feed_binding>
-                +get_feed_bindings(const vector<string>& ids) : vector<domain::feed_binding>
-                +save_feed_binding(const domain::feed_binding& feed_binding) : void
-                +save_feed_bindings(const vector<domain::feed_binding>& feed_bindings) : void
-                +delete_feed_binding(const boost::uuids::uuid& id) : void
-                +delete_feed_bindings(const vector<string>& ids) : void
-                +get_feed_binding_history(const string& key) : vector<domain::feed_binding>
-                -prepare_change(const messaging::feed_binding_change& change, const ores::utility::domain::change_intent& intent, domain::feed_binding& out) : ores::utility::domain::result
-            }
             class import_service {
                 -ctx_ : context
                 -auth_nats_ : ores::nats::service::nats_client&
@@ -715,14 +628,12 @@ namespace ores #F2F2F2 {
 ' conventions.
 
 ores::marketdata::core::series_classifier ..> ores::marketdata::core::series_classification
-ores::marketdata::repository::feed_binding_mapper ..> ores::marketdata::repository::feed_binding_entity
 ores::marketdata::repository::market_fixing_mapper ..> ores::marketdata::repository::market_fixing_entity
 ores::marketdata::repository::market_observation_mapper ..> ores::marketdata::repository::market_observation_entity
 ores::marketdata::repository::market_series_asset_class_mapper ..> ores::marketdata::repository::market_series_asset_class_entity
 ores::marketdata::repository::market_series_mapper ..> ores::marketdata::repository::market_series_entity
 ores::marketdata::repository::observation_lineage_mapper ..> ores::marketdata::repository::observation_lineage_entity
 ores::marketdata::repository::series_classification_rule_mapper ..> ores::marketdata::repository::series_classification_rule_entity
-ores::marketdata::service::feed_binding_service *-- ores::marketdata::repository::feed_binding_repository
 ores::marketdata::service::market_fixing_service *-- ores::marketdata::repository::market_fixing_repository
 ores::marketdata::service::market_observation_service *-- ores::marketdata::repository::market_observation_repository
 ores::marketdata::service::market_series_asset_class_service *-- ores::marketdata::repository::market_series_asset_class_repository
@@ -761,7 +672,6 @@ note as OresMarketdataRepositoryHelpers
     from column first on and throws std::runtime_error when the row is short.
     as_of_bucket_ordinal reads the bucket ordinal the row's first column carries
     and throws unless it is all digits and below bucket_count. The operator is
-    emitted for all seven entities: feed_binding, market_fixing,
     market_observation, market_series, market_series_asset_class,
     observation_lineage and series_classification_rule. as_of_row itself is a
     namespace-scope alias, using as_of_row = vector<optional<string>>, and has no
@@ -770,7 +680,6 @@ end note
 
 note as OresMarketdataPresentationFieldMappers
     Free functions in ores::marketdata::presentation:
-    render_feed_binding_fields(v : const domain::feed_binding&) : vector<ores::diff::domain::field_value>
     render_market_fixing_fields(v : const domain::market_fixing&) : vector<ores::diff::domain::field_value>
     render_market_observation_fields(v : const domain::market_observation&) : vector<ores::diff::domain::field_value>
     render_market_series_fields(v : const domain::market_series&) : vector<ores::diff::domain::field_value>
@@ -785,12 +694,10 @@ note as OresMarketdataMessagingRegistrars
     Free functions in ores::marketdata::messaging. The one-table handler
     registrars (nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
     return vector<subscription>:
-    register_feed_binding_handlers, register_market_fixing_handlers,
     register_market_observation_handlers, register_market_series_handlers,
     register_market_series_asset_class_handlers, register_observation_lineage_handlers,
     register_series_classification_rule_handlers.
     The history providers (registry : dispatch_registry&) return void:
-    register_feed_binding_history_provider, register_market_series_history_provider,
     register_observation_lineage_history_provider,
     register_series_classification_rule_history_provider.
     Each handler registrar subscribes that table's handlers and returns the
@@ -801,7 +708,6 @@ end note
 note as OresMarketdataHandlerHelpers
     File-local free functions, each in its own header's unnamed namespace, each
     returning its handler's own logger singleton:
-    curve_snapshot_handler_lg(), feed_binding_handler_lg(), import_handler_lg(),
     market_fixing_handler_lg(), market_observation_handler_lg(),
     market_series_handler_lg(), market_series_asset_class_handler_lg(),
     observation_lineage_handler_lg(), ore_export_handler_lg(),
@@ -810,9 +716,6 @@ note as OresMarketdataHandlerHelpers
     the same unnamed namespace, the server-side ceiling on a snapshot's buckets.
 end note
 
-class ores::marketdata::repository::feed_binding_repository {
-}
-note right of "ores::marketdata::repository::feed_binding_repository"
 Declares a nested enum class remove_status in its own body: removed,
 conflicting, missing, unsupported. The pass draws namespace-scope types only,
 so remove_status has no box. remove(id, version) returns it: removed when the
@@ -824,9 +727,6 @@ observation_lineage_repository and series_classification_rule_repository each
 declare the same enum in their own bodies.
 end note
 
-class ores::marketdata::service::feed_binding_service {
-}
-note right of "ores::marketdata::service::feed_binding_service"
 Declares a public nested alias, using context = ores::database::context, in its
 own body; the pass skips using lines, so it has no box. The other eight services
 here declare it too, and so does every repository in the part. import_service

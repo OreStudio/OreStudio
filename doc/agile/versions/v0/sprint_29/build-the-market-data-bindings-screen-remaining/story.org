@@ -2,7 +2,7 @@
 :ID: AE947749-7D9D-4336-BED9-78F69187AD4D
 :END:
 #+title: Story: Build the bindings screen and clear the oresmd snags — the remaining work
-#+description: A person lists bindings, says what each source writes and when it last ticked, binds and rebinds a party to a source, enables and disables a binding, and starts or stops the feed behind it, with the oresmd snags cleared.
+#+description: Retired on 2026-10-24: the feed binding is gone and the subscriptions screen replaces this one. The language control became its own capture.
 #+type: story
 #+level: s2
 #+filetags: :sprint_29:v0:
@@ -21,11 +21,11 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED                            |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started. Split from [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]], which closed in sprint 28 with its done tasks.                       |
+| Now           | Retired. The feed binding is gone, so the subscriptions screen replaces this one. |
 | Waiting on    | Nothing.                               |
-| Next          | Triage into a sprint.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -40,11 +40,11 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EEC492A7-D1FC-4CC0-B8DF-7A67EBC82D7E][Add a language control to the site]] | BACKLOG | | | Give the site a control that changes the language, so a person can reach the French and Portuguese catalogues. |
 
 * Decisions
 
 - Split from [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- Retired on 2026-10-24. The route is now the one consumer record and the feed binding is gone, so task [[id:3614B1D7-0D9C-4004-B190-2D8968C6A721][Build the market data service screens]] replaces this screen with the subscriptions screen. The story's only remaining task, the site language control, became the capture [[id:3AAC91D5-EB59-46ED-BC49-CDBE25ABCC32][Add a language control to the site]].
 
 * Out of scope
 

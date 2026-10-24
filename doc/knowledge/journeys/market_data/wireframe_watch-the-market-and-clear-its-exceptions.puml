@@ -22,7 +22,7 @@ salt
   <b>MARKET WATCH: source ^synthetic.v1.ir_curve^, as of 2026-10-06 11:30</b> | [ Refresh ]
   --
   {
-    Scope | ^feed binding: synthetic.v1.ir_curve^ | [ Change scope ]
+    Scope | ^route: synthetic.v1.ir_curve^ | [ Change scope ]
     Rows | 84 points, 5 exceptions
   }
   --

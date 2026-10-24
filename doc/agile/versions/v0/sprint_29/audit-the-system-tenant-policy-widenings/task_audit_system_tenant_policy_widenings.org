@@ -35,7 +35,7 @@ Each policy that lets the system tenant read every tenant is either replaced by 
 
 * Acceptance
 
-- The workflow instance, workflow batch link, scheduler job definition and marketdata feed binding policies each have a decision.
+- The workflow instance, workflow batch link, scheduler job definition and retired marketdata feed binding policies each have a decision.
 - A check fails on a system tenant widening that the exception list does not name.
 
 * Plan

@@ -1064,7 +1064,7 @@ export interface MarketTick {
     value: string;
     /** When the value was observed. */
     observation_time: string;
-    /** The producer, unique within a tenant; its feed bindings name the consumers. */
+    /** The producer, unique within a tenant; its routes name the consumers. */
     source: string;
 }
 

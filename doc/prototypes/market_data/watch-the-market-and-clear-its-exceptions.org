@@ -85,7 +85,7 @@ opens the oresmd URL editor in an overlay. No other click writes.
 
 ** What is fake
 
-Everything. The feed binding =synthetic.v1.ir_curve=, the eight points and their
+Everything. The route =synthetic.v1.ir_curve=, the eight points and their
 times, values, sources and ages; the three kinds and their details; the three
 fallbacks, their actors and their reasons; the threshold of 15m; and the 84-row
 count are constants in the page. There is no server, no session and no build

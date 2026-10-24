@@ -31,7 +31,7 @@
  * seed SQL this table is populated from is generated from it, so this model
  * carries no copy of the list. Code carries no parallel enumeration, because
  * the list is runtime-managed and no compiled list can be exhaustive over
- * it. Other entities (instrument_code, market_series, feed_binding)
+ * it. Other entities (instrument_code, market_series, route)
  * FK-validate against this table. Managed by the system tenant, like other
  * shared code tables.
  */

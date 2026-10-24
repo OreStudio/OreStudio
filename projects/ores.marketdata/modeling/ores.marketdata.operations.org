@@ -2876,7 +2876,7 @@ bindings.
 :END:
 
 #+begin_src cpp :name comment
-/** The producer, unique within a tenant; its feed bindings name the consumers. */
+/** The producer, unique within a tenant; its routes name the consumers. */
 #+end_src
 
 ** get_series_ticks_request

@@ -38,7 +38,7 @@ Both take a connected =nats_client= and own no state beyond it.
 
 * Outputs
 
-- Decoded protocol responses: market series, observations and feed bindings.
+- Decoded protocol responses: market series, observations and routes.
 - Decoded =fx_spot_tick= values delivered to a caller-supplied handler.
 
 * Entry points

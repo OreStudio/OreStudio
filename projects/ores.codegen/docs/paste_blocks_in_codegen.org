@@ -67,7 +67,7 @@ unique =:ID:=, then attach three Babel blocks:
 Reads the latest records across all tenants (no tenant_id filter).
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
+std::vector<domain::route> read_latest_all_tenants(context ctx);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -75,8 +75,8 @@ std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::feed_binding>
-feed_binding_repository::read_latest_all_tenants(context ctx) {
+std::vector<domain::route>
+route_repository::read_latest_all_tenants(context ctx) {
     ...
 }
 #+end_src

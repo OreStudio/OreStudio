@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D6E1F41B-1C92-4B1A-B75F-76F94FFBD390
+:END:
+#+title: The adapter announce test races a live market data service
+#+description: The synthetic service suite test 'the adapter announces again until the service answers' asserts that no reply arrives within 300 ms, but a running ores.marketdata.service adapter supervisor answers the announce subject in that window, so the test fails whenever the fleet is healthy. Stopping ores.marketdata.service makes the suite pass. The test needs an adapter id no supervisor will answer, or a quiet announce subject.
+#+type: capture
+#+level: cross
+#+filetags: :test:flaky:marketdata:synthetic:adapter:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

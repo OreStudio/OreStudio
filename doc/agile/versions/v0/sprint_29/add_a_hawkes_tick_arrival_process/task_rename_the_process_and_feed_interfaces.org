@@ -214,6 +214,10 @@ via its "Verifies task" field.
 | 12 | The owner's decisions behind the rename live only in task pages, not the story | =story.org= | Accepted | The two decisions are now in the story's =* Decisions= |
 | 13 | A =--check= pass proves less than the acceptance claims, because it cannot prove the build | the task | Declined | The build and the suites are the proof for that clause; the script is for the name clause only |
 | 14 | The drift sweep covers the synthetic component only, so two of the four diagrams are unchecked | the four =.puml= files | Accepted as risk | Recorded here; the diagrams are renamed in place and the drift gate cannot see them |
+| 15 | The local gate failed =backlog-indexes= because one backlog row was missing | =doc/agile/product_backlog/= | Accepted | The row was on main and the branch was behind; =compass pr sync= brought it |
+| 16 | The local gate failed =format= on =simulator_adapter_tests.cpp= | the test file | Accepted | The violation predated this branch, but the file is in the diff, so it is formatted here |
+| 17 | The local gate failed =db= because a service held a connection while the check recreated the database | the database | Accepted | The check was rerun with the fleet stopped |
+| 18 | =ores.synthetic.service.tests= fails its announce-retry case while the market data service runs | =simulator_adapter_tests.cpp:450= | Declined as out of scope | The live adapter supervisor answers the announce inside the test's 300 ms window. The suite passes with =ores.marketdata.service= stopped, and the test predates this branch. Captured in =doc/agile/product_backlog/inbox/adapter_announce_test_races_the_live_supervisor.org= |
 
 * Result
 
@@ -232,7 +236,12 @@ The evidence:
   the 30 records it allows.
 - The 12 changed translation units pass =clang++ -fsyntax-only=.
 - =check_component_drift.py --sweep= is clean.
-- =clang-format --dry-run --Werror= is clean on the changed files, save the one
-  file that failed before the change.
+- =clang-format --dry-run --Werror= is clean on the changed files, now including
+  =simulator_adapter_tests.cpp=, which was formatted for that reason.
 - The full build passes, and =compass test run= passes all four affected
   suites.
+
+One caveat on that last line. =ores.synthetic.service.tests= passes only while
+=ores.marketdata.service= is not running: the live adapter supervisor answers
+the announce inside the 300 ms window that the test reserves for silence. The
+failure predates this branch and is captured as its own item.

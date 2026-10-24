@@ -21,5 +21,4 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
-    "market_data_client_tests.cpp"
 )

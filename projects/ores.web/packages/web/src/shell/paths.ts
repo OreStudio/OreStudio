@@ -47,7 +47,6 @@ export const PATHS = {
     synthetic: '/market-data/synthetic',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
-    bindings: '/market-data/bindings',
     reporting: '/reporting',
     reports: '/reporting/reports',
     configurations: '/reporting/configurations',

@@ -100,8 +100,6 @@ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
-import { BindingPage } from './marketdata/bindings/BindingPage.js';
-import { BindingsPage } from './marketdata/bindings/BindingsPage.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
@@ -971,30 +969,6 @@ export function AppRoutes({
                     shell,
                     () => (
                         <IrFeedPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.bindings}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <BindingsPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={`${PATHS.bindings}/:id`}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <BindingPage />
                     ),
                     'workspace',
                 )}

@@ -272,7 +272,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats);
+    auto ctrl = std::make_shared<feed_controller>(nats);
 
     // The one per-kind registry: the config-plane dispatch table every
     // control-plane verb reads.

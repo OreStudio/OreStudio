@@ -423,7 +423,7 @@ struct cascade_fixture {
         nats.connect();
         REQUIRE(nats.is_connected());
 
-        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats, auth_nats);
+        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
         registry = ores::synthetic::service::make_default_feed_kind_registry();

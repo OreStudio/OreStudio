@@ -80,7 +80,6 @@ import {
     type MarketDataProvidersFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_provider_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
-import { FEED_BINDINGS_RESOURCE } from './bindings.js';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import {
     NO_ORDER,
@@ -467,7 +466,6 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         readOnlyBecause:
             'These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.',
     })),
-    FEED_BINDINGS_RESOURCE,
 ];
 
 /** The synthetic entity types whose history the history route serves. */

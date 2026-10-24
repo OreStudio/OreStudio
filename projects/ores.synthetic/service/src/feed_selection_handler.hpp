@@ -131,14 +131,12 @@ private:
             const auto wanted = matching_ids(*ctx, filter);
             const auto label = std::to_string(wanted.size()) + " selected feeds";
             if (starting) {
-                const auto bearer = ores::nats::service::extract_bearer(msg);
                 const ores::synthetic::feed::feed_build_context build{nats_, auth_nats_};
                 const auto outcome = start_feeds(
                     registry_,
                     *ctrl_,
                     *ctx,
                     build,
-                    bearer,
                     [&](const feed_start_target& t) {
                         return wanted.contains(t.row.candidate.feed_config_id);
                     },

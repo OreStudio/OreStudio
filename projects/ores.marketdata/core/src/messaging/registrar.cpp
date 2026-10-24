@@ -31,9 +31,6 @@
 #include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_registrar.hpp"
-#include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
-#include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
-#include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/market_data_mapping_history_provider_registrar.hpp"
@@ -112,7 +109,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_series_handlers(nats, ctx, verifier));
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
-    fold(register_feed_binding_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
     fold(register_market_data_source_handlers(nats, ctx, verifier));
     fold(register_market_data_vendor_instrument_handlers(nats, ctx, verifier));
@@ -216,16 +212,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.clear(std::move(msg));
                                         }));
 
-    // What each feed binding has written: the series of its source's newest
-    // observation and when the source last ticked.
-    subs.push_back(
-        nats.queue_subscribe(std::string(list_feed_binding_activity_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 feed_binding_activity_handler h(nats, ctx, verifier);
-                                 h.list(std::move(msg));
-                             }));
-
     // The oresmd schema: what a URI may hold, for a client that edits one.
     subs.push_back(nats.queue_subscribe(std::string(describe_oresmd_schema_request::nats_subject),
                                         queue,
@@ -288,7 +274,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto& hist_registry = history_registry();
         register_market_series_history_provider(hist_registry);
         register_market_series_asset_class_history_provider(hist_registry);
-        register_feed_binding_history_provider(hist_registry);
         register_provider_history_provider(hist_registry);
         register_market_data_source_history_provider(hist_registry);
         register_market_data_vendor_instrument_history_provider(hist_registry);

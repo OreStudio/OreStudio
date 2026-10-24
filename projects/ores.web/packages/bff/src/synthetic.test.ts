@@ -173,7 +173,6 @@ describe('synthetic resource routes', () => {
             'tenors',
             'instrument-codes',
             'payment-frequencies',
-            'feed-bindings',
         ]);
         const tenors = resources.find((resource) => resource.key === 'tenors');
         expect(tenors?.writable).toBe(false);

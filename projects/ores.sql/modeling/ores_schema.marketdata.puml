@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 25
+Tables: 23
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -159,78 +159,6 @@ package "marketdata" #E3F2FD {
     signal for the adapter and a billing fact for the vendor: a live adapter pays for the items in the set.
     The service opens an interval when an item enters the demand of a party and closes it when the item
     leaves, or when the party stops being served by the source.
-    end note
-
-    entity ores_marketdata_feed_binding_activity_tbl  #F7E5FF {
-        * tenant_id : uuid <<PK, FK>>
-        * party_id : uuid <<PK, FK>>
-        * source_name : text <<PK>>
-        --
-        * series_id : uuid <<FK>>
-        * last_tick_at : timestamptz
-    }
-
-    note right of ores_marketdata_feed_binding_activity_tbl
-    Feed Binding Activity
-    What each feed binding last delivered: the series its source writes and the time of its
-    newest tick. A tick has no source in the tick table, because the source is a fact about the
-    binding and not about each tick, so the ingest records it here. It writes one row for each
-    binding at most every few seconds, so the row trails the newest tick by that wait.
-    The ingest context names no party, so the table has the tenant policy only, as the
-    observation table has, and a reader states the party in its query.
-    end note
-
-    entity ores_marketdata_feed_bindings_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-        * source_name : text
-        * producer_kind : text
-        * provider_code : text
-        * source_id : uuid <<FK>>
-        * enabled : boolean
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_marketdata_feed_bindings_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Feed Binding Table
-    A feed binding records that a party consumes one producer source. It is the
-    one place a live tick finds its owners, for every feed and every asset class: a
-    tick names its own datum by its oresmd quote URI and its producer by source,
-    and the ingest loop stores it once for each enabled binding of that source,
-    under the binding's tenant and party, and republishes it on the per-party
-    realtime stream marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<token>, where the
-    token is the datum's canonical oresmd URI as one subject token. Bindings are created by provisioning
-    against the system party's config, not per office: each party consumes the
-    shared stream into its own per-party series.
-    Rebinding (editing source_name) switches the ingest source without restarting
-    producers. Setting enabled  false= suspends the subscription without deleting
-    the binding.
-    A binding also says what kind of producer it names: a real feed (VENDOR) or a
-    generated one (SYNTHETIC). The ingest loop stamps the series it creates with
-    the binding's producer_kind, so a reader of a series can tell generated data
-    from observed data without guessing from the source string. The column
-    defaults to VENDOR, so every binding a real feed creates carries it without
-    setting anything.
-    A binding also says which provider's ids its producer publishes (provider_code)
-    and which catalogue source it reads (source_id). The ingest loop creates the
-    series it needs under that provider and records the source on every observation
-    it stores, so a reader of a series learns where a value came from from the
-    catalogue and not from the source string.
-    This model binds to no variability profile. Its features match
-    uuid-surrogate-lookup, but that profile also enables the shell command
-    facet, which feed bindings do not have today. Binding it is a decision about
-    the shell surface, not about the model.
     end note
 
     entity ores_marketdata_market_data_mappings_tbl <<temporal>> #C6F0D8 {

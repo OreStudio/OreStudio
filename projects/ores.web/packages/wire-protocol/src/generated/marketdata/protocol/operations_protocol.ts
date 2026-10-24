@@ -1095,40 +1095,6 @@ export interface GetSeriesTicksResponse {
     values: number[];
 }
 
-/**
- * @brief Asks what each feed binding of the caller has written.
- *
- * The request carries nothing. A party reads only its own bindings and its own
- * observations, so the answer is the caller's view.
- */
-export interface ListFeedBindingActivityRequest {}
-
-/**
- * @brief The newest observation a binding's source has written.
- *
- * A binding names a source and not a series, and a source writes one series, so the
- * series of the source's newest observation is the series the binding feeds. A
- * source that has written nothing for the party has neither a series nor a tick,
- * and both state null: there is no empty-string spelling of either.
- */
-export interface FeedBindingActivity {
-    source_name: string;
-    series_id: string | null;
-    last_tick_at: string | null;
-}
-
-/**
- * @brief The activity of each feed binding of the caller.
- *
- * One entry for each binding, whether or not its source has written anything, so a
- * binding with no tick stays in the answer and the screen can say so.
- */
-export interface ListFeedBindingActivityResponse {
-    activities: FeedBindingActivity[];
-    success: boolean;
-    message: string;
-}
-
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
     describe_oresmd_schema_request: 'marketdata.v1.ops.describe_oresmd_schema',
@@ -1153,7 +1119,6 @@ export const subjects = {
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
     get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
-    list_feed_binding_activity_request: 'marketdata.v1.ops.list_feed_binding_activity',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -1184,5 +1149,4 @@ export const requiresSession = {
     export_market_data_request: true,
     market_tick: false,
     get_series_ticks_request: true,
-    list_feed_binding_activity_request: true,
 } as const;

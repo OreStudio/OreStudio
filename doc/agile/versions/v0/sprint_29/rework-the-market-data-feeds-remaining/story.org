@@ -23,9 +23,9 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The route is the one consumer record; the feed binding retires. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
+| Now           | The route is the one consumer record; the feed binding is gone. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Start [[id:6DB2B277-D4CC-4FE2-830B-A83D1033B6AC][Retire the feed binding]], then reconcile the stories and the docs. |
+| Next          | Start [[id:C452234B-3764-45C7-A62D-9DCDDFF151BC][Reconcile the binding stories and the market data docs]]. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance

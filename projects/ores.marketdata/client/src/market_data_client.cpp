@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
@@ -240,30 +239,6 @@ market_data_client::save_observations(const std::vector<domain::market_observati
     return count;
 }
 
-std::expected<std::vector<domain::feed_binding>, std::string>
-market_data_client::list_feed_bindings() {
-    messaging::list_feed_bindings_request req;
-    req.limit = all_rows;
-    auto resp = send(nats_, req);
-    if (!resp)
-        return std::unexpected(resp.error());
-    if (resp->result.outcome != ores::utility::domain::outcome::ok)
-        return std::unexpected(describe(resp->result));
-    return std::move(resp->feed_bindings);
-}
-
-messaging::feed_binding_write feed_binding_write_of(const domain::feed_binding& binding) {
-    messaging::feed_binding_write write;
-    write.id = binding.id;
-    write.party_id = binding.party_id;
-    write.source_name = binding.source_name;
-    write.producer_kind = binding.producer_kind;
-    write.provider_code = binding.provider_code;
-    write.source_id = binding.source_id;
-    write.enabled = binding.enabled;
-    return write;
-}
-
 std::expected<std::vector<domain::market_data_source>, std::string>
 market_data_client::list_market_data_sources() {
     messaging::list_market_data_sources_request req;
@@ -274,23 +249,6 @@ market_data_client::list_market_data_sources() {
     if (resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::unexpected(describe(resp->result));
     return std::move(resp->sources);
-}
-
-std::expected<bool, std::string>
-market_data_client::save_feed_binding(const domain::feed_binding& binding) {
-    messaging::put_feed_binding_request req;
-    req.change.write = feed_binding_write_of(binding);
-    // A save states no expectation about the row it writes, so the change
-    // lands whether the row is new or already present.
-    req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-    req.intent.reason_code = binding.change_reason_code;
-    req.intent.commentary = binding.change_commentary;
-    auto resp = send(nats_, req);
-    if (!resp)
-        return std::unexpected(resp.error());
-    if (resp->result.outcome != ores::utility::domain::outcome::ok)
-        return std::unexpected(describe(resp->result));
-    return true;
 }
 
 }

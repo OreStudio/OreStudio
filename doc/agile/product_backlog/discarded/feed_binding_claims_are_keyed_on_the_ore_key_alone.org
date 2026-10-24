@@ -45,7 +45,7 @@ creation and have the store decide it, and the compensation reads disappear.
 
 * References
 
-- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] — the model whose natural key the claim must follow.
+- ores.marketdata.feed_binding (retired) — the model whose natural key the claim must follow.
 - [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — the workflow whose market-feeds step binds every party the tenant holds, and the caller that met this defect.
 
 * See also

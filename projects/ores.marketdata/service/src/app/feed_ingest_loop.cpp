@@ -24,8 +24,6 @@
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
-#include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
@@ -55,8 +53,8 @@ namespace ores::marketdata::service::app {
 
 using namespace ores::logging;
 
-/// One consumer of one accepted tick: the binding it is stored under and the series it lands
-/// in. A tick that has several bindings makes several items.
+/// One consumer of one accepted tick: the route it is stored under and the series it lands
+/// in. A tick that has several consumers makes several items.
 struct feed_ingest_loop::item {
     std::size_t tick_index = 0;
     const tick_plan* plan = nullptr;
@@ -141,8 +139,8 @@ void feed_ingest_loop::start() {
 }
 
 std::shared_ptr<const std::vector<tick_target>>
-feed_ingest_loop::bindings_snapshot::targets_for(const std::string& source,
-                                                 const named_datum& named) const {
+feed_ingest_loop::consumers_snapshot::targets_for(const std::string& source,
+                                                  const named_datum& named) const {
     std::lock_guard lock(mu_);
     auto& by_uri = targets_[source];
     const auto found = by_uri.find(named.uri);
@@ -160,32 +158,24 @@ namespace {
 
 /// The consumer a route makes of its party: the tick of the source that the route names is
 /// stored for the party under the provider of the route.
-domain::feed_binding consumer_of(const domain::route& route, const std::string& source_name) {
-    domain::feed_binding b;
-    b.id = route.id;
-    b.tenant_id = route.tenant_id;
-    b.party_id = route.party_id;
-    b.source_name = source_name;
-    b.provider_code = route.provider_code;
-    b.source_id = route.source_id;
-    b.enabled = true;
-    return b;
+consumer consumer_of(const domain::route& route, const std::string& source_name) {
+    consumer c;
+    c.id = route.id;
+    c.tenant_id = route.tenant_id;
+    c.party_id = route.party_id;
+    c.source_name = source_name;
+    c.provider_code = route.provider_code;
+    c.source_id = route.source_id;
+    return c;
 }
 
 }
 
 void feed_ingest_loop::refresh() {
-    repository::feed_binding_repository repo;
-    const auto bindings = repo.read_latest_all_tenants(ctx_);
-
-    auto wanted = std::make_shared<bindings_snapshot>();
-    for (const auto& b : bindings) {
-        if (b.enabled)
-            wanted->by_source[b.source_name].push_back(b);
-    }
+    auto wanted = std::make_shared<consumers_snapshot>();
 
     // The catalogue belongs to the system tenant, and the routes to each party. A route makes
-    // its party a consumer of the source it names, in the same table as a binding.
+    // its party a consumer of the source it names.
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     auto sources = repository::market_data_source_repository{}.read_latest(system_ctx);
     auto instruments =
@@ -205,7 +195,7 @@ void feed_ingest_loop::refresh() {
         std::move(sources), std::move(instruments), std::move(mappings));
 
     std::lock_guard lock(mu_);
-    bindings_by_source_ = wanted;
+    consumers_by_source_ = wanted;
     translator_ = std::move(translator);
     adapter_drop_warned_.clear();
     series_ids_.clear();
@@ -214,20 +204,19 @@ void feed_ingest_loop::refresh() {
     bad_value_warned_.clear();
     classifiers_.clear();
 
-    // A stats entry per bound consumer, so a binding that never ticks still
-    // shows in INGEST STATUS.
-    std::map<binding_key, std::shared_ptr<feed_stats>> kept;
-    for (const auto& [source_name, source_bindings] : bindings_by_source_->by_source) {
-        for (const auto& b : source_bindings) {
-            const binding_key key{
-                b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
+    // A stats entry per consumer, so a route that never ticks still shows in INGEST STATUS.
+    std::map<consumer_key, std::shared_ptr<feed_stats>> kept;
+    for (const auto& [source_name, source_consumers] : consumers_by_source_->by_source) {
+        for (const auto& c : source_consumers) {
+            const consumer_key key{
+                c.source_name, c.tenant_id.to_string(), boost::uuids::to_string(c.party_id)};
             const auto it = stats_.find(key);
             kept[key] = it != stats_.end() ? it->second : std::make_shared<feed_stats>();
         }
     }
     stats_ = std::move(kept);
 
-    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << bindings_by_source_->by_source.size()
+    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << consumers_by_source_->by_source.size()
                               << " bound source(s), " << routed << " route(s), "
                               << translator_->source_count() << " catalogue source(s)";
 }
@@ -382,7 +371,7 @@ void feed_ingest_loop::warn_dropped(const messaging::market_tick& tick, tick_dro
         case tick_drop::unbound_source:
             if (unbound_warned_.insert(tick.source).second)
                 BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '" << tick.source
-                                          << "': no enabled feed_binding";
+                                          << "': no route names it";
             break;
         case tick_drop::unnameable_datum:
             if (unnameable_warned_.insert(tick.oresmd_uri).second)
@@ -405,24 +394,24 @@ feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
     batch->ticks = std::move(received);
     const auto& ticks = batch->ticks;
 
-    std::shared_ptr<const bindings_snapshot> bindings;
+    std::shared_ptr<const consumers_snapshot> consumers;
     {
         std::lock_guard lock(mu_);
-        bindings = bindings_by_source_;
+        consumers = consumers_by_source_;
     }
-    static const std::vector<domain::feed_binding> no_bindings;
+    static const std::vector<consumer> no_consumers;
 
-    // Plan every tick against one snapshot of the bindings.
+    // Plan every tick against one snapshot of the consumers.
     batch->plans.resize(ticks.size());
     for (std::size_t i = 0; i < ticks.size(); ++i) {
-        const auto found = bindings->by_source.find(ticks[i].source);
-        const auto& source_bindings =
-            found != bindings->by_source.end() ? found->second : no_bindings;
+        const auto found = consumers->by_source.find(ticks[i].source);
+        const auto& source_consumers =
+            found != consumers->by_source.end() ? found->second : no_consumers;
         // The URI is read only for a bound source, as plan_tick does, and once for each
         // distinct URI.
         std::shared_ptr<const named_datum> named;
         std::shared_ptr<const std::vector<tick_target>> targets;
-        if (!source_bindings.empty()) {
+        if (!source_consumers.empty()) {
             auto read = name_of(ticks[i].oresmd_uri);
             if (!read) {
                 warn_dropped(ticks[i], read.error());
@@ -431,9 +420,9 @@ feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
                 continue;
             }
             named = std::move(*read);
-            targets = bindings->targets_for(ticks[i].source, *named);
+            targets = consumers->targets_for(ticks[i].source, *named);
         }
-        auto plan = plan_tick(ticks[i], source_bindings, std::move(named), std::move(targets));
+        auto plan = plan_tick(ticks[i], source_consumers, std::move(named), std::move(targets));
         if (!plan) {
             warn_dropped(ticks[i], plan.error());
             if (outcomes)
@@ -452,7 +441,7 @@ feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
         if (!batch->plans[i])
             continue;
         for (const auto& target : *batch->plans[i]->targets) {
-            const auto& b = target.binding;
+            const auto& b = target.owner;
             auto ctx_it = tenant_ctxs.find(target.tenant_text);
             if (ctx_it == tenant_ctxs.end())
                 ctx_it = tenant_ctxs
@@ -538,7 +527,6 @@ void feed_ingest_loop::commit(prepared_batch& batch) {
 void feed_ingest_loop::announce(prepared_batch& batch) {
     const auto& ticks = batch.ticks;
     const auto& items = batch.items;
-    record_activity(batch);
 
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
@@ -551,9 +539,9 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         for (const auto& it : items) {
             if ((!it.stored && !it.unavailable) || stats_of.contains(it.target))
                 continue;
-            const auto& b = it.target->binding;
+            const auto& c = it.target->owner;
             auto& st =
-                stats_[binding_key{b.source_name, it.target->tenant_text, it.target->party_text}];
+                stats_[consumer_key{c.source_name, it.target->tenant_text, it.target->party_text}];
             if (!st)
                 st = std::make_shared<feed_stats>();
             stats_of.emplace(it.target, st);
@@ -568,7 +556,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         if (!it.stored && !it.unavailable)
             continue;
         const auto& tick = ticks[it.tick_index];
-        const auto& b = it.target->binding;
+        const auto& c = it.target->owner;
 
         auto& st = stats_of.at(it.target);
         const auto prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
@@ -580,7 +568,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
 
         if (prev_count == 0)
             BOOST_LOG_SEV(lg(), info)
-                << "INGEST FIRST TICK: source='" << b.source_name << "' datum='" << tick.oresmd_uri
+                << "INGEST FIRST TICK: source='" << c.source_name << "' datum='" << tick.oresmd_uri
                 << "' subject='" << it.target->subject << "' value=" << tick.value;
 
         // The live path never carries a tick that has aged out while its batch was
@@ -617,11 +605,11 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
         std::vector<delivery_entry> counts;
         counts.reserve(delivered.size());
         for (const auto& [at, count] : delivered) {
-            const auto& b = at.first->binding;
-            counts.push_back({delivery_key{b.tenant_id,
-                                           b.party_id,
-                                           b.provider_code,
-                                           b.source_id,
+            const auto& c = at.first->owner;
+            counts.push_back({delivery_key{c.tenant_id,
+                                           c.party_id,
+                                           c.provider_code,
+                                           c.source_id,
                                            std::string(at.second),
                                            period},
                               count});
@@ -693,7 +681,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
                 numbered[i] = true;
             } else if (queued.insert({it.series_id, uri}).second) {
                 unknown[it.target->tenant_text].push_back(
-                    {it.target->binding.party_id, it.series_id, uri});
+                    {it.target->owner.party_id, it.series_id, uri});
             }
         }
     }
@@ -789,52 +777,6 @@ void feed_ingest_loop::write_rows(prepared_batch& batch) {
                                    << failure;
 }
 
-void feed_ingest_loop::record_activity(const prepared_batch& batch) {
-    const auto& ticks = batch.ticks;
-    const auto& items = batch.items;
-    // The newest stored tick of each target of the batch.
-    struct newest {
-        const item* it;
-        std::chrono::system_clock::time_point at;
-    };
-    std::unordered_map<const tick_target*, newest> latest;
-    for (const auto& it : items) {
-        if (!it.stored)
-            continue;
-        const auto at = ticks[it.tick_index].observation_time;
-        const auto found = latest.find(it.target);
-        if (found == latest.end())
-            latest.emplace(it.target, newest{&it, at});
-        else if (found->second.at < at)
-            found->second = newest{&it, at};
-    }
-
-    // The bindings whose row is due, in one statement for each tenant.
-    std::map<std::string, std::vector<repository::feed_binding_activity_entry>> due;
-    {
-        const auto now = std::chrono::steady_clock::now();
-        std::lock_guard lock(mu_);
-        for (const auto& [target, n] : latest) {
-            const auto& b = target->binding;
-            auto& last = activity_recorded_[binding_key{
-                b.source_name, target->tenant_text, target->party_text}];
-            if (now - last < activity_interval)
-                continue;
-            last = now;
-            due[target->tenant_text].push_back({b.party_id, b.source_name, n.it->series_id, n.at});
-        }
-    }
-    for (const auto& [tenant, entries] : due) {
-        try {
-            repository::feed_binding_activity_repository{}.record(batch.tenant_ctxs.at(tenant),
-                                                                  entries);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to record the activity of " << entries.size()
-                                      << " feed binding(s): " << e.what();
-        }
-    }
-}
-
 std::shared_ptr<const core::series_classifier>
 feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
     const auto tenant = tenant_ctx.tenant_id().to_string();
@@ -850,22 +792,22 @@ feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
     return classifiers_.try_emplace(tenant, std::move(classifier)).first->second;
 }
 
-domain::market_series make_feed_series(const domain::feed_binding& binding,
+domain::market_series make_feed_series(const consumer& owner,
                                        const boost::uuids::uuid& id,
                                        const std::string& series_uri,
                                        const std::string& series_subclass,
                                        const std::string& service_account) {
     domain::market_series series;
     series.id = id;
-    series.tenant_id = binding.tenant_id;
-    series.party_id = binding.party_id;
+    series.tenant_id = owner.tenant_id;
+    series.party_id = owner.party_id;
     series.oresmd_uri = series_uri;
     series.series_subclass = series_subclass;
-    series.provider_code = binding.provider_code;
+    series.provider_code = owner.provider_code;
     series.modified_by = service_account;
     series.performed_by = service_account;
     series.change_reason_code = "system.initial_load";
-    series.change_commentary = "Created by the feed ingest loop for source " + binding.source_name;
+    series.change_commentary = "Created by the feed ingest loop for source " + owner.source_name;
     return series;
 }
 
@@ -887,7 +829,7 @@ feed_ingest_loop::name_of(const std::string& uri) {
 }
 
 boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context& tenant_ctx,
-                                                   const domain::feed_binding& binding,
+                                                   const consumer& owner,
                                                    const named_datum& named,
                                                    boost::uuids::random_generator& uuid_gen) {
     const auto& series_uri = named.series_uri;
@@ -896,8 +838,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
         if (found == series_ids_.end())
             return std::nullopt;
         for (const auto& entry : found->second)
-            if (entry.tenant_id == binding.tenant_id.to_uuid() &&
-                entry.party_id == binding.party_id && entry.provider_code == binding.provider_code)
+            if (entry.tenant_id == owner.tenant_id.to_uuid() && entry.party_id == owner.party_id &&
+                entry.provider_code == owner.provider_code)
                 return entry.id;
         return std::nullopt;
     };
@@ -906,11 +848,11 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
         if (const auto cached = find_cached())
             return *cached;
     }
-    const auto party = boost::uuids::to_string(binding.party_id);
+    const auto party = boost::uuids::to_string(owner.party_id);
 
     repository::market_series_repository series_repo;
     auto existing =
-        series_repo.read_latest_by_key(tenant_ctx, series_uri, binding.provider_code, party);
+        series_repo.read_latest_by_key(tenant_ctx, series_uri, owner.provider_code, party);
     if (existing.empty()) {
         const auto ck = core::classification_key_of(named.datum);
         const auto cl =
@@ -918,7 +860,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
         auto series = make_feed_series(
-            binding, uuid_gen(), series_uri, cl.series_subclass, ctx_.service_account());
+            owner, uuid_gen(), series_uri, cl.series_subclass, ctx_.service_account());
         series_repo.write(tenant_ctx, series);
 
         std::vector<domain::market_series_asset_class> classes;
@@ -941,7 +883,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     const auto id = existing.front().id;
     std::lock_guard lock(mu_);
     series_ids_[series_uri].push_back(
-        {binding.tenant_id.to_uuid(), binding.party_id, binding.provider_code, id});
+        {owner.tenant_id.to_uuid(), owner.party_id, owner.provider_code, id});
     return id;
 }
 

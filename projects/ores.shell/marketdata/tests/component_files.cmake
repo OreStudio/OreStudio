@@ -24,7 +24,6 @@ set(files
     "composite_input_commands_tests.cpp"
     "delivery_count_commands_tests.cpp"
     "demand_interval_commands_tests.cpp"
-    "feed_binding_commands_tests.cpp"
     "main.cpp"
     "market_data_mapping_commands_tests.cpp"
     "market_data_source_commands_tests.cpp"

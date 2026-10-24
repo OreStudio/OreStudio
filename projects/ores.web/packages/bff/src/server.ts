@@ -40,7 +40,6 @@ import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
 import { registerOresmdRoutes } from './oresmd.js';
-import { registerBindingRoutes } from './bindings.js';
 import { registerSeriesRoutes } from './series.js';
 import { registerTenorRoutes } from './tenors.js';
 import { registerAuditRoutes } from './audit.js';
@@ -2671,7 +2670,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerCurveRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
-    registerBindingRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);

@@ -18,11 +18,9 @@
  *
  */
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
-#include "ores.marketdata.api/generators/feed_binding_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.marketdata.api/generators/observation_lineage_generator.hpp"
 #include "ores.marketdata.api/generators/series_classification_rule_generator.hpp"
-#include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -45,71 +43,6 @@ const std::string tags("[repository]");
 using namespace ores::marketdata::generators;
 using namespace ores::marketdata::repository;
 using ores::testing::database_helper;
-
-TEST_CASE("feed_binding_reads_back_by_id_and_source_until_removed", tags) {
-    database_helper h;
-    auto ctx = ores::testing::make_generation_context(h);
-    feed_binding_repository repo;
-
-    const auto b = generate_synthetic_feed_binding(ctx);
-    repo.write(h.context(), b);
-    const auto id = boost::uuids::to_string(b.id);
-
-    const auto by_id = repo.read_latest(h.context(), id);
-    REQUIRE(by_id.size() == 1);
-    CHECK(by_id.front().source_name == b.source_name);
-    CHECK(by_id.front().party_id == b.party_id);
-
-    const auto by_source = repo.read_latest_by_source_name(h.context(), b.source_name);
-    REQUIRE(by_source.size() == 1);
-    CHECK(by_source.front().id == b.id);
-
-    repo.remove(h.context(), id);
-    CHECK(repo.read_latest(h.context(), id).empty());
-    CHECK(repo.read_any_by_source_name(h.context(), b.source_name).size() == 1);
-}
-
-TEST_CASE("feed_binding_history_resolves_to_the_session_party_s_row", tags) {
-    database_helper h;
-    auto ctx = ores::testing::make_generation_context(h);
-    feed_binding_repository repo;
-
-    // A source name is unique per party, not per tenant, so two parties can
-    // hold the same one and each has its own binding.
-    const auto source_name =
-        std::string("TEST/SHARED/") + boost::uuids::to_string(boost::uuids::random_generator()());
-
-    auto mine = generate_synthetic_feed_binding(ctx);
-    mine.source_name = source_name;
-    repo.write(h.context(), mine);
-
-    // Written second, so its version is the newest in the tenant.
-    auto theirs = mine;
-    theirs.id = boost::uuids::random_generator()();
-    theirs.party_id = boost::uuids::random_generator()();
-    repo.write(h.context(), theirs);
-
-    const auto my_context =
-        h.context().with_party(h.tenant_id(), mine.party_id, {mine.party_id}, h.db_user());
-    const auto my_rows = repo.read_any_by_source_name(my_context, source_name);
-    REQUIRE(my_rows.size() == 1);
-    CHECK(my_rows.front().id == mine.id);
-
-    const auto their_context =
-        h.context().with_party(h.tenant_id(), theirs.party_id, {theirs.party_id}, h.db_user());
-    const auto their_rows = repo.read_any_by_source_name(their_context, source_name);
-    REQUIRE(their_rows.size() == 1);
-    CHECK(their_rows.front().id == theirs.id);
-
-    // A session with no party reads the whole tenant, so the newest row of
-    // either party answers it.
-    const auto whole_tenant = repo.read_any_by_source_name(h.context(), source_name);
-    REQUIRE(whole_tenant.size() == 1);
-    CHECK(whole_tenant.front().id == theirs.id);
-
-    repo.remove(h.context(), boost::uuids::to_string(mine.id));
-    repo.remove(h.context(), boost::uuids::to_string(theirs.id));
-}
 
 TEST_CASE("observation_lineage_reads_back_by_id_until_removed", tags) {
     database_helper h;

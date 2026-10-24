@@ -436,7 +436,6 @@ RLS_002 ores_iam_account_parties_tbl
 # the matching AS RESTRICTIVE party isolation policies. Ignored here as a
 # stopgap to unblock CI; the RESTRICTIVE policies should be added to
 # marketdata_rls_policies_create.sql and these entries then removed.
-RLS_002 ores_marketdata_feed_bindings_tbl
 RLS_002 ores_marketdata_market_fixings_tbl
 RLS_002 ores_marketdata_market_observations_tbl
 RLS_002 ores_marketdata_market_series_tbl
@@ -445,7 +444,6 @@ RLS_002 ores_marketdata_market_series_tbl
 # restrictive party policy would refuse every row it writes. They have the
 # tenant policy, as the observation table has, and a reader states the party in
 # its query.
-RLS_002 ores_marketdata_feed_binding_activity_tbl
 RLS_002 ores_marketdata_tick_coords_tbl
 
 # CRM config tables — new, party_id-scoped from the start (Cross-rates

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/retire-the-feed-binding
+#+pr: 3725
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The route is the only consumer record. The ingest reads the routes, and the feed
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ The route is the only consumer record. The ingest reads the routes, and the feed
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Give the ingest loop its own consumer record, built from the route, and
+   delete the binding read, the activity record and the binding event
+   subscription.
+2. Delete the binding model and regenerate the component. Delete the generated
+   domain type, table, protocol, event, generator, repository, entity, mapper,
+   service, handler, history provider and presentation.
+3. Delete the shell commands, the client methods and the permission.
+4. Delete the two binding tables, their triggers and policies, the schema
+   diagrams, and the guard exception.
+5. Delete the web surface: the list and record pages, the API, the BFF read,
+   the contracts, the generated wire protocol, the routes, the menu card and
+   the i18n keys.
+6. Rebuild, run the marketdata suites, the web checks and the guard, recreate
+   the database and prove that a provisioned tenant ticks from its routes.
 
 * Measurements
 
@@ -58,9 +69,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files changed against main | 138 (418 insertions, 10,717 deletions) | =git diff --shortstat origin/main..HEAD= | 88be132ea0 |
+| System tenant widenings the guard lists | 13 | =python3 projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py= | 88be132ea0 |
+| Codegen suite | 1,589 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | 88be132ea0 |
+| Web tests | 3,206 passed across the workspaces | =cd projects/ores.web && npm test= | 88be132ea0 |
+| Component drift | no drift | =check_component_drift.py --changed --base origin/main= | 88be132ea0 |
 
 * Notes
+
+- =producer_kind= in refdata was the binding's producer classification. After
+  the deletion no code reads it, so the lookup itself is dead. It belongs to
+  refdata and goes in its own task, not this one.
+- The bindings screen story =AE947749= and the subscribe story =3BAE4AAA= still
+  name bindings. The follow-on task reconciles them.
 
 * Test Scenarios
 
@@ -77,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3725][#3725]] | [marketdata] Retire the feed binding |
 
 * Review
 
@@ -86,3 +107,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The route is the only consumer record. The ingest builds one consumer from
+each route, and the feed binding is gone from the model, the code, the tables,
+the screen, the permissions and the widening guard. The database is recreated
+from the create scripts: no migration, no compatibility view and no legacy row.
+
+** What changed
+
+- The ingest reads the routes only. The binding read, the =consumer_of= copy
+  and the binding change event are gone.
+- The synthetic controller no longer writes a binding when a feed starts, and
+  it no longer carries the bearer token that existed only for that write.
+- The binding model, its two tables, the notify trigger, the event mapping,
+  the operations activity read, the service, the repository, the handler, the
+  history provider, the shell commands, the client methods and the web list
+  and record pages are deleted.
+- The three =marketdata::feed_bindings= permissions are gone, and the guard
+  exception with them.
+- The ER diagrams, the component diagrams and the operations protocol are
+  regenerated.
+
+** Verification
+
+- The marketdata api, core, client and service libraries and executables build,
+  as do the shell and the synthetic service.
+- The web typechecks, formats, builds and passes 3,206 tests across its
+  workspaces.
+- The guard reports 13 widenings, all listed. The codegen suite passes 1,589
+  tests and the component drift check finds no drift.
+- The database recreates, the pgTAP suites pass, and the marketdata api, core,
+  client and service, shell and web suites pass in ctest.
+
+** Inherited failures
+
+Four ctest suites fail on code this branch does not change: =ores.ore.core=
+(7 failures on the ORE parameter data), =ores.reporting.core= and
+=ores.compute.api= and =ores.compute.core= (a SIGSEGV in
+=domain_result_tests.cpp=). The branch touches none of those trees, so they
+came in from main. They need their own fix.

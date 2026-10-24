@@ -125,7 +125,6 @@ public:
         }
 
         start_feed_response resp;
-        const auto bearer = ores::nats::service::extract_bearer(msg);
         try {
             const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_};
             auto attempt = registry_.make_feed(*target, bctx);
@@ -135,7 +134,7 @@ public:
                 reply(nats_, msg, resp);
                 return;
             }
-            reply_start_outcome(msg, resp, std::move(attempt.feed), bearer);
+            reply_start_outcome(msg, resp, std::move(attempt.feed));
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();
@@ -297,11 +296,10 @@ private:
     // the dispatch needs no per-kind branching.
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
-                             std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                             const std::string& bearer) {
+                             std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
         const auto source_name = feed->source_name();
         const auto series = feed->series_uris();
-        const auto result = ctrl_->start(std::move(feed), bearer);
+        const auto result = ctrl_->start(std::move(feed));
 
         switch (result) {
             case feed_controller::start_result::started:

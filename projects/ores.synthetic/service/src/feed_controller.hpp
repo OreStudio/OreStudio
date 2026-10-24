@@ -42,29 +42,6 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief The marketdata feed_binding store a feed_controller binds started
- * feeds into.
- *
- * A seam, not an abstraction: the controller owns the one rule "a started feed
- * is bound" and the store owns the marketdata round-trip that carries it out,
- * so tests can drive the rule without a live marketdata service.
- */
-class feed_binding_store {
-public:
-    virtual ~feed_binding_store() = default;
-
-    /**
-     * @brief Bind @p source_name unless a binding for it already exists.
-     *
-     * Idempotent: a source that is already bound is left alone, so a feed
-     * started, stopped and restarted keeps the one row instead of gaining a
-     * second.
-     */
-    virtual std::expected<void, std::string>
-    save_if_absent(const std::string& source_name, const std::string& caller_bearer_token) = 0;
-};
-
-/**
  * @brief Whether two running/candidate feeds would collide: their series lists
  * share a series.
  *
@@ -84,12 +61,6 @@ inline bool feeds_conflict(const std::vector<std::string>& series_a,
         return !s.empty() && std::ranges::find(series_b, s) != series_b.end();
     });
 }
-
-/**
- * @brief The production feed_binding store: marketdata over NATS.
- */
-std::shared_ptr<feed_binding_store>
-make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
 
 /**
  * @brief Owns the running synthetic producer feeds; one tick thread per
@@ -113,9 +84,8 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  *   - start(IFeed) — the on-demand path (the per-config control-plane),
  *     reporting already_running when that source is already up.
  *
- * Both create the feed's marketdata feed_binding once the feed is running.
- * Nothing branches on the asset class — a feed arrives as IFeed and its kind is
- * irrelevant here.
+ * Both start the feed's tick thread. Nothing branches on the asset class — a
+ * feed arrives as IFeed and its kind is irrelevant here.
  *
  * At most one feed runs at a time for any series (see feeds_conflict):
  * an add()/start() whose series is already held by a *different* running
@@ -139,11 +109,7 @@ private:
 public:
     // nats is the raw transport the feeds build with, kept so a caller
     // constructs the controller and the build context from one client.
-    // auth_nats builds the default marketdata binding store.
-    feed_controller(ores::nats::service::client& nats,
-                    ores::nats::service::nats_client& auth_nats,
-                    std::shared_ptr<feed_binding_store> bindings = {})
-        : bindings_(bindings ? std::move(bindings) : make_marketdata_binding_store(auth_nats)) {
+    explicit feed_controller(ores::nats::service::client& nats) {
         (void)nats;
     }
 
@@ -159,20 +125,13 @@ public:
     /**
      * @brief Config-driven path: registers an already-constructed feed as
      * running and spawns its tick thread (auto-start at boot, the folder
-     * cascade), then binds it. The caller built the feed from persisted
+     * cascade). The caller built the feed from persisted
      * config via the factory, including any vintage resolution the builder
      * performed, so this path does no vintage check and no process
      * construction.
      *
-     * The bind creates or confirms the feed_binding on
-     * "synthetic.v1.ops.tick.<source>", the subject the marketdata ingest loop
-     * subscribes.
-     *
-     * @p caller_bearer_token is the requesting end-user's token, forwarded to
-     * marketdata as X-Delegated-Authorization so the binding is created in
-     * that caller's tenant/party context. An internal call with no end-user
-     * session (boot auto-start) passes nothing and binds nothing: it has no
-     * party to bind under.
+     * The feed publishes on "synthetic.v1.ops.tick.<source>", the subject the
+     * marketdata ingest loop subscribes.
      *
      * Returns false without starting when a feed with the same source_name
      * is already running, or when the feed's conflict key is held by a
@@ -180,7 +139,6 @@ public:
      * the holder's source_name).
      */
     bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-             const std::string& caller_bearer_token = {},
              std::string* out_conflicting_source_name = nullptr) {
         const auto source_name = feed->source_name();
         {
@@ -200,10 +158,6 @@ public:
             }
             start_running(std::move(feed));
         }
-        // Binding creation is a blocking marketdata round-trip, so it runs
-        // after mu_ is released rather than inside the critical section every
-        // other start()/stop()/running_count()/list() call shares.
-        bind_feed(source_name, caller_bearer_token);
         return true;
     }
 
@@ -213,13 +167,8 @@ public:
      * Use running_source_name_for_series() to build an actionable
      * message when this returns oresmd_conflict.
      *
-     * @p caller_bearer_token means what it means in add(): the session that
-     * the feed_binding belongs to. A re-start of an already-running feed still
-     * confirms its binding, so a feed whose row was deleted by hand regains it
-     * on the next start.
      */
-    start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                       const std::string& caller_bearer_token = {}) {
+    start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
         const auto source_name = feed->source_name();
         bool already_running = false;
         {
@@ -231,12 +180,6 @@ public:
                 start_running(std::move(feed));
             }
         }
-        // Runs outside mu_ (a blocking marketdata round-trip): binding inside
-        // the critical section would stall every other start()/stop()/
-        // running_count()/list() call for the round-trip's duration. It runs
-        // on both outcomes, so a feed whose binding row was deleted by hand
-        // regains it on the next start.
-        bind_feed(source_name, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
     }
 
@@ -316,28 +259,6 @@ public:
     }
 
 private:
-    // The one binding rule, applied by every start path. Skipped when there is no caller
-    // bearer token — an internal start with no end-user session has no party
-    // to bind under. A store failure is logged, not thrown: the feed itself
-    // has already started either way, and the missing binding is visible (no
-    // ticks reach the CRM/market series) rather than silently wrong.
-    void bind_feed(const std::string& source_name, const std::string& caller_bearer_token) {
-        if (caller_bearer_token.empty())
-            return;
-        const auto saved = bindings().save_if_absent(source_name, caller_bearer_token);
-        if (!saved) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Failed to auto-create feed binding for "
-                                                     << source_name << ": " << saved.error();
-            return;
-        }
-        BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Auto-created feed binding for source " << source_name;
-    }
-
-    feed_binding_store& bindings() {
-        return *bindings_;
-    }
-
     static constexpr std::chrono::minutes status_interval_{1};
 
     void status_loop() {
@@ -408,93 +329,12 @@ private:
         return std::nullopt;
     }
 
-    // Injected or, by default, the marketdata-over-NATS store.
-    std::shared_ptr<feed_binding_store> bindings_;
-
     mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;
 
     std::atomic<bool> stop_flag_{false};
     std::thread status_thread_;
 };
-
-/**
- * @brief The production feed_binding store: marketdata over NATS, delegated to
- * the requesting end-user's bearer token so the binding lands in that caller's
- * tenant/party context.
- */
-class marketdata_binding_store final : public feed_binding_store {
-public:
-    explicit marketdata_binding_store(ores::nats::service::nats_client& auth_nats)
-        : auth_nats_(auth_nats) {}
-
-    /**
-     * @brief The binding this store creates for @p source_name.
-     *
-     * The store names a generated producer, so the binding it creates carries
-     * SYNTHETIC rather than the entity's VENDOR default. The ingest loop
-     * stamps the series it creates from this code, so the axis travels with
-     * the binding onto every series this feed's ticks land in. Public because
-     * the store's rule is what a test asserts, without a live marketdata
-     * service.
-     */
-    static ores::marketdata::domain::feed_binding binding_for(const std::string& source_name) {
-        ores::marketdata::domain::feed_binding b;
-        boost::uuids::random_generator uuid_gen;
-        b.id = uuid_gen();
-        b.source_name = source_name;
-        b.producer_kind = "SYNTHETIC";
-        // The name of a feed starts "synthetic.<provider>.", and the binding takes the provider
-        // and its simulated source from it. A name of any other shape binds to the provider ore
-        // and the source ore-import, which every series of an unknown origin belongs to.
-        namespace ids = ores::marketdata::domain::catalogue_ids;
-        const auto first = source_name.find('.');
-        const auto second = first == std::string::npos ? first : source_name.find('.', first + 1);
-        const auto provider = second == std::string::npos ?
-                                  std::string() :
-                                  source_name.substr(first + 1, second - first - 1);
-        if (const auto simulated = ids::simulated_source_id_for(provider)) {
-            b.provider_code = provider;
-            b.source_id = *simulated;
-        } else {
-            b.provider_code = std::string(ids::ore_provider);
-            b.source_id = ids::ore_import_source_id();
-        }
-        b.enabled = true;
-        b.change_reason_code = "system.new_record";
-        b.change_commentary = "Auto-created by feed_controller on feed start.";
-        return b;
-    }
-
-    std::expected<void, std::string>
-    save_if_absent(const std::string& source_name,
-                   const std::string& caller_bearer_token) override {
-        auto delegated = auth_nats_.with_delegation(caller_bearer_token);
-        ores::marketdata::client::market_data_client md_client(delegated);
-        // Read-then-write rather than an insert that would fail on the
-        // (tenant, party, source_name) unique index: a feed started, stopped
-        // and restarted must keep one binding, not gain a second.
-        auto existing = md_client.list_feed_bindings();
-        if (!existing)
-            return std::unexpected(existing.error());
-        for (const auto& b : *existing)
-            if (b.source_name == source_name)
-                return {};
-
-        auto saved = md_client.save_feed_binding(binding_for(source_name));
-        if (!saved)
-            return std::unexpected(saved.error());
-        return {};
-    }
-
-private:
-    ores::nats::service::nats_client& auth_nats_;
-};
-
-inline std::shared_ptr<feed_binding_store>
-make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats) {
-    return std::make_shared<marketdata_binding_store>(auth_nats);
-}
 
 }
 

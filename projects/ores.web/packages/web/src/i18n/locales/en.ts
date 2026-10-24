@@ -4137,39 +4137,6 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
-        bindings: {
-            title: 'Bindings',
-            lead: 'The feeds that write market data for this party: which source each one names, the series it writes and whether it runs.',
-            allKinds: 'All kinds',
-            series: 'Series',
-            status: 'Status',
-            lastTick: 'Last tick',
-            feed: 'Feed',
-            folder: 'Folder',
-            ticksPerHour: 'Ticks per hour',
-            seriesHint: 'The series this binding writes to, and the oresmd URL that names it.',
-            historyLead:
-                'Every saved version of this binding and what changed in each, newest first.',
-            historyGap:
-                'A version whose series a running feed holds cannot be written back, so it offers no Revert.',
-            vendorNote:
-                'A binding of a real feed is read only here. Only a binding of a synthetic feed can change.',
-            add: 'Add binding',
-            addTitle: 'Add binding',
-            sourceHelp: 'The synthetic feed this party will consume.',
-            enabledHelp:
-                'While it is No, no tick is stored for this party. The feed itself keeps running.',
-            held: '{source} already writes this series. Only one running feed may write a series, so this source cannot be bound while it runs.',
-            removeWarning:
-                "The binding is deleted and ingestion for this party stops. The series and its observations stay, and so does the binding's history.",
-            statuses: {
-                running: 'Running',
-                stopped: 'Stopped',
-                disabled: 'Disabled',
-                quiet: 'Quiet',
-                unsupported: 'Not supported',
-            },
-        },
         feeds: {
             targetUri:
                 'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',
@@ -4181,9 +4148,6 @@ export const en: SourceCatalogue = {
                 synthetic: 'Synthetic',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
-                bindings: 'Bindings',
-                bindingsBody:
-                    'The feeds that write market data for this party: the series each one writes and whether it runs.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },

@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/apply-the-standard-to-the-pricing-engine-configuration
-#+pr:
+#+pr: 3730
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -28,9 +28,9 @@ The pricing engine configuration screens follow the configuration screen standar
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The page is built and the tests pass; it needs a live verification. |
-| Waiting on   | Nothing.                               |
-| Next         | Build, start services, and check the five tabs on 21002. |
+| Now          | The page is built, the tests pass and it is live on 21002. |
+| Waiting on   | The owner's test of the screen.        |
+| Next         | Work through the scenario on 21002.    |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3730][#3730]] | [web] Apply the configuration screen standard to Product pricing |
 
 * Review
 

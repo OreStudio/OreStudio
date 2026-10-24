@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A fresh database, built services and a provisioned Acme tenant give a web client
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

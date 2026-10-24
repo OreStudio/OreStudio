@@ -38,7 +38,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |------+-------+-------+-----+-------------|
 | [[id:CE1EAB8C-CC74-444E-B0DA-A68C6927F2FE][Task: Open sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | Open sprint 29: scaffold, wire, and move the postponed stories. |
 | [[id:CCCE56A0-8CBE-4A0F-8D72-4EDC4F68B80A][Finish opening sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | The first sprint 29 PR did the scaffold and the release material. This task does the rest of the open-sprint recipe: the vcpkg update, the version bump, the postponed story and the promoted carried work. |
-| [[id:75C7ABFA-04FC-4C9C-A72C-D8CB1D9689C2][Get v0.0.29 up and running]] | BACKLOG | | | After the sprint 29 opening, bring v0.0.29 up on a fresh environment. The ORE provider must not show in the web client, and the feeds screen must show the feeds that run. |
+| [[id:75C7ABFA-04FC-4C9C-A72C-D8CB1D9689C2][Get v0.0.29 up and running]] | STARTED | 2026-10-24 | | After the sprint 29 opening, bring v0.0.29 up on a fresh environment. The ORE provider must not show in the web client, and the feeds screen must show the feeds that run. |
 
 * Decisions
 

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 247B37A7-15AF-4C24-80D1-8BC4CD45DBF1
+:END:
+#+title: Read the portfolio tree's junctions from the server
+#+description: The trade list's portfolio tree draws portfolios, the books under them and the trades in each book. The UI must learn two junctions from the server: which books hang from which portfolios, and which trades are filed in which book. Investigate the read API for both once the prototype is signed off.
+#+type: capture
+#+level: cross
+#+filetags: :trading:portfolio:books:tree:api:web:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The trade list draws a portfolio tree: portfolios nested by their parent, the books that hang from each portfolio, and a count of the trades filed in each book. The UI cannot draw it from one read. It must learn two junctions from the server, and this capture is the investigation of those reads.
+
+- *Books to portfolios.* A book states its portfolio in =parent_portfolio_id=, which points at =ores_refdata_portfolios_tbl=. A portfolio states its own parent the same way.
+- *Trades to books.* A trade states its book in =ores_trading_trade_bookings_tbl=, and the trade summary read model exposes it as =book_id=. A trade may also be reported in further portfolios, which =ores_trading_trade_portfolios_tbl= records.
+
+The questions to answer, once the prototype is signed off:
+
+1. Which protocol returns every portfolio of the party with its parent, as a whole hierarchy rather than a page? A tree that pages cannot be drawn.
+2. The same question for books: every book of the party with its =portfolio_id=.
+3. Does the read scope the rows to the caller's party, or does the BFF filter them?
+4. Are the counts per book needed, or can the tree count from the trade summary read it already makes? A count per node is a read per node today, which does not scale to thousands of books.
+5. Which permission code does each read need, and does the seeded role set already carry it?
+6. Do the extra reported portfolios of =trade_portfolios= belong in the tree's filter, or is the filing book enough? The prototype takes the book.
+
+* Why
+
+The prototype of the trade list, [[id:1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20][Trade list and page prototype]], argues the tree and filters the list by it. The screen is built from mock data, so nothing yet proves that the server can serve the hierarchy the tree draws. Discovering this late would force either a new read model or a tree that pages, and both change the screen.
+
+This work waits for the prototype to be signed off. It is not in the plan of [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] yet, because the signed-off shape decides what to ask for.
+
+* References
+
+- [[id:1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20][Trade list and page prototype]] — the screen this serves, and its portfolio tree section.
+- [[proj:projects/ores.refdata/modeling/ores.refdata.book.org][ores.refdata.book]] — the book's =parent_portfolio_id=.
+- [[proj:projects/ores.refdata/modeling/ores.refdata.portfolio.org][ores.refdata.portfolio]] — the portfolio's own parent.
+- [[proj:projects/ores.trading/modeling/ores.trading.trade_portfolio.org][ores.trading.trade_portfolio]] — the other portfolios a trade is reported in.
+- [[proj:projects/ores.trading/modeling/ores.trading.trade_summary.org][ores.trading.trade_summary]] — the read model that carries =book_id=.
+
+* See also
+
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the briefcase for a portfolio and the book for a book.

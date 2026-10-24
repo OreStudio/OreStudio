@@ -60,6 +60,10 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 -   **Cut the feed ingest round trips**: The database round trips that the feed ingest pays per stored tick are fewer, and a measurement proves it.
 -   **Find why market data ticks lag the wall clock** (Partly delivered, 10 of 32 tasks): The investigation found where the backlog of ticks builds up. The per-row costs of the ingest are removed, and a quiet loop runs in one thread. The remaining 21 tasks, among them the tick tables, the lanes and the history call, are not closed.
 
+![ore_studio-v0.0.28-synthetic-feeds.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-synthetic-feeds.png)
+
+*Every synthetic feed in a tree by provider, with its state, engine, frequency and oresmd URI.*
+
 ![ore_studio-v0.0.28-synthetic-price-behaviour.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png)
 
 *The price behaviour of the synthetic AUD/USD feed: the mixture of two Gaussians, the return distribution and sample paths.*
@@ -85,6 +89,10 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 *Usage by party: the outcomes of the finished results and each party's share.*
 
+![ore_studio-v0.0.28-grid-heatmap.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-grid-heatmap.png)
+
+*Node load: one row for each node and one column for each interval, coloured by what the node did.*
+
 
 ## Web & Journeys
 
@@ -106,6 +114,10 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 ![ore_studio-v0.0.28-grid-jobs.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-grid-jobs.png)
 
 *The grid's batches, workunits and results as a tree, with the detail of one result.*
+
+![ore_studio-v0.0.28-reports.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-reports.png)
+
+*The reports a party runs, with the health of each latest run and its schedule.*
 
 ![ore_studio-v0.0.28-engine-settings.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-engine-settings.png)
 

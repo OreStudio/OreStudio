@@ -32,6 +32,10 @@
 #+HTML: <figcaption class="carousel-caption"><strong>Compute Grid</strong><span>Watch the load, the fleet, the throughput and the outcomes of the grid over the last hour, day or week.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-heatmap.png" alt="Compute Grid Node Load">
+#+HTML: <figcaption class="carousel-caption"><strong>Node Load</strong><span>See what every node did in every interval, with work, failures and bytes on a heatmap.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
 #+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-usage.png" alt="Compute Grid Usage by Party">
 #+HTML: <figcaption class="carousel-caption"><strong>Usage by Party</strong><span>See each party's share of the grid's work and how its results ended, as a chart and a table.</span></figcaption>
 #+HTML: </figure>
@@ -40,8 +44,16 @@
 #+HTML: <figcaption class="carousel-caption"><strong>Follow a Job</strong><span>Open a batch, its workunits and its results, and follow a job from its dispatch to its output.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png" alt="Synthetic Market Data">
-#+HTML: <figcaption class="carousel-caption"><strong>Synthetic Market Data</strong><span>Shape the price behaviour of a synthetic feed and read the returns it implies before you save.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-synthetic-feeds.png" alt="Synthetic Feeds">
+#+HTML: <figcaption class="carousel-caption"><strong>Synthetic Feeds</strong><span>Browse every synthetic feed by provider and asset class, with its state, engine, frequency and oresmd URI.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png" alt="Synthetic Price Behaviour">
+#+HTML: <figcaption class="carousel-caption"><strong>Price Behaviour</strong><span>Shape the price behaviour of a synthetic feed and read the returns it implies before you save.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-reports.png" alt="Reports">
+#+HTML: <figcaption class="carousel-caption"><strong>Reports</strong><span>See the reports a party runs, when each is scheduled and the health of its latest run.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
 #+HTML: <img src="./assets/images/ore_studio-v0.0.28-engine-settings.png" alt="Engine Settings">
@@ -58,6 +70,9 @@
 #+HTML: <button class="carousel-dot" aria-label="Slide 5"></button>
 #+HTML: <button class="carousel-dot" aria-label="Slide 6"></button>
 #+HTML: <button class="carousel-dot" aria-label="Slide 7"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 8"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 9"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 10"></button>
 #+HTML: </div>
 #+HTML: </div>
 #+HTML: </section>

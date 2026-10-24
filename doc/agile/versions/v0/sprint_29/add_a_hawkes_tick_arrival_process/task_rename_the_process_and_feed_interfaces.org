@@ -8,7 +8,7 @@
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
 #+branch: feature/rename-the-process-and-feed-interfaces
-#+pr:
+#+pr: 3723
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -181,7 +181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3723][#3723]] | [analytics] Rename the quant and market data interfaces to snake_case |
 
 * Review
 

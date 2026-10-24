@@ -3,6 +3,7 @@
 #
 # Cumulative Stories Done — standalone chart, only run when story data exists
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,11"
 set output sprintf("doc/agile/versions/v0/sprint_%s/stories_done.png", sprint_str)
@@ -17,5 +18,5 @@ set ylabel "Stories"
 set title sprintf("Sprint %d — Cumulative Stories Done", sprint)
 set xtics rotate by -45 font "sans,8"
 
-infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
+infile_prog = datadir."/sprint_progress.csv"
 plot infile_prog using 0:2:xticlabels(stringcolumn(1)) every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"

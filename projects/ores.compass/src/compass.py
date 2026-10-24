@@ -1976,44 +1976,54 @@ def _sc_get_sprint_range(sprint):
 
 
 def _sc_collect_daily_metrics(start, end, branch="origin/main"):
-    metrics = defaultdict(lambda: {"commits": 0, "merges": 0, "added": 0, "deleted": 0})
-    end_inc = end + datetime.timedelta(days=1)
+    """Commits and line churn per local calendar day, start to end inclusive.
+
+    The window is explicit timestamps: a bare date in --since means that date
+    at the current time of day, which drops the early hours of the first day
+    and adds some of the day after the last. --since-as-filter walks every
+    commit instead of stopping at the first old one, which a rebased history
+    would otherwise cut short. Commits are bucketed by committer date, the
+    date the filter uses, so the filter and the bucket agree. Every day of the
+    window has a row, with zeros where nothing landed."""
+    metrics = {}
+    day = start
+    while day <= end:
+        metrics[day] = {"commits": 0, "prs": 0, "added": 0, "deleted": 0}
+        day += datetime.timedelta(days=1)
+    end_exc = end + datetime.timedelta(days=1)
     log = subprocess.check_output([
-        "git", "log", f"--after={start}", f"--before={end_inc}",
-        "--format=COMMIT %ai", "--numstat", "--reverse", branch,
+        "git", "log", f"--since-as-filter={start}T00:00:00",
+        f"--until={end_exc}T00:00:00", "--date=format-local:%Y-%m-%d",
+        "--format=COMMIT %cd", "--numstat", branch,
     ], text=True, cwd=PROJECT_ROOT).strip()
-    current_date = None
+    current = None
     for line in log.splitlines():
         if line.startswith("COMMIT "):
-            current_date = _sc_parse_date(line.split()[1])
-            if current_date:
-                metrics[current_date]["commits"] += 1
-        elif current_date and "\t" in line:
+            current = _sc_parse_date(line.split()[1])
+            if current in metrics:
+                metrics[current]["commits"] += 1
+            else:
+                current = None
+        elif current and "\t" in line:
             parts = line.split("\t")
             if len(parts) == 3 and parts[0] not in ("-", ""):
                 try:
-                    metrics[current_date]["added"] += int(parts[0])
-                    metrics[current_date]["deleted"] += int(parts[1])
+                    metrics[current]["added"] += int(parts[0])
+                    metrics[current]["deleted"] += int(parts[1])
                 except ValueError:
                     pass
-    log = subprocess.check_output([
-        "git", "log", "--merges", f"--after={start}", f"--before={end_inc}",
-        "--format=%ai", "--reverse", branch,
-    ], text=True, cwd=PROJECT_ROOT).strip()
-    for line in log.splitlines():
-        if line.strip():
-            metrics[_sc_parse_date(line.split()[0])]["merges"] += 1
     return metrics
 
 
 def _sc_get_merged_prs(start, end):
+    """Every PR merged on a local calendar day in start..end, with its cycle."""
     if not shutil.which("gh"):
-        print("Warning: gh CLI not found — skipping PR cycle time data", file=sys.stderr)
+        print("Warning: gh CLI not found — skipping PR data", file=sys.stderr)
         return []
     try:
         output = subprocess.check_output([
             "gh", "pr", "list", "--state", "merged",
-            "--search", f"merged:>={start}",
+            "--search", f"merged:>={start - datetime.timedelta(days=1)}",
             "--json", "number,title,createdAt,mergedAt",
             "--limit", "1000",
         ], text=True).strip()
@@ -2022,22 +2032,24 @@ def _sc_get_merged_prs(start, end):
         return []
     raw = json.loads(output)
     if len(raw) >= 1000:
-        print("Warning: the PR list hit the 1000 limit — cycle time data is "
+        print("Warning: the PR list hit the 1000 limit — the PR charts are "
               "truncated; raise the limit.", file=sys.stderr)
     prs = []
     for pr in raw:
         merged_str = pr.get("mergedAt", "")
         if not merged_str:
             continue
-        merged_dt = datetime.datetime.fromisoformat(merged_str.replace("Z", "+00:00"))
-        if merged_dt.date() > end:
+        merged_dt = datetime.datetime.fromisoformat(
+            merged_str.replace("Z", "+00:00")).astimezone()
+        if not start <= merged_dt.date() <= end:
             continue
         created_dt = datetime.datetime.fromisoformat(pr["createdAt"].replace("Z", "+00:00"))
-        cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 1)
+        cycle_hours = round((merged_dt - created_dt).total_seconds() / 3600, 2)
         prs.append({
             "number": pr["number"],
             "title": (pr.get("title") or "")[:60],
             "merged_day": merged_dt.date(),
+            "merged_at": merged_dt.strftime("%Y-%m-%dT%H:%M"),
             "cycle_hours": cycle_hours,
         })
     return prs
@@ -2061,7 +2073,7 @@ def _sc_parse_sprint_stories(sprint, start, end):
             parts = [p.strip() for p in line.split("|")]
             if len(parts) >= 6:
                 state, end_str = parts[2], parts[4]
-                if state:
+                if state == "DONE":
                     m = re.search(r"\d{4}-\d{2}-\d{2}", end_str)
                     if m:
                         try:
@@ -2077,35 +2089,32 @@ def _sc_write_activity(metrics, output_dir):
     path = output_dir / "sprint_activity.csv"
     with open(path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["day", "merges", "commits", "added", "deleted"])
+        w.writerow(["day", "prs", "commits", "added", "deleted"])
         for d in sorted(metrics):
             m = metrics[d]
-            w.writerow([d.isoformat(), m["merges"], m["commits"], m["added"], m["deleted"]])
+            w.writerow([d.isoformat(), m["prs"], m["commits"], m["added"], m["deleted"]])
     print(f"Wrote {path}")
 
 
-def _sc_write_progress(cumulative, prs, output_dir):
+def _sc_write_progress(cumulative, prs, output_dir, start, end):
+    """Cumulative DONE stories, one row per calendar day of the window."""
     path = output_dir / "sprint_progress.csv"
     with open(path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["day", "cumulative_done"])
         running = 0
-        for d in sorted(cumulative):
-            running += cumulative[d]
-            w.writerow([d.isoformat(), running])
-        if not cumulative:
-            w.writerow(["2000-01-01", 0])
+        day = start
+        while day <= end:
+            running += cumulative.get(day, 0)
+            w.writerow([day.isoformat(), running])
+            day += datetime.timedelta(days=1)
     print(f"Wrote {path}")
     cycle_path = output_dir / "pr_cycle_times.csv"
-    meaningful = sorted(
-        [pr for pr in prs if pr["cycle_hours"] > 0],
-        key=lambda x: x["cycle_hours"], reverse=True,
-    )[:20]
     with open(cycle_path, "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["pr_number", "title", "day", "cycle_hours"])
-        for pr in sorted(meaningful, key=lambda x: x["merged_day"]):
-            w.writerow([pr["number"], pr["title"], pr["merged_day"].isoformat(), pr["cycle_hours"]])
+        w.writerow(["pr_number", "title", "merged_at", "cycle_hours"])
+        for pr in sorted(prs, key=lambda x: x["merged_at"]):
+            w.writerow([pr["number"], pr["title"], pr["merged_at"], pr["cycle_hours"]])
     print(f"Wrote {cycle_path}")
 
 
@@ -2166,13 +2175,16 @@ def cmd_sprint_charts(args):
     branch = args.branch or "origin/main"
     daily = _sc_collect_daily_metrics(start, end, branch)
     prs = _sc_get_merged_prs(start, end)
+    for pr in prs:
+        daily[pr["merged_day"]]["prs"] += 1
     cumulative = _sc_parse_sprint_stories(sprint, start, end)
 
     _sc_write_activity(daily, output_dir)
-    _sc_write_progress(cumulative, prs, output_dir)
+    _sc_write_progress(cumulative, prs, output_dir, start, end)
 
-    print(f"Found {len(daily)} days of activity, {len(prs)} merged PRs, "
-          f"{sum(cumulative.values())} story transitions")
+    print(f"Found {sum(m['commits'] for m in daily.values())} commits in "
+          f"{len(daily)} days, {len(prs)} merged PRs, "
+          f"{sum(cumulative.values())} stories done")
 
     print("Rendering charts with gnuplot...")
     for script in _SC_GNUPLOT_SCRIPTS:
@@ -2181,7 +2193,8 @@ def cmd_sprint_charts(args):
             print(f"  ⚠️  skipping {script} (not found)", file=sys.stderr)
             continue
         subprocess.check_call(
-            ["gnuplot", "-e", f"sprint={sprint}", str(script_path)],
+            ["gnuplot", "-e", f"sprint={sprint}",
+             "-e", f"datadir='{output_dir.resolve()}'", str(script_path)],
             cwd=PROJECT_ROOT,
         )
         print(f"  Rendered {script}")

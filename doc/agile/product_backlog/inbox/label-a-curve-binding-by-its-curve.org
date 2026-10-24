@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 9125B649-96F6-4B1E-B245-62082D9E1C37
+:END:
+#+title: Task: Label a curve binding by its curve
+#+description: The Series column of a curve binding shows one arbitrary pillar of the curve and hides that the binding writes the whole curve. Label the binding by its curve and say how many pillars it writes.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A binding of an interest rate index writes one series for each maturity of the
+curve, such as 12 series for synthetic.bloomberg.dkkdestr, from 1M to 30Y. The
+list and the record page show only the series of the newest observation. All
+pillars tick at the same instant, so the observation id decides which pillar
+shows. The title of that series names =fwd_start= and =tenor= but not =term=, so
+"DKK swap rate, fwd_start=0D, tenor=1D" reads as one overnight series and not as
+a curve. Show the binding by its curve and say how many pillars it writes.
+
+* Why
+
+The screen states a fact that is not true. A person reading a curve binding sees
+one pillar and concludes the binding writes one series. The count of pillars is
+the fact the person needs, and it is already known when the binding is read.
+
+The task was scaffolded at sprint 28 for the story [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]],
+which closed without it. The scaffold lived only on an unmerged branch, so the
+finding is carried here rather than lost.
+
+* Acceptance
+
+- The list and the record page of an IR curve binding name the curve and the
+  number of pillars it writes, and do not name one pillar.
+- The label does not depend on which pillar has the newest observation.
+- A binding of a single series, such as an FX spot, keeps its series title.
+- A test covers a curve label and a single series label.
+- Check how the series title builder leaves out =term=, and how the bindable
+  sources and the held-by-a-running-feed check treat a curve that has one oresmd
+  URI for many pillars. Record the result in the task.
+
+* References
+
+- Sprint 28 story: Build the bindings screen and clear the oresmd snags
+  ([[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][0EF4BCEC]]), closed 2026-10-21 without this task.
+- The original scaffold is at commit =4e6bc13a74= on
+  =feature/label-a-curve-binding-by-its-curve=.
+
+* See also
+
+-

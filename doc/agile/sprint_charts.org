@@ -34,17 +34,26 @@ charts?]]) does everything in one step:
    =build/output/sprint_NN/=:
    - =sprint_activity.csv= — =day=, =merges=, =commits=, =added=,
      =deleted=. One row per calendar day in the sprint window, from
-     =git log= on =origin/main=: =merges= counts merge commits (one
-     per merged PR), =commits= counts all commits, =added= /
-     =deleted= sum the =--numstat= line counts.
-   - =pr_cycle_times.csv= — =pr_number=, =title=, =day=,
+     =git log= on =origin/main=: =prs= counts the PRs merged that
+     local day (from the GitHub API, not merge commits, which also
+     include merges of main into a branch), =commits= counts every
+     commit whose committer date is that day, =added= / =deleted=
+     sum the =--numstat= line counts. The window is explicit
+     timestamps (=T00:00:00= to the day after the end) and git walks
+     every commit (=--since-as-filter=): a bare date means that date
+     at the current time of day, and plain =--since= stops at the
+     first old commit of a rebased history.
+   - =pr_cycle_times.csv= — =pr_number=, =title=, =merged_at=,
      =cycle_hours=. From the GitHub API (=gh pr list --state
-     merged=): hours from PR creation to merge, the twenty longest
-     cycles with non-zero duration.
+     merged=): hours from PR creation to merge, for every PR merged
+     in the window.
    - =sprint_progress.csv= — =day=, =cumulative_done=. Parsed from
-     the sprint page's own =* Stories= tables: each row whose /End/
-     date falls inside the sprint counts as one story transitioning
-     to =DONE= (see [[id:8A246D60-6A87-4B54-A023-564EC1965C61][TODO state]]).
+     the sprint page's own =* Stories= tables: each row in state
+     =DONE= whose /End/ date falls inside the sprint counts as one
+     story transitioning to =DONE= (see [[id:8A246D60-6A87-4B54-A023-564EC1965C61][TODO state]]). An
+     =ABANDONED= row does not count: a sprint close that carries
+     stories out would otherwise show as a day of delivery. One row
+     per calendar day, with the running total.
 2. /Render/ each CSV through the four gnuplot scripts below, writing
    the PNGs into the sprint directory
    (=doc/agile/versions/v0/sprint_NN/=), where the sprint page's
@@ -90,15 +99,16 @@ reads them alongside goal alignment and the [[id:198DA730-D9FB-4BDE-B1C0-B930CD0
 
 *** PR Cycle Time
 
-- Measures :: Hours from PR open to merge, one bar per PR — the
-  twenty longest non-zero cycles in the sprint.
+- Measures :: Hours from PR open to merge, one dot per PR for every PR
+  merged in the sprint, on a log scale, with the median and the upper
+  quartile as lines.
 - Purpose :: Surfaces review latency. In this project's loop, review
   is where System 2 checks System 1 output (see [[id:227958A5-0F78-4CC6-A116-B83988592B68][sprint execution]]),
   so long cycles mean the checking function is the constraint.
-- How to read it :: Most PRs should merge within hours. Long bars are
-  review bottlenecks: a PR too large to review comfortably, a
+- How to read it :: Most PRs should merge within hours, so the dots
+  cluster low. High dots are review bottlenecks: a PR too large to review comfortably, a
   contentious design, or a PR parked while other work took priority.
-  A few long bars among short ones is normal; a wall of long bars
+  A few high dots among low ones is normal; a rising band of dots
   means the sprint is queueing on review. The chart only renders
   when PR data is available from the GitHub API.
 
@@ -140,6 +150,7 @@ input, solid fill, light y-grid, legend outside right.
 #
 # PRs & Commits per Day — standalone chart
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,11"
 set output sprintf("doc/agile/versions/v0/sprint_%s/prs_commits.png", sprint_str)
@@ -154,10 +165,13 @@ set ylabel "PRs"
 set y2label "Commits"
 set ytics nomirror
 set y2tics
-set title sprintf("Sprint %d — PRs & Commits per Day", sprint)
+set title sprintf("Sprint %d — PRs and Commits per Day", sprint)
+set yrange [0:*]
+set y2range [0:*]
+set boxwidth 0.7
 set xtics rotate by -45 font "sans,8"
 
-infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
+infile_act = datadir."/sprint_activity.csv"
 plot infile_act using 0:2:xticlabels(stringcolumn(1)) every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
      "" using 0:3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
 #+end_src
@@ -170,6 +184,7 @@ plot infile_act using 0:2:xticlabels(stringcolumn(1)) every ::1 title "PRs" with
 #
 # Line Churn — standalone chart
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,11"
 set output sprintf("doc/agile/versions/v0/sprint_%s/line_churn.png", sprint_str)
@@ -184,9 +199,10 @@ set ylabel "Lines"
 set title sprintf("Sprint %d — Daily Line Churn", sprint)
 set xtics rotate by -45 font "sans,8"
 
-infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
-plot infile_act using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rgb "#27AE60" title "Added", \
-     "" using 0:5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
+infile_act = datadir."/sprint_activity.csv"
+set boxwidth 0.4
+plot infile_act using ($0-0.2):4:xtic(1) every ::1 with boxes lc rgb "#27AE60" title "Added", \
+     "" using ($0+0.2):5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
 #+end_src
 
 *** PR Cycle Time
@@ -197,6 +213,7 @@ plot infile_act using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rg
 #
 # PR Cycle Time — standalone chart, only run when PR data exists
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,10"
 set output sprintf("doc/agile/versions/v0/sprint_%s/pr_cycle.png", sprint_str)
@@ -206,13 +223,20 @@ set grid ytics lc rgb "#cccccc" lw 1
 set border 3
 set tics nomirror
 set key outside right
-set xlabel "PR number"
-set ylabel "Hours"
-set title sprintf("Sprint %d — PR Cycle Time (open → close)", sprint)
-set xtics rotate by -45 font "sans,8"
-
-infile_cycle = sprintf("build/output/sprint_%s/pr_cycle_times.csv", sprint_str)
-plot infile_cycle using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rgb "#E74C3C" title "Cycle Hrs"
+set xlabel "Merged"
+set ylabel "Hours from open to merge (log, floor 0.01)"
+infile_cycle = datadir."/pr_cycle_times.csv"
+stats infile_cycle using 4 every ::1 nooutput
+set logscale y
+set yrange [0.01:*]
+set xdata time
+set timefmt "%Y-%m-%dT%H:%M"
+set format x "%m-%d"
+set xtics 86400 rotate by -45 font "sans,8"
+set title sprintf("Sprint %d — PR Cycle Time, all %d PRs", sprint, STATS_records)
+plot infile_cycle using 3:($4 < 0.01 ? 0.01 : $4) every ::1 with points pt 7 ps 0.5 lc rgb "#E74C3C" title "PR", \
+     STATS_median with lines lw 2 lc rgb "#2C3E50" title sprintf("Median %.1f h", STATS_median), \
+     STATS_up_quartile with lines lw 2 dt 2 lc rgb "#2C3E50" title sprintf("Upper quartile %.1f h", STATS_up_quartile)
 #+end_src
 
 *** Cumulative Stories Done
@@ -223,6 +247,7 @@ plot infile_cycle using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc 
 #
 # Cumulative Stories Done — standalone chart, only run when story data exists
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,11"
 set output sprintf("doc/agile/versions/v0/sprint_%s/stories_done.png", sprint_str)
@@ -237,7 +262,7 @@ set ylabel "Stories"
 set title sprintf("Sprint %d — Cumulative Stories Done", sprint)
 set xtics rotate by -45 font "sans,8"
 
-infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
+infile_prog = datadir."/sprint_progress.csv"
 plot infile_prog using 0:2:xticlabels(stringcolumn(1)) every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
 #+end_src
 

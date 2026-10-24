@@ -65,6 +65,37 @@ task and name that file in the Command column.
 
 * Notes
 
+** Conformance of the two configuration screens today
+
+Measured on =origin/main= at the time of the investigation, from the BFF routes and
+the web screens. This is the gap list the standard must normalise; it is not the
+standard.
+
+| # | Rule | Engine run settings | Pricing engine configuration |
+|---+------+---------------------+------------------------------|
+| 1 | A named, party-owned, versioned configuration bound in a slot | Meets | Meets |
+| 2 | Details, one tab per section, Used by and History | Meets | Gap: Details, Products and Settings are stacked sections; no Used by and no History |
+| 3 | A group edits in place; a collection edits in dialogs | Meets | Meets for the collection dialogs |
+| 4 | One documentation contract, keyed by schema and XPath | Meets, from =ore_parameter= | Gap: wording lives in =pricing_model=, =pricing_method=, =pricing_pair_setting= and =sensitivity_template= |
+| 5 | The value in force and its default, with Simple and Advanced | Meets | Partial: usual values, no default-in-force and no schema panel |
+| 6 | Reach is read, not guessed | Meets: the BFF reads the bindings by configuration id | Gap: the page states that the reach cannot be read |
+| 7 | History is the shared timeline with Revert | Meets | Gap: no History tab |
+| 8 | A numbers-changing change is a proposal; an operational change lands directly | Gap: every section edits in place | Gap: the model has no status, cycle or sign-off; the prototype draws them |
+| 9 | Import parses on the server, states findings and difference, and drops nothing in silence | Gap: no screen; the run document import drops with a warning | Gap: no parse or diff operation |
+| 10 | The page says what it decides and lists the related configurations | Partial: the lead says what it is; no relationship, no card | Partial: the lead says what it is; no relationship, no card |
+
+Reads behind the table: =projects/ores.web/packages/bff/src/engine-settings.ts=,
+=projects/ores.web/packages/bff/src/pricing-engines.ts=,
+=projects/ores.web/packages/web/src/engineSettings/=,
+=projects/ores.web/packages/web/src/pricingEngines/= and
+=projects/ores.reporting/modeling/=.
+
+** Where the rules come from
+
+The ten rules are distilled from the engine run settings arc and the ORE source
+extraction in the investigation. Each one names the page and section that will
+state it, and the checklist will copy one line per rule.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -556,11 +556,22 @@ function coverageStrip(c) {
   return `<div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage:</b> ${c.reports.length ? `the reports that bind it need ${n} product types, and ${n - un.length} have a row here.` : `no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row here.`} ${un.length ? `Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : 'Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures: no operation returns them.</span></div>`;
 }
 function productsTab(c) {
-  const rows = c.products.map(p => { const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null; return `<div class="setting"><div class="shead">
-    <div><b><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a></b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
-    <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}${may('edit') ? ` · <a class="link" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${c.status === 'approved' ? 'Propose' : 'Change'}</a>` : ''}</div></div>
-  </div></div>`; }).join('');
-  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions">${may('add') ? `<button class="btn small" disabled title="Add a product opens the same dialog as Edit, with the product type empty">${G.add} Add product</button>` : ''}</div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
+  const want = new URLSearchParams(location.search).get('doc');
+  const rows = c.products.map(p => {
+    const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, note = WHAT[p.type] || (t ? t.desc : '');
+    const settings = p.params.map(x => { const k = noteOf(x.name); return `<div class="help"><span class="mono">${esc(x.name)}</span> — ${esc(k ? k.note : 'The documentation of this setting is not held.')}</div>`; }).join('');
+    return `<div class="setting"><div class="shead">
+      <div><b><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a></b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
+      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}${may('edit') ? ` · <a class="link" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${c.status === 'approved' ? 'Propose' : 'Change'}</a>` : ''}</div></div>
+    </div>
+    <details class="doc" ${want === p.type ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>
+      ${t ? `<p class="help"><b>${esc(t.instrument)}</b> — ${esc(INSTRUMENTS[t.instrument] || '')}</p>` : ''}
+      ${cls ? `<p class="help"><b>${esc(cls.name)}</b> — ${esc(cls.what)}</p>` : ''}
+      ${settings}
+      ${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']</span></div><div>Model ${esc(p.model)} · Engine ${esc(p.engine)}</div><div>Introduced in 1.8.0.7</div></div>` : ''}
+    </div></details></div>`;
+  }).join('');
+  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>${may('add') ? `<button class="btn small" disabled title="Add a product opens the same dialog as Edit, with the product type empty">${G.add} Add product</button>` : ''}</div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
 }
 function coverageLine(c) {
   const un = gaps(c), n = needed(c).length;

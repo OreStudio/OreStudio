@@ -1,41 +1,44 @@
 :PROPERTIES:
-:ID: 367745B6-DC78-4400-B010-257A3F35236E
+:ID: 54F97D03-408C-4C60-9419-9AA3AB73E6EC
 :END:
-#+title: Task: Create the intraday reports every ACME entity needs
-#+description: ACME's reports are end of day. Every ACME entity needs intraday reports as well. Begin by reading the report documentation to establish which intraday reports are required and for which entity, then build them. A report that runs intraday values at the present moment rather than at the previous close, so it also decides what the market data must supply during the day.
+#+title: Task: Add a draft reason and a structure hold
+#+description: A draft states why it is not live and who must unblock it, and a leg names the structure it waits for.
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-16
+#+created: 2026-10-21
 #+updated: 2026-10-24
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A draft carries a reason from a lookup, such as structure_incomplete. A leg names the structure it waits for. A report lists drafts with their age and reason.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-16                               |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
--
+- A lookup holds the draft reasons and the party responsible for each.
+- The booking request carries the reason for a draft_capture.
+- A leg of a new structure can name its structure.
+- A draft report lists age and reason.
 
 * Plan
 

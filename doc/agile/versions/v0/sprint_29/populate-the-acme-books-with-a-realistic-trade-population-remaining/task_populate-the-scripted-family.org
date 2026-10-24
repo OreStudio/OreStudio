@@ -1,17 +1,17 @@
 :PROPERTIES:
-:ID: F6A6BAA9-5F73-4D39-9FA7-04517576AD7E
+:ID: 31F6526B-7E6E-4BA0-907F-71A361F0030D
 :END:
-#+title: Task: Complete a structure in one unit
-#+description: One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work.
+#+title: Task: Populate the scripted family
+#+description: Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared.
 #+type: task
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/populate-the-scripted-family
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-21
+#+created: 2026-10-24
 #+updated: 2026-10-24
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The completion operation takes leg ids, roles and the leg count. It checks the legs, writes the structure, members and links, and executes every leg in one unit of work.
+ACME's books hold scripted trades: ScriptedTrade, Autocallable_01, DoubleDigitalOption and PerformanceOption_01. The refdata asset class catalogue holds no scripted class, so the config cannot name one until the mapping is decided. The class carries 3% of the population.
 
 * Status
 
@@ -31,15 +31,15 @@ The completion operation takes leg ids, roles and the leg count. It checks the l
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- A refused completion leaves every leg a draft and writes no member.
-- A completed structure has every leg live and unauthorised.
-- A second completion answers already_exists.
-- The reply carries the structure's internal version.
-- A database-backed test proves the rollback.
+- The scripted asset class exists in the refdata catalogue or the config names it another way, and the mapping is recorded.
+- The four routed types book a trade.
+- EuropeanOptionBarrier is routed or named out of scope.
+- The class share of the population matches its weight within tolerance.
+- The family exports and reverse-maps without loss, and the task states whether the engine can price it.
 
 * Plan
 

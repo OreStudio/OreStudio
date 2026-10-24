@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-15                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-24. The task asked for every remaining family in one
+task, which cannot end in a verifiable state: an asset class needs its own
+planner, its own routed trade types and its own market data. Seven tasks
+replace it, one per asset class, in the order Trade Population Weights
+sets.
+
+Nothing was implemented under this task.

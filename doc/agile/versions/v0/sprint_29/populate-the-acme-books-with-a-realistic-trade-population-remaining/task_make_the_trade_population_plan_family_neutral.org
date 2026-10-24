@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: E7AE8C2E-F1FF-4248-83AF-794722F1F105
 :END:
-#+title: Task: Define the synthetic planner extension point
-#+description: Split synthetic generation into one planner for each asset class and one shared writer, so a new asset class adds a planner and nothing else.
+#+title: Task: Make the trade population plan family-neutral
+#+description: Give the plan a payload that belongs to its family, put one planner per asset class behind one interface, and keep one writer. Move the population size into the config. Commodity proves the seam.
 #+type: task
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Synthetic has a planner interface, one shared plan type and one shared writer. The bond population becomes the first planner. Any other asset class adds a planner only.
+Synthetic has one planner interface, one shared plan envelope and one shared writer. The plan carries a payload that belongs to its family, so a bond slot is a bond and a commodity slot is a commodity trade. The asset class a config names selects its planner, and a class with no planner is refused by name. The population size is a config field and not a constant.
+
+The bond planner is the first implementation. The commodity planner is the second, and it is delivered whole rather than as a stub: every commodity trade type books through it, its share matches its weight, and it exports and reverse-maps. Commodity is the proof because it is the one class whose every declared type routes, so the seam is tested on the plan alone and not on routing work.
 
 * Status
 
@@ -31,14 +33,27 @@ Synthetic has a planner interface, one shared plan type and one shared writer. T
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- A planner is a pure function of the generation config and returns a plan.
-- One writer sends any plan through the shared booking client.
-- The bond planner uses the interface, and the old bond-specific writer is deleted.
-- A test adds a second asset class planner with no change to the writer or to booking.
+- A planner is a pure function of the generation scope and returns a plan.
+- The plan carries a family-specific payload, and no slot states a bond
+  fact outside the bond family.
+- One writer executes any plan through the shared booking client.
+- The config's asset class selects the planner, and a class with no
+  planner is refused by name.
+- The bond planner implements the interface, and the old bond-only free
+  function is deleted.
+- A commodity planner is added with no change to the writer, the plan
+  envelope or booking, and it books all twenty-five routed commodity
+  trade types.
+- The commodity share of the population matches its weight in Trade
+  Population Weights within tolerance.
+- The bond and commodity populations export as the ORE portfolio the
+  engine reads, and reverse-map without loss.
+- The population size is a config field, and the =trades_per_book=
+  constant is gone.
 - A second run of any planner books nothing.
 
 * Plan

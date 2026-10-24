@@ -1,17 +1,17 @@
 :PROPERTIES:
-:ID: 54F97D03-408C-4C60-9419-9AA3AB73E6EC
+:ID: 29DAA209-E62B-47C4-9220-51CA6622EC0C
 :END:
-#+title: Task: Add a draft reason and a structure hold
-#+description: A draft states why it is not live and who must unblock it, and a leg names the structure it waits for.
+#+title: Task: Populate the commodity family
+#+description: Folded into the seam task, which delivers the commodity planner whole. Kept as the record of why commodity came before the heavier classes.
 #+type: task
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/populate-the-commodity-family
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-21
+#+created: 2026-10-24
 #+updated: 2026-10-24
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
@@ -20,25 +20,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A draft carries a reason from a lookup, such as structure_incomplete. A leg names the structure it waits for. A report lists drafts with their age and reason.
+ACME's books hold commodity trades across all twenty-five routed types, which no other class can claim: every commodity type the catalogue declares routes to commodity_instrument. The family carries 5% of the population. It is the second planner after bond and it proves the family-neutral plan, so it lands early rather than by weight.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- A lookup holds the draft reasons and the party responsible for each.
-- The booking request carries the reason for a draft_capture.
-- A leg of a new structure can name its structure.
-- A draft report lists age and reason.
+- All twenty-five commodity trade types book a trade, and none is skipped.
+- The class share of the population matches its weight within tolerance.
+- The family exports as the ORE portfolio the engine reads, and reverse-maps without loss.
+- The report that prices the family runs against the forward curves and volatility surfaces it needs, or the task states which pricing it cannot prove yet.
+- Adding the planner changes no code outside the synthetic component.
 
 * Plan
 
@@ -86,3 +87,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Folded into [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Make the trade
+population plan family-neutral]] on 2026-10-24. That task needs a second
+planner to prove the seam, and commodity is the one class whose every
+declared type routes, so it is the only class that tests the plan without
+also testing routing work. Its acceptance now covers every commodity
+trade type, the class share and the export.
+
+Nothing was implemented under this task. Its branch,
+=feature/populate-the-commodity-family=, carries no commits and can be
+deleted.

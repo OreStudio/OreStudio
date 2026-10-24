@@ -125,8 +125,9 @@ Three words are fixed by this table and replace the earlier screen words:
   configurations, not engines.
 - *Engine settings* becomes *Engine run settings*. It does not hold the settings
   of a pricing engine.
-- The pricing page's *Settings* tab becomes *Parameters*, which is the ORE
-  element name.
+- The pricing page has no *Settings* tab and no *Parameters* tab. A product's
+  parameters live in its workbench, and the document-level parameters have a
+  *Global parameters* tab.
 
 A product has *parameters*, not settings. The words *model settings* and *engine
 settings* never appear in a pricing engine configuration: the model and the
@@ -175,9 +176,10 @@ The page follows the record standard's header, access mark and actions, and adds
 this tab order, which is fixed:
 
 1. *Details*.
-2. One tab per section, in the order the kind declares them.
-3. *Used by*.
-4. *History*.
+2. *Global parameters*, where the kind has document-level parameters.
+3. One tab per section, in the order the kind declares them.
+4. *Used by*.
+5. *History*.
 
 Details is always first and History is always last. A tab that does not apply is
 not drawn. A kind with no sections has no section tabs.
@@ -230,9 +232,10 @@ lifecycle.
 A collection row is an element with its own identity, and its documentation has
 two levels.
 
-- The row opens a card that says what the element is: its label, its code, what
-  it is for, the instrument it maps to, its asset class, and the source of the
-  words. A row that shows a name and a count alone is not enough.
+- The row opens a card or a workbench pane that says what the element is: its
+  label, its code, what it is for, the instrument it maps to, its asset class, and
+  the source of the words. A row that shows a name and a count alone is not
+  enough.
 - The card lists the settings of that element as rows, each with the same
   collapsible documentation and the same Simple and Advanced switch as a group.
   Advanced adds the schema entry.
@@ -468,7 +471,7 @@ to differ.
 
 | Rule | Engine run settings | Pricing engine configuration |
 |------+---------------------+------------------------------|
-| List and record page | Meets | Gap: sections are stacked, not tabs; no Used by, no History |
+| List and record page | Meets | Gap: sections are stacked, not tabs; no Global parameters, Used by or History tab |
 | Sections and editing | Meets | Meets for the collection dialogs |
 | Documentation contract | Meets, from =ore_parameter= | Gap: four vocabulary tables hold the words |
 | Value in force, documentation and Simple/Advanced | Meets | Gap: no collapsible documentation, no Simple/Advanced, no default-in-force; the product card is where both must appear |

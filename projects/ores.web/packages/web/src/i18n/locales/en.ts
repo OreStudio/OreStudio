@@ -1769,6 +1769,13 @@ export const en: SourceCatalogue = {
                 notDone: 'Not done',
                 batchStatus: 'Batch Status',
                 batchName: 'Batch',
+                backToBatch: 'Jobs tab, batch {batch}',
+                find: {
+                    label: 'Find',
+                    placeholder: 'batch reference, job id or result id',
+                    button: 'Find',
+                    none: 'No job, result or batch matches this.',
+                },
                 batchRecordedAt: 'Batch Recorded At',
                 notYetKnown: 'not yet known',
                 notYetReceived: 'not yet received',

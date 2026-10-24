@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: DDE74125-CD08-4E31-A0DE-AA2202599739
+:END:
+#+title: Task: Lay out the job page as its prototype
+#+description: The approved job page prototype has two columns, a Find bar and a link back to the job's batch. The built page stacks every panel in one wide column, has no Find bar and links back to the Jobs tab.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/lay-out-the-job-page-as-its-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The job page draws its panels in the prototype's two columns, finds a job, a batch or a result from its own Find bar, and links back to the batch of the job.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The job, the runs, the time and the batch's jobs sit in the left column, and the files, the release and the lineage in the right.
+- The Find bar takes a batch reference, a job id or a result id and opens the job, or the Jobs tab at the batch, or says nothing matches.
+- The link back names the batch and opens the Jobs tab with that batch open.
+
+* Plan
+
+Compare the approved prototype in =doc/prototypes/compute/follow-a-job/= with the built page, panel by panel, and close the gaps that need no new data. The prototype splits the screen in two columns, 3 to 2: the job, the runs, the time and the batch's jobs on the left, the files, the release and the lineage on the right. It has a Find bar for a batch reference, a job id or a result id, and a link back to the batch. The page stacked every panel in one wide column and linked back to the Jobs tab.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The comparison found what the prototype draws and the page does not:
+
+| Prototype | Built | State |
+|-----------+-------+-------|
+| Two columns | One column | Done in this task |
+| Find bar | None | Done in this task |
+| Link back to the batch | Link back to the Jobs tab | Done in this task |
+| Lineage as a chart of nodes | A list | Task Draw the lineage of a job as a chart |
+| A timeline bar for each job of the batch | A state column | Task Draw the neighbour charts of a job, which waits for the start time and duration of a run |
+| Run statistics | None | Out of the story: no stored field feeds it |
+
+I closed the job page task earlier without listing these gaps. The Find bar decides in a pure function, =findTarget=, so the tests need no browser: an id is tried as a job, then a result, then a batch, and text opens the Jobs tab with that reference.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The job page draws its panels in the prototype's two columns, finds a job, a result or a batch from its own Find bar, and links back to the batch it names. The page has eight new tests, five for what the Find bar opens and three for the layout, the bar and the link. The lineage chart and the timeline remain, each in its own task.

@@ -1789,6 +1789,13 @@ const fr: SourceCatalogue = {
                 notDone: 'Non terminé',
                 batchStatus: 'Statut du lot',
                 batchName: 'Lot',
+                backToBatch: 'Onglet Travaux, lot {batch}',
+                find: {
+                    label: 'Chercher',
+                    placeholder: 'référence de lot, id de travail ou de résultat',
+                    button: 'Chercher',
+                    none: 'Aucun travail, résultat ou lot ne correspond.',
+                },
                 batchRecordedAt: 'Lot enregistré le',
                 notYetKnown: 'pas encore connu',
                 notYetReceived: 'pas encore reçu',

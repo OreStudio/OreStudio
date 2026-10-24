@@ -1780,6 +1780,13 @@ const pt: SourceCatalogue = {
                 notDone: 'Não concluído',
                 batchStatus: 'Estado do lote',
                 batchName: 'Lote',
+                backToBatch: 'Separador Trabalhos, lote {batch}',
+                find: {
+                    label: 'Procurar',
+                    placeholder: 'referência do lote, id do trabalho ou do resultado',
+                    button: 'Procurar',
+                    none: 'Nenhum trabalho, resultado ou lote corresponde.',
+                },
                 batchRecordedAt: 'Lote registado em',
                 notYetKnown: 'ainda não conhecido',
                 notYetReceived: 'ainda não recebido',

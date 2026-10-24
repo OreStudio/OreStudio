@@ -20,6 +20,7 @@
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amortization_repository.hpp"
@@ -28,7 +29,6 @@
 #include "ores.trading.core/repository/bond_issue_leg_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
-#include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
@@ -182,7 +182,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         !unsupported.empty()) {
         response.result.outcome = outcome::failed;
         response.result.code = "instrument_not_supported";
-        response.result.message = "Booking writes no instrument yet for: " + join(unsupported) + ".";
+        response.result.message =
+            "Booking writes no instrument yet for: " + join(unsupported) + ".";
         return response;
     }
 

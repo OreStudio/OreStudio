@@ -7820,6 +7820,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "services":
         import compass_services
         sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
+    if len(sys.argv) >= 2 and sys.argv[1] == "smoke":
+        import compass_smoke
+        sys.exit(compass_smoke.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "open-as":
         import compass_open_as
         sys.exit(compass_open_as.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
@@ -8026,6 +8029,10 @@ def main():
     subparsers.add_parser("services",
                           help="Operate: service lifecycle — start, stop, "
                                "status, clear-logs")
+    subparsers.add_parser("smoke",
+                          help="Check: 'smoke ticks' provisions a tenant on the "
+                               "database and asserts that ticks arrive; "
+                               "'smoke --help'")
     subparsers.add_parser("claude",
                           help="Launch Claude Code inside its own systemd "
                                "--user scope, so oomd can kill it without "

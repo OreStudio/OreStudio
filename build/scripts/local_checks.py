@@ -856,6 +856,19 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=7200,
     ),
+    # A fresh database, the services, a provisioned tenant and a tick: the one
+    # path no unit suite runs. It recreates the database itself, so it follows
+    # the suite rather than sharing the database the suite used.
+    Check(
+        id="ticks-smoke",
+        title="A provisioned tenant ticks on a fresh database",
+        argv=("./compass.sh", "smoke", "ticks", "--fresh"),
+        classes=("cpp", "services", "sql"),
+        phase=HEAVY,
+        after=("ctest",),
+        timeout=2400,
+        fix="Read the evidence the check prints: the first reason names the stage that failed.",
+    ),
     # The corpus test writes the documents it read back to the build tree,
     # and this reads that output, so it follows the suite that produced it.
     Check(

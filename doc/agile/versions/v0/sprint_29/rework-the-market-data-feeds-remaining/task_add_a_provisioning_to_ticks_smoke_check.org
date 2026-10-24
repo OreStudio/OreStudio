@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-a-provisioning-to-ticks-smoke-check
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A check runs the real path: fresh database, services started, a non-system tenan
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ A check runs the real path: fresh database, services started, a non-system tenan
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add a =smoke ticks= verb. With =--fresh= it stops the services, recreates
+   the database, starts them and provisions a non-system tenant with the
+   bootstrap recipe alone (no compute packages), then waits.
+2. Wait for both a tick and a demand set that carries ids: a healthy system
+   can tick a minute before the supervisor's next demand refresh.
+3. Read the evidence from the service log file when it exists and from the
+   journal otherwise, since a systemd launch logs to the journal.
+4. Keep the verdict pure, so the 2026-10-23 defect (routes invisible, no
+   demand sent) is an assertion rather than a live replay.
+5. Add the check to the local gate after the suite, with =--fresh=, for the
+   changes that can break the path.
 
 * Measurements
 
@@ -57,7 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Smoke unit tests | 10 passed | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_smoke.py -q= | pending |
+| Ticks on a fresh database | 5,460 | =./compass.sh smoke ticks --start-services= | pending |
+| Subscriptions and routes of the provisioned tenant | 10 and 10 | same run | pending |
+| Ids the simulated adapter accepted | 26 of 26 | same run | pending |
+| First tick after the services start | 80s | same run (00:16:04 to 00:17:24) | pending |
 
 * Notes
 
@@ -85,3 +97,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass smoke ticks= runs the path nothing else runs: it stops the services,
+recreates the database, starts them, provisions a non-system tenant, and waits
+for a tick and for a demand set that carries ids. It prints the tenant, its
+subscriptions and routes, the tick count and the first and last instant, each
+adapter's accepted, rejected and demanded ids, and where the evidence came
+from. It fails on the first reason in the order of the path:
+
+- the tenant holds no subscription;
+- the tenant has no route;
+- no adapter got a demand set;
+- every demand set was empty;
+- the adapters accepted fewer ids than demanded;
+- no tick arrived within the timeout;
+- a tick is dated in the future.
+
+The verdict is a pure function, so the 2026-10-23 defect is a unit test: with
+the routes invisible the supervisor sends nothing, the check reports "no
+adapter got a demand set" and fails. A live run also showed that failure
+before the demand evidence was wired.
+
+The local gate runs the check after the test suite, with =--fresh=, when the
+cpp, services or sql classes change. A recipe documents the verb and the
+compass recipe inventory lists it.
+
+** Verified
+
+Against a fresh database: 10 subscriptions, 10 routes, 5,460 ticks, the first
+80s after the services started, and the simulated adapter accepting 26 of the
+26 ids it was sent.

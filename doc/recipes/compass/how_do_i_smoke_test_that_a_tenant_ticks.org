@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 36881CD5-F9D3-4DD4-AFE2-B0CCD1935C3E
+:END:
+#+title: How do I smoke test that a tenant ticks?
+#+description: Recreate the database, start the services, provision a non-system tenant and prove that ticks arrive.
+#+type: recipe
+#+level: cross
+#+filetags: 
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I smoke test that a provisioned tenant ticks?
+
+* Answer
+
+Run compass smoke ticks. It recreates the database, starts the services, provisions the Acme tenant and waits for a tick. It prints the evidence: the tenant, its subscriptions and routes, the tick counts and instants, and each adapter's accepted, rejected and demanded ids. It fails when the tenant has no subscription or route, when no adapter gets a demand, when the adapters accept fewer ids than demanded, when no tick arrives, or when a tick is dated in the future. Use --start-services to keep the database, and --skip-provision to watch a tenant that is already provisioned.
+
+* Script
+
+./compass.sh smoke ticks --fresh
+
+* Tested by
+
+The local check gate runs it after the test suite when the marketdata, synthetic or provisioning code changes.
+
+* See also
+
+-

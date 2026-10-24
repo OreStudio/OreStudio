@@ -28,7 +28,7 @@ namespace {
 
 const std::string tags("[app][tick_plan]");
 
-using ores::marketdata::domain::feed_binding;
+using ores::marketdata::service::app::consumer;
 using ores::marketdata::messaging::market_tick;
 using ores::marketdata::service::app::make_targets;
 using ores::marketdata::service::app::name_datum;
@@ -45,18 +45,18 @@ market_tick make_tick(std::string uri, std::string value) {
     return t;
 }
 
-feed_binding make_binding(const std::string& tenant, const std::string& party) {
+consumer make_owner(const std::string& tenant, const std::string& party) {
     const boost::uuids::string_generator uuid;
-    feed_binding b;
-    b.tenant_id = ores::utility::uuid::tenant_id::from_string(tenant).value();
-    b.party_id = uuid(party);
-    b.source_name = "synthetic.eurusd";
-    return b;
+    consumer c;
+    c.tenant_id = ores::utility::uuid::tenant_id::from_string(tenant).value();
+    c.party_id = uuid(party);
+    c.source_name = "synthetic.eurusd";
+    return c;
 }
 
 }
 
-TEST_CASE("a_tick_from_an_unbound_source_is_dropped", tags) {
+TEST_CASE("a_tick_from_a_source_no_route_names_is_dropped", tags) {
     const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), {});
 
     REQUIRE_FALSE(plan.has_value());
@@ -64,50 +64,49 @@ TEST_CASE("a_tick_from_an_unbound_source_is_dropped", tags) {
 }
 
 TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222")};
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
-    const auto plan = plan_tick(make_tick("oresmd://fx/EUR?type=quote", "1.0845"), bindings);
+    const auto plan = plan_tick(make_tick("oresmd://fx/EUR?type=quote", "1.0845"), consumers);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
 TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222")};
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
     const auto plan = plan_tick(
         make_tick("oresmd://fx/EUR?instrument=fx_spot&type=quote&quote=rate&ccy=USD", "1.0845"),
-        bindings);
+        consumers);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
 TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222")};
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
-    const auto plan = plan_tick(make_tick(eur_usd_spot, "one point oh"), bindings);
+    const auto plan = plan_tick(make_tick(eur_usd_spot, "one point oh"), consumers);
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::not_a_number);
 }
 
-TEST_CASE("a_tick_from_a_source_with_several_bindings_has_one_target_each", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222"),
-                                             make_binding("33333333-3333-3333-3333-333333333333",
-                                                          "44444444-4444-4444-4444-444444444444")};
+TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", tags) {
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"),
+        make_owner("33333333-3333-3333-3333-333333333333", "44444444-4444-4444-4444-444444444444")};
 
-    const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), bindings);
+    const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), consumers);
 
     REQUIRE(plan.has_value());
     CHECK(plan->value == 1.0845);
     REQUIRE(plan->targets->size() == 2);
-    CHECK((*plan->targets)[0].binding == bindings[0]);
-    CHECK((*plan->targets)[1].binding == bindings[1]);
+    CHECK((*plan->targets)[0].owner == consumers[0]);
+    CHECK((*plan->targets)[1].owner == consumers[1]);
     const auto token = ores::marketdata::domain::subject_token(eur_usd_spot);
     CHECK((*plan->targets)[0].subject ==
           "marketdata.v1.ops.market_tick.11111111-1111-1111-1111-111111111111."
@@ -136,12 +135,12 @@ TEST_CASE("a_uri_that_names_no_datum_is_not_named", tags) {
 }
 
 TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222")};
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
     const auto named = name_datum(eur_usd_spot).value();
-    const auto targets = make_targets(bindings, *named);
+    const auto targets = make_targets(consumers, *named);
 
-    const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), bindings, named, targets);
+    const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), consumers, named, targets);
 
     REQUIRE(plan.has_value());
     CHECK(plan->named == named);
@@ -151,11 +150,11 @@ TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", tags) {
 }
 
 TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number", tags) {
-    const std::vector<feed_binding> bindings{make_binding("11111111-1111-1111-1111-111111111111",
-                                                          "22222222-2222-2222-2222-222222222222")};
+    const std::vector<consumer> consumers{
+        make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
     const auto plan = plan_tick(
-        make_tick(eur_usd_spot, "one point oh"), bindings, name_datum(eur_usd_spot).value());
+        make_tick(eur_usd_spot, "one point oh"), consumers, name_datum(eur_usd_spot).value());
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::not_a_number);

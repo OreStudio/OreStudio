@@ -23,7 +23,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
@@ -62,14 +61,13 @@ namespace ores::marketdata::service::app {
 /**
  * @brief The series a tick creates when it lands in one for the first time.
  *
- * Identity and classification come from the datum; the producer kind comes
- * from the binding the tick arrived under, so a series a generated producer
- * creates says so while a real feed's keeps the default. A series already
- * present keeps the kind it was created with, which is why the caller builds
- * one of these only on the create path.
+ * Identity and classification come from the datum, and the owner of the series
+ * comes from the route the tick arrived under. A series already present keeps
+ * its owner, which is why the caller builds one of these only on the create
+ * path.
  */
 ORES_MARKETDATA_SERVICE_EXPORT domain::market_series
-make_feed_series(const domain::feed_binding& binding,
+make_feed_series(const consumer& owner,
                  const boost::uuids::uuid& id,
                  const std::string& series_uri,
                  const std::string& series_subclass,
@@ -81,11 +79,11 @@ make_feed_series(const domain::feed_binding& binding,
  *
  * A producer publishes a market_tick on "synthetic.v1.ops.tick.<source>". The tick
  * names its datum by its oresmd quote URI and its producer by its source; it
- * carries no owner. refresh() caches the enabled feed bindings by source, and
- * each binding of the tick's source is one consumer: the tick is stored as a row of
- * the tick table under that binding's tenant and party, and republished
+ * carries no owner. refresh() caches the routes by source, and each route of
+ * the tick's source is one consumer: the tick is stored as a row of the tick
+ * table under that route's tenant and party, and republished
  * on market_tick_subject() for that consumer and the datum's canonical oresmd
- * URI. A tick from a source with no enabled binding is dropped, with one
+ * URI. A tick from a source that no route names is dropped, with one
  * warning per source, and so is a tick whose URI names no datum or whose
  * value is not a number.
  *
@@ -96,8 +94,8 @@ make_feed_series(const domain::feed_binding& binding,
  * The subscription only decodes a tick and queues it. A worker thread takes
  * every tick that has arrived and prepares them as one batch: it plans each tick, finds
  * the series of each consumer once, numbers the datums and builds the rows. A second
- * thread copies the batch to the tick table with one copy. A third thread then records the
- * activity and republishes. The three stages work on three batches at once. One batch waits
+ * thread copies the batch to the tick table with one copy. A third thread then republishes. The
+ * three stages work on three batches at once. One batch waits
  * at most between two stages, so five batches are in the loop at most, and a slow stage stops
  * the stage before it and the batches do not pile up. A small batch that arrives while no
  * batch is in the stages skips them: the worker prepares, copies and republishes it itself, so a
@@ -159,8 +157,7 @@ public:
 
     void start();
 
-    /// Reads the feed bindings, the routes and the catalogue again, and drops what was cached
-    /// from them.
+    /// Reads the routes and the catalogue again, and drops what was cached from them.
     void refresh();
 
     /**
@@ -182,12 +179,12 @@ public:
                                                          const messaging::adapter_tick& tick);
 
     /**
-     * @brief Stores @p tick for every cached binding of its source, and drops it
+     * @brief Stores @p tick for every cached consumer of its source, and drops it
      * when the cache holds none.
      *
      * This is the whole of what the loop does with a tick once it has arrived,
      * so it is the entry point a test drives to reach the store without a live
-     * subscription. The bindings cache it consults is what refresh() built.
+     * subscription. The consumer cache it consults is what refresh() built.
      *
      * @return The reason the tick was dropped, or nothing when it was stored.
      */
@@ -227,8 +224,7 @@ private:
     /// when the store does not answer or is left alone for a wait.
     void commit(prepared_batch& batch);
 
-    /// The third stage: records the activity of the bindings, counts, and republishes the ticks
-    /// of @p batch, stored or not.
+    /// The third stage: counts and republishes the ticks of @p batch, stored or not.
     void announce(prepared_batch& batch);
 
     /// Runs the second and the third stage in the calling thread, one after the other.
@@ -241,21 +237,17 @@ private:
     /// Copies the rows of @p batch, and marks each item stored or unavailable.
     void write_rows(prepared_batch& batch);
 
-    /// Records the newest stored tick of each binding of @p batch, at most once in
-    /// activity_interval for each binding. A failure is logged and changes nothing else.
-    void record_activity(const prepared_batch& batch);
-
     /// The thread of the second stage. It ends when its handoff is closed and empty.
     void commit_loop();
 
     /// The thread of the third stage. It ends when its handoff is closed and empty.
     void announce_loop();
 
-    /// The id of the series that @p tick_datum belongs to for @p binding's party,
+    /// The id of the series that @p tick_datum belongs to for @p owner's party,
     /// created and classified on the first tick that lands in it. Read once for
     /// each series and then cached until refresh().
     boost::uuids::uuid series_id_for(const ores::database::context& tenant_ctx,
-                                     const domain::feed_binding& binding,
+                                     const consumer& owner,
                                      const named_datum& named,
                                      boost::uuids::random_generator& uuid_gen);
 
@@ -273,12 +265,12 @@ private:
 
     // One consumer: a source feeds many parties, each of which gets its own
     // observations and republish stream from the shared tick.
-    struct binding_key {
+    struct consumer_key {
         std::string source_name;
         std::string tenant_id;
         std::string party_id;
 
-        bool operator<(const binding_key& other) const {
+        bool operator<(const consumer_key& other) const {
             return std::tie(source_name, tenant_id, party_id) <
                    std::tie(other.source_name, other.tenant_id, other.party_id);
         }
@@ -314,13 +306,13 @@ private:
     /// Adapter and reason pairs already reported as dropped, so each is reported once per
     /// refresh().
     std::set<std::string> adapter_drop_warned_;
-    using bindings_map = std::map<std::string, std::vector<domain::feed_binding>>;
+    using consumers_map = std::map<std::string, std::vector<consumer>>;
 
-    /// The enabled bindings by source, and the targets built from them for each source and
-    /// datum. The targets are a function of the bindings and the datum, so they live and die
+    /// The routes by source, and the targets built from them for each source and
+    /// datum. The targets are a function of the consumers and the datum, so they live and die
     /// with the snapshot, and a refresh() leaves none that is stale.
-    struct bindings_snapshot {
-        bindings_map by_source;
+    struct consumers_snapshot {
+        consumers_map by_source;
 
         /// The targets of a tick of @p named from @p source, which must be a bound source.
         [[nodiscard]] std::shared_ptr<const std::vector<tick_target>>
@@ -335,9 +327,9 @@ private:
             targets_;
     };
 
-    /// Enabled bindings by source, rebuilt by refresh(). A batch reads one snapshot.
-    std::shared_ptr<const bindings_snapshot> bindings_by_source_ =
-        std::make_shared<bindings_snapshot>();
+    /// Consumers by source, rebuilt by refresh(). A batch reads one snapshot.
+    std::shared_ptr<const consumers_snapshot> consumers_by_source_ =
+        std::make_shared<consumers_snapshot>();
 
     /// One series of a tenant and a party.
     struct series_entry {
@@ -348,9 +340,7 @@ private:
     };
     /// Series ids by series URI, then by tenant, party and provider, cleared by refresh().
     std::unordered_map<std::string, std::vector<series_entry>> series_ids_;
-    std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
-    /// When the activity of each binding was last recorded.
-    std::map<binding_key, std::chrono::steady_clock::time_point> activity_recorded_;
+    std::map<consumer_key, std::shared_ptr<feed_stats>> stats_;
     /// Classifiers by tenant id, cleared by refresh().
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
     /// Sources and URIs already reported as dropped, so each is reported once
@@ -379,8 +369,6 @@ private:
     /// How long a shutdown works through the queued ticks.
     static constexpr std::chrono::milliseconds shutdown_drain{2000};
     static constexpr std::chrono::minutes status_interval_{1};
-    /// How long the activity row of a binding waits between two writes.
-    static constexpr std::chrono::seconds activity_interval{5};
 
     /// The ticks that arrived and wait for the worker.
     drop_oldest_queue<messaging::market_tick> queue_{queue_capacity};

@@ -17,13 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/generators/market_data_source_generator.hpp"
+#include "ores.marketdata.api/generators/route_generator.hpp"
+#include "ores.marketdata.api/generators/subscription_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
-#include "ores.marketdata.core/repository/feed_binding_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/route_repository.hpp"
+#include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -62,10 +67,7 @@ namespace {
 
 const std::string tags("[app][feed_ingest_loop]");
 
-using ores::marketdata::domain::feed_binding;
 using ores::marketdata::messaging::market_tick;
-using ores::marketdata::repository::feed_binding_activity_repository;
-using ores::marketdata::repository::feed_binding_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::service::app::feed_ingest_loop;
@@ -73,13 +75,13 @@ using ores::marketdata::service::app::tick_drop;
 using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 
-const std::string bound_prefix = "synthetic.bound.";
-const std::string other_prefix = "synthetic.other.";
+const std::string bound_prefix = "bound-";
+const std::string other_prefix = "other-";
 const std::string tick_value = "1.0845";
 
 /**
  * A tag unique to this run. The suite reuses its tenant, so a source name or a
- * series identity that repeated would let an earlier run's binding answer for
+ * series identity that repeated would let an earlier run's route answer for
  * this one; the identity under test is therefore drawn per run.
  */
 std::string run_tag() {
@@ -116,9 +118,8 @@ std::string series_uri(const std::string& quote_uri) {
 
 /**
  * One test tenant's fixture: a party of its own, a helper that writes the
- * binding for a source under it, and the NATS client the loop is built around.
- * The binding's producer kind is what the ingest loop stamps a series it
- * creates with, so the cases state it.
+ * catalogue source, the subscription and the route that make the party consume
+ * it, and the NATS client the loop is built around.
  */
 struct fixture {
     scoped_database_helper h;
@@ -144,21 +145,47 @@ struct fixture {
         REQUIRE(nats.is_connected());
     }
 
-    void bind(const std::string& source, const std::string& producer_kind) {
-        feed_binding b;
-        b.tenant_id = h.tenant_id();
-        b.id = boost::uuids::random_generator{}();
-        b.party_id = party_id;
-        b.source_name = source;
-        b.producer_kind = producer_kind;
-        b.provider_code = "ore";
-        b.source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
-        b.enabled = true;
-        b.modified_by = h.db_user();
-        b.performed_by = h.db_user();
-        b.change_reason_code = "system.test";
-        b.change_commentary = "Bound source fixture";
-        feed_binding_repository{}.write(h.context(), b);
+    void route(const std::string& source) {
+        using namespace ores::marketdata;
+        // The catalogue source belongs to the system tenant, which is the only tenant the
+        // ingest loop reads the catalogue from.
+        const auto system_ctx =
+            ores::database::service::tenant_context::with_system_tenant(h.context());
+        auto src = generators::generate_synthetic_market_data_source(gen);
+        src.name = source;
+        src.provider_code = "ore";
+        src.kind = "simulated";
+        src.is_default = false;
+        src.tenant_id = ores::utility::uuid::tenant_id::from_string(
+                            ores::database::service::tenant_context::system_tenant_id)
+                            .value();
+        src.modified_by = h.db_user();
+        src.performed_by = h.db_user();
+        src.change_reason_code = "system.test";
+        src.change_commentary = "Route fixture source";
+        repository::market_data_source_repository{}.write(system_ctx, src);
+
+        auto sub = generators::generate_synthetic_subscription(gen);
+        sub.tenant_id = h.tenant_id();
+        sub.party_id = party_id;
+        sub.provider_code = "ore";
+        sub.display = true;
+        sub.modified_by = h.db_user();
+        sub.performed_by = h.db_user();
+        sub.change_reason_code = "system.test";
+        sub.change_commentary = "Route fixture subscription";
+        repository::subscription_repository{}.write(h.context(), sub);
+
+        auto r = generators::generate_synthetic_route(gen);
+        r.tenant_id = h.tenant_id();
+        r.party_id = party_id;
+        r.provider_code = "ore";
+        r.source_id = src.id;
+        r.modified_by = h.db_user();
+        r.performed_by = h.db_user();
+        r.change_reason_code = "system.test";
+        r.change_commentary = "Route fixture";
+        repository::route_repository{}.write(h.context(), r);
     }
 
     std::vector<ores::marketdata::domain::market_series> series_for(const std::string& quote_uri) {
@@ -236,19 +263,19 @@ std::shared_ptr<ores::marketdata::service::app::tick_writer> make_writer() {
 
 }
 
-TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_tick", tags) {
+TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", tags) {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     // The loop is built but never started: no subscription is opened, so
     // handle_tick is the store path under test rather than the wire. refresh()
-    // builds the bindings cache from the row above, exactly as start() does.
+    // builds the consumers from the route above, exactly as start() does.
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
     loop.refresh();
 
@@ -282,53 +309,14 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_tick", tags) {
     CHECK(std::chrono::abs(points.front().observation_datetime - tick.observation_time) <
           std::chrono::milliseconds(1));
     CHECK(boost::uuids::to_string(points.front().party_id) == party);
-
-    // The binding says what it last delivered, since the tick has no source of its own.
-    const auto recorded = feed_binding_activity_repository{}.read(owner, f.party_id, bound_source);
-    REQUIRE(recorded.has_value());
-    CHECK(recorded->series_id == series.front().id);
-    CHECK(std::chrono::abs(recorded->last_tick_at - tick.observation_time) <
-          std::chrono::milliseconds(1));
 }
 
-TEST_CASE("the_activity_of_a_binding_is_recorded_once_in_the_interval", tags) {
-    auto writer = make_writer();
-    if (!writer)
-        SKIP("The tick writer role is not configured");
-    fixture f;
-    const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
-    f.connect();
-
-    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
-    loop.refresh();
-
-    const auto first = tick_from(bound_source, quote_uri);
-    auto second = first;
-    second.observation_time += std::chrono::seconds(2);
-    REQUIRE_FALSE(loop.handle_tick(first).has_value());
-    REQUIRE_FALSE(loop.handle_tick(second).has_value());
-
-    const auto owner =
-        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, f.h.db_user());
-    const auto recorded = feed_binding_activity_repository{}.read(owner, f.party_id, bound_source);
-    REQUIRE(recorded.has_value());
-    CHECK(std::chrono::abs(recorded->last_tick_at - first.observation_time) <
-          std::chrono::milliseconds(1));
-
-    // A source that delivered nothing has no row.
-    CHECK_FALSE(feed_binding_activity_repository{}
-                    .read(owner, f.party_id, bound_source + ".none")
-                    .has_value());
-}
-
-TEST_CASE("a_tick_from_a_source_with_no_enabled_binding_is_dropped_and_writes_nothing", tags) {
+TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing", tags) {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto other_source = other_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(other_source, "SYNTHETIC");
+    f.route(other_source);
     f.connect();
 
     feed_ingest_loop loop(f.nats, f.h.context());
@@ -345,7 +333,7 @@ TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     // Started, the loop subscribes as the service does, so the tick travels the
@@ -373,7 +361,7 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
     const auto bound_source = bound_prefix + run_tag();
     const auto first_uri = eur_usd_spot();
     const auto second_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
@@ -412,7 +400,7 @@ TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer", ta
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     auto unreachable = std::make_shared<ores::marketdata::service::app::tick_writer>(
@@ -438,7 +426,7 @@ TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     auto loop = std::make_unique<feed_ingest_loop>(f.nats, f.h.context());
@@ -473,7 +461,7 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
@@ -507,7 +495,7 @@ TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinat
     const auto cds = [&](const std::string& term) {
         return cds_series + "&term=" + term;
     };
-    f.bind(bound_source, "SYNTHETIC");
+    f.route(bound_source);
     f.connect();
 
     feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
@@ -807,7 +795,7 @@ TEST_CASE("burst_the_store_path_of_the_loop_without_nats", "[.][burst]") {
     fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
-    f.bind(source, "SYNTHETIC");
+    f.route(source);
     f.connect();
     burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
 
@@ -845,7 +833,7 @@ TEST_CASE("burst_through_nats_and_the_worker_of_the_loop", "[.][burst]") {
     fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
-    f.bind(source, "SYNTHETIC");
+    f.route(source);
     f.connect();
     burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
 
@@ -899,7 +887,7 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
     fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
-    f.bind(source, "SYNTHETIC");
+    f.route(source);
     f.connect();
     burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
     const auto subject = ores::marketdata::domain::synthetic_tick_subject_for(source);
@@ -1022,7 +1010,7 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
-    f.bind(source, "SYNTHETIC");
+    f.route(source);
     f.connect();
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
@@ -1194,7 +1182,7 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages", tags
     fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
-    f.bind(source, "SYNTHETIC");
+    f.route(source);
     f.connect();
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);

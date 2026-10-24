@@ -41,27 +41,27 @@ std::expected<std::shared_ptr<const named_datum>, tick_drop> name_datum(std::str
         named_datum{std::move(*datum), std::move(*canonical), std::move(*series)});
 }
 
-std::shared_ptr<const std::vector<tick_target>>
-make_targets(const std::vector<domain::feed_binding>& bindings, const named_datum& named) {
+std::shared_ptr<const std::vector<tick_target>> make_targets(const std::vector<consumer>& consumers,
+                                                             const named_datum& named) {
     auto targets = std::make_shared<std::vector<tick_target>>();
-    targets->reserve(bindings.size());
-    for (const auto& b : bindings) {
-        auto tenant = b.tenant_id.to_string();
-        auto party = boost::uuids::to_string(b.party_id);
+    targets->reserve(consumers.size());
+    for (const auto& c : consumers) {
+        auto tenant = c.tenant_id.to_string();
+        auto party = boost::uuids::to_string(c.party_id);
         auto subject = domain::market_tick_subject(tenant, party, named.uri);
-        auto source = boost::uuids::to_string(b.source_id);
+        auto source = boost::uuids::to_string(c.source_id);
         targets->push_back(
-            {b, std::move(subject), std::move(tenant), std::move(party), std::move(source)});
+            {c, std::move(subject), std::move(tenant), std::move(party), std::move(source)});
     }
     return targets;
 }
 
 std::expected<tick_plan, tick_drop>
 plan_tick(const messaging::market_tick& tick,
-          const std::vector<domain::feed_binding>& bindings,
+          const std::vector<consumer>& consumers,
           std::shared_ptr<const named_datum> named,
           std::shared_ptr<const std::vector<tick_target>> targets) {
-    if (bindings.empty())
+    if (consumers.empty())
         return std::unexpected(tick_drop::unbound_source);
 
     if (!named) {
@@ -76,7 +76,7 @@ plan_tick(const messaging::market_tick& tick,
         return std::unexpected(tick_drop::not_a_number);
 
     if (!targets)
-        targets = make_targets(bindings, *named);
+        targets = make_targets(consumers, *named);
     return tick_plan{std::move(named), *value, std::move(targets)};
 }
 

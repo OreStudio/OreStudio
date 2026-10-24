@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retire-the-feed-binding
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The route is the only consumer record. The ingest reads the routes, and the feed
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,20 @@ The route is the only consumer record. The ingest reads the routes, and the feed
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Give the ingest loop its own consumer record, built from the route, and
+   delete the binding read, the activity record and the binding event
+   subscription.
+2. Delete the binding model and regenerate the component. Delete the generated
+   domain type, table, protocol, event, generator, repository, entity, mapper,
+   service, handler, history provider and presentation.
+3. Delete the shell commands, the client methods and the permission.
+4. Delete the two binding tables, their triggers and policies, the schema
+   diagrams, and the guard exception.
+5. Delete the web surface: the list and record pages, the API, the BFF read,
+   the contracts, the generated wire protocol, the routes, the menu card and
+   the i18n keys.
+6. Rebuild, run the marketdata suites, the web checks and the guard, recreate
+   the database and prove that a provisioned tenant ticks from its routes.
 
 * Measurements
 

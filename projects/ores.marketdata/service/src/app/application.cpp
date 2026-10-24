@@ -23,7 +23,6 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.api/eventing/feed_binding_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_source_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_vendor_instrument_event.hpp"
@@ -44,7 +43,6 @@
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
-#include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
@@ -164,8 +162,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // publication: each reads the trigger's channel and publishes the
     // canonical event. Composing them by hand instead left five entities
     // with a mapping no one registered, so nothing they wrote reached NATS.
-    auto feed_binding_sub =
-        mdsm::register_feed_binding_event_mapping(event_source, event_bus, nats);
     auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
     auto market_data_source_sub =
         mdsm::register_market_data_source_event_mapping(event_source, event_bus, nats);
@@ -196,19 +192,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto series_classification_rule_sub =
         mdsm::register_series_classification_rule_event_mapping(event_source, event_bus, nats);
 
-    // The generated registrar publishes; the ingest loop also has to act, so
-    // the channel carries a second subscriber rather than a second mapping.
-    // Every action refreshes: a bind that is created, retargeted or removed
-    // all change which series the loop is entitled to ingest.
-    auto feed_binding_refresh_sub =
-        event_bus.subscribe<mdm::feed_binding_event>([ingest](const mdm::feed_binding_event&) {
-            BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
-            ingest->refresh();
-        });
-
     // A route, a subscription, a source, a vendor instrument or a mapping changes what the loop
     // maps and to whom it stores, and what each adapter is asked to publish. Each of them
-    // refreshes both, the way a binding refreshes the loop.
+    // refreshes both.
     auto route_refresh_sub =
         event_bus.subscribe<mdm::route_event>([ingest, supervisor](const mdm::route_event&) {
             BOOST_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop and demand.";

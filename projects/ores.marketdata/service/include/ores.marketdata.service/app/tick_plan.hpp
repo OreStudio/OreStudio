@@ -21,9 +21,10 @@
 #define ORES_MARKETDATA_SERVICE_APP_TICK_PLAN_HPP
 
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <memory>
 #include <string>
@@ -36,7 +37,7 @@ namespace ores::marketdata::service::app {
  * @brief Why the ingest loop drops a tick rather than storing it.
  */
 enum class tick_drop {
-    /// No enabled feed binding names the tick's source.
+    /// No route names the tick's source.
     unbound_source,
     /// The tick's URI names no datum the oresmd URI codec can read and write.
     unnameable_datum,
@@ -68,33 +69,48 @@ ORES_MARKETDATA_SERVICE_EXPORT std::expected<std::shared_ptr<const named_datum>,
 name_datum(std::string_view uri);
 
 /**
- * @brief One consumer of a tick: the binding it is stored under, and the
+ * @brief One consumer of a tick: the route that makes a party consume a source.
+ */
+struct consumer final {
+    /// The id of the route.
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid party_id;
+    std::string provider_code;
+    boost::uuids::uuid source_id;
+    std::string source_name;
+
+    bool operator==(const consumer& other) const = default;
+};
+
+/**
+ * @brief One consumer of a tick: the route it is stored under, and the
  * subject it is republished on.
  */
 struct tick_target final {
-    domain::feed_binding binding;
+    consumer owner;
     std::string subject;
-    /// The tenant and the party of the binding as text, written once so the loop writes none
+    /// The tenant and the party of the consumer as text, written once so the loop writes none
     /// for each tick.
     std::string tenant_text;
     std::string party_text;
-    /// The source of the binding as text, for the same reason.
+    /// The source of the consumer as text, for the same reason.
     std::string source_text;
 };
 
 /**
- * @brief The targets of a tick of @p named: one for each binding, each with the republish
- * subject for that binding's tenant and party.
+ * @brief The targets of a tick of @p named: one for each consumer, each with the republish
+ * subject for that consumer's tenant and party.
  *
- * The targets depend on the bindings and the datum alone, so the loop builds them once for each
+ * The targets depend on the consumers and the datum alone, so the loop builds them once for each
  * source and datum and shares them.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::shared_ptr<const std::vector<tick_target>>
-make_targets(const std::vector<domain::feed_binding>& bindings, const named_datum& named);
+make_targets(const std::vector<consumer>& consumers, const named_datum& named);
 
 /**
  * @brief What the ingest loop does with a tick it accepts: the datum it names,
- * its value, and one target per enabled binding of its source.
+ * its value, and one target per consumer of its source.
  */
 struct tick_plan final {
     std::shared_ptr<const named_datum> named;
@@ -103,20 +119,19 @@ struct tick_plan final {
 };
 
 /**
- * @brief Decides what happens to @p tick, given the enabled bindings of its
- * source.
+ * @brief Decides what happens to @p tick, given the consumers of its source.
  *
- * The checks run in the order the loop reports them: an empty @p bindings is an
+ * The checks run in the order the loop reports them: an empty @p consumers is an
  * unbound source, then the URI must name a datum, then the value must be a
- * number. A tick that passes gets one target per binding, each with the
- * republish subject for that binding's tenant and party.
+ * number. A tick that passes gets one target per consumer, each with the
+ * republish subject for that consumer's tenant and party.
  *
  * A caller that has read the URI already passes @p named, and the URI is not read again. A
  * caller that has built the targets for this source and datum passes @p targets.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::expected<tick_plan, tick_drop>
 plan_tick(const messaging::market_tick& tick,
-          const std::vector<domain::feed_binding>& bindings,
+          const std::vector<consumer>& consumers,
           std::shared_ptr<const named_datum> named = nullptr,
           std::shared_ptr<const std::vector<tick_target>> targets = nullptr);
 

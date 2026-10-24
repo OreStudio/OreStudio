@@ -28,45 +28,36 @@ namespace {
 
 const std::string tags("[app][feed_series]");
 
-using ores::marketdata::domain::feed_binding;
+using ores::marketdata::service::app::consumer;
 using ores::marketdata::service::app::make_feed_series;
 
 const std::string eur_usd_spot = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
 const std::string service_account = "system.test";
 
-feed_binding make_binding() {
+consumer make_owner() {
     const boost::uuids::string_generator uuid;
-    feed_binding b;
-    b.tenant_id =
+    consumer c;
+    c.tenant_id =
         ores::utility::uuid::tenant_id::from_string("11111111-1111-1111-1111-111111111111").value();
-    b.party_id = uuid("22222222-2222-2222-2222-222222222222");
-    b.source_name = "synthetic.eurusd";
-    return b;
+    c.party_id = uuid("22222222-2222-2222-2222-222222222222");
+    c.source_name = "synthetic.eurusd";
+    return c;
 }
 
 }
 
-TEST_CASE("the ingest creates the series under the provider of the binding it stores the "
+TEST_CASE("the ingest creates the series under the provider of the route it stores the "
           "tick for",
           tags) {
-    auto binding = make_binding();
-    binding.provider_code = "bloomberg";
+    auto owner = make_owner();
+    owner.provider_code = "bloomberg";
 
     const auto series = make_feed_series(
-        binding, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
+        owner, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
 
     CHECK(series.provider_code == "bloomberg");
     CHECK(series.oresmd_uri == eur_usd_spot);
     CHECK(series.series_subclass == "spot");
-    CHECK(series.tenant_id == binding.tenant_id);
-    CHECK(series.party_id == binding.party_id);
-}
-
-TEST_CASE("a binding that names no provider creates the series under the provider ore", tags) {
-    const auto binding = make_binding();
-
-    const auto series = make_feed_series(
-        binding, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
-
-    CHECK(series.provider_code == "ore");
+    CHECK(series.tenant_id == owner.tenant_id);
+    CHECK(series.party_id == owner.party_id);
 }

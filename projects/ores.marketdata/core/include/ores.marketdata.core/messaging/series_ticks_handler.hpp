@@ -90,7 +90,14 @@ public:
                 resp.result.code = "internal_error";
                 resp.result.message = e.what();
             }
-            BOOST_LOG_SEV(series_ticks_handler_lg(), debug) << "Completed " << msg.subject;
+            BOOST_LOG_SEV(series_ticks_handler_lg(), debug)
+                << "Completed " << msg.subject << " tenant=" << req_ctx.tenant_id().to_string()
+                << " visible_parties=" << req_ctx.visible_party_ids().size()
+                << " identity=" << req->identity.asset << '/' << req->identity.scope << '/'
+                << req->identity.instrument_type << '/' << req->identity.quote_type
+                << " fields=" << req->identity.fields.size() << " party=" << req->identity.party_id
+                << " outcome=" << (resp.result.code.empty() ? "ok" : resp.result.code)
+                << " ticks=" << resp.values.size();
             reply(nats_, msg, resp);
             return;
         }

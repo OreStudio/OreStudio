@@ -1072,7 +1072,7 @@ export interface MarketTick {
  * that answers it. A span that holds more ticks than the ceiling is refused, never cut.
  */
 export interface GetSeriesTicksRequest {
-    series_id: string;
+    identity: ResolveSeriesIdentityRequest;
     from_instant: string;
     to_instant: string | null;
     coordinates: string[];

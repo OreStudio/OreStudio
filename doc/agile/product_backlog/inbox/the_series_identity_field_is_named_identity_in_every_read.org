@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 5E1F99DB-B821-4789-83F3-E3F31902B97D
+:END:
+#+title: The series identity field is named identity in every read
+#+description: Seven requests of the marketdata operations model name a series by a request field called identity. The word does not say a series, or that it is a set of typed fields and not a key. A reader asked what it is. Rename the field to series_identity in every request together, and say in one glossary entry what a series identity is.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Seven requests of the marketdata operations model carry a field called =identity=:
+=list_series_identities_request=, =get_series_slice_request=, =get_series_evolution_request=,
+=get_curve_snapshot_request=, =key_manual_point_request=, =clear_manual_point_request= and
+=get_series_ticks_request=. The type of the field is =resolve_series_identity_request=. The
+field holds the typed facts that tell one series from another: the asset class, the scope, the
+instrument type, the quote type, the remaining fields and an optional party. It is not a key
+and not an id. The name does not say any of this. Rename the field to =series_identity= in all
+seven requests in one change, and add one glossary entry that says what a series identity is.
+
+* Why
+
+On 24 October a reader of the history call asked what =identity= is. The call had taken a
+=series_id= until that day, and the change to =identity= made the question easy to ask. Alone,
+the word could mean the identity of the caller, the session or a tenant, and the system has
+all three. A series identity is a separate idea from the =series_id= UUID. The UUID changes on
+a database recreate. The identity does not. A caller who reads =identity= next to =series_id=
+cannot tell which one is the stable name.
+
+The rename has a cost. It changes the generated C++ and TypeScript protocol of seven requests
+and every client of them, with no old field kept. It should happen in one change, because a
+rename of one request would make the reads differ from each other. The same word is also in
+the names =resolve_series_identity_request= and =ores_marketdata_market_series_identity_tbl=.
+Those names already say series, so they stay.
+
+* References
+
+- [[id:98928583-B865-4A4A-81D6-AC7774EC3B70][Name a series in the history call by its identity]], the task that put the field on the history call.
+- [[id:37370E1F-099D-41C1-A659-AD6ED7D4B872][Name a series by its oresmd URL in the picker]], a capture about the name a person sees for a series.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]], the page type.

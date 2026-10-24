@@ -192,6 +192,11 @@ public:
     [[nodiscard]] static std::expected<std::chrono::system_clock::time_point, std::string>
     parse_span_bound(std::string_view text);
 
+    /// The remaining identity fields of a series, from text of the form name=value,name=value.
+    [[nodiscard]] static std::expected<std::vector<marketdata::messaging::series_identity_field>,
+                                       std::string>
+    parse_identity_fields(std::string_view text);
+
     /// One history tick as the screen renders it: time, coordinate URI and value.
     [[nodiscard]] static std::string history_tick_line(const history_tick& tick);
 

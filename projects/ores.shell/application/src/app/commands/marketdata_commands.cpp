@@ -193,14 +193,14 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         "Re-project the tenant's series identities, writing only the rows that changed",
         {"[--party <party_id>]"});
 
-    marketdata_menu->Insert(
-        "ticks",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_ticks(std::ref(out), std::ref(session), args);
-        },
-        "Read the ticks of one series over a span of time, in one call",
-        {"<series-id> [--from <date|instant>] [--to <date|instant>] [--coordinate <oresmd-uri>] "
-         "[--csv <path>]"});
+    marketdata_menu->Insert("ticks",
+                            [&session](std::ostream& out, std::vector<std::string> args) {
+                                process_ticks(std::ref(out), std::ref(session), args);
+                            },
+                            "Read the ticks of one series over a span of time, in one call",
+                            {"--asset <class> --scope <scope> --instrument <type> --quote <type> "
+                             "[--fields <name=value,...>] [--party <id>] [--from <date|instant>] "
+                             "[--to <date|instant>] [--coordinate <oresmd-uri>] [--csv <path>]"});
 
     marketdata_menu->Insert("stream",
                             [&session](std::ostream& out, std::vector<std::string> args) {
@@ -517,6 +517,23 @@ marketdata_commands::parse_span_bound(std::string_view text) {
     }
 }
 
+std::expected<std::vector<marketdata::messaging::series_identity_field>, std::string>
+marketdata_commands::parse_identity_fields(std::string_view text) {
+    std::vector<marketdata::messaging::series_identity_field> fields;
+    while (!text.empty()) {
+        const auto end = text.find(',');
+        const auto pair = text.substr(0, end);
+        text = end == std::string_view::npos ? std::string_view{} : text.substr(end + 1);
+        const auto equals = pair.find('=');
+        if (equals == std::string_view::npos || equals == 0 || equals + 1 == pair.size())
+            return std::unexpected(
+                std::format("'{}' is not a field of the form name=value.", pair));
+        fields.push_back(
+            {std::string(pair.substr(0, equals)), std::string(pair.substr(equals + 1))});
+    }
+    return fields;
+}
+
 std::expected<std::vector<history_tick>, std::string>
 marketdata_commands::history_ticks(const marketdata::messaging::get_series_ticks_response& reply) {
     const auto count = reply.values.size();
@@ -562,7 +579,13 @@ void marketdata_commands::process_ticks(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
     auto parsed = parse_args(args,
-                             {{.name = "from", .requires_value = true, .default_value = ""},
+                             {{.name = "asset", .requires_value = true, .default_value = ""},
+                              {.name = "scope", .requires_value = true, .default_value = ""},
+                              {.name = "instrument", .requires_value = true, .default_value = ""},
+                              {.name = "quote", .requires_value = true, .default_value = ""},
+                              {.name = "fields", .requires_value = true, .default_value = ""},
+                              {.name = "party", .requires_value = true, .default_value = ""},
+                              {.name = "from", .requires_value = true, .default_value = ""},
                               {.name = "to", .requires_value = true, .default_value = ""},
                               {.name = "coordinate", .requires_value = true, .default_value = ""},
                               {.name = "csv", .requires_value = true, .default_value = ""}});
@@ -570,9 +593,13 @@ void marketdata_commands::process_ticks(std::ostream& out,
         fail(out) << parsed.error() << std::endl;
         return;
     }
-    if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: marketdata ticks <series-id> [--from <date|instant>] "
-                     "[--to <date|instant>] [--coordinate <oresmd-uri>] [--csv <path>]"
+    if (!parsed->positionals.empty() || parsed->flag("asset").empty() ||
+        parsed->flag("scope").empty() || parsed->flag("instrument").empty() ||
+        parsed->flag("quote").empty()) {
+        fail(out) << "Usage: marketdata ticks --asset <class> --scope <scope> "
+                     "--instrument <type> --quote <type> [--fields <name=value,...>] "
+                     "[--party <id>] [--from <date|instant>] [--to <date|instant>] "
+                     "[--coordinate <oresmd-uri>] [--csv <path>]"
                   << std::endl;
         return;
     }
@@ -582,12 +609,17 @@ void marketdata_commands::process_ticks(std::ostream& out,
     }
 
     marketdata::messaging::get_series_ticks_request req;
-    try {
-        req.series_id = boost::uuids::string_generator()(parsed->positionals[0]);
-    } catch (const std::exception&) {
-        fail(out) << "'" << parsed->positionals[0] << "' is not a series id (a UUID)." << std::endl;
+    req.identity.asset = parsed->flag("asset");
+    req.identity.scope = parsed->flag("scope");
+    req.identity.instrument_type = parsed->flag("instrument");
+    req.identity.quote_type = parsed->flag("quote");
+    req.identity.party_id = parsed->flag("party");
+    const auto fields = parse_identity_fields(parsed->flag("fields"));
+    if (!fields) {
+        fail(out) << "--fields: " << fields.error() << std::endl;
         return;
     }
+    req.identity.fields = *fields;
     if (parsed->flag("from").empty()) {
         req.from_instant = std::chrono::system_clock::now() - std::chrono::minutes(10);
     } else {
@@ -609,7 +641,8 @@ void marketdata_commands::process_ticks(std::ostream& out,
     if (!parsed->flag("coordinate").empty())
         req.coordinates.push_back(parsed->flag("coordinate"));
 
-    BOOST_LOG_SEV(lg(), info) << "Reading the ticks of series " << parsed->positionals[0];
+    BOOST_LOG_SEV(lg(), info) << "Reading the ticks of the " << req.identity.instrument_type
+                              << " series of " << req.identity.scope;
     auto result = do_auth_request<marketdata::messaging::get_series_ticks_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)

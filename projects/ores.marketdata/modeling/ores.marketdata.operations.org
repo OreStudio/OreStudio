@@ -2887,12 +2887,13 @@ ticks that follow; it merges the two itself.
  */
 #+end_src
 
-*** series_id
+*** identity
 :PROPERTIES:
-:cpp_type: boost::uuids::uuid
+:cpp_type: resolve_series_identity_request
 :END:
 
-The series, by the id that the series catalogue returns.
+The series, as the typed identity the resolver already takes. An identity that matches the
+series of more than one party is refused, so a caller states the party to name one.
 
 *** from_instant
 :PROPERTIES:

@@ -26,11 +26,11 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | The arrival processes, the factory entry, the rules and the moved clock are in. Three suites pass. |
+| Now          | Nothing. |
 | Waiting on   | The PR.                                |
-| Next         | Rebase on main and open the PR.        |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance

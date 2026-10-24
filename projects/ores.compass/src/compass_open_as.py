@@ -6,8 +6,10 @@ developer's own Chrome. Each persona gets its own --user-data-dir under
 appears in the profile picker and never syncs. The sign-in form is filled
 through the DevTools protocol, so only Sign in is left to press.
 
-Acme is a fixed seeded tenant, so the tenant, the shared password, the
-locations and the titles are hard coded. The staff come from the seeder
+Acme is the seeded tenant the staff come from, so that tenant, the
+shared password, the locations and the titles are hard coded. The tenant
+administrator can be opened in another seeded tenant with --tenant; it keeps its
+own persona there, so one administrator per tenant can be open at once. The staff come from the seeder
 dataset, the same file the provisioning loads.
 
 Stdlib only: the DevTools socket speaks a small subset of RFC 6455.
@@ -160,12 +162,34 @@ def web_url(project_root, env_file=None):
     return f"http://localhost:{port}/"
 
 
+def persona_dir_name(person):
+    """The persona's directory name, which is its principal without Acme's suffix.
+
+    The tenant administrator is the same username in every tenant, so the
+    directory carries the tenant: two of them open at once must not share a
+    profile. Every other persona is already unique by its username, and the
+    Acme principal keeps the name it had before the tenant was part of it.
+    """
+    name = principal(person)
+    suffix = f"@{TENANT_HOSTNAME}"
+    return name[:-len(suffix)] if name.endswith(suffix) else name
+
+
+def persona_title(person):
+    """What Chrome shows for the persona, naming the tenant when it is not Acme."""
+    name = principal(person)
+    suffix = f"@{TENANT_HOSTNAME}"
+    if not name.endswith(suffix) and "@" in name:
+        return f"{person['full_name']} ({name.split('@', 1)[1]})"
+    return person["full_name"]
+
+
 def profile_path(project_root, person, workspace=None):
     """The persona's data directory, one per workspace so each keeps its pages."""
     base = PERSONAS_ROOT / env_name(project_root)
     if workspace is not None:
         base = base / f"workspace-{workspace}"
-    return base / person["username"]
+    return base / persona_dir_name(person)
 
 
 def env_name(project_root):
@@ -683,6 +707,10 @@ def run(argv, project_root=None, env_file=None) -> int:
     parser.add_argument("--location", default=DEFAULT_LOCATION,
                         help="office for title and role: london (default), "
                              "new york, hong kong (aliases: uk, ny, us, hk)")
+    parser.add_argument("--tenant", default=None, metavar="HOSTNAME",
+                        help="tenant hostname the tenant administrator signs "
+                             "in to; only the tenant_admin persona takes it "
+                             f"(default: {TENANT_HOSTNAME})")
     parser.add_argument("--pick", type=int, default=1,
                         help="which match to open when several match (default 1)")
     parser.add_argument("--list", action="store_true", dest="list_only",
@@ -714,6 +742,14 @@ def run(argv, project_root=None, env_file=None) -> int:
         found = by_title(staff, args.text, args.location)
     else:
         found = by_role(staff, args.text, args.location)
+
+    if args.tenant is not None and args.tenant != TENANT_HOSTNAME:
+        if len(found) != 1 or found[0].get("role") != "TenantAdmin":
+            parser.error("--tenant applies to the tenant_admin persona only")
+        administrator = dict(found[0])
+        administrator["principal"] = f"tenant_admin@{args.tenant}"
+        administrator["job_title"] = f"Administrator of the {args.tenant} tenant"
+        found = [administrator]
 
     if not found:
         print("open-as: nobody matches.", file=sys.stderr)
@@ -753,7 +789,7 @@ def open_person(args, person, profile_dir, project_root, env_file):
               f"open a new one.{note}")
         return 0
     prepare_profile(profile_dir, args.fresh)
-    name_profile(profile_dir, person["full_name"])
+    name_profile(profile_dir, persona_title(person))
     restored = (profile_dir / "Default" / "Sessions").is_dir()
     browser, filled, restored = launch(
         person, web_url(project_root, env_file), profile_dir,
@@ -772,5 +808,5 @@ def open_person(args, person, profile_dir, project_root, env_file):
         print("Opened with the form filled. Press Sign in.")
     else:
         print(f"Opened, but the form was not found (already signed in?). "
-              f"Sign in as {principal(person)} with the Acme password.")
+              f"Sign in as {principal(person)} with the shared password.")
     return 0

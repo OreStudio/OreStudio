@@ -37,7 +37,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:CE1EAB8C-CC74-444E-B0DA-A68C6927F2FE][Task: Open sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | Open sprint 29: scaffold, wire, and move the postponed stories. |
-| [[id:CCCE56A0-8CBE-4A0F-8D72-4EDC4F68B80A][Finish opening sprint 29]] | STARTED | 2026-10-24 | | The first sprint 29 PR did the scaffold and the release material. This task does the rest of the open-sprint recipe: the vcpkg update, the version bump, the postponed story and the promoted carried work. |
+| [[id:CCCE56A0-8CBE-4A0F-8D72-4EDC4F68B80A][Finish opening sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | The first sprint 29 PR did the scaffold and the release material. This task does the rest of the open-sprint recipe: the vcpkg update, the version bump, the postponed story and the promoted carried work. |
 
 * Decisions
 

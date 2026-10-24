@@ -2,7 +2,7 @@
 :ID: F05B672B-C054-42DF-91B5-27B47B72EAA3
 :END:
 #+title: Sprint 29
-#+description: Sprint 29: finish the market data work carried out of sprint 28, the history read, its screens and the remaining ticking-data defects, before drawing anything new from the product backlog.
+#+description: Sprint 29: finish the work carried out of sprint 28, before drawing anything new from the product backlog.
 #+type: sprint
 #+level: s3
 #+filetags: :v0:
@@ -16,7 +16,7 @@ This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Spri
 
 * Mission
 
-Finish the market data work carried out of sprint 28 (the history read, its screens and the ticking-data defects) before drawing anything new from the product backlog.
+Finish the work carried out of sprint 28 before drawing anything new from the product backlog.
 
 * Status
 

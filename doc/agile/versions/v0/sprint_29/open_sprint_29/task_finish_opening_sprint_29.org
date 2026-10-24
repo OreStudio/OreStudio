@@ -26,11 +26,11 @@ Every step of the open a new sprint recipe is done.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+vcpkg moved from e456309491 to 0c2a9ace19, the latest master on 2026-10-24. The project version is 0.0.29 in CMakeLists.txt, vcpkg.json, the macOS and Windows workflows and the dsh plugin, and the bump recipe now names the dsh plugin file. The 57 inbox stories carried from sprint 28 and the Hawkes story moved into sprint 29, and the mission names the carried work as a whole. The sprint backlog is not yet ordered. The Hawkes story belongs to the prime_origin environment, whose branch will see its folder move.

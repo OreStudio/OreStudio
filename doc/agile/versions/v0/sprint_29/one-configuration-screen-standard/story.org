@@ -31,7 +31,7 @@ binds.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The journeys and prototypes are being updated to the decided words. |
+| Now           | The standard is written and its draft PR waits on the prototypes sign-off. |
 | Waiting on    | The owner's sign-off of the journeys and prototypes. |
 | Next          | Update the journeys and prototypes, then write the standard. |
 | Last touched  | 2026-10-24                               |
@@ -56,7 +56,7 @@ binds.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] | STARTED | 2026-10-24 | | Establish what the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names and patterns follow. |
-| [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | BACKLOG | | | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
+| [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | STARTED | 2026-10-24 | | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
 | [[id:AF272041-13E2-4525-B634-7BA1A81031A5][Update the configuration journeys and prototypes]] | STARTED | 2026-10-24 | | Bring the pricing engine configuration and engine run settings journeys and prototypes onto the standard, and add the cross-links that say how the two configurations relate. |
 | [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] | BACKLOG | | | Apply the standard's screen words to the area cards, the list and record pages, the journeys and the translations. |
 | [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] | BACKLOG | | | Bring the pricing engine configuration list, page, dialogs, journey and import onto the standard. |

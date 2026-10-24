@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-the-configuration-screen-standard
-#+pr:
+#+pr: 3721
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -28,9 +28,9 @@ One standard page states the words, the list, the record page, the sections, the
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Paused until the journeys and prototypes are signed off. |
+| Now          | The draft PR is open and waits on the sign-off of #3720. |
 | Waiting on   | The owner's sign-off of the journeys and prototypes. |
-| Next         | Write the standard from the signed-off journeys and prototypes. |
+| Next         | Sign-off of #3720, then review and merge this PR. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    | The draft PR is opened after this page is written. |
+| 3721 | [doc] Write the configuration screen standard (draft, waits on #3720) |
 
 * Review
 

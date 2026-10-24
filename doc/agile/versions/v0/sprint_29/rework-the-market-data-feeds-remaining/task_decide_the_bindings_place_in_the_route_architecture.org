@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: E53B0439-85D8-44FF-9D3F-6C7C644E0D62
+:END:
+#+title: Task: Decide the binding's place in the route architecture
+#+description: Settle whether a feed binding stays as the persisted consumer record or retires in favour of the route, before the ingest, the screen and the policy audit build on it.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-the-bindings-place-in-the-route-architecture
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One record says which party consumes which source. The task decides whether the feed binding remains as a projection of the routes or retires with its policies, and records the consequence for the ingest, the bindings screen, the seed and the system-tenant policy audit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Writing the decision.                  |
+| Waiting on   | Nothing.                               |
+| Next         | Record the decision in the story and list the follow-on tasks. |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The decision names one consumer record, rejects the other shape, and cites the evidence in the code and the docs.
+- The decision states what happens to the ingest binding read, the bindings screen story, the feed_bindings policies and the two Sprint 29 stories that assume bindings.
+- The decision is recorded in the parent story, and the follow-on tasks that it unblocks are listed.
+
+* Plan
+
+1. Collect the evidence. Read the two consumer paths in the ingest, and find
+   every writer of the routes, the subscriptions and the feed bindings.
+2. Compare the two shapes. Either the binding stays as a projection of the
+   routes, or the binding retires and the route is the one consumer record.
+3. Judge each shape against the rule that one record says which party consumes
+   which source, and against the cost of the migration it needs.
+4. Record the decision in the parent story's =* Decisions= and list the tasks
+   it unblocks, including the decision for the feed_bindings policy widening.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

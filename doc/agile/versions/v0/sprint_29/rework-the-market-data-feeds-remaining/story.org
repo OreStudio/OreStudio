@@ -21,11 +21,11 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
+| Now           | Deciding the binding's place in the route architecture. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Triage into a sprint. |
+| Next          | Settle the binding decision, then start the follow-on task it unblocks. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -57,6 +57,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]] | BACKLOG | | | Run the demand, the ingest and the vintage tests with routes and subscriptions in a tenant that is not the system tenant. |
 | [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] | BACKLOG | | | Today the ingest writes one copy of a tick for each party that routes to the source. Decide if one shared copy with entitlement at read time is better. |
 | [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] | BACKLOG | | | The simulator builds its adapters once, at start. A new simulated source needs a restart. |
+| [[id:E53B0439-85D8-44FF-9D3F-6C7C644E0D62][Decide the binding's place in the route architecture]] | STARTED | 2026-10-24 | | Settle whether a feed binding stays as the persisted consumer record or retires in favour of the route, before the ingest, the screen and the policy audit build on it. |
 
 * Decisions
 

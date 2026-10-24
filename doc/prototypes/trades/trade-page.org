@@ -28,7 +28,8 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| (none) | The list, 15 rows a page. It holds trades and structures as rows of the same level; =?show=trades= or =?show=structures= narrows it. A structure row has no state, notional or version of its own, so those cells say how many trades it holds or stay empty, and a structure matches a filter when one of its trades does. A Book a trade button, sortable headers, a trade date range, and the request line under the table, in the form of the standard entity protocol: a page, a stated order and a filter record on the trade summary read model. The page, the size, the search, the filters and the order are in the address (=offset=, =limit=, =search=, =status=, =book=, =cp=, =type=, =from=, =to=, =sort=, =dir=) |
+| (none) | The list, 15 rows a page. It holds trades and structures as rows of the same level; =?show=trades= or =?show=structures= narrows it. A structure row has no state or version of its own, so those cells say how many trades it holds or stay empty, and a structure matches a filter when one of its trades does. A Book a trade button, sortable headers, a trade date range, and the request line under the table, in the form of the standard entity protocol: a page, a stated order and a filter record on the trade summary read model. The page, the size, the search, the filters and the order are in the address (=offset=, =limit=, =search=, =status=, =book=, =cp=, =type=, =from=, =to=, =sort=, =dir=) |
+| =?portfolio=FX=, =?book=EMEA-FX= | The list narrowed to the chosen portfolio, every portfolio under it, or one book. The tree marks the chosen row, and choosing it again clears the filter |
 | =?state=stale= | The list or page after a change reached the browser: Refresh is gold and a row pulses |
 | =?state=loading=, =empty=, =error= | The in-place states of the list, and of the page. =empty= says there are no trades and points to Book a trade |
 | =?state=refused&tab=history= | The History tab states that the reader may not read it. The other tabs carry on |
@@ -38,6 +39,33 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 | =?digest=fixed= | The two digest gaps closed: exercise prices and composite legs move the external version |
 | =?state=conflict= | An Edit dialog that learns another person saved first |
 | =?as=trader=, =operations=, =reader= | Who is signed in. A control the person may not use is not drawn |
+
+** The portfolio tree
+
+A trade is filed in one book, and a book hangs from exactly one portfolio. The tree on the left therefore holds both, and the tree and the list are one request.
+
+- A portfolio nests under a portfolio. A book hangs from its portfolio, so a portfolio row is followed by its child portfolios and then by its books.
+- *The two rows are told apart by their icon, never by their words.* A portfolio takes the briefcase and a book takes the book, which are the two icons [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][the icon guidelines]] name for the concepts: =ic_fluent_briefcase_20_regular= for a portfolio and =ic_fluent_book_20_regular= for a book. No new icon is drawn for this screen.
+- Choosing a portfolio keeps the trades of every book under it. Choosing a book keeps that book's trades. The choice marks the row and moves the accent onto its icon.
+- Each row states how many trades sit in its subtree, so a person sees where the population is before opening a folder.
+- A sandbox's portfolios are virtual and are drawn in italics. The trades in a sandbox leave the list as soon as a portfolio or a book outside the sandbox is chosen.
+- The tree keeps its shape while the list shows loading, empty or error, so a portfolio that holds nothing is not a trap.
+- The address carries the choice as =?portfolio= or =?book=, and the request line states it as =book_id_one_of=: a book of the tree is a book of the trade, and the portfolio is the books under it. The book combo box of the filter row and the tree stay in step, and choosing one clears the other.
+
+The trade summary read model already carries =book_id=, so the tree needs no column it lacks. It does not honour the other portfolios a trade may be reported in, which =ores_trading_trade_portfolios_tbl= records beside the book. A list that must show those is a later decision, and it is recorded in the task.
+
+** What a row is
+
+The list mixes three things, and each states what it is beside its type:
+
+- *A trade.* One instrument. It states no marker.
+- *A composite trade.* Its instrument is a composition: =ores_trading.composite_instrument= carries the product and =ores_trading.composite_leg= holds the constituent trades. The row states =composite · 2 constituent trades=.
+- *A structure or a package.* A deal assembled from several trades: =ores_trading.structure= carries the deal and =ores_trading.structure_member= holds the trades with the role each plays. The row states =structure= or =package=, and its parent deal when it is nested.
+- A trade that a deal holds states =leg of STR-0007= beside its type, so a leg is never mistaken for a trade standing on its own.
+
+*A composite instrument is not a structure.* A structure is a deal of several trades and belongs to no instrument. A composite instrument belongs to one trade and holds constituent trades inside it. The two compose at different levels, and a trade may be both: its instrument is composite, and the trade is also a leg of a structure.
+
+The first column states an identifier, never the internal uuid. A trade's uuids are internal, so the column shows one of the trade's identifiers, which =ores_trading.trade_identifier= records with a type: =Internal=, =UTI=, =USI= or =ORE=. The read model holds no identifier of its own, so the page reads them for the rows it shows.
 
 ** Journeys served
 
@@ -55,6 +83,10 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 The save sends a standard =put= with the version the edit started from as its precondition, and the reason and the commentary as its change intent. The dialog shows it. The kind of change comes first, as [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] says. The dialog offers only the activity types the card allows. An economic amendment unlocks the economic fields, a change of reference details unlocks the rest, and a null amend locks all of them and is saved only when nothing changed. Under the fields the dialog says what the save will do: which version moves, and whether a confirmation is issued.
 
 Open the exercise prices card of ACME-100202 and change the strike. The dialog says the external version stays, because the digest does not read that table. This is the defect filed as a capture. Add =?digest=fixed= to see it closed.
+
+** What the list does not show
+
+- *A notional.* An earlier revision of this prototype drew one Notional column. That column was wrong and is gone. A trade has no notional: notional is a property of the instrument, and not every instrument has one. [[id:326b86e9-df52-4921-a875-e9f5cfec0e49][ores.trading.bond_instrument]], [[id:104DDBF1-12E8-435F-90F0-A701AAD9078F][ores.trading.fra_instrument]] and the equity option instruments carry one; [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] carries none, because each leg states its own, and a leg's notional may step or amortise. A single number for a row cannot be read faithfully, so the list states the trade type and leaves the size to the Instrument tab of the page.
 
 ** What is fake
 

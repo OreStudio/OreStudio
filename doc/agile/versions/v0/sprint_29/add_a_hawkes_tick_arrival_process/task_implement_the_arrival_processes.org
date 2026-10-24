@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-the-arrival-processes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

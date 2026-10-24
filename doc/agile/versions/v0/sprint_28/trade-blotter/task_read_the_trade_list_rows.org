@@ -26,11 +26,11 @@ Build the read model under the trade list. A row holds the trade or the structur
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | The view holds trade and structure rows. Tests cover state, request, structure and every filter. The list takes about 4 s a page at 100,000 trades. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the local check gate, then close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -132,3 +132,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped the read model under the trade list.
+
+- A generator profile =read-model= for an entity whose relation is a view. It keeps the read-only current-state surface, swaps the table create and drop for a =create or replace view= with =security_invoker=, and withdraws the notify trigger and the facets that announce a change. The model states the select in its =* SQL ** View= section.
+- The entity =ores.trading.trade_summary=, read through =ores_trading_trade_summaries_vw=. A trade row holds the book, the state, the counterparty, the instrument type, the trade date, the authorisation status and the identifiers as one search text. A structure row holds its kind and the count of its trades, and its search text holds the identifiers of its trades. The protocol, repository, service, handler, shell command and TypeScript twin are generated. The service pages, sorts and filters.
+- The state name comes from =ores_trading_status_name_fn=, a security definer function, because the trade status machine is system reference data that a tenant policy does not show.
+- An index on the authorisation request by trade, which cut the identifier search at 102,432 trades from 10.0 s to 2.7 s.
+- 15 repository and service tests that cover every filter, the search, the total, paging, sorting, the state name, the request status and the structure rows.
+
+Acceptance met, with three changes:
+
+- A filter on a column only a trade has (book, state, date, authorisation status) leaves a structure row out. A search reaches a structure through the identifiers of its trades.
+- The trigram index is not added. A page takes about 4 s at 100,000 trades. The view is accepted, and the capture [[id:66157B83-53BD-476E-8F49-2D0EE45921BD][Materialise the trade summary row for very large lists]] holds the stored row.
+- The client-side refusal of a scope over 1000 books belongs to the trade list screen task.
+
+Open from this task:
+
+- The synthetic population books actual trades into real books, so a provisioned Acme tenant holds 32 requests in the Operations queue. The task [[id:BA9F70BA-4521-47F5-B5D1-835B01265D52][Keep seeded trades out of the authorisation queue]] holds it.

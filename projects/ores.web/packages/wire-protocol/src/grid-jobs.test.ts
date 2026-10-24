@@ -333,6 +333,18 @@ describe('the views', () => {
         expect(toResultView(result!, true)).toMatchObject({ started_at: null, duration_ms: null });
     });
 
+    it('read a duration that is not a whole number of milliseconds as unknown', async () => {
+        const { caller } = callerAnswering({
+            'compute.v1.results.get': {
+                result: OK,
+                result_value: wireResult({ duration_ms: -5 }),
+            },
+        });
+        const result = await readResult(caller, RESULT);
+
+        expect(toResultView(result!, true).duration_ms).toBeNull();
+    });
+
     it('read a run from a service that predates the two columns as unknown', async () => {
         const { caller } = callerAnswering({
             'compute.v1.results.get': { result: OK, result_value: wireResult() },

@@ -113,7 +113,9 @@ const resultSchema = z.object({
     received_at: wireTimestampSchema,
     // A compute service that predates the two columns omits them, and they read as unknown.
     started_at: wireTimestampSchema.default(() => wireTimestampSchema.parse(EPOCH)),
-    duration_ms: z.int().nonnegative().nullable().default(null),
+    // A value that is not a whole number of milliseconds reads as unknown, so a bad row
+    // costs its own cell and not the whole list.
+    duration_ms: z.int().nonnegative().nullable().catch(null),
     modified_by: text,
     performed_by: text,
     change_reason_code: text,

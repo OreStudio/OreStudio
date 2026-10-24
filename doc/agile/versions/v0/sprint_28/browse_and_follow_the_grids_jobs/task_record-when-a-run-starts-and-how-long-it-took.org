@@ -84,13 +84,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3707 | Record when a run starts and how long the engine ran |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An edit may clear the duration, as it carries the start but not the duration. | result_service.cpp | No change needed | The generated write states the duration, as it states the arrival, and the shell commands carry it. The start is not in the write, so the service keeps it. No web screen edits a result. |
+| 2 | A comment says -1 where the code reads any negative value. | result_submit_handler.hpp | Fixed | The comment says a negative value. |
+| 3 | The bar shows 100% for a zero total. | GridJobPage.tsx | No change needed | Equal claim and arrival with engine time would be a clock fault, which the clamp covers. |
+| 4 | A negative stored value fails the whole result list. | grid-jobs.ts | Fixed | The duration reads as unknown when it is not a whole number, and a test covers it. |
+| 5 | The history view omits the duration. | result_history_field_mapper.cpp | Skipped | The generator leaves out every optional column of the history view, here and in other components. That is a generator change of its own. |
 
 * Result
 

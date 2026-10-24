@@ -64,14 +64,13 @@ struct stop_outcome {
  * series another running feed holds) and the same counts. Every registered kind is
  * present in the result, whether or not a feed of it was wanted.
  *
- * @p build carries the clients every builder shares. @p bearer is the token of the person who
- * starts the feeds. It subscribes the person's party, and the feeds do not run as the person.
+ * @p build carries the clients every builder shares. The feeds run as this service, not as the
+ * person who starts them.
  */
 inline start_outcome start_feeds(const feed_kind_registry& registry,
                                  feed_controller& ctrl,
                                  const ores::database::context& ctx,
                                  const ores::synthetic::feed::feed_build_context& build,
-                                 const std::string& bearer,
                                  const std::function<bool(const feed_start_target&)>& wanted,
                                  const std::string& scope_label) {
     using namespace ores::logging;
@@ -101,7 +100,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 continue;
             }
             std::string conflicting_source_name;
-            if (ctrl.add(std::move(attempt.feed), bearer, &conflicting_source_name))
+            if (ctrl.add(std::move(attempt.feed), &conflicting_source_name))
                 ++counts.started;
             else if (conflicting_source_name.empty())
                 // A concurrent start of the same config landed between this loop's

@@ -138,15 +138,6 @@ public:
     }
 };
 
-// A no-op binding store, so a bound stub feed never calls marketdata.
-class no_binding_store final : public ores::synthetic::service::feed_binding_store {
-public:
-    std::expected<void, std::string> save_if_absent(const std::string&,
-                                                    const std::string&) override {
-        return {};
-    }
-};
-
 int stub_builds = 0;
 
 ores::synthetic::feed::feed_factory stub_factory() {
@@ -334,8 +325,7 @@ struct stub_fixture {
         : nats(ores::testing::make_nats_options())
         , auth_nats(nats, [](bool) { return std::string(); })
         , ctx(make_test_context()) {
-        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(
-            nats, auth_nats, std::make_shared<no_binding_store>());
+        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
     }

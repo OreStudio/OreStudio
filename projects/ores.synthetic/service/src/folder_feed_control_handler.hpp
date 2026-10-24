@@ -111,9 +111,6 @@ public:
         try {
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
-            // The caller's token binds the feeds it starts to the caller's party. The feeds
-            // themselves read marketdata as this service.
-            const auto bearer = ores::nats::service::extract_bearer(msg);
             const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_};
 
             const auto outcome = start_feeds(
@@ -121,7 +118,6 @@ public:
                 *ctrl_,
                 ctx,
                 bctx,
-                bearer,
                 [&](const feed_start_target& t) {
                     const auto& c = t.row.candidate;
                     return c.folder_id && folder_ids.contains(*c.folder_id);

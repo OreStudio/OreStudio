@@ -34,12 +34,9 @@ const std::string tags("[feed_controller]");
 
 using ores::marketdata::domain::IFeed;
 using ores::synthetic::feed::producer_subject;
-using ores::synthetic::service::feed_binding_store;
 using ores::synthetic::service::feed_controller;
 using ores::synthetic::service::feeds_conflict;
-using ores::synthetic::service::marketdata_binding_store;
 
-const std::string test_bearer("test-session-token");
 
 // A feed whose only job is to carry an identity into the controller: it
 // publishes nothing and its start() returns at once, so a controller can be
@@ -83,37 +80,15 @@ private:
     std::string subject_;
 };
 
-// In-memory feed_binding store. Mirrors the real store's one rule -- bind a
-// source unless it is already bound -- so a second start of the same source
-// is observable as a single recorded row rather than a second write. It
-// records the production store's own binding, so the kinds the controller's
-// bindings carry are asserted rather than restated here.
-class fake_binding_store final : public feed_binding_store {
-public:
-    std::expected<void, std::string> save_if_absent(const std::string& source_name,
-                                                    const std::string&) override {
-        for (const auto& b : bindings_)
-            if (b.source_name == source_name)
-                return {};
-        bindings_.push_back(marketdata_binding_store::binding_for(source_name));
-        return {};
-    }
-
-    std::vector<ores::marketdata::domain::feed_binding> bindings_;
-};
-
-// A controller wired to a fake store. The raw client is never connected: a
-// stub feed publishes nothing, and the fake store never reaches NATS.
+// A controller over a client that is never connected: a stub feed publishes
+// nothing, so no NATS round-trip is needed.
 struct controller_fixture {
     ores::nats::service::client nats;
-    ores::nats::service::nats_client auth_nats;
-    std::shared_ptr<fake_binding_store> store = std::make_shared<fake_binding_store>();
     std::shared_ptr<feed_controller> ctrl;
 
     controller_fixture()
-        : nats(ores::testing::make_nats_options())
-        , auth_nats(nats, [](bool) { return std::string(); }) {
-        ctrl = std::make_shared<feed_controller>(nats, auth_nats, store);
+        : nats(ores::testing::make_nats_options()) {
+        ctrl = std::make_shared<feed_controller>(nats);
     }
 
     std::shared_ptr<IFeed> feed(const std::string& kind,
@@ -151,31 +126,12 @@ TEST_CASE("producer_subject: unsafe characters are replaced", tags) {
     CHECK(producer_subject("weird name!*>") == "synthetic.v1.ops.tick.weird_name___");
 }
 
-TEST_CASE("starting a feed creates its feed_binding, for FX and IR alike", tags) {
-    producer_kinds kinds;
-    controller_fixture f;
-
-    const std::vector<std::shared_ptr<IFeed>> feeds{
-        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
-        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
-    REQUIRE(f.ctrl->start(feeds[0], test_bearer) == feed_controller::start_result::started);
-    REQUIRE(f.ctrl->start(feeds[1], test_bearer) == feed_controller::start_result::started);
-
-    REQUIRE(f.store->bindings_.size() == 2);
-    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
-    CHECK(f.store->bindings_[0].enabled == true);
-    CHECK(f.store->bindings_[0].producer_kind == "SYNTHETIC");
-    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
-    CHECK(f.store->bindings_[1].enabled == true);
-    CHECK(f.store->bindings_[1].producer_kind == "SYNTHETIC");
-}
-
 TEST_CASE("the controller names the running feed that holds a series", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
     const auto fx = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
-    REQUIRE(f.ctrl->start(fx, test_bearer) == feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(fx) == feed_controller::start_result::started);
 
     const auto held = f.ctrl->running_source_name_for_series({kinds.fx_oresmd_uri});
     REQUIRE(held.has_value());
@@ -185,14 +141,7 @@ TEST_CASE("the controller names the running feed that holds a series", tags) {
     CHECK_FALSE(f.ctrl->running_source_name_for_series({}).has_value());
 }
 
-TEST_CASE("the binding a synthetic store creates names a generated producer, for FX and IR "
-          "alike",
-          tags) {
-    CHECK(marketdata_binding_store::binding_for("eur.usd").producer_kind == "SYNTHETIC");
-    CHECK(marketdata_binding_store::binding_for("usd.sofr").producer_kind == "SYNTHETIC");
-}
-
-TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and IR alike", tags) {
+TEST_CASE("starting a feed twice reports already_running, for FX and IR alike", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
@@ -200,27 +149,18 @@ TEST_CASE("starting a feed twice does not duplicate its feed_binding, for FX and
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     for (const auto& feed : feeds) {
-        REQUIRE(f.ctrl->start(feed, test_bearer) == feed_controller::start_result::started);
-        REQUIRE(f.ctrl->start(feed, test_bearer) == feed_controller::start_result::already_running);
+        REQUIRE(f.ctrl->start(feed) == feed_controller::start_result::started);
+        REQUIRE(f.ctrl->start(feed) == feed_controller::start_result::already_running);
     }
-
-    REQUIRE(f.store->bindings_.size() == 2);
-    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
-    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
 }
 
-TEST_CASE("add() binds a feed of every kind as start() does", tags) {
+TEST_CASE("add() starts a feed of every kind as start() does", tags) {
     producer_kinds kinds;
     controller_fixture f;
 
-    CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
-                      test_bearer));
-    CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role),
-                      test_bearer));
-
-    REQUIRE(f.store->bindings_.size() == 2);
-    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
-    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
+    CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role)));
+    CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)));
+    CHECK(f.ctrl->running_count() == 2);
 }
 
 TEST_CASE("feeds_conflict: feeds that share a series conflict — both would write points "

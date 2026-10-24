@@ -56,8 +56,8 @@ One word per idea, in code, on screen and in conversation.
 | /Section/ | One part of a configuration: a group or a collection |
 | /Group/ | A fixed set of scalar ORE parameters, held in one row, edited in place |
 | /Collection/ | Repeated ORE elements with their own identity, such as products, edited in dialogs |
-| /Parameter/ | One leaf of an ORE document |
-| /Setting/ | A scalar parameter, shown with its documentation |
+| /Parameter/ | One leaf of an ORE document: a =<Parameter name="...">= element, such as the tolerance of a model |
+| /Setting/ | A parameter of the engine run settings, the ORE =Setup= block. The word is not used for a parameter of any other configuration |
 | /Documentation entry/ | The one record of what a parameter means: label, help, description, default, format, releases, XPath |
 | /Value in force/ | The value a run uses: the set value, or the default when the parameter is absent |
 | /Default/ | The value ORE uses when the parameter is absent; the first option of every control |
@@ -127,6 +127,12 @@ Three words are fixed by this table and replace the earlier screen words:
   of a pricing engine.
 - The pricing page's *Settings* tab becomes *Parameters*, which is the ORE
   element name.
+
+A product has *parameters*, not settings. The words *model settings* and *engine
+settings* never appear in a pricing engine configuration: the model and the
+engine each take parameters, and the engine run settings are a configuration of
+their own, named by their own screen. A label that says *settings* on a product
+screen is a gap, because it points the reader at the wrong file.
 
 The model names, the configuration type codes and the API routes keep their
 spelling. Only the screen words change.

@@ -162,26 +162,29 @@ def web_url(project_root, env_file=None):
     return f"http://localhost:{port}/"
 
 
-def persona_dir_name(person):
-    """The persona's directory name, which is its principal without Acme's suffix.
+def persona_tenant(person):
+    """The tenant a persona signs in to, or nothing when its principal names none.
 
-    The tenant administrator is the same username in every tenant, so the
-    directory carries the tenant: two of them open at once must not share a
-    profile. Every other persona is already unique by its username, and the
-    Acme principal keeps the name it had before the tenant was part of it.
+    Acme's own personas sign in to Acme, so they carry no tenant in their name
+    or their directory. A persona opened in another tenant carries it, because
+    the tenant administrator is the same username in every tenant.
     """
     name = principal(person)
-    suffix = f"@{TENANT_HOSTNAME}"
-    return name[:-len(suffix)] if name.endswith(suffix) else name
+    if name.endswith(f"@{TENANT_HOSTNAME}") or "@" not in name:
+        return None
+    return name.split("@", 1)[1]
+
+
+def persona_dir_name(person):
+    """The persona's directory name: its username, with the tenant when not Acme."""
+    tenant = persona_tenant(person)
+    return f"{person['username']}@{tenant}" if tenant else person["username"]
 
 
 def persona_title(person):
     """What Chrome shows for the persona, naming the tenant when it is not Acme."""
-    name = principal(person)
-    suffix = f"@{TENANT_HOSTNAME}"
-    if not name.endswith(suffix) and "@" in name:
-        return f"{person['full_name']} ({name.split('@', 1)[1]})"
-    return person["full_name"]
+    tenant = persona_tenant(person)
+    return f"{person['full_name']} ({tenant})" if tenant else person["full_name"]
 
 
 def profile_path(project_root, person, workspace=None):

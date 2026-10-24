@@ -159,6 +159,14 @@ if(NOT DEFINED ENV{CI})
             if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
                 continue()
             endif()
+            # Tests talk to the same NATS server as any running fleet, so they
+            # must not share its subjects. A running service answers the
+            # announces and consumes the feed messages the suites publish under
+            # the environment's prefix, and the suites then fail on the
+            # interference. Give the whole test run its own namespace.
+            if(_line MATCHES "^ORES_NATS_SUBJECT_PREFIX=(.*)$")
+                set(_line "ORES_NATS_SUBJECT_PREFIX=${CMAKE_MATCH_1}.tests")
+            endif()
             if(_line MATCHES "^ORES_COMPILER_CACHE=(.*)$")
                 set(ORES_COMPILER_CACHE "${CMAKE_MATCH_1}")
             endif()

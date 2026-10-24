@@ -8,9 +8,13 @@ tree keeps the old spelling.
 
 It edits hand-written text only. A file whose banner says the generator owns it
 is reported, not changed: regenerate it from its model instead. The component
-class diagrams and their SVGs are generated too, for the same reason. The past
-sprint records under doc/agile/ keep the old spelling on purpose, because they
-are a record of what was true then.
+class diagrams and their SVGs are generated too, for the same reason.
+
+A record under doc/agile/ keeps the old spelling on purpose, because it says
+what was true when it was written. The check still reports those files, so the
+gate never hides a match.
+
+Run it from the repository root.
 
 Usage:
   python3 scripts/rename_interfaces_to_snake_case.py            # report
@@ -31,7 +35,7 @@ RENAMES = [
     ("IFeed", "i_feed"),
 ]
 
-ROOTS = ["projects", "doc"]
+ROOTS = ["projects", "doc", "scripts"]
 
 SUFFIXES = {
     ".hpp",
@@ -58,18 +62,16 @@ SKIP_DIR_NAMES = {
     "tmp",
 }
 
-# A record of what was true then, not a claim about the code today.
-SKIP_PREFIXES = ("doc/agile/",)
+# A record of what was true then, not a claim about the code today. The rename
+# task and the parent story live here too, and they must name the old spelling
+# to say what changed.
+RECORD_PREFIXES = ("doc/agile/",)
 
 GENERATED_MARKERS = ("AUTO-GENERATED", "GENERATED FILE", "DO NOT EDIT MANUALLY")
 
 # Drawn from the headers and the SQL models by a generator, and committed as
 # output. They follow their source; they are never edited by hand.
-GENERATED_PATHS = (
-    re.compile(r"^projects/.*/modeling/.*\.(puml|svg)$"),
-    re.compile(r"^projects/ores\.sql/.*\.(puml|svg)$"),
-    re.compile(r"^projects/ores\.web/packages/wire-protocol/dist/"),
-)
+GENERATED_PATHS = (re.compile(r"^projects/.*/modeling/.*\.(puml|svg)$"),)
 
 PATTERNS = [
     (re.compile(r"\b" + re.escape(old) + r"\b"), new)
@@ -85,16 +87,19 @@ def is_generated(rel, text):
     return any(marker in head for marker in GENERATED_MARKERS)
 
 
+def is_record(rel):
+    """True when the file records history, so the old spelling belongs."""
+    return rel.startswith(RECORD_PREFIXES)
+
+
 def candidates():
-    """Yield paths to inspect: text files under the roots, minus the skips."""
+    """Yield every text file to inspect: (path, relative path)."""
     for root in ROOTS:
         for path in Path(root).rglob("*"):
             if not path.is_file():
                 continue
             rel = path.as_posix()
             if any(part in SKIP_DIR_NAMES for part in Path(rel).parts):
-                continue
-            if rel.startswith(SKIP_PREFIXES):
                 continue
             if path.suffix.lower() not in SUFFIXES:
                 continue
@@ -116,35 +121,56 @@ def main():
     group.add_argument(
         "--check",
         action="store_true",
-        help="exit non-zero when an editable file keeps an old name",
+        help="exit non-zero when editable or generated text keeps an old name",
     )
     args = parser.parse_args()
 
+    missing = [root for root in ROOTS if not Path(root).is_dir()]
+    if missing:
+        parser.error(
+            "run this from the repository root; missing: " + ", ".join(missing)
+        )
+
     edited = []
     generated = []
+    records = []
+    unreadable = []
 
     for path, rel in candidates():
         try:
             text = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except (OSError, UnicodeDecodeError) as error:
+            unreadable.append(f"{rel}: {error}")
             continue
         if not any(pattern.search(text) for pattern, _ in PATTERNS):
             continue
-        if is_generated(rel, text):
-            generated.append(rel)
-            continue
         count = sum(len(pattern.findall(text)) for pattern, _ in PATTERNS)
-        edited.append((rel, count))
-        if args.write:
-            path.write_text(rename(text), encoding="utf-8")
+        if is_record(rel):
+            records.append((rel, count))
+        elif is_generated(rel, text):
+            generated.append((rel, count))
+        else:
+            edited.append((rel, count))
+            if args.write:
+                path.write_text(rename(text), encoding="utf-8")
 
     if args.check:
-        if edited:
-            print("Editable files still name an old interface:", file=sys.stderr)
-            for rel, count in edited:
-                print(f"  {count:3d}  {rel}", file=sys.stderr)
+        problems = edited + generated
+        if problems or unreadable:
+            if problems:
+                print(
+                    "Files must not name an old interface:", file=sys.stderr
+                )
+                for rel, count in problems:
+                    print(f"  {count:3d}  {rel}", file=sys.stderr)
+            for line in unreadable:
+                print(f"  unreadable: {line}", file=sys.stderr)
             return 1
-        print("No editable file names an old interface.")
+        total = sum(count for _, count in records)
+        print(f"No file names an old interface, except {len(records)} record(s).")
+        for rel, count in records:
+            print(f"  {count:3d}  {rel}  (record, kept)")
+        print(f"{total} occurrence(s) allowed in records.")
         return 0
 
     verb = "Renamed" if args.write else "Would rename"
@@ -153,12 +179,22 @@ def main():
     for rel, count in edited:
         print(f"  {count:3d}  {rel}")
 
-    if generated:
+    for label, rows in (
+        ("Generated files, which their models must change", generated),
+        ("Records, which keep the old spelling", records),
+    ):
+        if not rows:
+            continue
         print()
-        print(f"{len(generated)} generated files name an old interface.")
-        print("Regenerate them from their models; do not edit them by hand:")
-        for rel in generated:
-            print(f"  {rel}")
+        print(f"{len(rows)} {label}:")
+        for rel, count in rows:
+            print(f"  {count:3d}  {rel}")
+
+    if unreadable:
+        print()
+        print("Unreadable files:", file=sys.stderr)
+        for line in unreadable:
+            print(f"  {line}", file=sys.stderr)
 
     if not args.write:
         print()

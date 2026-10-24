@@ -50,8 +50,10 @@ The bond planner is the first implementation. The commodity planner is the secon
   trade types.
 - The commodity share of the population matches its weight in Trade
   Population Weights within tolerance.
-- The bond and commodity populations export as the ORE portfolio the
-  engine reads, and reverse-map without loss.
+- The bond population, and the eight commodity shapes the importer maps,
+  export as the ORE portfolio the engine reads, and reverse-map without
+  loss. The other seventeen commodity codes book but have no round trip,
+  and the task names them as an importer gap.
 - The population size is a config field, and the =trades_per_book=
   constant is gone.
 - A second run of any planner books nothing.
@@ -125,6 +127,31 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The catalogue routes all twenty-five commodity codes to
+=commodity_instrument=, but the ORE importer maps only eight shapes, at
+=projects/ores.ore/core/src/domain/commodity_instrument_projection.cpp=
+lines 50-53: =CommodityForward=, =CommodityOption=, =CommoditySwap=,
+=CommoditySwaption=, =CommodityVarianceSwap=,
+=CommodityAveragePriceOption=, =CommodityOptionStrip= and
+=CommodityBasketOption=.
+
+The other seventeen codes route to the table and no projection reads or
+writes them. They are =CommodityForwardVolatilityAgreement=,
+=IntradayPowerForward=, =CommodityDigitalOption=,
+=CommodityDigitalAveragePriceOption=, =CommodityAsianOption=,
+=CommoditySpreadOption=, =CommodityPairwiseVarianceSwap=,
+=CommodityBasketVarianceSwap=, =CommodityAccumulator=, =CommodityTaRF=,
+=CommodityWorstOfBasketSwap=, =CommodityBestEntryOption=,
+=CommodityWindowBarrierOption=, =CommodityGenericBarrierOption=,
+=CommodityRainbowOption=, =CommodityStrikeResettableOption= and
+=CommodityPosition=.
+
+That decides what this task can claim. The planner books all twenty-five,
+because the table takes them, but the export-and-reverse-map proof covers
+the eight shapes the importer maps. The seventeen are a gap in the
+importer and not in the planner, and this task names them rather than
+asserting a round trip it cannot show.
 
 * Test Scenarios
 

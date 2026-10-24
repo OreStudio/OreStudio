@@ -52,7 +52,7 @@ namespace ores::marketdata::repository {
 class ORES_MARKETDATA_CORE_EXPORT market_series_identity_reader final {
 public:
     /**
-     * @brief The series that carry @p identity, at most one per owning party.
+     * @brief The series that carry @p identity, at most one per owning party and provider.
      *
      * @throws std::invalid_argument when the identity is not one the codec can
      * spell.

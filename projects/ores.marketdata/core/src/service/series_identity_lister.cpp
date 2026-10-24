@@ -66,6 +66,7 @@ identity_of(const domain::market_series& series) {
     identity.instrument_type = oresmd_uri_codec::instrument_spelling(parsed->type());
     identity.quote_type = oresmd_uri_codec::quote_spelling(parsed->quote());
     identity.party_id = boost::uuids::to_string(series.party_id);
+    identity.provider_code = series.provider_code;
 
     // The subject is the scope and every other identity field the series holds is
     // a field of the identity. A field that holds none is not stated.
@@ -166,7 +167,7 @@ series_identity_lister::list(ores::database::context ctx,
                                       row.identity.instrument_type,
                                       row.identity.quote_type,
                                       std::move(fields),
-                                      row.identity.party_id),
+                                      row.identity.party_id + "/" + row.identity.provider_code),
                            std::move(row));
     }
     std::ranges::sort(keyed, [](const auto& a, const auto& b) { return a.first < b.first; });

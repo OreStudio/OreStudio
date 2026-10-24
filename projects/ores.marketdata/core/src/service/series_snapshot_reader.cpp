@@ -123,7 +123,7 @@ series_snapshot_reader::read(ores::database::context ctx,
     }
     if (series.size() > 1)
         return refuse("the identity names " + std::to_string(series.size()) +
-                      " series; state the party so that it names one");
+                      " series; state the party or the provider so that it names one");
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);

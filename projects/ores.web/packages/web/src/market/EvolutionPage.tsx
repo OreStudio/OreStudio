@@ -545,6 +545,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
         quoteType: '',
         fields: '',
         partyId: '',
+        providerCode: '',
     });
     const [picked, setPicked] = useState('');
     const [from, setFrom] = useState(day(DEFAULT_SPAN_DAYS));
@@ -712,11 +713,11 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
 
     const text = (key: keyof IdentityForm) => ({
         value: form[key],
-        // Typing makes the identity the person's own, so it no longer names the party of a
-        // picked series.
+        // Typing makes the identity the person's own, so it no longer names the party or the
+        // provider of a picked series.
         onChange: (event: { target: { value: string } }) => {
             setPicked('');
-            setForm({ ...form, [key]: event.target.value, partyId: '' });
+            setForm({ ...form, [key]: event.target.value, partyId: '', providerCode: '' });
         },
     });
 

@@ -71,14 +71,18 @@ struct owned_series {
     resolve_series_identity_request identity;
 };
 
-/// A series of @p curve_id owned by @p party, or by a new party when @p party is nil.
+/// A series of @p curve_id owned by @p party, or by a new party when @p party is nil, from
+/// @p provider, or from the generator's provider when @p provider is empty.
 owned_series make_series(database_helper& h,
                          const std::string& curve_id = fresh_curve_id(),
-                         const boost::uuids::uuid& party = boost::uuids::nil_uuid()) {
+                         const boost::uuids::uuid& party = boost::uuids::nil_uuid(),
+                         const std::string& provider = "") {
     auto ctx = ores::testing::make_generation_context(h);
     auto s = generate_synthetic_market_series(ctx);
     if (!party.is_nil())
         s.party_id = party;
+    if (!provider.empty())
+        s.provider_code = provider;
     s.oresmd_uri = zero_uri(curve_id);
     market_series_repository{}.write(h.context(), s);
     auto owner = party_context(h, s.party_id);
@@ -415,4 +419,55 @@ TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
 
     CHECK(reply.result.outcome == outcome::ok);
     CHECK(reply.values == std::vector<double>{2.0});
+}
+
+TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_names_both", tags) {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
+    const auto bloomberg = make_series(h, curve, ore.series.party_id, "bloomberg");
+    const auto t0 = now_second();
+    insert_tick(
+        bloomberg.owner, bloomberg.series.party_id, bloomberg.series.id, bloomberg.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(ore.owner, span(ore, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::invalid);
+    CHECK(reply.result.code == "series_ambiguous");
+    CHECK(reply.result.message.find("bloomberg") != std::string::npos);
+    CHECK(reply.result.message.find("ore") != std::string::npos);
+    CHECK(reply.result.message.find("provider") != std::string::npos);
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("a_provider_states_which_series_of_one_party_is_read", tags) {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
+    const auto bloomberg = make_series(h, curve, ore.series.party_id, "bloomberg");
+    const auto t0 = now_second();
+    insert_tick(ore.owner, ore.series.party_id, ore.series.id, ore.number, t0, 1.0);
+    insert_tick(
+        bloomberg.owner, bloomberg.series.party_id, bloomberg.series.id, bloomberg.number, t0, 2.0);
+
+    auto request = span(ore, t0 - 1s, t0 + 1min);
+    request.identity.provider_code = "bloomberg";
+    const auto reply = series_tick_reader::read(ore.owner, request);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values == std::vector<double>{2.0});
+}
+
+TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply", tags) {
+    database_helper h;
+    const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "ore");
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+
+    auto request = span(o, t0 - 1s, t0 + 1min);
+    request.identity.provider_code = "bloomberg";
+    const auto reply = series_tick_reader::read(o.owner, request);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values.empty());
 }

@@ -410,15 +410,17 @@ The range holds more than {limit} {entity}; ask for a shorter range.
 :code: series_ambiguous
 :outcome: invalid
 :producer: request
-:args: entity, value
+:args: entity, value, reason
 :END:
 
-A read names a series by its typed identity, and the identity matches the series
-of more than one party. The read refuses and never picks one of them, because a
-chosen series could be the wrong one without any sign in the reply.
+A read names a series by its typed identity, and the identity matches more than one
+series: the series of several parties, or the series of several providers of one
+party. The read refuses and never picks one of them, because a chosen series could
+be the wrong one without any sign in the reply. The reason says what differs among
+the matches, so the caller knows what to state.
 
 #+begin_src text :name message
-The identity names {value} series of the {entity}; state the party so that it names one.
+The identity names {value} series of the {entity} ({reason}); state the party or the provider so that it names one.
 #+end_src
 
 ** internal_error

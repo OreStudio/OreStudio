@@ -66,6 +66,7 @@ const identity = z.strictObject({
     instrument_type: word,
     quote_type: word,
     party_id: z.union([z.uuid(), z.literal('')]).default(''),
+    provider_code: z.string().trim().max(100).default(''),
     fields: z
         .array(z.strictObject({ name: word, text: word }))
         .max(20)

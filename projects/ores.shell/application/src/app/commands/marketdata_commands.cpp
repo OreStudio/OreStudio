@@ -199,7 +199,8 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
                             },
                             "Read the ticks of one series over a span of time, in one call",
                             {"--asset <class> --scope <scope> --instrument <type> --quote <type> "
-                             "[--fields <name=value,...>] [--party <id>] [--from <date|instant>] "
+                             "[--fields <name=value,...>] [--party <id>] [--provider <code>] "
+                             "[--from <date|instant>] "
                              "[--to <date|instant>] [--coordinate <oresmd-uri>] [--csv <path>]"});
 
     marketdata_menu->Insert("stream",
@@ -585,6 +586,7 @@ void marketdata_commands::process_ticks(std::ostream& out,
                               {.name = "quote", .requires_value = true, .default_value = ""},
                               {.name = "fields", .requires_value = true, .default_value = ""},
                               {.name = "party", .requires_value = true, .default_value = ""},
+                              {.name = "provider", .requires_value = true, .default_value = ""},
                               {.name = "from", .requires_value = true, .default_value = ""},
                               {.name = "to", .requires_value = true, .default_value = ""},
                               {.name = "coordinate", .requires_value = true, .default_value = ""},
@@ -596,11 +598,12 @@ void marketdata_commands::process_ticks(std::ostream& out,
     if (!parsed->positionals.empty() || parsed->flag("asset").empty() ||
         parsed->flag("scope").empty() || parsed->flag("instrument").empty() ||
         parsed->flag("quote").empty()) {
-        fail(out) << "Usage: marketdata ticks --asset <class> --scope <scope> "
-                     "--instrument <type> --quote <type> [--fields <name=value,...>] "
-                     "[--party <id>] [--from <date|instant>] [--to <date|instant>] "
-                     "[--coordinate <oresmd-uri>] [--csv <path>]"
-                  << std::endl;
+        fail(out)
+            << "Usage: marketdata ticks --asset <class> --scope <scope> "
+               "--instrument <type> --quote <type> [--fields <name=value,...>] "
+               "[--party <id>] [--provider <code>] [--from <date|instant>] [--to <date|instant>] "
+               "[--coordinate <oresmd-uri>] [--csv <path>]"
+            << std::endl;
         return;
     }
     if (!session.is_logged_in()) {
@@ -614,6 +617,7 @@ void marketdata_commands::process_ticks(std::ostream& out,
     req.identity.instrument_type = parsed->flag("instrument");
     req.identity.quote_type = parsed->flag("quote");
     req.identity.party_id = parsed->flag("party");
+    req.identity.provider_code = parsed->flag("provider");
     const auto fields = parse_identity_fields(parsed->flag("fields"));
     if (!fields) {
         fail(out) << "--fields: " << fields.error() << std::endl;

@@ -96,6 +96,9 @@ travels in =fields=.
  *
  * `party_id` states whose series is wanted. An empty one asks across the
  * parties the caller can see, which is why the answer is a list.
+ *
+ * `provider_code` states which provider's series is wanted. A party holds one
+ * series of an identity for each provider, so an empty one can match several.
  */
 #+end_src
 
@@ -136,6 +139,15 @@ required, because every series URI carries a quote.
 :END:
 
 The owning party, or empty for every party the caller can see.
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The provider of the series, such as =bloomberg= or =ore=, or empty for every
+provider. The same party can hold one series of an identity for each provider, so a
+caller that wants one series states the provider.
 
 *** fields
 :PROPERTIES:

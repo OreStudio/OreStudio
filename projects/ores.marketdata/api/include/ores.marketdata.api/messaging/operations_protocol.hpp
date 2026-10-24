@@ -61,6 +61,9 @@ struct series_identity_field {
  *
  * `party_id` states whose series is wanted. An empty one asks across the
  * parties the caller can see, which is why the answer is a list.
+ *
+ * `provider_code` states which provider's series is wanted. A party holds one
+ * series of an identity for each provider, so an empty one can match several.
  */
 struct resolve_series_identity_request {
     using response_type = struct resolve_series_identity_response;
@@ -77,6 +80,7 @@ struct resolve_series_identity_request {
     std::string instrument_type;
     std::string quote_type;
     std::string party_id;
+    std::string provider_code;
     /**
      * @brief The identity's remaining fields, such as ccy or curve_id.
      *

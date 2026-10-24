@@ -38,6 +38,8 @@ export interface IdentityForm {
     readonly fields: string;
     /** The party a picked series belongs to. Empty when the identity is typed. */
     readonly partyId: string;
+    /** The provider of a picked series. Empty when the identity is typed. */
+    readonly providerCode: string;
 }
 
 /** The identity the form states, or the reason it does not state one. */
@@ -82,6 +84,7 @@ export function identityOf(form: IdentityForm): IdentityResult {
             instrument_type: instrumentType,
             quote_type: quoteType,
             party_id: form.partyId,
+            provider_code: form.providerCode,
             fields,
         },
     };
@@ -235,9 +238,13 @@ export function canBeShown(listed: ListedSeries): boolean {
     return listed.axes.length > 0;
 }
 
-/** The form a picked series fills in, with its party kept so the read names this series. */
+/**
+ * The form a picked series fills in, with its party and its provider kept so the read names
+ * this series and not another provider's series of the same identity.
+ */
 export function formFrom(listed: ListedSeries): IdentityForm {
-    const { asset, scope, instrument_type, quote_type, fields, party_id } = listed.identity;
+    const { asset, scope, instrument_type, quote_type, fields, party_id, provider_code } =
+        listed.identity;
     return {
         asset,
         scope,
@@ -245,5 +252,6 @@ export function formFrom(listed: ListedSeries): IdentityForm {
         quoteType: quote_type,
         fields: fields.map((field) => `${field.name}=${field.text}`).join('\n'),
         partyId: party_id,
+        providerCode: provider_code,
     };
 }

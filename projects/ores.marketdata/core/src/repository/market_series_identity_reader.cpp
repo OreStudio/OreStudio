@@ -155,7 +155,13 @@ market_series_identity_reader::read(ores::database::context ctx,
     ids.reserve(identities.size());
     for (const auto& i : identities)
         ids.push_back(boost::uuids::to_string(i.series_id));
-    return market_series_repository{}.read_latest(ctx, ids);
+    auto series = market_series_repository{}.read_latest(ctx, ids);
+    // The projection holds no provider, so the provider narrows the series it names.
+    if (!identity.provider_code.empty())
+        std::erase_if(series, [&](const domain::market_series& s) {
+            return s.provider_code != identity.provider_code;
+        });
+    return series;
 }
 
 }

@@ -219,6 +219,32 @@ lifecycle.
 - A parameter with no documentation entry shows its ORE name and a note. It is
   never hidden, because a gap in the data must be visible.
 
+** Reading a collection
+
+A collection row is an element with its own identity, and its documentation has
+two levels.
+
+- The row opens a card that says what the element is: its label, its code, what
+  it is for, the instrument it maps to, its asset class, and the source of the
+  words. A row that shows a name and a count alone is not enough.
+- The card lists the settings of that element as rows, each with the same
+  collapsible documentation and the same Simple and Advanced switch as a group.
+  Advanced adds the schema entry.
+- A setting with no documentation entry shows its ORE name and a note.
+
+** The same documentation depth everywhere
+
+A group and a collection offer the same documentation: the label, the help, the
+long description, the default, the format and, under Advanced, the ORE path and
+the releases. No configuration screen is exempt, and no section is exempt.
+
+The switch is one switch. It appears wherever a parameter is shown, its choice is
+remembered for every screen that offers it, and a card opened from a row carries
+it too.
+
+A screen that shows a value without its documentation is a gap, not a variation.
+The conformance table records it as a gap.
+
 ** Changing a group
 
 - *Edit* turns the section's card into a form in place. There is no dialog, so
@@ -241,9 +267,10 @@ lifecycle.
 
 - A row is added, changed and removed in the record standard's dialog. A
   collection is not edited in place.
-- The dialog shows the documentation of the choice, and where a choice depends on
-  another (a model on a product type, an engine on a model), it offers only the
-  choices that belong together.
+- The dialog shows the documentation of the choice, at the same depth as a
+  group: collapsed under the setting, with Simple and Advanced. Where a choice
+  depends on another (a model on a product type, an engine on a model), it offers
+  only the choices that belong together.
 - A change that drops a row or a parameter states what will be dropped before it
   is dropped. Nothing is dropped silently.
 - The save states the difference: added, changed and removed.
@@ -438,7 +465,7 @@ to differ.
 | List and record page | Meets | Gap: sections are stacked, not tabs; no Used by, no History |
 | Sections and editing | Meets | Meets for the collection dialogs |
 | Documentation contract | Meets, from =ore_parameter= | Gap: four vocabulary tables hold the words |
-| Value in force and Simple/Advanced | Meets | Partial: usual values, no default-in-force, no schema panel |
+| Value in force, documentation and Simple/Advanced | Meets | Gap: no collapsible documentation, no Simple/Advanced, no default-in-force; the product card is where both must appear |
 | Reach | Meets | Gap: the page says the reach cannot be read |
 | History | Meets | Gap |
 | Numbers-changing lifecycle | Gap | Gap: the model has no status or sign-off |

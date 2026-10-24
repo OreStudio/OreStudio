@@ -21,17 +21,40 @@ This prototype draws the list of pricing engine configurations and the page of o
 
 A party holds few official configurations, one for each cycle, and model risk signs them off. The prototype draws that. Each configuration has a status (approved, in review, draft or retired), and the one that is official for a cycle carries an *Official for* tag. An approved configuration offers *Propose a change* in place of *Edit*, and no *Delete*. A pending proposal shows as a banner and in the History tab. A draft edits and deletes as the standard says.
 
-The page carries one addition for clarity. The Details tab says what the configuration decides and
-lists the other configurations the reports binding this one also bind, with a link to the engine run
-settings. The two engine-facing configurations are named apart in every title, card and journey: this
-one chooses the model and the engine for each product type, and the engine run settings decide how the
-engine runs. See [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]].
+The page explains itself from the product side, not by comparing itself with another screen. The
+Products tab leads with the product type and the asset class, and each opens a card that says what the
+thing is. There is no cross-link to the engine run settings: a shared configuration does not need to
+explain its siblings, and the place where the two are bound together is the report.
 
 The two other additions are the two things a market-risk owner asks that the standard does not answer. The Products tab opens with a *coverage strip*: how many of the product types the reports that bind the configuration need have a row, and which do not. The Reports tab opens with the rule and the reach: a report needs a price for every product type in its portfolio, a change reaches the next run of each report named once it is approved, and a run already produced keeps what it ran with. It lists each report with its cycle, its portfolio, and what the configuration leaves unpriced for it.
 
 The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
 
 * Detail
+
+** The product card and the asset class card
+
+The Products tab is a table of product types, and each row can be read in two
+directions.
+
+- Clicking the product type opens a card that says what the product is: a
+  paragraph, the instrument it maps to and that instrument's paragraph, the asset
+  class and that class's paragraph, the model and engine in force, the settings
+  of this product, and the known model and engine pairs with the one in use
+  marked.
+- Clicking the asset class opens a card that says what the class is, and lists
+  the product types of this configuration that sit in it.
+
+The cards exist because the table's words are the ORE vocabulary, and a person
+who does not know what a Bermudan swaption is cannot judge the model and engine
+chosen for it. The explanation belongs beside the row, not in a comparison with
+another screen.
+
+The instrument and asset class descriptions already exist in the data:
+=ores_refdata_instrument_codes_tbl.description= and
+=ores_refdata_asset_class_codes_tbl.description= are paragraphs. The product type
+description is the humanised label, so the product card needs a verbose field
+beside it.
 
 ** The question the screen answers
 
@@ -47,7 +70,9 @@ The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See t
 
 ** What is fake
 
-Every value. The product and report counts in the list are fixtures, because no operation returns a count for a list row. The traded product types are a fixture, because no operation returns them. The reports on the Reports tab are names, because no read lists the reports that bind one configuration. The status, the cycle, the sign-off, the proposal and the portfolios of the reports are fixtures: no operation holds them. The first version of each official configuration is marked as provisioned by the seed, with no sign-off. The product, model and engine rows are real triples counted from the ORE example files, and the settings of the Bermudan swaption are the ones most example files carry.
+The product type and instrument paragraphs are fixtures written for this page.
+The asset class paragraphs follow the seeded descriptions. Every other value
+is a fixture. The product and report counts in the list are fixtures, because no operation returns a count for a list row. The traded product types are a fixture, because no operation returns them. The reports on the Reports tab are names, because no read lists the reports that bind one configuration. The status, the cycle, the sign-off, the proposal and the portfolios of the reports are fixtures: no operation holds them. The first version of each official configuration is marked as provisioned by the seed, with no sign-off. The product, model and engine rows are real triples counted from the ORE example files, and the settings of the Bermudan swaption are the ones most example files carry.
 
 ** Where the code lives
 
@@ -55,7 +80,8 @@ Every value. The product and report counts in the list are fixtures, because no 
 
 ** What it argues
 
-- The Details tab says what the configuration decides and lists the related configurations the same report binds, so the two engine-facing configurations are not confused.
+- The Products tab leads with the product, not the configuration: the product type and the asset class are links to a card that says what each one is. The explanation is beside the row, not in a comparison with another screen.
+- The Products tab explains the product and the asset class in a card beside the row, so the explanation is where the question is asked.
 - The History tab draws the shared timeline as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws it: an event chart split by kind, a rail grouped by day with the time in the left gutter, one header line for each entry, the note on its own line, a collapsed detail, the current-version emblem and the *Hide system activity* toggle. The prototype does not draw batches of entries that are one act, and the toggle is always on, because the fixture has no reader without the account permission.
 - The list is drawn as the record screen standard draws it, without a variation.
 - The coverage strip belongs on the Products tab, above the table, and states the products left unpriced by name.

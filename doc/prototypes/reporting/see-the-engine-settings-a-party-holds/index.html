@@ -443,27 +443,11 @@ function listScreen() {
   ${protoNote('The group count, the thread count and the report count are fixtures. No operation returns them for a list row.')}`;
 }
 
-/** The one sentence that separates this configuration from the pricing engine configuration. */
-function whatThisIs() {
-  return `<div class="notice"><b>What this configuration decides.</b> How the engine prepares its inputs and runs the job: which fixings and cash flows count, how the market and the trades are built, and how the work executes. It does not decide which model or engine prices a product. That is the <a href="../see-the-pricing-engines-a-party-holds/">pricing engine configuration</a>, a configuration of its own that the same report binds.</div>`;
-}
-
-/** The other configurations the reports that bind this one also bind. */
-function relatedCard() {
-  const rows = [
-    ['Pricing engine configuration', 'EOD pricing', 'which model and engine price each product', '../see-the-pricing-engines-a-party-holds/'],
-    ["Today's market", 'ACME HK market', 'how the curves and surfaces are built', null],
-    ['Curve configuration', 'HK curves', 'how each curve is defined and bootstrapped', null],
-    ['Conventions', 'HK conventions', 'the market terms a trade is read on', null],
-  ].map(([kind, name, what, href]) => `<tr><td>${esc(kind)}</td><td>${esc(name)}</td><td>${esc(what)}</td><td>${href ? `<a class="btn small" href="${href}">Open</a>` : '<span class="muted">No screen yet</span>'}</td></tr>`).join('');
-  return `<div class="card"><div class="body"><div style="grid-column:1/-1"><b>Related configurations</b><div class="muted">The other configurations that the reports binding this one bind as well.</div><table><thead><tr><th>Configuration</th><th>This report binds</th><th>What it decides</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
-}
-
 function detailsTab(c) {
   const l = c.versions[c.versions.length - 1];
   const set = GROUPS.filter(g => c.groups[g.id]).map(g => g.title);
-  return `${whatThisIs()}<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
-  <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>${relatedCard()}`;
+  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
+  <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
 }
 
 const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;

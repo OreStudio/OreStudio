@@ -23,10 +23,9 @@ its earlier file name; the screen it draws is *Engine run settings*. It answers 
 that reports bind, as they bind the pricing engines.
 
 The list and the page are the ones the pricing engine configurations use, so a person who knows one
-knows the other. The two are named apart: this one decides how the engine runs, and the pricing engine
-configuration decides which model and engine price each product. The Details tab says that, and lists
-the related configurations the same report binds, with a link to the pricing engine configuration. See
-[[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]]. The list has the
+knows the other. The two are named apart: this one decides how the run behaves, and the product
+pricing page decides which model and engine price each product. This page does not link to it: a
+shared configuration explains its own job, and the report page is where the two meet. The list has the
 standard bar and the four states. The page has six tabs: Details, one tab for each of the three groups, Used by and History.
 
 It is throwaway. It reads no service and writes nothing to one.

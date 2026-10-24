@@ -30,9 +30,9 @@ The bond planner is the first implementation. The commodity planner is the secon
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Writing the plan variant and the planner registry. A build runs against the new vcpkg baseline. |
+| Waiting on   | The build, before any source edit. |
+| Next         | Port the bond planner onto the interface, then move the population size into the config. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -58,9 +58,57 @@ The bond planner is the first implementation. The commodity planner is the secon
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The envelope stays. =trade_population_plan= keeps the config id, the
+   party and the as-of. =trade_population_slot= keeps the keys every
+   family shares: the trade id, the slot number, the book, the
+   counterparty, the netting set, the trader, the trade type, the trade
+   date, the notional and the currency.
+
+2. The payload becomes a variant. A slot carries
+   =std::variant<bond_terms, commodity_terms>=. =bond_terms= holds the
+   security id, the issue id, the issuer, the issue date, the maturity,
+   the tenor in years, the calendar and the reference curve.
+   =commodity_terms= holds the commodity, the delivery and maturity
+   dates and the price, strike, barrier or averaging fields its shape
+   needs. A family is a type, so a reader of a slot sees which facts it
+   carries and no others.
+
+3. The payload fills the batch, and the writer does not branch. The
+   trading protocol carries one typed array per entity, so a family
+   states how its own terms become the batch members it owns. Each
+   payload offers its own =apply_to(instrument_batch&)= and the writer
+   calls it through a visitor. That is what keeps the acceptance honest:
+   adding a family adds a payload type and a planner, and changes
+   nothing in the writer, the envelope or booking.
+
+4. The planner becomes an interface. =trade_planner= answers
+   =plan(scope)=. A registry maps =asset_class_code= to a planner, and a
+   class with no entry is refused by name. The free =plan_population= is
+   deleted.
+
+5. The shared validation moves up. Book, counterparty, trader, notional
+   band and tenor band are checks every family makes, so they run once
+   before the planner is called and not inside each planner.
+
+6. The bond planner becomes the first implementation. It states bond
+   terms for each slot and produces what =plan_population= produced, so
+   the existing tests keep their meaning.
+
+7. The size moves to the config. =trades_per_book= leaves the planner
+   header for a column on =ores.synthetic.trade_generation_config.org=,
+   regenerated through codegen.
+
+8. The commodity planner is written against the eight shapes the ORE
+   importer already declares, at
+   =projects/ores.ore/core/src/domain/commodity_instrument_projection.cpp=
+   lines 250-370: forward, option, swap, swaption, variance swap,
+   average price option, option strip and basket option. The catalogue's
+   twenty-five commodity codes map onto those shapes, so the planner
+   states a shape and not twenty-five special cases.
+
+9. Delivery order, one verifiable commit each: the seam with bond; the
+   size in the config; then the commodity shapes one at a time, each
+   with the test that proves the rows it writes.
 
 * Measurements
 

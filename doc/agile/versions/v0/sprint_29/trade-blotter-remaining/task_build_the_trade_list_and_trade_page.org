@@ -115,3 +115,11 @@ Two axes, run independently on the branch: standards against the repo's document
 | 17 | =.rail= reuses the name of the timeline's rail rule | prototype.css | Accepted | Renamed to =.ptree=, and =booksUnder= and =treeIcon= are kept because each names a concept used twice |
 
 * Result
+
+The prototype is settled and the plan is written. The trade list now draws a portfolio tree that holds portfolios and the books under them, states on every row whether it is a trade, a composite trade or a structure, and shows an identifier rather than the internal uuid. The Notional column is gone, because notional belongs to the instrument.
+
+Two model errors were corrected in the process: a single notional per trade cannot be read faithfully, and a composite instrument is not a structure. Both are recorded on the prototype's page so the next reader does not repeat them.
+
+The two open items of the prototype audit are settled: a tab is drawn by the read it needs, and each lifecycle event states the link it writes. The tree's real reads are not settled: the six questions they raise are filed as the capture Read the portfolio tree's junctions from the server, and the branch records the decisions it rests on in its Plan.
+
+What this round does not deliver: the screens. The list and the page, with the contract, the BFF route and the client, are the next PR of this task, and the task stays STARTED until they land.

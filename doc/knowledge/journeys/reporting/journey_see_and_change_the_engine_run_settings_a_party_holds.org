@@ -201,7 +201,7 @@ A write to any section bumps the central row's version in the same transaction.
 | 2 | Read the documentation of every setting | =reporting.v1.ore_parameters.list= | exists |
 | 2 | Read one configuration with its three sections | =reporting.v1.engine_settings.get= | exists |
 | 9 | Write one section against its version | =reporting.v1.engine_settings_<section>.put= | exists |
-| 10 | Read the reports that bind a configuration | =reporting.v1.report_configurations.list_by_configuration= | missing |
+| 10 | Read the reports that bind a configuration | =reporting.v1.report_configurations.list_by_configuration_id= | exists |
 | 11 | Read the history of the configuration and its sections | =reporting.v1.engine_settings_versions.list= | exists |
 | 11 | Write a section's earlier values as a new version | the same part put, with the earlier values | exists |
 | 9 | Submit a numbers-changing section as a proposal | (no subject) | missing |
@@ -217,11 +217,9 @@ A write to any section bumps the central row's version in the same transaction.
    [[id:4EC59CB6-0169-485F-9F85-889A9BFC0535][Put the numbers-changing engine run settings through sign-off]].
 2. *Who signs off.* The kind's approval parts are not decided. Model risk
    confirms them.
-3. *The reports that bind a configuration.* No read lists the definitions that
-   bind one configuration. The Used by tab is a fixture until one exists.
-4. *The version a run used.* A run does not record the version of the engine run
+3. *The version a run used.* A run does not record the version of the engine run
    settings it read, so the page cannot name the runs a change reached.
-5. *The build a setting needs.* A report does not state the ORE build it runs
+4. *The build a setting needs.* A report does not state the ORE build it runs
    on, so the page cannot warn that a setting is newer than the build.
 
 * Related journeys

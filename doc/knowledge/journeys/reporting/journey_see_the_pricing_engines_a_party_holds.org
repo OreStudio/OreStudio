@@ -223,7 +223,7 @@ party-scoped.
 | 2, Products | List the product types and their instrument types | =analytics.v1.pricing_engine_types.list= | exists |
 | 2, Products | List the products of one configuration | =analytics.v1.pricing_model_products.list= | partial; no read by configuration |
 | 2, Parameters | List the parameters of one configuration | (the parameters subject for =pricing_model_product_parameter=) | partial; no read by configuration |
-| 2, Reports | Read the definitions that bind a configuration | =reporting.v1.report_configurations.list= | partial; no read by configuration id |
+| 2, Reports | Read the definitions that bind a configuration | =reporting.v1.report_configurations.list_by_configuration_id= | exists |
 | 2, Reports | Read the reporting row | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
 | 2, History | Read the versions of a configuration and its parts | (the generic history request) | partial; one stream over the parts is missing |
 | 2, Details | Read the status, the cycle and the sign-off of a version | (no operation) | missing |
@@ -233,19 +233,19 @@ party-scoped.
 
 * What is missing
 
-1. *A route and a screen.* The BFF routes under =/api/reporting/pricing-engines=
-   serve the list and the document, and the list and the page exist. The page has
-   no *Used by* read and no *History* screen, which items 3 and 6 below describe.
+1. *The tabs.* The BFF routes under =/api/reporting/pricing-engines= serve the list
+   and the document, and the list and the page exist. The page draws Details,
+   Products and Settings as stacked sections, not the five tabs of the prototype,
+   and it has no *Used by* tab and no *History* tab.
 2. *Reads of the parts by configuration.* The document read returns the whole
    document, which is enough for a page. The list of configurations needs a count
    of products and a count of reports for each row, and no operation returns a
    count. Until one does, the list reads one page of configurations and the counts
    come from a second read, or the column is dropped.
-3. *The reports that bind a configuration.* =report_configurations.list= lists
-   the bindings of a definition. Nothing lists the definitions that bind one
-   configuration, which is the question the Reports tab asks and the question
-   [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] asks as
-   "who else is bound". The tab needs the read by configuration id.
+3. *The reports that bind a configuration.* The read exists
+   (=reporting.v1.report_configurations.list_by_configuration_id=), and the engine
+   run settings screen uses it for its Used by tab. The pricing page does not call
+   it yet.
 4. *The products the party trades.* The coverage strip compares the configuration
    with the instrument types of the party's trades. No operation returns the
    distinct instrument types of a party's book. Until one does, the strip is a

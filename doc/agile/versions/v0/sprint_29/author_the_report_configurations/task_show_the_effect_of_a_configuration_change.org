@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: DE2B9B71-1CD1-4D53-8D24-36C06F0D02AD
+:END:
+#+title: Task: Show the effect of a configuration change
+#+description: Run one report with two configurations and explain the difference.
+#+type: task
+#+level: s1
+#+filetags: :author_the_report_configurations:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the reviewer evidence of what a change does. The person runs the same report with configuration A and with configuration B, and the screen shows the difference in the results and explains it: which products moved, by how much, and which model, engine or setting change explains each move. The reviewer reads this beside the difference of the configurations before approving. This needs a run that can take a chosen configuration version, a way to compare two runs of one report, and a link from a moved result to the configuration change behind it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A person can run one report against two configuration versions and read both runs side by side.
+- The screen lists the products whose result moved, with the size of the move.
+- Each move names the configuration change that explains it, or says that no change explains it.
+- The proposal for sign-off carries this evidence.
+- The task says which operations exist today and which are missing, including the operation that says which configuration version a run used.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

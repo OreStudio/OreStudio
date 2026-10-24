@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 7295CBC5-402C-45D4-9888-4C795AFF883C
+:END:
+#+title: Story: Open sprint 29
+#+description: Scaffold sprint 29, wire the version manifest and the agile index, and move the postponed stories.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CE1EAB8C-CC74-444E-B0DA-A68C6927F2FE][Task: Open sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | Open sprint 29: scaffold, wire, and move the postponed stories. |
+| [[id:CCCE56A0-8CBE-4A0F-8D72-4EDC4F68B80A][Finish opening sprint 29]] | DONE | 2026-10-24 | 2026-10-24 | The first sprint 29 PR did the scaffold and the release material. This task does the rest of the open-sprint recipe: the vcpkg update, the version bump, the postponed story and the promoted carried work. |
+
+* Decisions
+
+* Out of scope
+
+-

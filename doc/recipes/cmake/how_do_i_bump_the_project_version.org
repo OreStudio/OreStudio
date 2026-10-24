@@ -18,7 +18,7 @@ mentions it?
 
 * Answer
 
-Six files carry the version string or the last-released screenshot.
+Seven files carry the version string or the last-released screenshot.
 Edit them as a single commit.
 
 1. /Pick the new version/. The project follows =0.0.<N>= where =N=
@@ -47,6 +47,14 @@ Edit them as a single commit.
 
    Each is a single =sed=-able substitution.
 
+   The *dsh plugin* =projects/ores.dsh_environment/package.json= carries the
+   same version, aligned with the product since sprint 28:
+
+   #+begin_src diff
+   -  "version": "0.0.<OLD>",
+   +  "version": "0.0.<NEW>",
+   #+end_src
+
 5. /=readme.org=/ — four things:
 
    a. The *sprint badge* (line 25): update both the =Sprint-<N>= label
@@ -58,16 +66,17 @@ Edit them as a single commit.
       +<a href="...sprint_<NEW>/sprint.html"><img ... src=".../Sprint-<NEW>-blue.svg"/></a>
       #+end_src
 
-   b. The *"PRs since"* static badge (line 43): update the label and
-      the href's merged date filter to the new sprint start date.
-      Use a static badge (=img.shields.io/badge/PRs%20since%20v0.0.<NEW>-GitHub%20search-blue=);
-      do *not* use =badge/dynamic/json= with a GitHub Search API URL —
-      shields.io rejects the =url= parameter when the inner URL
-      contains query-string syntax:
+   b. The *"PRs since"* badge: update the label and both date filters
+      to the date of the version tag. Use the shields.io search badge,
+      =img.shields.io/github/issues-search=, which shows the number of
+      merged pull requests. A static badge shows only its words and no
+      number. Do *not* use =badge/dynamic/json= with a GitHub Search API
+      URL: shields.io rejects the =url= parameter when the inner URL
+      contains query-string syntax.
 
       #+begin_src diff
-      -<a href="...merged%3A%3E%3D<OLD-DATE>"><img alt="PRs since v0.0.<OLD>" src="...badge/PRs%20since%20v0.0.<OLD>-GitHub%20search-blue"/></a>
-      +<a href="...merged%3A%3E%3D<NEW-DATE>"><img alt="PRs since v0.0.<NEW>" src="...badge/PRs%20since%20v0.0.<NEW>-GitHub%20search-blue"/></a>
+      -<a href="...merged%3A%3E%3D<OLD-DATE>"><img alt="PRs since v0.0.<OLD>" src="https://img.shields.io/github/issues-search/OreStudio/OreStudio?query=is%3Apr%20is%3Amerged%20merged%3A%3E%3D<OLD-DATE>&label=PRs%20since%20v0.0.<OLD>&color=blue"/></a>
+      +<a href="...merged%3A%3E%3D<NEW-DATE>"><img alt="PRs since v0.0.<NEW>" src="https://img.shields.io/github/issues-search/OreStudio/OreStudio?query=is%3Apr%20is%3Amerged%20merged%3A%3E%3D<NEW-DATE>&label=PRs%20since%20v0.0.<NEW>&color=blue"/></a>
       #+end_src
 
    c. The *"commits-since"* badge, which uses the /previous/
@@ -103,7 +112,8 @@ Edit them as a single commit.
 
    #+begin_src sh :results verbatim
    grep -rn "0\.0\.<OLD>" \
-       CMakeLists.txt vcpkg.json .github/workflows readme.org index.org
+       CMakeLists.txt vcpkg.json .github/workflows readme.org index.org \
+       projects/ores.dsh_environment/package.json
    #+end_src
 
    Expect zero matches.

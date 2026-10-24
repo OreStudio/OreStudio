@@ -1,0 +1,217 @@
+:PROPERTIES:
+:ID: 77DEA267-2F6B-4743-AE62-7DEF0A80C394
+:END:
+#+title: Task: Store ticks in an append-only table
+#+description: Step 1b of the tick ingest pipeline: ticks get their own hypertable with no trigger and one index.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/store-ticks-in-an-append-only-table
+#+pr: 3606
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-24
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The observation table stops at about 8,300 rows per second for one connection because its insert trigger runs for every row. An append-only table with one index reaches about 187,000 at 162 bytes for each row. Move ticks to it, and give the readers of the observation table a view over both.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] |
+| Now          | Steps 1 to 5 done. The store path passes 100,000 rows each second, and the drain through NATS reaches about 98,000. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge of this task. The tasks "Overlap the copy with the next batch" and "Remove the session functions from the policies" follow. |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- A hypertable for ticks with no trigger, no valid_to and one index on the series and the time, with a retention policy for each class and no compression.
+- The ingest writes ticks to it, and a batch needs no dedupe against a trigger.
+- A view joins it with the observation table, and the readers keep their results: snapshots, evolution, slices, ORE export, curve pillars, lineage and the feed binding activity.
+- The ingest drains a burst at more than 100,000 rows per second on one connection, measured with the tick injector. Met for the store path of the loop (median 117,000). Not met with margin for the whole path through NATS in this task (median 97,600 on a loaded machine). Met by the task "Overlap the copy with the next batch" (median 128,100).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Decision of the owner, 2026-10-21: this task keeps one row for each series. A series is one
+observation with its provenance, owned by a tenant and a party, so ticks are not shared and one
+row for each source does not apply.
+
+The design is in the section on tenant and party isolation of the tick ingest pipeline note.
+In short: one append-only hypertable for each retention class, with =tenant_id=, =party_id=,
+=series_id=, =ts=, =coord= and =value=. The reads run under the tenant policy and the party
+policy, in the scalar subquery form. A writer role with =BYPASSRLS= and =INSERT= only writes
+with =COPY=. The tests of write rate, read cost and isolation are done and recorded in the
+note. The table is not compressed, because row-level security is not supported on compressed
+chunks (Timescale documentation). Retention drops whole chunks. The order of work:
+
+1. Provision the writer role in the role script. Done: =ores_<env>_marketdata_writer= has
+   =BYPASSRLS=, is not in the service role and holds no grant. The =INSERT= grant on the tick
+   table comes with the table in step 2, and the role never gets =SELECT=. The =.env= carries
+   =ORES_MARKETDATA_SERVICE_WRITER_DB_USER= and =ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD=, from =.env=
+   format version 33.
+2. Write the table, its index, its two policies and its retention class, with the notification
+   trigger off. Done in =create/marketdata/marketdata_ticks_create.sql=, as =ores_marketdata_ticks_tbl=,
+   with one-day chunks, a seven-day retention policy where the licence allows it, and =INSERT= for
+   the writer role. The script is hand-written, because the entity template makes a trigger and a
+   =valid_to=. A scratch database ran it twice, and the checks of isolation passed: a session with no
+   settings read 0 rows, one tenant read its own 2 rows, one party read 1 row, a tenant with another
+   tenant's party read 0, and the writer was refused =SELECT=.
+3. Move the ingest to =COPY= with the owner copied from the cached series, and give the service
+   a second pool for the writer role. Done as a copy next to the observation write, so the
+   readers of the observation table keep working until step 4 moves them. =tick_writer= holds
+   one libpq connection, not a pool, because the ingest worker is its only caller, and it writes
+   each batch with one =COPY=. The loop copies the tick of every stored item with the owner of
+   its binding, which is the owner of its series. A failed copy is logged once, counted, and does
+   not change the store or the republish. A datum with a coordinate is not copied, because the
+   table has no coordinate dictionary yet, and the loop warns once for each such series. The role
+   comes from =ORES_MARKETDATA_SERVICE_WRITER_DB_USER= and =..._PASSWORD=, and an empty user turns
+   the copy off. The observation write goes when step 4 ends. Tests: the row format, the write to
+   a database that is not there, the parser, and a loop test that copies a tick as the writer and
+   reads it back as the marketdata service, which has no =BYPASSRLS=: 1 row for the party of the
+   series and 0 for another party.
+4. Point the readers at the table, one at a time, with a test for each. A reader of a party or a
+   tenant lists its series first. Done so far:
+   - The coordinate dictionary, =ores_marketdata_tick_coords_tbl=. The ingest gives each datum
+     of a series a number the first time it sees it, and the copy stores that number in =coord=.
+     Coordinate 0 is the datum of a series without coordinates. The loop now copies datums with
+     coordinates, so the warning of step 3 is gone. The table has the tenant policy only,
+     because the ingest context names no party.
+   - Reader 1, the as-of snapshot (=read_as_of_records=, which =read_as_of= calls). It serves the
+     snapshot, the curve pillars and the curve republish. It reads the latest tick of each
+     datum with one index probe, and it reads the observation table as before. On a tie the
+     observation row wins.
+   - Readers 2 and 3, the evolution buckets and the slice instants, in the same way.
+   - Every datum has a row in the dictionary, including the datum of a series without
+     coordinates. The row holds the URI that the feed sent, which is the URI of the
+     observation rows. The first version used the URI of the series for that datum, and the
+     export could not read it.
+   - Reader 4, the ORE export. Decision of the owner, 2026-10-21: the ingest no longer writes
+     the second row under the previous close. The export takes an optional valuation date.
+     It then keeps the history of the observation table, and replaces the lines of that date
+     by one line for each datum with the value at the close of that day, from both tables. The
+     history stays because analytics such as historical simulation and P&L explain read more
+     than one date. The report run passes the date of its run document, and the shell takes
+     =--date=. Without a date, the export is the observation table as before, and the ticks
+     of a live feed are not in it.
+   - The dated export carries a value forward only up to an age limit, 5 days by default, which
+     covers a weekend and a holiday. The request and the shell (=--max-age-days=) can change
+     it. A datum with an older value has no line at the date, and the answer counts these
+     datums and the carried ones. The report step logs a warning when any are left out. This
+     keeps a run from taking a stale quote for a current one.
+   - Review of PR 3615 found two faults, both fixed on this branch. The first export with a
+     date dropped the history. The assignment of coordinate numbers and the write of the
+     activity row opened one database connection for each datum and each binding. Each now
+     takes a few statements for a batch. The smaller findings are in seven backlog tasks of the
+     story.
+   - Reader 5, the activity of a feed binding. Decision of the owner, 2026-10-21: the tick has
+     no source column. The ingest writes one row for each binding in
+     =ores_marketdata_feed_binding_activity_tbl=, with the series and the time of its newest
+     tick, at most every five seconds. The reader reads that row. The row can trail the newest
+     tick by five seconds.
+   - The ingest stores a tick only in the tick table, with one =COPY= for each batch. The
+     observation write, the close row, the split-and-retry of a failed batch and
+     =keep_last_per_key= are gone. A store that does not answer leaves the batch unstored and
+     republished, with the backoff of before. Two ticks of one datum and time in a batch make
+     one row, and the later tick wins. Without a writer role, nothing is stored.
+   Not covered by this step: the list and count of observations of a series, which the shell
+   and the screens use, read the observation table only, so a live tick is not in them. The
+   plan did not list that reader.
+5. Measure a burst with the tick injector. Done, and the result is mixed. The hidden tests of
+   =app_feed_ingest_loop_tests.cpp= (tag =[burst]=) send 60,000 ticks over 200 datums to one
+   binding and time three paths: a bare =COPY= of the tick writer, the store path of the loop
+   with no NATS, and the drain through a real NATS subscription and the worker thread. A C++
+   publisher takes the place of the Python injector, because the Python injector needs a
+   running service and bindings for its source, and it cannot send fast enough to test a drain
+   of more than 100,000 rows each second. The last tick of a burst is the last row to appear,
+   so one index probe of that row finds the end of the drain. The tests delete their rows.
+   - The first measurement gave about 65,000 rows each second through NATS, and about 70,000
+     for the store path. A bare =COPY= gave about 225,000, so the loop added about 10 microseconds
+     for each tick.
+   - A profile with callgrind showed why. Reading and writing the URI of each tick took about
+     41,000 instructions in =plan_tick=, and the loop wrote the series URI again for every tick.
+     Each tick also copied its bindings and built its republish subject.
+   - The loop now names each distinct URI once and builds the targets once for each source and
+     datum. They live in the bindings snapshot, so a refresh leaves none that is stale. The
+     series, coordinate and stats lookups no longer build a string for each tick, and a row
+     holds views of its ids.
+   - After that, the store path gives about 117,000 rows each second and the drain through NATS
+     about 98,000, on a machine at 11 to 16 load on 8 CPUs, which other environments loaded.
+     The drain through NATS does not reliably pass 100,000 rows each second. The acceptance
+     criterion is met for the store path and not met with margin for the whole path. The task
+     "Overlap the copy with the next batch" followed, and it raises the drain through NATS to a
+     median of 128,100 rows each second over ten runs.
+   - What is left is spread thin: allocation, the CSV time stamp, the TLS of the republish, and
+     locks. A bare =COPY= takes about 0.26 s of the 0.55 s for 60,000 rows, and the loop takes the
+     rest, one after the other in one worker. Overlapping the =COPY= of one batch with the
+     preparation of the next is the one large step left, and it needs its own task.
+6. Open a separate task for the session functions of the policies, which cost seven times on an
+   indexed read. Done: "Remove the session functions from the policies". The step 5 result also
+   has a task, "Overlap the copy with the next batch".
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =COPY= of the owner shape, 50,000 rows in a transaction, by a =BYPASSRLS= role that does not own the table | 194,094 rows per second (append-only shape: 180,185) | =evidence/write_ceiling_owner_columns_output.txt= | this branch |
+| Read of one series, 2,500 rows, under both policies, session functions | 23 to 26 ms (3.4 ms without a policy) | =evidence/write_ceiling_owner_reads_output.txt= | same |
+| Read of one series, 2,500 rows, under both policies, scalar subquery form | 4.5 ms | same | same |
+| Bare =COPY= of the tick writer, 60,000 rows, 5 runs | 215,000 to 237,000 rows per second | =evidence/step5_burst_output.txt=, =ores.marketdata.service.tests "[burst]"= | aade1047c6 |
+| Store path of the loop with no NATS, 60,000 ticks, 5 runs | 102,000 to 121,000 rows per second, median 117,000 | same | same |
+| Drain through NATS and the worker, 60,000 ticks, 5 runs | 83,000 to 107,000 rows per second, median 99,000 | same | same |
+| Drain through NATS and the worker, 60,000 ticks, 10 runs | 86,500 to 108,900 rows per second, median 97,600 | =evidence/step5_burst_nats_10_runs_output.txt=, =ORES_BURST_REPETITIONS=10= | same |
+| Load of the machine during these runs | 11 to 16 on 8 CPUs, from other environments | the header of each evidence file, =/proc/loadavg= | same |
+| First measurement before the change of the loop | about 65,000 rows per second through NATS, about 70,000 for the store path | the same tests on the tree before aade1047c6, not kept as a file | 70283e1640 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3606][#3606]] | [marketdata,doc] Design and measure the isolation of the tick table |
+| [[https://github.com/OreStudio/OreStudio/pull/3615][#3615]] | [marketdata,sql,reporting,shell] Store ticks in the append-only table |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Row-level security is not supported on compressed chunks | =tick_ingest_pipeline.org= | Fixed | The design drops compression, states why, and names the fallbacks. |
+| 2 | "Owner columns cost nothing" rests on single runs | =tick_ingest_pipeline.org= | Fixed | The text states the 0.86 to 1.27 spread and that the two shapes ran as different roles. |
+| 3 | The benchmark creates the slow policy form | benchmark | Fixed | It now creates the scalar subquery form. |
+| 4 | Read table picks runs unevenly, inferred explanations | =tick_ingest_pipeline.org= | Fixed | The disk figure is marked as arithmetic. |
+| 5 | clang-format warnings and header comment | benchmark | Fixed | Formatted, and the header names the shape and the variables. |
+
+* Result

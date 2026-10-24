@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: B34E795E-6075-4738-8453-E8266A80D134
+:END:
+#+title: Story: Build the synthetic collection and model catalogue journeys
+#+description: A person runs a synthetic collection and keeps the yield curve model catalogue in ores.web, on the subjects the journeys name.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-13
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person runs a synthetic collection and keeps the yield curve model catalogue in ores.web, on the subjects the journeys name.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The collection screen shows the feed tree, the selection, the live chart and the folder-scoped start and stop.
+- The yield curve process type screen lists the process types and their parameter definitions as a record screen over the two catalogues.
+- A subject lists the vintages a price source offers, the lists the screens need filter on the parent, and the parameter definition's wire key keeps the process type.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:899404A9-FDF2-4BF6-B11D-B1F4240B2D4E][Build the synthetic collection screen]] | BACKLOG | | | Journey 3: the feed tree, the selection, the live chart and the folder-scoped start and stop. |
+| [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
+| [[id:F8D3EEA7-E3A8-4CDE-BA1B-05C1F0031D8E][Close the gaps the synthetic journeys found]] | BACKLOG | | | No subject lists the vintages a price source offers; several lists filter on id_one_of where the screen needs the parent; the parameter definition's wire key drops the process type. |
+
+* Decisions
+
+* Out of scope
+
+-

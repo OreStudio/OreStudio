@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: E2353FE1-B66F-4A04-90D5-51978D618C02
 :END:
-#+title: See the engine settings a party holds prototype
-#+description: The engine settings list and one configuration page, drawn beside the pricing engines. A configuration holds groups of documented ORE settings, each group its own part, and reports bind it by name.
+#+title: See the engine run settings a party holds prototype
+#+description: The engine run settings list and one configuration page, drawn beside the pricing engine configuration. A configuration holds sections of documented ORE settings, each section its own part, and reports bind it by name; a section that changes the numbers is proposed and signed off.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-21
-#+updated: 2026-10-22
+#+updated: 2026-10-24
 
 | Item          | Where                                                |
 |---------------+------------------------------------------------------|
@@ -17,11 +17,15 @@
 
 * Summary
 
-This prototype draws the list of engine settings configurations and the page of one. It answers to the design in the story
+This prototype draws the list of engine run settings configurations and the page of one. It keeps
+its earlier file name; the screen it draws is *Engine run settings*. It answers to the design in the story
 [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]]: the engine settings leave the run settings and become a named configuration
 that reports bind, as they bind the pricing engines.
 
-The list and the page are the ones the pricing engines use, so a person who knows one knows the other. The list has the
+The list and the page are the ones the pricing engine configurations use, so a person who knows one
+knows the other. The two are named apart: this one decides how the run behaves, and the product
+pricing page decides which model and engine price each product. This page does not link to it: a
+shared configuration explains its own job, and the report page is where the two meet. The list has the
 standard bar and the four states. The page has six tabs: Details, one tab for each of the three groups, Used by and History.
 
 It is throwaway. It reads no service and writes nothing to one.
@@ -61,13 +65,17 @@ button on the card opens or closes all of it.
 *Changing.* Edit turns the card into a form in place. There is no dialog, so nothing hides the documentation. Each setting
 becomes a control, and its first option is "Default (Yes)", which unsets it. Focusing a control opens the documentation of
 its setting. A setting that differs from the saved value is marked, with a count of the changes at the foot of the card. The
-foot says how many reports the group reaches and warns when the group changes the numbers, and asks for a change reason and
-a commentary. Save writes a new version of the group. Cancel leaves the card as it was.
+foot says how many reports the section reaches. A section that changes the numbers, on a configuration a report binds, offers
+*Propose a change*: Save submits a proposal for the next version, the version in force stays in force until the sign-off
+completes, and the person who proposed it cannot sign it off. An operational section offers *Edit* and writes directly with a
+reason and a history entry. A configuration no report binds writes directly in every section. Cancel leaves the card as it
+was.
 
 ** The group tabs
 
-Each tab holds one group, as one card. The card says whether the group changes the numbers a run computes or is
-operational, and shows its own version. A setting that changes the numbers carries a label for it. A group with no row shows
+Each tab holds one section, as one card. The card says whether the section changes the numbers a run computes or is
+operational, and shows its own version. A numbers-changing section on a bound configuration shows a pending proposal as a
+banner. A setting that changes the numbers carries a label for it. A group with no row shows
 "not set", and the engine uses its default for every setting in it.
 
 ** Simple and Advanced
@@ -101,9 +109,11 @@ in entries are the whole of the version documentation.
 
 ** History
 
-The History tab is the shared timeline. A change to a group is one entry that names the group and its part version. The
+The History tab is the shared timeline. A change to a section is one entry that names the section and its part version. The
 entry also moves the version of the whole configuration, because a write to any part makes the next version of the central
-row. Revert is offered on every entry that is not current and writes the values the group had before as a new version.
+row. A proposal that waits shows at the top and is not a version in force. Revert is offered on every entry that is not
+current and writes the values the section had before as a new version; on a numbers-changing section the revert is a
+proposal.
 
 ** States and switches
 
@@ -133,8 +143,8 @@ lists the reports bound to one configuration, and no operation returns a group c
 - The wording of the documentation is drawn from the ORE user guide, with the release numbers measured from the ORE source.
   A reviewer who knows ORE should read the descriptions.
 - Where the target ORE build lives in the data model, so that the screen can warn about a setting the build does not read.
-- Who may change a group. The prototype lets an analyst edit all three. A change to a group that changes the numbers may
-  need an approval like a pricing engine change. That is decision 4 in the story.
+- The approval parts of a numbers-changing section. The prototype lets an analyst propose and names no parts. Model risk
+  confirms them.
 - The flags are drawn as Yes and No. ORE accepts every spelling, so the model can store booleans. Whether the projection
   writes =true= or =Y= is still open in the story.
 - Whether the list should show the groups that are set, or only the count.
@@ -171,5 +181,6 @@ What it does not take up:
 * See also
 
 - [[file:index.org][Reporting prototypes]] — the group.
-- [[file:see-the-pricing-engines-a-party-holds.org][See the pricing engines a party holds]] — the named configuration this page sits beside.
+- [[file:see-the-pricing-engines-a-party-holds.org][See the pricing engine configurations a party holds]] — the named configuration this page sits beside.
 - [[file:see-a-report-and-everything-it-runs.org][See a report and everything it runs]] — the page whose Analytics tab shows these settings today.
+- [[id:29C26BB5-2F89-448C-8E1E-BAA60C91B327][See and change the engine run settings a party holds]] — the journey this prototype answers to.

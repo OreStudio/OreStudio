@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>See the pricing engines a party holds prototype — Reporting prototypes</title>
+<title>See the pricing engine configurations a party holds prototype — Reporting prototypes</title>
 <style>
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -151,15 +151,21 @@ label.plain{white-space:nowrap}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The pricing engines list and one configuration's page, drawn only as the Record
-  screen standard (doc/knowledge/ui/record_screen_standard.org) draws a record
-  screen: breadcrumb, plural title, one sentence, Refresh and Add, search, two
+  The pricing engine configurations list and one configuration's page, drawn only as
+  the Record screen standard (doc/knowledge/ui/record_screen_standard.org) draws a
+  record screen: breadcrumb, plural title, one sentence, Refresh and Add, search, two
   filters, the table, the pager and the four states; then the record page with the
   lead line, the access mark, Edit and Delete only for a person who may, and the
   tabs Details, Products, Parameters, Reports and History with Revert.
+
+  This page is one of two engine-facing configurations. It chooses the model and the
+  engine for each product type. How the engine runs is the engine run settings, drawn
+  by ../see-the-engine-settings-a-party-holds/. The Details tab says which is which
+  and lists the related configurations the same report binds.
   Add, Edit and the file import are the other three prototypes of this journey group.
 
   Addresses: ?screen=list | record&id=c1|c2|c3&tab=details|products|parameters|reports|history
+    &card=<product type> opens the product card; &class=<asset class> opens the asset class card
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
     ?actor=viewer|analyst|admin   a viewer reads, an analyst adds and edits, only the administrator deletes
@@ -213,6 +219,55 @@ const TYPES = [
   ['YYCapFloor','Inflation','CapFloor','A cap or a floor on year-on-year inflation.'],
   ['CpiCapFloor','Inflation','CapFloor','A cap or a floor on a consumer price index.']
 ].map(([code, cls, instrument, desc]) => ({ code, cls, instrument, desc }));
+
+// What the cards say. The asset class text follows the seeded descriptions; the
+// instrument and product type text is this prototype's own wording.
+const CLASSES = {
+  Rates: { name: 'Interest Rate', code: 'interest_rates', what: 'Interest rate products: instruments whose value derives from the level or shape of a yield curve for a currency and index. Covers deposits, forward rate agreements, swaps, swaptions, caps and floors. Discounting and forward projection for every other asset class depend on these curves.' },
+  FX: { name: 'FX', code: 'fx', what: 'Foreign exchange: instruments whose value derives from the exchange rate between two currencies. Covers spot, forwards, swaps and options. Every trade involves two currencies, so FX risk appears inside the other asset classes too.' },
+  Credit: { name: 'Credit', code: 'credit', what: 'Credit risk products: instruments whose value derives from the likelihood and severity of a reference entity defaulting. Covers single-name and index credit default swaps, credit-linked notes, and the spread and hazard rate curves that price them.' },
+  Equity: { name: 'Equity', code: 'equity', what: 'Equity products: instruments whose value derives from a share, a basket or an index. Covers spot and forward positions, vanilla and exotic options, and the dividend curves and volatility surfaces they read.' },
+  Commodity: { name: 'Commodity', code: 'commodity', what: 'Commodity products: instruments whose value derives from a physical commodity or a commodity index. Covers forwards, swaps and options, and forward curves driven by storage cost and convenience yield as well as interest rates.' },
+  Inflation: { name: 'Inflation', code: 'inflation', what: 'Inflation-linked products: instruments whose value derives from a published price index. Covers zero-coupon and year-on-year swaps, caps and floors, and inflation-linked bonds, with the index curve and its seasonality.' }
+};
+const INSTRUMENTS = {
+  Swap: 'A swap exchanges two streams of cash flows on the same or on different indices. The most common form is fixed against floating; a basis swap exchanges two floating indices.',
+  CrossCurrencySwap: 'A cross-currency swap exchanges cash flows in two currencies, usually with a principal exchange at the start and at the end. It carries both interest rate risk and FX risk.',
+  CapFloor: 'A cap or a floor is a series of options on an interest rate index. Each caplet or floorlet pays when the index fixes above or below the strike.',
+  Swaption: 'A swaption is the right, but not the obligation, to enter a swap on a future date. A European swaption exercises once; a Bermudan swaption exercises on any of several dates.',
+  FxForward: 'An FX forward is an agreement to exchange two currencies at a future date at a rate fixed today. The rate follows from the two money market curves and the spot rate.',
+  FxOption: 'An FX option is the right to exchange two currencies at a rate on a date. A European option exercises once; an American option exercises at any time before expiry.',
+  Bond: 'A bond pays a defined schedule of coupons and a principal at redemption. Its value follows from a discount curve plus the issuer spread.',
+  CreditDefaultSwap: 'A credit default swap transfers the loss from a reference entity defaulting. The protection buyer pays a spread, and the seller pays the notional less the recovery on a credit event.',
+  EquityOption: 'An equity option is the right to buy or sell a share or an index at a strike. The value follows from the forward, the volatility surface and the discount curve.',
+  EquityForward: 'An equity forward is an agreement to buy or sell a share or an index at a future date. The forward price follows from the spot, the dividend curve and the discount curve.',
+  CommodityForward: 'A commodity forward is an agreement to buy or sell a commodity at a future date. The forward curve reflects storage cost, convenience yield and interest rates.',
+  CommoditySwap: 'A commodity swap exchanges a fixed price against a floating commodity price over a series of dates.'
+};
+const WHAT = {
+  Swap: 'An interest rate swap exchanges fixed and floating payments on one currency, or two floating indices. ORE prices it from the two curves the trade names, and the swap is the reference product for the discounting engines.',
+  CrossCurrencySwap: 'A cross-currency swap exchanges payments in two currencies and usually exchanges principal at the start and the end. Each leg follows its own currency curve, and the two are joined by the FX rate.',
+  CapFloor: 'A cap or a floor is a strip of options on one interest rate index, one per accrual period. Each option pays only when the index fixes beyond the strike, so the price depends on the caplet volatility surface.',
+  CMS: 'A constant maturity swap leg pays the swap rate of a fixed tenor rather than an index. The rate is read from the swap curve, so the leg carries the risk of that tenor rather than of the index.',
+  CMSSpread: 'A CMS spread leg pays the difference between two constant maturity swap rates. The two rates are correlated, so the price depends on their joint distribution, not on either one alone.',
+  EuropeanSwaption: 'A European swaption is the right to enter a swap on one expiry date. Its price depends on the forward swap rate, the swaption volatility surface and the annuity of the underlying swap.',
+  BermudanSwaption: 'A Bermudan swaption is the right to enter a swap on any of several exercise dates. It is priced by a model, usually LGM or a grid, because each exercise date depends on the ones after it.',
+  FlexiSwap: 'A flexi swap lets the holder choose the notional on each payment date. The choices interact, so it needs a model rather than a closed formula.',
+  FxForward: 'An FX forward fixes the rate of a future exchange of two currencies. The rate follows from the spot rate and the two money market curves, and settlement is usually two business days after the date.',
+  FxOption: 'An FX option gives the right to exchange two currencies at a rate. Its value follows from the spot, the two curves and the volatility surface of the pair.',
+  FxOptionAmerican: 'An American FX option may be exercised at any time before expiry. It is priced by a finite difference scheme rather than a closed formula.',
+  Bond: 'A bond pays coupons and a principal on a schedule. Its value follows from a discount curve plus a spread for the issuer and the security.',
+  CreditDefaultSwap: 'A credit default swap transfers the loss from a default of one reference entity. The spread is read from the credit curve of that entity, and the protection and premium legs are discounted on it.',
+  BondOption: 'A bond option gives the right to buy or sell a bond at a strike. The underlying is the bond price, so the price depends on the bond curve and spread as well as the option volatility.',
+  EquityOption: 'An equity option gives the right to buy or sell a share or an index at a strike. Its value follows from the forward, the volatility surface and the discount curve.',
+  EquityOptionAmerican: 'An American equity option may be exercised at any time before expiry. It is priced by a finite difference scheme on the spot and the volatility surface.',
+  EquityForward: 'An equity forward fixes the price of a future purchase or sale of a share or an index. The forward follows from the spot, the dividend curve and the discount curve.',
+  CommodityForward: 'A commodity forward fixes the price of a future purchase or sale of a commodity. The forward curve reflects storage cost, convenience yield and interest rates.',
+  CommoditySwap: 'A commodity swap exchanges a fixed price against a floating commodity price over a series of dates. Each date reads the forward curve at its own maturity.',
+  YYCapFloor: 'A year-on-year cap or floor is a strip of options on the change of a price index between two dates. The price depends on the inflation curve and the inflation volatility surface.',
+  CpiCapFloor: 'A CPI cap or floor pays when a published index moves beyond a strike. The payoff is on the index level rather than on its year-on-year change.'
+};
+
 const typeOf = c => TYPES.find(t => t.code === c);
 const MODELS = [...new Set(TRIPLES.map(t => t[1]))].sort();
 const enginesFor = m => [...new Set(TRIPLES.filter(t => t[1] === m).map(t => t[2]))].sort();
@@ -361,6 +416,7 @@ function chrome(label, bars) {
   document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
   document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
 }
+const notDrilldown = '<div class="notice"><b>This page chooses the engine for each product.</b> Click a product type to read what it is, or an asset class to read what the class is. How the run executes is the engine behaviour, a configuration of its own.</div>';
 const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</span>${t ? '' : ' ' + tag('no code', 'warn')}`; };
 const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
 const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
@@ -464,17 +520,17 @@ function visible() {
   return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
 }
 function listScreen() {
-  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines']])}
-  <div class="titlebar"><div><h1>Pricing engines</h1><div class="sub">The configurations that decide which model and engine price each product. A party holds few official ones, one for each cycle.</div></div>
-    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<details class="menu"><summary class="btn">Workflows ▾</summary><div class="items"><a href="${OTHER.imp}">Bring in a pricing engines file</a><a href="${OTHER.sign}">Sign off a change</a></div></details><a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div>`;
+  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations']])}
+  <div class="titlebar"><div><h1>Pricing engine configurations</h1><div class="sub">The configurations that choose the model and the engine for each product type, and how they are set. A party holds few official ones, one for each cycle.</div></div>
+    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<details class="menu"><summary class="btn">Workflows ▾</summary><div class="items"><a href="${OTHER.imp}">Bring in a pricing engine configuration file</a><a href="${OTHER.sign}">Sign off a change</a></div></details><a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div>`;
   if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
-  if (state === 'error') return head + '<div class="badbox">The pricing engines could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
+  if (state === 'error') return head + '<div class="badbox">The pricing engine configurations could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
   const list = state === 'empty' ? [] : visible();
   const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
   const tr = c => `<tr class="rec" tabindex="0" data-open="${c.id}"><td><a data-nav class="link" href="${href({ screen: 'record', id: c.id })}">${esc(c.name)}</a>${c.proposal ? ' ' + tag('1 proposal', 'warn') : ''}</td><td>${statusTag(c.status)}</td><td>${officialTag(c)}</td><td>${c.variant ? tag(esc(c.variant), 'cls') : dash}</td><td class="num">${c.products.length}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
   let body;
-  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no pricing engines yet.${may('add') ? ` <a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div></div>`;
-  else if (!list.length) body = '<div class="notice">No pricing engines match the search. <button class="btn" id="clear">Clear</button></div>';
+  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no pricing engine configurations yet.${may('add') ? ` <a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div></div>`;
+  else if (!list.length) body = '<div class="notice">No pricing engine configurations match the search. <button class="btn" id="clear">Clear</button></div>';
   else body = `<table><thead><tr>${th('name', 'Name')}${th('status', 'Status')}${th('cycle', 'Official for')}${th('variant', 'Variant')}${th('products', 'Products')}${th('reports', 'Reports')}${th('changed', 'Last changed')}</tr></thead><tbody>${list.map(tr).join('')}</tbody></table>`;
   const variants = [...new Set(CONFIGS.map(c => c.variant || 'none'))];
   return head + `<div class="notice"><b>Official, approved, draft.</b> An official configuration is the approved one an official report runs with, one for each cycle. An approved version never changes in place: a change is a proposal, and it needs sign-off. A draft is a place to try a change, and no official report can bind it. The status, the cycle and the counts are fixtures: no operation returns them for a list row.</div>
@@ -486,8 +542,8 @@ function coverageStrip(c) {
   return `<div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage:</b> ${c.reports.length ? `the reports that bind it need ${n} product types, and ${n - un.length} have a row here.` : `no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row here.`} ${un.length ? `Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : 'Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures: no operation returns them.</span></div>`;
 }
 function productsTab(c) {
-  const rows = c.products.map(p => { const t = typeOf(p.type); return `<tr><td>${typeCell(p.type)}<div class="faint" style="font-size:.78rem">${t ? esc(t.desc) : ''}</div></td><td>${t ? esc(t.instrument) : dash}</td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${may('edit') ? `<a class="btn small" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose' : 'Edit'}</a>` : ''}</td></tr>`; }).join('');
-  return `${coverageStrip(c)}<div class="card"><table><thead><tr><th>Product type</th><th>Instrument</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="muted">None yet.</td></tr>'}</tbody></table></div>${may('add') ? `<div class="actions">${btn('Add', 'add', '', 'disabled title="Add a product opens the same dialog as Edit, with the product type empty"')}</div>` : ''}`;
+  const rows = c.products.map(p => { const t = typeOf(p.type); const cls = t ? CLASSES[t.cls] : null; return `<tr><td><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a><div class="faint" style="font-size:.78rem">${t ? esc(t.desc) : ''}</div></td><td>${cls ? `<a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a>` : dash}</td><td>${t ? esc(t.instrument) : dash}</td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${may('edit') ? `<a class="btn small" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose' : 'Edit'}</a>` : ''}</td></tr>`; }).join('');
+  return `${notDrilldown}${coverageStrip(c)}<div class="card"><table><thead><tr><th>Product type</th><th>Asset class</th><th>Instrument</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">None yet.</td></tr>'}</tbody></table></div>${may('add') ? `<div class="actions">${btn('Add', 'add', '', 'disabled title="Add a product opens the same dialog as Edit, with the product type empty"')}</div>` : ''}`;
 }
 function paramsTab(c) {
   const g = c.globals.map(x => `<tr><td>global</td><td>All products</td><td class="mono">${esc(x.name)}</td><td class="mono">${esc(x.value)}</td></tr>`);
@@ -497,21 +553,51 @@ function paramsTab(c) {
 function detailsTab(c) {
   return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
 }
+
 function recordScreen(c) {
   const r = route();
-  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines', LIST()], ['Not found']]) + '<div class="notice">This pricing engine does not exist.</div>';
+  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], ['Not found']]) + '<div class="notice">This pricing engine configuration does not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
   const tabs = [['details', 'Details'], ['products', 'Products'], ['parameters', 'Parameters'], ['reports', 'Reports'], ['history', 'History']];
   const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
-  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines', LIST()], [esc(c.name)]])}
+  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver}${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
     <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('edit') ? `<a class="btn" href="${OTHER.change}?config=${c.id}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}${may('delete') && c.status !== 'approved' ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
 }
+
+/** One product type as the configuration prices it: what it is, its instrument and its class. */
+function productCard(c, p) {
+  const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
+  const pairs = TRIPLES.filter(x => x[0] === p.type).map(x => [x[1], x[2]]);
+  const params = p.params.length ? `<table><thead><tr><th>Scope</th><th>Setting</th><th>Value</th></tr></thead><tbody>${p.params.map(x => `<tr><td>${esc(x.scope)}</td><td class="mono">${esc(x.name)}</td><td class="mono">${esc(x.value)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">This product carries no setting. The engine uses its own defaults.</p>';
+  const pairList = pairs.length ? `<ul>${pairs.map(([m, e]) => `<li><span class="mono">${esc(m)} / ${esc(e)}</span>${m === p.model && e === p.engine ? ' <span class="tag ok">in use</span>' : ''}</li>`).join('')}</ul>` : '<p class="muted">No pair is known for this product type.</p>';
+  const body = `<p class="muted">Product type <span class="mono">${esc(p.type)}</span>${cls ? ` · asset class <span class="mono">${esc(cls.code)}</span>` : ''}</p>
+    <h3>What it is</h3><p>${esc(WHAT[p.type] || (t ? t.desc : 'No description is held.'))}</p>
+    ${t ? `<h3>Instrument: ${esc(t.instrument)}</h3><p>${esc(inst || 'No description is held.')}</p>` : ''}
+    ${cls ? `<h3>Asset class: ${esc(cls.name)}</h3><p>${esc(cls.what)}</p><p><button class="btn small" id="pc-class">Read about the ${esc(cls.name)} asset class</button></p>` : '<h3>Asset class</h3><p class="muted">This product type maps to no instrument, so it has no asset class. Leg and coupon pricers are the usual case.</p>'}
+    <h3>In this configuration</h3><p><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span>, with ${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}.</p>
+    <h3>Settings of this product</h3>${params}
+    <h3>Known model and engine pairs</h3>${pairList}`;
+  dialog(`${p.type} — how this product is priced`, body, `<button class="btn" id="d-cancel">Close</button>${may('edit') ? `<a class="btn primary" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}`);
+  const b = document.getElementById('pc-class');
+  if (b && cls) b.onclick = () => assetClassCard(c, t.cls);
+}
+/** One asset class: what it is, and the product types of this configuration that sit in it. */
+function assetClassCard(c, key) {
+  const cls = CLASSES[key], types = [...new Set(c.products.map(x => x.type))].filter(x => { const t = typeOf(x); return t && t.cls === key; });
+  const body = `<p class="muted">Asset class <span class="mono">${esc(cls.code)}</span></p>
+    <h3>What it is</h3><p>${esc(cls.what)}</p>
+    <h3>Product types this configuration prices in this class</h3>
+    ${types.length ? `<ul>${types.map(x => `<li><a class="link" href="#" data-ptype="${esc(x)}">${esc(x)}</a></li>`).join('')}</ul>` : '<p class="muted">This configuration prices no product in this class.</p>'}`;
+  dialog(`${cls.name} — asset class`, body, `<button class="btn" id="d-cancel">Close</button>`);
+  document.querySelectorAll('[data-ptype]').forEach(x => x.onclick = e => { e.preventDefault(); const p = c.products.find(y => y.type === x.dataset.ptype); if (p) productCard(c, p); });
+}
+
 function deleteDialog(c) {
   const blocked = c.reports.length > 0;
-  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind this configuration: ${c.reports.map(esc).join(', ')}. Their next run would have no pricing engines. Rebind them first.</div><div class="faint">No service refuses this delete today. The screen refuses it because the server would not.</div>` : `<div>The configuration, its products and its parameters are deleted. Its history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
+  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind this configuration: ${c.reports.map(esc).join(', ')}. Their next run would have no pricing engine configuration. Rebind them first.</div><div class="faint">No service refuses this delete today. The screen refuses it because the server would not.</div>` : `<div>The configuration, its products and its parameters are deleted. Its history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
   if (!blocked) ready('d-save');
   document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
 }
@@ -527,12 +613,17 @@ function wire() {
   const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
   const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
   document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
+  document.querySelectorAll('#app [data-product]').forEach(x => x.onclick = e => { e.preventDefault(); const p = c.products.find(y => y.type === x.dataset.product); if (p) productCard(c, p); });
+  document.querySelectorAll('#app [data-class]').forEach(x => x.onclick = e => { e.preventDefault(); assetClassCard(c, x.dataset.class); });
+  const wantCard = new URLSearchParams(location.search).get('card'), wantClass = new URLSearchParams(location.search).get('class');
+  if (r.screen === 'record' && c && wantCard && !document.querySelector('.dlg')) { const p = c.products.find(y => y.type === wantCard); if (p) productCard(c, p); }
+  if (r.screen === 'record' && c && wantClass && !document.querySelector('.dlg')) assetClassCard(c, wantClass);
   document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
 }
 function render() {
   const r = route();
   document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
-  chrome('see the pricing engines a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  chrome('see the pricing engine configurations a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();
 }
 render();

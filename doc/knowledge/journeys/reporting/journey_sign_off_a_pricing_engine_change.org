@@ -69,11 +69,11 @@ Four people take part. All act inside their own tenant, for their own party.
 
 The trigger is a proposal. It comes from
 [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]], from
-[[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]], from
+[[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]], from
 a proposed revert on the History tab, or from a candidate in
 [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
 A signer starts from the queue under *Workflows* on
-[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]].
+[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]].
 The journey ends on the proposal's page, with the proposal in a final state.
 
 * Steps
@@ -160,7 +160,7 @@ that their names and order are assumed. Every value is a fixture.
 
 * Entities composed
 
-The first three rows exist in the pricing engines and reporting services. The next
+The first three rows exist in the analytics and reporting services. The next
 four exist in the inbox. The last two are new.
 
 #+ATTR_HTML: :class hug-leading
@@ -173,7 +173,7 @@ four exist in the inbox. The last two are new.
 | =approval_decision= | One part's approval or refusal, with the person, the time and the comment | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
 | =approval_part= | The parts, their permission and their answer order | [[id:B4BE73C7-E847-46BA-82A5-9A411E275B88][ores.inbox.approval_part]] |
 | =approval_kind= | What the request asks for, and how many approvals close it | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
-| a pricing engines change detail | The proposed version, held apart from the version in force, with its base version | (missing) |
+| a pricing engine configuration change detail | The proposed version, held apart from the version in force, with its base version | (missing) |
 | a policy row for a put of =pricing_model_config= | Says which parts must approve a write, so that a direct write to an approved version is refused | (missing; the inbox holds the table) |
 
 * Operations and messages
@@ -200,7 +200,7 @@ no new subject. The kind, two parts, a policy row and the detail are the new wor
 
 * What is missing
 
-1. *The kind and its detail.* No approval kind names a pricing engines change, and
+1. *The kind and its detail.* No approval kind names a pricing engine configuration change, and
    no detail row holds the proposed version. A proposal must not replace the rows
    that a run reads, so the detail holds it apart.
 2. *Two parts.* =market_risk= exists. A =quant= part and a =model_validation= part
@@ -233,9 +233,9 @@ no new subject. The kind, two parts, a policy row and the detail are the new wor
 
 * Related journeys
 
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where the queue starts, and where a proposal shows as a banner
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — where the queue starts, and where a proposal shows as a banner
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the main way a proposal starts
-- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — a proposal from a file
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]] — a proposal from a file
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — a candidate for a cycle
 - [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the same reach statement, for the analytics
 

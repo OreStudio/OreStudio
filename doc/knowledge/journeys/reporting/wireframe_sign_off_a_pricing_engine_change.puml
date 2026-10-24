@@ -20,7 +20,7 @@
 salt
 {
   <b>ORE STUDIO - REPORTING: SIGN OFF A PRICING ENGINE CHANGE</b>
-  Home > Reporting > Pricing engines > Sign-off
+  Home > Reporting > Pricing engine configurations > Sign-off
   --
   <b>THE QUEUE</b>
   "Search the configuration and the change" | ^Show: open^

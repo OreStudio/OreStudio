@@ -86,7 +86,7 @@ many items a save would refuse, because the runtime never asks it to.
 |----------+------+---------------|
 | 1 | What it is | The name, the description, the report type as a combo box over the type table, =is_official=, and the concurrency policy. |
 | 2 | The conventions it binds | One page of named convention sets: a row per set with its name, its purpose, the kinds it covers and whether this report uses it, a radio to choose one, and one link out to the authoring UX. |
-| 3 | The pricing engines it binds | The same four parts for =pricing_engines=, with no screen stated plainly. |
+| 3 | The pricing engine configuration it binds | The same four parts for =pricing_engines=, with no screen stated plainly. |
 | 4 | The market data it binds | The same four parts for =todays_market=, with no screen stated plainly. |
 | 5 | The curve configuration it binds | The same four parts for =curve_configuration=, with no screen stated plainly. |
 | 6 | The run settings it binds | The same four parts for =risk_report_config=, plus the portfolio and book scope the configuration carries. |

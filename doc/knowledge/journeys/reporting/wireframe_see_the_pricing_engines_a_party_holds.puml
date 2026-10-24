@@ -19,8 +19,8 @@
 
 salt
 {
-  <b>ORE STUDIO - REPORTING: PRICING ENGINES</b>
-  Home > Reporting > Pricing engines
+  <b>ORE STUDIO - REPORTING: PRICING ENGINE CONFIGURATIONS</b>
+  Home > Reporting > Pricing engine configurations
   --
   <b>THE LIST</b>
   A party holds few official configurations, one for each cycle. A draft is for trying a change.
@@ -39,6 +39,14 @@ salt
   [ Propose a change ]
   A proposed version 5 waits for sign-off. 1 of 3 approval parts have approved. Version 4 stays in force.
   [ Open the sign-off ]
+  This configuration chooses the model and the engine for each product type. It does not decide how the engine runs; that is the engine run settings.
+  {#
+    Related configuration | This report binds | What it decides
+    Engine run settings | HK standard EOD | how the engine prepares its inputs and runs the job
+    Today's market | ACME HK market | how the curves and surfaces are built
+    Curve configuration | HK curves | how each curve is defined and bootstrapped
+    Conventions | HK conventions | the market terms a trade is read on
+  }
   [ Details ] | [ Products ] | [ Parameters ] | [ Reports ] | [ History ]
   --
   Coverage: the reports that bind it need 11 product types, and 11 have a row here.

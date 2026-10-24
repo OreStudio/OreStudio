@@ -70,6 +70,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:11FC42FC-92EA-471E-BC7C-8AE9245928F3][Refresh the web lock file for fastify 5.12.6]] | DONE | 2026-10-23 | 2026-10-23 | Dependabot PR 3649 raised fastify to 5.12.6 in packages/bff/package.json and left package-lock.json at 5.12.5, so npm ci fails and every full build stops at Installing ores.web dependencies. |
 | [[id:433E7DFF-123A-467B-9392-569CD2E825C2][Capture the web version management issues]] | DONE | 2026-10-23 | 2026-10-23 | The web workspaces pin every dependency exactly, declare shared libraries in several packages, and let a bump of one package.json leave the lock file stale. Record each problem as a capture so it can be fixed later. |
 | [[id:35A81E18-D391-48B3-A144-52B4C2B84B71][Let the marketdata service read the routes and subscriptions of every tenant]] | DONE | 2026-10-23 | 2026-10-23 | The ingest loop reads routes and subscriptions as the system tenant, and their row-level policies allow only the current tenant, so it sees none. The loop logs 0 routes, the demand is empty, the adapters get 0 ids and nothing ticks for any tenant. |
+| [[id:A4AAEA01-7F27-4FA0-81D1-BBD4B02CD99B][Subscribe every Acme party to market data]] | BACKLOG | | | Provisioning gives the parent party Acme Corporation Plc no subscription and no route, so no series of Plc ticks. The subscribe step asks for the subscriptions the party holds, and a parent session sees its children's too, so the step finds the children's subscription and skips the parent. |
 
 * Decisions
 

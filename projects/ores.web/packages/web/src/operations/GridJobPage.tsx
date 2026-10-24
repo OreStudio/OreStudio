@@ -35,11 +35,12 @@
  * not stored yet, so no panel stands in for them.
  */
 
-import type { ReactNode } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { useState, type ReactNode } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import {
@@ -51,7 +52,7 @@ import {
 } from '../shell/paths.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
-import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Input, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import {
     DownloadLink,
@@ -198,7 +199,7 @@ function Header({
                     <JobState workunit={workunit} runs={runs} />
                 </div>
             </div>
-            <dl className="grid gap-3 sm:grid-cols-3">
+            <dl className="grid gap-3 sm:grid-cols-2">
                 <Detail
                     label={t('operations.grid.job.batchName')}
                     value={
@@ -514,7 +515,7 @@ function Release({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
     });
     return (
         <Panel title={t('operations.grid.job.release.title')}>
-            <dl className="grid gap-3 sm:grid-cols-3">
+            <dl className="grid gap-3">
                 <Detail
                     label={t(`${FIELD}.appVersionId`)}
                     value={
@@ -603,6 +604,101 @@ function Lineage({
     );
 }
 
+const UUID_TEXT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The reads the finder tries, each answering with the id it opens or refusing. */
+export interface FinderReads {
+    readonly workunit: (id: string) => Promise<{ readonly id: string }>;
+    readonly result: (id: string) => Promise<{ readonly workunit_id: string }>;
+    readonly batch: (id: string) => Promise<{ readonly id: string }>;
+}
+
+/**
+ * Where a search opens, or nothing when it matches nothing.
+ *
+ * An id is tried as a job, then as a result, then as a batch, and the first the session
+ * may read opens. Text that is not an id is a part of a batch reference, and the Jobs tab
+ * lists the batches it matches.
+ */
+export async function findTarget(wanted: string, reads: FinderReads): Promise<string | null> {
+    if (!UUID_TEXT.test(wanted)) {
+        return `/operations/grid?${new URLSearchParams({ tab: 'jobs', find: wanted })}`;
+    }
+    const attempts: readonly (() => Promise<string>)[] = [
+        async () => gridJobPath((await reads.workunit(wanted)).id),
+        async () => gridJobPath((await reads.result(wanted)).workunit_id),
+        async () => gridBatchPath((await reads.batch(wanted)).id),
+    ];
+    for (const attempt of attempts) {
+        try {
+            return await attempt();
+        } catch (error) {
+            // Not this kind of id, or not one the session may read: try the next. Any other
+            // failure is the search failing, and it is not read as an id that matches nothing.
+            if (!(error instanceof ApiFailure && (error.status === 404 || error.status === 403))) {
+                throw error;
+            }
+        }
+    }
+    return null;
+}
+
+/** The finder bar of the page: a batch reference, a job id or a result id. */
+function JobFinder(): ReactNode {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const [text, setText] = useState('');
+    const [outcome, setOutcome] = useState<'idle' | 'searching' | 'missing' | 'failed'>('idle');
+    const find = async (): Promise<void> => {
+        const wanted = text.trim();
+        if (wanted === '' || outcome === 'searching') {
+            return;
+        }
+        setOutcome('searching');
+        try {
+            const target = await findTarget(wanted, {
+                workunit: (id) => api.gridJobWorkunit(id),
+                result: (id) => api.gridJobResult(id),
+                batch: (id) => api.gridJobBatch(id),
+            });
+            if (target === null) {
+                setOutcome('missing');
+            } else {
+                setOutcome('idle');
+                void navigate(target);
+            }
+        } catch {
+            setOutcome('failed');
+        }
+    };
+    return (
+        <form
+            className="flex flex-wrap items-end gap-3"
+            onSubmit={(event) => {
+                event.preventDefault();
+                void find();
+            }}
+        >
+            <label className="flex flex-col gap-1 text-xs text-ink-faint sm:w-96">
+                {t('operations.grid.job.find.label')}
+                <Input
+                    type="search"
+                    value={text}
+                    placeholder={t('operations.grid.job.find.placeholder')}
+                    onChange={(event) => setText(event.target.value)}
+                />
+            </label>
+            <Button type="submit" variant="secondary" disabled={outcome === 'searching'}>
+                {t('operations.grid.job.find.button')}
+            </Button>
+            <span role="status" className="text-sm text-warn">
+                {outcome === 'missing' && t('operations.grid.job.find.none')}
+                {outcome === 'failed' && t('operations.grid.job.find.failed')}
+            </span>
+        </form>
+    );
+}
+
 /** The job page: one workunit, the runs of it and the batch it belongs to. */
 export function GridJobPage(): ReactNode {
     const { t } = useTranslation();
@@ -626,6 +722,10 @@ export function GridJobPage(): ReactNode {
         meta: QUIET,
     });
     const trail = [{ label: t('operations.screens.grid'), to: '/operations/grid?tab=jobs' }];
+    const shown =
+        workunit.data === undefined || runs.data === undefined
+            ? undefined
+            : focusRun(workunit.data, runs.data.rows);
 
     return (
         <div className="space-y-6">
@@ -635,12 +735,21 @@ export function GridJobPage(): ReactNode {
                     title={t('operations.grid.job.title')}
                     description={t('operations.grid.job.description')}
                     actions={
-                        <LinkButton to="/operations/grid?tab=jobs" variant="secondary">
-                            {t('operations.grid.job.back')}
-                        </LinkButton>
+                        batch.data === undefined ? (
+                            <LinkButton to="/operations/grid?tab=jobs" variant="secondary">
+                                {t('operations.grid.job.back')}
+                            </LinkButton>
+                        ) : (
+                            <LinkButton to={gridBatchPath(batch.data.id)} variant="secondary">
+                                {t('operations.grid.job.backToBatch', {
+                                    batch: batch.data.report_run_name ?? batch.data.external_ref,
+                                })}
+                            </LinkButton>
+                        )
                     }
                 />
             </div>
+            <JobFinder />
             {workunit.isPending && (
                 <p className="text-sm text-ink-muted">{t('operations.grid.job.loading')}</p>
             )}
@@ -663,15 +772,27 @@ export function GridJobPage(): ReactNode {
                             })}
                         </Notice>
                     )}
-                    <Header workunit={workunit.data} batch={batch.data} runs={runs.data.rows} />
-                    <RunsTable workunit={workunit.data} runs={runs.data.rows} />
-                    {focusRun(workunit.data, runs.data.rows) !== undefined && (
-                        <TimeBar run={focusRun(workunit.data, runs.data.rows) as ResultView} />
-                    )}
-                    <SiblingJobs workunit={workunit.data} />
-                    <Files workunit={workunit.data} runs={runs.data.rows} />
-                    <Release workunit={workunit.data} />
-                    <Lineage workunit={workunit.data} batch={batch.data} runs={runs.data.rows} />
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(280px,2fr)]">
+                        <div className="min-w-0 space-y-6">
+                            <Header
+                                workunit={workunit.data}
+                                batch={batch.data}
+                                runs={runs.data.rows}
+                            />
+                            <RunsTable workunit={workunit.data} runs={runs.data.rows} />
+                            {shown !== undefined && <TimeBar run={shown} />}
+                            <SiblingJobs workunit={workunit.data} />
+                        </div>
+                        <div className="min-w-0 space-y-6">
+                            <Files workunit={workunit.data} runs={runs.data.rows} />
+                            <Release workunit={workunit.data} />
+                            <Lineage
+                                workunit={workunit.data}
+                                batch={batch.data}
+                                runs={runs.data.rows}
+                            />
+                        </div>
+                    </div>
                 </>
             )}
         </div>

@@ -24,8 +24,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
+import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { GridJobPage, canonicalRun, focusRun, secondsBetween } from './GridJobPage.js';
+import { GridJobPage, canonicalRun, findTarget, focusRun, secondsBetween } from './GridJobPage.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
 
@@ -274,6 +275,96 @@ describe('the job page', () => {
         ]);
 
         expect(html).not.toContain('A closed batch is not a successful batch.');
+    });
+});
+
+describe('the layout and the finder of the job page', () => {
+    it('draws the job, the runs and the batch jobs on the left and the files, release and lineage on the right', () => {
+        const html = render(workunit(), [run()]);
+        const columns = html.split('min-w-0 space-y-6');
+
+        expect(html).toContain('lg:grid-cols-[minmax(0,3fr)_minmax(280px,2fr)]');
+        expect(columns).toHaveLength(3);
+        for (const left of ['Runs of the job', 'Jobs of the batch']) {
+            expect(columns[1]).toContain(left);
+        }
+        for (const right of ['Files', 'Release that ran it', 'Lineage']) {
+            expect(columns[2]).toContain(right);
+        }
+    });
+
+    it('offers a find bar for a batch reference, a job id or a result id', () => {
+        const html = render(workunit(), [run()]);
+
+        expect(html).toContain('batch reference, job id or result id');
+        expect(html).toContain('>Find<');
+    });
+
+    it('links back to the batch of the job and names it', () => {
+        const html = render(workunit(), [run()]);
+
+        expect(html).toContain('Jobs tab, batch order-e');
+        expect(html).toContain(`open=${BATCH_ID}`);
+    });
+});
+
+describe('where the find bar opens', () => {
+    const refuse = () =>
+        Promise.reject(new ApiFailure(404, { code: 'not-found', message: 'no such record' }));
+    const reads = (found: Partial<Record<'workunit' | 'result' | 'batch', string>>) => ({
+        workunit: found.workunit ? () => Promise.resolve({ id: found.workunit as string }) : refuse,
+        result: found.result
+            ? () => Promise.resolve({ workunit_id: found.result as string })
+            : refuse,
+        batch: found.batch ? () => Promise.resolve({ id: found.batch as string }) : refuse,
+    });
+    const ID = 'a0000000-0000-4000-8000-0000000000aa';
+
+    it('opens a job when the id is one', async () => {
+        expect(await findTarget(ID, reads({ workunit: ID }))).toBe(`/operations/grid/jobs/${ID}`);
+    });
+
+    it('opens the job of a result when the id is a result', async () => {
+        expect(await findTarget(ID, reads({ result: WORKUNIT_ID }))).toBe(
+            `/operations/grid/jobs/${WORKUNIT_ID}`,
+        );
+    });
+
+    it('opens the Jobs tab at a batch when the id is a batch', async () => {
+        const target = await findTarget(ID, reads({ batch: BATCH_ID }));
+
+        expect(target).toContain('tab=jobs');
+        expect(target).toContain(`open=${BATCH_ID}`);
+    });
+
+    it('opens nothing for an id that is none of them', async () => {
+        expect(await findTarget(ID, reads({}))).toBeNull();
+    });
+
+    it('moves on after a refusal and does not move on after a failure of the service', async () => {
+        const forbidden = () =>
+            Promise.reject(new ApiFailure(403, { code: 'forbidden', message: 'your role cannot' }));
+        const broken = () =>
+            Promise.reject(new ApiFailure(502, { code: 'upstream-unavailable', message: 'down' }));
+        const batch = () => Promise.resolve({ id: BATCH_ID });
+
+        expect(await findTarget(ID, { workunit: forbidden, result: refuse, batch })).toContain(
+            `open=${BATCH_ID}`,
+        );
+        await expect(findTarget(ID, { workunit: broken, result: refuse, batch })).rejects.toThrow(
+            'down',
+        );
+    });
+
+    it('lists the batches a part of a reference matches, without reading anything', async () => {
+        const never = () => Promise.reject(new Error('read'));
+        const target = await findTarget('order', {
+            workunit: never,
+            result: never,
+            batch: never,
+        });
+
+        expect(target).toBe('/operations/grid?tab=jobs&find=order');
     });
 });
 

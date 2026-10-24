@@ -456,7 +456,7 @@ function relatedCard() {
     ['Curve configuration', 'HK curves', 'how each curve is defined and bootstrapped', null],
     ['Conventions', 'HK conventions', 'the market terms a trade is read on', null],
   ].map(([kind, name, what, href]) => `<tr><td>${esc(kind)}</td><td>${esc(name)}</td><td>${esc(what)}</td><td>${href ? `<a class="btn small" href="${href}">Open</a>` : '<span class="muted">No screen yet</span>'}</td></tr>`).join('');
-  return `<div class="card"><div class="body"><b>Related configurations</b><div class="muted">The other configurations that the reports binding this one bind as well.</div><table><thead><tr><th>Configuration</th><th>This report binds</th><th>What it decides</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return `<div class="card"><div class="body"><div style="grid-column:1/-1"><b>Related configurations</b><div class="muted">The other configurations that the reports binding this one bind as well.</div><table><thead><tr><th>Configuration</th><th>This report binds</th><th>What it decides</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
 }
 
 function detailsTab(c) {

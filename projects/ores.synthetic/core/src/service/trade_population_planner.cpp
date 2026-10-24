@@ -25,7 +25,10 @@
 #include <chrono>
 #include <cmath>
 #include <format>
+#include <map>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::synthetic::service {
 
@@ -161,7 +164,7 @@ std::string slot_name(const domain::trade_generation_scope& scope, std::uint32_t
 
 }
 
-domain::trade_population_plan plan_population(const domain::trade_generation_scope& scope) {
+void validate_scope(const domain::trade_generation_scope& scope) {
     if (scope.book_ids.empty())
         throw trade_population_error("The config states no book, so the population has nowhere "
                                      "to land.");
@@ -171,9 +174,6 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
     if (scope.trader_usernames.empty())
         throw trade_population_error("The party holds no account that may trade, so no trade can "
                                      "name the person who entered it.");
-    if (scope.asset_class_code != "bond")
-        throw trade_population_error("Asset class '" + scope.asset_class_code +
-                                     "' is not one this generator covers yet; it states bonds.");
     if (scope.max_notional < scope.min_notional)
         throw trade_population_error("The notional band's ceiling is below its floor.");
 
@@ -183,6 +183,39 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
         throw trade_population_error("The tenor band's long end '" + scope.max_tenor_code +
                                      "' is shorter than its short end '" + scope.min_tenor_code +
                                      "'.");
+}
+
+std::vector<std::string_view> planned_asset_classes() {
+    static const std::vector<std::string_view> codes{"bond"};
+    return codes;
+}
+
+const trade_planner& planner_for(const std::string& asset_class_code) {
+    static const bond_trade_planner bond;
+    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond}};
+
+    const auto entry = planners.find(asset_class_code);
+    if (entry == planners.end()) {
+        std::string known;
+        for (const auto code : planned_asset_classes()) {
+            if (!known.empty())
+                known += ", ";
+            known += code;
+        }
+        throw trade_population_error("Asset class '" + asset_class_code +
+                                     "' has no trade planner; the planners are " + known + ".");
+    }
+    return *entry->second;
+}
+
+std::string_view bond_trade_planner::asset_class_code() const { return "bond"; }
+
+domain::trade_population_plan
+bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
 
     domain::trade_population_plan plan;
     plan.config_id = scope.config_id;

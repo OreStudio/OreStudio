@@ -25,6 +25,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::synthetic::service {
 
@@ -57,17 +59,72 @@ inline constexpr std::string_view bond_trade_type_code = "Bond";
 inline constexpr std::uint32_t trades_per_book = 8;
 
 /**
- * @brief Builds the population a scope states.
+ * @brief Builds the population one asset class states.
  *
- * Pure and deterministic: the answer is a function of the scope alone, so the
- * same scope states the same trades on every run, and a test can compare two
- * plans byte for byte without a database. Every identifier, date and amount is
- * derived and none is drawn from the clock.
+ * A planner is pure and deterministic: the answer is a function of the scope
+ * alone, so the same scope states the same trades on every run, and a test can
+ * compare two plans byte for byte without a database. Every identifier, date
+ * and amount is derived and none is drawn from the clock.
  *
- * @throws trade_population_error when the scope cannot state a population.
+ * One planner serves one asset class, and the class it serves is the key the
+ * registry answers it by.
  */
-ORES_SYNTHETIC_CORE_EXPORT domain::trade_population_plan
-plan_population(const domain::trade_generation_scope& scope);
+class ORES_SYNTHETIC_CORE_EXPORT trade_planner {
+public:
+    virtual ~trade_planner() = default;
+
+    /**
+     * @brief States the population the scope describes.
+     *
+     * @throws trade_population_error when the scope cannot state a
+     * population.
+     */
+    [[nodiscard]] virtual domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const = 0;
+
+    /// The asset class this planner answers for.
+    [[nodiscard]] virtual std::string_view asset_class_code() const = 0;
+};
+
+/**
+ * @brief The planner for a bond population.
+ *
+ * The first implementation of the interface, and the one the sprint 28
+ * population was written as a free function. It states a plain bond for every
+ * slot.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT bond_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
+ * @brief The planner registered for an asset class.
+ *
+ * A class with no planner is refused by name rather than falling back to one,
+ * because a population of the wrong family is worse than none: the reports
+ * would compute over trades the config never asked for.
+ *
+ * @throws trade_population_error when no planner serves the class.
+ */
+ORES_SYNTHETIC_CORE_EXPORT const trade_planner& planner_for(const std::string& asset_class_code);
+
+/// The asset classes that have a planner, in the order the registry holds them.
+ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string_view> planned_asset_classes();
+
+/**
+ * @brief The checks every family makes before it states a slot.
+ *
+ * A book, a counterparty and a trader every trade needs, and the notional and
+ * tenor bands must order, so these are checked once for every planner rather
+ * than repeated in each one.
+ *
+ * @throws trade_population_error naming the input that does not hold.
+ */
+ORES_SYNTHETIC_CORE_EXPORT void validate_scope(const domain::trade_generation_scope& scope);
 
 /**
  * @brief Derives the id a trade slot carries.

@@ -692,9 +692,11 @@ function productScreen(c, want) {
     <div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div><span class="access">✎ Editable</span></div></div>`;
   const detail = `<div class="card"><div class="body">
       <div class="wide"><div class="headline">${esc(p.type)}</div><div class="faint" style="margin-top:4px">${cls ? `${esc(cls.name)} · ${esc(t.instrument)}` : esc(p.type)}</div></div>
-      <div class="wide"><p>${esc(WHAT[p.type] || (t ? t.desc : ''))}</p></div>
-      ${inst ? `<div class="wide"><div class="faint">Instrument</div><div>${esc(t.instrument)}</div><p class="help" style="margin-top:4px">${esc(inst)}</p></div>` : ''}
-      ${cls ? `<div class="wide"><div class="faint">Asset class</div><div>${esc(cls.name)}</div><p class="help" style="margin-top:4px">${esc(cls.what)}</p></div>` : ''}
+      <div class="wide"><details class="doc" ${new URLSearchParams(location.search).get('doc') === 'product' ? 'open' : ''}><summary>Documentation: the product, the instrument and the asset class</summary><div class="docbody">
+        <p class="help"><b>Product ${esc(p.type)}</b> — ${esc(WHAT[p.type] || (t ? t.desc : 'No description is held.'))}</p>
+        ${inst ? `<p class="help"><b>Instrument ${esc(t.instrument)}</b> — ${esc(inst)}</p>` : ''}
+        ${cls ? `<p class="help"><b>Asset class ${esc(cls.name)}</b> — ${esc(cls.what)}</p>` : ''}
+      </div></details></div>
     </div></div>
     <div class="card"><div class="gh"><div><h3>How it is priced</h3><div class="faint">The model and the engine that value this product type.</div></div></div><div class="body" style="grid-template-columns:1fr 1fr">
       <div><div class="faint">Model</div><select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px">${MODELS.map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select><p class="help" style="margin-top:6px">The model ORE uses to price this product type.</p></div>

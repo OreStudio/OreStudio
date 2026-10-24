@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 69287DA4-3558-4EAE-972B-82BC7F9296E9
+:END:
+#+title: The simulator stops at the adapter seam
+#+description: How far the simulator goes to imitate a vendor, why it stops at the data and the adapter contract, and what fault injection adds.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:architecture:fidelity:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The simulator imitates what a vendor delivers. It does not imitate how the
+vendor delivers it. It reproduces vendor ids, field names, vendor time and
+realistic failure behaviour. It does not reproduce the =blpapi= session, the
+Elektron wire formats or vendor authentication.
+
+* Detail
+
+** Three levels of fidelity
+
+| Level | Covers | Decision |
+|-------+--------+----------|
+| Data | Ids, fields, vendor time, tick rates, market hours, stale values, gaps, bad ticks | Build |
+| Adapter contract | Announce, demand, tick, heartbeat | Build |
+| Vendor protocol | Sessions, wire formats, authentication | Do not build |
+
+** Why the seam is the limit
+
+- A live adapter turns a vendor protocol into the adapter contract. Everything
+  behind the seam is the service's own. A protocol simulator would test only the
+  translation code of a live adapter.
+- Vendor protocols are large and they change. A copy would be a project of its
+  own.
+- The rule in [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] holds at the seam.
+
+** Fault injection
+
+The simulator can fail the way a vendor fails. A generator can drop a
+connection, delay ticks, repeat ticks, send a value outside the range, or reject
+an id with =not_entitled=. These faults go through the adapter contract, so the
+checks in [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]] and the state changes in [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]] are tested
+against them.
+
+** Replay
+
+A replay adapter reads recorded vendor ticks and publishes them. It is another
+adapter of kind =replay=. It is the way to test the protocol code of a future
+live adapter, and it needs no change in the service.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the seam where the simulator stops.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: what the simulator builds up to that limit.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — completes: the differences that remain.

@@ -119,11 +119,19 @@ export const CARDS = {
         screenTitleKey: 'refdata.calendars.title',
     },
     conventions: {
-        titleKey: 'home.tenant.conventions',
-        bodyKey: 'home.tenant.conventionsBody',
+        titleKey: 'refdata.area.screens.conventions',
+        bodyKey: 'refdata.area.screens.conventionsBody',
         to: PATHS.conventions,
         icon: 'document',
+        screenTitleKey: 'refdata.conventions.title',
+    },
+    conventionAuthoring: {
+        titleKey: 'home.tenant.conventions',
+        bodyKey: 'home.tenant.conventionsBody',
+        to: PATHS.conventionAuthoring,
+        icon: 'document',
         kind: 'workflow',
+        on: 'conventions',
     },
     tenors: {
         titleKey: 'refdata.area.screens.tenors',
@@ -269,6 +277,14 @@ export const CARDS = {
         permission: 'analytics::pricing_model_configs:read',
         screenTitleKey: 'pricingEngines.title',
     },
+    engineSettings: {
+        titleKey: 'reporting.area.screens.engineSettings',
+        bodyKey: 'reporting.area.screens.engineSettingsBody',
+        to: PATHS.engineSettings,
+        icon: 'apps',
+        permission: 'reporting::engine_settings:read',
+        screenTitleKey: 'engineSettings.title',
+    },
     pricingEngineAuthoring: {
         titleKey: 'pricingEngines.workflows.author',
         bodyKey: 'pricingEngines.workflows.authorBody',
@@ -318,13 +334,13 @@ export const AREA_CARDS = {
         'calendars',
         'classifications',
         'tenors',
-        'bookStructure',
         'conventions',
+        'bookStructure',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'bindings', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
-    reporting: ['reports', 'pricingEngines'],
+    reporting: ['reports', 'pricingEngines', 'engineSettings'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;
 

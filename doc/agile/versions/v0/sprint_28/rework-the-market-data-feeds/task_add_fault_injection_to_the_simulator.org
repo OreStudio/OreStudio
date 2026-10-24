@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: BC8F67D4-59FD-446B-94A3-F62844F82A53
+:END:
+#+title: Task: Add fault injection to the simulator
+#+description: Let the simulator drop, delay, repeat and corrupt ticks and reject ids on request.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/add-fault-injection-to-the-simulator
+#+pr: 3677
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A simulator author can inject connection loss, delay, repeated ticks, out-of-range values and not_entitled rejections, so the quality checks and the adapter states are tested against faults.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- Each fault is a generator or adapter setting that goes through the adapter contract.
+- A test for each fault shows the matching drop reason or adapter state.
+- The faults are off by default.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3677][#3677]] | [synthetic] Add fault injection to the simulator |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Ticks continue under connection_lost | adapter_faults.hpp | accept | A lost connection now delivers no tick. A test covers it. |
+| 2 | not_entitled clears the demand and nothing restores it | simulator_adapter.cpp | accept | A change of the plan announces the adapter again, and the service then sends its demand set again. A test shows the announce. |
+| 3 | The repeat skips the other faults | adapter_faults.hpp | accept | A comment says the repeat is the tick as made, so the service drops it for its older vendor time only. |
+| 4 | describe() says little | fault_handler.hpp | accept | The reply lists the faults that are on. |
+| 5 | Anonymous-namespace logger in a header | fault_handler.hpp | decline | Every handler header of the service does the same. |
+
+* Result
+
+A simulator author injects five faults through one request, =synthetic.v1.ops.set_faults=. The request replaces the whole plan, only a session of the system tenant that may run feeds sends it, and every fault is off by default and after a restart. Each fault goes through the adapter contract:
+- A lost connection sends no announce, no heartbeat and no demand reply, so the service makes the adapter stale. The adapter resumes when the fault is off.
+- A delay gives each tick a vendor time older than the delay. A delay beyond the age limit makes the service drop the tick as =stale=.
+- A repeat sends the tick before the new one again, with its older vendor time, so the service drops it as =out_of_order=.
+- An out of range value makes each tick carry a value ten times the largest the service accepts, so the service drops it as =out_of_range=.
+- A not entitled rejection rejects every id of a demand set as =not_entitled= and stops the generators.
+
+The limits the service applies are now in =ores.marketdata.api= (=adapter_limits=), and the translator and the faults read them from there. A translator test sends a tick one step beyond each limit and shows the drop reason. The fault tests show the tick that each fault makes, the rejection reason and the silence of a lost connection.
+
+Against the rebuilt database: synthetic service 77 cases and marketdata service 162 cases pass.
+
+Left for other tasks:
+- No screen and no shell command sets the faults yet. The screens task and the shell task add them.
+- Only the FX generators carry faults. The curve generators publish on the old path.
+- The adapter state =stale= after a lost connection is shown by the registry tests of the market data service, and not by a run of the real service with the simulator.

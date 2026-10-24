@@ -479,7 +479,7 @@ public:
     }
 
     /**
-     * @brief Serves reporting.v1.configuration_analytic_parameters.list_by_parameter_definition_id.
+     * @brief Serves reporting.v1.configuration_analytic_parameters.list_by_ore_parameter_id.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -487,8 +487,7 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void
-    list_by_parameter_definition_id_configuration_analytic_parameters(ores::nats::message msg) {
+    void list_by_ore_parameter_id_configuration_analytic_parameters(ores::nats::message msg) {
         BOOST_LOG_SEV(configuration_analytic_parameter_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -503,8 +502,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req =
-            decode<list_by_parameter_definition_id_configuration_analytic_parameters_request>(msg);
+        auto req = decode<list_by_ore_parameter_id_configuration_analytic_parameters_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_analytic_parameter_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -513,8 +511,7 @@ public:
         }
         service::configuration_analytic_parameter_service svc(req_ctx);
         try {
-            auto response =
-                svc.list_by_parameter_definition_id_configuration_analytic_parameters(*req);
+            auto response = svc.list_by_ore_parameter_id_configuration_analytic_parameters(*req);
             BOOST_LOG_SEV(configuration_analytic_parameter_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
@@ -524,7 +521,7 @@ public:
             // thing and is reported as such.
             BOOST_LOG_SEV(configuration_analytic_parameter_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            list_by_parameter_definition_id_configuration_analytic_parameters_response failure;
+            list_by_ore_parameter_id_configuration_analytic_parameters_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

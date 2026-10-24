@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
-#+branch: feature/browse-and-follow-the-grids-jobs
-#+pr:
+#+branch: feature/find-a-result-by-its-outcome
+#+pr: 3666
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,23 +26,30 @@ A read returns the results whose outcome is not Success, and names the batch of 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
 
 - A read by outcome returns the results with that outcome that the session may see.
-- Each result in the answer leads to its workunit and its batch.
+- Each result in the answer leads to its workunit, and the job page of the workunit names its batch.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The nats entity protocol defines the filter record, so the work is to declare the column
+and carry the filter up.
+
+- The result model declares =outcome= filterable. The generator adds =outcome= and
+  =outcome_one_of= to the filter record and the repository condition.
+- The wire-protocol read =readResultsByOutcome= sends the filter on the generated list, and
+  the BFF serves it at =/api/operations/grid/jobs/results?outcome=N=, with the node hidden
+  from a role that may not read it.
+- The Jobs tab has an Outcome choice. When it is set, the tab lists the runs with that outcome
+  in place of the tree, and the batch filters are off.
 
 * Measurements
 
@@ -56,9 +63,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compute core tests, with the outcome filter case | pass | =ctest -R ores.compute.core.tests= | aa4605e98d plus the working tree |
+| BFF and wire-protocol jobs tests | 31 and 13 pass | =npx vitest run src/grid-jobs.test.ts= in each package | aa4605e98d plus the working tree |
+| Jobs tab tests | 26 pass | =npx vitest run src/operations/GridJobs.test.tsx= | aa4605e98d plus the working tree |
+| Runs with outcome 3 as the tenant administrator and a member of the party | 15 and 15, host hidden | =curl= on =/api/operations/grid/jobs/results?outcome=3= | aa4605e98d plus the working tree |
+| The same as a member of another party | 0 | the same route as =diane.kay= | aa4605e98d plus the working tree |
 
 * Notes
+
+- No schema change, so no recreate is needed.
+- The 15 failed runs of the check are real: the input bundle of the check has no
+  Input/ore.xml, so the engine exits with an error.
+- The prototype pruned the tree to the batches that hold such a run. That needs a count
+  of failures per batch, which the models do not hold, so the tab lists the runs flat.
 
 * Test Scenarios
 
@@ -75,12 +92,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3666 | [compute] Find a result by its outcome |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The BFF accepts any code from 0 to 9 | grid-jobs.ts | Fixed | The route takes the codes the model holds, 0, 1, 3 and 4, and refuses any other with 400. |
+| 2 | Outcome 0 and a null column | ores.compute.result.org | Noted | The service writes the column from an int that is 0 when unset, so a run has no null. The core test covers outcome 0. |
+| 3 | The page after a change of outcome | GridJobs.tsx | No change | The finder resets the page with every change. |
+| 4 | An empty page past the end | GridJobs.tsx | No change | The cause is removed by item 3. |
+| 5 | The default order of the list | grid-jobs.ts | Fixed | The result model states no default order, so the read asks for the recording time, newest first. The doc says so. |
 
 * Result
+
+A read by outcome lists the runs that ended with a code, and the Jobs tab has an Outcome
+choice that shows them as a flat list. Each run leads to its job page, which names its
+batch. A run that has no outcome yet is code 0.

@@ -22,12 +22,26 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/publish_operation_protocol.hpp"
+#include "ores.marketdata.core/messaging/composite_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/composite_input_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/composite_input_registrar.hpp"
+#include "ores.marketdata.core/messaging/composite_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
+#include "ores.marketdata.core/messaging/delivery_count_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
+#include "ores.marketdata.core/messaging/demand_interval_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/demand_interval_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
+#include "ores.marketdata.core/messaging/market_data_mapping_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_mapping_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_source_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_source_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_vendor_instrument_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_data_vendor_instrument_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_asset_class_history_provider_registrar.hpp"
@@ -40,12 +54,23 @@
 #include "ores.marketdata.core/messaging/ore_export_handler.hpp"
 #include "ores.marketdata.core/messaging/oresmd_schema_handler.hpp"
 #include "ores.marketdata.core/messaging/oresmd_uri_handler.hpp"
+#include "ores.marketdata.core/messaging/provider_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.marketdata.core/messaging/rate_card_component_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/rate_card_component_registrar.hpp"
+#include "ores.marketdata.core/messaging/route_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/route_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_evolution_handler.hpp"
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
+#include "ores.marketdata.core/messaging/series_ticks_handler.hpp"
+#include "ores.marketdata.core/messaging/subscription_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/subscription_interval_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
+#include "ores.marketdata.core/messaging/subscription_registrar.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include <functional>
@@ -88,6 +113,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
     fold(register_feed_binding_handlers(nats, ctx, verifier));
+    fold(register_provider_handlers(nats, ctx, verifier));
+    fold(register_market_data_source_handlers(nats, ctx, verifier));
+    fold(register_market_data_vendor_instrument_handlers(nats, ctx, verifier));
+    fold(register_market_data_mapping_handlers(nats, ctx, verifier));
+    fold(register_subscription_handlers(nats, ctx, verifier));
+    fold(register_route_handlers(nats, ctx, verifier));
+    fold(register_composite_input_handlers(nats, ctx, verifier));
+    fold(register_composite_handlers(nats, ctx, verifier));
+    fold(register_rate_card_component_handlers(nats, ctx, verifier));
+    fold(register_delivery_count_handlers(nats, ctx, verifier));
+    fold(register_demand_interval_handlers(nats, ctx, verifier));
+    fold(register_subscription_interval_handlers(nats, ctx, verifier));
     fold(register_observation_lineage_handlers(nats, ctx, verifier));
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
     fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
@@ -137,6 +174,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             series_slice_handler h(nats, ctx, verifier);
                                             h.get_slice(std::move(msg));
+                                        }));
+
+    // Every tick of one series in a span of time, in one reply.
+    subs.push_back(nats.queue_subscribe(std::string(get_series_ticks_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_ticks_handler h(nats, ctx, verifier);
+                                            h.get_ticks(std::move(msg));
                                         }));
 
     // Typed series identity: resolves a series from the identity fields a
@@ -244,6 +289,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_market_series_history_provider(hist_registry);
         register_market_series_asset_class_history_provider(hist_registry);
         register_feed_binding_history_provider(hist_registry);
+        register_provider_history_provider(hist_registry);
+        register_market_data_source_history_provider(hist_registry);
+        register_market_data_vendor_instrument_history_provider(hist_registry);
+        register_market_data_mapping_history_provider(hist_registry);
+        register_subscription_history_provider(hist_registry);
+        register_route_history_provider(hist_registry);
+        register_composite_input_history_provider(hist_registry);
+        register_composite_history_provider(hist_registry);
+        register_rate_card_component_history_provider(hist_registry);
+        register_delivery_count_history_provider(hist_registry);
+        register_demand_interval_history_provider(hist_registry);
+        register_subscription_interval_history_provider(hist_registry);
         register_observation_lineage_history_provider(hist_registry);
         register_series_classification_rule_history_provider(hist_registry);
 

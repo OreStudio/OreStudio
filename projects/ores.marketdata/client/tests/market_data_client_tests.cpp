@@ -34,6 +34,8 @@ feed_binding make_binding() {
     b.party_id = boost::uuids::random_generator()();
     b.source_name = "synthetic.bloomberg.eurusd";
     b.producer_kind = "SYNTHETIC";
+    b.provider_code = "ore";
+    b.source_id = boost::uuids::random_generator()();
     b.enabled = true;
     return b;
 }
@@ -56,6 +58,8 @@ TEST_CASE("a_saved_binding_carries_every_field_the_binding_owns", tags) {
     CHECK(write.id == binding.id);
     CHECK(write.party_id == binding.party_id);
     CHECK(write.source_name == binding.source_name);
+    CHECK(write.provider_code == binding.provider_code);
+    CHECK(write.source_id == binding.source_id);
     CHECK(write.enabled == binding.enabled);
 }
 

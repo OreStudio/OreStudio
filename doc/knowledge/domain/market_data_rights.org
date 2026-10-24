@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE
+:END:
+#+title: Display, non-display and derived rights are modelled on the subscription
+#+description: The three usage rights vendors license separately, where the system records them, and how they decide cost and permission.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:rights:licensing:subscription:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+Vendors license data by the use made of it. The system models three rights on
+each subscription: =display=, =non_display= and =derived=. A right decides what a
+party may do and what the party costs. The system models them now, so a later
+real vendor contract fits without a change of model.
+
+* Detail
+
+** The rights
+
+| Right | Meaning | Example |
+|-------+---------+---------|
+| =display= | A person looks at the data on a screen | A trader's blotter |
+| =non_display= | A system uses the data without display | A pricing or risk engine |
+| =derived= | A party computes a new value from the data | A blended spot, a curve |
+
+These follow the way vendors price access. A vendor licence for derived data
+covers internal use only and is priced for each legal entity. See
+[[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] for the sources.
+
+** Where the rights are checked
+
+- A demand checks that the subscription holds the right that the use needs. A
+  pricing engine needs =non_display=.
+- A composite needs =derived= on the subscription of every input provider. See
+  [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
+- A screen read needs =display=.
+
+** What the rights drive
+
+Each right is a driver of a charge component in a rate card. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
+
+** What is not modelled yet
+
+Redistribution to another legal entity, and a limit on the number of display
+users, are not modelled. A later change adds them as new rights or new limits.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the row that carries the rights.
+- [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]] — completes: the main user of the derived right.
+- [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] — completes: how a right becomes a charge.

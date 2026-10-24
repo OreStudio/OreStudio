@@ -558,6 +558,28 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_file_types_populate.py and commit the seed.",
     ),
     Check(
+        id="ore-parameters-seed",
+        title="The staged ore parameters match their texts",
+        argv=("python3", "projects/ores.sql/utility/generate_ore_parameters_dataset.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/utility/generate_ore_parameters_dataset.py",
+            "projects/ores.sql/utility/ore_parameter_seed.py",
+            "projects/ores.sql/utility/setup_parameter_rows.py",
+            "projects/ores.sql/utility/setup_parameter_descriptions.py",
+            "projects/ores.sql/utility/block_parameter_rows.py",
+            "projects/ores.sql/utility/block_parameter_catalogue.py",
+            "projects/ores.sql/utility/block_parameter_releases.py",
+            "projects/ores.sql/utility/block_parameter_descriptions/*",
+            "projects/ores.sql/utility/analytic_parameter_rows.py",
+            "projects/ores.sql/utility/analytic_parameter_catalogue.py",
+            "projects/ores.sql/utility/analytic_parameter_releases.py",
+            "projects/ores.sql/utility/analytic_parameter_descriptions/*",
+        ),
+        fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),
@@ -656,6 +678,14 @@ CATALOGUE: tuple[Check, ...] = (
         title="No test case sits inside a conditional compilation block",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_test_case_reachability.py"),
         classes=("cpp", "modeling", "codegen"),
+    ),
+    Check(
+        id="portable-stop",
+        title="No code outside ores.platform names a C++20 stop type",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_portable_stop_types.py"),
+        classes=("cpp",),
+        fix="Use the same name from ores::platform::concurrency (stoppable_thread.hpp):"
+            " Apple's libc++ has no std::jthread or std::stop_token.",
     ),
     Check(
         id="event-registrars",

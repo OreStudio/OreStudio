@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: F64DB34E-084D-4437-B536-392AA26D8B77
+:END:
+#+title: No code path may behave differently because a source is simulated
+#+description: The rule that keeps synthetic data from leaking into the system, what the source kind may affect, and a review test for it.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:architecture:principle:synthetic:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+Synthetic data is data. It is never a branch. A source has a kind, and a person
+can read the kind. No part of the system may choose a different action because
+the kind is =simulated=. If real data replaced the simulator tomorrow, no code,
+no table constraint, no subject and no screen should need a change.
+
+* Detail
+
+** What the kind may affect
+
+- *Display.* A badge on a source, a filter on a list and the text on a series
+  page.
+- *Governance and cost.* The rate card of the source and whether its bill is a
+  shadow bill.
+- *Installation.* Which bundle installs the source and its adapter.
+
+** What the kind may not affect
+
+- The mapping, the quality checks, the storage, the delivery and the metering.
+- Any NATS subject, table name, source name pattern or constraint.
+- Access control. The same permissions apply to a simulated source.
+- Any consumer. Pricing and risk read a quote and cannot ask where it came from.
+
+** A review test
+
+A change fails review when it does any of these.
+
+1. It tests the kind, the source name or the adapter id for the word
+   =synthetic=, =sim= or =simulated= outside the display code.
+2. It adds a table constraint, a subject prefix or a column whose value depends
+   on the kind.
+3. It gives the simulator a path that a live adapter cannot use.
+4. It lets a consumer read a value from the simulator that a live source could
+   not publish.
+
+** Why the rule matters
+
+If the system special-cases the simulator, a test with the simulator does not
+prove the system works with live data. The rule makes every simulated run a
+true test of the live path.
+
+** An exception that proves the rule
+
+The party tick carries the =source= id. A consumer can display it. A consumer
+that branches on it breaks the rule, and the review test catches it.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — exemplifies: the rule applied part by part.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] — completes: where the kind is stored.

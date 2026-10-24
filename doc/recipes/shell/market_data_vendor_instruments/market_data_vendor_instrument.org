@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 97318D73-729E-5159-B52B-09CD37F9921D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_data_vendor_instruments commands from the shell?
+#+description: Every command the market_data_vendor_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_data_vendor_instruments:
+
+This file documents the market_data_vendor_instruments resource at the shell, one section per command. Every command is a subcommand of =market_data_vendor_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E5CB52D1-9065-5BC3-91A7-4A021D30B550
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.list=.
+
+#+name: market_data_vendor_instruments-list
+#+begin_src ores-shell :tangle market_data_vendor_instruments-list.ores :exports none
+market_data_vendor_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A15831C5-654F-56C2-86E5-2F051C80C331
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments get <external_id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.get=.
+
+#+name: market_data_vendor_instruments-get
+#+begin_src ores-shell :tangle market_data_vendor_instruments-get.ores :exports none
+market_data_vendor_instruments get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4F04C3F6-B459-50BF-AA61-E5479DFF2E37
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments get-many <external_id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.get_many=.
+
+#+name: market_data_vendor_instruments-get-many
+#+begin_src ores-shell :tangle market_data_vendor_instruments-get-many.ores :exports none
+market_data_vendor_instruments get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1F5217C8-D98E-5D78-896E-30BD548135E4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments add <provider_code> <id_scheme> <external_id> <field> <minted> <deviation_note> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.put=.
+
+#+name: market_data_vendor_instruments-add
+#+begin_src ores-shell :tangle market_data_vendor_instruments-add.ores :exports none
+market_data_vendor_instruments add __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 062028F7-0DB9-5176-A828-E71AD010E4C8
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments set <id> <provider_code> <id_scheme> <external_id> <field> <minted> <deviation_note> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.put=.
+
+#+name: market_data_vendor_instruments-set
+#+begin_src ores-shell :tangle market_data_vendor_instruments-set.ores :exports none
+market_data_vendor_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A69E802B-47D8-5CB9-A70E-2011FF68AC58
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments put-many --count <n> <id> <provider_code> <id_scheme> <external_id> <field> <minted> <deviation_note> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.put_many=.
+
+#+name: market_data_vendor_instruments-put-many
+#+begin_src ores-shell :tangle market_data_vendor_instruments-put-many.ores :exports none
+market_data_vendor_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 018DABE3-7C34-5D08-9062-113793F7AB64
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments delete <external_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.delete=.
+
+#+name: market_data_vendor_instruments-delete
+#+begin_src ores-shell :tangle market_data_vendor_instruments-delete.ores :exports none
+market_data_vendor_instruments delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F2DC6BC4-AC52-546D-A2A6-20214B32122E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments delete-many <external_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments.delete_many=.
+
+#+name: market_data_vendor_instruments-delete-many
+#+begin_src ores-shell :tangle market_data_vendor_instruments-delete-many.ores :exports none
+market_data_vendor_instruments delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E310A47D-E58C-5F2F-80E2-E95C32B3E408
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments versions <external_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments_versions.list=.
+
+#+name: market_data_vendor_instruments-versions
+#+begin_src ores-shell :tangle market_data_vendor_instruments-versions.ores :exports none
+market_data_vendor_instruments versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9ECF16DF-27FC-5957-8E4D-91C6531F835A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_data_vendor_instruments version <external_id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.market_data_vendor_instruments_versions.get=.
+
+#+name: market_data_vendor_instruments-version
+#+begin_src ores-shell :tangle market_data_vendor_instruments-version.ores :exports none
+market_data_vendor_instruments version __none__ --version 1
+#+end_src
+

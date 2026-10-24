@@ -59,6 +59,7 @@ asio::awaitable<void> http_session::run() {
         for (;;) {
             http::request_parser<http::string_body> parser;
             parser.body_limit(options_.max_body_size);
+            parser.header_limit(options_.max_header_size);
             co_await http::async_read(stream_, buffer_, parser, asio::use_awaitable);
             auto req = parser.release();
 

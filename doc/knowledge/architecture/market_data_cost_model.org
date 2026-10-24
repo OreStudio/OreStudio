@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 1B8A3DB7-006A-4E14-AC11-57FA3741222D
+:END:
+#+title: A rate card on the source turns usage into a bill the platform shares
+#+description: How vendors charge, the rate card that models it, how rating and allocation produce a bill for each party, and why a simulated source gets a shadow bill.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:cost:rate_card:allocation:governance:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The platform owns the vendor contracts. It pays each vendor and shares the cost
+with the parties that use the data. A rate card on each source describes how the
+vendor charges. Rating applies the card to a period's usage events and gives the
+source bill. Allocation splits that bill among the parties. A simulated source has
+a simulated rate card, so its parties see a shadow bill that approximates the
+real one.
+
+* Detail
+
+#+caption: From usage events to a bill for each party.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/market_data_cost_flow.png]]
+
+Source: [[proj:doc/knowledge/architecture/market_data_cost_flow.puml][=market_data_cost_flow.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/market_data_cost_flow.puml=.
+
+** How vendors charge
+
+Vendors charge on several axes together.
+
+| Axis | Meaning | Evidence |
+|------+---------+----------|
+| Platform or connection | A fixed fee for the enterprise feed | [[https://multiples.vc/compare/bloomberg-api-alternatives][Bloomberg B-PIPE and Server API are quoted apart from terminal seats]] |
+| Display, per user | A fee for each person who views data | [[https://assets.bbhub.io/professional/sites/10/BTFE-market-data-policy.pdf][Bloomberg Trading Facility market data policy]] |
+| Non-display | A fee for a system that uses data without display | Same policy |
+| Derived data | A licence to compute from the data, priced for each legal entity | [[https://data.bloomberglp.com/professional/sites/10/20200416-BTFE-Data-Fees-Disclosure1.pdf][Bloomberg data fees disclosure]] |
+| Instrument or request volume | A fee for each entitled instrument or request | General practice |
+| Redistribution | A fee to pass data to another legal entity | General practice |
+
+Bloomberg publishes no price list. We found no public LSEG fee schedule. Contract
+terms are the input for a real card.
+
+** The rate card
+
+A rate card belongs to a source. It lists charge components. Each component has a
+driver and a rate.
+
+| Driver | Charged for |
+|--------+-------------|
+| =fixed_per_period= | The connection or platform, whatever the use |
+| =per_instrument= | Each distinct instrument in demand in the period |
+| =per_party= | Each subscribed party |
+| =per_licence= | Each right held: =non_display=, =derived= |
+| =per_thousand_ticks= | Delivered ticks |
+| =per_display_user= | Each person with display access (later) |
+
+A simulated source carries a card with illustrative rates, or published rates
+where they exist. The model is the same.
+
+** Rating
+
+Rating reads the usage events of one period for a source and applies its card.
+The result is the source bill: the cost the platform bears for the source.
+
+** Allocation
+
+Allocation splits the source bill among parties, by the driver of each
+component.
+
+- =per_instrument=: among the parties that demanded the instrument.
+- =per_party= and =per_licence=: to the party that holds it.
+- =per_thousand_ticks=: by delivery count.
+- =fixed_per_period=: no party driver exists. The default policy splits it equally
+  among the active subscribers of the period. The policy is replaceable.
+
+A composite has no card. Its demand counts as demand on its input providers, so
+their components allocate its cost. See [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
+
+** Real bill and shadow bill
+
+The system pays the bill of a =live= source. The bill of a =simulated= source is a
+shadow bill. It has the same lines and the same allocation. Nobody pays it. The
+card is the only part that differs, and it is data. See
+[[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+
+** One simplification
+
+A real vendor could treat each party as a separate licensee. The first release
+assumes one payer, the platform, that shares the cost. A change to the
+contract holder changes who owns the card and not the model.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the events that rating reads.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the rights that some components charge for.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — exemplifies: the rate card is a difference that remains.

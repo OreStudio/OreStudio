@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:synthetic:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-22
 
 * Summary
 
@@ -27,15 +27,13 @@ readable.
 Each rule names the shared part that carries it, so a new feed screen gets the
 rule by using the part.
 
-Feeds have two scopes. A /system feed/ simulates a real provider, such as
-Bloomberg, Refinitiv or an exchange; it is run once for the installation and a
-tenant consumes it through a feed binding. A /test feed/ is one a tenant or a
-party creates for itself. Today every feed is a party's test feed, and the FX
-price feed screen lists one party's FX feeds. In the organisation that
-[[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]]
-brings, a feed browser organises system feeds by provider and kind and holds
-the per-kind screens of this page as its leaves, at a scale of many thousands
-of feeds.
+A feed here is a generator of the simulator. Every generator belongs to the system
+tenant and the system party, and it simulates one vendor instrument of a real
+provider such as Bloomberg or LSEG. A party consumes the data through a
+subscription and a route and never owns a generator. See
+[[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]]. A feed browser
+organises generators by provider and kind and holds the per-kind screens of this
+page as its leaves, at a scale of many thousands of generators.
 
 * Detail
 
@@ -381,17 +379,17 @@ the provider catalogue, with a description of what it simulates, and every colle
 names one, so every feed has a provider. The ORE examples are the provider /ORE/.
 
 - A row shows what the provider simulates, its FX and IR counts, one of Running, Stopped,
-  "n of m running" or Empty, and how many of its feeds should run and do not. Start and
-  Stop on a row act on every feed of the provider.
-- A banner counts the feeds that are enabled, start on their own, and are not running.
-  A restart of the synthetic service stops every feed and nothing starts them again, so
-  this is the first thing the screen says. /Start them/ starts exactly those feeds; /Show
-  them in the feed tree/ opens the tree on them.
+  "n of m running" or Empty, and how many of its generators are demanded and do not run.
+  Demand starts a generator. Start and Stop on a row are operator controls for a test and
+  act on every generator of the provider.
+- A banner counts the generators that are enabled, are demanded, and are not running. A
+  restart of the simulator needs no action, because the service sends the demand set
+  again, so a count above zero means a generator failed to start. /Show them in the feed
+  tree/ opens the tree on them.
 - The chosen provider has a panel with its asset classes and a link into the tree.
-- A provider whose feeds are the installation's, a system collection, wears a /System/ tag.
-  Its feeds run once for every tenant, and only the system tenant starts and stops them. A
-  start or a stop from another tenant skips them and says so, and the banner of feeds that
-  should run leaves them out.
+- Every collection belongs to the system tenant, so the screen draws no scope tag. Only
+  the system tenant writes a generator or starts and stops one, and any tenant may read
+  them.
 - The server counts. =synthetic.v1.ops.list_feed_folders= returns the children of one
   folder, or the roots, each with the feeds under it at any depth, how many run and how
   many are idle. The screen asks again every five seconds.

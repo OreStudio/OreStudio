@@ -54,9 +54,21 @@ BEGIN
     -- The provider feeds: system collections, one for each provider that has feeds of a
     -- kind the platform simulates. They publish after the provider catalogue they name,
     -- into the system tenant under its system party, and run there once.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.refinitiv', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.lseg', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ice', 11);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.tradeweb', 12);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 13);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 15);
+
+    -- The ORE parameter documentation. The system tenant's rows are what the
+    -- validators of the configuration parameters read, and each tenant's rows
+    -- are what its own screens read, so both bundles carry it. The parameters
+    -- depend on the value domains, so the dataset dependency orders them.
+    -- Two copies of one dataset is a stopgap: the capture "One source for
+    -- reference data that the system and each tenant read" tracks the choice
+    -- of one source and the rewrite of the readers that follows.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 16);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 17);
 
     -- =============================================================================
     -- Base System Bundle Members
@@ -144,6 +156,8 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_definitions', 301);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.code_domains', 302);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_mappings', 303);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameter_value_domains', 304);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameters', 305);
 
     -- =============================================================================
     -- Crypto Bundle Members
@@ -208,32 +222,6 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.portfolios', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
-
-    -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
-    -- One member: the synthetic feeds dataset itself, covering every asset
-    -- class it contains (FX + IR today) in one atomic publish -- see
-    -- doc/plans/2026-07-27-synthetic-theme-atomic-dataset-design.org. A new
-    -- asset class never requires a client code change or a new bundle
-    -- member, only a new artefact table/loop inside
-    -- ores_synthetic_publish_feeds_from_dq_fn. This dataset's
-    -- price_source='vintage' rows depend on real market data they resolve
-    -- against at feed-start time -- that dependency is declared in
-    -- synthetic_dataset_dependency_populate.sql, not re-stated here as bundle
-    -- membership; publish_bundle resolves it via the dependency graph (see
-    -- publication_service::list_bundle_publishable_datasets), same as the
-    -- ID-based publish path.
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_ore_samples_2016', 'synthetic.feeds.ore_samples_2016', 10);
-
-    -- --- Synthetic Data: Bloomberg Bundle Members ---
-    -- The dataset's feed rows name the bloomberg provider, which the provider
-    -- catalogue (system_core) already holds when a tenant is provisioned.
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_bloomberg', 'synthetic.feeds.bloomberg', 10);
-
-    -- --- Synthetic Data: Uniform Volatility Demo Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.feeds.uniform_demo', 10);
 
     -- --- CRM Cross-Rates Matrix Topology Bundle Members ---
 

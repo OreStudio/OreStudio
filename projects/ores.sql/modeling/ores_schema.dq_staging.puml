@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 137
+Tables: 139
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -730,7 +730,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_configuration_analytic_parameters_artefact_tbl
-    One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in parameter_definition whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column. - Artefact Table
+    One Parameter element inside one Analytic of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in ore_parameter whose scope is the analytic and whose subtype is the analytic type code, so adding a parameter is a lookup row and never a column. - Artefact Table
     end note
 
     entity ores_dq_configuration_analytics_artefact_tbl  #F7E5FF {
@@ -2094,7 +2094,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_market_data_providers_artefact_tbl
-    A catalogue of the providers whose market data the synthetic feeds simulate. A system-scope collection names the provider it stands for, so the installation can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it as that provider's data. Every collection names its provider, so every feed has one. A reference set such as the ORE examples is a provider of its own. Every provider here is simulated, and the synthetic screens show it without a mark, because everything on them is synthetic. Every source name a provider's feed publishes on starts synthetic.<provider code>., so a simulated feed is never read as the real one. A real provider integration, when one comes, belongs in market data and not in this catalogue. Scoped to ores.synthetic (not ores.refdata) because only synthetic generation uses it today, following the yield_curve_process_type precedent. Managed by the system tenant. - Artefact Table
+    A catalogue of the providers whose market data the synthetic feeds simulate. A system-scope collection names the provider it stands for, so the installation can run a simulated Bloomberg, LSEG or CME once and every tenant reads it as that provider's data. Every collection names its provider, so every feed has one. A reference set such as the ORE examples is a provider of its own. Every provider here is simulated, and the synthetic screens show it without a mark, because everything on them is synthetic. Every source name a provider's feed publishes on starts synthetic.<provider code>., so a simulated feed is never read as the real one. A real provider integration, when one comes, belongs in market data and not in this catalogue. Scoped to ores.synthetic (not ores.refdata) because only synthetic generation uses it today, following the yield_curve_process_type precedent. Managed by the system tenant. - Artefact Table
     end note
 
     entity ores_dq_market_observations_artefact_tbl  #F7E5FF {
@@ -2189,6 +2189,48 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_ois_conventions_artefact_tbl
     Defines the fixed-leg and overnight floating-leg parameters for an OIS. OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA, SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml. - Artefact Table
+    end note
+
+    entity ores_dq_ore_parameter_value_domains_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * storage_kind : text
+        * referenced_entity : text
+    }
+
+    note right of ores_dq_ore_parameter_value_domains_artefact_tbl
+    Every configuration parameter holds one value, and this says what that value is: a currency, a date, a boolean, an integer, a tenor, a document reference, or a list. Where the value names something in the model, referenced_entity names the entity it points at, so the mapper knows what to write into the document and a reader knows what the value means. A malformed org header makes this loader fail in a misleading way: a line that does not start at column zero, or a stray character before a #+ keyword, leaves the entity type unresolved and the generator writes files called unknown_* rather than reporting the bad line. Check the header first when a model generates unknown. - Artefact Table
+    end note
+
+    entity ores_dq_ore_parameters_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * scope : text
+        * subtype : text
+        * name : text
+        * schema_name : text
+        * xpath : text
+        * position : integer
+        * ore_parameter_value_domain_code : text
+        * is_required : boolean
+        * label : text
+        * help : text
+        * description : text
+        * default_text : text
+        * format : text
+        * introduced_in : text
+          removed_in : text
+    }
+
+    note right of ores_dq_ore_parameters_artefact_tbl
+    The vocabulary of ORE XML. A row documents one leaf of one ORE document: an attribute or an element that holds a value. schema_name names the XML schema of the document, for example ore.xsd, and xpath is the path to the leaf in a document of that schema. The two together say which leaf this is. ORE writes the parameters of ore.xml as a name and a value inside a block. For them scope names the block (Setup, Markets, an analytic), subtype narrows it, and name is the parameter, so the three give the same path as xpath. position keeps the order the document wrote, because a document that is not reproducible in order is not reproducible. 165 of the 218 parameter names observed in the shipped corpus belong to exactly one analytic kind, which is why the name alone is not the key. - Artefact Table
     end note
 
     entity ores_dq_overnight_index_conventions_artefact_tbl  #F7E5FF {
@@ -2442,6 +2484,7 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
         * tier : text
           applicable_jurisdiction : text
+          regulatory_book_type : text
     }
 
     note right of ores_dq_report_definitions_artefact_tbl

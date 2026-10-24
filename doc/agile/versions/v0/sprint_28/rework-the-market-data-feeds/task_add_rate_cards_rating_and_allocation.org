@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: DAA15D3D-F31E-4FAB-BAAF-37072815F31E
+:END:
+#+title: Task: Add rate cards, rating and allocation
+#+description: Add the rate card on a source, the rating step and the allocation of a source bill to parties.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/add-rate-cards-rating-and-allocation
+#+pr: 3659
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A rate card on a source describes its charge components and drivers, rating applies it to a period's events, and allocation splits the source bill among parties, with a shadow bill for a simulated source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- A rate card holds components with the drivers fixed_per_period, per_instrument, per_party, per_licence and per_thousand_ticks.
+- Rating gives the source bill for a period, and allocation gives each party a bill by the driver of each component, splitting a fixed fee equally among active subscribers.
+- The bill of a simulated source is marked a shadow bill and nothing else differs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Model one component of a rate card as an entity owned by the system tenant: source, driver, licence right, charge and the dates it applies. The rate card of a source is the set of components that apply.
+2. Hold every amount as a whole number of millionths of the currency, so rating and allocation are exact and a split loses no cent.
+3. Rate a source in a pure function of its components and the usage events of a period, with a count for each driver.
+4. Allocate the bill in a second pure function by the driver of each component, with the remainder of a split going to the largest fraction, so the charges and the unallocated part add up to the bill.
+5. Mark a bill of a simulated source as a shadow bill and let nothing else differ.
+6. Compute the bills on request from the events and the cards, and show a tenant only its own charges.
+7. Install illustrative cards for the sources of the provider ore.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3659][#3659]] | [marketdata] Add rate cards, rating and allocation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Overlapping components double-bill | billing.cpp | Accept | Of the components that share a driver and a licence right, the one that started last bills, and a test shows it. |
+| 2 | Mixed currencies are summed silently | billing.cpp | Defer | One currency for each source needs a rule when a component is written. It is a later change to the entity. |
+| 3 | An unknown driver is skipped and the currency is set before it | billing.cpp | Accept | The currency is set after the driver is known. The entity already refuses any driver outside its list. |
+| 4 | Negative charges are not handled | billing.cpp | Accept | The entity refuses a negative charge, and the contract of the splits says the total is not negative. |
+| 5 | allocate recounts the events | billing.cpp | Defer | The cost grows with the events and the sources. A shared count belongs with a measurement. |
+
+* Result
+
+A rate card belongs to a source and is the set of its components. =rate_card_component= is an entity owned by the system tenant, with history, a driver, a licence right, a charge in millionths of the currency and the dates it applies. The drivers are fixed_per_period, per_instrument, per_party, per_licence and per_thousand_ticks. =rate_source= rates a source from its components and the usage events of a period, and =allocate= splits the bill among the parties by the driver of each component: an instrument is shared among the parties that demanded it, a party or a licence is borne by its holder, ticks are split by the deliveries counted, and a fixed fee is split equally among the active subscribers. Every amount is a whole number, a split gives the remainder to the largest fractions, and the charges and the unallocated part add up to the bill. The bill of a simulated source is marked a shadow bill and nothing else differs. A request for the bills of a period computes them on demand, and a tenant outside the system tenant reads only its own charges. The populate installs illustrative cards for the two sources of the provider ore. Eighteen billing cases pass with the earlier service tests. The build passes.
+
+Left for later tasks:
+- A bill is computed on request and not stored. A bill that must be paid or disputed needs a stored statement.
+- A component that starts or ends inside a period applies to the whole period.
+- A party administrator reads the charges through the compute request. The usage and cost screen is in the screens task.
+- The display driver per person needs the access record, which is not modelled.
+- The computation was not run against a database, because the worktree =.env= is at version 32.

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 5554508D-C8B8-4E92-B872-CC8E0988DE73
+:END:
+#+title: Task: Show the report run behind a batch
+#+description: The job page cannot link to the report run that a batch names. No page and no read for a report run exist, and the batch names the run only in its external_ref.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/show-the-report-run-behind-a-batch
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The job page links to the report run that dispatched its batch, where a report dispatched it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- A report run has a read the BFF serves and a page the job page links to.
+- A batch that the shell dispatched states that no report is behind it.
+
+* Plan
+
+The reporting service reads a run by id through its list filter =id_one_of=, so no model changes. The BFF serves =GET /api/operations/grid/report-runs/:id= with the run, its health word and the batch that names it. The web gets the page =/operations/grid/report-runs/:id=. The job page links to it when the batch's =external_ref= is an id, and states that no report is behind the batch when it is not.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The health word and the batch are decorations. A failed read of either leaves the cell empty and does not fail the page. The operator gets a 404 for a run, because the run belongs to a tenant party. The sample run in the dev database has no state, so the page reads "No word" for it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3675 | Show the report run behind a batch |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A bare catch hides expired-session and network errors in the health and batch reads. | grid-report-runs.ts | Skipped | The run read comes first on the same session, so an expired session fails there. The two reads are decorations by design. |
+| 2 | State why a page of 5 batches is enough. | grid-report-runs.ts | Fixed | A comment says the exact match narrows the page and a uuid is unlikely to repeat. |
+| 3 | The trail keeps the short id when the read fails. | GridReportRunPage.tsx | No change needed | The bot calls it acceptable. |
+| 4 | The report link may lead to a 404 when the definition is hidden. | GridReportRunPage.tsx | Skipped | The run and its definition share a party, so the policy shows both or neither. |
+| 5 | The run read ignores a result that is not an exact match. | grid-report-runs.ts | No change needed | The id filter narrows the read to one row. |
+| 6 | A test where the health read fails would pin the decoration. | grid-report-runs.test.ts | No change needed | The third test already removes both reads. |
+
+* Result
+
+The job page links to a report run page for a batch named by a run id. A batch the shell dispatched says no report is behind it. A live check as four accounts found that the party member and the tenant administrator read the run, the member of another party gets 404, and the operator gets 404. The BFF has six tests for the route and the web has four for the page and two for the link. The TypeScript suites pass.

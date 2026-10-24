@@ -1890,10 +1890,9 @@ void synthetic_commands::process_setup(std::ostream& out,
 
     // The shared flow: one container, one folder chain, and the config the
     // class's own rows hang from. The class supplies the rows below that, and
-    // nothing else about the flow changes with it. Every config row is party
-    // scoped and the party comes from the session rather than from an
-    // argument, so a session that selected no party names the one command that
-    // gives it one.
+    // nothing else about the flow changes with it. Every config row holds a party and
+    // the party comes from the session rather than from an argument, so a
+    // session that selected no party names the one command that gives it one.
     const auto party_id = session.party_id();
     if (party_id.empty()) {
         fail(out) << "This session holds no party, which every config row needs. Run "
@@ -1910,8 +1909,6 @@ void synthetic_commands::process_setup(std::ostream& out,
 
     synthetic_ms::put_market_data_generation_config_request container_req;
     container_req.change.write.id = boost::lexical_cast<boost::uuids::uuid>(collection);
-    container_req.change.write.scope = synthetic::domain::scope::party;
-    container_req.change.write.binding_mode = synthetic::domain::binding_mode::bound;
     container_req.change.write.name = name;
     container_req.change.write.description = "Authored by synthetic setup";
     container_req.change.write.enabled = true;

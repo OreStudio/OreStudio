@@ -64,10 +64,8 @@ struct stop_outcome {
  * series another running feed holds) and the same counts. Every registered kind is
  * present in the result, whether or not a feed of it was wanted.
  *
- * @p build carries the clients every builder shares, and each feed gets its own run token
- * from the controller's identity. @p bearer is the token of the person who starts the
- * feeds, or empty for a restore. It gives the consent and subscribes the person's party,
- * and the feeds do not run as the person.
+ * @p build carries the clients every builder shares. @p bearer is the token of the person who
+ * starts the feeds. It subscribes the person's party, and the feeds do not run as the person.
  */
 inline start_outcome start_feeds(const feed_kind_registry& registry,
                                  feed_controller& ctrl,
@@ -92,27 +90,18 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 << "Skipping " << c.display_name << " under " << scope_label << " — " << reason;
         };
         // A system feed runs once for every tenant, so only the system tenant starts it.
-        if (target.container_scope == ores::synthetic::domain::scope::system &&
-            !feed_kind_registry::is_system_caller(ctx)) {
+        if (target.container_is_system && !feed_kind_registry::is_system_caller(ctx)) {
             skip("a system feed starts only in the system tenant.");
             continue;
         }
         try {
-            const auto token = ctrl.identity().run_token_for(target, ctx, bearer);
-            if (!token) {
-                skip(token.error());
-                continue;
-            }
-            auto context = build;
-            context.run_token = *token;
-            auto attempt = registry.make_feed(target, context);
+            auto attempt = registry.make_feed(target, build);
             if (!attempt.feed) {
                 skip(attempt.failure);
                 continue;
             }
             std::string conflicting_source_name;
-            if (ctrl.add(
-                    std::move(attempt.feed), target.binding_mode, bearer, &conflicting_source_name))
+            if (ctrl.add(std::move(attempt.feed), bearer, &conflicting_source_name))
                 ++counts.started;
             else if (conflicting_source_name.empty())
                 // A concurrent start of the same config landed between this loop's

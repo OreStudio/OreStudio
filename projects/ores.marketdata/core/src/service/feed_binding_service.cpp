@@ -104,6 +104,8 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
     v.party_id = write.party_id;
     v.source_name = write.source_name;
     v.producer_kind = write.producer_kind;
+    v.provider_code = write.provider_code;
+    v.source_id = write.source_id;
     v.enabled = write.enabled;
     return v;
 }
@@ -135,6 +137,18 @@ feed_binding_service::list_feed_bindings(const messaging::list_feed_bindings_req
         request.filter->producer_kind_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "producer_kind_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->provider_code_one_of &&
+        request.filter->provider_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "provider_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->source_id_one_of &&
+        request.filter->source_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "source_id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {

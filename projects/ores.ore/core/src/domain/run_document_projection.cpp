@@ -75,8 +75,10 @@ struct engine_binding {
 
 // ORE's parseBool spellings.
 bool parse_flag(const std::string& name, const std::string& value) {
-    static constexpr std::array<std::string_view, 6> yes = {"Y", "YES", "TRUE", "True", "true", "1"};
-    static constexpr std::array<std::string_view, 6> no = {"N", "NO", "FALSE", "False", "false", "0"};
+    static constexpr std::array<std::string_view, 6> yes = {
+        "Y", "YES", "TRUE", "True", "true", "1"};
+    static constexpr std::array<std::string_view, 6> no = {
+        "N", "NO", "FALSE", "False", "false", "0"};
     if (std::ranges::find(yes, value) != yes.end())
         return true;
     if (std::ranges::find(no, value) != no.end())
@@ -132,15 +134,13 @@ using execution_t = reporting::domain::engine_settings_execution;
 
 const std::vector<engine_binding>& engine_bindings() {
     static const std::vector<engine_binding> bindings = {
-        flag_binding(
-            "implyTodaysFixings", &engine_t::fixings, &fixings_t::imply_todays_fixings),
+        flag_binding("implyTodaysFixings", &engine_t::fixings, &fixings_t::imply_todays_fixings),
         flag_binding(
             "includeTodaysCashFlows", &engine_t::fixings, &fixings_t::include_todays_cash_flows),
         flag_binding("includeReferenceDateEvents",
                      &engine_t::fixings,
                      &fixings_t::include_reference_date_events),
-        flag_binding(
-            "enrichIndexFixings", &engine_t::fixings, &fixings_t::enrich_index_fixings),
+        flag_binding("enrichIndexFixings", &engine_t::fixings, &fixings_t::enrich_index_fixings),
         int_binding("ignoreFixingLag", &engine_t::fixings, &fixings_t::ignore_fixing_lag),
         int_binding("ignoreFixingLead", &engine_t::fixings, &fixings_t::ignore_fixing_lead),
         {"observationModel",
@@ -148,7 +148,8 @@ const std::vector<engine_binding>& engine_bindings() {
              if (std::ranges::find(observation_models, v) == observation_models.end())
                  throw std::runtime_error(
                      "run_document_projection: Setup parameter 'observationModel' is not one of "
-                     "None, Disable, Defer or Unregister: '" + v + "'");
+                     "None, Disable, Defer or Unregister: '" +
+                     v + "'");
              if (!e.building)
                  e.building.emplace();
              e.building->observation_model = v;
@@ -158,16 +159,13 @@ const std::vector<engine_binding>& engine_bindings() {
                  return std::nullopt;
              return e.building->observation_model;
          }},
-        flag_binding(
-            "lazyMarketBuilding", &engine_t::building, &building_t::lazy_market_building),
+        flag_binding("lazyMarketBuilding", &engine_t::building, &building_t::lazy_market_building),
         flag_binding("buildFailedTrades", &engine_t::building, &building_t::build_failed_trades),
         flag_binding("continueOnError", &engine_t::building, &building_t::continue_on_error),
-        flag_binding("useAtParCouponsCurves",
-                     &engine_t::building,
-                     &building_t::use_at_par_coupons_curves),
-        flag_binding("useAtParCouponsTrades",
-                     &engine_t::building,
-                     &building_t::use_at_par_coupons_trades),
+        flag_binding(
+            "useAtParCouponsCurves", &engine_t::building, &building_t::use_at_par_coupons_curves),
+        flag_binding(
+            "useAtParCouponsTrades", &engine_t::building, &building_t::use_at_par_coupons_trades),
         int_binding("nThreads", &engine_t::execution, &execution_t::n_threads),
         int_binding("logMask", &engine_t::execution, &execution_t::log_mask),
         int_binding(
@@ -317,7 +315,8 @@ mapped_setup run_document_projection::map_setup(const document& v) {
 std::vector<std::string> run_document_projection::dropped_parameter_warnings(const document& v) {
     std::vector<std::string> warnings;
     for (const auto& name : map_setup(v).dropped) {
-        auto text = std::format("Setup parameter '{}' is not held by the model and was dropped.", name);
+        auto text =
+            std::format("Setup parameter '{}' is not held by the model and was dropped.", name);
         if (name == "fixingCutoff")
             text += " ORE reads it and the run will not, so its numbers may differ from the "
                     "original run.";

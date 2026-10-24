@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: CF2FFE22-85E6-4490-B44D-37657F9B76EE
+:END:
+#+title: A system clock drives the date the feeds read
+#+description: One system clock gives the date the feeds read, and a table of daily rates means a public source is asked for each day only once.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The system has a system clock that the feeds check. The clock drives which date a feed reads. A feed that needs the daily rates of a date looks them up in a table of daily rates. If the date is in the table the feed reuses it. If not, the feed fetches the rates once, stores them in the table, and then reuses them. So a public source is asked for one date only once, however many feeds, restarts or services need it.
+
+* Why
+
+The calibration of the synthetic ticks reads the daily rates of free public sources. Without one clock and one table, each feed, each restart and each service would ask the source again, and two feeds could read two different days. The same clock can later be set to another date, so a replay or a test runs on the rates of that date.
+
+* References
+
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]
+
+* See also
+
+-

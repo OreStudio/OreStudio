@@ -18,6 +18,8 @@
  *
  */
 #include "curve_pillar_reader.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -26,6 +28,16 @@
 #include <stdexcept>
 
 namespace ores::marketdata::service {
+
+namespace {
+
+auto& lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.marketdata.service.curve_pillar_reader");
+    return instance;
+}
+
+}
 
 double observation_value(const domain::market_observation& obs) {
     const auto value = ores::platform::numeric::parse_double(obs.value);
@@ -56,10 +68,19 @@ read_pillar_rates(ores::database::context ctx,
                                                      p.end_tenor_code);
         // The config's own party, as the ingest loop scopes the series it writes:
         // the curve is bootstrapped for that party, so its quotes come from it.
-        const auto series = series_repo.read_latest_by_uri(
-            ctx, core::pillar_series_uri(key), boost::uuids::to_string(config.party_id));
-        if (series.empty())
+        // The curve configuration names no provider yet, so the quotes are the
+        // ones the ingest loop stores for the default provider of its bindings.
+        const auto series = series_repo.read_latest_by_key(
+            ctx,
+            core::pillar_series_uri(key),
+            std::string(ores::marketdata::domain::catalogue_ids::ore_provider),
+            boost::uuids::to_string(config.party_id));
+        if (series.empty()) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "No series of provider " << ores::marketdata::domain::catalogue_ids::ore_provider
+                << " holds the pillar " << p.end_tenor_code << " of curve config " << config.id;
             continue;
+        }
 
         // The row stores the datum's URI, so the pillar is found by the same
         // string the writer wrote.

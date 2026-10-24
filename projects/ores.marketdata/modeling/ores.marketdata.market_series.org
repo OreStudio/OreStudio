@@ -12,7 +12,7 @@
 #+entity_title: Market Series
 #+brief: Catalog entry identifying what is being observed, by its oresmd URI and subclass.
 #+created: 2026-06-30
-#+updated: 2026-09-04
+#+updated: 2026-10-23
 
 A catalog entry for a market data series — it records what is being observed:
 a yield curve, vol surface, spot rate, fixing index, or similar. Standard
@@ -36,11 +36,11 @@ observations. Per-observation lineage (which source series/as-of a
 specific derived point came from) is a separate concern, tracked by
 =observation_lineage=, not this catalog-level marker.
 
-=producer_kind= answers a different question: not how the series was
-produced but who produced it, a real feed (=VENDOR=) or a generated one
-(=SYNTHETIC=). It is stamped once, from the =feed_binding= the first
-observation arrived under, and is never revised -- a series a generated
-producer created stays generated however it is later read.
+=provider_code= names the provider whose ids the series carries. A series is one
+item of one provider held by one party, so two providers that quote the same item
+keep two series, and a party that switches the source of a provider keeps one
+series and one history. The observations beneath it record the source that
+produced each one, for information; the source is never part of the key.
 
 * Flags
 :PROPERTIES:
@@ -90,8 +90,8 @@ the index name the row arrived under, and the identity the series is read by. Th
 point belongs to the observation rows beneath this one, so a series with two points
 carries one identity rather than the identity of whichever point arrived first.
 
-The natural key with =party_id=, and unique per party: one party holds one series per
-identity. It is the only name the row carries: the registry's =series_type=, =metric= and
+The natural key with =party_id= and =provider_code=, and unique per party and provider:
+one party holds one series per identity and provider. It is the only name the row carries: the registry's =series_type=, =metric= and
 =qualifier= columns have gone, and a reader that wants the key's parts reads the
 identity through =oresmd_uri_codec= rather than off a series.
 
@@ -131,24 +131,22 @@ carried as the code itself: the taxonomy is runtime-managed.
 }()
 #+end_src
 
-** producer_kind
+** provider_code
 :PROPERTIES:
 :type:          text
 :cpp_type:      std::string
 :nullable:      false
-:default_value: "VENDOR"
+:natural_key:   true
+:filterable:    true
+:no_generator_suffix: true
 :END:
 
-References =producer_kind.code= -- who produced this series: a real feed
-(=VENDOR=, the default) or a generated one (=SYNTHETIC=). Orthogonal to
-=derivation_kind=, which says whether the series was published or
-computed. The ingest loop stamps it from the binding the tick arrived
-under when it creates the series, and leaves an existing series' kind
-alone, so the axis records the producer that created the row rather than
-the last writer to touch it.
+References =provider.code=: the provider whose ids the series carries. The natural
+key with =party_id= and =oresmd_uri=: one party holds one series of each provider
+for each item.
 
 #+begin_src cpp :name generator
-std::string("VENDOR")
+std::string("ore")
 #+end_src
 
 ** derivation_kind
@@ -226,7 +224,7 @@ The derivation config's version this series was produced under -- =0=
 | column          | validation_function                           |
 |-----------------+------------------------------------------------|
 | series_subclass | ores_refdata_validate_series_subclass_code_fn |
-| producer_kind   | ores_refdata_validate_producer_kind_fn        |
+| provider_code   | ores_marketdata_validate_provider_fn          |
 | derivation_kind | ores_refdata_validate_derivation_kind_fn      |
 
 * C++
@@ -244,22 +242,22 @@ The derivation config's version this series was produced under -- =0=
 :entity_plural_words:   market series
 :END:
 
-*** read_latest_by_uri
+*** read_latest_by_key
 :PROPERTIES:
 :ID: 2fc528c8-f766-41d8-b64b-e17a9990f683
 :END:
 
-Reads the latest market series matching =oresmd_uri=. When =party_id= is non-empty,
-scopes the result to that party.
+Reads the latest market series matching =oresmd_uri= and =provider_code=. When
+=party_id= is non-empty, scopes the result to that party.
 
-This is the lookup the cutover moves to. The URI is the identity, so a reader that
-starts here finds a series without knowing how the registry decomposed its key, and it
-is now the only lookup the repository offers: the triple reader that matched the
-registry's three columns went with them, and every row carries an identity.
+The URI and the provider are the identity, so a reader that starts here finds a
+series without knowing how the registry decomposed its key. The method has no
+default for the provider: a caller that does not know it cannot name a series.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_series> read_latest_by_uri(context ctx,
-    const std::string& oresmd_uri, const std::string& party_id = {});
+std::vector<domain::market_series> read_latest_by_key(context ctx,
+    const std::string& oresmd_uri, const std::string& provider_code,
+    const std::string& party_id = {});
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -268,7 +266,8 @@ std::vector<domain::market_series> read_latest_by_uri(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri,
+market_series_repository::read_latest_by_key(context ctx, const std::string& oresmd_uri,
+                                             const std::string& provider_code,
                                              const std::string& party_id) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -277,22 +276,24 @@ market_series_repository::read_latest_by_uri(context ctx, const std::string& ore
         const auto query = sqlgen::read<std::vector<market_series_entity>> |
                            where("tenant_id"_c == tid && "party_id"_c == party_id &&
                                  "valid_to"_c == max.value() &&
+                                 "provider_code"_c == provider_code &&
                                  "oresmd_uri"_c == oresmd_uri) |
                            order_by("id"_c);
         return execute_read_query<market_series_entity, domain::market_series>(
             ctx, query,
             [](const auto& entities) { return market_series_mapper::map(entities); },
-            lg(), "Reading latest market series by URI and party");
+            lg(), "Reading latest market series by URI, provider and party");
     }
 
     const auto query = sqlgen::read<std::vector<market_series_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "provider_code"_c == provider_code &&
                              "oresmd_uri"_c == oresmd_uri) |
                        order_by("id"_c);
     return execute_read_query<market_series_entity, domain::market_series>(
         ctx, query,
         [](const auto& entities) { return market_series_mapper::map(entities); },
-        lg(), "Reading latest market series by URI");
+        lg(), "Reading latest market series by URI and provider");
 }
 #+end_src
 
@@ -432,9 +433,11 @@ could not read it.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include <chrono>
 #+end_src
 
 #+begin_src cpp :name export_to_storage :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
@@ -455,18 +458,39 @@ could not read it.
                 reply(nats_, msg, resp);
                 return;
             }
+            if (!names_a_party(ctx)) {
+                resp.message = party_required_message();
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            const auto began = std::chrono::steady_clock::now();
+            const auto since = [&began] {
+                return std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::steady_clock::now() - began)
+                    .count();
+            };
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: exporting for valuation date '"
+                << req->valuation_date.value_or("") << "' to " << req->storage_bucket << "/"
+                << req->storage_key;
 
             service::ore_export_service svc(ctx);
-            const auto written = svc.write_all();
+            const auto written = svc.write_all(req->valuation_date, req->max_age_days);
+            const auto exported_ms = since();
 
-            ores::storage::net::storage_transfer transfer(
-                http_base_url, ores::nats::service::extract_bearer(msg));
+            ores::storage::net::storage_transfer transfer(http_base_url,
+                                                          ores::nats::service::extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, written.market_data);
-            transfer.upload_blob(req->storage_bucket, req->fixings_storage_key,
-                                 written.fixings);
+            transfer.upload_blob(req->storage_bucket, req->fixings_storage_key, written.fixings);
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: built the export in " << exported_ms
+                << " ms and uploaded it in " << (since() - exported_ms) << " ms";
 
             resp.success = true;
             resp.series_count = written.series_count;
+            resp.carried_forward_count = written.carried_forward_count;
+            resp.stale_count = written.stale_count;
             resp.storage_key = req->storage_key;
             resp.fixings_storage_key = req->fixings_storage_key;
             resp.message = "Exported " + std::to_string(written.series_count) +

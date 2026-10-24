@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 7C994EDE-829A-4F82-A095-D9E5198E2AD9
+:END:
+#+title: The notation of a provider is an independent class that roundtrips
+#+description: How ores.marketdata reads and writes the ids of Bloomberg, LSEG and Demo, what the classes refuse, and how the corpus and the catalogue prove the roundtrip.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:notation:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+Each provider has a notation: a class of =ores.marketdata= that reads the id of a vendor instrument into a neutral description of the quote, and writes the description back into the provider's id. The classes know nothing of the catalogue, NATS, the simulator or any generator, so a live adapter can use them to read real ids and a simulator can use them to write native ones. A notation refuses what it could not read back, and a corpus of ids and descriptions plus a check of the installed catalogue prove the roundtrip.
+
+* Detail
+
+** The shape
+
+A vendor id is an id scheme, an external id and a field. The description of a quote is a =quote_description=, today the spot quote of a currency pair and the side of the price (=last=, =bid=, =ask= or =mid=). A notation is a =provider_notation=:
+
+| Operation | Does |
+|-----------+------|
+| =read(id)= | The description the id names, or the reason the notation does not read it |
+| =write(description)= | The id that writes the description, or the reason the notation cannot write it |
+| =id_scheme()= | The scheme of the provider's ids |
+| =primary_side()= | The side that the provider's main price field carries |
+
+The classes are =bloomberg_notation=, =lseg_notation= and =demo_notation=, in =ores.marketdata.core/vendor/=. The function =notation_of(provider)= lists them.
+
+** The contract
+
+- =read(write(d))= is =d=, for every description the notation writes.
+- =write(read(id))= is =id=, for every id the notation reads.
+- A notation never writes an id that would read as another description. It refuses instead.
+
+A refusal carries one reason: =wrong_scheme=, =wrong_field=, =malformed=, =unsupported= or =not_representable=. =unsupported= means the id is valid for the provider and this description cannot hold it. A Bloomberg ticker with another yellow key, or with a pricing source, is such an id.
+
+** What each notation does
+
+| Provider | External id | Field |
+|----------+-------------+-------|
+| Bloomberg | The pair as six upper case letters, a space and =Curncy=: =EURUSD Curncy= | =PX_LAST=, =PX_BID=, =PX_ASK=, =PX_MID= |
+| LSEG | The other currency and an equals sign for a pair with USD (=EUR=, =JPY=), both currencies and an equals sign for any other pair (=EURGBP=) | =BID=, =ASK=, =TRDPRC_1= for the last trade |
+| Demo | The pair with a slash: =EUR/USD= | =value= |
+
+The LSEG RIC does not say which currency of a USD pair is the base, so the class holds the market convention: EUR, GBP, AUD and NZD are the base against USD, and every other currency is the quote. It refuses a pair that is not in that order, because =JPY/USD= would read back as =USD/JPY=. The LSEG rows are the documented examples, and a person with a login confirms them.
+
+** The reader is a grammar
+
+The readers are Boost.Spirit.X3 grammars. X3 is header-only and is already in our Boost. Boost.Parser is not installed, and adding it changes the manifest. The writers are plain code, and the roundtrip tests keep the two together.
+
+** How the roundtrip is proved
+
+- The corpus under =projects/ores.marketdata/core/tests/corpus/vendor_notation/= holds the ids of each provider with the description each reads as or the reason it is refused, and the descriptions with the id each provider writes. A script wrote the expectations from the providers' documented examples. The C++ under test did not.
+- A grid test writes every ordered pair of twelve currencies on every side through every notation and reads each id back.
+- A damage test changes or cuts each character of every valid id. A notation that still reads the damaged id must write the damaged id back, so it never repairs an id quietly.
+- A catalogue test reads every installed vendor instrument of these providers and checks that it reads and writes back as itself, so the catalogue and the classes cannot drift apart.
+
+** Where they are used
+
+The simulator asks =notation_of(provider)= for the id of a generator and writes nothing itself. The classes do not depend on the simulator, and the simulator does not hold any provider's grammar.
+
+** Extending them
+
+A rate pillar or another instrument is a further alternative of =quote_description=. Each notation then reads and writes it or refuses it with =unsupported= or =not_representable=. A new provider is a new class and one line in =notation_of=.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the left side that the notations read and write.
+- [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The mapping inventory lists the vendor instruments each provider carries]] — completes: the rows the catalogue test checks.

@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: 5604CFFC-EDD8-4291-BF56-AB7EEE0007E7
+:END:
+#+title: ores.marketdata.provider
+#+description: The catalogue of market data providers: data vendors, exchanges, brokers and reference sets. A provider owns a namespace of vendor ids, and its sources share one mapping.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: provider
+#+entity_plural: providers
+#+entity_title: Provider
+#+brief: Market data provider that owns a namespace of vendor ids: a vendor, an exchange, a broker, or a reference set.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+The catalogue of market data providers: data vendors such as Bloomberg and LSEG,
+exchanges such as CME, brokers, and reference sets such as the ORE examples. A
+provider owns a namespace of vendor ids. Every source belongs to one provider, and
+every vendor instrument and mapping belongs to a provider, so a live and a
+simulated source of one provider share their ids and their mapping. The name
+carries no mark of any source kind.
+
+The system tenant and the system party own the rows. Every tenant reads them and
+only the system tenant writes them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: marketdata
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique provider code: lower case letters, digits, underscores and hyphens,
+starting with a letter.
+
+Examples: 'ore', 'bloomberg', 'lseg', 'ice'.
+
+#+begin_src cpp :name generator
+std::string("provider")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+The provider's name as a person knows it.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What sort of provider it is: =data_vendor=, =exchange=, =broker= or =reference=.
+
+#+begin_src cpp :name generator
+std::string("data_vendor")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the provider supplies, in a sentence or two.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_providers_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                          |
+|---------------------------------------------------------------------|
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
+| "kind" in ('data_vendor', 'exchange', 'broker', 'reference')         |
+| "name" <> ''                                                        |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_marketdata_validate_provider_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: provider
+:entity_plural_short:   providers
+:entity_singular_words: provider
+:entity_plural_words:   providers
+:system_tenant_visible: true
+:END:
+
+The provider catalogue ships under the system tenant, and every tenant reads it,
+which =:system_tenant_visible: true= states on the repository. The row-level security
+policy still decides which system rows a tenant sees and who may write them.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mdp
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| kind          | Kind          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.marketdata.api/domain/provider.hpp
+:domain_class:           marketdata::domain::provider
+:protocol_include:       ores.marketdata.api/messaging/provider_protocol.hpp
+:collection_name:        providers
+:key_field:              code
+:get_request_class:      marketdata::messaging::get_providers_request
+:get_response_class:     marketdata::messaging::get_providers_response
+:get_message_type:       get_providers_request
+:save_request_class:     marketdata::messaging::save_provider_request
+:save_response_class:    marketdata::messaging::save_provider_response
+:save_message_type:      save_provider_request
+:delete_request_class:   marketdata::messaging::delete_provider_request
+:delete_response_class:  marketdata::messaging::delete_provider_response
+:delete_message_type:    delete_provider_request
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder              |
+|---------------+---------------+-----------------+-----------+--------+-------------+---------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter provider code       |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name                |
+| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or reference |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Kind         | kind          | Kind          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version      | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By    | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] -- the knowledge page for the catalogue.
+- [[id:B6FDABE7-C146-4B63-9C87-B18DEA09D27A][Yield Curve Process Type]] -- the system catalogue this follows.

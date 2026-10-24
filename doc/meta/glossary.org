@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:glossary:terminology:
 #+created: 2026-05-18
-#+updated: 2026-09-10
+#+updated: 2026-10-22
 
 Every term used across the ORE Studio [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][information architecture]] has a single
 definition here. Other documents link to these entries with =[[id:...]]= so
@@ -640,3 +640,24 @@ we say delegate because the relationship is what matters, not the mechanism.
 The [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] LLM session the user has assigned to a story. Forks agents, reviews
 their output, decides what to do with discovered work. See [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]] for the priming
 context.
+
+* Target redundancy
+:PROPERTIES:
+:ID: 83B0F6ED-A6BF-43DE-AC54-00D5D3180433
+:END:
+
+How many times the compute grid runs one workunit, so that the results can be compared. It is the workunit's =target_redundancy= column. The default is 1, and the shell always dispatches with 1. The workunit is complete when it holds that many finished results. See [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]].
+
+* Canonical result
+:PROPERTIES:
+:ID: 358CF0D8-1189-4CD7-A79F-091C75BAAFE7
+:END:
+
+The result the grid accepted as the answer for a workunit. It is the workunit's =canonical_result_id= column, and it is empty until the workunit holds as many finished results as its target redundancy. Acceptance does not check the outcome, so a result that failed can still be canonical. A workunit has no status column: a workunit is done when it has a canonical result. See [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]].
+
+* Release note
+:PROPERTIES:
+:ID: FBBCDC57-844F-4402-9E50-42A3215FB09E
+:END:
+
+The text that says what changed in one release of a compute application. A release is one engine build and one wrapper build, packaged for several platforms, so the note belongs to the app version and not to a package. It is the app version's =release_note= column, and an empty note means none was written. The shell's =compute publish-package= writes it from a file with =--release-note-file=, and a republish without a file keeps the stored note.

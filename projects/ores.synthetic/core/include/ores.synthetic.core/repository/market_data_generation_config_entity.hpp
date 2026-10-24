@@ -46,14 +46,11 @@ struct market_data_generation_config_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> party_id;
-    std::string scope;
-    std::string binding_mode;
     std::string name;
     std::string description;
     bool enabled = false;
     std::optional<std::string> dataset_id;
     std::string provider_code;
-    std::optional<std::string> run_grant_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -20,6 +20,30 @@
 
 -- Drop observations, fixings and the asset-class junction before series
 -- (they reference it).
+\ir ./marketdata_subscription_intervals_notify_trigger_drop.sql
+\ir ./marketdata_subscription_intervals_drop.sql
+\ir ./marketdata_demand_intervals_notify_trigger_drop.sql
+\ir ./marketdata_demand_intervals_drop.sql
+\ir ./marketdata_delivery_counts_notify_trigger_drop.sql
+\ir ./marketdata_delivery_counts_drop.sql
+\ir ./marketdata_rate_card_components_notify_trigger_drop.sql
+\ir ./marketdata_rate_card_components_drop.sql
+\ir ./marketdata_composites_notify_trigger_drop.sql
+\ir ./marketdata_composites_drop.sql
+\ir ./marketdata_composite_inputs_notify_trigger_drop.sql
+\ir ./marketdata_composite_inputs_drop.sql
+\ir ./marketdata_routes_notify_trigger_drop.sql
+\ir ./marketdata_routes_drop.sql
+\ir ./marketdata_subscriptions_notify_trigger_drop.sql
+\ir ./marketdata_subscriptions_drop.sql
+\ir ./marketdata_market_data_mappings_notify_trigger_drop.sql
+\ir ./marketdata_market_data_mappings_drop.sql
+\ir ./marketdata_market_data_vendor_instruments_notify_trigger_drop.sql
+\ir ./marketdata_market_data_vendor_instruments_drop.sql
+\ir ./marketdata_market_data_sources_notify_trigger_drop.sql
+\ir ./marketdata_market_data_sources_drop.sql
+\ir ./marketdata_providers_notify_trigger_drop.sql
+\ir ./marketdata_providers_drop.sql
 \ir ./marketdata_feed_bindings_notify_trigger_drop.sql
 \ir ./marketdata_feed_bindings_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql

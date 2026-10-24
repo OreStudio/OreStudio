@@ -223,6 +223,22 @@ class TestWhatACommandAsksFor:
         # The command, the one typed field, and the two intent tokens.
         assert len(add["invocation"].split()) == 1 + 1 + 2
 
+    def test_a_key_that_a_put_mints_is_still_typed_to_name_a_row(self):
+        """An entity keyed by its id mints the id for a new row, and a read or a
+        delete names an existing row by it. The command must read the id, or it
+        sends a nil key and takes the id for the reason."""
+        key = _key("id", "boost::uuids::uuid")
+        writes = [_write("id", "boost::uuids::uuid", is_minted=True), _write("name")]
+        commands = entity_shell_commands(
+            _entity(key=[key], writes=writes, operations=ALL_VERBS))
+        by_name = {c["command"]: c for c in commands}
+
+        for name in ("get", "delete", "versions", "version", "get-many", "delete-many"):
+            keys = by_name[name]["keys"]
+            assert [(k["name"], k["is_user"], k["is_minted"]) for k in keys] == [
+                ("id", True, False)], name
+        assert by_name["delete"]["usage"].startswith("delete <id> <reason> <commentary>")
+
     def test_a_version_read_asks_for_the_number(self):
         commands = entity_shell_commands(_entity(operations=ALL_VERBS))
         version = next(c for c in commands if c["command"] == "version")
@@ -278,13 +294,13 @@ class TestSupply:
         get = next(c for c in entity_shell_commands(entity) if c["command"] == "get")
         assert get["keys"][0]["is_user"] is True
 
-    def test_a_minted_key_is_marked_so_the_command_mints_it(self):
+    def test_a_minted_key_is_still_typed_by_a_command_that_names_a_row(self):
         entity = _entity(
             key=[_key("id", "boost::uuids::uuid", is_minted=True)],
             operations=ALL_VERBS)
         get = next(c for c in entity_shell_commands(entity) if c["command"] == "get")
-        assert get["keys"][0]["is_minted"] is True
-        assert get["keys"][0]["is_user"] is False
+        assert get["keys"][0]["is_minted"] is False
+        assert get["keys"][0]["is_user"] is True
 
     def test_a_session_party_field_is_marked_so_it_comes_from_the_session(self):
         entity = _entity(

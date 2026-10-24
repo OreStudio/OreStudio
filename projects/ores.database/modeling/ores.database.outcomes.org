@@ -358,6 +358,53 @@ applier makes the write when every part the policy names has approved.
 A change to this {entity} needs the approval of a request; raise one instead of writing it.
 #+end_src
 
+** party_required
+:PROPERTIES:
+:code: party_required
+:outcome: denied
+:producer: request
+:args: entity
+:END:
+
+A read of rows that a party owns arrives in a session that names no party. The
+party policy of the table shows such a session no row, so an empty answer would
+look complete. The read refuses and says why.
+
+#+begin_src text :name message
+This read of the {entity} needs a party, and the session has none.
+#+end_src
+
+** range_inverted
+:PROPERTIES:
+:code: range_inverted
+:outcome: invalid
+:producer: request
+:args: entity
+:END:
+
+A read states a range that ends before it starts. A range that starts and ends at
+one instant is empty and is not refused.
+
+#+begin_src text :name message
+The range of the {entity} ends before it starts.
+#+end_src
+
+** range_too_large
+:PROPERTIES:
+:code: range_too_large
+:outcome: invalid
+:producer: request
+:args: entity, limit
+:END:
+
+A read states a range that holds more rows than one reply carries. The read
+refuses and names the ceiling and never returns part of the range as if it were
+the whole.
+
+#+begin_src text :name message
+The range holds more than {limit} {entity}; ask for a shorter range.
+#+end_src
+
 ** internal_error
 :PROPERTIES:
 :code: internal_error

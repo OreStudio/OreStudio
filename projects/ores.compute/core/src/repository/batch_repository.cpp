@@ -70,11 +70,28 @@ std::string batch_repository::sql() {
 }
 
 bool batch_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "recorded_at",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
 namespace {
+
+/*
+ * The stored column behind a sortable field. A field is named as the wire
+ * names it, which is the column itself except for the recording time.
+ */
+std::string sort_column(std::string_view field) {
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
+        {"recorded_at", "valid_from"},
+    };
+    for (const auto& [name, column] : columns) {
+        if (name == field)
+            return std::string(column);
+    }
+    return std::string(field);
+}
 
 /*
  * The order a page is read in. An empty field is the default order, which
@@ -89,7 +106,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     if (!batch_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of compute batches cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return make_order({sort_column(order.field)}, order.descending, {"id"});
 }
 
 /*
@@ -101,12 +118,31 @@ filter_condition(const std::optional<messaging::batches_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->party_id)
+        r.push_back(*filter->party_id ? equals("party_id", filter_value(**filter->party_id)) :
+                                        is_null("party_id"));
+    if (filter->status)
+        r.push_back(equals("status", filter_value(*filter->status)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->party_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("party_id", std::move(values)));
+    }
+    if (filter->status_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->status_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("status", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"external_ref"}, *filter->search));
     return all_of(std::move(r));
 }
 
@@ -349,7 +385,7 @@ batch_repository::read_latest(context ctx,
     return execute_ordered_read_query<batch_entity, domain::batch>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
+        list_order(order, {"valid_from"}, true),
         narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return batch_mapper::map(entities); },
         lg(),

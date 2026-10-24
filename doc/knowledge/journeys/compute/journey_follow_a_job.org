@@ -178,9 +178,23 @@ everything.
 
 * Prototype
 
-None. This journey is not built and has no clickable prototype. Its design
-record is the use-case analysis on
-[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]].
+A static prototype argues the job page: the state with the outcome beside it,
+the runs, the files, the release and the lineage, for the three roles and the
+four states. It leaves out the duration charts and the phase waterfall, which
+no stored field feeds.
+
+- Source :: =doc/prototypes/compute/follow-a-job/=
+- Open :: =index.html=, with =?role=operator|tenant|member=,
+  =?state=loaded|loading|empty|error|refused=, =?job=done|failed|running= and
+  =?origin=report|shell=
+
+The App Version ID on the job page opens the page of that version, which
+=doc/prototypes/compute/app-version/= draws and
+[[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]] owns.
+
+The use-case analysis on
+[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]] stays the design
+record for the charts the prototype leaves out.
 
 * Entities composed
 

@@ -7,22 +7,21 @@
 #+level: cross
 #+filetags: :synthetic:producers:ir:
 #+created: 2026-10-06
-#+updated: 2026-10-11
+#+updated: 2026-10-22
 
 * Summary
 
-=ores::synthetic::feed::ir_curve_feed= is the producer that turns an
-=ir_curve_generation_config= into a stream of curve points on NATS. It is
-declared in =ores.synthetic.api/feeds/ir_curve_feed.hpp= and implemented in
-=ores.synthetic.api/src/feeds/ir_curve_feed.cpp=. It implements
-=ores::marketdata::domain::IFeed=, and its =kind()= returns the string
-constant =ir_curve_feed_kind=, spelled ="ir_curve"=.
+=ores::marketdata::synthetic::ir_curve_generator= is the generator that turns an
+=ir_curve_generation_config= into vendor ticks, one for each pillar of the curve.
+It is declared in =ores.marketdata.synthetic.api/generators/ir_curve_generator.hpp=.
+It implements =i_generator=, and its =kind()= returns the string constant
+=ir_curve_generator_kind=, spelled ="ir_curve"=.
 
 * Detail
 
-** How the feed is built
+** How the generator is built
 
-=make_ir_curve_feed= is the builder the start paths share, so the auto-start
+=make_ir_curve_generator= is the builder the start paths share, so the auto-start
 pass and an on-demand start cannot drift.
 
 1. It resolves the config's template entries into =ir_curve_resolved_entry=
@@ -35,8 +34,9 @@ pass and an on-demand start cannot drift.
 3. It builds the process through
    =map_parameters_to_yield_curve_process=, passing the joined definitions and
    value rows.
-4. It derives the publish subject from =source_name= and the binding mode
-   through =producer_subject=.
+4. It names each pillar's vendor instrument from the template entry: the
+   provider, the id scheme, the external id and the field. See
+   [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][the mapping]].
 
 ** One process step, many ticks
 
@@ -50,8 +50,8 @@ Each pass does this.
 1. It advances the process once with =next()=. The new state is read from the
    process by the pricing step and its return value is discarded.
 2. It takes one timestamp for the whole batch.
-3. For every resolved entry it builds one =market_tick=, each with that same
-   timestamp, and publishes it on the one subject.
+3. For every resolved entry it builds one adapter tick, each with that same
+   vendor time, and the adapter publishes it on its ingress subject.
 
 ** How a pillar tick is named and priced
 
@@ -77,15 +77,14 @@ so a preview and a run cannot disagree about what a state implies.
 
 ** Identity and conflict
 
-The feed reports the series its pillars land in through =series_uris()=: one
-series for the pillars that start at spot, and one for each later start date,
-such as a meeting-dated FOMC pillar. The feed builds the list once, from its
-resolved entries, through =pillar_series_uri=. Two feeds conflict when their
-lists share a series, because both would write points into it. The role comes
-from the config and is reported by =role()=, but it plays no part in what the
-feed owns: two curves of one currency and index tenor publish the
-same series, whatever their index family or role, and so cannot run together. See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]] for the identity, and [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] for
-the controller that enforces it.
+The generator reports the vendor instruments its pillars serve through
+=vendor_instruments()=: one for each resolved entry. Two generators conflict when
+their lists share a vendor instrument, because both would publish values for one
+id. The role comes from the config, but it plays no part in what the generator
+owns: two curves of one currency and index tenor serve the same instruments,
+whatever their index family or role, and so cannot run together. See
+[[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]] for the owner that
+enforces it.
 
 ** The facts the code shape does not show
 
@@ -116,10 +115,10 @@ points alongside it.
 - [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the ladder this feed resolves.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the engines the config may name.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the short-rate process.
-- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface contract this class implements.
-- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], where =ir_curve_feed_kind= selects this builder.
-- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the message each pillar publishes.
+- [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]], the contract this generator's adapter shares with a live adapter.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]], where =ir_curve_generator_kind= selects this builder.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the tick the party receives for each pillar.
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — how a curve is a series, and what the grammar leaves to the consumer.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — what a curve is.
 - [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family of curves, one series for each index tenor.
-- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — the rule that two feeds with overlapping series cannot run together.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]] — the rule that two generators serving one vendor instrument cannot run together.

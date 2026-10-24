@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind>
+     * @brief add <party_id> <oresmd_uri> <provider_code> <series_subclass> <derivation_kind>
      * <derivation_config_id> <derivation_config_version> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +95,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind>
+     * @brief set <id> <party_id> <oresmd_uri> <provider_code> <series_subclass> <derivation_kind>
      * <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -103,7 +103,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind>
+     * @brief put-many --count <n> <id> <party_id> <oresmd_uri> <provider_code> <series_subclass>
      * <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

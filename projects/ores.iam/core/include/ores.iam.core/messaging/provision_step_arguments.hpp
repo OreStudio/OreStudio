@@ -45,7 +45,7 @@ enum class provision_step_action {
     load_staff,
     set_staff_passwords,
     attach_photos,
-    start_market_feeds,
+    subscribe_market_data,
     generate_trades,
     complete_provisioning,
     start_tenant_setup,
@@ -84,8 +84,8 @@ enum class provision_step_action {
         return provision_step_action::set_staff_passwords;
     if (kind == "attach_photos")
         return provision_step_action::attach_photos;
-    if (kind == "start_market_feeds")
-        return provision_step_action::start_market_feeds;
+    if (kind == "subscribe_market_data")
+        return provision_step_action::subscribe_market_data;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
     return provision_step_action::refuse;
@@ -472,26 +472,31 @@ struct photo_step_arguments {
     return result;
 }
 
-/// The synthetic feeds dataset whose feeds a start_market_feeds step starts.
-struct market_feed_step_arguments {
-    std::string dataset;
+/// The provider whose market data a subscribe_market_data step gives every party, and the
+/// source the parties are routed to.
+struct market_data_step_arguments {
+    std::string provider;
+    std::string source;
 };
 
 /**
- * @brief Reads a start_market_feeds step's arguments.
+ * @brief Reads a subscribe_market_data step's arguments.
  *
- * The dataset is the synthetic feeds dataset the feeds' configurations were
- * published from; the kind reads every other fact — the system party, the
- * bindings' parties, the folder — from the deployment. The dataset is
- * published with the tenant's own bundles, so this step only binds and starts.
+ * The provider is the code of a provider in the market data catalogue, and the
+ * source is the name of one of its sources. The step reads every other fact, the
+ * parties, from the deployment. The generators belong to the system, so this step only
+ * subscribes and routes.
  */
-[[nodiscard]] inline market_feed_step_arguments
-parse_market_feed_arguments(const std::string& arguments_json) {
+[[nodiscard]] inline market_data_step_arguments
+parse_market_data_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
-    market_feed_step_arguments result;
-    result.dataset = detail::read_string(arguments, "dataset");
-    if (result.dataset.empty())
-        throw std::runtime_error("The step names no 'dataset' argument.");
+    market_data_step_arguments result;
+    result.provider = detail::read_string(arguments, "provider");
+    if (result.provider.empty())
+        throw std::runtime_error("The step names no 'provider' argument.");
+    result.source = detail::read_string(arguments, "source");
+    if (result.source.empty())
+        throw std::runtime_error("The step names no 'source' argument.");
     return result;
 }
 

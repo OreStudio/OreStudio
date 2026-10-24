@@ -102,11 +102,19 @@ filter_condition(const std::optional<messaging::market_series_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->provider_code)
+        r.push_back(equals("provider_code", filter_value(*filter->provider_code)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->provider_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->provider_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("provider_code", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -361,34 +369,38 @@ void market_series_repository::remove(context ctx, const std::vector<std::string
 }
 
 
-std::vector<domain::market_series> market_series_repository::read_latest_by_uri(
-    context ctx, const std::string& oresmd_uri, const std::string& party_id) {
+std::vector<domain::market_series>
+market_series_repository::read_latest_by_key(context ctx,
+                                             const std::string& oresmd_uri,
+                                             const std::string& provider_code,
+                                             const std::string& party_id) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
 
     if (!party_id.empty()) {
-        const auto query = sqlgen::read<std::vector<market_series_entity>> |
-                           where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                                 "valid_to"_c == max.value() && "oresmd_uri"_c == oresmd_uri) |
-                           order_by("id"_c);
+        const auto query =
+            sqlgen::read<std::vector<market_series_entity>> |
+            where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value() &&
+                  "provider_code"_c == provider_code && "oresmd_uri"_c == oresmd_uri) |
+            order_by("id"_c);
         return execute_read_query<market_series_entity, domain::market_series>(
             ctx,
             query,
             [](const auto& entities) { return market_series_mapper::map(entities); },
             lg(),
-            "Reading latest market series by URI and party");
+            "Reading latest market series by URI, provider and party");
     }
 
-    const auto query =
-        sqlgen::read<std::vector<market_series_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value() && "oresmd_uri"_c == oresmd_uri) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "provider_code"_c == provider_code && "oresmd_uri"_c == oresmd_uri) |
+                       order_by("id"_c);
     return execute_read_query<market_series_entity, domain::market_series>(
         ctx,
         query,
         [](const auto& entities) { return market_series_mapper::map(entities); },
         lg(),
-        "Reading latest market series by URI");
+        "Reading latest market series by URI and provider");
 }
 
 }

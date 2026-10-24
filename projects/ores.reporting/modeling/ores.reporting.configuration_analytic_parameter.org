@@ -14,7 +14,7 @@
 #+created: 2026-09-29
 #+updated: 2026-09-29
 
-One =Parameter= element inside one =Analytic= of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in =parameter_definition= whose =scope= is the analytic and whose =subtype= is the analytic type code, so adding a parameter is a lookup row and never a column.
+One =Parameter= element inside one =Analytic= of the run document that a configuration describes: the value, and the definition that says what it means. A row is keyed to a definition in =ore_parameter= whose =scope= is the analytic and whose =subtype= is the analytic type code, so adding a parameter is a lookup row and never a column.
 
 * Flags
 :PROPERTIES:
@@ -60,7 +60,7 @@ ctx.generate_uuid()
 
 The analytic of the configuration that this parameter belongs to.
 
-** parameter_definition_id
+** ore_parameter_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
@@ -147,16 +147,30 @@ The definition of a parameter has an id that differs between databases, so a dat
 :list_by:       true
 :END:
 
-** parameter_definition_id
+** ore_parameter_id
 :PROPERTIES:
-:table:         ores_reporting_parameter_definitions_tbl
+:table:         ores_reporting_ore_parameters_tbl
 :target_column: id
 :use_system_tenant: true
-:parent_entity: parameter_definition
+:parent_entity: ore_parameter
 :nullable:      false
-:error_message: Invalid parameter_definition_id: %. No active parameter definition found with this id.
+:error_message: Invalid ore_parameter_id: %. No active ore parameter found with this id.
 :list_by:       true
 :END:
+
+The insert checks the parameter under the system tenant, and the database build
+publishes no parameter. The eventing integration test writes five parameters of
+its own into the system tenant, and a value domain for them, and names the first.
+The test does not read the real parameters.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ore_parameter_test_fixture.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    v.ore_parameter_id =
+        ores::reporting::tests::write_system_parameters(party_ctx, h.db_user(), ctx).front();
+#+end_src
 
 * Insert trigger
 

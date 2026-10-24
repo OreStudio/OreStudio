@@ -156,7 +156,7 @@ std::string lowercase(std::string s) {
 double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                     const ores::synthetic::domain::ir_curve_generation_config& cfg,
                                     const std::vector<ir_curve_resolved_entry>& resolved,
-                                    const std::string& run_token) {
+                                    const std::string& start_date) {
     const auto* anchor = select_vintage_anchor_entry(resolved);
     if (!anchor) {
         throw vintage_data_missing_error(
@@ -164,7 +164,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     }
 
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
-                                 ", date=" + cfg.vintage_date + ", point=" + anchor->point_id + ".";
+                                 ", date=" + start_date + ", point=" + anchor->point_id + ".";
 
     // The row the vintage is read from is the anchor pillar's own datum: the series
     // the config names at the pillar's point. The codecs compose both, so the read
@@ -186,11 +186,11 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                          "': " + anchor_uri.error());
 
     const auto found = find_vintage_observation(auth_nats,
-                                                run_token,
+                                                {},
                                                 cfg.vintage_series_uri,
                                                 *anchor_uri,
                                                 cfg.vintage_source,
-                                                cfg.vintage_date,
+                                                start_date,
                                                 missing_message,
                                                 cfg.vintage_series_uri,
                                                 boost::uuids::to_string(cfg.party_id));
@@ -211,8 +211,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
-    ores::synthetic::domain::binding_mode binding_mode,
-    const std::string& run_token) {
+    const ores::marketdata::domain::market_clock* clock) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -220,7 +219,11 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // See the field's own doc comment for the vintage semantics.
     auto cfg_values = values;
     if (cfg.price_source == "vintage") {
-        const auto initial_rate = resolve_vintage_initial_rate(auth_nats, cfg, resolved, run_token);
+        const auto initial_rate = resolve_vintage_initial_rate(
+            auth_nats,
+            cfg,
+            resolved,
+            ores::marketdata::domain::start_date(cfg.vintage_date, clock));
         const auto def_it =
             std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
                 return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&
@@ -245,7 +248,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // than computed here.
     return std::make_shared<ir_curve_feed>(nats,
                                            cfg.source_name,
-                                           producer_subject(cfg.source_name, binding_mode),
+                                           producer_subject(cfg.source_name),
                                            cfg.currency_code,
                                            ir_curve_index_tenor(cfg),
                                            cfg.role,

@@ -29,16 +29,27 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_amortization_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_amount_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_generator.hpp"
+#include "ores.trading.api/generators/bond_issue_leg_schedule_date_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
+#include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -49,6 +60,7 @@ namespace {
 const std::string tags("[service]");
 
 using ores::trading::messaging::book_trade_request;
+using ores::trading::messaging::put_bond_issue_composite_request;
 using ores::trading::service::trade_operations_service;
 using ores::utility::domain::outcome;
 
@@ -99,6 +111,87 @@ struct fixture final {
         book.change_reason_code = "system.test";
         repo::book_repository().write(ctx, book);
         book_id = book.id;
+    }
+
+    put_bond_issue_composite_request issue_request() {
+        namespace gen_tr = ores::trading::generators;
+        put_bond_issue_composite_request r;
+        r.issue = gen_tr::generate_synthetic_bond_issue(gen);
+        r.issue.change_reason_code = "system.test";
+        auto leg = gen_tr::generate_synthetic_bond_issue_leg(gen);
+        leg.issue_id = r.issue.issue_id;
+        leg.leg_number = 1;
+        leg.change_reason_code = "system.test";
+        r.legs.push_back(leg);
+        auto amount = gen_tr::generate_synthetic_bond_issue_leg_amount(gen);
+        amount.issue_id = r.issue.issue_id;
+        amount.leg_number = 1;
+        amount.sequence_number = 1;
+        amount.change_reason_code = "system.test";
+        r.amounts.push_back(amount);
+        return r;
+    }
+
+    // The request with a row of each optional child type, so a comparison that
+    // skipped one of them would pass the same-terms test and fail the other.
+    put_bond_issue_composite_request full_issue_request() {
+        namespace gen_tr = ores::trading::generators;
+        auto r = issue_request();
+
+        auto schedule_date = gen_tr::generate_synthetic_bond_issue_leg_schedule_date(gen);
+        schedule_date.issue_id = r.issue.issue_id;
+        schedule_date.leg_number = 1;
+        schedule_date.schedule_role = "schedule";
+        schedule_date.schedule_sequence_number = 1;
+        schedule_date.sequence_number = 1;
+        schedule_date.change_reason_code = "system.test";
+        r.schedule_dates.push_back(schedule_date);
+
+        auto amortization = gen_tr::generate_synthetic_bond_issue_leg_amortization(gen);
+        amortization.issue_id = r.issue.issue_id;
+        amortization.leg_number = 1;
+        amortization.sequence_number = 1;
+        amortization.change_reason_code = "system.test";
+        r.amortizations.push_back(amortization);
+
+        auto call_date = gen_tr::generate_synthetic_bond_issue_call_date(gen);
+        call_date.issue_id = r.issue.issue_id;
+        call_date.sequence_number = 1;
+        call_date.change_reason_code = "system.test";
+        r.call_dates.push_back(call_date);
+
+        auto conversion_target = gen_tr::generate_synthetic_bond_issue_conversion_target(gen);
+        conversion_target.issue_id = r.issue.issue_id;
+        conversion_target.sequence_number = 1;
+        conversion_target.change_reason_code = "system.test";
+        r.conversion_targets.push_back(conversion_target);
+        return r;
+    }
+
+    // A bond trade of an issue the store holds, with one identifier.
+    book_trade_request bond_request(const boost::uuids::uuid& issue_id) {
+        auto r = request();
+        r.anchor.trade_type = "Bond";
+
+        ores::trading::domain::trade_identifier identifier;
+        identifier.id_type = "Internal";
+        identifier.id_value = "TEST-" + boost::uuids::to_string(r.anchor.id);
+        identifier.change_reason_code = "system.test";
+        identifier.modified_by = r.booking.modified_by;
+        identifier.performed_by = r.booking.modified_by;
+        r.identifiers.push_back(identifier);
+
+        ores::trading::domain::bond_instrument_data bond;
+        bond.instrument.issue_id = issue_id;
+        bond.instrument.audit.change_reason_code = "system.test";
+        r.instruments.bond_instruments.push_back(bond);
+        return r;
+    }
+
+    boost::uuids::uuid stored_issue() {
+        const auto issue = issue_request();
+        trade_operations_service(ctx).put_bond_issue_composite(issue);
+        return issue.issue.issue_id;
     }
 
     book_trade_request request() {
@@ -164,6 +257,112 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
     CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
               .empty());
+}
+
+TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
+    fixture f;
+    const auto req = f.issue_request();
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    CHECK(ores::trading::repository::bond_issue_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
+              .size() == 1);
+}
+
+TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
+    fixture f;
+    const auto req = f.issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "already_exists");
+}
+
+TEST_CASE("a_second_write_with_other_terms_is_content_differs", tags) {
+    fixture f;
+    auto req = f.issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+    req.issue.issuer = req.issue.issuer + "-other";
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
+    const auto stored = ores::trading::repository::bond_issue_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.issue.issue_id));
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front().issuer != req.issue.issuer);
+}
+
+TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
+    fixture f;
+    auto req = f.issue_request();
+    req.amounts.front().sequence_number = 0;
+
+    CHECK_THROWS(trade_operations_service(f.ctx).put_bond_issue_composite(req));
+
+    CHECK(ores::trading::repository::bond_issue_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
+              .empty());
+}
+
+TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", tags) {
+    fixture f;
+    const auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "already_exists");
+}
+
+TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
+    const auto change = GENERATE(0, 1, 2, 3);
+    fixture f;
+    auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+
+    switch (change) {
+        case 0:
+            req.schedule_dates.front().schedule_date += std::chrono::months(1);
+            break;
+        case 1:
+            req.amortizations.front().amortization_type += "-other";
+            break;
+        case 2:
+            req.call_dates.front().call_date += std::chrono::months(1);
+            break;
+        default:
+            req.conversion_targets.front().underlying_id += "-other";
+            break;
+    }
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
+}
+
+TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", tags) {
+    fixture f;
+    auto req = f.full_issue_request();
+    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
+            outcome::ok);
+    req.call_dates.clear();
+
+    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "content_differs");
 }
 
 namespace {
@@ -234,4 +433,90 @@ TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", tags) {
 
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().authorisation_status == "not_required");
+}
+
+TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", tags) {
+    fixture f;
+    const auto issue_id = f.stored_issue();
+    const auto req = f.bond_request(issue_id);
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    REQUIRE(response.activity_id.has_value());
+    const auto identifiers =
+        ores::trading::repository::trade_identifier_repository().read_latest(f.ctx, id, "Internal");
+    REQUIRE(identifiers.size() == 1);
+    CHECK(identifiers.front().trade_activity_id == *response.activity_id);
+    CHECK(identifiers.front().id_value == req.identifiers.front().id_value);
+    const auto instruments =
+        ores::trading::repository::bond_instrument_repository().read_latest(f.ctx, id);
+    REQUIRE(instruments.size() == 1);
+    CHECK(instruments.front().identity.trade_activity_id == *response.activity_id);
+    CHECK(instruments.front().identity.trade_type_code == "Bond");
+    CHECK(instruments.front().issue_id == issue_id);
+}
+
+TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
+    fixture f;
+    const auto req = f.bond_request(f.gen.generate_uuid());
+
+    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+
+    const auto id = boost::uuids::to_string(req.anchor.id);
+    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
+    CHECK(ores::trading::repository::trade_identifier_repository()
+              .read_latest(f.ctx, id, "Internal")
+              .empty());
+}
+
+TEST_CASE("an_instrument_of_a_kind_with_no_writer_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.fx_forward_instruments.emplace_back();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("fx_forward_instruments"));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.bond_instruments.front().option.emplace();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("bond_instruments"));
+}
+
+TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.bond_instruments.front().option_data.emplace();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.message.contains("bond_instruments.option_data"));
+}
+
+TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_the_database", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.anchor.trade_type = "Swap";
+
+    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+
+    const auto id = boost::uuids::to_string(req.anchor.id);
+    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
 }

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: C5B268A3-BF5D-50EC-9A77-A81BB844F652
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the subscriptions commands from the shell?
+#+description: Every command the subscriptions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:subscriptions:
+
+This file documents the subscriptions resource at the shell, one section per command. Every command is a subcommand of =subscriptions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 93EFFD64-AEEF-5D6B-A4C8-DC8522E107E0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.list=.
+
+#+name: subscriptions-list
+#+begin_src ores-shell :tangle subscriptions-list.ores :exports none
+subscriptions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 099DFD36-4212-5671-A6CA-BCED861E146A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions get <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.get=.
+
+#+name: subscriptions-get
+#+begin_src ores-shell :tangle subscriptions-get.ores :exports none
+subscriptions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B60B1A28-E972-546C-B7E3-F9143C81415D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions get-many <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.get_many=.
+
+#+name: subscriptions-get-many
+#+begin_src ores-shell :tangle subscriptions-get-many.ores :exports none
+subscriptions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 66ABBFB5-90A1-5F00-A21F-F35BE1271D24
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions add <party_id> <provider_code> <display> <non_display> <derived> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.put=.
+
+#+name: subscriptions-add
+#+begin_src ores-shell :tangle subscriptions-add.ores :exports none
+subscriptions add 00000000-0000-0000-0000-000000000000 __none__ false false false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5EF3C1A4-6426-5552-9701-DFFB019E6AB1
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions set <id> <party_id> <provider_code> <display> <non_display> <derived> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.put=.
+
+#+name: subscriptions-set
+#+begin_src ores-shell :tangle subscriptions-set.ores :exports none
+subscriptions set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false false false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 492374D0-8BDC-5F39-892D-1C6B7AABD2CD
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions put-many --count <n> <id> <party_id> <provider_code> <display> <non_display> <derived> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.put_many=.
+
+#+name: subscriptions-put-many
+#+begin_src ores-shell :tangle subscriptions-put-many.ores :exports none
+subscriptions put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false false false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A39297AF-0A96-56AE-BF7D-1630109DE984
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions delete <provider_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.delete=.
+
+#+name: subscriptions-delete
+#+begin_src ores-shell :tangle subscriptions-delete.ores :exports none
+subscriptions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D93A04FB-9568-5E81-984D-8616AF3FEA7F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions delete-many <provider_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions.delete_many=.
+
+#+name: subscriptions-delete-many
+#+begin_src ores-shell :tangle subscriptions-delete-many.ores :exports none
+subscriptions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 25C7D114-C356-5B9B-AAAD-3F6C640142EE
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions versions <provider_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions_versions.list=.
+
+#+name: subscriptions-versions
+#+begin_src ores-shell :tangle subscriptions-versions.ores :exports none
+subscriptions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0FB18909-5519-541A-A3C4-3B048C1EE525
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscriptions version <provider_code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.subscriptions_versions.get=.
+
+#+name: subscriptions-version
+#+begin_src ores-shell :tangle subscriptions-version.ores :exports none
+subscriptions version __none__ --version 1
+#+end_src
+

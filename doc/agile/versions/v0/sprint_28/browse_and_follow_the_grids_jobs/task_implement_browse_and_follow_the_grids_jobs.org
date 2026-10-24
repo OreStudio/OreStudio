@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-paged-job-tree-through-the-bff
+#+pr: 3642
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The web client reads the batches, workunits and results that the session may see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -42,9 +42,17 @@ The web client reads the batches, workunits and results that the session may see
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One module in =wire-protocol= holds the reads, and one module in the BFF holds
+the routes, as the grid usage read does.
+
+- =grid-jobs.ts= in =wire-protocol= declares the request and reply schemas of
+  the generated batch, workunit and result reads, the readers, and the views a
+  screen reads. A view states an unset value as =null=.
+- =grid-jobs.ts= in the BFF registers six routes under
+  =/api/operations/grid/jobs/=: the batches, the workunits of a batch, the
+  results of a workunit, and one batch, workunit or result by id.
+- Every route is one generated read on the session's own client. The route
+  states no tenant and no party.
 
 * Measurements
 
@@ -58,9 +66,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Wire-protocol tests for the jobs reads | 11 pass | =npx vitest run src/grid-jobs.test.ts= in =packages/wire-protocol= | e79bf1d3f7 plus the working tree |
+| BFF tests for the jobs routes | 18 pass | =npx vitest run src/grid-jobs.test.ts= in =packages/bff= | e79bf1d3f7 plus the working tree |
+| Batches in key order after six creations in turn | b, d, e, a, f, c | =curl= on =/api/operations/grid/jobs/batches= as the tenant administrator | e79bf1d3f7 plus the working tree |
+| Batches a party member of the same party reads | 6 of 6 | the same route as =adrian.vance= | e79bf1d3f7 plus the working tree |
+| Batches a member of another party reads | 0 | the same route as =diane.kay= | e79bf1d3f7 plus the working tree |
 
 * Notes
+
+- The batch list first ordered by its key only. A live check on 2026-10-22
+  showed that the key is a random identifier, not a time-ordered one. Six
+  batches were created in turn, and the key order read b, d, e, a, f, c. The
+  task Order the job lists by when they were recorded made the recording time
+  sortable and the default order of the batch list. The routes send no order,
+  so they take that default, and a live check read the six batches newest
+  first. The routes needed no code change for it.
+- The generated batch read is keyed by the external reference, not the id. The
+  by-id route reads through the list read's =id_one_of= filter.
+- The service states an unset id as the nil uuid, unset text as an empty
+  string and an unset instant as the epoch. The views state =null= for each.
+- Until the task Decide who sees a node's name is done, the result views state
+  the node to an operator only. Other sessions get =host_hidden= set.
+- A route reads the jobs of the tenant the session is inside. An operator in
+  the system tenant does not read another tenant's jobs without entering it.
+- A live check on 2026-10-22, as each role, showed the following.
+  - An operator reads the jobs of the system tenant only. The batch of an
+    Acme tenant answers 404, so tenant ownership holds.
+  - An operator sees the host of a result. A tenant administrator gets
+    =host_hidden= set.
+  - A party member of the batches' own party reads all six batches. A member
+    of another party reads none, with a total of 0.
+  - Both party members are refused the workunit and result reads with 403.
+    The Member role does not hold those read codes. The task Let a party
+    member read workunits and results adds them.
+  - A failed run keeps its output address. The prototype showed none for a
+    failed run, and the screens must not assume it.
+- Not checked: a tenant administrator who reads the batches of several
+  parties. Every check batch belongs to one party.
 
 * Test Scenarios
 
@@ -77,12 +119,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3642 | [web] Serve the paged job tree through the BFF |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An empty offset reads as 0 | grid-jobs.ts | Fixed | The BFF refuses an empty offset or limit. Two tests cover it. |
+| 2 | The refusal union repeats | grid-jobs.ts | Fixed | The type GridJobsRefusal names it. |
+| 3 | The BFF and wire page limits differ | grid-jobs.ts | Fixed | A comment states both. |
+| 4 | Hidden rows answer alike | grid-jobs.ts | No change | Each single-id route answers 404 for a hidden row. |
 
 * Result
+
+Six routes under =/api/operations/grid/jobs/= serve the batches, workunits and
+results, one page at a time, and one row by id. Each route is one generated
+read on the session's own client. The batch list reads newest first once PR
+#3643 merges. A party member of the batches' own party reads the batches and is
+refused the workunit and result reads. The task Let a party member read
+workunits and results gives the Member role those read codes, so the last
+acceptance line holds for batches now and for the whole tree after that task.

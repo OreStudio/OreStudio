@@ -142,7 +142,7 @@ void configuration_analytic_parameter_commands::register_commands(cli::Menu& roo
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <configuration_analytic_id> <parameter_definition_id> <value> <position> <reason> "
+        "add <configuration_analytic_id> <ore_parameter_id> <value> <position> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -150,15 +150,15 @@ void configuration_analytic_parameter_commands::register_commands(cli::Menu& roo
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <configuration_analytic_id> <parameter_definition_id> <value> <position> "
-        "<reason> <commentary> [--version <n>]");
+        "set <id> <configuration_analytic_id> <ore_parameter_id> <value> <position> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <configuration_analytic_id> <parameter_definition_id> <value> "
+        "put-many --count <n> <id> <configuration_analytic_id> <ore_parameter_id> <value> "
         "<position> <reason> <commentary>");
 
     menu->Insert(
@@ -184,12 +184,12 @@ void configuration_analytic_parameter_commands::register_commands(cli::Menu& roo
         "[--order <field>] [--desc]");
 
     menu->Insert(
-        "by-parameter-definition-id",
+        "by-ore-parameter-id",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_by_parameter_definition_id(std::ref(out), std::ref(session), std::move(args));
+            process_by_ore_parameter_id(std::ref(out), std::ref(session), std::move(args));
         },
-        "by-parameter-definition-id <parameter_definition_id> [--offset <n>] [--limit <n>] "
-        "[--order <field>] [--desc]");
+        "by-ore-parameter-id <ore_parameter_id> [--offset <n>] [--limit <n>] [--order <field>] "
+        "[--desc]");
 
     menu->Insert(
         "versions",
@@ -285,6 +285,7 @@ void configuration_analytic_parameter_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -377,9 +378,8 @@ void configuration_analytic_parameter_commands::process_add(std::ostream& out,
         read_token(req.change.write.configuration_analytic_id,
                    parsed->positionals[next++],
                    "configuration_analytic_id");
-        read_token(req.change.write.parameter_definition_id,
-                   parsed->positionals[next++],
-                   "parameter_definition_id");
+        read_token(
+            req.change.write.ore_parameter_id, parsed->positionals[next++], "ore_parameter_id");
         read_token(req.change.write.value, parsed->positionals[next++], "value");
         read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -433,9 +433,8 @@ void configuration_analytic_parameter_commands::process_set(std::ostream& out,
         read_token(req.change.write.configuration_analytic_id,
                    parsed->positionals[next++],
                    "configuration_analytic_id");
-        read_token(req.change.write.parameter_definition_id,
-                   parsed->positionals[next++],
-                   "parameter_definition_id");
+        read_token(
+            req.change.write.ore_parameter_id, parsed->positionals[next++], "ore_parameter_id");
         read_token(req.change.write.value, parsed->positionals[next++], "value");
         read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -502,9 +501,8 @@ void configuration_analytic_parameter_commands::process_put_many(
             read_token(change.write.configuration_analytic_id,
                        parsed->positionals[next++],
                        "configuration_analytic_id");
-            read_token(change.write.parameter_definition_id,
-                       parsed->positionals[next++],
-                       "parameter_definition_id");
+            read_token(
+                change.write.ore_parameter_id, parsed->positionals[next++], "ore_parameter_id");
             read_token(change.write.value, parsed->positionals[next++], "value");
             read_token(change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -555,6 +553,7 @@ void configuration_analytic_parameter_commands::process_delete(
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -683,15 +682,15 @@ void configuration_analytic_parameter_commands::process_by_configuration_analyti
     out << rfl::json::write(*result) << std::endl;
 }
 
-void configuration_analytic_parameter_commands::process_by_parameter_definition_id(
+void configuration_analytic_parameter_commands::process_by_ore_parameter_id(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-parameter-definition-id request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-ore-parameter-id request.";
 
     using request_type =
-        messaging::list_by_parameter_definition_id_configuration_analytic_parameters_request;
+        messaging::list_by_ore_parameter_id_configuration_analytic_parameters_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run by-parameter-definition-id." << std::endl;
+            fail(out) << "You must be logged in to run by-ore-parameter-id." << std::endl;
             return;
         }
     }
@@ -718,8 +717,8 @@ void configuration_analytic_parameter_commands::process_by_parameter_definition_
                       << std::endl;
             return;
         }
-        req.parameter_definition_id = ores::shell::app::from_token<boost::uuids::uuid>(
-            parsed->positionals[next++], "parameter_definition_id");
+        req.ore_parameter_id = ores::shell::app::from_token<boost::uuids::uuid>(
+            parsed->positionals[next++], "ore_parameter_id");
         if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
@@ -731,7 +730,7 @@ void configuration_analytic_parameter_commands::process_by_parameter_definition_
     }
 
     auto result = do_auth_request<
-        messaging::list_by_parameter_definition_id_configuration_analytic_parameters_response>(
+        messaging::list_by_ore_parameter_id_configuration_analytic_parameters_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -772,6 +771,7 @@ void configuration_analytic_parameter_commands::process_versions(
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -817,6 +817,7 @@ void configuration_analytic_parameter_commands::process_version(
                       << std::endl;
             return;
         }
+        read_token(req.key.configuration_analytic_parameter.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

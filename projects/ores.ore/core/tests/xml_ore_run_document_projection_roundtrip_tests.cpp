@@ -246,7 +246,8 @@ TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning",
 </ORE>)");
 
     const auto mapped = run_document_projection::map_setup(original);
-    CHECK(mapped.dropped == std::vector<std::string>{"notAParameter", "fixingCutoff", "dateCalendar"});
+    CHECK(mapped.dropped ==
+          std::vector<std::string>{"notAParameter", "fixingCutoff", "dateCalendar"});
     CHECK_FALSE(mapped.engine_settings);
 
     const auto warnings = run_document_projection::dropped_parameter_warnings(original);
@@ -274,10 +275,9 @@ TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused", tags) {
         run_document_projection::map(
             document("<Parameter name=\"observationModel\">Move</Parameter>")),
         Catch::Matchers::ContainsSubstring("is not one of None, Disable, Defer or Unregister"));
-    CHECK_THROWS_WITH(
-        run_document_projection::map(
-            document("<Parameter name=\"lazyMarketBuilding\">maybe</Parameter>")),
-        Catch::Matchers::ContainsSubstring("is not a flag"));
+    CHECK_THROWS_WITH(run_document_projection::map(
+                          document("<Parameter name=\"lazyMarketBuilding\">maybe</Parameter>")),
+                      Catch::Matchers::ContainsSubstring("is not a flag"));
 }
 
 TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused", tags) {

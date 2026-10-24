@@ -105,6 +105,10 @@ roles, and the four states.
 - Open :: =index.html=, with =?role=operator|tenant|member= and
   =?state=loaded|loading|empty|error|refused=
 
+The finder also filters by =outcome=, and a workunit or a result links to
+[[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]. The address holds the
+filters, the open rows, the page and the selection.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -134,20 +138,25 @@ roles, and the four states.
 Each read checks its entity's read code (=compute::batches:read=,
 =compute::workunits:read=, =compute::results:read=) and serves the session's
 tenant. The row-level policy narrows a party member to their own party. The
-Member role holds the batch read in the seed. The workunit and result reads for
-the Member role need the same check as the grid sample read did.
+Member role holds the batch, workunit and result read codes in the seed, so a
+party member opens a batch of their own party and reads its workunits and
+results. The TenantAdmin role holds every code, and the ReportRun service role
+holds the three reads.
+
+The batch list reads newest first. The batch model declares =recorded_at=
+sortable and orders by it, descending, and the workunit and result lists accept
+the same field. The time is that of the current version of the row, so a batch
+whose =status= changes is recorded again and moves to the top of the list.
 
 * What is missing
 
-1. *No filters on the batch list.* The list pages by offset and limit. Status,
-   party and reference filters need a server-side predicate, or the screen
-   cannot find one batch among thousands.
-2. *No way to find failed results.* "Which of the 1268 failed?" has no read.
-   =read_by_state= filters on =server_state=, and every stored result is Done,
-   so the failed ones are not separable. A read by =outcome=, and a way from a
-   result to its batch, would answer it. Until then the person opens batches
-   and reads each result's =outcome=. The screen shows no per-batch job or
-   failure count, because the models hold none.
+1. *Filters on the batch list are partial.* The list narrows by status, by party and
+   by a part of the reference, on the server. A filter by date is still missing.
+2. *Finding the failed runs is flat.* A read by =outcome= lists the runs that ended with
+   a code, newest first, and each run leads to its job page, which names its batch. The
+   Jobs tab draws it as a flat list. It does not prune the tree to the batches that
+   hold such a run, because the models hold no count of failures per batch. The batch
+   and the outcome filters do not combine.
 3. *No run statistics on the result.* The result holds no start time, no end
    time, no input or output size and no memory figure. The wrapper measures the
    run's duration and the bytes it fetched and uploaded, but it only sums them
@@ -163,17 +172,26 @@ the Member role need the same check as the grid sample read did.
    the largest peak memory. The aggregate is a grouped read, not a stored field.
    The prototype draws all three levels in a dashed block labelled "proposed,
    not stored yet".
-4. *No download route.* =input_uri= and =output_uri= name stored objects. The
-   browser has no route to stream them, and the route must check that the
-   caller may read the owning record first.
-5. *No BFF route.* The web client reads through hand-written BFF routes, as
-   the grid series does. A route for the paged tree is needed.
-6. *Node names for tenants.* A result names its host. A tenant administrator
-   or a party member should probably not see the installation's node names.
-   The owner must decide. Until then, the prototype shows the node to the
-   operator only.
+4. *Downloads reach the operator and the tenant administrator.* =input_uri= and
+   =output_uri= name stored objects. Two BFF routes stream them after they read the
+   owning record, so a caller who may not read the record gets no byte. The storage
+   service then checks =storage::objects:read= on the person's own token, and that
+   code is bucket-wide. The Member role lacks it, so a party member sees the address
+   as text. The task Let a party member download its own files closes the gap.
+5. *The BFF routes exist.* Six routes under =/api/operations/grid/jobs/= serve the
+   paged tree, and the batch route takes =status=, =party= and =find=.
+6. *Node names for tenants.* A result names its host. The node belongs to the
+   installation, so only the operator sees its name. A tenant administrator
+   and a party member see "hidden for your role" where the node would be.
+   The reads and the screens follow this rule, and a test pins each role.
 7. *A run in flight has no node.* As in Follow a job, the node is bound when
    the run ends. The details say "not yet known".
+8. *A report run has a page.* A batch names its report run in its =external_ref=.
+   When the reference is an id, the job page links to the page of that run. The BFF
+   reads the run with the person's own session, so a person who may not see the
+   run's party gets the answer for a run that does not exist, and so does the
+   operator, who works outside the tenant. A batch the shell dispatched holds an
+   operator string, and the page says no report is behind it.
 
 * Related journeys
 

@@ -144,6 +144,44 @@ export type {
 export { readPartiesPage } from './party-page.js';
 export { readGridUsage } from './grid-usage.js';
 export {
+    batchPageSchema,
+    batchViewSchema,
+    GridJobsRefusedError,
+    readBatch,
+    readBatches,
+    readResult,
+    readResultsByOutcome,
+    readResultsOfWorkunit,
+    readWorkunit,
+    readWorkunitsOfBatch,
+    resultPageSchema,
+    resultViewSchema,
+    toBatchView,
+    toResultView,
+    toWorkunitView,
+    workunitPageSchema,
+    workunitViewSchema,
+} from './grid-jobs.js';
+export type {
+    BatchPage,
+    BatchFilter,
+    BatchView,
+    GridJobsRefusal,
+    JobPageRequest,
+    ResultPage,
+    ResultView,
+    WorkunitPage,
+    WorkunitView,
+} from './grid-jobs.js';
+export {
+    RELEASE_NOTE_MAX,
+    appVersionPageViewSchema,
+    readAppVersion,
+    readAppVersionPage,
+    writeReleaseNote,
+} from './grid-app-versions.js';
+export type { AppVersionPageView } from './grid-app-versions.js';
+export {
     ACCESS_SUBJECTS,
     deleteRole,
     giveRole,
@@ -666,3 +704,7 @@ export {
     timelineSchema,
 } from './timeline.js';
 export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';
+
+export { gridReportRunViewSchema } from './grid-report-runs.js';
+export type { GridReportRunView } from './grid-report-runs.js';
+export { reportHealthWordSchema } from './reporting.js';

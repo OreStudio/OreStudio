@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 35A81E18-D391-48B3-A144-52B4C2B84B71
+:END:
+#+title: Task: Let the marketdata service read the routes and subscriptions of every tenant
+#+description: The ingest loop reads routes and subscriptions as the system tenant, and their row-level policies allow only the current tenant, so it sees none. The loop logs 0 routes, the demand is empty, the adapters get 0 ids and nothing ticks for any tenant.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
+#+owner: marco
+#+branch: feature/let-the-marketdata-service-read-the-routes-and-subscriptions-of-every-tenant
+#+pr: 3693
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After a tenant is provisioned the marketdata service sees its routes and subscriptions, computes a demand, and the simulated adapters publish ticks, with no restart.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- A system-tenant session reads the routes and subscriptions of every tenant, and a tenant session reads its own only, and a pgTAP test states each.
+- The widening gate lists the two policies with the reason: the adapters are shared, so the demand is the union over all tenants.
+- On a fresh database, provisioning Acme makes the ingest loop report its routes and the tick table fill, with no restart of marketdata.
+- The marketdata service sees a route or subscription change event during provisioning, or the cause of its absence is found.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3693][#3693]] | [marketdata,sql] Marketdata reads all tenants' routes and subscriptions |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The marketdata service reads the routes and the subscriptions of every tenant. The two models state
+=rls_system_tenant_visible=, the generator writes the clause into both tenant policies, and the
+widening gate lists the policies as temporary exceptions, with the reason and a pointer to the audit
+story. A pgTAP test of eight assertions fails four on the old policies and passes all eight on the
+new ones.
+
+On a fresh database, with the services started first and Acme provisioned after, the ingest loop
+accepted 26 of 26 ids for =bloomberg-a=, and 3,608 ticks in 104 series of one tenant reached the tick
+table in about a minute, none of them dated in the future and the newest 20 ms old. Marketdata was
+not restarted. The route and subscription change events reached it during provisioning and
+refreshed the demand.
+
+The policy lets a system-tenant session write the rows of another tenant too, as it does for
+=feed_bindings=. The cause of the missing events that =eager_maxwell= saw earlier is not isolated:
+they appear now, and the policy change is the only one made.

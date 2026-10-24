@@ -1,0 +1,46 @@
+\set ON_ERROR_STOP on
+select set_config('app.current_tenant_id', 'aaaaaaaa-0000-0000-0000-000000000001', false);
+select set_config('app.visible_party_ids', '{bbbbbbbb-0000-0000-0000-000000000001}', false);
+
+insert into ores_marketdata_tick_coords_tbl (tenant_id, party_id, series_id, coord, oresmd_uri)
+values ('aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001',
+        'cccccccc-0000-0000-0000-000000000001', 1, 'oresmd://explain/spot');
+
+-- The series under test: 500,000 ticks, one every 4 seconds.
+insert into ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, source_id)
+select 'aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001',
+       'cccccccc-0000-0000-0000-000000000001',
+       now() - interval '23 days' + n * interval '4 seconds', 1, n::float8,
+       'dddddddd-0000-0000-0000-000000000001'
+from generate_series(0, 499999) as n;
+
+-- 200 other series of the same party: 2,000,000 ticks over the same 23 days.
+insert into ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, source_id)
+select 'aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001',
+       md5('noise' || k::text)::uuid,
+       now() - interval '23 days' + n * interval '199 seconds', 1, n::float8,
+       'dddddddd-0000-0000-0000-000000000001'
+from generate_series(1, 200) as k, generate_series(0, 9999) as n;
+
+analyze ores_marketdata_ticks_tbl;
+
+\o /tmp/claude-1000/-home-marco-Development-OreStudio-ores-dev-brave-hopper/1a6f1874-b86c-4270-8a60-6f0046540c6f/scratchpad/plan4.txt
+explain (analyze, buffers, timing off, summary on, costs off)
+WITH page AS (
+    SELECT t.ts, t.coord, t.party_id, t.value
+    FROM ores_marketdata_ticks_tbl t
+    WHERE t.series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid
+      AND t.ts >= (now() - interval '30 days') AND t.ts < now()
+    ORDER BY t.ts
+    LIMIT 25001
+)
+SELECT (extract(epoch FROM p.ts) * 1000000)::bigint::text, c.oresmd_uri, p.value::text
+FROM page p
+JOIN ores_marketdata_tick_coords_tbl c
+  ON c.series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid
+ AND c.coord = p.coord AND c.party_id = p.party_id
+ORDER BY p.ts, p.coord;
+\o
+
+delete from ores_marketdata_ticks_tbl where tenant_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+delete from ores_marketdata_tick_coords_tbl where series_id = 'cccccccc-0000-0000-0000-000000000001';

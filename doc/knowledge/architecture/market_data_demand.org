@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 083D4B54-549B-4D56-AE89-430A8A4277FF
+:END:
+#+title: Demand drives what an adapter publishes
+#+description: How the service computes the set of ids each adapter must serve, when it sends the set, and why demand also feeds metering.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:demand:adapters:metering:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+An adapter publishes only the ids that parties need. The service computes the
+demand set of each adapter from the subscriptions and the routes of its
+parties, and sends the set by request and reply. A live adapter then pays the
+vendor for those ids only. The same demand intervals feed metering.
+
+* Detail
+
+** How the set is computed
+
+The demand set of an adapter is the union, over all parties routed to the
+adapter, of the external ids that the parties' items map to. A party's items
+come from its explicit requirements and from the composites it uses. A
+composite adds the ids of all its inputs.
+
+** When the service sends it
+
+- When an adapter becomes =ready=, and after it recovers from =stale=.
+- When a route, a subscription or a requirement changes.
+- The set always replaces the previous set. The service does not send deltas,
+  so a lost message cannot leave the adapter with a wrong set.
+
+** The reply
+
+The adapter answers with the ids it accepts and the ids it rejects. A reason
+goes with each rejection, such as =unknown_id= or =not_entitled=. The service
+shows the rejected ids on the source's screen.
+
+** Demand intervals
+
+The service records when each (party, instrument) pair enters and leaves the
+set. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]. Demand is therefore both a control signal and a billing
+fact.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the message that carries the set.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: the input that decides which adapter a party uses.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the use of demand intervals as a driver of cost.

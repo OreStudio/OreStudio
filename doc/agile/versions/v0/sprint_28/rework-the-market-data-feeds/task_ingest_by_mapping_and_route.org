@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 31720152-8E45-4E9B-9D9A-3E77CD9A4B9D
+:END:
+#+title: Task: Ingest by mapping and route
+#+description: Make the ingest loop map vendor ids, check quality, resolve the routed parties and store one observation for each.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/ingest-by-mapping-and-route
+#+pr: 3652
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ingest loop reads an adapter tick, maps it through the provider mapping, applies the quality checks, finds the parties routed to the source, stores one observation for each and delivers the party tick.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The loop drops a tick with the reasons unmapped, not_a_number, out_of_range, stale and out_of_order, and counts each reason for each adapter.
+- The loop refreshes its mapping and route caches from change events.
+- A test shows a live source and a simulated source take the same path and write the same rows apart from source_id.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Build a translator that maps an adapter tick through the provider mapping and applies the five checks, with no database or NATS, so each reason can be tested.
+2. Make a route a consumer of its source in the loop, by building the loop's consumer from the route, so the existing batch, series and store code is the one path.
+3. Subscribe the loop to the ingress subjects of all adapters and queue the translated ticks.
+4. Record the id of the source on each stored tick.
+5. Refresh the loop when a route, a source, a vendor instrument or a mapping changes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3652][#3652]] | [marketdata] Ingest adapter ticks by mapping and route |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The tick table gains a column with no migration | marketdata_ticks_create.sql | Decline | The schema is applied by recreation. |
+| 2 | source_text goes unchecked into the COPY line | feed_ingest_loop.cpp | Decline | It is the text of a uuid, nil at worst, and a binding also carries a source_id, so the legacy path fills it. |
+| 3 | The order state moves before a later check could drop the tick | translator | Decline | The order check is the last. A check added after it must move the update, and the tests would show it. |
+| 4 | A refresh resets the order state | translator | Defer | One older tick can pass after a refresh. A debounced refresh with a kept order state is a later change. |
+| 5 | Refresh reads the catalogue on every event | feed_ingest_loop | Defer | A debounce belongs with the order state in the same later change. |
+| 6 | The age and value limits are constants | translator | Defer | Item bounds are listed in the Result as a later model. |
+| 7 | Overlapping mappings need a test | translator tests | Decline | the_newest_mapping_that_holds_names_the_item covers it. |
+
+* Result
+
+An adapter tick now goes through the provider mapping and five checks before it is stored. =adapter_tick_translator= finds the source by the adapter id, the vendor instrument by provider, scheme, id and field, and the mapping that holds now. It drops a tick as unmapped, not_a_number, out_of_range, stale or out_of_order, and counts each drop for each adapter and reason. The loop subscribes to the ingress subjects of all adapters, and a route makes its party a consumer of its source, in the same table as a binding, so the existing batch, series and store code is the one path. The tick table records the id of the source for each row. The loop refreshes when a route, a source, a vendor instrument or a mapping changes. Eleven translator tests pass, with the tick writer tests: a live and a simulated source take the same path and differ in the source id only. The build of the service and core test targets passes.
+
+Left for later tasks:
+- The stored rows of the live path were not read back in a test against a database or NATS, because the worktree =.env= is at version 32.
+- Reads of a series from the tick table, and a manual point, still give a nil =source_id=. The tick table holds it, and the read projections do not carry it yet.
+- The bounds of out_of_range are one absolute limit for every item. Item bounds need a model that does not exist yet.
+- A default route is not created for a new subscription, so a party with no route receives nothing from an adapter.
+- The legacy synthetic subjects and feed bindings stay until the simulator moves in a later task.

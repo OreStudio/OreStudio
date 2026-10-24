@@ -18,16 +18,22 @@
  *
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
-#include "ores.marketdata.core/repository/tick_coordinate_repository.hpp"
+#include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.marketdata.service/app/batch_size.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -93,6 +99,7 @@ feed_ingest_loop::~feed_ingest_loop() {
     // The callback of the subscription queues into queue_, which is destroyed before
     // tick_sub_. Stopping the subscription first leaves no callback to run after that.
     tick_sub_.reset();
+    adapter_sub_.reset();
     drain_deadline_rep_.store(
         (std::chrono::steady_clock::now() + shutdown_drain).time_since_epoch().count(),
         std::memory_order_relaxed);
@@ -125,6 +132,11 @@ void feed_ingest_loop::start() {
     }
     worker_ = std::thread(&feed_ingest_loop::worker_loop, this);
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
+    const auto adapter_wildcard = domain::adapter_ingress_subject_all();
+    BOOST_LOG_SEV(lg(), info) << "Subscribing to the ticks of adapters on '" << adapter_wildcard
+                              << "'";
+    adapter_sub_ = nats_.subscribe(adapter_wildcard,
+                                   [this](ores::nats::message msg) { on_adapter_tick(msg); });
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
 
@@ -144,6 +156,24 @@ feed_ingest_loop::bindings_snapshot::targets_for(const std::string& source,
     return targets;
 }
 
+namespace {
+
+/// The consumer a route makes of its party: the tick of the source that the route names is
+/// stored for the party under the provider of the route.
+domain::feed_binding consumer_of(const domain::route& route, const std::string& source_name) {
+    domain::feed_binding b;
+    b.id = route.id;
+    b.tenant_id = route.tenant_id;
+    b.party_id = route.party_id;
+    b.source_name = source_name;
+    b.provider_code = route.provider_code;
+    b.source_id = route.source_id;
+    b.enabled = true;
+    return b;
+}
+
+}
+
 void feed_ingest_loop::refresh() {
     repository::feed_binding_repository repo;
     const auto bindings = repo.read_latest_all_tenants(ctx_);
@@ -154,8 +184,30 @@ void feed_ingest_loop::refresh() {
             wanted->by_source[b.source_name].push_back(b);
     }
 
+    // The catalogue belongs to the system tenant, and the routes to each party. A route makes
+    // its party a consumer of the source it names, in the same table as a binding.
+    const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
+    auto sources = repository::market_data_source_repository{}.read_latest(system_ctx);
+    auto instruments =
+        repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
+    auto mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
+    const auto routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
+    std::size_t routed = 0;
+    for (const auto& route : routes) {
+        const auto source =
+            std::ranges::find(sources, route.source_id, &domain::market_data_source::id);
+        if (source == sources.end())
+            continue;
+        wanted->by_source[source->name].push_back(consumer_of(route, source->name));
+        ++routed;
+    }
+    auto translator = std::make_shared<adapter_tick_translator>(
+        std::move(sources), std::move(instruments), std::move(mappings));
+
     std::lock_guard lock(mu_);
     bindings_by_source_ = wanted;
+    translator_ = std::move(translator);
+    adapter_drop_warned_.clear();
     series_ids_.clear();
     unbound_warned_.clear();
     unnameable_warned_.clear();
@@ -176,7 +228,58 @@ void feed_ingest_loop::refresh() {
     stats_ = std::move(kept);
 
     BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << bindings_by_source_->by_source.size()
-                              << " bound source(s)";
+                              << " bound source(s), " << routed << " route(s), "
+                              << translator_->source_count() << " catalogue source(s)";
+}
+
+std::shared_ptr<adapter_tick_translator> feed_ingest_loop::translator() const {
+    std::lock_guard lock(mu_);
+    return translator_;
+}
+
+std::optional<adapter_tick_drop>
+feed_ingest_loop::accept_adapter_tick(std::string_view adapter_id,
+                                      const messaging::adapter_tick& tick) {
+    const auto current = translator();
+    auto translated = current->translate(adapter_id, tick, std::chrono::system_clock::now());
+    if (!translated) {
+        const auto reason = translated.error();
+        const auto key = std::string(adapter_id) + ":" + std::string(to_string(reason));
+        bool first = false;
+        {
+            std::lock_guard lock(mu_);
+            first = adapter_drop_warned_.insert(key).second;
+        }
+        if (first)
+            BOOST_LOG_SEV(lg(), warn)
+                << "Dropping ticks of adapter '" << adapter_id << "': " << to_string(reason)
+                << " (first: " << tick.external_id << " " << tick.field << ")";
+        return reason;
+    }
+    queue_.push(std::move(translated->tick));
+    return std::nullopt;
+}
+
+void feed_ingest_loop::on_adapter_tick(const ores::nats::message& msg) {
+    // The subject carries the environment prefix in front of the ingress base.
+    const auto base = std::string(domain::adapter_ingress_subject_base) + ".";
+    const auto at = msg.subject.find(base);
+    const auto parts =
+        at == std::string::npos ?
+            std::nullopt :
+            domain::adapter_ingress_subject_parts(std::string_view(msg.subject).substr(at));
+    if (!parts) {
+        BOOST_LOG_SEV(lg(), warn) << "Dropping a tick on '" << msg.subject
+                                  << "': not an ingress subject of an adapter";
+        return;
+    }
+    auto tick = ores::nats::default_wire_codec().decode<messaging::adapter_tick>(msg.data);
+    if (!tick) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to decode adapter_tick on '" << msg.subject
+                                  << "': " << tick.error().what();
+        return;
+    }
+    accept_adapter_tick(parts->adapter_id, *tick);
 }
 
 void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
@@ -458,6 +561,9 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
     }
 
     std::vector<std::vector<std::byte>> payloads(ticks.size());
+    // The deliveries of this batch, by consumer and item. The views point into the ticks of the
+    // batch, which outlive this function.
+    std::map<std::pair<const tick_target*, std::string_view>, std::int64_t> delivered;
     for (const auto& it : items) {
         if (!it.stored && !it.unavailable)
             continue;
@@ -498,10 +604,29 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             payload = ores::nats::default_wire_codec().encode(tick);
         try {
             nats_.publish(it.target->subject, payload);
+            if (meter_)
+                ++delivered[{it.target, tick.oresmd_uri}];
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to republish a tick on '" << it.target->subject << "': " << e.what();
         }
+    }
+
+    if (meter_ && !delivered.empty()) {
+        const auto period = delivery_meter::hour_of(now);
+        std::vector<delivery_entry> counts;
+        counts.reserve(delivered.size());
+        for (const auto& [at, count] : delivered) {
+            const auto& b = at.first->binding;
+            counts.push_back({delivery_key{b.tenant_id,
+                                           b.party_id,
+                                           b.provider_code,
+                                           b.source_id,
+                                           std::string(at.second),
+                                           period},
+                              count});
+        }
+        meter_->add_many(counts);
     }
 
     batches_.fetch_add(1, std::memory_order_relaxed);
@@ -574,7 +699,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
     }
     for (const auto& [tenant, wanted] : unknown) {
         try {
-            const auto numbers = repository::tick_coordinate_repository{}.resolve_all(
+            const auto numbers = repository::tick_coords_repository{}.resolve_all(
                 batch.tenant_ctxs.at(tenant), wanted);
             std::lock_guard lock(mu_);
             for (std::size_t j = 0; j < numbers.size(); ++j)
@@ -611,6 +736,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
         row.ts = tick.observation_time;
         row.coord = coord_of[i];
         row.value = it.plan->value;
+        row.source_id = it.target->source_text;
         const auto at = row_at.try_emplace(
             row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()},
             batch.rows.size());
@@ -735,7 +861,7 @@ domain::market_series make_feed_series(const domain::feed_binding& binding,
     series.party_id = binding.party_id;
     series.oresmd_uri = series_uri;
     series.series_subclass = series_subclass;
-    series.producer_kind = binding.producer_kind;
+    series.provider_code = binding.provider_code;
     series.modified_by = service_account;
     series.performed_by = service_account;
     series.change_reason_code = "system.initial_load";
@@ -771,7 +897,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
             return std::nullopt;
         for (const auto& entry : found->second)
             if (entry.tenant_id == binding.tenant_id.to_uuid() &&
-                entry.party_id == binding.party_id)
+                entry.party_id == binding.party_id && entry.provider_code == binding.provider_code)
                 return entry.id;
         return std::nullopt;
     };
@@ -783,7 +909,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     const auto party = boost::uuids::to_string(binding.party_id);
 
     repository::market_series_repository series_repo;
-    auto existing = series_repo.read_latest_by_uri(tenant_ctx, series_uri, party);
+    auto existing =
+        series_repo.read_latest_by_key(tenant_ctx, series_uri, binding.provider_code, party);
     if (existing.empty()) {
         const auto ck = core::classification_key_of(named.datum);
         const auto cl =
@@ -813,7 +940,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
 
     const auto id = existing.front().id;
     std::lock_guard lock(mu_);
-    series_ids_[series_uri].push_back({binding.tenant_id.to_uuid(), binding.party_id, id});
+    series_ids_[series_uri].push_back(
+        {binding.tenant_id.to_uuid(), binding.party_id, binding.provider_code, id});
     return id;
 }
 

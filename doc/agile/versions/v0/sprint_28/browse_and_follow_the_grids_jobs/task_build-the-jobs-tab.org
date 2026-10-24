@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
-#+branch: feature/browse-and-follow-the-grids-jobs
-#+pr:
+#+branch: feature/build-the-jobs-tab
+#+pr: 3655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The Jobs tab of the grid screen shows the paged tree and the details panel for t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-22                               |
 
 * Acceptance
@@ -38,12 +38,22 @@ The Jobs tab of the grid screen shows the paged tree and the details panel for t
 - The tree opens a batch, then a workunit, and reads one page of children at a time.
 - The details panel shows the entity's own fields under the model's headers, with state and outcome as badges and references as links.
 - The screen shows loading, empty, error and refused states in words, and the filters, open rows and pages live in the URL.
+- (Moved) The Outcome filter lands with the task Find a result by its outcome, and the Follow this job link lands with the task Build the job page. Neither read nor page exists yet.
+- The tabs are the ones the grid screen has, and the build follows =doc/prototypes/compute/browse-the-grids-jobs/=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add a sixth tab, Jobs, to the grid screen, and a Jobs tab to the tenant and
+party view. One component, =GridJobs.tsx=, holds the tree and the details panel.
+
+- The tree reads one page of batches, and one page of workunits or results for
+  each open row, from the six BFF routes. The page size of a child is 5.
+- The address holds the batch page and size, the open rows (=open=), the selected
+  record (=sel=, as kind:id) and the child pages (=wp.<id>=, =rp.<id>=).
+- The details panel reads the selected record by id and draws its fields under
+  the model headers. A reference is a link that selects the record it names.
+- A refused read says the role cannot read jobs. Any other failure says what
+  failed and offers a retry.
 
 * Measurements
 
@@ -57,9 +67,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Jobs tab tests | 14 pass | =npx vitest run src/operations/GridJobs.test.tsx= in =packages/web= | aa4605e98d plus the working tree |
+| Operations, i18n and routes tests | 134 pass | =npx vitest run src/operations src/i18n src/AppRoutes.test.tsx= | aa4605e98d plus the working tree |
+| Jobs tab as the tenant administrator | 3 batches, a page of 5 of 12 workunits, a result with its failure | headless Chrome on =/operations/grid?tab=jobs= | aa4605e98d plus the working tree |
+| Jobs tab as a member of the batches' party | the same tree, host hidden | the same page as =adrian.vance= | aa4605e98d plus the working tree |
+| Jobs tab as a member of another party | no batch | the same page as =diane.kay= | aa4605e98d plus the working tree |
 
 * Notes
+
+- The tab does not show the party of a batch in the tree. A session that acts in a
+  party has the mode application, so the mode cannot tell a tenant administrator
+  from a party member. The details panel shows the party id.
+- The dispatch command writes the batch status dispatched, and the model page lists
+  four statuses without it. The tab draws a status it does not know as stated.
+- A batch moves to the top of the list when its status changes, because the order is
+  by the latest change. The first screenshot read jobs-check-b, jobs-check-a and
+  jobs-check-c, and c was created last.
+- The Follow this job link and the App Version ID link wait for the pages they open.
 
 * Test Scenarios
 
@@ -76,12 +100,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3655 | [web] Build the Jobs tab |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A div inside a list is invalid markup | GridJobs.tsx | Fixed | Each row holds its children inside its list item. A test checks it. |
+| 2 | A page past the last gives a blank tree | GridJobs.tsx | Fixed | The tree says so and offers the first page. A test covers it. |
+| 3 | A link opens a record outside the open tree | GridJobs.tsx | Partly fixed | A missing record states its own message. The tree does not reveal the target. |
+| 4 | Unchecked casts in the details panel | GridJobs.tsx | Fixed | The query returns a record tagged with its kind. |
+| 5 | A collapse changes the selection | GridJobs.tsx | Fixed | Only an open selects. |
+| 6 | Short ids can collide | GridJobs.tsx | Fixed | The full id is the row title. |
+| 7 | parseSelection order | GridJobs.tsx | Fixed | The colon check comes first. |
 
 * Result
+
+The grid screen has a Jobs tab for an operator, a tenant administrator and a party
+member. It reads a page of batches, opens a batch to a page of its workunits and a
+workunit to a page of its results, and shows the selected record under the model
+headers. The open rows, pages and selection live in the address. The Outcome filter
+and the links to the job page and the app version page land with their own tasks.

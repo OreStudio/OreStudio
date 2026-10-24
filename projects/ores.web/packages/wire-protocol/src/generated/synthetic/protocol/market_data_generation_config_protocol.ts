@@ -34,14 +34,11 @@ export interface MarketDataGenerationConfigKey {
 
 export interface MarketDataGenerationConfigWrite {
     id: string;
-    scope: string;
-    binding_mode: string;
     name: string;
     description: string;
     enabled: boolean;
     dataset_id: string | null;
     provider_code: string;
-    run_grant_id: string | null;
 }
 
 export interface MarketDataGenerationConfigChange {

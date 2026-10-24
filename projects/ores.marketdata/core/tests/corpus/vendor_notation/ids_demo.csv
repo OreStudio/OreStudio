@@ -1,0 +1,54 @@
+# Vendor ids of the fictional provider Demo, and what a reader makes of each.
+# scheme,external id,field,outcome -- an outcome is 'fx base quote side' or 'error kind'.
+demo_key,EUR/USD,value,fx EUR USD last
+demo_key,GBP/USD,value,fx GBP USD last
+demo_key,AUD/USD,value,fx AUD USD last
+demo_key,NZD/USD,value,fx NZD USD last
+demo_key,USD/CAD,value,fx USD CAD last
+demo_key,USD/CHF,value,fx USD CHF last
+demo_key,USD/DKK,value,fx USD DKK last
+demo_key,USD/INR,value,fx USD INR last
+demo_key,USD/JPY,value,fx USD JPY last
+demo_key,USD/MXN,value,fx USD MXN last
+demo_key,USD/NOK,value,fx USD NOK last
+demo_key,USD/SEK,value,fx USD SEK last
+demo_key,USD/ZAR,value,fx USD ZAR last
+demo_key,USD/HKD,value,fx USD HKD last
+demo_key,USD/SGD,value,fx USD SGD last
+demo_key,USD/CNH,value,fx USD CNH last
+demo_key,USD/KRW,value,fx USD KRW last
+demo_key,USD/TWD,value,fx USD TWD last
+demo_key,USD/PLN,value,fx USD PLN last
+demo_key,USD/CZK,value,fx USD CZK last
+demo_key,USD/HUF,value,fx USD HUF last
+demo_key,USD/TRY,value,fx USD TRY last
+demo_key,USD/ILS,value,fx USD ILS last
+demo_key,USD/BRL,value,fx USD BRL last
+demo_key,USD/CLP,value,fx USD CLP last
+demo_key,USD/COP,value,fx USD COP last
+demo_key,EUR/GBP,value,fx EUR GBP last
+demo_key,EUR/JPY,value,fx EUR JPY last
+demo_key,EUR/CHF,value,fx EUR CHF last
+demo_key,EUR/AUD,value,fx EUR AUD last
+demo_key,GBP/JPY,value,fx GBP JPY last
+demo_key,AUD/NZD,value,fx AUD NZD last
+demo_key,CHF/JPY,value,fx CHF JPY last
+demo_key,CAD/JPY,value,fx CAD JPY last
+demo_key,AUD/JPY,value,fx AUD JPY last
+demo_key,NZD/JPY,value,fx NZD JPY last
+demo_key,EUR/SEK,value,fx EUR SEK last
+demo_key,EUR/NOK,value,fx EUR NOK last
+demo_key,USD/EUR,value,fx USD EUR last
+demo_key,JPY/USD,value,fx JPY USD last
+# Ids that must be refused.
+demo_key,EUR/usd,value,error malformed
+demo_key,EUR-USD,value,error malformed
+demo_key,EURUSD,value,error malformed
+demo_key,EUR/EUR,value,error malformed
+demo_key,EUR/US,value,error malformed
+demo_key,EUR/USDX,value,error malformed
+demo_key,/USD,value,error malformed
+demo_key,,value,error malformed
+demo_key,EUR/USD,PX_LAST,error wrong_field
+demo_key,EUR/USD,,error wrong_field
+ric,EUR/USD,value,error wrong_scheme

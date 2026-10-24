@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: 2035EA76-7320-455A-B9B2-B7AB4DEB3640
+:END:
+#+title: ores.marketdata.billing_operations
+#+description: Codegen operation model for the bills of the market data sources: the request for the bill of a period and the views of the source bill and the party charges.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: billing_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The request for the bills of a period, and the bills.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A bill is computed from the usage events of a period and the rate card of each source, so it is not stored.
+The request names a period and may name one source. The answer holds the bill of each source, the charge of
+each party for each component, and the part of the bill that no party bears. Every amount is a whole number
+of millionths of the currency.
+
+A session of the system tenant reads every bill. A session of any other tenant reads the charges of its own
+tenant only.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** bill_line_view
+
+One line of a source bill.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One component of a rate card, the quantity it counted and what it costs.
+ */
+#+end_src
+
+*** driver
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+What the component counts.
+
+*** licence_right
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The right a per_licence component charges for. Empty for every other driver.
+
+*** quantity
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+How many units the driver counted in the period.
+
+*** charge_micros
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The charge for one unit, in millionths of the currency.
+
+*** total_micros
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+What the line costs, in millionths of the currency.
+
+** source_bill_view
+
+What the platform owes the vendor of one source for a period.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bill of a source.
+ *
+ * A shadow bill is the bill of a simulated source. It has the same lines and the same amounts as a bill
+ * of a live source, and nobody pays it.
+ */
+#+end_src
+
+*** source_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The source.
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The name of the source.
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The currency of the amounts.
+
+*** shadow
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when nobody pays the bill because the source is simulated.
+
+*** lines
+:PROPERTIES:
+:cpp_type: std::vector<bill_line_view>
+:END:
+
+One line for each component of the rate card that applied.
+
+*** total_micros
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The total of the lines.
+
+** party_charge_view
+
+What one party bears of one component of a source bill.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The charge of a party for a component of a source.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The tenant of the party.
+
+*** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party.
+
+*** source_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The source.
+
+*** driver
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The driver of the component.
+
+*** licence_right
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The right of a per_licence component. Empty for every other driver.
+
+*** total_micros
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+What the party bears, in millionths of the currency.
+
+** compute_bill_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.compute_bill
+:response: compute_bill_response
+:END:
+
+Asks for the bills of a period.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the bills of a half open period.
+ *
+ * A period of no length, or one that ends before it starts, is refused.
+ */
+#+end_src
+
+*** period_from
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The start of the period. It is in the period.
+
+*** period_to
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The end of the period. It is not in the period.
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The name of one source, or empty for every source.
+
+** compute_bill_response
+
+The bills of a period.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The source bills, the charge of each party and the part that no party bears.
+ */
+#+end_src
+
+*** source_bills
+:PROPERTIES:
+:cpp_type: std::vector<source_bill_view>
+:END:
+
+One bill for each source with a rate card in the period. Empty for a session that is not of the system tenant.
+
+*** party_charges
+:PROPERTIES:
+:cpp_type: std::vector<party_charge_view>
+:END:
+
+What each party bears. A session that is not of the system tenant reads the charges of its own tenant.
+
+*** unallocated_micros
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The part of the bills that no party bears. Zero for a session that is not of the system tenant.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the bills were computed.
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason when they were not. Empty on success.
+
+* See also
+
+- [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] — the rating and allocation these messages carry.
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.

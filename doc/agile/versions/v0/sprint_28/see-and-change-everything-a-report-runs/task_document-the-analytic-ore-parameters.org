@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 78AB66E8-2D4D-4CCE-910B-15175F722B82
+:END:
+#+title: Task: Document the analytic ORE parameters
+#+description: Write the full documentation of every analytic parameter of ore.xml, in batches of analytics, and make the documentation fields NOT NULL.
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/document-the-analytic-ore-parameters
+#+pr: 3639
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every leaf of the ore.xml analytics has a label, help line, description with examples, default, format and introduced_in. A generator with a check mode writes the seed from one text module per batch. When the last batch lands, the fields become NOT NULL.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- Every analytic parameter in the old seed has a complete entry, and no parameter is lost.
+- Each introduced_in value is measured from the release tags of the ORE source.
+- The check fails when an entry is incomplete.
+- The documentation fields of ore_parameter are NOT NULL, except removed_in.
+
+* Plan
+
+1. Take the structure of the old seed (365 rows, 35 analytic types) as the catalogue, in =analytic_parameter_catalogue.py=.
+2. Measure the release of each parameter from the git tags of the ORE checkout, with =measure_ore_parameter_releases.py=. A parameter cannot be older than its analytic, so the later of the two first releases is the answer. The tag 1.8.12.0 does not exist in the checkout, so the script uses the commit that bumped the version to 1.8.12.0. The same script finds the names that ORE no longer reads and the names that it never read.
+3. Write the text for each group of analytics in a module of =analytic_parameter_descriptions=: pricing, simulation, calibration, xva, xva_family, sensitivity, risk and margin. Read each parameter in the user guide (=ore.tex=), in the C++ sources and in the comments of the example files. Add the parameters that the sources read and the old seed lacked.
+4. Generate the seed with =generate_analytic_ore_parameters_populate.py=. The local check =analytic-parameters-seed= compares the seed with the texts, and the generator fails when a parameter has no complete text.
+5. Make the documentation columns NOT NULL, regenerate the entity, and add pgTAP checks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Analytic parameters with a complete text | 525 | =python3 projects/ores.sql/utility/generate_analytic_ore_parameters_populate.py --check= | see PR |
+| Analytic types in the catalogue | 46 (35 in the old seed) | =python3 -c "import analytic_parameter_catalogue as c; print(len({t for t,n,d in c.CATALOGUE}))"= from =projects/ores.sql/utility= | see PR |
+| Parameters of the old seed | 365 | counted in the seed before this task | 2860807e7d |
+| Parameters that no release of the C++ sources reads | 16 | =python3 projects/ores.sql/utility/measure_ore_parameter_releases.py --ore-source <vault>/Development/ORE/Engine= | see PR |
+| Parameters that the latest release no longer reads | 6 | the same command | see PR |
+| Release of the ORE checkout | 1.8.17.0 | =git describe --tags= in the checkout | see PR |
+| pgTAP checks on the keys and the documentation | 5 of 5 pass | =./compass.sh sql -- -f projects/ores.sql/test/reporting_ore_parameters_test.sql= | see PR |
+
+* Notes
+
+- The old seed came from the shipped examples and had no description. Reading the sources showed that the examples hold parameters that ORE never reads, such as =extendedResults=, and parameters that ORE reads only in another block, such as =applySimmExemptions=. The text of each such parameter says so.
+- The sources also hold 160 parameters that the examples lack. They are rows of the catalogue now.
+- Three faults of release 1.8.17.0 are in the texts: the AMC individual training input is read from a block named =xsimulationva=, the sensitivity scenario type of scenario generation generates nothing, and the bounds of the par stress conversion are read and not used.
+- The nine analytic types =frtb=, =frtbCrif=, =npvLagged=, =totalIM=, =imImpact=, =crifToTrade=, =fixingEstimate=, =simmOptimization= and =simmBacktest= are read by ORE, but the open source release has no analytic of these names. Their rows say so.
+- =introduced_in= is the first release in which the sources or the examples show the parameter. It is an upper bound when the parameter existed before the oldest tag, 1.8.0.7. The text then says "or earlier".
+- The release 1.8.12.0 is inferred from the commit that bumped the version, because the checkout has no tag for it.
+- The Setup, Markets and Logging blocks of =ore.xml= are not in this task. The engine settings task and the later screens cover them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3639][#3639]] | [reporting] Document the analytic ORE parameters |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All 525 analytic parameters of =ore.xml= have a label, a help line, a description, a default, a format and the release that introduced them. The columns are NOT NULL, except =removed_in=. The seed comes from a generator that fails when a text is incomplete, and a local gate compares the seed with the texts.
+
+Reading the sources found 16 example parameters that no release reads, 6 that the latest release no longer reads, and three faults of release 1.8.17.0. The texts say so.
+
+The descriptions are shorter than the prototype text of the engine settings: the median is about 190 characters, and examples are sparse. The owner can ask to deepen them for the analytics that a screen shows first.
+
+Left for other tasks: the Setup, Markets and Logging blocks, and the leaves of other schemas.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:storage:ore:import:export:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
@@ -96,10 +96,10 @@ Both requests declare =requires_session = true=.
   series it creates gets the same classification, subclass and asset class
   junction rows, so a reader cannot tell an imported series from an ingested
   one by its shape.
-- Every series the import creates carries =VENDOR=, because the
-  =market_series= domain type defaults =producer_kind= to =VENDOR= and the
-  import never sets the field. A =VENDOR= series in this store can therefore
-  mean imported text rather than a running vendor producer.
+- Every observation the import writes names the source =ore-import=, a source
+  of the provider =ore= with the kind =replay=, because the import replays
+  recorded values and no live session produced them. The series key is
+  (item, =ore=, party).
 - The export's scope is the tenant and the import's scope is the tenant.
   Neither takes a series, a party or a date range.
 - The import reports parse warnings and errors in the response while
@@ -113,7 +113,7 @@ Both requests declare =requires_session = true=.
 
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the =VENDOR= stamp an imported series carries.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]], the =replay= kind of the import's source.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the catalog the import writes into.
 - The import service is
   =projects/ores.marketdata/core/src/service/import_service.cpp=.

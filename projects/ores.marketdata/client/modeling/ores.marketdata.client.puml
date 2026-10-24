@@ -55,7 +55,7 @@ namespace ores #F2F2F2 {
 
 class ores::marketdata::client::market_data_client {
     +list_series(series_type : const string&) : [[nodiscard]] expected<vector<domain::market_series>, string>
-    +find_series_by_uri(oresmd_uri : const string&, party_id : const string&) : [[nodiscard]] expected<optional<domain::market_series>, string>
+    +find_series_by_uri(oresmd_uri : const string&, party_id : const string&) : [[nodiscard]] expected<vector<domain::market_series>, string>
 }
 note right of "ores::marketdata::client::market_data_client"
 Every call goes through the authenticated nats_client that the
@@ -65,8 +65,8 @@ an error string on transport, authorisation, or decode failure.
 list_series() accepts series_type and ignores it, because the
 canonical list request carries no series-type filter.
 find_series_by_uri() reads one generous page (limit 10000) and matches
-the identity client-side; with no party_id the first id-ordered match
-wins.
+the identity client-side. It returns every match, because one identity
+can hold a series for each provider and party; party_id narrows them.
 end note
 
 ' Local Variables:

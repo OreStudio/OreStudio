@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/messaging/party_required.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -78,6 +79,13 @@ public:
         auto req = decode<export_market_data_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ore_export_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        if (!names_a_party(ctx)) {
+            reply(
+                nats_,
+                msg,
+                export_market_data_response{.success = false, .message = party_required_message()});
             return;
         }
         try {

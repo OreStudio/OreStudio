@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 810811DC-1F60-4808-A224-1690374CEEC4
+:END:
+#+title: ORE data format
+#+description: The id scheme, the field and the mapping for ORE market data, the one provider with a public specification.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:ore:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+ORE, the Open Source Risk Engine, is a provider whose notation is open. An ORE quote key is a slash delimited string such as =FX/RATE/EUR/USD=, and each key has one value. The provider code is =ore=. Its sources are =ore-import=, which replays a market data file, and =ore-derived=, which holds the values the service computes from other series.
+
+* Detail
+
+** The id scheme
+
+The scheme code is =ore_key=. A key has the form =TYPE/SUBTYPE/dim1/.../dimN=. The number and meaning of the dimensions depend on the type. The format is defined by ORE's open source code and by the =marketdata.csv= files in its Examples directory.
+
+** The field
+
+A key has one value, so the field is =value=.
+
+** On the wire
+
+An adapter of this provider sends the tick fields below. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] for the subject.
+
+| Tick field | Example |
+|------------+---------|
+| id scheme | =ore_key= |
+| external id | =FX/RATE/EUR/USD= |
+| field | =value= |
+| value | =1.0842= (decimal text) |
+
+The ingress subject token for the id is =FX%2FRATE%2FEUR%2FUSD=. The service never decodes the token. It reads the id from the payload.
+
+** The mapping
+
+=ore_key= / =FX/RATE/EUR/USD= / =value= maps to =oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=. This mapping is nearly mechanical, because the oresmd identity grew out of the ORE key. The import of an ORE market data file uses it, and the series it creates belong to the provider =ore=.
+
+** Minted ids
+
+None. Every ORE key is defined by ORE itself.
+
+** What the simulator does
+
+Nothing. The simulator is native to each vendor and publishes the ids of Bloomberg, of LSEG and of the fictional provider Demo. It publishes no ORE key, and no simulated source of this provider exists. The values of this provider are the values of ORE's own example files, imported by =ore-import=, and the values the service derives from them, stored by =ore-derived=.
+
+** External references
+
+- [[https://www.opensourcerisk.org][Open Source Risk Engine]] — the project home and the user guide.
+- [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]] — the code. The =Examples= directory holds =marketdata.csv=, and =OREData/ored/marketdata= holds the =CSVLoader= that reads it.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the three parts this page fills in.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how these ids reach an oresmd item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of the notations.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue: asset classes, quote keys, and product dependencies]] — completes: every quote key type that ORE defines.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] — completes: the project itself.

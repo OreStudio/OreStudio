@@ -826,14 +826,6 @@ tangled into the runnable script library
 
 - [[id:C10B8762-D5B0-575D-8CFB-17312188CEDA][How do I run the credit_simulation_matrix_row_configs commands from the shell?]]
 
-* Parameter Definitions
-
-- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the parameter_definitions commands from the shell?]]
-
-* Parameter Value Domains
-
-- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the parameter_value_domains commands from the shell?]]
-
 * Report Configurations
 
 - [[id:107EC378-86EB-52A7-90ED-62512A7BD785][How do I run the report_configurations commands from the shell?]]
@@ -1685,3 +1677,99 @@ tangled into the runnable script library
 * Trade Authorisation Requests
 
 - [[id:C39A3FBB-8625-538F-87DF-E780CBAE34B1][How do I run the trade_authorisation_requests commands from the shell?]]
+
+* Pricing Methods
+
+- [[id:FC4F033E-9672-5CB9-A439-327F2816AA76][How do I run the pricing_methods commands from the shell?]]
+
+* Pricing Model Engine Pairs
+
+- [[id:496100E1-7D92-5E71-9401-8ED19F7E8721][How do I run the pricing_model_engine_pairs commands from the shell?]]
+
+* Pricing Models
+
+- [[id:23CBB411-6419-5A63-A401-C788A4D07D5E][How do I run the pricing_models commands from the shell?]]
+
+* Pricing Pair Settings
+
+- [[id:8BC2BE27-A822-531E-A344-418627A29891][How do I run the pricing_pair_settings commands from the shell?]]
+
+* Sensitivity Templates
+
+- [[id:08C2B365-7E21-5D7E-A5E0-C40C41E2B963][How do I run the sensitivity_templates commands from the shell?]]
+
+* Ore Parameter Value Domains
+
+- [[id:10EE66B7-D0C5-52AC-84E3-0367181F65F9][How do I run the ore_parameter_value_domains commands from the shell?]]
+
+* Ore Parameters
+
+- [[id:30745220-F498-5666-A6BB-F586CDEE8F3E][How do I run the ore_parameters commands from the shell?]]
+
+* Market Data Mappings
+
+- [[id:9709DEFB-9C32-5E00-8CA0-6B926ED00ED6][How do I run the market_data_mappings commands from the shell?]]
+
+* Market Data Sources
+
+- [[id:AA656F86-F1EE-5EAE-B25A-759568DC3081][How do I run the market_data_sources commands from the shell?]]
+
+* Market Data Vendor Instruments
+
+- [[id:97318D73-729E-5159-B52B-09CD37F9921D][How do I run the market_data_vendor_instruments commands from the shell?]]
+
+* Providers
+
+- [[id:1FC395AE-BCAE-5164-902D-5B9618D91368][How do I run the providers commands from the shell?]]
+
+* Source Kinds
+
+- [[id:57381A9E-95A5-5F78-AE5F-02088FBDDE62][How do I run the source_kinds commands from the shell?]]
+
+* Routes
+
+- [[id:AFECC4E9-C27A-548E-A5CD-3DA09478C6B0][How do I run the routes commands from the shell?]]
+
+* Subscriptions
+
+- [[id:C5B268A3-BF5D-50EC-9A77-A81BB844F652][How do I run the subscriptions commands from the shell?]]
+
+* Engine Settings
+
+- [[id:817F93B3-E2B3-50C3-A6EF-E94062C9F413][How do I run the engine_settings commands from the shell?]]
+
+* Engine Settings Building
+
+- [[id:D3A2C85B-9488-594A-BC6B-5684D8E67E87][How do I run the engine_settings_building commands from the shell?]]
+
+* Engine Settings Execution
+
+- [[id:02359E78-9ACE-54C7-BBCA-478E5D41A1EB][How do I run the engine_settings_execution commands from the shell?]]
+
+* Engine Settings Fixings
+
+- [[id:19E6840B-B36B-52AF-9398-50E4FEFCB8EE][How do I run the engine_settings_fixings commands from the shell?]]
+
+* Composite Inputs
+
+- [[id:61BFFDA4-C2AD-5C42-92E2-C13029C490AA][How do I run the composite_inputs commands from the shell?]]
+
+* Composites
+
+- [[id:5FFF1AC6-E2D5-585F-9324-0A0DD0F202F1][How do I run the composites commands from the shell?]]
+
+* Delivery Counts
+
+- [[id:6A2DAD2C-C948-5FEA-9B6E-EB731CC409EC][How do I run the delivery_counts commands from the shell?]]
+
+* Demand Intervals
+
+- [[id:A1BB2DEE-A705-5B74-9A5F-887F3DB7633C][How do I run the demand_intervals commands from the shell?]]
+
+* Rate Card Components
+
+- [[id:9928C6E3-7B14-5C96-8A69-35733E371659][How do I run the rate_card_components commands from the shell?]]
+
+* Subscription Intervals
+
+- [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]

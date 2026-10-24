@@ -7,7 +7,8 @@
     "concurrency_policy": "skip",
     "display_order": 5,
     "tier": "common",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "System Health",
@@ -17,7 +18,8 @@
     "concurrency_policy": "skip",
     "display_order": 10,
     "tier": "common",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Audit Trail Summary",
@@ -27,7 +29,8 @@
     "concurrency_policy": "skip",
     "display_order": 15,
     "tier": "common",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "SA-CCR Exposure",
@@ -37,7 +40,8 @@
     "concurrency_policy": "skip",
     "display_order": 20,
     "tier": "regulatory",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Leverage Ratio",
@@ -47,7 +51,8 @@
     "concurrency_policy": "skip",
     "display_order": 25,
     "tier": "regulatory",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "FRTB SA Capital",
@@ -57,7 +62,8 @@
     "concurrency_policy": "skip",
     "display_order": 30,
     "tier": "regulatory",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": "Trading"
   },
   {
     "name": "Liquidity Coverage",
@@ -67,7 +73,8 @@
     "concurrency_policy": "skip",
     "display_order": 35,
     "tier": "regulatory",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Large Exposures",
@@ -77,7 +84,8 @@
     "concurrency_policy": "skip",
     "display_order": 40,
     "tier": "regulatory",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "MIFID II Transaction Reporting",
@@ -87,7 +95,8 @@
     "concurrency_policy": "skip",
     "display_order": 45,
     "tier": "regulatory",
-    "applicable_jurisdiction": "GB"
+    "applicable_jurisdiction": "GB",
+    "regulatory_book_type": null
   },
   {
     "name": "CFTC Swap Data Reporting",
@@ -97,7 +106,8 @@
     "concurrency_policy": "skip",
     "display_order": 50,
     "tier": "regulatory",
-    "applicable_jurisdiction": "US"
+    "applicable_jurisdiction": "US",
+    "regulatory_book_type": null
   },
   {
     "name": "HKMA Trade Repository",
@@ -107,7 +117,8 @@
     "concurrency_policy": "skip",
     "display_order": 55,
     "tier": "regulatory",
-    "applicable_jurisdiction": "HK"
+    "applicable_jurisdiction": "HK",
+    "regulatory_book_type": null
   },
   {
     "name": "Group Consolidated Exposure",
@@ -117,7 +128,8 @@
     "concurrency_policy": "skip",
     "display_order": 60,
     "tier": "strategic",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Board Risk Dashboard",
@@ -127,7 +139,8 @@
     "concurrency_policy": "skip",
     "display_order": 65,
     "tier": "strategic",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Cross-Entity Counterparty Concentration",
@@ -137,7 +150,8 @@
     "concurrency_policy": "skip",
     "display_order": 70,
     "tier": "strategic",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Intercompany Exposure Matrix",
@@ -147,7 +161,8 @@
     "concurrency_policy": "skip",
     "display_order": 75,
     "tier": "strategic",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Model Calibration",
@@ -157,7 +172,8 @@
     "concurrency_policy": "skip",
     "display_order": 80,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Yield Curves",
@@ -167,7 +183,8 @@
     "concurrency_policy": "skip",
     "display_order": 85,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "FX Spot Rates",
@@ -177,7 +194,8 @@
     "concurrency_policy": "skip",
     "display_order": 90,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Volatility Surfaces",
@@ -187,7 +205,8 @@
     "concurrency_policy": "skip",
     "display_order": 95,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Credit Curves",
@@ -197,7 +216,8 @@
     "concurrency_policy": "skip",
     "display_order": 100,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "NPV",
@@ -207,7 +227,8 @@
     "concurrency_policy": "skip",
     "display_order": 105,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Cashflows",
@@ -217,7 +238,8 @@
     "concurrency_policy": "skip",
     "display_order": 110,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Delta and Gamma",
@@ -227,7 +249,8 @@
     "concurrency_policy": "skip",
     "display_order": 115,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Vega",
@@ -237,7 +260,8 @@
     "concurrency_policy": "skip",
     "display_order": 120,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Bucketed DV01",
@@ -247,7 +271,8 @@
     "concurrency_policy": "skip",
     "display_order": 125,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Exposure",
@@ -257,7 +282,8 @@
     "concurrency_policy": "queue",
     "display_order": 130,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "CVA/DVA/FVA",
@@ -267,7 +293,8 @@
     "concurrency_policy": "queue",
     "display_order": 135,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Stressed VaR",
@@ -277,7 +304,8 @@
     "concurrency_policy": "skip",
     "display_order": 140,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": "Trading"
   },
   {
     "name": "P&L Attribution",
@@ -287,7 +315,8 @@
     "concurrency_policy": "skip",
     "display_order": 145,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": "Trading"
   },
   {
     "name": "Intraday Risk Monitor",
@@ -297,7 +326,8 @@
     "concurrency_policy": "queue",
     "display_order": 150,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   },
   {
     "name": "Headline Position",
@@ -307,6 +337,7 @@
     "concurrency_policy": "skip",
     "display_order": 155,
     "tier": "trading",
-    "applicable_jurisdiction": null
+    "applicable_jurisdiction": null,
+    "regulatory_book_type": null
   }
 ]

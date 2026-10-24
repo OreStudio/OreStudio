@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 7D1DE23F-AA14-44AB-81D5-9961EF02533C
+:END:
+#+title: Market data ticks because ownership, demand and a smoke check agree
+#+description: Why the system did not tick after provisioning, which shortcomings the failure showed, and the ordered plan that removes them.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:tenancy:rls:adapters:testing:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+* Summary
+
+On 2026-10-23 a fresh build, a new database and a provisioned Acme tenant produced no tick, although the database held the routes and the subscriptions. The marketdata service reads as the system tenant, and the policies of the two tables showed it only the system tenant's rows. The service stayed up and logged "accepted 0 of 0 ids", so nothing looked wrong. This page lists the seven shortcomings that the failure showed and the order of the work that removes them. The first fix is a select-only policy for the service role. The decision about where ticks are stored is the one open question.
+
+* Detail
+
+** What happened
+
+- The supervisor computes the ids that each adapter must publish. It reads every party's routes and subscriptions.
+- The ingest loop reads the same routes, to know which parties store a tick.
+- Both read through =read_latest_all_tenants=. The policies of =routes= and =subscriptions= admitted the own tenant only. The service session is the system tenant, so both reads returned no row.
+- An end to end test passed before the merge, because its seed wrote the routes under the system tenant.
+- A second defect hid behind the first. A restart with stored ticks made 6 of 26 generators fail, because the vintage read took the first series of an identity and the tick series of another provider shared that identity. [[https://github.com/OreStudio/OreStudio/pull/3690][Pull request 3690]] fixed it.
+
+** The shortcomings
+
+| # | Shortcoming | Evidence | Fix |
+|---+-------------+----------+-----|
+| 1 | A platform process needs the rows of every tenant, and the policy gave it a wider reach than it needs | [[https://github.com/OreStudio/OreStudio/pull/3693][Pull request 3693]] added an "or the session is the system tenant" clause, for all commands, to two tables. The widening guard lists both as temporary. | [[id:6FB56C53-3582-4ACE-BE9D-DF0B175BBB5B][Read routes through a role-scoped policy]] |
+| 2 | The failure was silent | The service was up. The log said "accepted 0 of 0 ids". No view showed routes seen against ids demanded. | [[id:0BA09EFB-9E28-457A-9471-5AD18F77F016][Make the demand self-correcting and visible]] |
+| 3 | The demand depends on change events | A refresh runs on a route event or a subscription event only. A missed event leaves the snapshot old until a restart. During one run no event reached the service, and the cause is not known. | [[id:0BA09EFB-9E28-457A-9471-5AD18F77F016][Make the demand self-correcting and visible]] |
+| 4 | No test runs the real path | Tests put their rows under the system tenant. No check provisions a tenant and then waits for ticks. | [[id:51A7DF59-52C9-4F25-90FD-72D7B4755CCD][Add a provisioning to ticks smoke check]] and [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]] |
+| 5 | The simulator builds its adapters once | A source added after the start needs a restart. | [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] |
+| 6 | One copy of each tick for each party | The ingest stores a tick for every party that routes to the source: 26 pairs for 4 parties gave 104 series. The copy ties the ingest to the routes of every tenant. | [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] |
+| 7 | An item has no single series | A vintage and a tick stream of one item are two series, one for each provider, and a read by series must guess. | The owner is the published quotes work, not a task of this plan: the reader of the published quotes reads by item. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]]. |
+
+** The target
+
+The page [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] names three owners: a tenant, the system tenant and the installation. The target puts each part of the market data flow with one owner.
+
+- *The catalogue* (providers, sources, vendor instruments, mappings) belongs to the system tenant and every tenant reads it. This part is right now.
+- *Routes and subscriptions* belong to a party in a tenant. The one platform reader is the marketdata service. It reads them through a select-only policy for its own database role. The CRM configs already use this shape, in [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]. No other system tenant session gains a read or a write of another tenant's routes.
+- *Demand* is a pure function of the catalogue, the routes and the subscriptions. The supervisor computes it on a timer and on events. A missed event delays demand by one interval. It never loses demand.
+- *Ticks* go to one owner. The open decision below picks it.
+- *Every claim of health is observable.* One status shows, for each adapter, the routes seen, the ids demanded and accepted, the ticks of the last minute and the age of the last tick.
+- *One check proves the path.* It provisions a non-system tenant on a fresh database and fails unless ticks arrive.
+
+** The order of the work
+
++ First, because it unblocks the work that comes after it, [[id:6FB56C53-3582-4ACE-BE9D-DF0B175BBB5B][Read routes through a role-scoped policy]]. It replaces the widening of pull request 3693 with a narrower policy and removes two exceptions from the guard.
++ Second, [[id:51A7DF59-52C9-4F25-90FD-72D7B4755CCD][Add a provisioning to ticks smoke check]] and [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]]. They are the safety net for every later step. The smoke check runs by hand and in the local gate when the marketdata, synthetic or provisioning code changes, because it needs a database and every service. The tenant test is an ordinary suite that runs in every ctest run. Neither replaces the other.
++ Third, [[id:0BA09EFB-9E28-457A-9471-5AD18F77F016][Make the demand self-correcting and visible]].
++ In parallel, [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]].
++ Then [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]]. It needs measured numbers from a provisioned tenant, and it can change the later tasks.
++ The tasks [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] and [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] follow, and they remove the vintage read of the generators.
+
+** The open decision
+
+Today the ingest writes a copy of each tick for each party that routes to the source. The other shape stores one copy for each source, as shared reference data, and decides at read time whether a party may see it.
+
+| | One copy for each party (today) | One copy for each source |
+|-+-----------------------------------+---------------------------|
+| Tenant boundary | A tick sits in the tenant of its party. | A tick sits with the system tenant. A read checks the subscription. |
+| Ingest | Needs the routes of every tenant. | Needs the catalogue only. |
+| Storage | Grows with the number of parties. | Grows with the number of sources. |
+| Entitlement | Fixed when the tick is stored. | Checked at every read. |
+| Billing | Counts stored rows. | Needs a meter at the read. |
+
+The plan did not read the usage recorder or the delivery meter, so it does not know how much of the billing depends on the per-party copy. The decision task measures this first. Until it ends, the target keeps the copy for each party, and the role-scoped policy serves it.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — the three owners and the four mechanisms.
+- [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — the building blocks of a read across tenants.
+- [[id:E5AEC5A1-7C42-4FA0-B25B-EC0A6F314271][Plan the market data tenancy and the ticking guarantee]] — the task that wrote this page.

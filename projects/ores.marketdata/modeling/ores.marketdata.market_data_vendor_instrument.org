@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: 7D2A9E15-3C84-4B60-A1F7-5E8D0B94C2A1
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.market_data_vendor_instrument
+#+description: Codegen entity model for the vendor instruments table; one value a provider publishes, named by an id scheme, an id and a field.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_data_vendor_instrument
+#+entity_plural: market_data_vendor_instruments
+#+entity_title: Market Data Vendor Instrument
+#+brief: One value a provider publishes, named in the vendor's own notation by an id scheme, an external id and a field.
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+A vendor instrument names one value that a provider publishes. It has an id scheme,
+an external id and a field, all in the vendor's own notation, so a live adapter and
+the simulator publish the same names. Where the vendor has no single id for what the
+system needs, the system mints an id in the vendor's style, sets =minted= and writes
+the reason in =deviation_note=.
+
+A mapping links a vendor instrument to an internal item. The system tenant and the
+system party own the rows. Every tenant reads them and only the system tenant
+writes them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this market data vendor instrument.
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:natural_key: true
+:filterable: true
+:END:
+
+References =market_data_provider.code=: the provider that owns the namespace of this id.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:natural_key: true
+:filterable: true
+:END:
+
+How to read the external id, for example =bbg_ticker= or =ric=.
+
+#+begin_src cpp :name generator
+std::string("bbg_ticker")
+#+end_src
+
+** external_id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:natural_key: true
+:searchable: true
+:sortable: true
+:END:
+
+The id exactly as the vendor writes it, including spaces and punctuation, for example =EURUSD Curncy= or =EUR==. Encoding for NATS happens in the subject and never here.
+
+#+begin_src cpp :name generator
+std::string("EURUSD Curncy")
+#+end_src
+
+** field
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: false
+:natural_key: true
+:filterable: true
+:END:
+
+Which value of the instrument is meant, for example =PX_LAST= or =BID=.
+
+#+begin_src cpp :name generator
+std::string("PX_LAST")
+#+end_src
+
+** minted
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:filterable: true
+:END:
+
+True when the system invented the id because the vendor has no single id for the value. A minted id carries a deviation note.
+
+** deviation_note
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable: true
+:END:
+
+Why the id differs from the vendor's own, when =minted= is true. Empty otherwise.
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_market_data_vendor_instruments_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                                          |
+|-------------------------------------------------------------------------------------|
+| "provider_code" <> ''                                                               |
+| "id_scheme" <> ''                                                                   |
+| "external_id" <> ''                                                                 |
+| "field" <> ''                                                                       |
+| not "minted" or ("deviation_note" is not null and "deviation_note" <> '')           |
+
+** Indexes
+
+| name     | columns                                              | unique | current_only | where_extra |
+|----------+------------------------------------------------------+--------+--------------+-------------|
+| identity | tenant_id, provider_code, id_scheme, external_id, field | true   | true         |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: vendor_instrument
+:entity_plural_short:   vendor_instruments
+:entity_singular_words: market data vendor instrument
+:entity_plural_words:   market data vendor instruments
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mvi
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/market_data_vendor_instrument.hpp
+:domain_class:            ores::marketdata::domain::market_data_vendor_instrument
+:protocol_include:        ores.marketdata.api/messaging/market_data_vendor_instrument_protocol.hpp
+:collection_name:         market_data_vendor_instruments
+:key_field:               external_id
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field          | label          | widget            | type      | is_key | is_required | placeholder          |
+|----------------+----------------+-------------------+-----------+--------+-------------+----------------------|
+| provider_code  | Provider       | providerEdit      | line_edit | true   | true        | Enter provider code  |
+| id_scheme      | Id Scheme      | idSchemeEdit      | line_edit | true   | true        | e.g. bbg_ticker      |
+| external_id    | External Id    | externalIdEdit    | line_edit | true   | true        | Enter the vendor id  |
+| field          | Field          | fieldEdit         | line_edit | true   | true        | e.g. PX_LAST         |
+| minted         | Minted         | mintedEdit        | check_box |        |             |                      |
+| deviation_note | Deviation Note | deviationNoteEdit | text_edit |        |             | Why the id is minted |
+
+*** Columns
+
+| enum_name    | field         | header      | type    | width |
+|--------------+---------------+-------------+---------+-------|
+| ProviderCode | provider_code | Provider    | string  | 120   |
+| IdScheme     | id_scheme     | Id Scheme   | string  | 120   |
+| ExternalId   | external_id   | External Id | string  | 200   |
+| Field        | field         | Field       | string  | 100   |
+| Minted       | minted        | Minted      | boolean | 80    |
+| Version      | version       | Version     | int     | 80    |
+| ModifiedBy   | modified_by   | Modified By | string  | 120   |
+
+* See also
+
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] -- the knowledge page.

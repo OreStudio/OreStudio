@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:config:fx:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-22
 
 * Summary
 
@@ -23,16 +23,18 @@ components are separate =gmm_component= rows.
 
 - The pair, as =base_currency_code= and =quote_currency_code=. Both are soft
   foreign keys to currencies.
-- The datum, as =oresmd_uri=, the quote URI of the spot rate, for example
+- The datum, as =oresmd_uri=, the quote URI of the spot rate that the vendor
+  instrument maps to, for example
   ="oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD"=. It is
   derived from the pair rather than typed. The feed reads it with the strict
   codec at construction, and refuses a URI that is not an =fx_spot= quote or
   whose pair differs from the two currencies. See
   [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] and
   [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
-- The provenance, as =source_name=, for example ="synthetic.eurusd"=. It is
-  derived from the pair, it is unique per tenant and party, and it is what
-  the published tick carries as its source.
+- The vendor instrument, as =provider_code=, =id_scheme=, =external_id= and
+  =field=, for example =bloomberg=, =bbg_ticker=, =EURUSD Curncy= and =PX_LAST=.
+  It is the id the simulator publishes under, and it is unique among generators.
+  The generator carries no source name and no mark of the simulator.
 - The cadence, as =ticks_per_hour=.
 
 ** Where the initial price comes from
@@ -79,26 +81,24 @@ The two flags are orthogonal and they answer different questions.
 - =enabled= says the config is startable at all. A disabled config may not be
   started by an auto-start pass or by a manual Start action.
 - =auto_start= says the config starts on its own when the service comes up,
-  in every active tenant. A feed that starts from a vintage price starts only when
-  its collection holds a run grant. A Start by a person gives the grant.
+  in every active tenant. A generator that starts from a vintage price reads the price as the system
+  service and needs no grant.
   A config can be enabled and not auto-start, which is the shape a legacy or
   alternate-index variant takes when it lives beside a currency's primary
   config.
 
-Starting a feed is refused outright when another feed is already running for
-the same series. Nothing auto-disables the running one, so a switch is a
-Stop followed by a Start.
+Starting a generator is refused outright when another generator already serves
+the same vendor instrument. Nothing auto-disables the running one, so a switch is
+a Stop followed by a Start.
 
 ** The fact the code shape does not show
 
-=folder_id= is optional, and only the publish-from-dq path fills it. A rate
-made by hand has no position in the Market Simulator tree even though
-=source_name= reads as though it had one.
+=folder_id= is optional, and only the bundle path fills it. A rate made by hand
+has no position in the Market Simulator tree.
 
 The pair is not the process identity. Two configs for the same pair differ by
-=source_name= and by their component rows, and the collision rule binds them
-by the series URI alone, so they cannot run at the same time whatever else
-differs.
+their component rows, and the collision rule binds them by the vendor
+instrument alone, so they cannot run at the same time whatever else differs.
 
 * See also
 

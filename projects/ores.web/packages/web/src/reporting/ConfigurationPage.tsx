@@ -233,6 +233,13 @@ export function ConfigurationPage(): ReactNode {
                                         {report.name}
                                     </Link>
                                     {report.partyName !== '' && <Tag>{report.partyName}</Tag>}
+                                    {report.regulatoryBookType !== null && (
+                                        <Tag>
+                                            {t(
+                                                `refdata.choices.regulatory_book_type.${report.regulatoryBookType}`,
+                                            )}
+                                        </Tag>
+                                    )}
                                 </li>
                             ))}
                         </ul>

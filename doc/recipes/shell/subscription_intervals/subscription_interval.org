@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6F51E66D-F98B-5C72-AA5D-729D5DD86589
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the subscription_intervals commands from the shell?
+#+description: Every command the subscription_intervals submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:subscription_intervals:
+
+This file documents the subscription_intervals resource at the shell, one section per command. Every command is a subcommand of =subscription_intervals=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0CDAC533-56E3-56C5-9437-2FDE260C5FF2
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.list=.
+
+#+name: subscription_intervals-list
+#+begin_src ores-shell :tangle subscription_intervals-list.ores :exports none
+subscription_intervals list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 210D4CC9-1EAE-5A06-A5DB-2B25ED0DEAC4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals get <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.get=.
+
+#+name: subscription_intervals-get
+#+begin_src ores-shell :tangle subscription_intervals-get.ores :exports none
+subscription_intervals get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B5E66BB8-A782-5CB0-8DAD-20F90E5729D9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals get-many <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.get_many=.
+
+#+name: subscription_intervals-get-many
+#+begin_src ores-shell :tangle subscription_intervals-get-many.ores :exports none
+subscription_intervals get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0D5C71ED-55B5-5320-8C7A-9B0A4072C438
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals add <party_id> <provider_code> <interval_from> <source_id> <display> <non_display> <derived> <interval_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.put=.
+
+#+name: subscription_intervals-add
+#+begin_src ores-shell :tangle subscription_intervals-add.ores :exports none
+subscription_intervals add 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 false false false - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 924D21DF-71F6-5611-98C9-5FAF991D02E1
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals set <id> <party_id> <provider_code> <interval_from> <source_id> <display> <non_display> <derived> <interval_to> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.put=.
+
+#+name: subscription_intervals-set
+#+begin_src ores-shell :tangle subscription_intervals-set.ores :exports none
+subscription_intervals set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 false false false - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 077AAF57-2779-5762-BF09-B6E219E87B57
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals put-many --count <n> <id> <party_id> <provider_code> <interval_from> <source_id> <display> <non_display> <derived> <interval_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.put_many=.
+
+#+name: subscription_intervals-put-many
+#+begin_src ores-shell :tangle subscription_intervals-put-many.ores :exports none
+subscription_intervals put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 false false false - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E7229A90-E427-5910-9EE9-12F3290618D5
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals delete <provider_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.delete=.
+
+#+name: subscription_intervals-delete
+#+begin_src ores-shell :tangle subscription_intervals-delete.ores :exports none
+subscription_intervals delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DB1633B0-1001-550C-AEF9-D53B2BE60117
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals delete-many <provider_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals.delete_many=.
+
+#+name: subscription_intervals-delete-many
+#+begin_src ores-shell :tangle subscription_intervals-delete-many.ores :exports none
+subscription_intervals delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 87E79D18-37B1-57AD-A06E-E38F119AE066
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals versions <provider_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals_versions.list=.
+
+#+name: subscription_intervals-versions
+#+begin_src ores-shell :tangle subscription_intervals-versions.ores :exports none
+subscription_intervals versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8AEC1C7E-2B7C-5AA2-8C3F-47CA22639767
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+subscription_intervals version <provider_code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.subscription_intervals_versions.get=.
+
+#+name: subscription_intervals-version
+#+begin_src ores-shell :tangle subscription_intervals-version.ores :exports none
+subscription_intervals version __none__ --version 1
+#+end_src
+

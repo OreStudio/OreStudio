@@ -22,19 +22,36 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/domain/market_clock.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::synthetic::feed {
+
+/**
+ * @brief The vendor id a generator quotes and the subject it publishes the quote on.
+ *
+ * A generator with a target publishes an @c adapter_tick of that id on the subject. A
+ * generator without one publishes the old @c market_tick on its producer subject.
+ */
+struct adapter_target final {
+    ores::marketdata::messaging::vendor_id id;
+    std::string subject;
+    /// The faults in force. Empty means none is ever injected.
+    std::shared_ptr<const fault_state> faults;
+};
+
 
 /**
  * @brief The kind string this producer registers under in
@@ -76,7 +93,8 @@ public:
                  std::string source_name,
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
-                 double ticks_per_hour);
+                 double ticks_per_hour,
+                 std::optional<adapter_target> adapter = std::nullopt);
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -103,6 +121,10 @@ public:
     }
 
 private:
+    const std::string& published_subject() const {
+        return adapter_ ? adapter_->subject : nats_subject_;
+    }
+
     ores::nats::service::client& nats_;
     std::string quote_uri_;
     std::vector<std::string> series_uris_;
@@ -110,6 +132,8 @@ private:
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
     tick_clock clock_;
     std::string nats_subject_;
+    std::optional<adapter_target> adapter_;
+    std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
 };
 
 /**
@@ -117,11 +141,12 @@ private:
  * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
  * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
  * stdevs/weights via process_factory, seeded from random_device; the publish subject is derived
- * from the config's source_name under @p binding_mode via producer_subject().
+ * from the config's source_name via producer_subject().
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation
  * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
- * via @p auth_nats delegated to the run token @p run_token, overriding the stored gmm_initial_price
+ * through @p auth_nats as the service itself, on the date the config names or, when it names none,
+ * on the date of @p clock (the system clock when null), overriding the stored gmm_initial_price
  * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
  * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves, replacing the vintage
  * lookup the deleted client-supplied-params path of feed_controller::start() used to perform.
@@ -137,9 +162,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  ores::synthetic::domain::binding_mode binding_mode =
-                      ores::synthetic::domain::binding_mode::bound,
-                  const std::string& run_token = {});
+                  std::optional<adapter_target> adapter = std::nullopt,
+                  const ores::marketdata::domain::market_clock* clock = nullptr);
 
 }
 #endif

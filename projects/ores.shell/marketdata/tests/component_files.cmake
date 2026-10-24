@@ -20,12 +20,24 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "composite_commands_tests.cpp"
+    "composite_input_commands_tests.cpp"
+    "delivery_count_commands_tests.cpp"
+    "demand_interval_commands_tests.cpp"
     "feed_binding_commands_tests.cpp"
     "main.cpp"
+    "market_data_mapping_commands_tests.cpp"
+    "market_data_source_commands_tests.cpp"
+    "market_data_vendor_instrument_commands_tests.cpp"
     "market_fixing_commands_tests.cpp"
     "market_observation_commands_tests.cpp"
     "market_series_asset_class_commands_tests.cpp"
     "market_series_commands_tests.cpp"
     "observation_lineage_commands_tests.cpp"
+    "provider_commands_tests.cpp"
+    "rate_card_component_commands_tests.cpp"
+    "route_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"
+    "subscription_commands_tests.cpp"
+    "subscription_interval_commands_tests.cpp"
 )

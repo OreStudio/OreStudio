@@ -300,7 +300,9 @@
 \ir ./refdata_derivation_kinds_notify_trigger_drop.sql
 \ir ./refdata_derivation_kinds_drop.sql
 \ir ./refdata_producer_kinds_notify_trigger_drop.sql
+\ir ./refdata_source_kinds_notify_trigger_drop.sql
 \ir ./refdata_producer_kinds_drop.sql
+\ir ./refdata_source_kinds_drop.sql
 
 -- IR curve bootstrap recipe: pillars before config (which they FK to).
 \ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_drop.sql

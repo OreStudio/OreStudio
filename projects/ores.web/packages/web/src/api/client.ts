@@ -107,6 +107,14 @@ import {
     gridSeriesViewSchema,
     gridUsageViewSchema,
     gridViewSchema,
+    appVersionPageViewSchema,
+    gridReportRunViewSchema,
+    batchPageSchema,
+    batchViewSchema,
+    resultPageSchema,
+    resultViewSchema,
+    workunitPageSchema,
+    workunitViewSchema,
     busViewSchema,
     logsViewSchema,
     workflowProgressSchema,
@@ -135,6 +143,14 @@ import {
     type ServiceRosterRow,
     type GridSeriesView,
     type GridUsageView,
+    type AppVersionPageView,
+    type GridReportRunView,
+    type BatchPage,
+    type BatchView,
+    type ResultPage,
+    type ResultView,
+    type WorkunitPage,
+    type WorkunitView,
     type GridView,
     type SeriesRange,
     type BusView,
@@ -339,9 +355,7 @@ const feedFolderSchema = z.object({
     parent_id: z.string(),
     name: z.string(),
     kind: z.string(),
-    scope: z.string(),
     provider_code: z.string(),
-    binding_mode: z.string(),
     fx_feeds: z.number(),
     ir_feeds: z.number(),
     running_feeds: z.number(),
@@ -430,6 +444,7 @@ export interface ReportEdit {
     readonly concurrency_policy: string;
     readonly schedule_expression: string;
     readonly is_official: boolean;
+    readonly regulatory_book_type?: string | null;
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;
@@ -1281,15 +1296,17 @@ export const api = {
         );
     },
 
-    /** The codes a report type and a concurrency policy may take. */
+    /** The codes a report type, a concurrency policy and a regulatory book type may take. */
     async reportChoices(): Promise<{
         readonly reportTypes: readonly string[];
         readonly concurrencyPolicies: readonly string[];
+        readonly regulatoryBookTypes: readonly string[];
     }> {
         return z
             .object({
                 reportTypes: z.array(z.string()),
                 concurrencyPolicies: z.array(z.string()),
+                regulatoryBookTypes: z.array(z.string()),
             })
             .parse(await request('/api/reporting/choices', { method: 'GET' }));
     },
@@ -2308,6 +2325,125 @@ export const api = {
     async gridUsage(): Promise<GridUsageView> {
         return gridUsageViewSchema.parse(
             await request('/api/operations/grid/usage', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * One page of the batches the session may see, newest first.
+     *
+     * The call names no tenant and no party. The compute service decides which
+     * rows the session may read.
+     */
+    async gridJobBatches(
+        offset: number,
+        limit: number,
+        filter: { readonly find?: string; readonly status?: string; readonly party?: string } = {},
+    ): Promise<BatchPage> {
+        const query = new URLSearchParams(pageQuery({ offset, limit }));
+        for (const [name, value] of Object.entries(filter)) {
+            if (value !== undefined && value !== '') {
+                query.set(name, value);
+            }
+        }
+        return batchPageSchema.parse(
+            await request(`/api/operations/grid/jobs/batches?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One page of the workunits of a batch. */
+    async gridJobWorkunits(batchId: string, offset: number, limit: number): Promise<WorkunitPage> {
+        return workunitPageSchema.parse(
+            await request(
+                `/api/operations/grid/jobs/batches/${batchId}/workunits?${pageQuery({ offset, limit })}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** One page of the results of a workunit. */
+    async gridJobResults(workunitId: string, offset: number, limit: number): Promise<ResultPage> {
+        return resultPageSchema.parse(
+            await request(
+                `/api/operations/grid/jobs/workunits/${workunitId}/results?${pageQuery({ offset, limit })}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /**
+     * One page of the runs that ended with an outcome, newest first.
+     *
+     * An outcome of 3 reads the runs that failed. The call names no tenant and no party:
+     * the compute service decides which runs the session may see.
+     */
+    async gridJobResultsByOutcome(
+        outcome: number,
+        offset: number,
+        limit: number,
+    ): Promise<ResultPage> {
+        const query = new URLSearchParams(pageQuery({ offset, limit }));
+        query.set('outcome', String(outcome));
+        return resultPageSchema.parse(
+            await request(`/api/operations/grid/jobs/results?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One batch by id. */
+    async gridJobBatch(id: string): Promise<BatchView> {
+        return batchViewSchema.parse(
+            await request(`/api/operations/grid/jobs/batches/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One workunit by id. */
+    async gridJobWorkunit(id: string): Promise<WorkunitView> {
+        return workunitViewSchema.parse(
+            await request(`/api/operations/grid/jobs/workunits/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One result by id. */
+    async gridJobResult(id: string): Promise<ResultView> {
+        return resultViewSchema.parse(
+            await request(`/api/operations/grid/jobs/results/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** The report run that dispatched a batch. */
+    async gridReportRun(id: string): Promise<GridReportRunView> {
+        return gridReportRunViewSchema.parse(
+            await request(`/api/operations/grid/report-runs/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /** One app version with its packages and the other versions of its app. */
+    async gridAppVersion(id: string): Promise<AppVersionPageView> {
+        return appVersionPageViewSchema.parse(
+            await request(`/api/operations/grid/app-versions/${id}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Replaces the release note of an app version.
+     *
+     * The call states the version the editor read, so a note edited since is refused
+     * and not overwritten. The answer is the page as it stands after the write.
+     */
+    async saveReleaseNote(
+        id: string,
+        releaseNote: string,
+        version: number,
+    ): Promise<AppVersionPageView> {
+        return appVersionPageViewSchema.parse(
+            await request(`/api/operations/grid/app-versions/${id}/release-note`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ release_note: releaseNote, version }),
+            }),
         );
     },
 

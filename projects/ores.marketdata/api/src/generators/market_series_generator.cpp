@@ -50,6 +50,7 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.party_id = ctx.generate_uuid();
     r.oresmd_uri = std::string("oresmd://generic/") + std::string(faker::word::noun()) + "-" +
                    std::to_string(idx) + "?type=fixing" + "-" + std::to_string(idx);
+    r.provider_code = std::string("ore");
     r.series_subclass = [idx] {
         static constexpr std::string_view subclasses[] = {"spot",
                                                           "forward",
@@ -68,7 +69,6 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
                                                           "correlation"};
         return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
     }();
-    r.producer_kind = std::string("VENDOR");
     r.derivation_kind = std::string("OBSERVED");
     r.derivation_config_id = boost::uuids::nil_uuid();
     r.derivation_config_version = 0;

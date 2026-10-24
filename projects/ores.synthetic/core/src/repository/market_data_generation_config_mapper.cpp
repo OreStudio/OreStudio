@@ -33,7 +33,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/enums.hpp>
 #include <vector>
 
 namespace ores::synthetic::repository {
@@ -52,8 +51,6 @@ market_data_generation_config_mapper::map(const market_data_generation_config_en
     r.party_id = v.party_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
                      std::nullopt;
-    r.scope = rfl::string_to_enum<domain::scope>(v.scope).value();
-    r.binding_mode = rfl::string_to_enum<domain::binding_mode>(v.binding_mode).value();
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
@@ -61,9 +58,6 @@ market_data_generation_config_mapper::map(const market_data_generation_config_en
                        std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.dataset_id)) :
                        std::nullopt;
     r.provider_code = v.provider_code;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.run_grant_id)) :
-                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -84,8 +78,6 @@ market_data_generation_config_mapper::map(const domain::market_data_generation_c
     r.version = v.version;
     r.party_id =
         v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
-    r.scope = rfl::enum_to_string(v.scope);
-    r.binding_mode = rfl::enum_to_string(v.binding_mode);
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
@@ -93,9 +85,6 @@ market_data_generation_config_mapper::map(const domain::market_data_generation_c
                        std::optional(boost::uuids::to_string(*v.dataset_id)) :
                        std::nullopt;
     r.provider_code = v.provider_code;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::uuids::to_string(*v.run_grant_id)) :
-                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

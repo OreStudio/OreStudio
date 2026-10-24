@@ -97,6 +97,7 @@ feed_kind make_fx_spot_kind() {
             c.auto_start = fx.auto_start;
             c.vintage_priced = fx.price_source == "vintage";
             c.folder_id = fx.folder_id;
+            c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
             c.vintage_anchor = [fx] {
                 feed_vintage_anchor a;
                 a.applicable = fx.price_source == "vintage";
@@ -113,7 +114,7 @@ feed_kind make_fx_spot_kind() {
                 a.datum_uri = datum::oresmd_uri_codec::write(*d).value();
                 return a;
             };
-            c.build_input = [ctx, fx](domain::binding_mode mode) -> feed_build_outcome {
+            c.build_input = [ctx, fx]() -> feed_build_outcome {
                 repo::gmm_component_repository comp_repo;
                 std::vector<ores::synthetic::domain::gmm_component> components;
                 for (auto& g : comp_repo.read_latest(ctx))
@@ -124,7 +125,7 @@ feed_kind make_fx_spot_kind() {
                             .skip_reason = "Feed config has no GMM components: " +
                                            boost::uuids::to_string(fx.id)};
                 return {.input = feed::feed_build_input{fx_spot_feed_build_input{
-                            fx, std::move(components), mode}},
+                            fx, std::move(components), {}}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -251,7 +252,7 @@ feed_kind make_ir_curve_kind() {
                 a.datum_uri = *anchor_uri;
                 return a;
             };
-            c.build_input = [ctx, cfg](domain::binding_mode mode) -> feed_build_outcome {
+            c.build_input = [ctx, cfg]() -> feed_build_outcome {
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
                 for (auto& e : entry_repo.read_latest(ctx))
@@ -287,8 +288,7 @@ feed_kind make_ir_curve_kind() {
                             std::move(entries),
                             std::move(values),
                             read_definition_catalogue(ctx),
-                            *refctx,
-                            mode}},
+                            *refctx}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -402,7 +402,7 @@ std::set<boost::uuids::uuid>
 feed_kind_registry::system_containers(const ores::database::context& ctx) const {
     std::set<boost::uuids::uuid> out;
     for (const auto& c : deps_.containers(ctx))
-        if (c.scope == domain::scope::system)
+        if (c.tenant_id.to_string() == ores::database::service::tenant_context::system_tenant_id)
             out.insert(c.id);
     return out;
 }
@@ -427,9 +427,9 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
         return target;
     target.container_found = true;
     target.container_enabled = found->second.enabled;
-    target.binding_mode = found->second.binding_mode;
-    target.container_scope = found->second.scope;
-    target.run_grant_id = found->second.run_grant_id;
+    target.container_provider_code = found->second.provider_code;
+    target.container_is_system = found->second.tenant_id.to_string() ==
+                                 ores::database::service::tenant_context::system_tenant_id;
     return target;
 }
 
@@ -479,7 +479,7 @@ feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target
         return {.feed = {},
                 .failure = "Feed config is not enabled: " + target.row.candidate.feed_config_id};
 
-    const auto outcome = target.row.candidate.build_input(target.binding_mode);
+    const auto outcome = target.row.candidate.build_input();
     if (!outcome.input)
         return {.feed = {}, .failure = outcome.skip_reason};
 

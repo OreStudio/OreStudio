@@ -163,8 +163,6 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
                             const boost::uuids::uuid& test_party) {
     namespace dom = ores::synthetic::domain;
     namespace repo = ores::synthetic::repository;
-    using ores::synthetic::domain::binding_mode;
-    using ores::synthetic::domain::scope;
 
     h.set_party(test_party);
     auto& party_ctx = h.context();
@@ -254,8 +252,6 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     container.tenant_id = h.tenant_id();
     container.id = uuid();
     container.party_id = test_party;
-    container.scope = scope::party;
-    container.binding_mode = binding_mode::bound;
     container.provider_code = "bloomberg";
     container.enabled = true;
     container.name = "Cascade Test Container";

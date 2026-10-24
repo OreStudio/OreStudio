@@ -58,6 +58,8 @@ render_report_definition_fields(const domain::report_definition& v) {
     fields.push_back({.name = "Prepared Input Key", .value = v.prepared_input_key});
     fields.push_back({.name = "Post Processing", .value = v.post_processing});
     fields.push_back({.name = "Is Official", .value = v.is_official ? "true" : "false"});
+    fields.push_back(
+        {.name = "Regulatory Book Type", .value = v.regulatory_book_type.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

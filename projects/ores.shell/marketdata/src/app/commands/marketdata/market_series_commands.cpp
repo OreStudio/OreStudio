@@ -141,7 +141,7 @@ void market_series_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> "
+        "add <party_id> <oresmd_uri> <provider_code> <series_subclass> <derivation_kind> "
         "<derivation_config_id> <derivation_config_version> <reason> <commentary>");
 
     menu->Insert(
@@ -149,7 +149,7 @@ void market_series_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> "
+        "set <id> <party_id> <oresmd_uri> <provider_code> <series_subclass> <derivation_kind> "
         "<derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,7 +157,7 @@ void market_series_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> "
+        "put-many --count <n> <id> <party_id> <oresmd_uri> <provider_code> <series_subclass> "
         "<derivation_kind> <derivation_config_id> <derivation_config_version> <reason> "
         "<commentary>");
 
@@ -269,6 +269,7 @@ void market_series_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -361,9 +362,9 @@ void market_series_commands::process_add(std::ostream& out,
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
         read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
-        read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
         read_token(
             req.change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
         read_token(req.change.write.derivation_config_id,
@@ -422,9 +423,9 @@ void market_series_commands::process_set(std::ostream& out,
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
         read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
-        read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
         read_token(
             req.change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
         read_token(req.change.write.derivation_config_id,
@@ -497,9 +498,9 @@ void market_series_commands::process_put_many(std::ostream& out,
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+            read_token(change.write.provider_code, parsed->positionals[next++], "provider_code");
             read_token(
                 change.write.series_subclass, parsed->positionals[next++], "series_subclass");
-            read_token(change.write.producer_kind, parsed->positionals[next++], "producer_kind");
             read_token(
                 change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
             read_token(change.write.derivation_config_id,
@@ -557,6 +558,7 @@ void market_series_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -662,6 +664,7 @@ void market_series_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -707,6 +710,7 @@ void market_series_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.market_series.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

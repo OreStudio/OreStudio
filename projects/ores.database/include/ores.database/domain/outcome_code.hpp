@@ -75,6 +75,9 @@ enum class outcome_code {
     precondition_incomplete,
     batch_removal_is_unconditional,
     approval_required,
+    party_required,
+    range_inverted,
+    range_too_large,
     internal_error,
 };
 
@@ -119,6 +122,12 @@ enum class outcome_code {
             return "batch_removal_is_unconditional";
         case outcome_code::approval_required:
             return "approval_required";
+        case outcome_code::party_required:
+            return "party_required";
+        case outcome_code::range_inverted:
+            return "range_inverted";
+        case outcome_code::range_too_large:
+            return "range_too_large";
         case outcome_code::internal_error:
             return "internal_error";
         default:
@@ -167,6 +176,12 @@ enum class outcome_code {
             return ores::utility::domain::outcome::invalid;
         case outcome_code::approval_required:
             return ores::utility::domain::outcome::denied;
+        case outcome_code::party_required:
+            return ores::utility::domain::outcome::denied;
+        case outcome_code::range_inverted:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::range_too_large:
+            return ores::utility::domain::outcome::invalid;
         case outcome_code::internal_error:
             return ores::utility::domain::outcome::failed;
         default:
@@ -263,6 +278,14 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
             return detail::fill("A change to this {entity} needs the approval of a request; raise "
                                 "one instead of writing it.",
                                 a);
+        case outcome_code::party_required:
+            return detail::fill(
+                "This read of the {entity} needs a party, and the session has none.", a);
+        case outcome_code::range_inverted:
+            return detail::fill("The range of the {entity} ends before it starts.", a);
+        case outcome_code::range_too_large:
+            return detail::fill(
+                "The range holds more than {limit} {entity}; ask for a shorter range.", a);
         case outcome_code::internal_error:
             return detail::fill("The store refused the write: {reason}", a);
         default:

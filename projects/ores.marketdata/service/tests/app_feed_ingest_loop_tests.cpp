@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_binding_activity_repository.hpp"
@@ -150,6 +151,8 @@ struct fixture {
         b.party_id = party_id;
         b.source_name = source;
         b.producer_kind = producer_kind;
+        b.provider_code = "ore";
+        b.source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
         b.enabled = true;
         b.modified_by = h.db_user();
         b.performed_by = h.db_user();
@@ -159,8 +162,8 @@ struct fixture {
     }
 
     std::vector<ores::marketdata::domain::market_series> series_for(const std::string& quote_uri) {
-        return market_series_repository{}.read_latest_by_uri(
-            h.context(), series_uri(quote_uri), boost::uuids::to_string(party_id));
+        return market_series_repository{}.read_latest_by_key(
+            h.context(), series_uri(quote_uri), "ore", boost::uuids::to_string(party_id));
     }
 };
 
@@ -256,7 +259,7 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_tick", tags) {
     const auto series = f.series_for(quote_uri);
     REQUIRE(series.size() == 1);
     CHECK(series.front().oresmd_uri == series_uri(quote_uri));
-    CHECK(series.front().producer_kind == "SYNTHETIC");
+    CHECK(series.front().provider_code == "ore");
     CHECK(series.front().series_subclass == "spot");
     CHECK(series.front().tenant_id.to_string() == f.h.tenant_id().to_string());
     CHECK(boost::uuids::to_string(series.front().party_id) == boost::uuids::to_string(f.party_id));
@@ -775,6 +778,8 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
     const auto series = boost::uuids::to_string(boost::uuids::random_generator{}());
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
+    const auto source =
+        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_derived_source_id());
     for (int rep = 1; rep <= burst_repetitions; ++rep) {
         const auto base = std::chrono::system_clock::now();
         std::vector<ores::marketdata::service::app::tick_row> rows(burst_ticks);
@@ -785,6 +790,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
             rows[i].ts = base + std::chrono::microseconds(i);
             rows[i].coord = 1;
             rows[i].value = 999.0;
+            rows[i].source_id = source;
         }
         const auto start = burst_clock::now();
         writer->write(rows);
@@ -973,14 +979,19 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
 
 namespace {
 
-/// The writer of the environment with a copy that fails once, when it is armed. It counts the
-/// rows that its copies wrote.
+/// The writer of the environment with a store that is down until the test brings it up. While it
+/// is down, every copy fails, so the loop leaves the store alone for a longer wait each time and
+/// no row is stored, however long the test takes.
 class flaky_writer final : public ores::marketdata::service::app::tick_writer {
 public:
     using tick_writer::tick_writer;
 
-    void arm() {
-        armed_ = true;
+    void take_down() {
+        down_ = true;
+    }
+
+    void bring_up() {
+        down_ = false;
     }
 
     std::size_t written() const {
@@ -988,14 +999,14 @@ public:
     }
 
     void write(std::span<const ores::marketdata::service::app::tick_row> rows) override {
-        if (armed_.exchange(false))
-            throw std::runtime_error("the copy fails on purpose");
+        if (down_)
+            throw std::runtime_error("the store is down on purpose");
         tick_writer::write(rows);
         written_ += rows.size();
     }
 
 private:
-    std::atomic<bool> armed_{false};
+    std::atomic<bool> down_{false};
     std::atomic<std::size_t> written_{0};
 };
 
@@ -1076,21 +1087,38 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     const auto stored_before = reader.count_since(base);
     CHECK(stored_before == uris.size() + part);
 
-    // A burst whose first copy fails. The batches behind it are prepared while it fails, and the
-    // wait that follows the failure leaves them unstored.
-    writer->arm();
+    // A burst while the store is down. The first copy fails, the batches behind it are prepared
+    // while it fails, and the waits that follow leave them unstored. The store stays down, so the
+    // burst stores nothing however long it takes to republish.
+    writer->take_down();
     send(20000);
     REQUIRE(wait_until([&] { return republished.load() == sent; }));
     CHECK(reader.count_since(base) == stored_before);
 
-    // After the wait, the store is tried again and takes the next burst.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    // The store comes up. The loop tries it again only when its wait has ended, so a single tick is
+    // sent until one is stored. A tick that arrives during the wait is republished and not stored.
+    writer->bring_up();
+    std::size_t probes = 0;
+    REQUIRE(wait_until([&] {
+        if (reader.has(series[last_datum], last_ts))
+            return true;
+        send(1);
+        ++probes;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        return false;
+    }));
+    REQUIRE(wait_until([&] { return republished.load() == sent; }));
+    const auto recovered = reader.count_since(base);
+    CHECK(recovered > stored_before);
+    CHECK(recovered <= stored_before + probes);
+
+    // The store is up and takes the next burst, and takes each tick once.
     send(part);
     REQUIRE(wait_until([&] { return reader.has(series[last_datum], last_ts); }));
     REQUIRE(wait_until([&] { return republished.load() == sent; }));
 
-    CHECK(reader.count_since(base) == stored_before + part);
-    CHECK(writer->written() == stored_before + part);
+    CHECK(reader.count_since(base) == recovered + part);
+    CHECK(writer->written() == recovered + part);
     CHECK(republished.load() == sent);
 }
 
@@ -1201,10 +1229,16 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages", tags
     REQUIRE(writer->small_threads().size() == 1);
 
     // A burst makes a large batch, which goes through the stages. The gate holds its copy, so
-    // the batch stays in the copy stage.
+    // the batch stays in the copy stage. Whether a burst makes a large batch depends on how fast
+    // the worker takes the ticks as they arrive, so the burst is repeated until a copy is held.
     writer->close_gate();
-    send(400, std::chrono::milliseconds(0));
-    REQUIRE(wait_until([&] { return writer->held() >= 1; }));
+    for (int attempt = 0; attempt < 20 && writer->held() == 0; ++attempt) {
+        send(400, std::chrono::milliseconds(0));
+        const auto give_up = burst_clock::now() + std::chrono::milliseconds(500);
+        while (writer->held() == 0 && burst_clock::now() < give_up)
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    REQUIRE(writer->held() >= 1);
     CHECK(writer->held_thread() != *writer->small_threads().begin());
 
     // A tick that arrives now is a small batch. It must wait behind the batch in the copy stage.

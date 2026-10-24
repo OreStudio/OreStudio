@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D
+:END:
+#+title: LSEG data format
+#+description: The id scheme, the fields and the mapping we use for LSEG, which was Reuters and Refinitiv, and where LSEG documents them.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:lseg:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+LSEG, known before as Reuters and Refinitiv, identifies an instrument by a RIC and a value by a field name. We store the RIC and the field exactly as LSEG writes them. The provider code is =lseg=.
+
+* Detail
+
+** The id scheme
+
+The scheme code is =ric=. A RIC is a short code with per asset class conventions. An equity RIC ends with an exchange suffix such as =.OQ=. An index RIC starts with a dot, such as =.SPX=. An FX spot RIC ends with an equals sign, such as ~EUR=~. A rates RIC can carry a broker suffix. No public grammar exists. The characters ~=~ and ~.~ must be encoded before they go into a NATS token.
+
+** The fields
+
+A field is the name that LSEG gives a value in a real-time update. We use these:
+
+| Field | Meaning |
+|-------+---------|
+| =BID=, =ASK= | The bid and ask price |
+| =TRDPRC_1= | The last trade price |
+
+An update message from the feed can carry only the fields that changed. The adapter turns each changed field into one tick.
+
+** On the wire
+
+An adapter of this provider sends the tick fields below. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] for the subject.
+
+| Tick field | Example |
+|------------+---------|
+| id scheme | =ric= |
+| external id | ~EUR=~ |
+| field | =BID= |
+| value | =1.0841= (decimal text) |
+
+The ingress subject token for the id is =EUR%3D=. The service never decodes the token. It reads the id from the payload.
+
+** The mapping
+
+=ric= / ~EUR=~ / =BID= maps to =oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=. The Bloomberg instrument =EURUSD Curncy= maps to the same item. A mapping that uses =BID= and one that uses =ASK= can feed two different items, such as a bid series and an ask series. The mapping inventory decides which.
+
+** Minted ids
+
+A RIC is minted when a curve point has no RIC of its own. The minted RIC keeps the form of a RIC for the same asset class and the deviation note says why.
+
+** What the simulator does
+
+The source =lseg-a= is the simulated LSEG source. It publishes ticks with =ric=, the RIC and the field. It does not speak the LSEG real-time protocols.
+
+** External references
+
+- [[https://developers.lseg.com/][LSEG Developer Portal]] — the Real-Time SDK, the Data Library and their guides. Part of it needs a login.
+- [[https://developers.lseg.com/content/dam/devportal/en_us/product-docs/lseg-data-guide/chapter03][LSEG Data Library guide, chapter 3]] — shows the structure of LSEG data and field lists such as =BID= and =ASK=.
+- [[https://en.wikipedia.org/wiki/Reuters_Instrument_Code][Reuters Instrument Code]] — a general summary. It is not authoritative.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the three parts this page fills in.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how these ids reach an oresmd item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of the notations.
+- [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]] — contradicts: another notation for the same EUR/USD spot.
+- [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][Financial Information eXchange (FIX) Protocol]] — completes: FIX names =RIC_CODE= as one of its id sources.

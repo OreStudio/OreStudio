@@ -83,7 +83,7 @@ TEST_CASE("configuration_analytic_parameter_commands_registers_every_derived_ver
              std::string{"configuration_analytic_parameters delete"},
              std::string{"configuration_analytic_parameters delete-many"},
              std::string{"configuration_analytic_parameters by-configuration-analytic-id"},
-             std::string{"configuration_analytic_parameters by-parameter-definition-id"},
+             std::string{"configuration_analytic_parameters by-ore-parameter-id"},
              std::string{"configuration_analytic_parameters versions"},
              std::string{"configuration_analytic_parameters version"},
          })
@@ -329,25 +329,24 @@ TEST_CASE("configuration_analytic_parameter_commands_process_by_configuration_an
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("configuration_analytic_parameter_commands_process_by_parameter_definition_id_requires_a_"
-          "session",
-          tags) {
+TEST_CASE(
+    "configuration_analytic_parameter_commands_process_by_ore_parameter_id_requires_a_session",
+    tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    configuration_analytic_parameter_commands::process_by_parameter_definition_id(
-        out, session, tokens(1));
+    configuration_analytic_parameter_commands::process_by_ore_parameter_id(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("configuration_analytic_parameter_commands_process_by_parameter_definition_id_reports_"
-          "the_expected_count",
+TEST_CASE("configuration_analytic_parameter_commands_process_by_ore_parameter_id_reports_the_"
+          "expected_count",
           tags) {
     auto lg(make_logger(test_suite));
 
@@ -356,7 +355,7 @@ TEST_CASE("configuration_analytic_parameter_commands_process_by_parameter_defini
     std::ostringstream out;
 
     command_feedback::reset();
-    configuration_analytic_parameter_commands::process_by_parameter_definition_id(out, session, {});
+    configuration_analytic_parameter_commands::process_by_ore_parameter_id(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

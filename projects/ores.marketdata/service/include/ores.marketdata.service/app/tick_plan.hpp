@@ -78,6 +78,8 @@ struct tick_target final {
     /// for each tick.
     std::string tenant_text;
     std::string party_text;
+    /// The source of the binding as text, for the same reason.
+    std::string source_text;
 };
 
 /**

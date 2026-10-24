@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 2856500E-6771-474E-8899-765761D7A0A5
+:END:
+#+title: Task: Move the simulator to ores.marketdata.synthetic as an adapter
+#+description: Rename the synthetic component under market data and make the runner serve a demand set as an adapter.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/move-the-simulator-to-ores-marketdata-synthetic
+#+pr: 3674
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The simulator implements the adapter contract, runs as a system service, and starts generators from the demand set. The rename of its component to ores.marketdata.synthetic is the task [[file:task_rename_the_simulator_component.org][Rename the simulator component to ores.marketdata.synthetic]], because a rename of 975 files and of the codegen identity fails for other reasons than a change of behaviour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The generators publish adapter ticks with vendor ids.
+- The runner starts and stops generators from the demand set and refuses a second generator for one vendor instrument.
+- The run grant, the run token cache and the restore walk are removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+The task was planned as two pull requests, because the two halves fail for different reasons. The first
+changes behaviour. The second changes names only. The second became its own task when the first was ready to
+merge, so the first pull request closes this task.
+
+*Pull request 1: the adapter.*
+
+1. Name the vendor id of a generator. An FX spot generator for the pair =EUR/USD= quotes the ORE key
+   =FX/RATE/EUR/USD= with the field =value=, the notation the catalogue installs for the provider =ore=.
+   Only FX has vendor rows today, so only FX generators are adapter generators. The rate curves keep to the
+   old path until their rows exist.
+2. Let a generator publish an adapter tick. The FX generator takes an optional adapter target: the vendor
+   id and the ingress subject. With a target it publishes =adapter_tick= on
+   =marketdata.v1.ingress.<adapter>.<id token>=. Without one it publishes the old =market_tick=.
+3. Add the runner. It holds the generators that run, keyed by vendor id. It takes the full demand set and
+   answers accepted and rejected ids. It starts the generators the set adds, stops the ones it drops, and
+   refuses a second generator for one vendor instrument. It knows nothing of NATS or of the database, so a
+   unit test drives it.
+4. Add the adapter. It announces the id =ore-simulated= for the provider =ore= with the universe of the
+   generators it can build, answers the demand request on =marketdata.v1.adapters.ore-simulated.demand=, and
+   sends a heartbeat. The generator configs it builds from are the ones the system tenant owns.
+5. Remove the run grant, the run token cache and the restore walk. The feed identity, the restore pass, its
+   retry policy, the restore verb and the run grant column of the collection go. A generator that starts
+   from a vintage price reads marketdata as the service, so a vintage price in a tenant collection no longer
+   resolves. The next task makes the generators system-owned, which is the case that remains.
+6. Test the runner and the tick translation without a server, and the whole path (announce, demand, tick,
+   ingest) against the live NATS and the rebuilt database.
+
+*The name (now its own task).* Move =projects/ores.synthetic= to =projects/ores.marketdata.synthetic= and change the
+component name, the library names, the namespaces, the include paths and the generated files with it. The
+change is a script that runs the move and the regeneration, so the reviewer reruns it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+*Pull request 1 (the adapter).* The simulator serves the market data service as the adapter =ore-simulated=
+of the provider =ore=. It announces the ORE keys of the FX generators that the system collections hold,
+answers each demand set with a generator for every key it can quote, and sends a heartbeat every 5 seconds.
+The announce repeats every 60 seconds, so a market data service that restarts learns the adapter again.
+An FX generator with an adapter target publishes =adapter_tick= on =marketdata.v1.ingress.ore-simulated.<key>=.
+The runner keeps one generator for each vendor instrument: of two configs that quote one pair, the config
+with the lower id wins and the other is logged.
+
+The run grant, the run token cache and the restore walk are gone from the simulator. The feed identity,
+the restore pass, its retry policy, the =restore_feeds= verb, the provisioning call to it and the
+=run_grant_id= column of the collection are removed, and the database was recreated without the column. A
+generator that starts from a vintage price reads marketdata as the service, which belongs to the system
+tenant. A vintage price in a tenant collection no longer resolves; the next task makes the generators
+system-owned.
+
+What this pull request does not do:
+
+- The old control plane stays. =start_feed=, =stop_feed= and the folder verbs still start a generator by
+  hand, and that generator still publishes =market_tick= on its binding subject. The screens task retires
+  them with the bindings screen.
+- Rate curve generators are not adapter generators. The catalogue has no vendor rows for the curve pillars,
+  so a curve generator keeps the old path.
+- The adapter was tested against a fake market data service and the real FX generator on live NATS. A run
+  of the real market data service, the adapter and a database together was not made.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3674][#3674]] | [synthetic] Serve the market data service as the ore-simulated adapter |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A stop that arrives before the thread enters start() may be lost and hang the join | generator_runner.hpp | decline | The tick clock keeps its stop flag from the member initialiser and never resets it (tick_clock.hpp, run()), so a stop before start is seen at the first loop test. |
+| 2 | An exception in start() ends the process | generator_runner.hpp | accept | The thread now catches and logs it. A test covers it. |
+| 3 | The lock is held while a generator is built and stopped | generator_runner.hpp | accept | Dropped generators are stopped after the lock is released. A build still runs under the lock, because the demand set is applied as a whole. |
+| 4 | The heartbeat check uses a time read before a slow announce | simulator_adapter.cpp | accept | The loop reads the clock at each test. |
+| 5 | Shutdown waits for an announce in flight | simulator_adapter.cpp | decline | The production reply timeout is 2 seconds. |
+| 6 | Relaxed memory order of the stop flag | simulator_adapter.cpp | decline | The reviewer found it correct. |
+| 7 | One run of the real service, adapter and database before merge | PR | decline | Recorded as a limit in the PR and the task notes. The next task starts the generators from the bundle and gives that run a reason to exist. |
+
+* Result
+
+The simulator is an adapter of the market data service. It announces itself as =ore-simulated= of the provider =ore=, with the ORE keys of the FX generators that the system collections hold. It answers each demand set with a generator for every key it can quote, and rejects the others as =unknown_id=. It sends a heartbeat every 5 seconds and announces again every 60 seconds. An FX generator with an adapter target publishes =adapter_tick= on =marketdata.v1.ingress.ore-simulated.<key>=. The runner keeps one generator for each vendor instrument and refuses a second one.
+
+The run grant, the run token cache and the restore walk are removed. The simulator reads vintage prices as the service, which belongs to the system tenant. The collection lost its =run_grant_id= column, and the database was recreated without it.
+
+Against the rebuilt database: the synthetic service (73 cases), api (80), core (61), shell (221), IAM core (304), marketdata service (161) and the 57 pgTAP files pass. The build is green and the web typecheck, format check and 216 tests pass.
+
+Left for other tasks:
+- The old control plane (=start_feed=, =stop_feed=, the folder verbs) still starts a generator by hand and still publishes =market_tick= on its binding subject. The screens task retires it.
+- Rate curve generators stay on the old path, because the catalogue has no vendor rows for the pillars.
+- A vintage price in a tenant collection no longer resolves. The next task makes the generators system-owned.
+- The real market data service, the adapter and a database were not run together.
+- The rename of the component is the task =Rename the simulator component to ores.marketdata.synthetic=.

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 318A5695-2045-4532-B48C-703B1B86CED0
+:END:
+#+title: Task: Fix the defects the first database run found
+#+description: Fix the catalogue populate, the mapping date types, the as-of source id and a wrong test that a database run showed.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: fix/market-data-database-build
+#+pr: 3669
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data schema builds from scratch and every suite that the market data work touched passes against a rebuilt database.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The database recreates from the schema and the populate scripts.
+- The marketdata, refdata, synthetic and IAM suites and the pgTAP suites pass against it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Recreate the database from the schema and the populate scripts and read the first error.
+2. Fix each defect the run shows, at its source: the model for generated code, the script for hand-written SQL.
+3. Run every suite that the market data work touched against the rebuilt database, and the pgTAP suites, until all pass.
+4. Judge each failing test on its premise before changing code: a test that asserts the wrong behaviour is the defect.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3669][#3669]] | [marketdata] Fix the defects the first database run found |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The comment about valid_from is long and unclear | as_of_rows.hpp | Accept | Rewrapped, and it says the tenth of the eleven columns. |
+| 2 | The row test does not pin the order of valid_from and valid_to | as_of rows test | Accept | The full-row test checks both. |
+| 3 | An existing database keeps the old column type | mapping model | Decline | The schema is applied by recreation. |
+| 4 | The web BFF tests were not run | web | Accept | The binding tests pass (21). Ten tests in grid-app-versions and grid-jobs fail because the built wire protocol lacks exports they import, which these changes did not touch. |
+
+* Result
+
+The database now builds from the schema and the populate scripts, and every suite that the market data work touched passes against it. The first run found four defects, which the earlier PRs had missed because no database suite could run:
+- The summary query at the end of the catalogue populate repeated its column aliases, and the database build stopped on it.
+- The mapping dates =effective_from= and =effective_to= were typed =timestamp= without a time zone. They are instants, so they are now =timestamp with time zone=. The event payload of a mapping failed to parse without the zone.
+- Observations record the id of their source, but the as-of reads and their positional row mapper did not carry it, so 44 reads failed with a bad lexical cast. The model's projections and the mapper now carry =source_id= after =source=.
+- A test expected a tenant write for the system tenant to be refused. =ores_iam_validate_tenant_fn= reads the system tenant id as "use the session tenant", so the row lands in the tenant's own tenant and a tenant can never write a system row. The test now asserts that.
+
+The database holds 6 providers, 4 sources, 78 vendor instruments and 78 mappings after the build. Against it: marketdata core 271 cases, marketdata service 161 (the ingest loop on live NATS), marketdata api 55, marketdata client 3, shell marketdata 315, refdata core 464, synthetic service 79, synthetic core 61, IAM core 304, and all 57 pgTAP files with 564 tests.
+
+Left unrun: the web BFF tests, and an end to end run of the bill read, the supervisor with a real adapter and the usage recorder, which have unit tests only.

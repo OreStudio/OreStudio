@@ -287,8 +287,7 @@ private:
     folders(const ores::database::context& ctx) const {
         const auto rows = query(ctx, R"sql(
             select f.id::text, coalesce(f.parent_id::text, ''), f.name, f.kind,
-                   coalesce(c.scope, ''), coalesce(c.provider_code, ''),
-                   coalesce(c.binding_mode, '')
+                   coalesce(c.provider_code, '')
             from ores_synthetic_folders_tbl f
             left join ores_synthetic_market_data_generation_configs_tbl c
               on c.id = f.collection_id
@@ -302,9 +301,7 @@ private:
             f.parent_id = text_of(r[1]);
             f.name = text_of(r[2]);
             f.kind = text_of(r[3]);
-            f.scope = text_of(r[4]);
-            f.provider_code = text_of(r[5]);
-            f.binding_mode = text_of(r[6]);
+            f.provider_code = text_of(r[4]);
             out.push_back(std::move(f));
         }
         return out;
@@ -363,12 +360,9 @@ private:
 
         // A system feed is the system tenant's to start, so another tenant does not count it
         // among the feeds that should run.
-        const std::string runnable =
-            feed_kind_registry::is_system_caller(ctx) ?
-                std::string() :
-                " and config_id not in (select id from "
-                "ores_synthetic_market_data_generation_configs_tbl"
-                " where scope = 'system' and valid_to = ores_utility_infinity_timestamp_fn())";
+        const std::string runnable = feed_kind_registry::is_system_caller(ctx) ?
+                                         std::string() :
+                                         " and tenant_id <> ores_utility_system_tenant_id_fn()";
         for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
                                   "ores_synthetic_ir_curve_generation_configs_tbl"}) {
             add(query(ctx,

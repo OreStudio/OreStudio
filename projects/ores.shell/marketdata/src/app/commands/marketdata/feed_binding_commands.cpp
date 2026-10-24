@@ -141,23 +141,24 @@ void feed_binding_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <source_name> <producer_kind> <enabled> <reason> <commentary>");
+        "add <party_id> <source_name> <producer_kind> <provider_code> <source_id> <enabled> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <source_name> <producer_kind> <enabled> <reason> <commentary> "
-        "[--version <n>]");
+        "set <id> <party_id> <source_name> <producer_kind> <provider_code> <source_id> <enabled> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <source_name> <producer_kind> <enabled> <reason> "
-        "<commentary>");
+        "put-many --count <n> <id> <party_id> <source_name> <producer_kind> <provider_code> "
+        "<source_id> <enabled> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -352,8 +353,8 @@ void feed_binding_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -361,6 +362,8 @@ void feed_binding_commands::process_add(std::ostream& out,
         read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
         read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
+        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+        read_token(req.change.write.source_id, parsed->positionals[next++], "source_id");
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -404,8 +407,8 @@ void feed_binding_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -413,6 +416,8 @@ void feed_binding_commands::process_set(std::ostream& out,
         read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.source_name, parsed->positionals[next++], "source_name");
         read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
+        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+        read_token(req.change.write.source_id, parsed->positionals[next++], "source_id");
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -468,8 +473,8 @@ void feed_binding_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -479,6 +484,8 @@ void feed_binding_commands::process_put_many(std::ostream& out,
             read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.source_name, parsed->positionals[next++], "source_name");
             read_token(change.write.producer_kind, parsed->positionals[next++], "producer_kind");
+            read_token(change.write.provider_code, parsed->positionals[next++], "provider_code");
+            read_token(change.write.source_id, parsed->positionals[next++], "source_id");
             read_token(change.write.enabled, parsed->positionals[next++], "enabled");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

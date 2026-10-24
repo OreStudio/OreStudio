@@ -47,6 +47,7 @@ struct market_observation_write {
     std::string oresmd_uri;
     std::string value;
     std::string source;
+    boost::uuids::uuid source_id;
 };
 
 struct market_observation_change {

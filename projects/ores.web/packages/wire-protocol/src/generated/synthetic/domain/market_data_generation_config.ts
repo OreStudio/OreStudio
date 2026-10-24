@@ -35,14 +35,11 @@ export interface MarketDataGenerationConfig {
     tenant_id: string;
     id: string;
     party_id: string | null;
-    scope: string;
-    binding_mode: string;
     name: string;
     description: string;
     enabled: boolean;
     dataset_id: string | null;
     provider_code: string;
-    run_grant_id: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

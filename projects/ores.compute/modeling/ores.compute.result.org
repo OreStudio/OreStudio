@@ -33,6 +33,7 @@ result declares no key field, so callers address it by its storage key.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:sortable_recorded_at: true
 :END:
 
 * Columns
@@ -97,6 +98,7 @@ State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
 :cpp_type: int
 :nullable: true
 :default_value: 0
+:filterable: true
 :END:
 
 Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
@@ -186,7 +188,7 @@ generator owns them from this model.
 
 ** workunit_id
 :PROPERTIES:
-:columns:      tenant_id, workunit_id
+:columns:      tenant_id, workunit_id, valid_from
 :current_only: true
 :END:
 

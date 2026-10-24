@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
-#+branch: feature/browse-and-follow-the-grids-jobs
+#+branch: feature/decide-who-sees-a-nodes-name
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
-#+updated: 2026-10-22
-#+environment:
+#+updated: 2026-10-23
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A recorded decision states which roles see a node name on a result, and the scre
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
@@ -40,9 +40,7 @@ A recorded decision states which roles see a node name on a result, and the scre
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The BFF already hides the node from every session but the operator, in =mayReadHost=. The plan records that rule as the decision and pins each role with a test. The rule changes in one place if the owner widens it.
 
 * Measurements
 
@@ -60,6 +58,8 @@ task and name that file in the Command column.
 
 * Notes
 
+The owner did not state a rule. This task takes the safe default, operator only, and the story says so. A tenant gains nothing from an installation's node names.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,12 +75,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3672 | Decide who sees a node's name |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The dates on the task page still say 2026-10-22. | task page | Fixed | Both dates now say 2026-10-23. |
+| 2 | The State and Now cells lose their alignment. | task page | Skipped | The change affects only raw org text. |
+| 3 | A test pins each role. | journey | No change needed | True for the roles that exist. |
 
 * Result
+
+Only the operator sees a node name. The journey and the story state it. A BFF test now pins the party member, beside the operator and the tenant administrator.

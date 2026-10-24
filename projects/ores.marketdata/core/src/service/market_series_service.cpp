@@ -103,8 +103,8 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
     v.id = write.id;
     v.party_id = write.party_id;
     v.oresmd_uri = write.oresmd_uri;
+    v.provider_code = write.provider_code;
     v.series_subclass = write.series_subclass;
-    v.producer_kind = write.producer_kind;
     v.derivation_kind = write.derivation_kind;
     v.derivation_config_id = write.derivation_config_id;
     v.derivation_config_version = write.derivation_config_version;
@@ -126,6 +126,12 @@ market_series_service::list_market_series(const messaging::list_market_series_re
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->provider_code_one_of &&
+        request.filter->provider_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "provider_code_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

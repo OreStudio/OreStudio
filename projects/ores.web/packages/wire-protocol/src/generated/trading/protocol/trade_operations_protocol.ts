@@ -22,16 +22,27 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { BondIssue } from '../domain/bond_issue.js';
+import type { BondIssueCallDate } from '../domain/bond_issue_call_date.js';
+import type { BondIssueConversionTarget } from '../domain/bond_issue_conversion_target.js';
+import type { BondIssueLeg } from '../domain/bond_issue_leg.js';
+import type { BondIssueLegAmortization } from '../domain/bond_issue_leg_amortization.js';
+import type { BondIssueLegAmount } from '../domain/bond_issue_leg_amount.js';
+import type { BondIssueLegRate } from '../domain/bond_issue_leg_rate.js';
+import type { BondIssueLegSchedule } from '../domain/bond_issue_leg_schedule.js';
+import type { BondIssueLegScheduleDate } from '../domain/bond_issue_leg_schedule_date.js';
 import type { Trade } from '../domain/trade.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
+import type { TradeIdentifier } from '../domain/trade_identifier.js';
 import type { InstrumentBatch } from '../../../generated/trading/instrument_batch.js';
 import type { Result } from '../../../utility/protocol.js';
 import type { TradeEnvelopeData } from '../../../trading/payload.js';
 
 /**
- * @brief Books a trade: its anchor, its booking and its first state.
+ * @brief Books a trade: its anchor, its booking, its first state, its
+ * identifiers and its instrument.
  *
- * The three rows are written in one transaction. The booking's trade id,
+ * The rows are written in one transaction. The booking's trade id,
  * party and counterparty are taken from the anchor, so the caller states
  * them once.
  */
@@ -51,6 +62,17 @@ export interface BookTradeRequest {
      * draft.
      */
     activity_type_code: string;
+    /**
+     * @brief The trade's identifiers. The service states the trade id and the
+     * activity id on each one, so the caller states the scheme and the value.
+     */
+    identifiers: TradeIdentifier[];
+    /**
+     * @brief The trade's instrument, as one array for each instrument table. The
+     * service states the trade id, the trade type and the activity id on each
+     * row. A row for a kind with no writer yet refuses the booking by name.
+     */
+    instruments: InstrumentBatch;
 }
 
 /**
@@ -67,6 +89,67 @@ export interface BookTradeResponse {
      * refused.
      */
     activity_id: string | null;
+}
+
+/**
+ * @brief Creates a bond issue with its legs, in one transaction.
+ *
+ * The issue is the security master. It is whole or absent: a refused child
+ * write leaves no issue row. The issue is create-only. An issue that already
+ * exists is answered with a conflict and the stored issue stays as it is:
+ * already_exists when its terms equal the request, content_differs when they
+ * do not. Each child row names its issue and leg, and the caller states them
+ * once on the row.
+ */
+export interface PutBondIssueCompositeRequest {
+    /**
+     * @brief The security's terms.
+     */
+    issue: BondIssue;
+    /**
+     * @brief The issue's legs.
+     */
+    legs: BondIssueLeg[];
+    /**
+     * @brief The amounts of the legs: notionals, coupons and the like.
+     */
+    amounts: BondIssueLegAmount[];
+    /**
+     * @brief The rate terms of the legs.
+     */
+    rates: BondIssueLegRate[];
+    /**
+     * @brief The schedules of the legs.
+     */
+    schedules: BondIssueLegSchedule[];
+    /**
+     * @brief The dates of the schedules that state a date list.
+     */
+    schedule_dates: BondIssueLegScheduleDate[];
+    /**
+     * @brief The amortisation terms of the legs.
+     */
+    amortizations: BondIssueLegAmortization[];
+    /**
+     * @brief The dates on which the issuer may call the issue.
+     */
+    call_dates: BondIssueCallDate[];
+    /**
+     * @brief The securities a convertible issue converts into.
+     */
+    conversion_targets: BondIssueConversionTarget[];
+}
+
+/**
+ * @brief The outcome of creating a bond issue.
+ */
+export interface PutBondIssueCompositeResponse {
+    /**
+     * @brief Outcome of the operation: conflict with code already_exists when
+     * the same issue is stored, and conflict with code content_differs when an
+     * issue with this id or security id is stored with other terms.
+     */
+    result: Result;
 }
 
 /**
@@ -189,6 +272,7 @@ export interface ExportTradesToStorageResponse {
 
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
+    put_bond_issue_composite_request: 'trading.v1.ops.put_bond_issue_composite',
     export_portfolio_request: 'trading.v1.ops.export_portfolio',
     export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
 } as const;
@@ -199,6 +283,7 @@ export const subjects = {
  */
 export const requiresSession = {
     book_trade_request: true,
+    put_bond_issue_composite_request: true,
     export_portfolio_request: true,
     export_trades_to_storage_request: true,
 } as const;

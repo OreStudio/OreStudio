@@ -22,13 +22,12 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
-#include "ores.synthetic.api/domain/scope.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -39,6 +38,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -88,11 +88,13 @@ struct feed_kind_candidate final {
     /** The feed starts from a vintage price, so its start reads marketdata. */
     bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
+    /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
+    std::optional<std::pair<std::string, std::string>> fx_pair;
 
     /** Built lazily: only the vintage verb reads it. */
     std::function<feed_vintage_anchor()> vintage_anchor;
     /** Built lazily: only the start, folder-start and auto-start verbs read it. */
-    std::function<feed_build_outcome(domain::binding_mode)> build_input;
+    std::function<feed_build_outcome()> build_input;
 };
 
 struct feed_kind;
@@ -106,13 +108,12 @@ struct feed_kind_row final {
 /** One config row plus its container: what the start verbs read. */
 struct feed_start_target final {
     feed_kind_row row;
-    domain::binding_mode binding_mode = domain::binding_mode::bound;
-    /** The scope of the container: a system container is the installation's, not a tenant's. */
-    domain::scope container_scope = domain::scope::party;
+    /** The provider the container stands for. */
+    std::string container_provider_code;
+    /** The container belongs to the system tenant: the installation's, not a tenant's. */
+    bool container_is_system = false;
     bool container_found = false;
     bool container_enabled = false;
-    /** The run grant the container holds: the consent its feeds run under. */
-    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief The one startability gate: the row and its container are both
@@ -193,7 +194,7 @@ struct feed_kind final {
  *
  * Owns the two reads that are not per-kind but are needed by several verbs: the
  * market_data_generation_config container lookup (which carries enabled and
- * binding_mode) and the synthetic folder subtree walk. Because it owns them, no
+ * enabled flag) and the synthetic folder subtree walk. Because it owns them, no
  * handler includes an ores.synthetic.core repository header.
  */
 class feed_kind_registry final {
@@ -214,7 +215,7 @@ public:
      * @brief The three reads the registry does on every kind's behalf.
      *
      * None of them is per-kind: the container table is one table with one
-     * binding_mode column, and the folder hierarchy is one tree. Injecting
+     * provider_code column, and the folder hierarchy is one tree. Injecting
      * them is what keeps every handler free of an ores.synthetic.core
      * repository and what lets a stub-kind test run with no database.
      */

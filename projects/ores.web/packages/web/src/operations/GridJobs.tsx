@@ -1,0 +1,1135 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+/**
+ * The Jobs tab of the grid screen, from
+ * doc/knowledge/journeys/compute/journey_browse_the_grids_jobs.org.
+ *
+ * A paged tree of batches, workunits and results beside a details panel. Every
+ * level pages on the server: opening a batch reads one page of its workunits,
+ * never all of them. The screen draws the fields the entity models hold under
+ * the models' own headers and computes nothing: no count, no total and no state
+ * of its own. The paging total is the server's figure.
+ *
+ * The open rows, the pages and the selection live in the address, so a reload or
+ * a shared link shows the same screen.
+ */
+
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
+import { api } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
+import { useTranslation } from '../i18n/Provider.js';
+import type { Translator } from '../i18n/translate.js';
+import { useHeld } from '../access/holds.js';
+import {
+    gridAppVersionPath,
+    gridJobPath,
+    gridNodePath,
+    gridReportRunPath,
+} from '../shell/paths.js';
+import { formatDateTime } from '../ui/Time.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
+import { Button, Detail, Input, LinkButton, Notice, Select, Tag } from '../ui/Primitives.js';
+
+/** Where the jobs answers are cached, so a test can seed them and Refresh can read them again. */
+export const GRID_JOBS_QUERY_KEY = 'operations-grid-jobs';
+
+const FIELDS = 'operations.grid.jobs.fields';
+
+/** How many workunits or results a row shows before it pages. */
+export const CHILD_PAGE_SIZE = 5;
+
+export type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
+
+/** The record kinds the tree holds, as the selection names them in the address. */
+type Kind = 'batch' | 'workunit' | 'result';
+
+interface Selection {
+    readonly kind: Kind;
+    readonly id: string;
+}
+
+const KINDS: readonly Kind[] = ['batch', 'workunit', 'result'];
+
+/** The selection an address carries, or nothing when it names none. */
+export function parseSelection(value: string | null): Selection | null {
+    if (value === null) {
+        return null;
+    }
+    const at = value.indexOf(':');
+    if (at < 0) {
+        return null;
+    }
+    const kind = KINDS.find((candidate) => candidate === value.slice(0, at));
+    const id = value.slice(at + 1);
+    return kind === undefined || id === '' ? null : { kind, id };
+}
+
+/**
+ * batch.status: open, processing, assimilating and closed in the model, and
+ * dispatched, which the dispatch command writes. A status the screen does not know is
+ * drawn as the server stated it.
+ */
+const BATCH_STATUS_TONE: Readonly<Record<string, Tone>> = {
+    open: 'neutral',
+    dispatched: 'accent',
+    processing: 'accent',
+    assimilating: 'accent',
+    closed: 'up',
+};
+
+/** result.server_state: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done. */
+export const SERVER_STATE: Readonly<
+    Record<number, { readonly name: string; readonly tone: Tone }>
+> = {
+    1: { name: 'inactive', tone: 'muted' },
+    2: { name: 'unsent', tone: 'neutral' },
+    4: { name: 'inProgress', tone: 'accent' },
+    5: { name: 'done', tone: 'up' },
+};
+
+/** result.outcome: 1=Success, 3=ClientError, 4=NoReply. Any other value is not set. */
+export const OUTCOME: Readonly<Record<number, { readonly name: string; readonly tone: Tone }>> = {
+    1: { name: 'success', tone: 'up' },
+    3: { name: 'clientError', tone: 'down' },
+    4: { name: 'noReply', tone: 'warn' },
+};
+
+/** The address of the tab: the parameters it holds and the way to change them. */
+function useJobsAddress(): {
+    readonly params: URLSearchParams;
+    readonly hrefWith: (patch: Readonly<Record<string, string | null>>) => string;
+    readonly set: (patch: Readonly<Record<string, string | null>>) => void;
+} {
+    const [params, setParams] = useSearchParams();
+    const merged = (patch: Readonly<Record<string, string | null>>): URLSearchParams => {
+        const next = new URLSearchParams(params);
+        for (const [key, value] of Object.entries(patch)) {
+            if (value === null || value === '') {
+                next.delete(key);
+            } else {
+                next.set(key, value);
+            }
+        }
+        return next;
+    };
+    return {
+        params,
+        hrefWith: (patch) => `?${merged(patch).toString()}`,
+        set: (patch) => setParams(merged(patch), { replace: true }),
+    };
+}
+
+/** A whole number of at least one from the address, or the fallback. */
+export function numberParam(value: string | null, fallback: number): number {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 1 ? parsed : fallback;
+}
+
+function openIds(params: URLSearchParams): ReadonlySet<string> {
+    return new Set((params.get('open') ?? '').split(',').filter((id) => id !== ''));
+}
+
+function isRefused(error: unknown): boolean {
+    return error instanceof ApiFailure && error.status === 403;
+}
+
+/** A read the tab states itself, so the shell raises no banner for it. */
+export const QUIET = { quiet: true } as const;
+
+export function ReadFailure({
+    error,
+    onRetry,
+}: {
+    readonly error: unknown;
+    readonly onRetry: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (isRefused(error)) {
+        return <Notice tone="warn">{t('operations.grid.jobs.refused')}</Notice>;
+    }
+    const message = error instanceof Error ? error.message : '';
+    if (error instanceof ApiFailure && error.status === 404) {
+        return <Notice tone="warn">{message}</Notice>;
+    }
+    return (
+        <Notice tone="error">
+            <span>{t('operations.grid.jobs.error', { message })}</span>{' '}
+            <Button size="sm" onClick={onRetry}>
+                {t('operations.grid.jobs.retry')}
+            </Button>
+        </Notice>
+    );
+}
+
+export function StatusTag({ status }: { readonly status: string }): ReactNode {
+    const { t } = useTranslation();
+    const known = status in BATCH_STATUS_TONE;
+    const label = known ? t(`operations.grid.jobs.status.${status}`) : status;
+    return <Tag tone={BATCH_STATUS_TONE[status] ?? 'neutral'}>{label}</Tag>;
+}
+
+export function ResultTags({ result }: { readonly result: ResultView }): ReactNode {
+    const { t } = useTranslation();
+    const state = SERVER_STATE[result.server_state];
+    const outcome = OUTCOME[result.outcome];
+    return (
+        <span className="flex gap-1">
+            {state !== undefined && (
+                <Tag tone={state.tone}>{t(`operations.grid.jobs.serverState.${state.name}`)}</Tag>
+            )}
+            {outcome !== undefined && (
+                <Tag tone={outcome.tone}>{t(`operations.grid.jobs.outcome.${outcome.name}`)}</Tag>
+            )}
+        </span>
+    );
+}
+
+/**
+ * One row of the tree: a button that selects the record and, for a parent, opens it.
+ *
+ * The children of an open row sit inside its list item, so the list nests as the
+ * tree does. The full id is the row's title, because the label is only its start.
+ */
+function TreeRow({
+    label,
+    title,
+    note,
+    tags,
+    twist,
+    selected,
+    onClick,
+    children,
+}: {
+    readonly label: string;
+    readonly title?: string | undefined;
+    readonly note?: string | undefined;
+    readonly tags?: ReactNode;
+    /** Open or closed for a parent, and nothing for a leaf. */
+    readonly twist?: 'open' | 'closed';
+    readonly selected: boolean;
+    readonly onClick: () => void;
+    readonly children?: ReactNode;
+}): ReactNode {
+    return (
+        <li>
+            <button
+                type="button"
+                title={title}
+                aria-expanded={twist === undefined ? undefined : twist === 'open'}
+                aria-current={selected ? 'true' : undefined}
+                className={`flex w-full items-center justify-between gap-3 rounded px-2 py-1.5 text-left text-sm hover:bg-bg-hover ${
+                    selected ? 'bg-bg-hover' : ''
+                }`}
+                onClick={onClick}
+            >
+                <span className="flex min-w-0 items-center gap-2">
+                    <span aria-hidden="true" className="w-3 text-ink-faint">
+                        {twist === undefined ? '' : twist === 'open' ? '▾' : '▸'}
+                    </span>
+                    <span className="truncate font-mono text-xs">{label}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3 text-xs text-ink-muted">
+                    {note !== undefined && <span>{note}</span>}
+                    {tags}
+                </span>
+            </button>
+            {children}
+        </li>
+    );
+}
+
+function showingText(
+    t: Translator['t'],
+    key: string,
+    offset: number,
+    shown: number,
+    total: number,
+): string {
+    const { first, last } = pageBounds(offset, shown);
+    return t(key, { first, last, total });
+}
+
+/** The way back when an address names a page past the last one. */
+function PastTheLastPage({
+    param,
+    address,
+}: {
+    readonly param: string;
+    readonly address: ReturnType<typeof useJobsAddress>;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <p className="px-2 text-xs text-ink-muted">
+            {t('operations.grid.jobs.pastTheLastPage')}{' '}
+            <Button size="sm" onClick={() => address.set({ [param]: null })}>
+                {t('operations.grid.jobs.firstPage')}
+            </Button>
+        </p>
+    );
+}
+
+/** Opens a parent that is closed and closes one that is open, naming the one opened. */
+function toggled(
+    open: ReadonlySet<string>,
+    id: string,
+    select: string,
+): Readonly<Record<string, string | null>> {
+    const next = new Set(open);
+    if (next.has(id)) {
+        next.delete(id);
+        return { open: [...next].join(',') };
+    }
+    next.add(id);
+    return { open: [...next].join(','), sel: select };
+}
+
+function ResultRows({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const param = `rp.${workunit.id}`;
+    const page = numberParam(address.params.get(param), 1);
+    const offset = (page - 1) * CHILD_PAGE_SIZE;
+    const results = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'results', workunit.id, offset],
+        queryFn: () => api.gridJobResults(workunit.id, offset, CHILD_PAGE_SIZE),
+        meta: QUIET,
+    });
+    const selection = parseSelection(address.params.get('sel'));
+
+    if (results.isError) {
+        return <ReadFailure error={results.error} onRetry={() => void results.refetch()} />;
+    }
+    if (results.isPending) {
+        return (
+            <p className="px-2 text-xs text-ink-muted">
+                {t('operations.grid.jobs.loadingResults')}
+            </p>
+        );
+    }
+    const rows = results.data.rows;
+    if (rows.length === 0) {
+        return results.data.total > 0 ? (
+            <PastTheLastPage param={param} address={address} />
+        ) : (
+            <p className="px-2 text-xs text-ink-muted">{t('operations.grid.jobs.noResults')}</p>
+        );
+    }
+    return (
+        <>
+            <ul className="ml-6 border-l border-line-subtle pl-2">
+                {rows.map((result) => (
+                    <TreeRow
+                        key={result.id}
+                        label={result.id.slice(0, 8)}
+                        title={result.id}
+                        tags={<ResultTags result={result} />}
+                        selected={selection?.kind === 'result' && selection.id === result.id}
+                        onClick={() => address.set({ sel: `result:${result.id}` })}
+                    />
+                ))}
+            </ul>
+            {results.data.total > CHILD_PAGE_SIZE && (
+                <div className="ml-6 pl-2">
+                    <Pager
+                        offset={offset}
+                        shown={rows.length}
+                        total={results.data.total}
+                        pageSize={CHILD_PAGE_SIZE}
+                        showing={showingText(
+                            t,
+                            'operations.grid.jobs.resultsShowing',
+                            offset,
+                            rows.length,
+                            results.data.total,
+                        )}
+                        onMove={(next) =>
+                            address.set({ [param]: String(next / CHILD_PAGE_SIZE + 1) })
+                        }
+                    />
+                </div>
+            )}
+        </>
+    );
+}
+
+function WorkunitRows({ batch }: { readonly batch: BatchView }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const param = `wp.${batch.id}`;
+    const page = numberParam(address.params.get(param), 1);
+    const offset = (page - 1) * CHILD_PAGE_SIZE;
+    const workunits = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'workunits', batch.id, offset],
+        queryFn: () => api.gridJobWorkunits(batch.id, offset, CHILD_PAGE_SIZE),
+        meta: QUIET,
+    });
+    const open = openIds(address.params);
+    const selection = parseSelection(address.params.get('sel'));
+
+    if (workunits.isError) {
+        return <ReadFailure error={workunits.error} onRetry={() => void workunits.refetch()} />;
+    }
+    if (workunits.isPending) {
+        return (
+            <p className="px-2 text-xs text-ink-muted">
+                {t('operations.grid.jobs.loadingWorkunits')}
+            </p>
+        );
+    }
+    const rows = workunits.data.rows;
+    if (rows.length === 0) {
+        return workunits.data.total > 0 ? (
+            <PastTheLastPage param={param} address={address} />
+        ) : (
+            <p className="px-2 text-xs text-ink-muted">{t('operations.grid.jobs.noWorkunits')}</p>
+        );
+    }
+    return (
+        <>
+            <ul className="ml-6 border-l border-line-subtle pl-2">
+                {rows.map((workunit, index) => (
+                    <TreeRow
+                        key={workunit.id}
+                        label={t('operations.grid.jobs.jobLabel', { n: offset + index + 1 })}
+                        title={workunit.id}
+                        note={t('operations.grid.jobs.workunitNote', {
+                            priority: workunit.priority,
+                            redundancy: workunit.target_redundancy,
+                        })}
+                        twist={open.has(workunit.id) ? 'open' : 'closed'}
+                        selected={selection?.kind === 'workunit' && selection.id === workunit.id}
+                        onClick={() =>
+                            address.set(toggled(open, workunit.id, `workunit:${workunit.id}`))
+                        }
+                    >
+                        {open.has(workunit.id) && <ResultRows workunit={workunit} />}
+                    </TreeRow>
+                ))}
+            </ul>
+            {workunits.data.total > CHILD_PAGE_SIZE && (
+                <div className="ml-6 pl-2">
+                    <Pager
+                        offset={offset}
+                        shown={rows.length}
+                        total={workunits.data.total}
+                        pageSize={CHILD_PAGE_SIZE}
+                        showing={showingText(
+                            t,
+                            'operations.grid.jobs.workunitsShowing',
+                            offset,
+                            rows.length,
+                            workunits.data.total,
+                        )}
+                        onMove={(next) =>
+                            address.set({ [param]: String(next / CHILD_PAGE_SIZE + 1) })
+                        }
+                    />
+                </div>
+            )}
+        </>
+    );
+}
+
+/**
+ * The outcomes a person may ask for, as codes: 1 Success, 3 ClientError, 4 NoReply and
+ * 0 for a run with no outcome yet.
+ */
+export const OUTCOME_CODES: readonly number[] = [1, 3, 4, 0];
+
+/** The outcome code the address asks for, or nothing when it asks for none. */
+export function outcomeOf(params: URLSearchParams): number | null {
+    const raw = params.get('outcome');
+    if (raw === null) {
+        return null;
+    }
+    const code = Number(raw);
+    return OUTCOME_CODES.includes(code) ? code : null;
+}
+
+/** What narrows the batch list, from the address. Every member is empty when unset. */
+export interface BatchFilterParams {
+    readonly find: string;
+    readonly status: string;
+    readonly party: string;
+}
+
+/** The statuses a batch holds, as the batch model lists them. */
+export const BATCH_STATUSES: readonly string[] = [
+    'open',
+    'dispatched',
+    'processing',
+    'assimilating',
+    'closed',
+];
+
+export function batchFilterOf(params: URLSearchParams): BatchFilterParams {
+    return {
+        find: params.get('find') ?? '',
+        status: params.get('status') ?? '',
+        party: params.get('party') ?? '',
+    };
+}
+
+export function isFiltered(filter: BatchFilterParams): boolean {
+    return filter.find !== '' || filter.status !== '' || filter.party !== '';
+}
+
+/** One party a person may pick to narrow the list. */
+export interface PartyChoice {
+    readonly id: string;
+    readonly name: string;
+}
+
+/**
+ * The finder bar: a part of the reference, a status and a party.
+ *
+ * A search or a pick states itself in the address and starts again from the first
+ * page, so a link reopens the same list. The parties are those the session acts for,
+ * so a person who reads one party is offered no choice of parties.
+ */
+function Finder({ parties }: { readonly parties: readonly PartyChoice[] }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const filter = batchFilterOf(address.params);
+    const outcome = outcomeOf(address.params);
+    const [text, setText] = useState(filter.find);
+    // The address can change outside the form: Back, or a link opened in this tab.
+    useEffect(() => setText(filter.find), [filter.find]);
+    const apply = (patch: Readonly<Record<string, string | null>>): void =>
+        address.set({ ...patch, page: null });
+    return (
+        <form
+            className="flex flex-wrap items-end gap-3"
+            onSubmit={(event) => {
+                event.preventDefault();
+                apply({ find: text.trim() });
+            }}
+        >
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t('operations.grid.jobs.finder.find')}
+                <Input
+                    type="search"
+                    disabled={outcome !== null}
+                    value={text}
+                    placeholder={t('operations.grid.jobs.finder.placeholder')}
+                    onChange={(event) => setText(event.target.value)}
+                />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t(`${FIELDS}.status`)}
+                <Select
+                    value={filter.status}
+                    disabled={outcome !== null}
+                    onChange={(event) => apply({ status: event.target.value })}
+                >
+                    <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                    {BATCH_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                            {t(`operations.grid.jobs.status.${status}`)}
+                        </option>
+                    ))}
+                </Select>
+            </label>
+            {parties.length > 1 && (
+                <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                    {t('operations.grid.jobs.finder.party')}
+                    <Select
+                        value={filter.party}
+                        disabled={outcome !== null}
+                        onChange={(event) => apply({ party: event.target.value })}
+                    >
+                        <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                        {parties.map((party) => (
+                            <option key={party.id} value={party.id}>
+                                {party.name}
+                            </option>
+                        ))}
+                    </Select>
+                </label>
+            )}
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+                {t(`${FIELDS}.outcome`)}
+                <Select
+                    value={outcome === null ? '' : String(outcome)}
+                    onChange={(event) => apply({ outcome: event.target.value, sel: null })}
+                >
+                    <option value="">{t('operations.grid.jobs.finder.any')}</option>
+                    {OUTCOME_CODES.map((code) => (
+                        <option key={code} value={String(code)}>
+                            {OUTCOME[code] === undefined
+                                ? t('operations.grid.jobs.outcomeNotSet')
+                                : t(`operations.grid.jobs.outcome.${OUTCOME[code].name}`)}
+                        </option>
+                    ))}
+                </Select>
+            </label>
+            <Button type="submit" variant="secondary" disabled={outcome !== null}>
+                {t('operations.grid.jobs.finder.search')}
+            </Button>
+            <Button
+                type="button"
+                variant="ghost"
+                disabled={!isFiltered(filter) && text === '' && outcome === null}
+                onClick={() => {
+                    setText('');
+                    apply({ find: null, status: null, party: null, outcome: null });
+                }}
+            >
+                {t('operations.grid.jobs.finder.clear')}
+            </Button>
+        </form>
+    );
+}
+
+/**
+ * The runs that ended with the outcome the address asks for, one page at a time.
+ *
+ * A run belongs to a workunit and the workunit to a batch, and the tree opens by
+ * batch. So this answer is a flat list: each row selects the run, and Follow this job
+ * leads to the job page, which names the batch.
+ */
+function OutcomeList({ outcome }: { readonly outcome: number }): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const size = numberParam(address.params.get('size'), DEFAULT_PAGE_SIZE);
+    const page = numberParam(address.params.get('page'), 1);
+    const offset = (page - 1) * size;
+    const runs = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'by-outcome', outcome, offset, size],
+        queryFn: () => api.gridJobResultsByOutcome(outcome, offset, size),
+        meta: QUIET,
+    });
+    const selection = parseSelection(address.params.get('sel'));
+
+    if (runs.isError) {
+        return <ReadFailure error={runs.error} onRetry={() => void runs.refetch()} />;
+    }
+    if (runs.isPending) {
+        return <p className="text-sm text-ink-muted">{t('operations.grid.jobs.loadingResults')}</p>;
+    }
+    const rows = runs.data.rows;
+    if (runs.data.total === 0) {
+        return <Notice>{t('operations.grid.jobs.noRuns')}</Notice>;
+    }
+    return (
+        <>
+            <ul>
+                {rows.map((run) => (
+                    <TreeRow
+                        key={run.id}
+                        label={run.id.slice(0, 8)}
+                        title={run.id}
+                        note={t('operations.grid.jobs.ofWorkunit', {
+                            id: run.workunit_id.slice(0, 8),
+                        })}
+                        tags={<ResultTags result={run} />}
+                        selected={selection?.kind === 'result' && selection.id === run.id}
+                        onClick={() => address.set({ sel: `result:${run.id}` })}
+                    />
+                ))}
+            </ul>
+            <Pager
+                offset={offset}
+                shown={rows.length}
+                total={runs.data.total}
+                pageSize={size}
+                showing={showingText(
+                    t,
+                    'operations.grid.jobs.resultsShowing',
+                    offset,
+                    rows.length,
+                    runs.data.total,
+                )}
+                onMove={(next) => address.set({ page: String(Math.floor(next / size) + 1) })}
+                onPageSize={(next) => address.set({ size: String(next), page: null })}
+            />
+        </>
+    );
+}
+
+function Tree(): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const size = numberParam(address.params.get('size'), DEFAULT_PAGE_SIZE);
+    const page = numberParam(address.params.get('page'), 1);
+    const offset = (page - 1) * size;
+    const filter = batchFilterOf(address.params);
+    const batches = useQuery({
+        queryKey: [
+            GRID_JOBS_QUERY_KEY,
+            'batches',
+            offset,
+            size,
+            filter.find,
+            filter.status,
+            filter.party,
+        ],
+        queryFn: () => api.gridJobBatches(offset, size, filter),
+        meta: QUIET,
+    });
+    const open = openIds(address.params);
+    const selection = parseSelection(address.params.get('sel'));
+
+    if (batches.isError) {
+        return <ReadFailure error={batches.error} onRetry={() => void batches.refetch()} />;
+    }
+    if (batches.isPending) {
+        return <p className="text-sm text-ink-muted">{t('operations.grid.jobs.loadingBatches')}</p>;
+    }
+    const rows = batches.data.rows;
+    if (batches.data.total === 0) {
+        return (
+            <Notice>
+                {t(
+                    isFiltered(filter)
+                        ? 'operations.grid.jobs.noMatch'
+                        : 'operations.grid.jobs.empty',
+                )}
+            </Notice>
+        );
+    }
+    return (
+        <>
+            {rows.length === 0 ? (
+                <PastTheLastPage param="page" address={address} />
+            ) : (
+                <ul>
+                    {rows.map((batch) => (
+                        <TreeRow
+                            key={batch.id}
+                            label={batch.report_run_name ?? batch.external_ref}
+                            title={batch.id}
+                            note={batch.party_name ?? undefined}
+                            tags={<StatusTag status={batch.status} />}
+                            twist={open.has(batch.id) ? 'open' : 'closed'}
+                            selected={selection?.kind === 'batch' && selection.id === batch.id}
+                            onClick={() =>
+                                address.set(toggled(open, batch.id, `batch:${batch.id}`))
+                            }
+                        >
+                            {open.has(batch.id) && <WorkunitRows batch={batch} />}
+                        </TreeRow>
+                    ))}
+                </ul>
+            )}
+            <Pager
+                offset={offset}
+                shown={rows.length}
+                total={batches.data.total}
+                pageSize={size}
+                showing={showingText(
+                    t,
+                    'operations.grid.jobs.batchesShowing',
+                    offset,
+                    rows.length,
+                    batches.data.total,
+                )}
+                onMove={(next) => address.set({ page: String(Math.floor(next / size) + 1) })}
+                onPageSize={(next) => address.set({ size: String(next), page: null })}
+            />
+        </>
+    );
+}
+
+/** The address that streams the stored input of a workunit or the stored output of a run. */
+export function downloadHref(kind: 'input' | 'output', id: string): string {
+    return kind === 'input'
+        ? `/api/operations/grid/jobs/workunits/${encodeURIComponent(id)}/input`
+        : `/api/operations/grid/jobs/results/${encodeURIComponent(id)}/output`;
+}
+
+/**
+ * A stored file as a link that downloads it.
+ *
+ * The link is the file's own address as the record states it. The route behind it reads
+ * the record first, so a person who may not read the record is refused and gets no byte.
+ * The storage service then checks the person's own read code, so a person who lacks it is
+ * shown the address as text.
+ */
+export function DownloadLink({
+    kind,
+    id,
+    uri,
+}: {
+    readonly kind: 'input' | 'output';
+    readonly id: string;
+    readonly uri: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const held = useHeld();
+    // The storage service checks the read code of the person's own token and holds no
+    // rule for a single record, so the code is bucket-wide. A person without it reads the
+    // address as text and is not offered a link that the service would refuse.
+    if (!held('storage::objects:read')) {
+        return <span className="break-all">{uri}</span>;
+    }
+    return (
+        <a
+            href={downloadHref(kind, id)}
+            download
+            title={t('operations.grid.jobs.download')}
+            className="break-all underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {uri}
+        </a>
+    );
+}
+
+/** A reference that opens another record or screen without leaving the application. */
+function RouteLink({
+    to,
+    children,
+}: {
+    readonly to: string;
+    readonly children: ReactNode;
+}): ReactNode {
+    return (
+        <Link
+            to={to}
+            className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {children}
+        </Link>
+    );
+}
+
+/** A value, or the word that says there is none. */
+function orNone(value: string | null, none: string): string {
+    return value === null || value === '' ? none : value;
+}
+
+function BatchDetails({ batch }: { readonly batch: BatchView }): ReactNode {
+    const { t, language } = useTranslation();
+    const none = t('operations.grid.jobs.none');
+    return (
+        <>
+            {batch.report_run_name !== null && (
+                <Detail
+                    label={t('operations.grid.jobs.fields.reportRun')}
+                    value={
+                        <RouteLink to={gridReportRunPath(batch.external_ref)}>
+                            {batch.report_run_name}
+                        </RouteLink>
+                    }
+                />
+            )}
+            <Detail
+                label={t('operations.grid.jobs.fields.externalRef')}
+                value={batch.external_ref}
+                mono={batch.report_run_name !== null}
+            />
+            <Detail
+                label={
+                    batch.party_name === null
+                        ? t('operations.grid.jobs.fields.partyId')
+                        : t('operations.grid.jobs.fields.party')
+                }
+                value={
+                    batch.party_name === null ? (
+                        orNone(batch.party_id, none)
+                    ) : (
+                        <span title={batch.party_id ?? undefined}>{batch.party_name}</span>
+                    )
+                }
+                mono={batch.party_name === null}
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.status')}
+                value={<StatusTag status={batch.status} />}
+            />
+            <Detail label={t('operations.grid.jobs.fields.modifiedBy')} value={batch.modified_by} />
+            <Detail
+                label={t('operations.grid.jobs.fields.recordedAt')}
+                value={formatDateTime(batch.recorded_at, language)}
+            />
+        </>
+    );
+}
+
+function WorkunitDetails({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
+    const { t, language } = useTranslation();
+    const address = useJobsAddress();
+    const none = t('operations.grid.jobs.none');
+    return (
+        <>
+            <Detail
+                label={t('operations.grid.jobs.fields.batchId')}
+                value={
+                    <RouteLink to={address.hrefWith({ sel: `batch:${workunit.batch_id}` })}>
+                        {workunit.batch_id}
+                    </RouteLink>
+                }
+                mono
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.appVersionId')}
+                value={
+                    <RouteLink to={gridAppVersionPath(workunit.app_version_id)}>
+                        {workunit.app_version_id}
+                    </RouteLink>
+                }
+                mono
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.inputUri')}
+                value={<DownloadLink kind="input" id={workunit.id} uri={workunit.input_uri} />}
+                mono
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.configUri')}
+                value={orNone(workunit.config_uri, none)}
+                mono
+            />
+            <Detail label={t('operations.grid.jobs.fields.priority')} value={workunit.priority} />
+            <Detail
+                label={t('operations.grid.jobs.fields.targetRedundancy')}
+                value={workunit.target_redundancy}
+            />
+            {workunit.canonical_result_id === null ? (
+                <Detail label={t('operations.grid.jobs.fields.canonicalResultId')} value={none} />
+            ) : (
+                <Detail
+                    label={t('operations.grid.jobs.fields.canonicalResultId')}
+                    value={
+                        <RouteLink
+                            to={address.hrefWith({ sel: `result:${workunit.canonical_result_id}` })}
+                        >
+                            {workunit.canonical_result_id}
+                        </RouteLink>
+                    }
+                    mono
+                />
+            )}
+            <Detail
+                label={t('operations.grid.jobs.fields.modifiedBy')}
+                value={workunit.modified_by}
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.recordedAt')}
+                value={formatDateTime(workunit.recorded_at, language)}
+            />
+        </>
+    );
+}
+
+function ResultDetails({ result }: { readonly result: ResultView }): ReactNode {
+    const { t, language } = useTranslation();
+    const address = useJobsAddress();
+    const none = t('operations.grid.jobs.none');
+    const state = SERVER_STATE[result.server_state];
+    const outcome = OUTCOME[result.outcome];
+    return (
+        <>
+            <Detail
+                label={t('operations.grid.jobs.fields.workunitId')}
+                value={
+                    <RouteLink to={address.hrefWith({ sel: `workunit:${result.workunit_id}` })}>
+                        {result.workunit_id}
+                    </RouteLink>
+                }
+                mono
+            />
+            {result.host_hidden ? (
+                <Detail
+                    label={t('operations.grid.jobs.fields.hostId')}
+                    value={t('operations.grid.jobs.hostHidden')}
+                />
+            ) : result.host_id === null ? (
+                <Detail label={t('operations.grid.jobs.fields.hostId')} value={none} />
+            ) : (
+                <Detail
+                    label={t('operations.grid.jobs.fields.hostId')}
+                    value={
+                        <RouteLink to={gridNodePath(result.host_id)}>{result.host_id}</RouteLink>
+                    }
+                    mono
+                />
+            )}
+            <Detail
+                label={t('operations.grid.jobs.fields.serverState')}
+                value={
+                    state === undefined ? (
+                        String(result.server_state)
+                    ) : (
+                        <Tag tone={state.tone}>
+                            {t(`operations.grid.jobs.serverState.${state.name}`)}
+                        </Tag>
+                    )
+                }
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.outcome')}
+                value={
+                    outcome === undefined ? (
+                        t('operations.grid.jobs.outcomeNotSet')
+                    ) : (
+                        <Tag tone={outcome.tone}>
+                            {t(`operations.grid.jobs.outcome.${outcome.name}`)}
+                        </Tag>
+                    )
+                }
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.outputUri')}
+                value={
+                    result.output_uri === null ? (
+                        none
+                    ) : (
+                        <DownloadLink kind="output" id={result.id} uri={result.output_uri} />
+                    )
+                }
+                mono
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.errorMessage')}
+                value={orNone(result.error_message, none)}
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.receivedAt')}
+                value={
+                    result.received_at === null
+                        ? none
+                        : formatDateTime(result.received_at, language)
+                }
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.modifiedBy')}
+                value={result.modified_by}
+            />
+            <Detail
+                label={t('operations.grid.jobs.fields.recordedAt')}
+                value={formatDateTime(result.recorded_at, language)}
+            />
+        </>
+    );
+}
+
+/** The record the details panel draws, tagged with the kind that says which it is. */
+type SelectedRecord =
+    | { readonly kind: 'batch'; readonly data: BatchView }
+    | { readonly kind: 'workunit'; readonly data: WorkunitView }
+    | { readonly kind: 'result'; readonly data: ResultView };
+
+function Details(): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const selection = parseSelection(address.params.get('sel'));
+    const record = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'record', selection?.kind, selection?.id],
+        queryFn: async (): Promise<SelectedRecord> => {
+            if (selection === null) {
+                throw new Error('No record is selected.');
+            }
+            switch (selection.kind) {
+                case 'batch':
+                    return { kind: 'batch', data: await api.gridJobBatch(selection.id) };
+                case 'workunit':
+                    return { kind: 'workunit', data: await api.gridJobWorkunit(selection.id) };
+                case 'result':
+                    return { kind: 'result', data: await api.gridJobResult(selection.id) };
+            }
+        },
+        enabled: selection !== null,
+        meta: QUIET,
+    });
+
+    if (selection === null) {
+        return <p className="text-sm text-ink-muted">{t('operations.grid.jobs.details.none')}</p>;
+    }
+    if (record.isError) {
+        return <ReadFailure error={record.error} onRetry={() => void record.refetch()} />;
+    }
+    if (record.isPending) {
+        return (
+            <p className="text-sm text-ink-muted">{t('operations.grid.jobs.details.loading')}</p>
+        );
+    }
+    const selected = record.data;
+    return (
+        <div>
+            <p className="text-xs text-ink-faint">{t('operations.grid.jobs.fields.id')}</p>
+            <p className="mb-3 break-all font-mono text-sm">{selected.data.id}</p>
+            <dl className="grid gap-3 sm:grid-cols-2">
+                {selected.kind === 'batch' && <BatchDetails batch={selected.data} />}
+                {selected.kind === 'workunit' && <WorkunitDetails workunit={selected.data} />}
+                {selected.kind === 'result' && <ResultDetails result={selected.data} />}
+            </dl>
+            {selected.kind !== 'batch' && (
+                <div className="mt-4">
+                    <LinkButton
+                        to={gridJobPath(
+                            selected.kind === 'workunit'
+                                ? selected.data.id
+                                : selected.data.workunit_id,
+                        )}
+                        variant="secondary"
+                    >
+                        {t('operations.grid.jobs.follow')}
+                    </LinkButton>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/** The Jobs tab. */
+export function GridJobsTab({
+    parties = [],
+}: {
+    readonly parties?: readonly PartyChoice[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const address = useJobsAddress();
+    const selection = parseSelection(address.params.get('sel'));
+    const outcome = outcomeOf(address.params);
+    const listTitle =
+        outcome === null
+            ? t('operations.grid.jobs.treeTitle')
+            : t('operations.grid.jobs.runsTitle');
+    return (
+        <div className="space-y-6">
+            <Finder parties={parties} />
+            <div className="grid gap-6 lg:grid-cols-2">
+                <section aria-label={listTitle}>
+                    <h2 className="mb-3 text-sm font-medium">{listTitle}</h2>
+                    {outcome === null ? <Tree /> : <OutcomeList outcome={outcome} />}
+                </section>
+                <section aria-label={t('operations.grid.jobs.details.record')}>
+                    <div className="mb-3 flex items-center justify-between">
+                        <h2 className="text-sm font-medium">
+                            {t(`operations.grid.jobs.details.${selection?.kind ?? 'record'}`)}
+                        </h2>
+                        {selection !== null && (
+                            <Tag small tone="muted">
+                                {t('operations.grid.jobs.details.readOnly')}
+                            </Tag>
+                        )}
+                    </div>
+                    <Details />
+                </section>
+            </div>
+        </div>
+    );
+}

@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: A1A78FC2-713E-430F-8079-ED4626B5FF1A
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.marketdata.route
+#+description: Codegen entity model for the marketdata routes table; the one source that serves a party for a provider.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: route
+#+entity_plural: routes
+#+entity_title: Route
+#+brief: The one source that serves a party for a provider.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A route names the one source that serves a party for a provider. A party has at most one
+route for each provider, so it reads one value of each instrument and the mapping and the series
+key stay unambiguous. A source switch is one new route and nothing else.
+
+The source must belong to the provider of the route, and the party must hold a subscription to
+the provider. A change of route is a new version with a reason and a commentary, and the history
+keeps the earlier routes. The source must also be ready; the adapter state that says so is held by
+the task that tracks adapters.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this route.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+The party the route serves. Set server-side from the authenticated session and enforced by row level security.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the provider the route serves. With the party it is the natural key, so a party has one route for each provider.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** source_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:filterable: true
+:nullable: false
+:END:
+
+References =market_data_source.id=: the source that serves the party. The source belongs to the provider of the route.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_routes_tbl
+:rls_tenant_isolation:      true
+:rls_party_isolation:       true
+:rls_system_tenant_visible: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "provider_code" <> '' |
+
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| provider_code | ores_marketdata_validate_provider_fn   |
+
+
+
+#+begin_src sql :name route_checks :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- The party holds a subscription to the provider the route serves.
+    if not exists (
+        select 1 from ores_marketdata_subscriptions_tbl
+        where tenant_id = NEW.tenant_id
+          and party_id = NEW.party_id
+          and provider_code = NEW.provider_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid route: party % holds no subscription to provider %.',
+            NEW.party_id, NEW.provider_code
+            using errcode = '23503';
+    end if;
+
+    -- The source belongs to the provider of the route. Sources are rows of the
+    -- system tenant, which every tenant reads.
+    if not exists (
+        select 1 from ores_marketdata_market_data_sources_tbl
+        where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+          and id = NEW.source_id
+          and provider_code = NEW.provider_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid route: source % is not a source of provider %.',
+            NEW.source_id, NEW.provider_code
+            using errcode = '23514';
+    end if;
+
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: route
+:entity_plural_short:   routes
+:entity_singular_words: route
+:entity_plural_words:   routes
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 5C2E8A14-7D3B-4F96-A1E5-9B4D6C0F3E27
+:END:
+
+Reads the latest routes across all tenants. The ingest loop resolves the parties routed
+to a source regardless of tenant, so it cannot filter on one. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::route> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::route>
+route_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<route_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<route_entity, domain::route>(
+        ctx,
+        query,
+        [](const auto& entities) { return route_mapper::map(entities); },
+        lg(),
+        "Reading latest routes across all tenants");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rte
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/route.hpp
+:domain_class:            ores::marketdata::domain::route
+:protocol_include:        ores.marketdata.api/messaging/route_protocol.hpp
+:collection_name:         routes
+:key_field:               provider_code
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label    | widget       | type      | is_key | is_required | placeholder         |
+|---------------+----------+--------------+-----------+--------+-------------+---------------------|
+| provider_code | Provider | providerEdit | line_edit | true   | true        | Enter provider code |
+| source_id     | Source   | sourceEdit   | line_edit |        | true        | Enter source id     |
+
+*** Columns
+
+| enum_name    | field         | header      | type   | width |
+|--------------+---------------+-------------+--------+-------|
+| ProviderCode | provider_code | Provider    | string | 140   |
+| SourceId     | source_id     | Source      | string | 300   |
+| Version      | version       | Version     | int    | 80    |
+| ModifiedBy   | modified_by   | Modified By | string | 120   |
+
+* See also
+
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] -- the rule this table records.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] -- the subscription a route serves.
+

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: D1F87C08-4628-418C-8289-4948EEFF4DE0
+:END:
+#+title: ores.synthetic.fault_operations
+#+description: Codegen operation model for the fault injection of the simulator: the request that sets the faults an adapter shows to the market data service.
+#+type: ores.codegen.operation
+#+component: synthetic
+#+subcomponent: api
+#+entity_singular: fault_operation
+#+namespace: ores::synthetic::messaging
+#+brief: The request that sets the faults the simulator injects.
+#+filetags: :model:operation:synthetic:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A simulator author sets the faults of the adapters of the simulator with one request. The request
+replaces the whole plan, so a request with every field off turns every fault off. The faults are
+off by default and a restart of the service turns them off.
+
+Each fault goes through the adapter contract and is seen as a state of the adapter or as a drop
+reason of a tick. A lost connection silences the heartbeat and the demand reply, and the service
+makes the adapter stale. A delay beyond the age limit makes the service drop each tick as stale. A
+repeated tick makes the service drop the repeat as out of order. An out of range value makes the
+service drop each tick as out of range. A not entitled rejection makes the adapter reject every id
+of a demand set as not_entitled.
+
+Only a session of the system tenant that may run feeds sets the faults.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#+end_src
+
+* Messages
+
+** set_faults_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.set_faults
+:response: set_faults_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Replace the faults the simulator injects.
+ */
+#+end_src
+
+*** connection_lost
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+The adapter sends no heartbeat and answers no demand, as a connection that dropped.
+
+*** tick_delay_ms
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many milliseconds older than the moment of the tick each vendor time is. A delay beyond the
+age limit of the service makes the tick stale.
+
+*** repeat_ticks
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Each generator sends the tick before the new one again, with its older vendor time.
+
+*** out_of_range
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Each value is larger than the service accepts.
+
+*** not_entitled
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+The adapter rejects every id of a demand set as not_entitled and runs no generator.
+
+** set_faults_response
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the plan was set, and why not when it was not.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: EA8D3864-10B4-4AAE-A0CA-6C1660FED111
+:END:
+#+title: Task: Key the app version by its app, engine and wrapper versions
+#+description: The app version service reads the version precondition by wrapper_version alone, so two versions that share a wrapper version read each other's row and a second republish fails.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/key-the-app-version-by-its-app-engine-and-wrapper-versions
+#+pr: 3660
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A republish of an app version checks the version of its own row, whichever other versions share its wrapper version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The precondition of an app version reads its own row, by its id.
+- Two versions that share a wrapper version republish more than once without a version conflict.
+
+* Plan
+
+The workunit model met the same fault and dropped its =:key_field:=, so its key is the
+id. Do the same for the app version: drop =:key_field: wrapper_version=, regenerate
+the files the model drives, and add a service test that republishes two versions that
+share a wrapper version. A write then reads its own row by id.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compute core tests, with two new cases | pass | =ctest -R ores.compute.core.tests= after a database recreate | aa4605e98d plus the working tree |
+| Two versions sharing wrapper 1.0.0, each republished twice | no conflict | =compute publish-package= four times as =super_admin=, then =app_versions list= | aa4605e98d plus the working tree |
+| A republish without a note after a republish with one | the note is kept | the same run | aa4605e98d plus the working tree |
+
+* Notes
+
+- The review of the PR found a fault in the shell generator, older than this task: a
+  command that names one row (get, delete, versions, version) read no key when the
+  key was an id that a put mints. The command sent a nil key, and delete took the id
+  as the reason. The generator now always reads the key from the caller. The change
+  regenerates 103 command files in the shell, each with one added line. The shell
+  builds, and a live get and versions by id answer.
+
+- The shell commands that took the wrapper version as the key, such as get, delete and
+  versions, take the id now. The recipe and its scripts are regenerated.
+- The notify trigger of the table states the key as the id, so a database that is not
+  rebuilt keeps the old trigger and the eventing test fails until a recreate.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #3660 | [compute] Key the app version by its id |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The shell commands never read the id | app_version_commands.cpp | Fixed | The generator fault is fixed, with a test, and 103 command files are regenerated. |
+| 2 | delete maps missing to not_found | app_version_service.cpp | Confirmed | The existing switch maps the missing status. |
+| 3 | A malformed id reaches the repository | app_version_service.cpp | No change | The request type is a uuid, so a bad id fails at decode. |
+| 4 | The trigger needs a migration | compute_app_versions_notify_trigger_create.sql | Noted | The repo has create scripts only. A recreate applies it. |
+
+* Result
+
+An app version is keyed by its id, as the workunit is. Two versions of one app that
+share a wrapper version each read their own row, so each republishes without a
+version conflict. The shell commands that named a version by its wrapper version name
+it by its id.

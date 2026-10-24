@@ -122,6 +122,7 @@
 #include "ores.refdata.core/messaging/sandbox_member_registrar.hpp"
 #include "ores.refdata.core/messaging/sandbox_registrar.hpp"
 #include "ores.refdata.core/messaging/series_subclass_code_registrar.hpp"
+#include "ores.refdata.core/messaging/source_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
@@ -284,6 +285,7 @@
 #include "ores.refdata.core/messaging/sandbox_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/sandbox_member_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/series_subclass_code_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/source_kind_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/supervisory_body_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_index_convention_registrar.hpp"
@@ -451,6 +453,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_rule_handlers(nats, ctx, verifier));
     append(register_derivation_kind_handlers(nats, ctx, verifier));
     append(register_producer_kind_handlers(nats, ctx, verifier));
+    append(register_source_kind_handlers(nats, ctx, verifier));
     append(register_average_ois_convention_handlers(nats, ctx, verifier));
     append(register_base_correlation_config_handlers(nats, ctx, verifier));
     append(register_bma_basis_swap_convention_handlers(nats, ctx, verifier));
@@ -673,6 +676,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_csa_eligible_currency_history_provider(hist_registry);
         register_derivation_kind_history_provider(hist_registry);
         register_producer_kind_history_provider(hist_registry);
+        register_source_kind_history_provider(hist_registry);
         register_instrument_code_history_provider(hist_registry);
         register_ir_curve_bootstrap_config_history_provider(hist_registry);
         register_ir_curve_bootstrap_pillar_history_provider(hist_registry);

@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -50,15 +51,18 @@ inline void insert_tick(ores::database::context ctx,
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
     ores::database::repository::execute_parameterized_multi_column_query(
         ctx,
-        "INSERT INTO ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value) "
-        "VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz, $5::smallint, $6::float8) "
+        "INSERT INTO ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, "
+        "source_id) "
+        "VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz, $5::smallint, $6::float8, "
+        "        $7::uuid) "
         "RETURNING 1",
         {ctx.tenant_id().to_string(),
          boost::uuids::to_string(party_id),
          boost::uuids::to_string(series_id),
          ores::platform::time::datetime::to_iso8601_utc(ts),
          std::to_string(coord),
-         std::format("{}", value)},
+         std::format("{}", value),
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id())},
         lg,
         "inserting a tick");
 }

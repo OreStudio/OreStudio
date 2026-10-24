@@ -106,23 +106,6 @@ public:
     std::vector<domain::app_version> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
-    /**
-     * @brief Reads latest app versions filtered by wrapper_version.
-     */
-    std::vector<domain::app_version>
-    read_latest_by_wrapper_version(context ctx, const std::string& wrapper_version);
-
-    /**
-     * @brief Reads the newest app versions filtered by wrapper_version, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
-     */
-    std::vector<domain::app_version>
-    read_any_by_wrapper_version(context ctx, const std::string& wrapper_version);
-
 
     /**
      * @brief Reads all app versions, possibly filtered by primary key.
@@ -140,6 +123,30 @@ public:
      */
     std::optional<domain::app_version>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest app versions filtered by app_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param app_id The app_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::app_version> read_latest_by_app_id(
+        context ctx,
+        const std::string& app_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active app versions filtered by app_id.
+     */
+    std::uint32_t get_total_app_version_count_by_app_id(
+        context ctx,
+        const std::string& app_id,
+        const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
 
 
     /**

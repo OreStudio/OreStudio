@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 8354553E-21FB-4785-A8F5-73D95B28DC76
+:END:
+#+title: Task: Track adapter state and demand
+#+description: Track each adapter's state, compute its demand set, and check its universe against the catalogue.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/track-adapter-state-and-demand
+#+pr: 3654
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The service tracks announced, ready, serving, stale and rejected adapters, sends each the full demand set, and checks the announced universe against the catalogue.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- A missed heartbeat makes an adapter stale and a returning heartbeat triggers a new demand set.
+- The demand set is the union of the mapped external ids of the parties routed to the adapter, including the inputs of composites.
+- The reply lists accepted and rejected ids with reasons, and the status read shows them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Keep the five states and their changes in a registry that reads no clock and no network, so each change can be tested.
+2. Compute the demand set of each adapter in a pure function of the catalogue: the union of the mapped vendor ids of the provider over the parties routed to the source, refusing a party with no right as not_entitled.
+3. Put the NATS side in a supervisor: it answers the announce, takes the heartbeats, makes an adapter stale on a missed heartbeat, and sends the demand set when an adapter is ready, has recovered or when the catalogue changes.
+4. Add a status read that lists each adapter with its state and the ids of its last reply.
+5. Test the registry, the calculator and the subject helpers without NATS.
+
+A party states no requirements yet, so a party needs every item of its provider that a mapping reaches. The calculator takes a policy for requirements and for the inputs of a composite, so the composite task only has to supply it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3654][#3654]] | [marketdata] Track adapter state and demand |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A failed demand send is never retried | adapter_supervisor | Accept | A failed send is owed again after two seconds. |
+| 2 | A service restart loses every adapter, and an unknown heartbeat is ignored without a trace | adapter_registry, supervisor | Accept | The supervisor logs the first unknown heartbeat of an adapter. The adapter re-announce on a missing demand belongs to the adapter side. |
+| 3 | No caller refreshes the catalogue after start | application.cpp | Decline | The route, subscription, source, vendor instrument and mapping events refresh the supervisor. |
+| 4 | An adapter id must equal a source name | adapter_supervisor.hpp | Accept | The header says so. |
+| 5 | The universe check scans every instrument | adapter_supervisor | Accept | The snapshot holds a set of the vendor ids. |
+| 6 | compute_demand searches linearly | demand_calculator | Defer | The catalogue is small. An index belongs with a measurement. |
+
+* Result
+
+The service tracks each adapter as announced, ready, serving, stale or rejected. =adapter_registry= holds the five states and the changes the messages cause: an announce checks the provider and the universe against the catalogue, a missed heartbeat makes an adapter stale after 15 seconds, and a returning heartbeat makes it ready and asks for its demand again. =compute_demand= computes the demand set of each adapter as the union of the mapped vendor ids of the provider over the parties routed to its source, refuses a routed party with no right as not_entitled, and accepts a policy for requirements and the inputs of a composite. =adapter_supervisor= answers the announce, takes the heartbeats, and sends the full demand set when an adapter is ready, has recovered, or the catalogue changes. A status read lists each adapter with its state and the ids of its last reply, under the permission to read market data sources. Thirty-five service test cases and ten subject cases pass. The build of the service, its tests and the core tests passes.
+
+Left for later tasks:
+- The supervisor, the status read and the NATS exchange were not run against a live NATS server or a database, because the worktree =.env= is at version 32.
+- A route is not refused when its source is not ready. The registry knows the state, and the route trigger does not read it yet.
+- A party states no requirements, so it needs every mapped item of its provider. The composite task supplies the policy.
+- The demand is not recorded as intervals. The metering task does that.

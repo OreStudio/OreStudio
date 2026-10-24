@@ -36,7 +36,7 @@
 namespace ores::compute::messaging {
 
 struct app_version_key {
-    std::string wrapper_version;
+    boost::uuids::uuid id;
 };
 
 struct app_version_write {
@@ -45,6 +45,7 @@ struct app_version_write {
     std::string wrapper_version;
     std::string engine_version;
     int min_ram_mb;
+    std::string release_note;
 };
 
 struct app_version_change {
@@ -63,7 +64,9 @@ struct app_version_lookup {
 };
 
 struct app_versions_filter {
+    std::optional<boost::uuids::uuid> app_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> app_id_one_of;
 };
 
 struct app_version_event {
@@ -217,6 +220,30 @@ struct delete_many_app_versions_request {
 
 struct delete_many_app_versions_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_app_id_app_versions_request {
+    using response_type = struct list_by_app_id_app_versions_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_versions.list_by_app_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid app_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<app_versions_filter> filter;
+};
+
+struct list_by_app_id_app_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::compute::domain::app_version> app_versions;
+    std::uint64_t total;
 };
 
 struct list_app_version_versions_request {

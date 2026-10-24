@@ -46,9 +46,12 @@
 #include "ores.iam.core/service/seed_profile_step_service.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
+#include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/route_protocol.hpp"
+#include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -867,8 +870,8 @@ private:
             case provision_step_action::attach_photos:
                 attach_photos_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::start_market_feeds:
-                start_market_feeds_step(wf, command, resolve_step_actor(command));
+            case provision_step_action::subscribe_market_data:
+                subscribe_market_data_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::generate_trades:
                 generate_trades_step(wf, command, resolve_step_actor(command));
@@ -943,7 +946,6 @@ private:
             publish_bundle_or_throw(
                 admin_client, bundle_code, super_actor.username, params_json, command.kind);
             complete_system_onboarding(admin_client);
-            restore_system_feeds(admin_client);
             wf.complete(rfl::json::write(
                 provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
             return;
@@ -1228,27 +1230,20 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Binds every party the tenant holds to the feeds of the synthetic feeds
-    /// dataset the step names, through the configurations the tenant's bundle
-    /// publication already stored, and starts those feeds.
-    void start_market_feeds_step(const ores::service::messaging::workflow_step_context& wf,
-                                 const ores::iam::workflow::provision_tenant_step_command& command,
-                                 const step_actor& actor) {
-        const auto arguments = parse_market_feed_arguments(command.arguments_json);
+    /// Gives every party the tenant holds a subscription to the provider the step
+    /// names and a route to the source it names. The generators belong to the system,
+    /// so the tenant publishes none and starts none: the parties take the shared
+    /// simulated stream through their subscriptions and routes.
+    void
+    subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command,
+                               const step_actor& actor) {
+        const auto arguments = parse_market_data_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        const auto source_id = find_source_id(discover, arguments.provider, arguments.source);
 
-        const auto system_party = find_system_party(discover);
-        if (!system_party)
-            throw std::runtime_error(
-                "The tenant holds no system party to resolve its market configuration against.");
-
-        auto system_client =
-            make_step_client(command.tenant_id, actor.account_id, system_party->id, actor.username);
-
-        // Every party the tenant holds consumes the shared stream through its
-        // own bindings, which is how the consistent world reaches each party.
-        std::vector<std::string> bound;
+        std::vector<std::string> subscribed;
         std::uint32_t offset = 0;
         constexpr std::uint32_t page_size = 1000;
         while (true) {
@@ -1257,24 +1252,18 @@ private:
             request.limit = page_size;
             const auto page = discover.request(request).parties;
             for (const auto& party : page) {
-                const auto party_id = boost::uuids::to_string(party.id);
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                if (!create_feed_bindings(system_client, party_client, arguments.dataset, party_id))
-                    throw std::runtime_error("The feeds of '" + arguments.dataset +
-                                             "' was not bound for the party '" + party_id + "'.");
-                bound.push_back(party_id);
+                subscribe_party(party_client, party.id, arguments.provider, source_id);
+                subscribed.push_back(boost::uuids::to_string(party.id));
             }
             if (page.size() < page_size)
                 break;
             offset += page_size;
         }
 
-        if (!start_synthetic_feeds(system_client, arguments.dataset))
-            throw std::runtime_error("The feeds of '" + arguments.dataset + "' were not started.");
-
-        wf.complete(rfl::json::write(provision_step_result{
-            .kind = command.kind, .parties = bound, .datasets = {arguments.dataset}}));
+        wf.complete(
+            rfl::json::write(provision_step_result{.kind = command.kind, .parties = subscribed}));
     }
 
     /// A client that speaks as one party over the connection this handler
@@ -1846,123 +1835,6 @@ private:
         return matches.front();
     }
 
-    // Starts every feed under the calling party's (client's) collection
-    // folder for the given synthetic feeds dataset code (e.g.
-    // "synthetic.feeds.bloomberg") via one folder-scoped request the server
-    // cascades across asset classes, resolved server-side from
-    // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
-    // convention rather than by matching on display name. Logs and returns
-    // false on any resolution miss (dataset/config/folder not found, or a
-    // list request itself failing server-side); the caller fails the step on
-    // false.
-    static bool start_synthetic_feeds(internal_request_client& client,
-                                      const std::string& dataset_code) {
-        std::optional<boost::uuids::uuid> dataset_id;
-        {
-            dq::messaging::list_datasets_request req;
-            req.limit = 1000;
-            auto resp = client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_feeds: list datasets failed: " << resp.result.message;
-                return false;
-            }
-            for (auto& d : resp.datasets)
-                if (d.code == dataset_code) {
-                    dataset_id = d.id;
-                    break;
-                }
-        }
-        if (!dataset_id) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_feeds: dataset not found: " << dataset_code;
-            return false;
-        }
-
-        std::optional<boost::uuids::uuid> config_id;
-        {
-            synthetic::messaging::list_market_data_generation_configs_request req;
-            req.limit = 1000;
-            auto resp = client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_feeds: list market_data_generation_configs "
-                       "failed: "
-                    << resp.result.message;
-                return false;
-            }
-            for (auto& c : resp.market_data_generation_configs)
-                if (c.dataset_id == dataset_id) {
-                    config_id = c.id;
-                    break;
-                }
-        }
-        if (!config_id) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_feeds: no market_data_generation_config for dataset "
-                << dataset_code;
-            return false;
-        }
-
-        std::optional<boost::uuids::uuid> folder_id;
-        {
-            synthetic::messaging::list_folders_request req;
-            req.limit = 1000;
-            auto resp = client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_feeds: list folders failed: " << resp.result.message;
-                return false;
-            }
-            for (auto& f : resp.folders)
-                if (f.kind == "collection" && f.collection_id == config_id) {
-                    folder_id = f.id;
-                    break;
-                }
-        }
-        if (!folder_id) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_feeds: no collection folder for dataset " << dataset_code;
-            return false;
-        }
-        const auto folder_id_str = boost::uuids::to_string(*folder_id);
-
-        // One folder-scoped request cascades every feed under the subtree
-        // server-side, across all asset classes.
-        marketdata::messaging::start_feeds_under_folder_request req;
-        req.folder_id = folder_id_str;
-        auto resp = client.request(req);
-        if (!resp.success) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "start_synthetic_feeds: start folder failed: " << resp.message;
-            return false;
-        }
-        return true;
-    }
-
-    // Starts the system feeds that the system bundle just created, so a new
-    // installation runs them without a restart. A synthetic service that is not
-    // up yet restores the same feeds when it starts, so no failure here fails
-    // the step.
-    static void restore_system_feeds(internal_request_client& client) {
-        try {
-            const auto resp = client.request(ores::synthetic::messaging::restore_feeds_request{});
-            if (!resp.success) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "restore_system_feeds: " << resp.message;
-                return;
-            }
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "restore_system_feeds: " << resp.message;
-            for (const auto& failure : resp.failures)
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "restore_system_feeds: " << failure;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "restore_system_feeds: the synthetic service did not answer: " << e.what();
-        }
-    }
-
     // Finds the tenant's system party (party_category == "System", created
     // once per tenant by the IAM provisioner) -- the owner of the simulated
     // market config in the consistent world, and the scope a tenant's own
@@ -1975,169 +1847,84 @@ private:
         return std::nullopt;
     }
 
-    // Creates one feed binding per enabled FX and IR source of the synthetic
-    // feeds dataset resolved by @p dataset_code, for @p party_id_str -- the
-    // consumption contract of the consistent world (see the
-    // simulated-market-data strategy): the dataset's config lives once under
-    // the system party, every party consumes the shared stream through its
-    // own bindings, and the marketdata ingest loop materializes each
-    // party's observations from it. Two clients are needed: the synthetic
-    // tables are party-isolated by RLS and the dataset's configs live under
-    // the system party, so resolution runs through @p resolve_client (the
-    // system party's); the bindings themselves are saved through
-    // @p save_client impersonating the consuming party, because
-    // feed-binding saves stamp the binding's party from the authenticated
-    // context (a security boundary). Sources already bound for the party
-    // are skipped, so the step is re-runnable: a party that already holds
-    // every source returns true without writing, and a party that holds
-    // some of them writes only the rest. Logs and returns false on any
-    // resolution miss, and the caller fails the step on false; individual
-    // save failures are logged and skipped so one bad source does not drop
-    // the remaining bindings.
-    static bool create_feed_bindings(internal_request_client& resolve_client,
-                                     internal_request_client& save_client,
-                                     const std::string& dataset_code,
-                                     const std::string& party_id_str) {
-        std::optional<boost::uuids::uuid> dataset_id;
-        {
-            dq::messaging::list_datasets_request req;
-            req.limit = 1000;
-            auto resp = resolve_client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list datasets failed: " << resp.result.message;
-                return false;
-            }
-            for (auto& d : resp.datasets)
-                if (d.code == dataset_code) {
-                    dataset_id = d.id;
-                    break;
-                }
-        }
-        if (!dataset_id) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "create_feed_bindings: dataset not found: " << dataset_code;
-            return false;
-        }
+    // The id of the source the step names, which must belong to the provider.
+    static boost::uuids::uuid find_source_id(internal_request_client& client,
+                                             const std::string& provider,
+                                             const std::string& source) {
+        marketdata::messaging::list_market_data_sources_request request;
+        request.limit = 1000;
+        const auto response = client.request(request);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The market data sources were not read: " +
+                                     response.result.message);
+        for (const auto& candidate : response.sources)
+            if (candidate.name == source && candidate.provider_code == provider)
+                return candidate.id;
+        throw std::runtime_error("The catalogue holds no source '" + source +
+                                 "' of the provider '" + provider + "'.");
+    }
 
-        std::optional<boost::uuids::uuid> config_id;
-        {
-            synthetic::messaging::list_market_data_generation_configs_request req;
-            req.limit = 1000;
-            auto resp = resolve_client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list market_data_generation_configs "
-                       "failed: "
-                    << resp.result.message;
-                return false;
-            }
-            for (auto& c : resp.market_data_generation_configs)
-                if (c.dataset_id == dataset_id) {
-                    config_id = c.id;
-                    break;
-                }
-        }
-        if (!config_id) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "create_feed_bindings: no market_data_generation_config for dataset "
-                << dataset_code;
-            return false;
-        }
-
-        // Every feed the config starts, FX and IR alike, is bound by its source:
-        // a tick names its own datum, so a binding names only who consumes it.
-        std::vector<std::string> sources;
-        const auto collect = [&](auto req, const char* what, auto configs_of) {
-            req.limit = 1000;
-            auto resp = resolve_client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list " << what << " failed: " << resp.result.message;
-                return false;
-            }
-            for (const auto& c : configs_of(resp))
-                if (c.enabled && c.config_id == config_id)
-                    sources.push_back(c.source_name);
-            return true;
-        };
-        if (!collect(synthetic::messaging::list_fx_spot_generation_configs_request{},
-                     "fx_spot_generation_configs",
-                     [](const auto& r) -> const auto& { return r.fx_spot_generation_configs; }) ||
-            !collect(synthetic::messaging::list_ir_curve_generation_configs_request{},
-                     "ir_curve_generation_configs",
-                     [](const auto& r) -> const auto& { return r.ir_curve_generation_configs; }))
-            return false;
-
-        // Active bindings already exist per natural key (tenant, party, source);
-        // skip them so re-provisioning does not trip the unique index. The list
-        // is tenant-scoped, so filter down to this party's rows.
-        std::vector<std::string> existing;
-        {
-            marketdata::messaging::list_feed_bindings_request req;
-            req.limit = 1000;
-            auto resp = save_client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: list feed_bindings failed: " << resp.result.message;
-                return false;
-            }
-            for (const auto& b : resp.feed_bindings)
-                if (boost::uuids::to_string(b.party_id) == party_id_str)
-                    existing.push_back(b.source_name);
-        }
-
+    // Gives one party a subscription to a provider and a route to a source. The
+    // client speaks as the party, because the service stamps the party from the
+    // session. A subscription or a route the party already holds is left as it is,
+    // so the step can run again.
+    static void subscribe_party(internal_request_client& party_client,
+                                const boost::uuids::uuid& party_id,
+                                const std::string& provider,
+                                const boost::uuids::uuid& source_id) {
+        const auto party_text = boost::uuids::to_string(party_id);
         boost::uuids::random_generator uuid_gen;
-        boost::uuids::string_generator sg;
-        bool all_saved = true;
-        for (const auto& source_name : sources) {
-            if (std::find(existing.begin(), existing.end(), source_name) != existing.end()) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                    << "create_feed_bindings: binding " << source_name << " for party "
-                    << party_id_str << " already exists; skipping";
-                continue;
-            }
-            marketdata::messaging::put_feed_binding_request req;
-            req.change.write.id = uuid_gen();
-            req.change.write.source_name = source_name;
-            // These bindings name the dataset's simulated streams, so the series
-            // the ingest loop stamps from them are generated, not observed.
-            req.change.write.producer_kind = "SYNTHETIC";
-            req.change.write.enabled = true;
-            req.change.write.party_id = sg(party_id_str);
-            // The stream these bindings consume is the tenant's own simulated
-            // one, not a real feed.
-            req.change.write.producer_kind = "SYNTHETIC";
-            // The write states no expectation, because the store's
-            // must-not-exist claim is keyed on the source alone while the
-            // binding's natural key is the party with the source. A
-            // must-not-exist claim would refuse the second party's binding for
-            // a source the first party already holds. The freshness check above
-            // keeps this idempotent, and the natural key's unique index keeps
-            // it honest.
-            req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-            req.intent.reason_code = "system.new_record";
-            req.intent.commentary =
-                "Created by ACME provisioning: consumes the system-party simulated market "
-                "stream";
-            auto resp = save_client.request(req);
-            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_feed_bindings: save binding " << source_name << " for party "
-                    << party_id_str << " failed: " << resp.result.message;
-                all_saved = false;
-            } else {
-                // The freshness list is read once, so a source this loop just bound
-                // has to join it: two enabled configs naming one source would
-                // otherwise both pass the check and the second would meet the
-                // unique index instead of the skip above.
-                existing.push_back(source_name);
-            }
+
+        marketdata::messaging::list_subscriptions_request held_subscriptions;
+        held_subscriptions.limit = 1000;
+        const auto subscriptions = party_client.request(held_subscriptions);
+        if (subscriptions.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The subscriptions of party " + party_text +
+                                     " were not read: " + subscriptions.result.message);
+        const bool has_subscription =
+            std::ranges::any_of(subscriptions.subscriptions,
+                                [&](const auto& s) { return s.provider_code == provider; });
+        if (!has_subscription) {
+            marketdata::messaging::put_subscription_request put;
+            put.change.write.id = uuid_gen();
+            put.change.write.party_id = party_id;
+            put.change.write.provider_code = provider;
+            put.change.write.display = true;
+            put.change.write.non_display = true;
+            put.change.write.derived = true;
+            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary =
+                "Created by provisioning: the party takes the shared market data";
+            const auto saved = party_client.request(put);
+            if (saved.result.outcome != ores::utility::domain::outcome::ok)
+                throw std::runtime_error("The subscription of party " + party_text + " to '" +
+                                         provider + "' was not saved: " + saved.result.message);
         }
-        if (sources.empty())
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "create_feed_bindings: no enabled feed sources for dataset " << dataset_code;
-        return all_saved;
+
+        marketdata::messaging::list_routes_request held_routes;
+        held_routes.limit = 1000;
+        const auto routes = party_client.request(held_routes);
+        if (routes.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The routes of party " + party_text +
+                                     " were not read: " + routes.result.message);
+        const bool has_route = std::ranges::any_of(
+            routes.routes, [&](const auto& r) { return r.provider_code == provider; });
+        if (!has_route) {
+            marketdata::messaging::put_route_request put;
+            put.change.write.id = uuid_gen();
+            put.change.write.party_id = party_id;
+            put.change.write.provider_code = provider;
+            put.change.write.source_id = source_id;
+            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary =
+                "Created by provisioning: the party takes the shared market data";
+            const auto saved = party_client.request(put);
+            if (saved.result.outcome != ores::utility::domain::outcome::ok)
+                throw std::runtime_error("The route of party " + party_text + " to '" + provider +
+                                         "' was not saved: " + saved.result.message);
+        }
     }
 
     // Ensures the caller tenant holds the image with this code, copying the

@@ -1,0 +1,280 @@
+:PROPERTIES:
+:ID: 6EF0F185-0B58-4E41-AC27-83D03777BD20
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.subscription_interval
+#+description: Codegen entity model for the marketdata subscription_intervals table; a period in which a party held a subscription, with its rights, and was routed to a source.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: subscription_interval
+#+entity_plural: subscription_intervals
+#+entity_title: Subscription Interval
+#+brief: A period in which a party held a subscription, with its rights, and was routed to a source.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A subscription interval is a fact about usage. It records that a party held a subscription to a provider
+with given rights and was routed to a source, from one time to another. It holds no price. A rating
+step applies the rate card of the source to the interval later, so a new contract can price old facts.
+
+The service opens an interval when a route and its subscription come to hold together and closes it
+when either changes or ends. A change of the source or of the rights closes one interval and opens the
+next. A party administrator reads the intervals of the party and the system tenant reads all of them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this interval.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+The party that used the feed. Set from the service that records the event and enforced by row level security, so a party administrator reads only the events of the party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the provider whose feed the event is about.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** source_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:filterable: true
+:nullable: false
+:END:
+
+References =market_data_source.id=: the source that served the party when the event happened. A rate card is on the source, so the rating step needs it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** display
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+The subscription held the display right during the interval.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** non_display
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+The subscription held the non-display right during the interval.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** derived
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+The subscription held the derived right during the interval.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** interval_from
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:natural_key: true
+:nullable: false
+:END:
+
+When the interval opened: a route and a subscription with these rights held together from this time.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** interval_to
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the interval closed, or null while it is open. A change of source or of rights closes the interval and opens another.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_subscription_intervals_tbl
+:rls_tenant_isolation:      true
+:rls_party_isolation:       true
+:rls_system_tenant_visible:      true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "provider_code" <> '' |
+| "interval_to" is null or "interval_to" >= "interval_from" |
+| "display" or "non_display" or "derived" |
+
+
+* Insert trigger
+** Validations
+
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: subscription_interval
+:entity_plural_short:   subscription_intervals
+:entity_singular_words: subscription interval
+:entity_plural_words:   subscription intervals
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 6CE9190E-B04E-46A8-9B8E-C07F9D542099
+:END:
+
+Reads the latest subscription intervals across all tenants. The service that meters usage reads the intervals
+that are open for every party, so it cannot filter on one tenant. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::subscription_interval> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::subscription_interval>
+subscription_interval_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<subscription_interval_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<subscription_interval_entity, domain::subscription_interval>(
+        ctx,
+        query,
+        [](const auto& entities) { return subscription_interval_mapper::map(entities); },
+        lg(),
+        "Reading latest subscription intervals across all tenants");
+}
+#+end_src
+
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sub
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/subscription_interval.hpp
+:domain_class:            ores::marketdata::domain::subscription_interval
+:protocol_include:        ores.marketdata.api/messaging/subscription_interval_protocol.hpp
+:collection_name:         subscription_intervals
+:key_field:               provider_code
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label    | widget       | type      | is_key | is_required | placeholder         |
+|---------------+----------+--------------+-----------+--------+-------------+---------------------|
+| provider_code | Provider | providerEdit | line_edit | true   | true        | Enter provider code |
+
+*** Columns
+
+| enum_name    | field         | header      | type    | width |
+|--------------+---------------+-------------+---------+-------|
+| ProviderCode | provider_code | Provider    | string  | 140   |
+| SourceId     | source_id     | Source      | string  | 300   |
+| Display      | display       | Display     | boolean | 80    |
+| NonDisplay   | non_display   | Non-display | boolean | 100   |
+| Derived      | derived       | Derived     | boolean | 80    |
+| Version      | version       | Version     | int     | 80    |
+
+* See also
+
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] -- the events this table records.
+

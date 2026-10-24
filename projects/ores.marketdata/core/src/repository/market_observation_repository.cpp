@@ -50,6 +50,7 @@
 #include <cstdint>
 #include <format>
 #include <initializer_list>
+#include <map>
 #include <optional>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
@@ -457,6 +458,23 @@ market_observation_repository::read_latest_for_series(context ctx,
         "Reading latest market observations.");
 }
 
+std::vector<domain::market_observation>
+market_observation_repository::read_latest_all(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("series_id"_c, "observation_datetime"_c);
+
+    return execute_read_query<market_observation_entity, domain::market_observation>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_observation_mapper::map(entities); },
+        lg(),
+        "Reading the latest market observations of every series.");
+}
+
 namespace {
 
 /*
@@ -480,7 +498,7 @@ std::string latest_tick_points(std::string_view bound, std::string_view max) {
     return std::format(R"(
             SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
                    t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
-                   NULL::text, t.ts, {1}::timestamptz, 1
+                   NULL::text, t.source_id, t.ts, {1}::timestamptz, 1
             FROM coords c
             CROSS JOIN LATERAL (
                 SELECT * FROM ores_marketdata_ticks_tbl x
@@ -507,7 +525,7 @@ std::vector<observation_record> read_manual_points(market_observation_repository
     const auto sid = boost::uuids::to_string(series_id);
     static const std::string sql = R"(
         SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
-               o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+               o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
         FROM ores_marketdata_observation_lineages_tbl l
         JOIN ores_marketdata_market_observations_tbl o
           ON o.tenant_id = l.tenant_id AND o.party_id = l.party_id
@@ -526,6 +544,36 @@ std::vector<observation_record> read_manual_points(market_observation_repository
         result.push_back(
             {market_observation_mapper::map(as_of_observation(row, 0, "read_manual_points")),
              as_of_recorded_at(row, 0, "read_manual_points")});
+    return result;
+}
+
+/*
+ * The manual points of every series of the tenant: the read above without its series.
+ */
+std::vector<observation_record> read_manual_points_all(market_observation_repository::context ctx,
+                                                       ores::logging::logger_t& log) {
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sql = R"(
+        SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
+               o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
+        FROM ores_marketdata_observation_lineages_tbl l
+        JOIN ores_marketdata_market_observations_tbl o
+          ON o.tenant_id = l.tenant_id AND o.party_id = l.party_id
+         AND o.series_id = l.series_id AND o.oresmd_uri = l.oresmd_uri
+         AND o.observation_datetime = l.observation_datetime AND o.valid_to = $2
+        WHERE l.tenant_id = $1 AND l.point_source_kind = 'manual'
+            AND l.valid_to = $2
+    )";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid, MAX_TIMESTAMP}, log, "reading manual curve points of every series");
+
+    std::vector<observation_record> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+        result.push_back(
+            {market_observation_mapper::map(as_of_observation(row, 0, "read_manual_points_all")),
+             as_of_recorded_at(row, 0, "read_manual_points_all")});
     return result;
 }
 
@@ -554,7 +602,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     static const std::string sql = "WITH " + tick_coords_cte() + R"(,
         points AS (
             SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-                   source, valid_from, valid_to, 0 AS src_rank
+                   source, source_id, valid_from, valid_to, 0 AS src_rank
             FROM ores_marketdata_market_observations_tbl
             WHERE tenant_id = $1 AND series_id = $2 AND observation_datetime <= $3
                 AND valid_to = $4
@@ -563,7 +611,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
         )
         SELECT DISTINCT ON (oresmd_uri)
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-            source, valid_from, valid_to
+            source, source_id, valid_from, valid_to
         FROM points
         ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
@@ -608,6 +656,80 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     return result;
 }
 
+std::vector<domain::market_observation> market_observation_repository::read_as_of_all(
+    context ctx, const std::chrono::system_clock::time_point& as_of_datetime) {
+    using ores::platform::time::datetime;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
+    BOOST_LOG_SEV(lg(), debug) << "Reading the as-of snapshot of every series as-of: " << as_of_str;
+
+    // The statement of read_as_of_records without its series filter: the coordinates of
+    // every series, the latest tick of each by one index probe, and the observation rows,
+    // reduced to one row for each datum of each series.
+    static const std::string sql = R"(
+        WITH coords AS (
+            SELECT series_id, coord, oresmd_uri
+            FROM ores_marketdata_tick_coords_tbl
+            WHERE tenant_id = $1
+        ),
+        points AS (
+            SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
+                   source, source_id, valid_from, valid_to, 0 AS src_rank
+            FROM ores_marketdata_market_observations_tbl
+            WHERE tenant_id = $1 AND observation_datetime <= $2 AND valid_to = $3
+            UNION ALL
+            SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
+                   t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
+                   NULL::text, t.source_id, t.ts, $3::timestamptz, 1
+            FROM coords c
+            CROSS JOIN LATERAL (
+                SELECT * FROM ores_marketdata_ticks_tbl x
+                WHERE x.series_id = c.series_id AND x.coord = c.coord
+                    AND x.ts <= $2::timestamptz
+                ORDER BY x.ts DESC
+                LIMIT 1
+            ) t
+        )
+        SELECT DISTINCT ON (series_id, oresmd_uri)
+            id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
+            source, source_id, valid_from, valid_to
+        FROM points
+        ORDER BY series_id, oresmd_uri, observation_datetime DESC, src_rank
+    )";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of snapshot of every series");
+
+    std::vector<observation_record> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+        result.push_back(
+            {market_observation_mapper::map(as_of_observation(row, 0, "read_as_of_all")),
+             as_of_recorded_at(row, 0, "read_as_of_all")});
+
+    // A current manual point owns its datum until cleared, as in the read for one series.
+    std::map<std::pair<std::string, std::string>, std::size_t> position;
+    for (std::size_t i = 0; i != result.size(); ++i)
+        position[{boost::uuids::to_string(result[i].observation.series_id),
+                  result[i].observation.oresmd_uri}] = i;
+    for (auto& manual : read_manual_points_all(ctx, lg())) {
+        if (manual.observation.observation_datetime > as_of_datetime)
+            continue;
+        const auto key = std::pair{boost::uuids::to_string(manual.observation.series_id),
+                                   manual.observation.oresmd_uri};
+        if (const auto it = position.find(key); it != position.end())
+            result[it->second] = std::move(manual);
+        else
+            result.push_back(std::move(manual));
+    }
+
+    std::vector<domain::market_observation> observations;
+    observations.reserve(result.size());
+    for (auto& record : result)
+        observations.push_back(std::move(record.observation));
+    return observations;
+}
+
 std::vector<std::vector<domain::market_observation>>
 market_observation_repository::read_as_of_buckets(
     context ctx,
@@ -646,16 +768,16 @@ market_observation_repository::read_as_of_buckets(
         )" + tick_coords_cte() +
                                    R"(
         SELECT b.bucket_ordinal, o.id, o.tenant_id, o.party_id, o.series_id,
-               o.observation_datetime, o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+               o.observation_datetime, o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
         FROM boundaries b
         CROSS JOIN LATERAL (
             SELECT DISTINCT ON (u.oresmd_uri)
                 u.id, u.tenant_id, u.party_id, u.series_id, u.observation_datetime,
-                u.oresmd_uri, u.value, u.source, u.valid_from, u.valid_to
+                u.oresmd_uri, u.value, u.source, u.source_id, u.valid_from, u.valid_to
             FROM (
                 (SELECT DISTINCT ON (oresmd_uri)
                     id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-                    source, valid_from, valid_to, 0 AS src_rank
+                    source, source_id, valid_from, valid_to, 0 AS src_rank
                 FROM ores_marketdata_market_observations_tbl m
                 WHERE m.tenant_id = $1 AND m.series_id = $2
                     AND m.observation_datetime <= b.boundary
@@ -771,7 +893,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
         ),
         points AS (
             SELECT i.instant, o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
-                   o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to, 0 AS src_rank
+                   o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to, 0 AS src_rank
             FROM instants i
             JOIN ores_marketdata_market_observations_tbl o
               ON o.tenant_id = $1 AND o.series_id = $2
@@ -779,7 +901,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
             UNION ALL
             SELECT i.instant, md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
                    t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
-                   NULL::text, t.ts, $6::timestamptz, 1
+                   NULL::text, t.source_id, t.ts, $6::timestamptz, 1
             FROM instants i
             JOIN ores_marketdata_ticks_tbl t ON t.series_id = $2::uuid AND t.ts = i.instant
             JOIN coords c ON c.coord = t.coord
@@ -787,7 +909,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
         SELECT DISTINCT ON (instant, oresmd_uri)
                (extract(epoch FROM instant) * 1000000)::bigint::text,
                id, tenant_id, party_id, series_id, observation_datetime,
-               oresmd_uri, value, source, valid_from, valid_to
+               oresmd_uri, value, source, source_id, valid_from, valid_to
         FROM points
         ORDER BY instant, oresmd_uri, src_rank
     )";

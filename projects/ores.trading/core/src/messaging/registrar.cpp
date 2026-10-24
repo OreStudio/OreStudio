@@ -190,6 +190,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 toh->book_trade(std::move(msg));
             }));
         subs.push_back(nats.queue_subscribe(
+            put_bond_issue_composite_request::nats_subject,
+            queue_group,
+            [toh](ores::nats::message msg) { toh->put_bond_issue_composite(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
             export_portfolio_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->export_portfolio(std::move(msg));
             }));

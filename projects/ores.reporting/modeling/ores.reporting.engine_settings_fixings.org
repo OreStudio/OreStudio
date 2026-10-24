@@ -277,23 +277,6 @@ A configuration has at most one row of this part.
 
 ** Custom repository methods
 
-* Physical space
-
-The messaging, eventing and history surface is not generated yet. This task models the data.
-
-| Address                          | Enabled |
-|----------------------------------+---------|
-| ores.cpp.service                 | false   |
-| ores.cpp.protocol                | false   |
-| ores.cpp.nats-handler            | false   |
-| ores.cpp.nats-sub-registrar      | false   |
-| ores.cpp.nats-event-registrar    | false   |
-| ores.cpp.nats-eventing           | false   |
-| ores.cpp.nats-event-cache        | false   |
-| ores.cpp.history-provider-registrar | false |
-| ores.cpp.presentation            | false   |
-| ores.cpp.eventing-integration-test | false |
-
 * See also
 
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

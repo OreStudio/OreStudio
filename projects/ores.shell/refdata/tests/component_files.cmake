@@ -161,6 +161,7 @@ set(files
     "sandbox_commands_tests.cpp"
     "sandbox_member_commands_tests.cpp"
     "series_subclass_code_commands_tests.cpp"
+    "source_kind_commands_tests.cpp"
     "sub_periods_coupon_type_commands_tests.cpp"
     "supervisory_body_commands_tests.cpp"
     "swap_convention_commands_tests.cpp"

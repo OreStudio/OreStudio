@@ -26,7 +26,7 @@
  *
  * A catalogue of the providers whose market data the synthetic feeds simulate.
  * A system-scope collection names the provider it stands for, so the installation
- * can run a simulated Bloomberg, Refinitiv or CME once and every tenant reads it
+ * can run a simulated Bloomberg, LSEG or CME once and every tenant reads it
  * as that provider's data. Every collection names its provider, so every feed has
  * one. A reference set such as the ORE examples is a provider of its own.
  *

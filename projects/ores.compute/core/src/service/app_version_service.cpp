@@ -76,7 +76,7 @@ namespace {
 std::vector<domain::app_version> read_one(repository::app_version_repository& repo,
                                           const ores::database::context& ctx,
                                           const messaging::app_version_key& key) {
-    return repo.read_latest_by_wrapper_version(ctx, key.wrapper_version);
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
@@ -87,7 +87,7 @@ std::vector<domain::app_version> read_one(repository::app_version_repository& re
  */
 messaging::app_version_key key_from(const domain::app_version& v) {
     messaging::app_version_key key;
-    key.wrapper_version = v.wrapper_version;
+    key.id = v.id;
     return key;
 }
 
@@ -105,6 +105,7 @@ domain::app_version to_domain(const messaging::app_version_write& write) {
     v.wrapper_version = write.wrapper_version;
     v.engine_version = write.engine_version;
     v.min_ram_mb = write.min_ram_mb;
+    v.release_note = write.release_note;
     return v;
 }
 
@@ -125,6 +126,12 @@ app_version_service::list_app_versions(const messaging::list_app_versions_reques
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->app_id_one_of &&
+        request.filter->app_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "app_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -139,6 +146,37 @@ app_version_service::list_app_versions(const messaging::list_app_versions_reques
     response.app_versions = repo_.read_latest(
         ctx_, request.offset, request.limit, request.order, request.filter, as_of);
     response.total = repo_.get_total_app_version_count(ctx_, request.filter, as_of);
+    return response;
+}
+
+messaging::list_by_app_id_app_versions_response app_version_service::list_by_app_id_app_versions(
+    const messaging::list_by_app_id_app_versions_request& request) {
+    messaging::list_by_app_id_app_versions_response response;
+    if (!request.order.field.empty() &&
+        !repository::app_version_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "app versions", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->app_id_one_of &&
+        request.filter->app_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "app_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "app versions"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.app_id);
+    response.app_versions = repo_.read_latest_by_app_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_app_version_count_by_app_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -235,13 +273,7 @@ app_version_service::delete_app_version(const messaging::delete_app_version_requ
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "app_version"});
-        return response;
-    }
-    const auto& row = named.front();
-    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
         case repository::app_version_repository::remove_status::removed:
             break;
         case repository::app_version_repository::remove_status::missing:
@@ -284,22 +316,10 @@ messaging::delete_many_app_versions_response app_version_service::delete_many_ap
     }
     if (request.removals.empty())
         return response;
-    // A removal names its row by the key a caller holds, and the repository
-    // takes the storage key, so the two are joined once here rather than at
-    // each column's conversion. A name that matches no row is skipped: the
-    // batch reports what it removed, and a row that is already gone is not a
-    // failure.
-    std::vector<domain::app_version> resolved;
-    resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
-        if (!named.empty())
-            resolved.push_back(std::move(named.front()));
-    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(resolved.size());
-    for (const auto& row : resolved)
-        id_keys.push_back(boost::uuids::to_string(row.id));
+    id_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        id_keys.push_back(boost::uuids::to_string(removal.key.id));
     repo_.remove(ctx_, id_keys);
     return response;
 }
@@ -316,15 +336,7 @@ messaging::list_app_version_versions_response app_version_service::list_app_vers
         response.result = refuse(outcome_code::filter_not_supported, {.entity = "app versions"});
         return response;
     }
-    // The versions of the row the caller's key names. The repository reads by
-    // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "app_version"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -339,15 +351,8 @@ messaging::list_app_version_versions_response app_version_service::list_app_vers
 messaging::get_app_version_version_response app_version_service::get_app_version_version(
     const messaging::get_app_version_version_request& request) {
     messaging::get_app_version_version_response response;
-    // The version key nests the entity's own key, which is the declared one.
-    // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.app_version);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "app_version"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
+    auto found = repo_.read_at_version(
+        ctx_, boost::uuids::to_string(request.key.app_version.id), request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "app_version"});
         return response;
@@ -416,6 +421,18 @@ std::uint32_t app_version_service::count_app_versions() {
 }
 
 
+std::vector<domain::app_version> app_version_service::list_app_versions_by_app_id(
+    const std::string& app_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing app versions by app_id: " << app_id;
+    return repo_.read_latest_by_app_id(ctx_, app_id, offset, limit);
+}
+
+std::uint32_t app_version_service::count_app_versions_by_app_id(const std::string& app_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total app versions count by app_id: " << app_id;
+    return repo_.get_total_app_version_count_by_app_id(ctx_, app_id);
+}
+
+
 std::optional<domain::app_version>
 app_version_service::get_app_version_at_version(const boost::uuids::uuid& id,
                                                 std::uint32_t version) {
@@ -431,17 +448,6 @@ app_version_service::get_app_version(const boost::uuids::uuid& id) {
     if (results.empty())
         return std::nullopt;
     return results.front();
-}
-
-std::optional<domain::app_version>
-app_version_service::get_app_version_by_wrapper_version(const std::string& wrapper_version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting app version by wrapper_version: " << wrapper_version;
-    messaging::app_version_key k;
-    k.wrapper_version = wrapper_version;
-    auto found = read_one(repo_, ctx_, k);
-    if (found.empty())
-        return std::nullopt;
-    return found.front();
 }
 
 std::vector<domain::app_version>
@@ -483,25 +489,9 @@ void app_version_service::delete_app_versions(const std::vector<std::string>& id
 }
 
 std::vector<domain::app_version>
-app_version_service::get_app_version_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for app version. key: " << key;
-    // The caller holds the key the model declares and this reads by the
-    // storage key, so the two are joined here exactly as they are for any
-    // other read. Without this step a provider looks the versions up under a
-    // value the storage key never holds, and reports an entity that has a
-    // history as having none.
-    messaging::app_version_key k;
-    k.wrapper_version = key;
-    // A delete here closes the transaction-time window and leaves every version
-    // in place, so resolving through a latest read would lose the history at
-    // exactly the moment it is wanted. This takes the newest row carrying the
-    // declared key whether or not it is still current, which for a record that
-    // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_wrapper_version(ctx_, k.wrapper_version);
-    if (found.empty())
-        return {};
-    const auto& row = found.front();
-    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+app_version_service::get_app_version_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for app version. " << "id: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 }

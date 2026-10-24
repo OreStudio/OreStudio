@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 13
+Tables: 25
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,6 +41,126 @@ end note
 ' ==================== marketdata (Market Data (Quotes, Fixings, Series)) ====================
 '
 package "marketdata" #E3F2FD {
+    entity ores_marketdata_composite_inputs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * composite_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_composite_inputs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Input Table
+    A composite input is one quote series of one provider that a composite reads. The inputs of a composite are
+    read in the order of their position. The set of inputs also says which providers a party needs the derived right
+    on, and which items the service demands on a party's behalf when the party uses the composite.
+    end note
+
+    entity ores_marketdata_composites_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * provider_code : text
+        * oresmd_uri : text
+        * rule_code : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_composites_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Table
+    A composite is an internal item that the service derives from several quote series by a rule. A blended
+    EUR/USD spot from Bloomberg and LSEG is the first case. The composite is published by an internal provider with
+    one source of kind derived. It has no rate card: its use counts as demand on its inputs.
+    A party that uses a composite needs the derived right on the provider of every input. A composite with a
+    missing right gets no values and shows the reason. The rule is named by a code, so a later rule needs no schema
+    change. The system tenant owns the rows and every tenant reads them.
+    end note
+
+    entity ores_marketdata_delivery_counts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * period_start : timestamptz
+        * flushed_at : timestamptz
+        * source_id : uuid <<FK>>
+        * deliveries : bigint
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_delivery_counts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Delivery Count Table
+    A delivery count is a fact about usage. The fan-out counts the ticks it delivers to each party for each item
+    and writes the counts in batches. A count holds no price. The only cost at tick time is one increment in
+    memory, and one row is written for each party, item and hour at each write.
+    A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+    end note
+
+    entity ores_marketdata_demand_intervals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * oresmd_uri : text
+        * interval_from : timestamptz
+        * source_id : uuid <<FK>>
+          interval_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_demand_intervals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Demand Interval Table
+    A demand interval is a fact about usage. It records that one item was in the demand set of a party, and
+    so was published by the source that served the party, from one time to another. Demand is a control
+    signal for the adapter and a billing fact for the vendor: a live adapter pays for the items in the set.
+    The service opens an interval when an item enters the demand of a party and closes it when the item
+    leaves, or when the party stops being served by the source.
+    end note
+
     entity ores_marketdata_feed_binding_activity_tbl  #F7E5FF {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
@@ -68,6 +188,8 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * source_name : text
         * producer_kind : text
+        * provider_code : text
+        * source_id : uuid <<FK>>
         * enabled : boolean
         * modified_by : text
         * performed_by : text
@@ -100,10 +222,115 @@ package "marketdata" #E3F2FD {
     from observed data without guessing from the source string. The column
     defaults to VENDOR, so every binding a real feed creates carries it without
     setting anything.
+    A binding also says which provider's ids its producer publishes (provider_code)
+    and which catalogue source it reads (source_id). The ingest loop creates the
+    series it needs under that provider and records the source on every observation
+    it stores, so a reader of a series learns where a value came from from the
+    catalogue and not from the source string.
     This model binds to no variability profile. Its features match
     uuid-surrogate-lookup, but that profile also enables the shell command
     facet, which feed bindings do not have today. Binding it is a decision about
     the shell surface, not about the model.
+    end note
+
+    entity ores_marketdata_market_data_mappings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * vendor_instrument_id : uuid <<FK>>
+        * effective_from : timestamptz
+        * oresmd_uri : text
+          effective_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_mappings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Mapping Table
+    A mapping links a vendor instrument (provider, id scheme, external id, field) to an
+    internal item, which is an oresmd datum. It belongs to the provider and not to a
+    source, so the live and the simulated sources of one provider share it and a party
+    that changes its source keeps its series. The mapping is many to one: several vendor
+    instruments, of different providers, can map to one item.
+    A mapping holds for a period. A vendor instrument has at most one mapping that starts
+    at a given instant. The system tenant and the system party own the rows. Every
+    tenant reads them and only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_market_data_sources_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * provider_code : text
+        * kind : text
+        * is_default : boolean
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_sources_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Source Table
+    A source is one adapter instance of a provider: bloomberg-a and
+    bloomberg-b are two sources of the provider bloomberg. Its kind says how the
+    adapter gets its values and is data a person can read. No code in the pipeline
+    branches on it. The name is a label and no code parses it.
+    A provider can have several sources at once. A party reaches one of them through a
+    route, never through the provider. One source of each provider is the default, and a
+    new subscription routes to it.
+    The system tenant and the system party own the rows. Every tenant reads them and
+    only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_market_data_vendor_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * provider_code : text
+        * id_scheme : text
+        * external_id : text <<FK>>
+        * field : text
+        * minted : boolean
+          deviation_note : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_data_vendor_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Vendor Instrument Table
+    A vendor instrument names one value that a provider publishes. It has an id scheme,
+    an external id and a field, all in the vendor's own notation, so a live adapter and
+    the simulator publish the same names. Where the vendor has no single id for what the
+    system needs, the system mints an id in the vendor's style, sets minted and writes
+    the reason in deviation_note.
+    A mapping links a vendor instrument to an internal item. The system tenant and the
+    system party own the rows. Every tenant reads them and only the system tenant
+    writes them.
     end note
 
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
@@ -143,6 +370,7 @@ package "marketdata" #E3F2FD {
         * oresmd_uri : text
         * value : text
           source : text
+        * source_id : uuid <<FK>>
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -293,8 +521,8 @@ package "marketdata" #E3F2FD {
         * version : integer
         * party_id : uuid <<FK>>
         * oresmd_uri : text
+        * provider_code : text
         * series_subclass : text
-        * producer_kind : text
         * derivation_kind : text
         * derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
@@ -330,11 +558,11 @@ package "marketdata" #E3F2FD {
     observations. Per-observation lineage (which source series/as-of a
     specific derived point came from) is a separate concern, tracked by
     observation_lineage, not this catalog-level marker.
-    producer_kind answers a different question: not how the series was
-    produced but who produced it, a real feed (VENDOR) or a generated one
-    (SYNTHETIC). It is stamped once, from the feed_binding the first
-    observation arrived under, and is never revised -- a series a generated
-    producer created stays generated however it is later read.
+    provider_code names the provider whose ids the series carries. A series is one
+    item of one provider held by one party, so two providers that quote the same item
+    keep two series, and a party that switches the source of a provider keeps one
+    series and one history. The observations beneath it record the source that
+    produced each one, for information; the source is never part of the key.
     end note
 
     entity ores_marketdata_observation_lineages_tbl <<temporal>> #C6F0D8 {
@@ -393,6 +621,101 @@ package "marketdata" #E3F2FD {
     convention every other bitemporal entity in this codebase already
     gets, mirroring (not literally reusing) how market_observations
     itself handles a rerun.
+    end note
+
+    entity ores_marketdata_providers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_providers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Provider Table
+    The catalogue of market data providers: data vendors such as Bloomberg and LSEG,
+    exchanges such as CME, brokers, and reference sets such as the ORE examples. A
+    provider owns a namespace of vendor ids. Every source belongs to one provider, and
+    every vendor instrument and mapping belongs to a provider, so a live and a
+    simulated source of one provider share their ids and their mapping. The name
+    carries no mark of any source kind.
+    The system tenant and the system party own the rows. Every tenant reads them and
+    only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_rate_card_components_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * source_id : uuid <<FK>>
+        * driver : text
+        * licence_right : text
+        * effective_from : timestamptz
+        * currency : text
+        * charge_micros : bigint
+          effective_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_rate_card_components_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Rate Card Component Table
+    A rate card belongs to a source. It is the set of components that apply to the source in a period. Each
+    component has a driver, which says what the vendor counts, and a charge for one unit of it. A rating step
+    applies the components to the usage events of a period and gives the bill of the source.
+    A simulated source carries a card of its own with illustrative charges, or published ones where they
+    exist. The model is the same for every source, so a simulated source gives a shadow bill with the same
+    lines as a live one. The system tenant owns the cards, because the platform owns the vendor contracts.
+    end note
+
+    entity ores_marketdata_routes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * source_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_routes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Route Table
+    A route names the one source that serves a party for a provider. A party has at most one
+    route for each provider, so it reads one value of each instrument and the mapping and the series
+    key stay unambiguous. A source switch is one new route and nothing else.
+    The source must belong to the provider of the route, and the party must hold a subscription to
+    the provider. A change of route is a new version with a reason and a commentary, and the history
+    keeps the earlier routes. The source must also be ready; the adapter state that says so is held by
+    the task that tracks adapters.
     end note
 
     entity ores_marketdata_series_axes_tbl  #F7E5FF {
@@ -498,6 +821,71 @@ package "marketdata" #E3F2FD {
     than the first series it met.
     end note
 
+    entity ores_marketdata_subscription_intervals_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * interval_from : timestamptz
+        * source_id : uuid <<FK>>
+        * display : boolean
+        * non_display : boolean
+        * derived : boolean
+          interval_to : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_subscription_intervals_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Subscription Interval Table
+    A subscription interval is a fact about usage. It records that a party held a subscription to a provider
+    with given rights and was routed to a source, from one time to another. It holds no price. A rating
+    step applies the rate card of the source to the interval later, so a new contract can price old facts.
+    The service opens an interval when a route and its subscription come to hold together and closes it
+    when either changes or ends. A change of the source or of the rights closes one interval and opens the
+    next. A party administrator reads the intervals of the party and the system tenant reads all of them.
+    end note
+
+    entity ores_marketdata_subscriptions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * display : boolean
+        * non_display : boolean
+        * derived : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_subscriptions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Subscription Table
+    A subscription is the entitlement of one party to the feeds of one provider. It carries the
+    three rights the vendor licences name: display, non_display and derived. A demand checks
+    that the subscription holds the right the use needs. The source that serves the party is not
+    here. A route names it.
+    A subscription holds at least one right. A party administrator reads and changes only the
+    subscriptions of the party, and the history of every change is kept.
+    end note
+
     entity ores_marketdata_tick_coords_tbl  #F7E5FF {
         * series_id : uuid <<PK, FK>>
         * coord : smallint <<PK>>
@@ -528,6 +916,7 @@ package "marketdata" #E3F2FD {
         * ts : timestamptz
         * coord : smallint
         * value : double
+        * source_id : uuid <<FK>>
     }
 
     note right of ores_marketdata_ticks_tbl

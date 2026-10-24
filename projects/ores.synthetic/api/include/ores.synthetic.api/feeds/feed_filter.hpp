@@ -82,8 +82,8 @@ ORES_SYNTHETIC_API_EXPORT std::string sql_literal(const std::string& text);
  * @brief A query that returns every feed of every kind, one row each.
  *
  * The columns are id, kind, label, source_name, oresmd_uri, folder_id, enabled,
- * auto_start, asset_class_code, ticks_per_hour, engine, underlying, provider_code and scope.
- * It reads the rows the caller's session sees.
+ * auto_start, asset_class_code, ticks_per_hour, engine, underlying, and provider_code, with the
+ * owning tenant after them. It reads the rows the caller's session sees.
  */
 ORES_SYNTHETIC_API_EXPORT std::string feeds_query();
 

@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: FC1CEA57-FD12-4ACA-B9FD-9FCE4E4B136A
+:END:
+#+title: Task: Export market data without a query per series
+#+description: The market data export read each series with its own statements, so a tenant with 306 series needed 38 seconds and the report run timed out at 30. Read the tenant in two statements and log each phase.
+#+type: task
+#+level: s1
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/export-market-data-without-a-query-per-series
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report run's market data export answers well inside the 30 second wait, and the service log states what each phase did and how long it took.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The export of the ACME tenant takes under 5 seconds.
+- The log names each phase of the export with its duration.
+- A test shows the reads for every series equal the reads for each series.
+
+* Plan
+
+Find why the export outlasted the 30 second wait of the report run, then remove the cause. The export read each series with three statements. The tenant has 306 series. Each statement paid for planning across the 162 chunks of the observation and tick tables. So the plan is two reads for the whole tenant, the current observations and the as-of snapshot, grouped by series in the service. The log of the export and of each service call names the phase and its duration.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Export of the ACME tenant, before | 38 s (21:49:52 to 21:50:30) | =journalctl --user -u ores.marketdata.service-swift_curie.service= for instance 18fe9858 | 2a0b529f5a |
+| Planning time of one as-of statement | 24 ms, with 1.4 ms to run | =EXPLAIN (ANALYZE)= of the statement for one series, over 162 chunks | 2a0b529f5a |
+| Export of the ACME tenant, after | 205 ms for the same 306 series and 1,639 observations | the same log, instance 8d4cea3b | 839566a712 |
+| Whole NPV run, after | 12 s, state completed | =compass db sql= on the instance row | 839566a712 |
+
+* Notes
+
+The first NPV run of the dev database failed in =gather_market_data= with "NATS request timed out". The marketdata service finished the export after 38 seconds, 8 seconds after the reporting service had stopped waiting. The log of the service said only that the export had started and, much later, that it had written the file.
+
+The log now states the request (valuation date and storage key), each phase of the export with its duration (series, current observations, points at the close, building the data, writing the text), the upload, and the total. The reporting service logs each service call with its duration, as a warning above five seconds, and a failed call states how long it waited.
+
+Seen on the way, and not fixed here:
+
+- After =gather_market_data= fails, =gather_trades= still starts and fails with "cannot move from failed to running".
+- The marketdata service cannot write its delivery counts: "Invalid modified_by: ores.marketdata.service. Must be a valid account username or service role". It fails every 40 seconds with 19,910 counts waiting.
+- The database fingerprint does not match this checkout. It was built from commit 2a0b529f5a.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3688 | Export market data without a query per series |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The manual point merge of the bulk as-of read is not tested. | repository tests | Fixed | A new case compares the bulk read with the read for one series before the manual point, between it and a later feed write, and after both. |
+| 2 | A datum with only a tick is not covered. | export tests | No change needed | The export equivalence test has a tick that wins over an observation. A tick-only datum shares the same SQL branch. |
+| 3 | The bulk read holds the whole tenant in memory. | market_observation_repository.hpp | Fixed | The method comment says the answer grows with history. |
+| 4 | The bulk SQL copies the per-series SQL. | market_observation_repository.cpp | Fixed in part | The comment of the bulk read says a change to one is a change to the other. The equivalence tests guard the drift. A shared statement is a larger change. |
+| 5 | nats_call reads the clock twice. | report_execution_handler.cpp | Fixed | The duration is read once. The log line comes before the X-Error check, so a slow call that the server rejects is still logged. |
+| 6 | The tick id must stay identical in both reads. | market_observation_repository.cpp | No change needed | Both statements use the same md5 expression, and the equivalence tests compare the datums. |
+
+* Result
+
+The export of the ACME tenant takes 205 ms and not 38 s, so the NPV run of the UK party completes in 12 s. The report run page shows that run as completed, "completed with errors", with its batch. The export tests pass (7 cases, 48 assertions), including one that proves the reads for every series equal the reads for each series. The fixing series still read one statement each. The ACME tenant has none.

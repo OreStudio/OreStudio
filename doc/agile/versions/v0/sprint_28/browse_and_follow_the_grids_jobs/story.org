@@ -23,7 +23,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Scaffolded. No task has started.                       |
+| Now           | The prototypes of the Jobs tab, the job page and the app version page are approved. No build task has started.                       |
 | Waiting on    | Nothing. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics.                               |
 | Next          | Start Serve the paged job tree through the BFF.            |
 | Last touched  | 2026-10-22                               |
@@ -33,6 +33,7 @@ A person sees the batches, workunits and results that the session may see, as a 
 - The Jobs tab of the grid screen lists the batches the session may see, newest first, and opens the workunits of a batch and the results of a workunit one page at a time.
 - The details of a batch, workunit or result show the entity's own fields under the model's headers, with state and outcome as badges, and the references as links.
 - The list filters by status, party and reference on the server, and a failed result is found by its outcome.
+- An app version page shows the release note stored with the version, its platforms and packages, and the other versions of its app.
 - The person downloads a workunit input or a result output, and the route checks that the caller may read the owning record first.
 - A job page states where the job is, the node it ran on, when it ran, and what it produced, and links to the report run behind its batch.
 - An operator, a tenant administrator and a party member each see only what their session allows.
@@ -42,23 +43,46 @@ A person sees the batches, workunits and results that the session may see, as a 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D6CA4B25-D1E0-4E11-AFB7-58D80A9C4116][Scaffold story: Browse and follow the grid's jobs]] | DONE | 2026-10-22 | 2026-10-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | BACKLOG | | | Initial task for: Browse and follow the grid's jobs |
-| [[id:78C4D328-EA8E-46D3-B25B-8B09CE6930C3][Filter the batch list by status, party and reference]] | BACKLOG | | | The batch list pages by offset and limit only. A person cannot find one batch among thousands. |
-| [[id:26625549-D4D9-47F3-B978-2C240F85CC5A][Find a result by its outcome]] | BACKLOG | | | Which of the failed results ran? Today read_by_state filters on server_state, and every stored result is Done, so a failed result cannot be separated from a successful one. |
-| [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | BACKLOG | | | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
-| [[id:8088985C-EAE9-4CF3-962E-4BC6C319A0E7][Serve a stored input or output as a download]] | BACKLOG | | | A workunit names its input and a result names its output as stored objects. The browser has no route that streams them. |
-| [[id:9F73E400-ADDE-499A-A0B0-A616FB5D1668][Build the job page]] | BACKLOG | | | Follow a job: the batch, the state of the job, the node, the timings, the input, the output, and the report run behind the batch. |
-| [[id:32140ED0-C5D0-46A3-8DA4-560A8BF68F8B][Decide who sees a node's name]] | BACKLOG | | | A result names its host. The operator needs the node. A tenant administrator or a party member probably should not see the installation's node names. The owner must decide. |
+| [[id:FC1BA481-3685-4C1B-8CB7-1B565152520B][Serve the paged job tree through the BFF]] | DONE | 2026-10-22 | 2026-10-23 | Initial task for: Browse and follow the grid's jobs |
+| [[id:78C4D328-EA8E-46D3-B25B-8B09CE6930C3][Filter the batch list by status, party and reference]] | DONE | 2026-10-23 | 2026-10-23 | The batch list pages by offset and limit only. A person cannot find one batch among thousands. |
+| [[id:26625549-D4D9-47F3-B978-2C240F85CC5A][Find a result by its outcome]] | DONE | 2026-10-23 | 2026-10-23 | Which of the failed results ran? Today read_by_state filters on server_state, and every stored result is Done, so a failed result cannot be separated from a successful one. |
+| [[id:011D49A0-B5EA-4156-9AB1-1319A41C8D0B][Build the Jobs tab]] | DONE | 2026-10-23 | 2026-10-23 | The finder bar, the tree of batches, workunits and results, the details panel and the four states, drawn in the prototype and not yet in the web client. |
+| [[id:8088985C-EAE9-4CF3-962E-4BC6C319A0E7][Serve a stored input or output as a download]] | DONE | 2026-10-23 | 2026-10-23 | A workunit names its input and a result names its output as stored objects. The browser has no route that streams them. |
+| [[id:9F73E400-ADDE-499A-A0B0-A616FB5D1668][Build the job page]] | DONE | 2026-10-23 | 2026-10-23 | Follow a job: the batch, the state of the job, the node, the timings, the input, the output, and the report run behind the batch. |
+| [[id:32140ED0-C5D0-46A3-8DA4-560A8BF68F8B][Decide who sees a node's name]] | DONE | 2026-10-23 | 2026-10-23 | Only the operator sees the node a result ran on. Every other role sees that the node is hidden. |
+| [[id:AD0E1F28-52B5-4138-BAFB-83548B676D08][Draw the prototypes for the jobs screens]] | DONE | 2026-10-22 | 2026-10-22 | Redraw the Jobs tab and draw the job page and the app version page before any screen is built, so the build tasks follow an agreed design. |
+| [[id:A2D86110-9343-487F-990E-C8AA4A491575][Store a release note with the app version]] | DONE | | 2026-10-23 | The app version model has no release note. A job pins a version and a person cannot read what changed in it. Add the note to the version, and publish it with the bundle. |
+| [[id:B5C3CA59-67B9-4826-9191-0AB40C6B80CE][Build the app version page]] | DONE | 2026-10-23 | 2026-10-23 | One app version of the compute catalogue: the build, its release note, its packages and the other versions of its app, drawn in the prototype and not yet in the web client. |
+| [[id:75489199-9605-4135-AFA9-7F03CBAAFD5F][Order the job lists by when they were recorded]] | DONE | | 2026-10-23 | The batch, workunit and result lists order by their key alone, and the key is a random identifier. A page cannot read newest first. Make the recording time sortable. |
+| [[id:97AA0C61-915C-4650-B717-3F4416AF9610][Let a party member read workunits and results]] | DONE | | 2026-10-23 | A party member may read batches and is refused the workunit and result reads with forbidden. The Browse the grid's jobs journey gives the party member the whole tree. |
+| [[id:EA8D3864-10B4-4AAE-A0CA-6C1660FED111][Key the app version by its app, engine and wrapper versions]] | DONE | 2026-10-23 | 2026-10-23 | The app version service reads the version precondition by wrapper_version alone, so two versions that share a wrapper version read each other's row and a second republish fails. |
+| [[id:5554508D-C8B8-4E92-B872-CC8E0988DE73][Show the report run behind a batch]] | DONE | 2026-10-23 | 2026-10-23 | The job page links to the page of the report run that a batch names, and states that no report is behind a batch the shell dispatched. |
+| [[id:E45D7BDF-DC20-40C8-A5E3-DA53629E3061][Filter the app versions by their app]] | DONE | 2026-10-23 | 2026-10-23 | The app version page reads every app version of the catalogue and keeps those of one app, because the generated list has no filter by app. |
+| [[id:3AA1B51F-A002-413F-BA65-4F11CC7DB2A4][Let a party member download its own files]] | BACKLOG | | | The storage service checks storage::objects:read on the person's own token and holds no rule for one record, so the code is bucket-wide. The Member role lacks it, so a party member sees a stored address as text and cannot download it. |
+| [[id:018356B7-4EE4-46E8-8636-391512377021][Name things on the grid job screens]] | DONE | | 2026-10-23 | The Jobs tab, the job page and the report run page show UUIDs where a person needs names. A report-driven batch reads as its run id, a party as its id, and the link to the report as 'Open the report'. |
+| [[id:555DB7C2-CACC-45B7-8B1C-FF2CFE8218D4][Draw the lineage of a job as a chart]] | BACKLOG | | | The job page lists the batch, the workunit and the runs. The Follow a job journey draws the chain from the scheduled job to the result as one column of nodes. The report definition, the report run, the batch and the jobs can be drawn now. |
+| [[id:4B62C4C3-A020-4D25-8F03-5C9768825E2C][Read a scheduled job by its id]] | BACKLOG | | | The report run names the scheduler job instance that fired it, and the scheduler has no read that returns one instance by id. The lineage cannot reach the scheduled job without it. |
+| [[id:CA5100E1-85C7-4E74-AD99-38ACED1C2E02][Record when a run starts and how long it took]] | BACKLOG | | | A result stores when it was written and when its output arrived, and nothing between. The time bar cannot show phases and the neighbour charts have no duration to draw. |
+| [[id:914DC2E0-58E6-40CB-9960-1DE669CDA36D][Draw the neighbour charts of a job]] | BACKLOG | | | The journey asks whether a job is normal, whether one node is slow and whether the batch is nearly done. It draws a timeline of the batch's jobs, a duration distribution and a duration by node. |
+| [[id:1A40912E-54A4-47B1-A388-164A7E886951][Link a job to the failure and grid screens]] | BACKLOG | | | The Follow a job journey ends with two ways on: a failed run continues in Diagnose and reproduce a failure, and the load the job sat in continues in Watch the grid. The job page offers neither. |
+| [[id:DDE74125-CD08-4E31-A0DE-AA2202599739][Lay out the job page as its prototype]] | DONE | | 2026-10-24 | The approved job page prototype has two columns, a Find bar and a link back to the job's batch. The built page stacks every panel in one wide column, has no Find bar and links back to the Jobs tab. |
 
 * Decisions
 
 - 2026-10-22: The story builds what the journeys Browse the grid's jobs and Follow a job already specify. It adds no screen they do not draw. The reads for batches, workunits and results exist as generated subjects, so the first slice is the BFF route and the screen, not new compute code.
-- 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the timing and size fields when those exist, and show the prototype's dashed block until then.
+- 2026-10-22: The job page links to a page for the app version, and the page shows a release note stored on the version. The model has no such column, so the story adds one, =release_note=, to =app_version=, not to the package. A release is one engine build and one wrapper build, packaged for several platforms, and one note describes the release. The shell's =compute publish-package= writes the note with the bundle.
+- 2026-10-22: The prototypes come before the build. The Jobs tab prototype was compared with the acceptance and redrawn, and the job page and the app version page were drawn. The screens use the model's own field names and add no other term. The glossary defines target redundancy and canonical result.
+- 2026-10-22: A live check of the jobs routes found two gaps in the compute service, and each has a task. The batch key is a random identifier, so a list cannot read newest first until the recording time is sortable. The Member role is refused the workunit and result reads, so a party member cannot open a batch.
+- 2026-10-22: The recording time is sortable through a model flag, =:sortable_recorded_at: true=. The flag adds the field =recorded_at= to the sortable fields and stores it in =valid_from=. The batch model orders by it, descending, so the Jobs tab reads newest first. The time is that of the current version, so a batch whose status changes moves to the top. The story accepts this order. A creation time would need a column the models do not hold.
+- 2026-10-22: The run statistics are not part of this story. They belong to Draw the node heatmap and carry the engine run statistics. The screens show the Run statistics panel when those fields exist, and show no such panel until then.
+- 2026-10-23: Only the operator sees the name of a node. The node belongs to the installation, and a tenant gains nothing from its name. The BFF states =host_hidden= to every other role, and the screens say the node is hidden. The owner can widen the rule in =mayReadHost= in one place.
+- 2026-10-23: A report run has a page, =/operations/grid/report-runs/:id=. The reporting service already reads a run by id, so no model changed. The batch names the run in =external_ref=, so the job page links when that text is an id, and says no report is behind the batch when it is not. The run does not name its batch, so the page finds the batch by reading the visible batches for that reference. The operator reads no run, because a run belongs to a tenant party.
+- 2026-10-24: The prototypes of the job page show more than this story built. Five tasks carry the rest of the Follow a job journey: the lineage chart, a read of a scheduled job by id, the start time and duration of a run, the neighbour charts, and the links to the failure and grid screens. The neighbour charts wait for the start time and duration, which the result model does not hold. The scheduled job node of the lineage waits for the read by id. The story stays open until the five are done or moved.
 
 * Out of scope
 
-- The compute catalogue screen, which is the journey Keep what the grid runs.
+- The rest of the compute catalogue screen, which is the journey Keep what the grid runs. This story builds only the page of one app version.
 - Registering a compute node for a tenant.
 - Charts of the grid over time, which the grid screen already carries.
-- The report run naming its batch, and a scheduler job instance read by id. The job page links through the batch's =external_ref= until they exist.
+- The report run naming its batch, and a scheduler job instance read by id. The report run page finds the batch through the batch's =external_ref=, and the job page links through it, until they exist.
 - Per-phase timestamps for the waterfall chart.

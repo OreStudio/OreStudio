@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
@@ -113,6 +114,33 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
     CHECK(read.size() == written.size());
     for (const auto& r : read)
         CHECK(r.series_id == s.id);
+}
+
+TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto written = generate_synthetic_market_observations(2, ctx);
+    for (auto& o : written)
+        o.series_id = s.id;
+    written[0].source_id = ores::marketdata::domain::catalogue_ids::ore_import_source_id();
+    written[1].source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
+    obs_repo.insert(h.context(), written);
+
+    const auto read = obs_repo.read_latest_for_series(h.context(), s.id);
+    REQUIRE(read.size() == 2);
+    CHECK(std::ranges::count_if(read, [](const auto& r) {
+              return r.source_id == ores::marketdata::domain::catalogue_ids::ore_import_source_id();
+          }) == 1);
+    CHECK(std::ranges::count_if(read, [](const auto& r) {
+              return r.source_id ==
+                     ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
+          }) == 1);
 }
 
 namespace {
@@ -450,6 +478,44 @@ TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
     CHECK(buckets[1].front().value == "0.050000");
     CHECK(buckets[2].front().value == "0.050000");
     CHECK(buckets[3].front().value == "0.050000");
+}
+
+TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    auto manual = make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(10), 0.0500);
+    obs_repo.insert(h.context(), manual);
+    lineage_repo.write(h.context(), make_lineage(ctx, manual, "manual"));
+    obs_repo.insert(h.context(),
+                    make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(20), 0.0450));
+
+    // Before the manual point is keyed, between it and the later feed write, and after both.
+    for (const auto minutes : {5, 15, 30}) {
+        const auto instant = t0 + std::chrono::minutes(minutes);
+        const auto one = obs_repo.read_as_of(h.context(), s.id, instant);
+        std::vector<std::string> from_one, from_all;
+        for (const auto& o : one)
+            from_one.push_back(o.oresmd_uri + " " + o.value);
+        for (const auto& o : obs_repo.read_as_of_all(h.context(), instant))
+            if (o.series_id == s.id)
+                from_all.push_back(o.oresmd_uri + " " + o.value);
+        std::ranges::sort(from_one);
+        std::ranges::sort(from_all);
+        CAPTURE(minutes);
+        CHECK(from_all == from_one);
+    }
 }
 
 namespace {

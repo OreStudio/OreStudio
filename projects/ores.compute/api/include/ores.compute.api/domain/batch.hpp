@@ -67,7 +67,8 @@ struct batch final {
     std::optional<boost::uuids::uuid> party_id;
 
     /**
-     * @brief Lifecycle status: open, processing, assimilating, or closed.
+     * @brief Lifecycle status: open, dispatched, processing, assimilating, or closed. The dispatch
+     * command writes dispatched when it has created the batch's workunits.
      */
     std::string status;
 

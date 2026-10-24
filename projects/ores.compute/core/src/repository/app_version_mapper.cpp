@@ -50,6 +50,7 @@ domain::app_version app_version_mapper::map(const app_version_entity& v) {
     r.wrapper_version = v.wrapper_version;
     r.engine_version = v.engine_version;
     r.min_ram_mb = v.min_ram_mb;
+    r.release_note = v.release_note;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,6 +72,7 @@ app_version_entity app_version_mapper::map(const domain::app_version& v) {
     r.wrapper_version = v.wrapper_version;
     r.engine_version = v.engine_version;
     r.min_ram_mb = v.min_ram_mb;
+    r.release_note = v.release_note;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

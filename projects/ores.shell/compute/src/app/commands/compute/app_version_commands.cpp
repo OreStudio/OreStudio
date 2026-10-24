@@ -127,29 +127,30 @@ void app_version_commands::register_commands(cli::Menu& root_menu, nats_client& 
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <wrapper_version>");
+        "get <id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <wrapper_version>");
+        "get-many <id>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary>");
+        "add <app_id> <wrapper_version> <engine_version> <min_ram_mb> <release_note> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <reason> <commentary> "
-        "[--version <n>]");
+        "set <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> <release_note> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -157,35 +158,42 @@ void app_version_commands::register_commands(cli::Menu& root_menu, nats_client& 
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <app_id> <wrapper_version> <engine_version> <min_ram_mb> "
-        "<reason> <commentary>");
+        "<release_note> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <wrapper_version> <reason> <commentary> [--version <n>]");
+        "delete <id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <wrapper_version> <reason> <commentary>");
+        "delete-many <id> <reason> <commentary>");
+
+    menu->Insert(
+        "by-app-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_app_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-app-id <app_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <wrapper_version> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <wrapper_version> --version <n>");
+        "version <id> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -267,7 +275,7 @@ void app_version_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.wrapper_version, parsed->positionals[next++], "wrapper_version");
+        read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -312,7 +320,7 @@ void app_version_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::app_version_key key;
-            read_token(key.wrapper_version, parsed->positionals[i + 0], "wrapper_version");
+            read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -352,8 +360,8 @@ void app_version_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -363,6 +371,7 @@ void app_version_commands::process_add(std::ostream& out,
             req.change.write.wrapper_version, parsed->positionals[next++], "wrapper_version");
         read_token(req.change.write.engine_version, parsed->positionals[next++], "engine_version");
         read_token(req.change.write.min_ram_mb, parsed->positionals[next++], "min_ram_mb");
+        read_token(req.change.write.release_note, parsed->positionals[next++], "release_note");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -405,8 +414,8 @@ void app_version_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -416,6 +425,7 @@ void app_version_commands::process_set(std::ostream& out,
             req.change.write.wrapper_version, parsed->positionals[next++], "wrapper_version");
         read_token(req.change.write.engine_version, parsed->positionals[next++], "engine_version");
         read_token(req.change.write.min_ram_mb, parsed->positionals[next++], "min_ram_mb");
+        read_token(req.change.write.release_note, parsed->positionals[next++], "release_note");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -470,8 +480,8 @@ void app_version_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -483,6 +493,7 @@ void app_version_commands::process_put_many(std::ostream& out,
                 change.write.wrapper_version, parsed->positionals[next++], "wrapper_version");
             read_token(change.write.engine_version, parsed->positionals[next++], "engine_version");
             read_token(change.write.min_ram_mb, parsed->positionals[next++], "min_ram_mb");
+            read_token(change.write.release_note, parsed->positionals[next++], "release_note");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -532,7 +543,7 @@ void app_version_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.wrapper_version, parsed->positionals[next++], "wrapper_version");
+        read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -586,7 +597,7 @@ void app_version_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::app_version_key key;
-            read_token(key.wrapper_version, parsed->positionals[i * 1 + 0], "wrapper_version");
+            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::app_version_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -597,6 +608,61 @@ void app_version_commands::process_delete_many(std::ostream& out,
     }
 
     auto result = do_auth_request<messaging::delete_many_app_versions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void app_version_commands::process_by_app_id(std::ostream& out,
+                                             nats_client& session,
+                                             const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-app-id request.";
+
+    using request_type = messaging::list_by_app_id_app_versions_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-app-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.app_id =
+            ores::shell::app::from_token<boost::uuids::uuid>(parsed->positionals[next++], "app_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_by_app_id_app_versions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -638,7 +704,7 @@ void app_version_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.wrapper_version, parsed->positionals[next++], "wrapper_version");
+        read_token(req.key.id, parsed->positionals[next++], "id");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -684,8 +750,7 @@ void app_version_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(
-            req.key.app_version.wrapper_version, parsed->positionals[next++], "wrapper_version");
+        read_token(req.key.app_version.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

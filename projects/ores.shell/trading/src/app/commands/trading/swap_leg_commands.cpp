@@ -278,6 +278,7 @@ void swap_leg_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -586,6 +587,7 @@ void swap_leg_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.removal.key.leg_number, parsed->positionals[next++], "leg_number");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -748,6 +750,7 @@ void swap_leg_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
@@ -794,6 +797,7 @@ void swap_leg_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.swap_leg.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.swap_leg.leg_number, parsed->positionals[next++], "leg_number");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");

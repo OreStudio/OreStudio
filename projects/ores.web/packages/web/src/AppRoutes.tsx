@@ -62,6 +62,9 @@ import { BusPage } from './operations/BusPage.js';
 import { EvolutionPage } from './market/EvolutionPage.js';
 import { SeriesPage } from './market/SeriesPage.js';
 import { GridNodePage } from './operations/GridNodePage.js';
+import { GridAppVersionPage } from './operations/GridAppVersionPage.js';
+import { GridReportRunPage } from './operations/GridReportRunPage.js';
+import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
@@ -92,6 +95,7 @@ import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
+import { ConventionDocumentsPage, ConventionKindsPage } from './refdata/conventions.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
@@ -102,6 +106,8 @@ import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ConfigurationPage } from './reporting/ConfigurationPage.js';
+import { EngineSettingsPage } from './engineSettings/EngineSettingsPage.js';
+import { EngineSettingsRecordPage } from './engineSettings/EngineSettingsRecordPage.js';
 import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
 import { PricingEnginePage } from './pricingEngines/PricingEnginePage.js';
 import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
@@ -559,7 +565,43 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <GridPage mode={view.mode} />
+                        <GridPage mode={view.mode} parties={view.availableParties} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/report-runs/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridReportRunPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/app-versions/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridAppVersionPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid/jobs/:workunitId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridJobPage />
                     ),
                     'workspace',
                 )}
@@ -747,6 +789,30 @@ export function AppRoutes({
                         <PricingEngineJourney />
                     </CardScreen>
                 ))}
+            />
+            <Route
+                path={PATHS.engineSettings}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <EngineSettingsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.engineSettings}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <EngineSettingsRecordPage />
+                    ),
+                    'workspace',
+                )}
             />
             <Route
                 path={`${PATHS.pricingEngines}/:id`}
@@ -1159,9 +1225,33 @@ export function AppRoutes({
             />
             <Route
                 path={PATHS.conventions}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ConventionKindsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.conventionAuthoring}
                 element={signedIn(gate.version, session, shell, () => (
-                    <CardScreen card="conventions">{conventionJourney}</CardScreen>
+                    <CardScreen card="conventionAuthoring">{conventionJourney}</CardScreen>
                 ))}
+            />
+            <Route
+                path={`${PATHS.conventions}/:family`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ConventionDocumentsPage />
+                    ),
+                    'workspace',
+                )}
             />
             <Route
                 path={PATHS.tenors}
@@ -1367,7 +1457,7 @@ export function ConnectedApp(): ReactNode {
                     conventionJourney={
                         <ConventionJourney
                             server={conventionsServer}
-                            onFinished={() => navigate('/')}
+                            onFinished={() => navigate(PATHS.conventions)}
                         />
                     }
                     tenorJourney={

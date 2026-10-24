@@ -151,6 +151,14 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'bool' },
         help: 'reporting.detail.isOfficialHint',
     },
+    {
+        field: 'regulatory_book_type',
+        history: 'Regulatory Book Type',
+        labelKey: 'reporting.fields.regulatory_book_type',
+        kind: { kind: 'choice', options: ['Trading', 'Banking'] },
+        optional: true,
+        means: { key: 'reporting.means.regulatoryBookType', values: ['Trading', 'Banking'] },
+    },
 ];
 
 /**
@@ -275,7 +283,9 @@ function ReportBody(): ReactNode {
     const reload = (): void => {
         void queries.invalidateQueries({ queryKey: reportKey(definition.id) });
     };
-    const editFields = fieldsWith(choices.data ?? { reportTypes: [], concurrencyPolicies: [] });
+    const editFields = fieldsWith(
+        choices.data ?? { reportTypes: [], concurrencyPolicies: [], regulatoryBookTypes: [] },
+    );
     return (
         <div className="space-y-4">
             <RecordHeader
@@ -335,14 +345,16 @@ function ReportBody(): ReactNode {
     );
 }
 
-/** The definition's fields, with the options of the two coded fields as the server holds them. */
+/** The definition's fields, with the options of the coded fields as the server holds them. */
 function fieldsWith(choices: {
     readonly reportTypes: readonly string[];
     readonly concurrencyPolicies: readonly string[];
+    readonly regulatoryBookTypes: readonly string[];
 }): readonly FieldSpec[] {
     const optionsOf: Readonly<Record<string, readonly string[]>> = {
         report_type: choices.reportTypes,
         concurrency_policy: choices.concurrencyPolicies,
+        regulatory_book_type: choices.regulatoryBookTypes,
     };
     return DEFINITION_FIELDS.map((spec) => {
         const options = optionsOf[spec.field];

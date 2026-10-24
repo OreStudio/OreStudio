@@ -215,7 +215,7 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
                       declared("load_staff"),
                       declared("set_staff_passwords", R"({"password":"Secure-Password-123"})"),
                       declared("attach_photos"),
-                      declared("start_market_feeds")}),
+                      declared("subscribe_market_data")}),
         tenant_id,
         correlation_id);
 
@@ -239,7 +239,7 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     // The feeds bind every party the tenant holds, so they wait for the party
     // chain as well as the reference data: a party the import creates after
     // the feeds start would never be bound.
-    CHECK(inputs_of("start_market_feeds") ==
+    CHECK(inputs_of("subscribe_market_data") ==
           (std::vector<std::string>{"provision_party", "publish_bundle"}));
     // Nothing is finished before everything is, so the last step reads them all.
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
@@ -250,7 +250,7 @@ TEST_CASE("the trade generation waits for the books, the staff and the feeds", t
     const auto steps = def.build_steps(request_json({declared("publish_bundle"),
                                                      declared("provision_party"),
                                                      declared("load_staff"),
-                                                     declared("start_market_feeds"),
+                                                     declared("subscribe_market_data"),
                                                      declared("generate_trades")}),
                                        tenant_id,
                                        correlation_id);
@@ -266,7 +266,7 @@ TEST_CASE("the trade generation waits for the books, the staff and the feeds", t
     // the population waits for the staff; it is booked against the market the
     // feeds have started, so it waits for those too.
     CHECK(inputs_of("generate_trades") ==
-          (std::vector<std::string>{"load_staff", "start_market_feeds"}));
+          (std::vector<std::string>{"load_staff", "subscribe_market_data"}));
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 5);
     CHECK(steps.front().name == "publish_bundle");
     CHECK(steps[steps.size() - 2].name == "generate_trades");
@@ -417,7 +417,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", tags) 
     CHECK(is_executed_step_kind("load_staff"));
     CHECK(is_executed_step_kind("set_staff_passwords"));
     CHECK(is_executed_step_kind("attach_photos"));
-    CHECK(is_executed_step_kind("start_market_feeds"));
+    CHECK(is_executed_step_kind("subscribe_market_data"));
     CHECK(is_executed_step_kind("generate_trades"));
 
     CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
@@ -434,14 +434,15 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
              declared(
                  "attach_photos",
                  R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
-             declared("start_market_feeds", R"({"dataset":"synthetic.feeds.bloomberg"})")}),
+             declared("subscribe_market_data",
+                      R"({"provider":"bloomberg","source":"bloomberg-a"})")}),
         tenant_id,
         correlation_id);
 
     REQUIRE(steps.size() == 4);
     CHECK(steps[0].name == "load_staff");
     CHECK(steps[1].name == "attach_photos");
-    CHECK(steps[2].name == "start_market_feeds");
+    CHECK(steps[2].name == "subscribe_market_data");
     CHECK(steps[3].name == complete_provisioning_step_kind);
 }
 

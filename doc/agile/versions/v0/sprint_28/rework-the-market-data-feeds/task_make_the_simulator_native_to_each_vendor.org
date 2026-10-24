@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 78B28D99-C3D0-4576-B4F0-15AB2440832D
+:END:
+#+title: Task: Make the simulator native to each vendor
+#+description: One simulated source for each vendor provider, publishing that vendor's own ids under a neutral source name, and no simulated source of the provider ore.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/make-the-simulator-native-to-each-vendor
+#+pr: 3682
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The simulator looks like the vendor to everything downstream: a Bloomberg generator sends Bloomberg ids, an LSEG generator sends RICs, and no name, subject or id says that the source is simulated or names ORE.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- Each simulated source has a neutral name of the form provider-letter, such as bloomberg-a, and its kind shows only in the kind column and as a badge.
+- A table turns a currency pair into the id of each provider (bbg_ticker with PX_LAST, ric with BID), and the generators publish those ids. Bloomberg is first and LSEG second.
+- The source ore-simulated, the adapter id ore-simulated and the Acme step arguments that name it are gone. The Acme parties route to a Bloomberg source.
+- The ore_samples_2016 dataset is removed and the uniform_demo dataset is kept with fixed levels.
+- Rate curves are listed as not served until a vendor ticker per pillar is written down.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3682][#3682]] | [synthetic] Make the simulator native to each vendor |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The synthetic service depends on the marketdata core and its repository | application.cpp | decline | The service already linked and included ores.marketdata.core before this change. The build lists its include path, and the feed code reads the oresmd codec from it. |
+| 2 | Warn when no simulated source is served | application.cpp | accept | The service logs a warning when the count is zero. |
+| 3 | Two instances of one provider map to one source in the old binding | feed_controller.hpp | decline | The binding belongs to the old control plane that the marks task removes. A second instance of a provider has no old-path feed. |
+| 4 | Two adapters of one provider start the same generators twice | simulator_offers.hpp | decline | Each adapter publishes on its own ingress subject, so nothing clashes. The load doubles. A second simulated source of one provider is a case for the task that calibrates and splits the collections by source, and no source needs it today. |
+| 5 | The error path of the Bloomberg reader parses twice | bloomberg_notation.cpp | decline | An error path. Correctness is tested by the corpus. |
+| 6 | Style and a note on the pointer overload of start_date | market_clock.hpp | accept | The blank lines are removed and the comment states that a null pointer means the system clock. |
+| 7 | Existing databases keep the removed rows | populate scripts | decline | The story recreates the database at each task, and the project builds it from the create and populate scripts. |
+| 8 | The web check does not run | web | decline | The lock file mismatch is on main. |
+
+* Result
+
+The simulator is native to each vendor. The catalogue holds one simulated source for each of three providers, named for the provider and an instance: =bloomberg-a=, =lseg-a= and =demo-a=. No name, subject or id says that a source is simulated or names ORE, and the source =ore-simulated= is gone. The service starts one adapter for each source of the catalogue whose kind is simulated, and each adapter serves the system collections of its provider and publishes that provider's own ids.
+
+The notation of each provider is an independent class of =ores.marketdata=: =bloomberg_notation=, =lseg_notation= and =demo_notation=. A notation reads a vendor id into a neutral description of the quote and writes it back, and refuses what it could not read back. The readers are Boost.Spirit.X3 grammars. The classes know nothing of the catalogue, NATS or the simulator, and the simulator only asks =notation_of(provider)= for the id of a generator. The roundtrip is proved by a corpus of 545 lines of ids and descriptions, a grid over every ordered pair of twelve currencies on every side, a test that damages each character of every valid id, and a test that reads every installed vendor instrument of the three providers and writes it back as itself.
+
+The provider =ore= no longer has a simulated source. It keeps =ore-import= and =ore-derived=. The 2016 ORE samples dataset is removed. The uniform demo is a set of fixed levels for the provider =demo=. The Acme profile routes its parties to =bloomberg-a=. A market clock (=system_market_clock= and =fixed_market_clock=) gives the start date of a feed whose config names none, and the build context gives every feed the same clock instance.
+
+Left for other tasks:
+- Rate curves have no vendor tickers, so curve generators stay on the old path. The task =Write the vendor tickers of the curve pillars= carries it.
+- The Bloomberg dataset still starts 13 pairs from the fixed 2026-05-05 vintage. The task =Calibrate the synthetic ticks from free public sources= replaces it and makes the clock decide the date.
+- The LSEG and Bloomberg rows marked =to confirm= on the inventory page still need a person with a login.
+- ICE and Tradeweb have no notation and no simulated source.
+- The adapters are built from the catalogue at start-up. A source added later needs a restart.

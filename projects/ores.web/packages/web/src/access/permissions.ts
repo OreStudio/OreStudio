@@ -53,6 +53,9 @@ export const PERMISSION = {
     pricingEnginesRead: 'analytics::pricing_model_configs:read',
     pricingEnginesWrite: 'analytics::pricing_model_configs:write',
     pricingEnginesDelete: 'analytics::pricing_model_configs:delete',
+    engineSettingsRead: 'reporting::engine_settings:read',
+    engineSettingsWrite: 'reporting::engine_settings:write',
+    engineSettingsDelete: 'reporting::engine_settings:delete',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

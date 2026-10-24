@@ -155,6 +155,43 @@ struct publish_engine_settings_from_dq_request {
     static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter value domains.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request, and
+ * declared the same way: the SQL function name the handler derives from the
+ * subject depends on the spelling.
+ */
+struct publish_ore_parameter_value_domains_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.publish_ore_parameter_value_domains_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter documentation.
+ *
+ * The same trigger shape as publish_engine_settings_from_dq_request. The
+ * value domains publish first, because the dataset depends on theirs.
+ */
+struct publish_ore_parameters_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.publish_ore_parameters_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_trades";

@@ -1,0 +1,108 @@
+                                                                          QUERY PLAN                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort (actual rows=25001.00 loops=1)
+   Sort Key: t.ts, t.coord
+   Sort Method: quicksort  Memory: 2722kB
+   Buffers: shared hit=16551 read=718 dirtied=1
+   ->  Hash Join (actual rows=25001.00 loops=1)
+         Hash Cond: ((t.coord = c.coord) AND (t.party_id = c.party_id))
+         Buffers: shared hit=16551 read=718 dirtied=1
+         ->  Limit (actual rows=25001.00 loops=1)
+               Buffers: shared hit=16551 read=716
+               ->  Custom Scan (ChunkAppend) on ores_marketdata_ticks_tbl t (actual rows=25001.00 loops=1)
+                     Order: t.ts
+                     Chunks excluded during startup: 0
+                     Buffers: shared hit=16551 read=716
+                     ->  Index Scan Backward using _hyper_16_1_chunk_ores_marketdata_ticks_tbl_ts_idx on _hyper_16_1_chunk t_1 (actual rows=3937.00 loops=1)
+                           Index Cond: ((ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Filter: (series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid)
+                           Rows Removed by Filter: 16000
+                           Index Searches: 1
+                           Buffers: shared hit=16217
+                     ->  Index Scan Backward using _hyper_16_2_chunk_marketdata_ticks_series_ts_idx on _hyper_16_2_chunk t_2 (actual rows=21064.00 loops=1)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 1
+                           Buffers: shared hit=334 read=716
+                     ->  Index Scan Backward using _hyper_16_3_chunk_marketdata_ticks_series_ts_idx on _hyper_16_3_chunk t_3 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_4_chunk_marketdata_ticks_series_ts_idx on _hyper_16_4_chunk t_4 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_5_chunk_marketdata_ticks_series_ts_idx on _hyper_16_5_chunk t_5 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_6_chunk_marketdata_ticks_series_ts_idx on _hyper_16_6_chunk t_6 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_7_chunk_marketdata_ticks_series_ts_idx on _hyper_16_7_chunk t_7 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_8_chunk_marketdata_ticks_series_ts_idx on _hyper_16_8_chunk t_8 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_9_chunk_marketdata_ticks_series_ts_idx on _hyper_16_9_chunk t_9 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_10_chunk_marketdata_ticks_series_ts_idx on _hyper_16_10_chunk t_10 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_11_chunk_marketdata_ticks_series_ts_idx on _hyper_16_11_chunk t_11 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_12_chunk_marketdata_ticks_series_ts_idx on _hyper_16_12_chunk t_12 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_13_chunk_marketdata_ticks_series_ts_idx on _hyper_16_13_chunk t_13 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_14_chunk_marketdata_ticks_series_ts_idx on _hyper_16_14_chunk t_14 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_15_chunk_marketdata_ticks_series_ts_idx on _hyper_16_15_chunk t_15 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_16_chunk_marketdata_ticks_series_ts_idx on _hyper_16_16_chunk t_16 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_17_chunk_marketdata_ticks_series_ts_idx on _hyper_16_17_chunk t_17 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_18_chunk_marketdata_ticks_series_ts_idx on _hyper_16_18_chunk t_18 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_19_chunk_marketdata_ticks_series_ts_idx on _hyper_16_19_chunk t_19 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_20_chunk_marketdata_ticks_series_ts_idx on _hyper_16_20_chunk t_20 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_21_chunk_marketdata_ticks_series_ts_idx on _hyper_16_21_chunk t_21 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_22_chunk_marketdata_ticks_series_ts_idx on _hyper_16_22_chunk t_22 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_23_chunk_marketdata_ticks_series_ts_idx on _hyper_16_23_chunk t_23 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+                     ->  Index Scan Backward using _hyper_16_24_chunk_marketdata_ticks_series_ts_idx on _hyper_16_24_chunk t_24 (never executed)
+                           Index Cond: ((series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid) AND (ts >= (now() - '30 days'::interval)) AND (ts < now()))
+                           Index Searches: 0
+         ->  Hash (actual rows=1.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared read=2 dirtied=1
+               ->  Bitmap Heap Scan on ores_marketdata_tick_coords_tbl c (actual rows=1.00 loops=1)
+                     Recheck Cond: (series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid)
+                     Heap Blocks: exact=1
+                     Buffers: shared read=2 dirtied=1
+                     ->  Bitmap Index Scan on ores_marketdata_tick_coords_tbl_series_id_oresmd_uri_key (actual rows=1.00 loops=1)
+                           Index Cond: (series_id = 'cccccccc-0000-0000-0000-000000000001'::uuid)
+                           Index Searches: 1
+                           Buffers: shared read=1
+ Planning:
+   Buffers: shared hit=1097 read=64 dirtied=15
+ Planning Time: 3.425 ms
+ Execution Time: 36.580 ms
+(104 rows)
+

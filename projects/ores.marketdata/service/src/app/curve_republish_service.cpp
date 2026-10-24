@@ -21,6 +21,7 @@
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
@@ -331,6 +332,7 @@ void curve_republish_service::republish(context ctx,
         obs.oresmd_uri = datum_uri;
         obs.value = std::format("{:.17g}", point.discount_factor);
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
+        obs.source_id = domain::catalogue_ids::ore_derived_source_id();
         observations.push_back(std::move(obs));
 
         // A rerun over the same (series, as_of, point_id) natural key must reuse the prior

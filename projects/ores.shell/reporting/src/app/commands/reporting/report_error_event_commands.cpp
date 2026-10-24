@@ -224,6 +224,7 @@ void report_error_event_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

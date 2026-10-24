@@ -95,7 +95,7 @@ jobs:
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: false
-    runs-on: macos-15
+    runs-on: macos-26
     environment: CI
     strategy:
       fail-fast: false
@@ -111,13 +111,13 @@ jobs:
         # The macOS image ships several SDKs and simulator runtimes a C++ build
         # never touches, and this workflow has no cleanup of its own, so the
         # debug job has already died linking with "No space left on device".
-        # Xcode 16 is kept: the next step selects it.
+        # Xcode 26 is kept: the next step selects it.
         run: |
           echo "=== Disk space before cleanup ==="
           df -h
           for xcode in /Applications/Xcode_*.app; do
             case "$xcode" in
-              *Xcode_16*) ;;
+              *Xcode_26*) ;;
               *) sudo rm -rf "$xcode" ;;
             esac
           done
@@ -142,16 +142,28 @@ jobs:
         with:
           submodules: true
 
-      - name: Select Xcode 16
+      - name: Select Xcode 26
         run: |
-          xcode16=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
-          if [[ -z "$xcode16" ]]; then
-            echo "No Xcode 16.x found — keeping default"
+          xcode26=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [[ -z "$xcode26" ]]; then
+            echo "No Xcode 26.x found — keeping default"
           else
-            echo "Selecting $xcode16"
-            sudo xcode-select -s "$xcode16"
+            echo "Selecting $xcode26"
+            sudo xcode-select -s "$xcode26"
             xcodebuild -version
           fi
+
+      # Apple's libc++ has lagged the C++20 library, and ores.platform carries
+      # a fallback for each gap: jthread and stop_token, and the atomic
+      # shared_ptr. The feature macros say which of them this toolchain now has,
+      # so the log shows when a fallback can go. A missing macro prints nothing
+      # for that name.
+      - name: Report the C++ library features
+        run: |
+          xcrun clang++ --version
+          printf '#include <version>\n' \
+            | xcrun clang++ -std=c++23 -x c++ -dM -E - \
+            | grep -E '__cpp_lib_(jthread|atomic_shared_ptr|stop_token)' || true
 
       # sccache is NOT cached across runs on this platform (deliberately —
       # see story canary_ctest_ignores_cancellation): GitHub's actions/cache

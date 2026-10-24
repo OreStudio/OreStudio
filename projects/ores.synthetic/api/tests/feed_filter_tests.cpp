@@ -192,8 +192,10 @@ TEST_CASE("feed_filter names the cap in its message", tags) {
 TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run", tags) {
     feed_filter f;
     f.should_run = true;
-    CHECK_THAT(where_clause(f, {}, false), ContainsSubstring("scope <> 'system'"));
-    CHECK_THAT(where_clause(f, {}, true), !ContainsSubstring("scope <> 'system'"));
+    CHECK_THAT(where_clause(f, {}, false),
+               ContainsSubstring("tenant_id <> ores_utility_system_tenant_id_fn()"));
+    CHECK_THAT(where_clause(f, {}, true),
+               !ContainsSubstring("tenant_id <> ores_utility_system_tenant_id_fn()"));
     f.should_run = false;
     CHECK(where_clause(f, {}, false) == "true");
 }

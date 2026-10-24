@@ -46,19 +46,11 @@ generate_synthetic_market_data_generation_config(utility::generation::generation
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.scope = // Always party-scoped in generated test data, matching the party_id
-              // generator above always producing a value -- a tenant-scoped row would
-              // need a null party_id and a system-scoped one the system tenant, which
-              // this per-column generator has no way to coordinate with. Real tenant/system-scoped
-              // configs are created explicitly, not through the synthetic data generator.
-        domain::scope::party;
-    r.binding_mode = domain::binding_mode::bound;
     r.name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.enabled = faker::datatype::boolean();
     r.dataset_id = std::nullopt;
     r.provider_code = std::string("bloomberg");
-    r.run_grant_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

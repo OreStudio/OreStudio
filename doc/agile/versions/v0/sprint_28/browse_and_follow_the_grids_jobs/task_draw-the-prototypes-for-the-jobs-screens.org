@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: AD0E1F28-52B5-4138-BAFB-83548B676D08
+:END:
+#+title: Task: Draw the prototypes for the jobs screens
+#+description: Redraw the Jobs tab and draw the job page and the app version page before any screen is built, so the build tasks follow an agreed design.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/draw-the-prototypes-for-the-jobs-screens
+#+pr: 3637
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three prototypes show the Jobs tab, the job page and the app version page for the three roles and the four states, and each follows the story's acceptance and the data model's own terms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The Jobs tab prototype finds a failed result by its outcome, links to the job page, keeps its state in the address, and uses the grid screen's tabs.
+- The job page prototype shows the state with the outcome beside it, the runs, the run statistics, the files, the release and the lineage, under the model's field names.
+- The app version page prototype shows the release note beside the build and the packages.
+- The glossary defines target redundancy and canonical result.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The Jobs tab prototype was compared with the story's acceptance on 2026-10-22.
+It lacked an outcome filter and a link to the job page. It drew a dashed run
+statistics block, the wrong tabs and a failed workunit with no canonical
+result, and it kept its state in memory. All six are fixed. The job page and
+the app version page are new. The app version model has no release note, so the
+page draws one and the task Store a release note with the app version adds the
+column.
+
+Opened in headless Chrome on 2026-10-22: the three prototypes render for every
+role, state and variant checked. The owner reviewed the three prototypes on
+2026-10-22 and approved them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3637][#3637]] | [agile] Draw the prototypes for the grid's jobs screens |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Three prototypes are drawn and approved: the Jobs tab, the job page and the app
+version page, under =doc/prototypes/compute/=. They use the data model's own
+field names. The glossary defines target redundancy and canonical result. The
+release note needs a new =release_note= column on =app_version=, which the task
+Store a release note with the app version adds. The build tasks of the story
+follow these prototypes. Merged in PR #3637.

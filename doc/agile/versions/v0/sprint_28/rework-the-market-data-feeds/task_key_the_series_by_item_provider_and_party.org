@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 588E506E-B400-4A34-A5CF-5CDBEB787BFC
+:END:
+#+title: Task: Key the series by item, provider and party
+#+description: Add the provider to the series key, and record the source id on each observation.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/key-the-series-by-item-provider-and-party
+#+pr: 3644
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A quote series is keyed by item, provider and party, and an observation records the source that produced it, so a source switch keeps one price history.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- market_series carries the provider and is unique on item, provider and party; market_observation carries source_id.
+- The series, the as-of reads and the import use the new key, and the ORE import writes to the source ore-import of the provider ore.
+- The producer_kind column and its code table are gone.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Install the first catalogue rows with the system bundle: the provider =ore= with the sources =ore-import= (replay), =ore-simulated= (simulated) and =ore-derived= (derived), and the providers =bloomberg=, =lseg=, =ice= and =tradeweb= with no source yet.
+2. Add =provider_code= to =market_series= as part of the natural key, so a series is unique on party, provider and identity. Validate it against the catalogue.
+3. Add =source_id= to =market_observation=. It is information, never part of the key.
+4. Write the provider =ore= on every series the seed data and the ORE import create, and the source =ore-import= on their observations.
+5. Move the as-of reads, the DQ publish and the ingest bridge to the new key.
+6. Remove =producer_kind= from =market_series=. Add =provider_code= and =source_id= to =feed_binding= so the ingest loop knows the provider and the source of its producer.
+7. Test that two providers keep two series for one item and party, that one provider keeps one history across two sources, and that an observation records its source.
+
+Open points, with the recommended answer:
+- Seed series with no vendor: give them the provider =ore=. They come from ORE examples, so no vendor is invented.
+- =feed_binding= still uses =producer_kind=: the bindings screen filters and guards on it, so the column and the code table stay until the task that retires the screen. This changed from the first plan, which dropped it.
+- Existing observations have no source: the column is not null with the source =ore-import= as the value the seed writers supply. No default in the table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3644][#3644]] | [marketdata] Key the series by item, provider and party |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The pillar reader reads only the provider ore, and a missing series is silent | curve_pillar_reader.cpp | Accept | It logs a warning for each pillar with no series. A provider on the curve configuration waits for the routing task. |
+| 2 | SQL literals duplicate the C++ constants | publish_from_dq, curve_series | Defer | A test of the constants against the populated rows needs a database run. The literals carry a comment that names the populate script. |
+| 3 | Install order and no check of source_id | populate | Decline | The catalogue populate runs first in the marketdata populate. A source_id check waits for the task that adds routes. |
+| 4 | Schema change without a migration | SQL | Decline | The schema is applied by recreation. |
+| 5 | producer_kind stays beside provider_code on feed_binding | feed_binding | Accept | The task Build the market data service screens removes both. |
+| 6 | The one_of filters of provider_code and source_id | feed_binding | Decline | The generated repository applies them with the template every entity uses. |
+
+* Result
+
+A series is unique on party, provider and identity, and an observation records the id of its source. The ORE import and the data quality publish write the provider =ore= and the source =ore-import=. The bootstrapped curve writes =ore-derived=. A feed binding names a provider and a source, and the ingest loop creates its series under that provider. The catalogue populate installs five providers and the three =ore= sources. Three new series tests cover two providers for one item, one provider for one item, and an unknown provider. The build of the marketdata test targets passes.
+
+Left for later tasks:
+- =producer_kind= stays on =feed_binding= with its code table, because the bindings screen filters and guards on it. The task that builds the new screens removes both.
+- No database test has run. The worktree =.env= is out of date, so the suites need a rebuilt database.
+- The curve pillar reader reads the provider =ore=, because a curve configuration names no provider yet.

@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: E1A582A6-9E12-4074-877E-91ACD7E64301
+:END:
+#+title: The history call returns every tick of a range in one reply, or refuses the range
+#+description: The contract of get_series_ticks: a request for a span of time, one reply with every tick of the span, and a refusal that names the ceiling when the span holds too many.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ticks:reads:architecture:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+=marketdata.v1.ops.get_series_ticks= takes a series and a span of time. It answers with
+every tick of the span in one reply, with no pages and no cursor. A span that holds more
+ticks than the ceiling is refused, and the refusal names the ceiling. The service never
+returns part of a span as if it were the whole. The client that calls it is described in
+[[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+
+* Detail
+
+** The request
+
+- *The series,* named by its series id, the id that the series catalogue returns.
+- *From,* the first instant of the span, inclusive.
+- *To,* the end of the span, exclusive. A request without it means now.
+- *The coordinates,* optional. A client that plots one pillar of a curve names it, and the
+  reply holds that coordinate only. A request names at most 1,000 coordinates, and a longer
+  list is refused with =filter_too_large=, as the filters of the list reads are.
+
+The request has no count. A caller asks for a span of time, never for "the newest N". A
+span has the same meaning on both tiers, and it is what a chart shows.
+
+** The reply
+
+- The coordinate URIs of the series come first, once each.
+- The first instant of the reply follows, in the wire shape that every instant takes. See
+  [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]].
+- The ticks follow as three arrays of equal length: the gap in microseconds from the
+  previous tick, the index of the coordinate, and the value. The first gap runs from the
+  first instant. The order is by time, then by coordinate.
+
+A gap is a duration and not an instant, so the rule that every instant has one wire shape
+holds. An instant in that shape takes 27 characters, and a gap of seconds takes 5 bytes.
+The client adds the gaps up to get each time.
+
+The reply holds every tick of the span that the window holds or that the store has
+committed. It makes no stronger promise. See the two tiers below for the one case that
+falls between them.
+
+A tick has no id and no source in the reply. A chart needs neither, and each field adds to
+the size of a reply that the client reads whole. The tick table keeps the =source_id= for
+audit.
+
+A series that does not exist yet, or a span with no tick, gives an empty reply and
+success. An empty series is a normal state, as it is for the snapshot.
+
+** Why one reply and not pages
+
+A client that opens a chart wants the whole span at once. Pages add a round trip for each
+page, a cursor that the server must keep correct while ticks arrive, and a partial chart
+that the user watches fill. One reply costs one round trip and one probe of the index on
+series and time.
+
+** The ceiling
+
+The reply is one message, and the broker caps a message at 1 MB. The service declares a
+ceiling of 25,000 ticks for each reply. A tick costs about 15 bytes in three msgpack
+arrays, because each element carries a type byte: 5 for a gap of seconds, 1 to 3 for the
+coordinate index and 9 for the value. That is about 375 KB, little more than a third of
+the cap, which leaves room for the coordinates and the envelope. This is an estimate, and the measurement of the first
+build confirms or changes it. Packing each array as one binary block would cost 8 bytes a
+value and would raise the ceiling.
+
+A span over the ceiling is refused with the same rule as the instant ceiling of the slice
+and the evolution: the answer names the ceiling and the service never truncates. See
+[[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+
+The ceiling is also a limit on the cost of one read. The readers of the store share one
+pool, and a chart that asks for a month of a busy series would hold a connection that other
+sessions need. [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] limits how much one
+caller may ask for in a period, and the ceiling limits how much one caller may ask for in a
+call. Both protect the callers that ask for little.
+
+A client that needs more than the ceiling narrows the span. A body larger than the message
+cap would travel as a [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]]: the reply
+holds a key and the bytes sit in storage. This page does not define that path, because a
+narrower span serves every chart.
+
+** How the service answers a decision
+
+The service decides four things before it reads: the context has a party, the request names
+no more than 1,000 coordinates, the span does not end before it starts, and the span holds
+no more than the ceiling. It reports each one as an outcome in the body, and not as a refusal
+off the body, because each is a decision about the data. The codes are =party_required=,
+=filter_too_large=, =range_inverted= and =range_too_large=, in the outcome catalogue. A span that starts and ends at one instant is empty and is not
+refused. A span with no end runs to now, so a start ahead of the clock of the service gives
+an empty reply, because nothing has ticked after now. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
+
+A context with no party gets =party_required= and not an empty reply. The party policy
+of the tick table shows such a context no tick, and an empty reply would look complete.
+The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+
+The read uses the tenant-aware pool. The policies of the tick table decide what the
+session sees, and no role skips them.
+
+** Two tiers behind one reply
+
+The lane keeps a window of recent ticks, and the store holds the rest. See
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] for
+the window. The service answers a span from both and sends one reply:
+
+- The span from the start of the window to now comes from the window.
+- The span before the window comes from the tick table.
+
+The client cannot know where the window starts, so the join happens inside the reply. It is
+not a merge of two sources of the same span. The window and the store cover different
+spans, and the service prefers the window for the span that it covers. A span that the
+window does not reach comes from the store alone. A restart empties the window, and the
+store then answers the whole span.
+
+A datum that no consumer watches keeps only its last tick in the window. A span for it
+comes from the store alone, and the store trails the lane by one batch. A tick that the
+lane took before the client subscribed, and that the store has not yet committed, is in
+neither the reply nor the buffer. How the lane learns that a datum is watched is open on
+the pipeline page. If the subscription tells it, the window fills from the subscription
+on, and the case shrinks to the ticks of one batch.
+
+** Open questions
+
+- Does the first build keep the ceiling of 25,000 ticks? The measurement of reply size and
+  of read time decides.
+- Can a tick fall between the store and the window, as the two tiers section describes?
+  The measurement of the batch delay against the first reply decides whether the call
+  must wait for the commit of the batch in flight.
+- The live subject names a series by the percent-encoded series URI, and this call names
+  it by id. The client reads both from the series catalogue. Should the live subject carry
+  the id instead, so that one name serves both calls?
+- Should the reply carry the =source_id=? This page says no. A client that audits a tick
+  reads the store.
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the history call is a request with one reply, and a decision is an outcome in that reply.
+- [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] — the way a reply larger than the message cap would travel, if a client ever needs it.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]] — completes: the client that makes this call and merges its reply.
+- [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — contrasts: the reads that value a series at a date, and the ceiling rule this call follows.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — exemplifies, from another cluster: a limit on what one caller may ask for.

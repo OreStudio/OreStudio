@@ -115,8 +115,7 @@ public:
             return;
         }
 
-        if (target->container_scope == ores::synthetic::domain::scope::system &&
-            !feed_kind_registry::is_system_caller(req_ctx)) {
+        if (target->container_is_system && !feed_kind_registry::is_system_caller(req_ctx)) {
             reply(
                 nats_,
                 msg,
@@ -128,16 +127,7 @@ public:
         start_feed_response resp;
         const auto bearer = ores::nats::service::extract_bearer(msg);
         try {
-            const auto token = ctrl_->identity().run_token_for(*target, req_ctx, bearer);
-            if (!token) {
-                resp.success = false;
-                resp.message = token.error();
-                BOOST_LOG_SEV(feed_config_handler_lg(), warn)
-                    << msg.subject << " — feed rejected: " << resp.message;
-                reply(nats_, msg, resp);
-                return;
-            }
-            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, *token};
+            const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;
@@ -145,7 +135,7 @@ public:
                 reply(nats_, msg, resp);
                 return;
             }
-            reply_start_outcome(msg, resp, std::move(attempt.feed), target->binding_mode, bearer);
+            reply_start_outcome(msg, resp, std::move(attempt.feed), bearer);
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();
@@ -308,11 +298,10 @@ private:
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
                              std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-                             ores::synthetic::domain::binding_mode binding_mode,
                              const std::string& bearer) {
         const auto source_name = feed->source_name();
         const auto series = feed->series_uris();
-        const auto result = ctrl_->start(std::move(feed), binding_mode, bearer);
+        const auto result = ctrl_->start(std::move(feed), bearer);
 
         switch (result) {
             case feed_controller::start_result::started:

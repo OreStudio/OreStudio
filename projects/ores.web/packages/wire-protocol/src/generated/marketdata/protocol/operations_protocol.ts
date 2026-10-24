@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { MarketSeries } from '../domain/market_series.js';
+import type { Result } from '../../../utility/protocol.js';
 
 /**
  * @brief One typed identity field of a series, as the caller gives it.
@@ -859,6 +860,23 @@ export interface ExportMarketDataToStorageRequest {
      * document names the file must find it.
      */
     fixings_storage_key: string;
+    /**
+     * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
+     *
+     * A date adds one line for each datum, dated at it, with the value the datum had at the
+     * close of that day, and the history of the other dates stays. The ticks of a live feed are
+     * in that line. They are not in the history.
+     */
+    valuation_date: string | null;
+    /**
+     * @brief The oldest value, in days before the valuation date, that the line of that date
+     * may carry forward. Empty means the service default.
+     *
+     * A datum whose latest value is older than this has no line of its own at the date, so the
+     * run does not use a stale quote as a current one. Its history lines stay. The answer counts
+     * these datums.
+     */
+    max_age_days: number | null;
 }
 
 export interface ExportMarketDataToStorageResponse {
@@ -870,6 +888,15 @@ export interface ExportMarketDataToStorageResponse {
      * @brief Where the fixings body was written.
      */
     fixings_storage_key: string;
+    /**
+     * @brief The datums whose line at the valuation date carries a value from an earlier day.
+     */
+    carried_forward_count: number;
+    /**
+     * @brief The datums left out of the valuation date because their latest value is older
+     * than the limit.
+     */
+    stale_count: number;
 }
 
 /**
@@ -959,12 +986,30 @@ export interface ClearManualPointResponse {
 /**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
- * Takes no arguments: the export is the whole tenant's, because that is the
- * scope the files have. An ORE market.txt is a snapshot of everything a run
- * needs, not a slice of one series, and an export that could name a subset
- * would produce a file that does not reproduce anything.
+ * The export is the whole tenant's, because that is the scope the files have.
+ * An ORE market.txt is a snapshot of everything a run needs, not a slice of
+ * one series, and an export that could name a subset would produce a file that
+ * does not reproduce anything. The one thing a caller states is the date.
  */
-export interface ExportMarketDataRequest {}
+export interface ExportMarketDataRequest {
+    /**
+     * @brief The valuation date, as an ISO 8601 date, or empty for the whole stored history.
+     *
+     * A date adds one line for each datum, dated at it, with the value the datum had at the
+     * close of that day, and the history of the other dates stays. The ticks of a live feed are
+     * in that line. They are not in the history.
+     */
+    valuation_date: string | null;
+    /**
+     * @brief The oldest value, in days before the valuation date, that the line of that date
+     * may carry forward. Empty means the service default.
+     *
+     * A datum whose latest value is older than this has no line of its own at the date, so the
+     * run does not use a stale quote as a current one. Its history lines stay. The answer counts
+     * these datums.
+     */
+    max_age_days: number | null;
+}
 
 /**
  * @brief The two file bodies, as the caller's own text to write.
@@ -989,6 +1034,15 @@ export interface ExportMarketDataResponse {
     series_count: number;
     observation_count: number;
     fixing_count: number;
+    /**
+     * @brief The datums whose line at the valuation date carries a value from an earlier day.
+     */
+    carried_forward_count: number;
+    /**
+     * @brief The datums left out of the valuation date because their latest value is older
+     * than the limit.
+     */
+    stale_count: number;
 }
 
 /**
@@ -1008,6 +1062,37 @@ export interface MarketTick {
     observation_time: string;
     /** The producer, unique within a tenant; its feed bindings name the consumers. */
     source: string;
+}
+
+/**
+ * @brief Asks for every tick of one series in a span of time.
+ *
+ * The span is half open: it holds a tick at from_instant and none at to_instant. The
+ * request has no count and no page, because a span of time means the same on every tier
+ * that answers it. A span that holds more ticks than the ceiling is refused, never cut.
+ */
+export interface GetSeriesTicksRequest {
+    series_id: string;
+    from_instant: string;
+    to_instant: string | null;
+    coordinates: string[];
+}
+
+/**
+ * @brief Every tick of a span of one series.
+ *
+ * The coordinates come first, once each. The times follow as the first instant and a gap in
+ * microseconds from the previous tick, because every instant has one wire shape and a text
+ * instant for each tick would take more than twice the bytes of a gap. The three arrays have
+ * the same length, and the order is by time and then by coordinate.
+ */
+export interface GetSeriesTicksResponse {
+    result: Result;
+    coordinates: string[];
+    first_instant: string | null;
+    gaps_us: number[];
+    coordinate_indexes: number[];
+    values: number[];
 }
 
 /**
@@ -1067,6 +1152,7 @@ export const subjects = {
     clear_manual_point_request: 'marketdata.v1.ops.clear_manual_point',
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
+    get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
     list_feed_binding_activity_request: 'marketdata.v1.ops.list_feed_binding_activity',
 } as const;
 /**
@@ -1097,5 +1183,6 @@ export const requiresSession = {
     clear_manual_point_request: true,
     export_market_data_request: true,
     market_tick: false,
+    get_series_ticks_request: true,
     list_feed_binding_activity_request: true,
 } as const;

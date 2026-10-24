@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 6E4B5EBF-F355-4836-BFBD-2ABD799F49E9
+:END:
+#+title: Follow a job prototype
+#+description: The page of one workunit: its state with the outcome beside it, its runs, where its time went, its files, the release that ran it, and the chain back to the scheduled job.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:compute:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+| Item      | Where                                      |
+|-----------+--------------------------------------------|
+| Prototype | [[file:follow-a-job/][the prototype]]                        |
+| Group     | [[file:index.org][Compute prototypes]]                |
+| Journey   | [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]] |
+
+* Summary
+
+A person who opens a workunit from the Jobs tab needs one page that says where
+the job is. This prototype draws that page. It is the second screen of the
+story Browse and follow the grid's jobs. The first is the
+[[file:browse-the-grids-jobs.org][Jobs tab]].
+
+It is throwaway. It reads no service. Open the [[file:follow-a-job/][job page]].
+
+* Detail
+
+** What it argues
+
+- One page answers the question. The header, the runs, the bar, the batch's
+  jobs, the files, the release and the lineage are panels of one screen.
+- Every label is a model field. Batch Recorded At and Received At stand for the
+  batch's and the result's own columns. The Done and Not done badges are not
+  fields: they are read from the canonical result, which the glossary defines.
+- The state is read from two fields. A workunit has no status. A job with a
+  =canonical_result_id= is done, and a job that ran and failed is done too, so
+  the run's =outcome= sits beside the state. The page warns that a closed batch
+  is not a successful batch.
+- A run in flight has no node and no output. The page says "not yet known" and
+  "not yet received". It does not leave the field empty.
+- The node follows the role. The field is Host ID, as the result model names
+  it. The operator sees the host. The tenant administrator and the party member
+  see "hidden for your role". The owner has
+  not yet decided this, and the task Decide who sees a node's name settles it.
+- The bar for one run has two ends. The service stores when the run was written
+  and when its output arrived, and nothing between. The page says so and does
+  not split the bar into phases.
+- The lineage states what is stored and what is not. The hop from a batch to
+  its report run is the batch's =external_ref=, and the page marks it as not a
+  checked relationship. A batch that the shell dispatched has no report behind
+  it, and the page says so.
+
+** Variants and states
+
+=?role=operator|tenant|member=, =?state=loaded|loading|empty|error|refused=,
+=?job=done|failed|running= and =?origin=report|shell=. The bar at the foot of
+the page switches all four.
+
+| Job     | What it shows |
+|---------+---------------|
+| done    | Target redundancy 2. Two runs, both Success. The first is canonical. |
+| failed  | One run, ClientError, with its error message. It is canonical, so the job reads Done and ClientError. |
+| running | One run, InProgress. No node, no output, no canonical result. |
+
+** What is real and what is not
+
+The batch reference, the party code, the storage URIs, the host display names
+and the app version id come from the development database as it stood on
+2026-10-13. The failed and in-flight runs, the report run, the scheduled job,
+the engine and wrapper versions and every other id are invented.
+
+The /Run statistics/ panel is the one exception to the fields-only rule. A row
+per run shows Started At, Finished At, Input Bytes, Output Bytes and Peak
+Memory. The result stores none of them today. The tasks of the story Draw the
+node heatmap and carry the engine run statistics add them, and the panel waits
+for those tasks. A run still going shows "not yet known".
+
+** What is left out
+
+The journey also draws a duration distribution, a duration by node chart and a
+per-phase waterfall. They need per-result durations and per-phase times, which
+no row holds. The page does not draw them until the rows exist. The lineage
+above the batch needs a read of a scheduler job instance by id, which does not
+exist, so the lineage names the scheduled job through the report definition.
+
+* See also
+
+- [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]] — the journey this prototype answers.
+- [[file:browse-the-grids-jobs.org][Browse the grid's jobs]] — the screen that leads to this page.
+- [[file:index.org][Compute prototypes]] — the group page.

@@ -82,10 +82,10 @@
 \ir ./reporting_configuration_parameters_notify_trigger_drop.sql
 \ir ./reporting_configuration_parameters_drop.sql
 
-\ir ./reporting_parameter_definitions_notify_trigger_drop.sql
-\ir ./reporting_parameter_definitions_drop.sql
+\ir ./reporting_ore_parameters_notify_trigger_drop.sql
+\ir ./reporting_ore_parameters_drop.sql
 
-\ir ./reporting_parameter_value_domains_notify_trigger_drop.sql
-\ir ./reporting_parameter_value_domains_drop.sql
+\ir ./reporting_ore_parameter_value_domains_notify_trigger_drop.sql
+\ir ./reporting_ore_parameter_value_domains_drop.sql
 
 \ir ./reporting_functions_drop.sql

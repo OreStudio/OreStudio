@@ -24,8 +24,13 @@ the URI of its own packaged bundle.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
-:key_field: wrapper_version
 :END:
+
+The app version's key is its id. An earlier version of this model said
+=:key_field: wrapper_version=, and that made two versions of one app that share a
+wrapper version read each other's row: the version precondition of a write found the
+first row with that wrapper version, so a second republish of the other version was
+refused with a version conflict.
 
 * Columns
 
@@ -75,6 +80,18 @@ Version of the underlying engine, e.g. 'ORE-Studio-7.1'.
 
 Minimum RAM in MB required by the node to run this app version.
 
+** release_note
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Release note of the release this app version belongs to, as plain text. One
+release is one engine build and one wrapper build, packaged for several
+platforms, and one note describes it. An empty note means none was written.
+
 * Foreign keys
 
 ** app_id
@@ -83,6 +100,7 @@ Minimum RAM in MB required by the node to run this app version.
 :target_column: id
 :nullable:      false
 :error_message: Invalid app_id: %. No active app found with this id.
+:list_by:       true
 :END:
 
 * SQL

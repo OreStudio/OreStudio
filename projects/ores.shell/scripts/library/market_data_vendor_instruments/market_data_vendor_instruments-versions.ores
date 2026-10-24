@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/market_data_vendor_instruments/market_data_vendor_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+market_data_vendor_instruments versions __none__ --limit 1

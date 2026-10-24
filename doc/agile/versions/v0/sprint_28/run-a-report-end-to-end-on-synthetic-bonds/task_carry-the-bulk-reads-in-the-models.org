@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 887E639C-1733-4FD1-937A-D5D8DF0476CD
+:END:
+#+title: Task: Carry the bulk observation reads in the models
+#+description: Commit b06ddccb2f hand-edited generated marketdata files, so the component drift gate fails on main. Move the bulk reads and the export handler into their models and regenerate.
+#+type: task
+#+level: s1
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/carry-the-bulk-reads-in-the-models
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The component drift gate passes for marketdata on main, with the bulk observation reads and the export handler carried by their models.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BEDD8AC3-F5F3-4E2C-A03D-4ABF2A49F05D][Run a report end to end on a synthetic bond population]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- check_component_drift.py --component marketdata passes.
+- The generated files equal what the models regenerate, and the bulk reads and the export handler keep their behaviour.
+
+* Plan
+
+Commit b06ddccb2f edited three generated files by hand: the observation repository (header and source) and the series handler header. The drift gate regenerates them and removes the edits. So the code moves into the paste blocks of the two models, =ores.marketdata.market_observation.org= and =ores.marketdata.market_series.org=, and the files are regenerated. The code does not change.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found by another session, which ran the gate on main and saw it fail for marketdata. The cause was mine. I ran no drift gate on the pull request of that commit, because I chose to run gates sparingly, and I edited generated files instead of the model blocks. A model-carried read needs its section, its slot blocks and its includes in the model. =read_latest_all= and =read_as_of_all= are new sections. The manual point helper joins the block of =read_as_of_records=. The handler block and its chrono include are updated.
+
+The regenerated source files equal what was committed. The header differs in order only: the generator orders the declarations by the order of the model sections.
+
+The gate compares the tree with the committed state, so a task page or story row that is not yet committed reads as drift.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The bulk reads hold the whole tenant in memory. | market_observation.org | No change needed | Known trade-off, stated in the doc comment. |
+| 2 | read_manual_points_all filters by date in C++. | market_observation.org | Skipped | The manual set is small. The filter can move into the SQL if it grows. |
+| 3 | The map key allocates a string for each row. | market_observation.org | Skipped | A micro-optimisation with no measured cost. |
+| 4 | Track the flaky catalogue tests in a separate issue. | repository_market_data_catalogue_tests.cpp | Open | Two cases fail in some runs when a generated code repeats in a database that holds many rows. To be raised as its own task. |
+| 5 | Run the drift gate earlier, as a CI step. | build | Open | I skipped the local gate on the earlier pull request. The gate that runs before a pull request is raised covers this set of components, and I should have run it. |
+
+* Result
+
+The bulk reads and the export handler live in their models, and the generated files are what the models regenerate. The drift gate for marketdata passes.

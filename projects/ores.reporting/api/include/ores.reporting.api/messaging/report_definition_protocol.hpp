@@ -54,6 +54,7 @@ struct report_definition_write {
     std::string prepared_input_key;
     std::string post_processing;
     bool is_official;
+    std::optional<std::string> regulatory_book_type;
 };
 
 struct report_definition_change {

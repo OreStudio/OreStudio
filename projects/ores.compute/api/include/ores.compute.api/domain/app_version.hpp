@@ -78,6 +78,13 @@ struct app_version final {
     int min_ram_mb = 0;
 
     /**
+     * @brief Release note of the release this app version belongs to, as plain text. One release is
+     * one engine build and one wrapper build, packaged for several platforms, and one note
+     * describes it. An empty note means none was written.
+     */
+    std::string release_note;
+
+    /**
      * @brief Username of the person who last modified this app version.
      */
     std::string modified_by;

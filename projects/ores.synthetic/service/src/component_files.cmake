@@ -41,6 +41,7 @@ set(files
     "messaging/yield_curve_process_parameter_definition_event_registrar.cpp"
     "messaging/yield_curve_process_type_event_registrar.cpp"
     "registrar.cpp"
+    "simulator_adapter.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

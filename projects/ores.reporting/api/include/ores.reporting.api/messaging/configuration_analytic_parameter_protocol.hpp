@@ -42,7 +42,7 @@ struct configuration_analytic_parameter_key {
 struct configuration_analytic_parameter_write {
     boost::uuids::uuid id;
     boost::uuids::uuid configuration_analytic_id;
-    boost::uuids::uuid parameter_definition_id;
+    boost::uuids::uuid ore_parameter_id;
     std::string value;
     int position;
 };
@@ -65,10 +65,10 @@ struct configuration_analytic_parameter_lookup {
 
 struct configuration_analytic_parameters_filter {
     std::optional<boost::uuids::uuid> configuration_analytic_id;
-    std::optional<boost::uuids::uuid> parameter_definition_id;
+    std::optional<boost::uuids::uuid> ore_parameter_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_analytic_id_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> parameter_definition_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> ore_parameter_id_one_of;
 };
 
 struct configuration_analytic_parameter_event {
@@ -259,11 +259,11 @@ struct list_by_configuration_analytic_id_configuration_analytic_parameters_respo
     std::uint64_t total;
 };
 
-struct list_by_parameter_definition_id_configuration_analytic_parameters_request {
+struct list_by_ore_parameter_id_configuration_analytic_parameters_request {
     using response_type =
-        struct list_by_parameter_definition_id_configuration_analytic_parameters_response;
+        struct list_by_ore_parameter_id_configuration_analytic_parameters_response;
     static constexpr std::string_view nats_subject =
-        "reporting.v1.configuration_analytic_parameters.list_by_parameter_definition_id";
+        "reporting.v1.configuration_analytic_parameters.list_by_ore_parameter_id";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -271,7 +271,7 @@ struct list_by_parameter_definition_id_configuration_analytic_parameters_request
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    boost::uuids::uuid parameter_definition_id;
+    boost::uuids::uuid ore_parameter_id;
     ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
@@ -279,7 +279,7 @@ struct list_by_parameter_definition_id_configuration_analytic_parameters_request
     std::optional<configuration_analytic_parameters_filter> filter;
 };
 
-struct list_by_parameter_definition_id_configuration_analytic_parameters_response {
+struct list_by_ore_parameter_id_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
     std::uint64_t total;

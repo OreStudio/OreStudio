@@ -42,6 +42,9 @@ TEST_CASE("http_server_options_default_construction", tags) {
     CHECK(sut.port == 8080);
     CHECK(sut.max_connections == 100);
     CHECK(sut.request_timeout.count() == 30);
+    // The access token of a person who acts for many parties passes Beast's 8KB default.
+    CHECK(sut.max_header_size >= 32 * 1024);
+    CHECK(sut.max_header_size <= 1024 * 1024);
     CHECK_FALSE(sut.enable_ssl);
     CHECK(sut.certificate_file.empty());
     CHECK(sut.private_key_file.empty());

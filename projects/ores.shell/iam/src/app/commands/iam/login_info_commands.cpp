@@ -216,6 +216,7 @@ void login_info_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.account_id, parsed->positionals[next++], "account_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

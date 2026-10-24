@@ -25,8 +25,6 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
 
-#include "ores.synthetic.api/domain/binding_mode.hpp"
-#include "ores.synthetic.api/domain/scope.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -37,19 +35,16 @@
 namespace ores::synthetic::domain {
 
 /**
- * @brief A named, party-scoped recipe for generating synthetic market data.
+ * @brief A named, system-owned recipe for generating synthetic market data.
  *
  * A top-level container that owns one or more typed sub-configurations (FX spot
  * now; vol surface, interest-rate curves later). It is the recipe for how
- * synthetic market data is produced. Carries two orthogonal axes: scope
- * (system/tenant/party) decides the sharing radius -- who consumes the same
- * generated data -- and binding_mode (bound/sandboxed) decides whether
- * that data is authoritative for real feed consumers or reachable only by
- * explicit selection. tenant_id and party_id follow the scope: a system
- * collection belongs to the system tenant and its system party, the party the
- * super administrator works in; a tenant collection belongs to its tenant with
- * no party; a party collection belongs to its tenant and party. A system
- * collection's feeds are the installation's, and every tenant reads them.
+ * synthetic market data is produced. A collection belongs to the system tenant and
+ * its system party, the party the super administrator works in. Every tenant reads
+ * it and only the system tenant writes it, because a simulated feed stands for one
+ * observation in the world and every party must see the same value. See
+ * [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system
+ * party]].
  */
 struct market_data_generation_config final {
     /**
@@ -68,26 +63,11 @@ struct market_data_generation_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Owning party (legal entity) this configuration belongs to: the party for party scope,
-     * the system tenant's system party for system scope, and null for tenant scope. Not a natural
-     * key: a party can legitimately own several containers (e.g. "Basic" and "Realistic" published
-     * from different DQ datasets), so no uniqueness is enforced beyond the surrogate id.
+     * @brief The system tenant's system party, which owns every collection. Not a natural key: the
+     * system can hold several collections (such as "Basic" and "Realistic" published from different
+     * DQ datasets), so no uniqueness is enforced beyond the surrogate id.
      */
     std::optional<boost::uuids::uuid> party_id;
-
-    /**
-     * @brief Sharing radius: who consumes the same generated data. system sets the system tenant
-     * and its system party, tenant sets tenant_id only, party sets both. Orthogonal to
-     * binding_mode.
-     */
-    domain::scope scope = domain::scope::party;
-
-    /**
-     * @brief Whether this configuration's generated data is authoritative for real feed consumers
-     * (bound) or reachable only by explicit selection (sandboxed, never resolved into the bound
-     * feed). Orthogonal to scope.
-     */
-    domain::binding_mode binding_mode = domain::binding_mode::bound;
 
     /**
      * @brief Stable name for this configuration, unique per tenant and party.
@@ -114,20 +94,10 @@ struct market_data_generation_config final {
 
     /**
      * @brief The simulated market data provider this collection stands for
-     * (market_data_provider.code), such as bloomberg or ore. Required at every scope, so every feed
-     * has a provider. Its feeds' source names start synthetic.<provider_code>..
+     * (market_data_provider.code), such as bloomberg or ore. Required, so every feed has a
+     * provider. Its feeds' source names start synthetic.<provider_code>..
      */
     std::string provider_code;
-
-    /**
-     * @brief The collection's standing consent to run. It is the IAM run grant that every feed of
-     * this collection acts under, whoever or whatever starts the feed. The first Start of the
-     * collection by a person creates it, and a restart of the service reuses it. It is not a
-     * credential: the service exchanges it for a run token at each start. IAM owns the grant, so
-     * this column is not a checked foreign key. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The
-     * identity a feed runs as]].
-     */
-    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief Username of the person who last modified this market data generation config.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB
+:END:
+#+title: A party takes a provider's feeds through a subscription
+#+description: What a subscription records, the rights it carries, how it limits what a party can demand, and why the party names a provider and never a source.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:subscription:entitlement:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+A subscription says that one party takes the feeds of one provider, with a set
+of rights, for a period. It is an entitlement. A party names the provider and
+never the source, because the route chooses the source. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]. The
+party does not need to know whether the source is simulated, and it can look it
+up.
+
+* Detail
+
+** What a row records
+
+| Column | Meaning |
+|--------+---------|
+| =tenant_id=, =party_id= | The consumer |
+| =provider= | The provider whose feeds the party takes |
+| =rights= | A set of =display=, =non_display= and =derived=. See [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] |
+| =valid_from=, =valid_to= | The period of the subscription |
+| =enabled= | A suspend flag. Nothing is deleted. |
+| Audit columns and version | The standard members |
+
+The natural key is the party, the provider and the period. A tenant admin or a
+party admin can read the subscriptions. A person with the write permission
+changes them.
+
+** What a subscription allows
+
+- The party can demand the items that map to instruments of the provider. A
+  demand outside the subscription is refused with =not_entitled=.
+- The party gets a route to one source. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+- The party's usage is metered against the subscription. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
+
+** The enabled flag is a suspend
+
+Setting =enabled= to false closes the party's demand and stops delivery. The
+service keeps the row and the party's stored series. Setting the flag to true
+restores service without a new row.
+
+** Who sees what
+
+A party sees only its own subscriptions. The system tenant sees all. The catalogue
+rows are readable by every party. See [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: how a subscription finds its source.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the rights a subscription carries.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: how usage is attributed to a subscription.

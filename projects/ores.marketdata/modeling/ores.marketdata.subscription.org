@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: EB876B8B-C5F7-4C81-9A5B-5E81FE1FF21C
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.subscription
+#+description: Codegen entity model for the marketdata subscriptions table; a party's entitlement to the feeds of one provider, with its display, non-display and derived rights.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: subscription
+#+entity_plural: subscriptions
+#+entity_title: Subscription
+#+brief: A party's entitlement to the feeds of one provider, with its display, non-display and derived rights.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A subscription is the entitlement of one party to the feeds of one provider. It carries the
+three rights the vendor licences name: =display=, =non_display= and =derived=. A demand checks
+that the subscription holds the right the use needs. The source that serves the party is not
+here. A route names it.
+
+A subscription holds at least one right. A party administrator reads and changes only the
+subscriptions of the party, and the history of every change is kept.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this subscription.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+The party that holds the subscription. Set server-side from the authenticated session and enforced by row level security, so a party sees only its own subscriptions.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the provider whose feeds the party takes. A party holds at most one subscription to a provider.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** display
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+The party may show the data to a person on a screen.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** non_display
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+A system of the party may use the data without displaying it, such as a pricing or risk engine.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** derived
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable: false
+:default_value: false
+:END:
+
+The party may compute new values from the data, such as a blended spot or a curve.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_subscriptions_tbl
+:rls_tenant_isolation:      true
+:rls_party_isolation:       true
+:rls_system_tenant_visible: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "provider_code" <> '' |
+| "display" or "non_display" or "derived" |
+
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| provider_code | ores_marketdata_validate_provider_fn   |
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: subscription
+:entity_plural_short:   subscriptions
+:entity_singular_words: subscription
+:entity_plural_words:   subscriptions
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 8E4B1D26-3A7C-4F59-B0D2-6C9A5E1F7B43
+:END:
+
+Reads the latest subscriptions across all tenants. The service computes the demand of an
+adapter from the parties of every tenant, so it cannot filter on one. Queries only on
+=valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::subscription> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::subscription>
+subscription_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<subscription_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<subscription_entity, domain::subscription>(
+        ctx,
+        query,
+        [](const auto& entities) { return subscription_mapper::map(entities); },
+        lg(),
+        "Reading latest subscriptions across all tenants");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sub
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/subscription.hpp
+:domain_class:            ores::marketdata::domain::subscription
+:protocol_include:        ores.marketdata.api/messaging/subscription_protocol.hpp
+:collection_name:         subscriptions
+:key_field:               provider_code
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder          |
+|---------------+---------------+-----------------+-----------+--------+-------------+----------------------|
+| provider_code | Provider      | providerEdit    | line_edit | true   | true        | Enter provider code  |
+| display       | Display       | displayEdit     | check_box |        |             |                      |
+| non_display   | Non-display   | nonDisplayEdit  | check_box |        |             |                      |
+| derived       | Derived       | derivedEdit     | check_box |        |             |                      |
+
+*** Columns
+
+| enum_name    | field         | header      | type    | width |
+|--------------+---------------+-------------+---------+-------|
+| ProviderCode | provider_code | Provider    | string  | 140   |
+| Display      | display       | Display     | boolean | 80    |
+| NonDisplay   | non_display   | Non-display | boolean | 100   |
+| Derived      | derived       | Derived     | boolean | 80    |
+| Version      | version       | Version     | int     | 80    |
+| ModifiedBy   | modified_by   | Modified By | string  | 120   |
+
+* See also
+
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] -- the entitlement this table records.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][The rights on a subscription]] -- the three rights this table holds.
+

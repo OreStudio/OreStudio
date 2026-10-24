@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-[#0d0f12] text-slate-200">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intraday Engine Settings - Configuration Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for parameter impact sparklines -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0d0f12',
+                            panel: '#13161c',
+                            card: '#1a1d24',
+                            border: '#2a2e39',
+                            hover: '#242833',
+                            accent: '#3b82f6',
+                            warning: '#f59e0b',
+                            danger: '#ef4444',
+                            success: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom sleek scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0f12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2e39;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+        }
+        .row-expanded {
+            background-color: rgba(30, 41, 59, 0.4);
+            border-left: 3px solid #3b82f6;
+        }
+        .modified-row {
+            border-left: 3px solid #f59e0b;
+            background-color: rgba(245, 158, 11, 0.03);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden antialiased bg-[#0d0f12] text-slate-300">
+
+    <!-- TOP GLOBAL HEADER -->
+    <header class="h-12 bg-[#13161c] border-b border-[#2a2e39] px-4 flex items-center justify-between shrink-0 select-none">
+        <div class="flex items-center gap-3">
+            <!-- App Icon / Brand -->
+            <div class="flex items-center gap-2 font-semibold text-white tracking-wide text-sm">
+                <div class="w-6 h-6 rounded bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                </div>
+                <span>ORE<span class="text-blue-500 font-bold">Studio</span></span>
+            </div>
+            
+            <div class="h-4 w-[1px] bg-[#2a2e39]"></div>
+
+            <!-- Environment Badge -->
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                PROTOTYPE MODE
+            </span>
+
+            <!-- System Info -->
+            <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 font-mono pl-2">
+                <span class="text-slate-500">ENGINE:</span>
+                <span class="text-slate-300">Intraday-v2.8.4</span>
+            </div>
+        </div>
+
+        <!-- Global Search & System Status -->
+        <div class="flex items-center gap-4">
+            <!-- Global Command Palette Search -->
+            <div class="relative w-64 lg:w-80">
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="globalSearchInput" placeholder="Search XML node, setting, tag... (Ctrl+K)" 
+                    class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded-md pl-8 pr-12 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors code-font">
+                <kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] bg-[#242833] text-slate-400 border border-[#2a2e39] px-1 rounded">⌘K</kbd>
+            </div>
+
+            <!-- Mode Switcher Toggle (Simple vs Advanced) -->
+            <div class="flex items-center bg-[#1a1d24] p-0.5 rounded-md border border-[#2a2e39]">
+                <button id="btnViewSimple" onclick="setMode('simple')" 
+                    class="px-2.5 py-1 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    Simple
+                </button>
+                <button id="btnViewAdvanced" onclick="setMode('advanced')" 
+                    class="px-2.5 py-1 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm">
+                    <i data-lucide="code" class="w-3.5 h-3.5"></i>
+                    Advanced
+                </button>
+            </div>
+
+            <div class="h-4 w-[1px] bg-[#2a2e39]"></div>
+
+            <!-- Actions & Alerts -->
+            <div class="flex items-center gap-2">
+                <button title="Pending Changes" class="relative p-1.5 text-slate-400 hover:text-white rounded hover:bg-[#242833] transition">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span id="pendingBadge" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 hidden"></span>
+                </button>
+                <div class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-xs text-blue-300 font-bold">
+                    RM
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SUB-HEADER / BREADCRUMBS -->
+    <div class="h-9 bg-[#13161c]/80 border-b border-[#2a2e39] px-4 flex items-center justify-between shrink-0 text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>/</span>
+            <span class="hover:text-slate-300 cursor-pointer">Reporting</span>
+            <span>/</span>
+            <span class="hover:text-slate-300 cursor-pointer">Engine Settings</span>
+            <span>/</span>
+            <span class="text-slate-200 font-medium">Intraday Engine Settings</span>
+            <span class="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">Bound to 0 reports</span>
+        </div>
+
+        <div class="flex items-center gap-3 font-mono text-[11px]">
+            <span class="text-slate-500">VERSION: <span class="text-slate-300">1.8.0.7</span></span>
+            <span class="text-slate-500">STATE: <span class="text-emerald-400">VALIDATED</span></span>
+        </div>
+    </div>
+
+    <!-- MAIN BODY CONTAINER -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- LEFT SIDEBAR: CATEGORY NAVIGATION TREE -->
+        <aside class="w-64 bg-[#13161c] border-r border-[#2a2e39] flex flex-col shrink-0 select-none">
+            <!-- Sidebar Header / Search -->
+            <div class="p-3 border-b border-[#2a2e39] flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-400"></i>
+                    Categories
+                </span>
+                <span class="text-[10px] text-slate-500 font-mono">7 Modules</span>
+            </div>
+
+            <!-- Category Tree List -->
+            <nav id="categoryTree" class="flex-1 overflow-y-auto p-2 space-y-1 text-xs">
+                <!-- Fixings and Cash Flows (Active) -->
+                <button onclick="selectCategory(this, 'fixings')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md bg-blue-600/10 text-blue-400 border border-blue-500/20 font-medium transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="coins" class="w-4 h-4 text-blue-400 shrink-0"></i>
+                        <span class="truncate">Fixings & Cash Flows</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-blue-500/20 text-blue-300">5</span>
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                    </div>
+                </button>
+
+                <!-- Market & Trade Building -->
+                <button onclick="selectCategory(this, 'market')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="candlestick-chart" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                        <span class="truncate">Market & Trade Building</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#242833] text-slate-400">12</span>
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0" title="1 Warning"></i>
+                    </div>
+                </button>
+
+                <!-- Execution -->
+                <button onclick="selectCategory(this, 'execution')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="play-circle" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                        <span class="truncate">Execution Engine</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#242833] text-slate-400">8</span>
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                    </div>
+                </button>
+
+                <!-- Sensor Management -->
+                <button onclick="selectCategory(this, 'sensors')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="activity" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                        <span class="truncate">Sensor Management</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#242833] text-slate-400">4</span>
+                        <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-500 shrink-0" title="1 Error in schema"></i>
+                    </div>
+                </button>
+
+                <!-- Used By -->
+                <button onclick="selectCategory(this, 'usedBy')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="network" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                        <span class="truncate">Used By / Bindings</span>
+                    </div>
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#242833] text-slate-400">3</span>
+                </button>
+
+                <!-- Audit History -->
+                <button onclick="selectCategory(this, 'history')" class="category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="history" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                        <span class="truncate">Audit & History</span>
+                    </div>
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#242833] text-slate-400">19</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Footer Status -->
+            <div class="p-3 border-t border-[#2a2e39] bg-[#0d0f12] text-[11px] text-slate-500 flex flex-col gap-1">
+                <div class="flex justify-between">
+                    <span>Validation Status:</span>
+                    <span class="text-emerald-400 font-mono">0 Errors</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Modified Params:</span>
+                    <span id="modifiedCount" class="text-amber-400 font-mono">0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT WORKSPACE -->
+        <main class="flex-1 flex flex-col min-w-0 bg-[#0d0f12] overflow-hidden">
+
+            <!-- PAGE TITLE & TAB NAVIGATION -->
+            <div class="pt-4 px-6 bg-[#13161c] border-b border-[#2a2e39] flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h1 class="text-lg font-semibold text-white tracking-tight flex items-center gap-2">
+                            Intraday Engine Settings
+                            <span class="text-xs font-mono font-normal text-slate-400 bg-[#1a1d24] px-2 py-0.5 rounded border border-[#2a2e39]">ore.xml</span>
+                        </h1>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Configure market pricing valuation parameters, cash flow conventions, and real-time intraday curve overrides.
+                        </p>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="resetDefaults()" class="px-3 py-1.5 text-xs font-medium rounded-md border border-[#2a2e39] bg-[#1a1d24] hover:bg-[#242833] text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-400"></i>
+                            Reset Defaults
+                        </button>
+                        <button onclick="exportXML()" class="px-3 py-1.5 text-xs font-medium rounded-md border border-blue-500/30 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 transition flex items-center gap-1.5">
+                            <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+                            Export XML
+                        </button>
+                        <button id="btnSave" disabled onclick="saveChanges()" class="px-3.5 py-1.5 text-xs font-medium rounded-md bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-500 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex items-center gap-6 text-xs font-medium border-b border-transparent">
+                    <button class="pb-2.5 text-blue-400 border-b-2 border-blue-500 font-semibold flex items-center gap-1.5">
+                        <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                        Fixings and cash flows
+                    </button>
+                    <button class="pb-2.5 text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+                        <i data-lucide="line-chart" class="w-3.5 h-3.5"></i>
+                        Market & trade building
+                    </button>
+                    <button class="pb-2.5 text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                        Execution
+                    </button>
+                    <button class="pb-2.5 text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+                        <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                        Used by
+                    </button>
+                    <button class="pb-2.5 text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                        History
+                    </button>
+                </div>
+            </div>
+
+            <!-- PROTOTYPE BANNER NOTE (Dismissable) -->
+            <div id="protoNote" class="bg-amber-500/10 border-b border-amber-500/20 px-6 py-2 text-xs text-amber-300 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                    <span>
+                        <strong>Prototype Note:</strong> Toggle between <strong>Simple</strong> and <strong>Advanced View</strong> in the top header. Advanced view exposes ORE XML path structures, version lifecycles, and inline impact charts.
+                    </span>
+                </div>
+                <button onclick="document.getElementById('protoNote').remove()" class="text-amber-400 hover:text-amber-200">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- FILTER & SEARCH BAR -->
+            <div class="px-6 py-3 bg-[#13161c]/50 border-b border-[#2a2e39] flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+                    <!-- Table Search -->
+                    <div class="relative flex-1 max-w-md">
+                        <i data-lucide="filter" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="Filter parameters by name or XML tag..." 
+                            class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded-md pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+
+                    <!-- Filter Chips -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto">
+                        <button onclick="toggleFilterChip(this, 'changed')" class="chip-btn px-2.5 py-1 rounded-full text-[11px] bg-[#1a1d24] text-slate-400 border border-[#2a2e39] hover:text-slate-200 transition flex items-center gap-1">
+                            <span>Changed from Default</span>
+                        </button>
+                        <button onclick="toggleFilterChip(this, 'impact')" class="chip-btn px-2.5 py-1 rounded-full text-[11px] bg-[#1a1d24] text-slate-400 border border-[#2a2e39] hover:text-slate-200 transition flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span>Numbers Impact</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right View Status Summary -->
+                <div class="text-xs text-slate-400 font-mono flex items-center gap-3">
+                    <span>Showing <strong id="visibleRowCount" class="text-slate-200">5</strong> of 5 settings</span>
+                    <button onclick="collapseAllDrawers()" class="text-blue-400 hover:underline text-[11px]">Collapse All</button>
+                </div>
+            </div>
+
+            <!-- PARAMETER DATA TABLE CONTAINER -->
+            <div class="flex-1 overflow-y-auto px-6 py-4">
+                <div class="rounded-lg border border-[#2a2e39] bg-[#13161c] overflow-hidden shadow-xl">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-[#1a1d24] text-slate-400 font-medium border-b border-[#2a2e39] select-none">
+                                <th class="py-2.5 px-3 w-8"></th>
+                                <th class="py-2.5 px-3 font-semibold text-slate-300">Parameter Setting</th>
+                                <th class="py-2.5 px-3 adv-col text-slate-400">ORE XML Node</th>
+                                <th class="py-2.5 px-3 font-semibold text-slate-300 w-44">Current Value</th>
+                                <th class="py-2.5 px-3 text-slate-400 w-28">Default</th>
+                                <th class="py-2.5 px-3 text-slate-400">Business Impact Summary</th>
+                                <th class="py-2.5 px-3 text-center w-12">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parameterTableBody" class="divide-y divide-[#2a2e39]">
+
+                            <!-- ROW 1: Imply today's fixings -->
+                            <tr id="row-1" class="param-row hover:bg-[#1a1d24]/60 transition-colors cursor-pointer" onclick="toggleDrawer('drawer-1', event)">
+                                <td class="py-3 px-3 text-center text-slate-500">
+                                    <i id="icon-drawer-1" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="font-semibold text-slate-200 text-xs flex items-center gap-2">
+                                            Imply today's fixings
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">Changes the numbers</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 line-clamp-1">Decides what the run does about the fixing of the valuation date.</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 adv-col font-mono text-[11px] text-blue-400">
+                                    ore.xml &gt; Setup &gt; implyTodaysFixings
+                                </td>
+                                <td class="py-3 px-3" onclick="event.stopPropagation()">
+                                    <select onchange="markModified(1, this)" class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs">
+                                        <option value="No" selected>No (Default)</option>
+                                        <option value="Yes">Yes (Imply Curves)</option>
+                                    </select>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">No</td>
+                                <td class="py-3 px-3 text-slate-300 text-[11px]">
+                                    When No, valuation date fixing is loaded from historical fixings file.
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 inline-block" title="Valid"></i>
+                                </td>
+                            </tr>
+                            <!-- DRAWER 1: Expanded details -->
+                            <tr id="drawer-1" class="hidden bg-[#161920] border-b border-[#2a2e39]">
+                                <td colspan="7" class="p-4">
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <!-- Documentation Text -->
+                                        <div class="lg:col-span-2 space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                                Comprehensive Documentation
+                                            </h4>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-[#111318] p-3 rounded border border-[#2a2e39]">
+                                                Decides what the valuation run does regarding the fixing of the valuation date. 
+                                                When set to <strong>No</strong>, the fixing for the valuation date is loaded from the fixing file like any earlier fixing. 
+                                                When set to <strong>Yes</strong>, that fixing is not loaded, and the pricing engine implies it directly from the discount/forward curves.
+                                                Use <strong>Yes</strong> when the run prices off hypothetical market data (e.g., scenario analysis or stress testing), as real market fixings would mismatch hypothetical curves.
+                                            </p>
+                                            
+                                            <!-- Mini Impact Chart -->
+                                            <div class="pt-2">
+                                                <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                                                    <span>Valuation Sensitivity Delta (Historical Run vs Implied)</span>
+                                                    <span class="font-mono text-blue-400">±0.042% Variance</span>
+                                                </div>
+                                                <div class="h-16 bg-[#111318] rounded border border-[#2a2e39] p-2">
+                                                    <canvas id="chart-1"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Advanced Metadata Panel -->
+                                        <div class="space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="database" class="w-3.5 h-3.5 text-amber-400"></i>
+                                                Schema Metadata
+                                            </h4>
+                                            <div class="bg-[#111318] p-3 rounded border border-[#2a2e39] space-y-2 font-mono text-[11px]">
+                                                <div>
+                                                    <span class="text-slate-500 block text-[10px]">ORE XML PATH</span>
+                                                    <code class="text-blue-300 bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-800/40 block mt-0.5 truncate">
+                                                        ore.xml &gt; Setup &gt; implyTodaysFixings
+                                                    </code>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                                    <div>
+                                                        <span class="text-slate-500 block text-[10px]">INTRODUCED IN</span>
+                                                        <span class="text-slate-300">v1.8.0.7 or earlier</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-slate-500 block text-[10px]">REMOVED IN</span>
+                                                        <span class="text-slate-500">—</span>
+                                                    </div>
+                                                </div>
+                                                <div class="pt-1 border-t border-[#2a2e39]/60">
+                                                    <span class="text-slate-500 block text-[10px]">ACCEPTED FORMAT</span>
+                                                    <span class="text-slate-300">Flag written as Y / N, or true / false</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ROW 2: Include today's cash flows -->
+                            <tr id="row-2" class="param-row hover:bg-[#1a1d24]/60 transition-colors cursor-pointer" onclick="toggleDrawer('drawer-2', event)">
+                                <td class="py-3 px-3 text-center text-slate-500">
+                                    <i id="icon-drawer-2" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="font-semibold text-slate-200 text-xs flex items-center gap-2">
+                                            Include today's cash flows
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">Changes the numbers</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 line-clamp-1">Includes or excludes cash flows occurring on the valuation date itself.</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 adv-col font-mono text-[11px] text-blue-400">
+                                    ore.xml &gt; Setup &gt; includeTodaysCashFlows
+                                </td>
+                                <td class="py-3 px-3" onclick="event.stopPropagation()">
+                                    <select onchange="markModified(2, this)" class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs">
+                                        <option value="No" selected>No (Default)</option>
+                                        <option value="Yes">Yes (Include)</option>
+                                    </select>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">No</td>
+                                <td class="py-3 px-3 text-slate-300 text-[11px]">
+                                    Excludes cash flows payable today from NPV calculation.
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 inline-block"></i>
+                                </td>
+                            </tr>
+                            <!-- DRAWER 2 -->
+                            <tr id="drawer-2" class="hidden bg-[#161920] border-b border-[#2a2e39]">
+                                <td colspan="7" class="p-4">
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div class="lg:col-span-2 space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                                Comprehensive Documentation
+                                            </h4>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-[#111318] p-3 rounded border border-[#2a2e39]">
+                                                Determines whether cash flows scheduled on the valuation date are included in trade NPV pricing. 
+                                                When set to <strong>No</strong>, today's cash flows are assumed already settled. 
+                                                When set to <strong>Yes</strong>, they are discounted and added to the portfolio present value.
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="database" class="w-3.5 h-3.5 text-amber-400"></i>
+                                                Schema Metadata
+                                            </h4>
+                                            <div class="bg-[#111318] p-3 rounded border border-[#2a2e39] space-y-2 font-mono text-[11px]">
+                                                <div>
+                                                    <span class="text-slate-500 block text-[10px]">ORE XML PATH</span>
+                                                    <code class="text-blue-300 bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-800/40 block mt-0.5 truncate">
+                                                        ore.xml &gt; Setup &gt; includeTodaysCashFlows
+                                                    </code>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                                    <div>
+                                                        <span class="text-slate-500 block text-[10px]">INTRODUCED IN</span>
+                                                        <span class="text-slate-300">v1.8.0.1</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-slate-500 block text-[10px]">FORMAT</span>
+                                                        <span class="text-slate-300">Boolean (Y/N)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ROW 3: Include reference date events -->
+                            <tr id="row-3" class="param-row hover:bg-[#1a1d24]/60 transition-colors cursor-pointer" onclick="toggleDrawer('drawer-3', event)">
+                                <td class="py-3 px-3 text-center text-slate-500">
+                                    <i id="icon-drawer-3" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="font-semibold text-slate-200 text-xs flex items-center gap-2">
+                                            Include reference date events
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">Changes the numbers</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 line-clamp-1">Controls credit default / exercise events on valuation date.</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 adv-col font-mono text-[11px] text-blue-400">
+                                    ore.xml &gt; Setup &gt; includeReferenceDateEvents
+                                </td>
+                                <td class="py-3 px-3" onclick="event.stopPropagation()">
+                                    <select onchange="markModified(3, this)" class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs">
+                                        <option value="No" selected>No (Default)</option>
+                                        <option value="Yes">Yes (Include)</option>
+                                    </select>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">No</td>
+                                <td class="py-3 px-3 text-slate-300 text-[11px]">
+                                    Ignores exercise/protection events occurring exactly on reference date.
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 inline-block"></i>
+                                </td>
+                            </tr>
+                            <!-- DRAWER 3 -->
+                            <tr id="drawer-3" class="hidden bg-[#161920] border-b border-[#2a2e39]">
+                                <td colspan="7" class="p-4">
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div class="lg:col-span-2 space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                                Comprehensive Documentation
+                                            </h4>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-[#111318] p-3 rounded border border-[#2a2e39]">
+                                                Specifies whether optionality exercises or credit default protection triggers occurring on the reference date are active in pricing context.
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="database" class="w-3.5 h-3.5 text-amber-400"></i>
+                                                Schema Metadata
+                                            </h4>
+                                            <div class="bg-[#111318] p-3 rounded border border-[#2a2e39] space-y-2 font-mono text-[11px]">
+                                                <div>
+                                                    <span class="text-slate-500 block text-[10px]">ORE XML PATH</span>
+                                                    <code class="text-blue-300 bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-800/40 block mt-0.5 truncate">
+                                                        ore.xml &gt; Setup &gt; includeReferenceDateEvents
+                                                    </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ROW 4: Inflation Lag Days Override -->
+                            <tr id="row-4" class="param-row hover:bg-[#1a1d24]/60 transition-colors cursor-pointer" onclick="toggleDrawer('drawer-4', event)">
+                                <td class="py-3 px-3 text-center text-slate-500">
+                                    <i id="icon-drawer-4" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="font-semibold text-slate-200 text-xs flex items-center gap-2">
+                                            Inflation Index Observation Lag
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">Convention</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 line-clamp-1">Overrides default 3-month CPI publication lag period.</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 adv-col font-mono text-[11px] text-blue-400">
+                                    ore.xml &gt; Setup &gt; inflationLagMonths
+                                </td>
+                                <td class="py-3 px-3" onclick="event.stopPropagation()">
+                                    <input type="number" value="3" min="0" max="12" onchange="markModified(4, this)" class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs">
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">3</td>
+                                <td class="py-3 px-3 text-slate-300 text-[11px]">
+                                    Standard 3M lag applied to CPI index fixing lookups.
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 inline-block"></i>
+                                </td>
+                            </tr>
+                            <!-- DRAWER 4 -->
+                            <tr id="drawer-4" class="hidden bg-[#161920] border-b border-[#2a2e39]">
+                                <td colspan="7" class="p-4">
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div class="lg:col-span-2 space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                                Comprehensive Documentation
+                                            </h4>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-[#111318] p-3 rounded border border-[#2a2e39]">
+                                                Defines the default publication lag in months for inflation-indexed bonds and swaps when computing zero-coupon CPI fixings.
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="database" class="w-3.5 h-3.5 text-amber-400"></i>
+                                                Schema Metadata
+                                            </h4>
+                                            <div class="bg-[#111318] p-3 rounded border border-[#2a2e39] space-y-2 font-mono text-[11px]">
+                                                <div>
+                                                    <span class="text-slate-500 block text-[10px]">ORE XML PATH</span>
+                                                    <code class="text-blue-300 bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-800/40 block mt-0.5 truncate">
+                                                        ore.xml &gt; Setup &gt; inflationLagMonths
+                                                    </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ROW 5: Intraday Curve Fallback Mode -->
+                            <tr id="row-5" class="param-row hover:bg-[#1a1d24]/60 transition-colors cursor-pointer" onclick="toggleDrawer('drawer-5', event)">
+                                <td class="py-3 px-3 text-center text-slate-500">
+                                    <i id="icon-drawer-5" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="font-semibold text-slate-200 text-xs flex items-center gap-2">
+                                            Intraday Curve Fallback Behavior
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">Execution</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 line-clamp-1">Fallback behavior if intraday tick stream drops pricing curves.</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 adv-col font-mono text-[11px] text-blue-400">
+                                    ore.xml &gt; Setup &gt; intradayFallbackMode
+                                </td>
+                                <td class="py-3 px-3" onclick="event.stopPropagation()">
+                                    <select onchange="markModified(5, this)" class="w-full bg-[#1a1d24] border border-[#2a2e39] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs">
+                                        <option value="EOD_CLOSE" selected>EOD_CLOSE (Default)</option>
+                                        <option value="HALT_RUN">HALT_RUN (Strict)</option>
+                                        <option value="INTERPOLATE">INTERPOLATE_LAST</option>
+                                    </select>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">EOD_CLOSE</td>
+                                <td class="py-3 px-3 text-slate-300 text-[11px]">
+                                    Falls back to previous business day EOD closing curve snapshot.
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 inline-block"></i>
+                                </td>
+                            </tr>
+                            <!-- DRAWER 5 -->
+                            <tr id="drawer-5" class="hidden bg-[#161920] border-b border-[#2a2e39]">
+                                <td colspan="7" class="p-4">
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div class="lg:col-span-2 space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                                Comprehensive Documentation
+                                            </h4>
+                                            <p class="text-xs text-slate-300 leading-relaxed bg-[#111318] p-3 rounded border border-[#2a2e39]">
+                                                Controls engine resilience during live intraday calculations if real-time tick feeds experience latency or missing market quotes.
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i data-lucide="database" class="w-3.5 h-3.5 text-amber-400"></i>
+                                                Schema Metadata
+                                            </h4>
+                                            <div class="bg-[#111318] p-3 rounded border border-[#2a2e39] space-y-2 font-mono text-[11px]">
+                                                <div>
+                                                    <span class="text-slate-500 block text-[10px]">ORE XML PATH</span>
+                                                    <code class="text-blue-300 bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-800/40 block mt-0.5 truncate">
+                                                        ore.xml &gt; Setup &gt; intradayFallbackMode
+                                                    </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FOOTER STATUS BAR -->
+            <footer class="h-8 bg-[#13161c] border-t border-[#2a2e39] px-4 flex items-center justify-between text-[11px] text-slate-400 select-none font-mono">
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        LIVE SYNC ACTIVE
+                    </span>
+                    <span class="text-slate-600">|</span>
+                    <span>SERVER: <span class="text-slate-300">ord-prod-engine-04</span></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span>ACTIVE SCHEMA: <span class="text-blue-400">ORE_v1.8_STRICT</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-slate-500">Press Ctrl+S to save modified settings</span>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-10 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT INTERACTIVE LOGIC -->
+    <script>
+        // State Management
+        let currentMode = 'advanced'; // 'simple' or 'advanced'
+        const modifiedParameters = new Set();
+        let activeFilters = {
+            changed: false,
+            impact: false
+        };
+
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initCharts();
+            setMode('advanced');
+        });
+
+        // Toggle View Mode (Simple vs Advanced)
+        function setMode(mode) {
+            currentMode = mode;
+            const btnSimple = document.getElementById('btnViewSimple');
+            const btnAdvanced = document.getElementById('btnViewAdvanced');
+            const advCols = document.querySelectorAll('.adv-col');
+
+            if (mode === 'simple') {
+                btnSimple.className = "px-2.5 py-1 text-xs font-medium rounded transition-all bg-blue-600 text-white shadow-sm";
+                btnAdvanced.className = "px-2.5 py-1 text-xs font-medium rounded transition-all text-slate-400 hover:text-white";
+                
+                // Hide XML Code Columns
+                advCols.forEach(col => col.classList.add('hidden'));
+                showToast('Switched to Simple View (Business Focus)', 'info');
+            } else {
+                btnAdvanced.className = "px-2.5 py-1 text-xs font-medium rounded transition-all bg-blue-600 text-white shadow-sm";
+                btnSimple.className = "px-2.5 py-1 text-xs font-medium rounded transition-all text-slate-400 hover:text-white";
+                
+                // Show XML Code Columns
+                advCols.forEach(col => col.classList.remove('hidden'));
+                showToast('Switched to Advanced View (Technical Metadata Exposed)', 'info');
+            }
+        }
+
+        // Expand/Collapse Row Drawer
+        function toggleDrawer(drawerId, event) {
+            // Prevent drawer toggle if click came from interactive form control
+            if (event && (event.target.tagName === 'SELECT' || event.target.tagName === 'INPUT' || event.target.tagName === 'OPTION')) {
+                return;
+            }
+
+            const drawer = document.getElementById(drawerId);
+            const icon = document.getElementById(`icon-${drawerId}`);
+            const rowId = drawerId.replace('drawer-', 'row-');
+            const parentRow = document.getElementById(rowId);
+
+            if (drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(90deg)';
+                if (parentRow) parentRow.classList.add('row-expanded');
+            } else {
+                drawer.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                if (parentRow) parentRow.classList.remove('row-expanded');
+            }
+        }
+
+        function collapseAllDrawers() {
+            for (let i = 1; i <= 5; i++) {
+                const drawer = document.getElementById(`drawer-${i}`);
+                const icon = document.getElementById(`icon-drawer-${i}`);
+                const row = document.getElementById(`row-${i}`);
+                if (drawer) drawer.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                if (row) row.classList.remove('row-expanded');
+            }
+        }
+
+        // Track Modifications
+        function markModified(id, element) {
+            const row = document.getElementById(`row-${id}`);
+            modifiedParameters.add(id);
+            row.classList.add('modified-row');
+
+            // Update modified counters
+            const modifiedCount = document.getElementById('modifiedCount');
+            modifiedCount.textContent = modifiedParameters.size;
+
+            // Enable save button & show badge
+            document.getElementById('btnSave').disabled = false;
+            document.getElementById('pendingBadge').classList.remove('hidden');
+
+            showToast(`Parameter #${id} value updated`, 'warning');
+        }
+
+        function saveChanges() {
+            if (modifiedParameters.size === 0) return;
+
+            modifiedParameters.forEach(id => {
+                const row = document.getElementById(`row-${id}`);
+                row.classList.remove('modified-row');
+            });
+
+            modifiedParameters.clear();
+            document.getElementById('modifiedCount').textContent = '0';
+            document.getElementById('btnSave').disabled = true;
+            document.getElementById('pendingBadge').classList.add('hidden');
+
+            showToast('All modified settings successfully saved to ore.xml', 'success');
+        }
+
+        function resetDefaults() {
+            location.reload();
+        }
+
+        function exportXML() {
+            showToast('Exporting updated ore.xml configuration file...', 'info');
+        }
+
+        // Real-time Dynamic Table Filtering
+        function filterTable() {
+            const query = document.getElementById('tableSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.param-row');
+            let visibleCount = 0;
+
+            rows.forEach((row, index) => {
+                const id = index + 1;
+                const drawer = document.getElementById(`drawer-${id}`);
+                const text = row.innerText.toLowerCase();
+
+                let matchesSearch = text.includes(query);
+                let matchesFilter = true;
+
+                if (activeFilters.changed && !modifiedParameters.has(id)) {
+                    matchesFilter = false;
+                }
+
+                if (activeFilters.impact && !text.includes('changes the numbers')) {
+                    matchesFilter = false;
+                }
+
+                if (matchesSearch && matchesFilter) {
+                    row.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    row.classList.add('hidden');
+                    if (drawer) drawer.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('visibleRowCount').textContent = visibleCount;
+        }
+
+        function toggleFilterChip(btn, filterType) {
+            activeFilters[filterType] = !activeFilters[filterType];
+            
+            if (activeFilters[filterType]) {
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+                btn.classList.remove('bg-[#1a1d24]', 'text-slate-400');
+            } else {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                btn.classList.add('bg-[#1a1d24]', 'text-slate-400');
+            }
+
+            filterTable();
+        }
+
+        // Category Navigation Switching
+        function selectCategory(button, categoryKey) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = "category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1a1d24] transition-all text-left";
+            });
+
+            button.className = "category-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md bg-blue-600/10 text-blue-400 border border-blue-500/20 font-medium transition-all text-left";
+            showToast(`Loaded module: ${button.querySelector('span').innerText}`, 'info');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgBg = 'bg-[#1a1d24] border-[#2a2e39] text-slate-200';
+            let icon = 'info';
+            let iconColor = 'text-blue-400';
+
+            if (type === 'success') {
+                bgBg = 'bg-emerald-950/80 border-emerald-500/40 text-emerald-200';
+                icon = 'check-circle';
+                iconColor = 'text-emerald-400';
+            } else if (type === 'warning') {
+                bgBg = 'bg-amber-950/80 border-amber-500/40 text-amber-200';
+                icon = 'alert-triangle';
+                iconColor = 'text-amber-400';
+            }
+
+            toast.className = `pointer-events-auto px-3.5 py-2 rounded-md border text-xs font-sans shadow-2xl flex items-center gap-2.5 transition-all transform translate-y-2 opacity-0 ${bgBg}`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-4 h-4 ${iconColor} shrink-0"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize Sparkline Charts inside Drawers
+        function initCharts() {
+            const ctx1 = document.getElementById('chart-1');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+                        datasets: [{
+                            data: [100.0, 100.02, 99.98, 100.05, 100.01, 100.04, 100.03, 100.042],
+                            borderColor: '#3b82f6',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.08)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 3183ED5C-D5BB-40C0-ABB1-78439F52779D
+:END:
+#+title: One service owns market data between the vendors and the parties
+#+description: Why ores.marketdata is the only place where vendor data becomes party data, what it owns, and what sits outside it.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:architecture:service:adapters:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+=ores.marketdata= is the market data service. It sits between the sources of
+market data and the parties that consume it. Sources are adapters: one adapter
+for each way of reaching a provider. The service subscribes to the adapters,
+maps their ids to internal items, checks quality, stores the quote series,
+delivers ticks to the parties, and records what each party used. No party
+reads an adapter. No adapter knows a party.
+
+This is how Murex and Calypso work. A market data server owns the vendor
+connections. The rest of the system reads the server and cannot tell which
+vendor, which environment or which simulator produced a value.
+
+* Detail
+
+** What the service owns
+
+- The catalogue: providers, sources, vendor instruments and mappings.
+  See [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]].
+- The ingest path from tick to stored observation. See [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
+- Routing: which source serves which party. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+- Quote series, composites and their rules. See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
+- Entitlement and metering. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
+
+** What sits outside the service
+
+- Adapters. Each is a separate NATS service. See [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]].
+- The simulator, which is one adapter plus its authoring tools. See
+  [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]].
+- Consumers: pricing, risk, reports and screens. They read the party stream or
+  the store.
+
+** The components
+
+#+caption: The market data service with its adapters and consumers.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/market_data_components.png]]
+
+Source: [[proj:doc/knowledge/architecture/market_data_components.puml][=market_data_components.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/market_data_components.puml=.
+
+** The rule that keeps the design honest
+
+The service treats every source in the same way. A source has a kind, and the
+kind is data that a person can read. No code path in the service, in a
+consumer or in an adapter contract changes because the kind is
+=simulated=. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — completes: how a live adapter and the simulator differ.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]] — completes: what the service does with a tick.

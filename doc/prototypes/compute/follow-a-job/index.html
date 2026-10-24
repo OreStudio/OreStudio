@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compute prototype — follow a job</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Follow a job, from
+  doc/knowledge/journeys/compute/journey_follow_a_job.org: the page of one
+  workunit. The state of the job, its runs, where its time went, the files, the
+  release that ran it, and the chain from the scheduled job to the result.
+
+  Switch the role with ?role=operator|tenant|member, the state with
+  ?state=loaded|loading|empty|error|refused, the job with
+  ?job=done|failed|running and the origin of its batch with
+  ?origin=report|shell. The bar at the foot does all four.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 1FC395AE-BCAE-5164-902D-5B9618D91368
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the providers commands from the shell?
+#+description: Every command the providers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:providers:
+
+This file documents the providers resource at the shell, one section per command. Every command is a subcommand of =providers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A9E3675C-6564-5D49-A290-95665048F431
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.providers.list=.
+
+#+name: providers-list
+#+begin_src ores-shell :tangle providers-list.ores :exports none
+providers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: ED79C20B-8276-509A-BA5F-2E8D53F37D9A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers get <code>
+#+end_example
+
+It is addressed at =marketdata.v1.providers.get=.
+
+#+name: providers-get
+#+begin_src ores-shell :tangle providers-get.ores :exports none
+providers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7571942A-913A-58C4-8CEC-F01893732978
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers get-many <code>
+#+end_example
+
+It is addressed at =marketdata.v1.providers.get_many=.
+
+#+name: providers-get-many
+#+begin_src ores-shell :tangle providers-get-many.ores :exports none
+providers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CC0DB309-3165-593B-8C48-86681270CB89
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers add <code> <name> <kind> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.providers.put=.
+
+#+name: providers-add
+#+begin_src ores-shell :tangle providers-add.ores :exports none
+providers add __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8F42A92F-E336-5FBF-8C2E-BC8239495021
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers set <code> <name> <kind> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.providers.put=.
+
+#+name: providers-set
+#+begin_src ores-shell :tangle providers-set.ores :exports none
+providers set __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 62BF11FD-3628-5310-A105-69CC1C15C4FF
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers put-many --count <n> <code> <name> <kind> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.providers.put_many=.
+
+#+name: providers-put-many
+#+begin_src ores-shell :tangle providers-put-many.ores :exports none
+providers put-many --count 1 __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 619AC131-E44D-52CE-A298-D82500F4F8B4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.providers.delete=.
+
+#+name: providers-delete
+#+begin_src ores-shell :tangle providers-delete.ores :exports none
+providers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A02F2463-5261-5219-A8F5-B5E533E26E11
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.providers.delete_many=.
+
+#+name: providers-delete-many
+#+begin_src ores-shell :tangle providers-delete-many.ores :exports none
+providers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B83524BC-1C3F-54BA-AC6A-4C835A69D1CE
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.providers_versions.list=.
+
+#+name: providers-versions
+#+begin_src ores-shell :tangle providers-versions.ores :exports none
+providers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 75942F3C-4036-5C47-82AD-F2EE44E085D5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+providers version <code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.providers_versions.get=.
+
+#+name: providers-version
+#+begin_src ores-shell :tangle providers-version.ores :exports none
+providers version __none__ --version 1
+#+end_src
+

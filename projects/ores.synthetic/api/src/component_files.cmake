@@ -87,7 +87,6 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/binding_mode.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/curve_template_validation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder_json_io.hpp"
@@ -122,7 +121,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_provider_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_provider_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_provider_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/scope.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/step_subjects.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/synthetic_catalog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/trade_generation_book.hpp"
@@ -161,6 +159,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_parameter_definition_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/adapter_faults.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_factory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_filter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_overview.hpp"
@@ -189,6 +188,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/convert_fx_mixture_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/convert_fx_simple_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/convert_ir_parameters_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/fault_operation_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/feed_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/feed_overview_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/feed_selection_protocol.hpp"

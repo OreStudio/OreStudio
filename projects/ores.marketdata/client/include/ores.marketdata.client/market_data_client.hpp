@@ -21,6 +21,7 @@
 #define ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 
 #include "ores.marketdata.api/domain/feed_binding.hpp"
+#include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
@@ -103,13 +104,13 @@ public:
      * marketdata.v1.market_series.list (limit 10000).
      *
      * When @p party_id is non-empty the scan is restricted to that party's
-     * series. Without it the first id-ordered match wins, which is arbitrary
-     * when the same identity exists for several parties (e.g. FX spot series are
-     * materialised per party).
+     * series. One identity can hold several series, one for each provider and
+     * party (a vintage of one provider and the ticks of another), so every match
+     * is returned.
      *
-     * @return The matching series, std::nullopt if none found, or an error.
+     * @return The matching series, empty if none found, or an error.
      */
-    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
+    [[nodiscard]] std::expected<std::vector<domain::market_series>, std::string>
     find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id = {});
 
     /**
@@ -160,6 +161,15 @@ public:
      */
     [[nodiscard]] std::expected<bool, std::string>
     save_feed_binding(const domain::feed_binding& binding);
+
+    /**
+     * @brief The sources of the catalogue, every kind and every provider.
+     *
+     * Sends marketdata.v1.market_data_sources.list. The catalogue belongs to marketdata, so an
+     * adapter that needs to know its sources asks here and reads no table of marketdata.
+     */
+    [[nodiscard]] std::expected<std::vector<domain::market_data_source>, std::string>
+    list_market_data_sources();
 
 private:
     ores::nats::service::nats_client& nats_;

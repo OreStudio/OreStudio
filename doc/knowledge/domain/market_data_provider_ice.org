@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 72848BB7-9ADE-49CF-8D33-008ED7C1DF29
+:END:
+#+title: ICE data format
+#+description: The id scheme, the fields and the mapping we use for ICE Data Services, and where ICE documents them.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:ice:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+ICE Data Services publishes pricing and reference data through its Consolidated Feed and other feeds. Its own symbology is based on exchange tickers. We record the ICE symbol and the field as ICE names them. The public documents give less detail than for Bloomberg or LSEG, so this page says what is decided and what the mapping inventory must settle.
+
+* Detail
+
+** The id scheme
+
+The scheme code is =ice_symbol=. The Consolidated Feed uses its own symbology, based on exchange tickers. The feed also accepts other identifiers: RIC, CUSIP, ISIN, SEDOL and Bloomberg ticker. A catalogue row uses the ICE symbol. If a row needs an alternative identifier, it has its own scheme code such as =isin=, so a row never mixes two notations.
+
+** The fields
+
+ICE gives each reference value in a normalised form and in the native exchange form. Instrument status and market phase use one value set. ICE system times are in UTC and the native exchange times keep the exchange time zone. A client can ask for a subset of fields. We store the field name that ICE uses and take the normalised form first.
+
+*Not yet decided:* the list of pricing fields we map. The mapping inventory task sets it.
+
+** On the wire
+
+An adapter of this provider sends the tick fields below. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] for the subject.
+
+| Tick field | Example |
+|------------+---------|
+| id scheme | =ice_symbol= |
+| external id | =(an ICE symbol)= |
+| field | =(an ICE field name)= |
+| value | =(decimal text)= (decimal text) |
+
+The ingress subject token for the id is =(the encoded symbol)=. The service never decodes the token. It reads the id from the payload.
+
+** The mapping
+
+An ICE vendor instrument maps to an oresmd item in the same way as any other. ICE is strongest in fixed income and in exchange data, so its first mappings are bond and futures items. The rows are not written yet.
+
+** Minted ids
+
+The same rule applies. A minted ICE symbol has the form of an ICE symbol, and the deviation note says why.
+
+** What the simulator does
+
+The simulated ICE source publishes ticks with =ice_symbol=, a symbol and a field. It does not speak any ICE feed protocol.
+
+** External references
+
+- [[https://www.ice.com/publicdocs/ICE_Consolidated_Feed_FactSheet.pdf][ICE Consolidated Feed fact sheet]] — the identifiers the feed accepts and the normalised fields.
+- [[https://www.ice.com/publicdocs/web-ICE_Consolidated_Feed.pdf][ICE Consolidated Feed brochure]] — the feed in outline.
+- [[https://developer.ice.com/fixed-income-data-services/catalog/liquidnet][ICE developer catalog]] — the catalogue of sources and their symbology.
+- The full field dictionary is not public. ICE gives it to subscribers.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the three parts this page fills in.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how these ids reach an oresmd item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of the notations.
+- [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]] — completes: the same parts for a provider with a public API library.

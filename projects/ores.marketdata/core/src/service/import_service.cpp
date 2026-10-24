@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -240,8 +241,9 @@ import_service::import(const messaging::import_market_data_request& req) {
         // it wrote the axes that party owns. A context with no party looks across
         // the tenant, as before.
         const auto party = ctx_.party_id();
-        auto existing = series_repo.read_latest_by_uri(
-            ctx_, oresmd_uri, party ? boost::uuids::to_string(*party) : std::string{});
+        const std::string provider(domain::catalogue_ids::ore_provider);
+        auto existing = series_repo.read_latest_by_key(
+            ctx_, oresmd_uri, provider, party ? boost::uuids::to_string(*party) : std::string{});
         if (!existing.empty()) {
             const auto id = existing.front().id;
             series_cache.emplace(key, id);
@@ -259,6 +261,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
         s.series_subclass = cl.series_subclass;
         s.oresmd_uri = oresmd_uri;
+        s.provider_code = provider;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();
         s.change_reason_code =
@@ -359,6 +362,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 obs.oresmd_uri = named->datum_uri;
                 obs.source = req.source;
+                obs.source_id = domain::catalogue_ids::ore_import_source_id();
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
             }

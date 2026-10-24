@@ -23,6 +23,7 @@ of 'workunit'. Does not track execution state — that belongs to results.
 :product:   ores
 :component: compute
 :profile:   uuid-identified-lookup
+:sortable_recorded_at: true
 :END:
 
 The workunit's key is its id. An earlier version of this model said
@@ -156,6 +157,17 @@ tenant could run a report at all.
 ** Flags
 :PROPERTIES:
 :tablename: ores_compute_workunits_tbl
+:END:
+
+* Indexes
+
+The workunits of one batch are read a page at a time, and a page may be
+ordered by its recording time.
+
+** batch_id
+:PROPERTIES:
+:columns:      tenant_id, batch_id, valid_from
+:current_only: true
 :END:
 
 * C++

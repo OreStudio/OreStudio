@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: EC556A9D-3EC6-4AA6-A3C9-1C78B1167E77
+:END:
+#+title: Task: Rename the parameter definition to ore parameter
+#+description: Rename the entity to ore_parameter and key it by schema name and XPath, so it documents any leaf of any ORE XML schema.
+#+type: task
+#+level: s1
+#+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/rename-parameter-definition-to-ore-parameter
+#+pr: 3638
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The entity ore_parameter documents one leaf of an ORE XML document. A row says which leaf it is by the schema name (for example ore.xsd) and the XPath of the leaf. The documentation fields become required, except removed_in, in the task that documents the analytic parameters.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The table, domain, protocol, C++, TypeScript, shell and importer use the name ore_parameter.
+- The entity has two new required columns, schema_name and xpath. The existing rows carry them.
+- A test fails when a schema name and an XPath name more than one row, and when the XPath of an ore.xsd row does not follow from its scope, subtype and name.
+- The model, SQL hygiene and drift checks pass.
+
+* Plan
+
+1. Rename the model files, the generated files and the hand-written references with one script, in a commit that only renames. The synthetic yield curve process parameter definition is a different entity and keeps its name.
+2. Regenerate the four entities that the rename touches: ore_parameter, ore_parameter_value_domain, configuration_parameter and configuration_analytic_parameter.
+3. Add the required columns schema_name and xpath. Give each existing row =ore.xsd= and its XPath: =/ORE/Setup/Parameter[@name='x']= for Setup and =/ORE/Analytics/Analytic[@type='t']/Parameter[@name='x']= for an analytic.
+4. Keep scope, subtype and name. The run document service and the importer read them. A later task can drop scope and subtype when a second schema needs the table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The column is =schema_name=, not =schema=, because =schema= is a keyword in SQL.
+- The owner asked to add the schema and the path. This task keeps scope and subtype, so a row holds the same fact twice for =ore.xsd=. The pgTAP test =reporting_ore_parameters_test.sql= fails when the two disagree.
+- The unique key on the schema name and the XPath is a test, not an index, because the model has no knob for a unique index on a natural key.
+- The column =ore_parameter= of =file_type= was already named so. It holds the name of the Setup parameter that names a document. It could later refer to a row of this table.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3638][#3638]] | [reporting] Rename the parameter definition to ore parameter |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The entity is =ore_parameter=, and its value domain is =ore_parameter_value_domain=. The rename touched about 180 files and kept the synthetic yield curve process parameter definition as it was. A row says which leaf it documents by =schema_name= and =xpath=, both required. All 380 seeded rows carry them. A pgTAP test fails when two forms of an =ore.xsd= row disagree.
+
+The owner asked to add the schema and the path, so =scope= and =subtype= stay. The run document service and the importer read them. A later task can drop them when a second schema needs the table.
+
+Left for other tasks: the documentation of the Setup, Markets and Logging blocks beyond the 15 engine settings, and the leaves of other schemas.

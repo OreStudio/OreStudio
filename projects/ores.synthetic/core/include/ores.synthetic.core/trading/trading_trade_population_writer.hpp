@@ -63,46 +63,15 @@ public:
     void write_trade(const trade_population_write& write,
                      const domain::trade_generation_scope& scope) override;
 
-    void write_instrument(const trade_population_write& write,
-                          const domain::trade_generation_scope& scope) override;
-
 private:
     /**
-     * @brief Writes the security's own terms once per run.
+     * @brief Creates the trade's security with the security operation.
      *
-     * A security owns its legs, so they are written with the issue row and not
-     * with each trade: a second trade of the same ISIN would collide with the
-     * first trade's rows, because a leg's parent is the issue.
-     */
-    void write_issue_leg(const trade_population_write& write);
-
-    /**
-     * @brief Writes the trade's security unless the tenant holds it in full.
-     *
-     * It runs before the trade is booked, because a booked trade is one that a
-     * later run takes as present and does not revisit.
+     * It runs before the trade is booked. The operation is create-only and
+     * whole or absent, so a security the tenant already holds with equal terms
+     * is taken as present.
      */
     void ensure_issue(const trade_population_write& write);
-
-    /**
-     * @brief Whether the tenant holds the bond issue in full.
-     *
-     * A security belongs to the tenant and not to a config, so another config
-     * of the same tenant, or an earlier run, may have written it already. The
-     * schedule of its leg is the last row written, so an issue without one was
-     * cut short.
-     */
-    bool issue_complete(const boost::uuids::uuid& issue_id);
-
-    /**
-     * @brief Issues an entity write, stating the entity on a refusal.
-     *
-     * @return True when the store took the write.
-     *
-     * @throws trade_population_write_error on a transport failure.
-     */
-    template <typename Request>
-    bool call_ok(std::string_view subject, const Request& request, const std::string& what);
 
     ores::nats::service::nats_client& nats_;
     /*
@@ -112,11 +81,6 @@ private:
      * instrument.
      */
     std::set<boost::uuids::uuid> issues_written_;
-    /*
-     * The activity each booked trade names, so the instrument it then receives
-     * is stamped with the act that booked it rather than with its own id.
-     */
-    std::map<boost::uuids::uuid, boost::uuids::uuid> activities_;
 };
 
 }

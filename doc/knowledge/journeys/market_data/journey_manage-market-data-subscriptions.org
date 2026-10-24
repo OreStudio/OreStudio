@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: D46E4DEF-7431-419B-BA88-476AA7B98D24
+:END:
+#+title: User Journey: Manage market data subscriptions
+#+description: A party administrator decides which providers a party takes, with which rights, and which source serves each provider, sees the usage and cost, and reads who changed it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-13
+#+updated: 2026-10-22
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A party administrator decides which providers a party takes, with which rights, and which source serves each provider, sees the usage and cost, and reads who changed it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to say which providers of market data my party takes, to choose where
+each provider's data comes from, and to see what that costs, without asking
+someone to run a script." The journey is done when the person has a subscription
+for each provider the party needs, each subscription has a route to a source,
+and the person can read the usage and the bill of each.
+
+* Actor and trigger
+
+The actor is the party administrator. Reading needs
+=marketdata::subscriptions:read=. Changing a subscription or a route needs
+=marketdata::subscriptions:write=. Deleting needs =marketdata::subscriptions:delete=.
+The system administrator has the same screens for any party, and the
+[[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]]
+journey covers the system's view of the sources.
+
+The trigger is one of four events. A party is new and has no market data. A desk
+needs a provider's data. A development party must move to a live source for
+prelive testing. A bill is higher than expected and the person looks for the
+cause. The journey starts at *Market data*, then *Subscriptions*, and ends when
+the person leaves the screen.
+
+Three facts shape the screens.
+
+- A subscription names a provider and never a source. A route picks the source.
+  See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] and [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+- A source has a kind: live, replay, test, simulated or derived. The screens show
+  it as a badge and a filter and change nothing else. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+- The party does not own any feed. Every provider's data is system data. The
+  party takes it by subscription.
+
+* Steps
+
+The screens are the record screens of the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]: a list, a record page with the
+tabs Details, Usage and History, and dialogs for add, edit and delete. This
+journey adds no layout of its own.
+
+1. *List the subscriptions.* The person opens *Market data* and then
+   *Subscriptions*. The system lists the party's subscriptions: provider first,
+   then rights, the routed source with its kind badge, the state of the source,
+   whether the subscription is enabled, and when the source last ticked for the
+   party.
+2. *Search and filter.* The person searches by provider or source and filters by
+   source kind. A search that matches nothing says so and offers to clear it.
+3. *Open a subscription.* A click on a row opens the record page on its Details
+   tab. The system shows the provider, the rights, the period, the route, the
+   source's kind and state, and who last changed it, when and why.
+4. *Add a subscription.* The person chooses *Add*. The dialog asks for the
+   provider, chosen from the catalogue, the rights, and the period. The new
+   subscription routes to the provider's default source. The system opens its page.
+5. *Change the rights.* The person chooses *Edit*. A right that a composite or a
+   demand needs cannot be removed, and the dialog names the user of the right.
+6. *Change the source.* The person chooses *Change source* on the route. The
+   dialog lists the provider's sources with kind badge and state, asks for an
+   effective date and a reason, and says that the series and the consumers stay
+   as they are. See [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]. A source that is not ready is not offered.
+7. *Read the usage.* The person opens the *Usage* tab. The system shows demand,
+   deliveries and the bill by period. For a simulated source the bill is a shadow
+   bill, and the tab says so. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
+8. *Suspend or delete.* The person clears *Enabled* to suspend delivery, or
+   deletes the subscription. Delete names what is lost: delivery stops, and the
+   series and the history stay.
+9. *See who changed a subscription.* The person opens the *History* tab, the
+   shared timeline of the
+   [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]. The
+   route changes appear in the same timeline. *Revert* is offered on an older
+   version to a person who may write.
+10. *Leave.* The person goes back to the *Market data* area.
+
+* Screens and wireframes
+
+The list and the record page of the standard, and dialogs for add, edit and
+change source. The wireframe and the prototype are still to be drawn.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes |
+|--------+---------------------|
+| =market_data_subscription= | The party, the provider, the rights and the period |
+| =market_data_route= | The source that serves the subscription, with its period |
+| =market_data_source= | The source's name, kind, state and rate card |
+| =provider= | The provider and its default source |
+| =market_data_usage= | Demand, delivery and cost events |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| List, read | List and read subscriptions | =marketdata.v1.subscriptions.list=, =.get= | planned |
+| Add, edit, delete | Write and delete a subscription | =marketdata.v1.subscriptions.put=, =.delete= | planned |
+| Change source | Write a route | =marketdata.v1.routes.put= | planned |
+| Change source | List the sources of a provider | =marketdata.v1.sources.list= | planned |
+| Read the usage | List usage by period | =marketdata.v1.ops.list_usage= | planned |
+| See who changed | List and read versions | =marketdata.v1.subscriptions_versions.list=, =.get= | planned |
+
+* Related journeys
+
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]] — the system's view of the sources.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Offer a synthetic collection]] — how a simulator author prepares the generators.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — to read the quotes that a subscription delivers.
+
+* Related knowledge
+
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]]
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]]
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]
+- [[id:1FC08F40-A345-4F8A-821C-008ED4030AF9][Four areas of the Market data menu cover the service]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]

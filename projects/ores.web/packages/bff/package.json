@@ -17,9 +17,9 @@
     "@fastify/static": "^10.1.2",
     "@ores/org": "*",
     "@ores/wire-protocol": "*",
-    "fastify": "5.12.5",
+    "fastify": "5.12.6",
     "@ores/contracts": "*",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "tsx": "4.23.13",

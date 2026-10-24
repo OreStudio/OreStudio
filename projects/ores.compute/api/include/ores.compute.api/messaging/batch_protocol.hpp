@@ -61,7 +61,12 @@ struct batch_lookup {
 };
 
 struct batches_filter {
+    std::optional<std::optional<boost::uuids::uuid>> party_id;
+    std::optional<std::string> status;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+    std::optional<std::vector<std::string>> status_one_of;
+    std::optional<std::string> search;
 };
 
 struct batch_event {

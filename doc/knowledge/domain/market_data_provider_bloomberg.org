@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 89B7883C-6F06-457B-A9A5-B78257C5C9FC
+:END:
+#+title: Bloomberg data format
+#+description: The id scheme, the fields and the mapping we use for Bloomberg, and where Bloomberg documents them.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:vendor:bloomberg:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+Bloomberg identifies an instrument by a ticker and a yellow key, and a value by a field mnemonic. We store the ticker and the field exactly as Bloomberg writes them. The simulated Bloomberg source publishes the same names, so a live adapter replaces it with no change in the catalogue.
+
+* Detail
+
+** The id scheme
+
+The scheme code is =bbg_ticker=. An id is the ticker, a space and a yellow key such as =Curncy=, =Index=, =Equity=, =Comdty= or =Corp=. A pricing source can sit between them: =EURUSD Curncy= and =EURUSD BGN Curncy= are two ids. The catalogue holds the id with its spaces. The yellow key tells the asset class, but the ticker part has no single grammar.
+
+** The fields
+
+A field is the mnemonic that Bloomberg gives a value. We use these:
+
+| Field | Meaning | Where Bloomberg serves it |
+|-------+---------+----------------------------|
+| =PX_LAST= | The last or closing price | reference data (=//blp/refdata=) |
+| =PX_BID=, =PX_ASK= | The bid and ask price | reference data (=//blp/refdata=) |
+| =BID=, =ASK=, =LAST_PRICE= | The streaming bid, ask and last price | market data subscription (=//blp/mktdata=) |
+
+One id carries many fields, so the field is part of the vendor instrument. The same ticker with two fields is two vendor instruments.
+
+** On the wire
+
+An adapter of this provider sends the tick fields below. See [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] for the subject.
+
+| Tick field | Example |
+|------------+---------|
+| id scheme | =bbg_ticker= |
+| external id | =EURUSD Curncy= |
+| field | =PX_LAST= |
+| value | =1.0842= (decimal text) |
+
+The ingress subject token for the id is =EURUSD%20Curncy=. The service never decodes the token. It reads the id from the payload.
+
+** The mapping
+
+A vendor instrument maps to one oresmd item. =bbg_ticker= / =EURUSD Curncy= / =PX_LAST= maps to
+=oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=. The LSEG instrument ~EUR=~ maps to the same item, so the two providers quote one EUR/USD spot.
+
+** Minted ids
+
+Bloomberg publishes some points of a curve only as a chain, with no ticker of their own. For such a point we mint a ticker in Bloomberg's style, set =minted= and write the reason in the deviation note. A live adapter must turn a minted id into the real chain request.
+
+** What the simulator does
+
+The source =bloomberg-a= is the simulated Bloomberg source. It publishes ticks with =bbg_ticker=, the ticker and the field above. It does not speak =blpapi=. Nothing behind the adapter seam is simulated. See [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]].
+
+** External references
+
+- [[https://www.bloomberg.com/professional/support/api-library/][Bloomberg API library]] — the BLPAPI SDKs and the developer guide. The documents need a Bloomberg login.
+- [[https://www.bloomberg.com/professional][Bloomberg Professional Services]] — the vendor's own documentation, behind a login.
+- The Bloomberg field dictionary is the =FLDS= function on the Terminal. No public copy exists.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the three parts this page fills in.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: how these ids reach an oresmd item.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey of the notations.
+- [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]] — exemplifies: a live adapter that would serve this provider.
+- [[id:A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D][LSEG data format]] — contradicts: another notation for the same EUR/USD spot.

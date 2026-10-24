@@ -156,8 +156,8 @@ TEST_CASE("a pricing engines document saves, reads back and deletes by its confi
 
 TEST_CASE("saving a pricing engines document again removes what it omits", tags) {
     fixture f;
-    const auto token = f.token({"analytics::pricing_model_configs:read",
-                                "analytics::pricing_model_configs:write"});
+    const auto token = f.token(
+        {"analytics::pricing_model_configs:read", "analytics::pricing_model_configs:write"});
     auto gen = ores::testing::make_generation_context(f.db);
     ores::analytics::messaging::pricing_engines_document doc;
     doc.config = ores::analytics::generators::generate_synthetic_pricing_model_config(gen);
@@ -174,7 +174,8 @@ TEST_CASE("saving a pricing engines document again removes what it omits", tags)
         return p;
     };
     doc.products = {product("Swap", 0), product("CapFloor", 1)};
-    auto parameter = ores::analytics::generators::generate_synthetic_pricing_model_product_parameter(gen);
+    auto parameter =
+        ores::analytics::generators::generate_synthetic_pricing_model_product_parameter(gen);
     parameter.pricing_model_config_id = doc.config.id;
     parameter.pricing_model_product_id = doc.products.front().id;
     parameter.change_reason_code = "system.test";
@@ -208,7 +209,8 @@ TEST_CASE("saving a pricing engines document again removes what it omits", tags)
 
     // The second save keeps the first product and omits the second product and the parameter.
     auto next = held;
-    std::erase_if(next.products, [](const auto& p) { return p.pricing_engine_type_code == "CapFloor"; });
+    std::erase_if(next.products,
+                  [](const auto& p) { return p.pricing_engine_type_code == "CapFloor"; });
     next.parameters.clear();
     save(next);
 

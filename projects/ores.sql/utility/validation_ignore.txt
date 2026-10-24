@@ -276,6 +276,14 @@ TEMPORAL_006 ores_marketdata_market_fixings_tbl
 TENANT_002 ores_marketdata_market_observations_tbl
 TENANT_002 ores_marketdata_market_fixings_tbl
 
+# Tick tables. ores_marketdata_ticks_tbl is an append-only hypertable with no
+# primary key: an index on every row would cost the bulk copy, and a correction
+# is a new row that the reader orders by time. ores_marketdata_tick_coords_tbl
+# is keyed by its series, a UUID that is unique across tenants, so tenant_id
+# would only widen the key.
+TENANT_002 ores_marketdata_ticks_tbl
+TENANT_002 ores_marketdata_tick_coords_tbl
+
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.
 # Uses a UUID primary key for global uniqueness. tenant_id is carried for RLS
@@ -371,7 +379,7 @@ RLS_001 ores_trading_lifecycle_events_tbl
 # by every tenant, like the refdata and reporting lookup tables above; a
 # tenant-isolation policy would filter rows no caller should be filtered from.
 RLS_001 ores_reporting_configuration_types_tbl
-RLS_001 ores_reporting_parameter_value_domains_tbl
+RLS_001 ores_reporting_ore_parameter_value_domains_tbl
 
 # Reporting requirement junction -- which configuration types a report type
 # requires. It pairs two of the system-wide code tables above and is seeded
@@ -389,6 +397,16 @@ RLS_001 ores_reporting_report_type_configuration_types_tbl
 # party reads these rows, so a party isolation policy would only hide the
 # template from the function that publishes it.
 RLS_002 ores_dq_*_artefact_tbl
+
+# Synthetic generators — the system party owns every collection, folder and feed, and every
+# tenant reads them. A feed stands for one observation in the world, so no party may be
+# outside the readers of a generator. Tenant isolation is the whole policy.
+RLS_002 ores_synthetic_market_data_generation_configs_tbl
+RLS_002 ores_synthetic_folders_tbl
+RLS_002 ores_synthetic_fx_spot_generation_configs_tbl
+RLS_002 ores_synthetic_gmm_components_tbl
+RLS_002 ores_synthetic_ir_curve_generation_configs_tbl
+RLS_002 ores_synthetic_ir_curve_template_entries_tbl
 
 # IAM auth events — auth log; party_id records the session context for
 # debugging, not for data isolation. The whole log is tenant-scoped.
@@ -422,6 +440,13 @@ RLS_002 ores_marketdata_feed_bindings_tbl
 RLS_002 ores_marketdata_market_fixings_tbl
 RLS_002 ores_marketdata_market_observations_tbl
 RLS_002 ores_marketdata_market_series_tbl
+
+# Tables the feed ingest writes. The ingest context names no party, so a
+# restrictive party policy would refuse every row it writes. They have the
+# tenant policy, as the observation table has, and a reader states the party in
+# its query.
+RLS_002 ores_marketdata_feed_binding_activity_tbl
+RLS_002 ores_marketdata_tick_coords_tbl
 
 # CRM config tables — new, party_id-scoped from the start (Cross-rates
 # matrix story), but sharing the same stopgap as the four tables above:

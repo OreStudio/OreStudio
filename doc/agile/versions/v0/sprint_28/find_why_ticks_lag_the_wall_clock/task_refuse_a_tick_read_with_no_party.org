@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/refuse-a-tick-read-with-no-party
+#+pr: 3699
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,26 @@ A read of ticks by a context with no party says so, and does not return an answe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
 
-- The snapshot, the evolution, the slices and the export of market data refuse a context with no party, or name the missing party in the answer, and a test states each.
-- A test shows that the run token of a report, which carries one party, reads the ticks of that party and no others.
-- The knowledge page of the readers says which contexts see ticks.
+- The handlers of the snapshot, the evolution, the slice, the export and the export to storage refuse a session that names no party. The reply has =success= false and the sentence of =party_required=, and a test over NATS states each.
+- A token that names one party reads the ticks of that party and no others. The history call shows it over NATS: its two cases of PR 3695 read the ticks of the owner and none of another party. The as-of reads show it at the repository, in =a_tick_of_another_party_is_not_in_the_snapshot=. No test reads a snapshot through a handler with data, because that needs a resolved series identity.
+- The knowledge page of the readers says which contexts see ticks, and says that the handlers refuse a session with no party. Done in the snapshots page.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The rule is decided in the snapshots page. The handlers refuse and the readers do not, because every production caller of a reader is a handler that builds its context from the session, and the reader tests read observations through a tenant context.
+
+1. A helper names the refusal: a session names a party when its context lists a visible party, and the reply carries the sentence of =party_required=.
+2. The four hand-written handlers and the export-to-storage handler call it after the permission check. The last one is a paste block of =ores.marketdata.market_series.org=, so the change goes into the model and the header is regenerated.
+3. A test fixture runs each handler over NATS with a minted token. A token with no visible party gets the refusal from each. A token with the party reads its own ticks, and a token that sees another party reads none.
 
 * Measurements
 
@@ -61,6 +63,10 @@ task and name that file in the Command column.
 
 * Notes
 
+The snapshots page now says which contexts see ticks, which meets the third acceptance
+line. It leaves the choice between a refusal and a named missing party to this task. The
+history call answers a context with no party with an outcome in the body.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3699][#3699]] | [marketdata] Refuse a tick read from a session with no party |
 
 * Review
 
@@ -85,3 +91,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The handlers of the snapshot, the slice, the evolution, the export and the export to storage refuse a session that names no party. The reply has =success= false and the sentence of =party_required=, the words the history call uses. A helper header, =party_required.hpp=, holds the check and the sentence. Four handlers are hand-written. The handler of the export to storage is a paste block of =ores.marketdata.market_series.org=, so the guard went into the model and the header was regenerated, and the regeneration changed nothing else.
+
+Two cases run the five handlers over NATS with a minted token. A token with no visible party gets the refusal from each, and a token with a party is not refused for want of one. Removing the guard of the slice handler and of the export handler fails exactly the cases of those two reads and no other. The readers do not check, so their tests read observations through a tenant context as before.
+
+The shared token and party helpers of the history-call test moved into =tick_handler_support.hpp=, and the test target links the storage library that the export handler needs.
+
+The link libraries that the handler tests need were added by hand to =core/tests/CMakeLists.txt= in PR 3695. That file is generated, so the next drift check removed them. They are now in the =extra_test_dependencies= block of the component overview, with the storage library, and the file is regenerated. That repairs the drift that PR 3695 left on main.

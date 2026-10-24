@@ -272,6 +272,7 @@ void trade_party_role_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.role, parsed->positionals[next++], "role");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -532,6 +533,7 @@ void trade_party_role_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.removal.key.role, parsed->positionals[next++], "role");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -694,6 +696,7 @@ void trade_party_role_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.role, parsed->positionals[next++], "role");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
@@ -740,6 +743,7 @@ void trade_party_role_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_party_role.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.key.trade_party_role.role, parsed->positionals[next++], "role");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");

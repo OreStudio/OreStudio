@@ -28,7 +28,7 @@
  *
  * The step kinds come from the catalogue in code: publish_bundle,
  * import_lei_hierarchy, provision_party, load_staff, attach_photos,
- * start_market_feeds and generate_trades. ACME orders all seven, because it
+ * subscribe_market_data and generate_trades. ACME orders all seven, because it
  * produces every kind of datum a demonstration needs. Operational orders the
  * three that create real data and no test data at all.
  *
@@ -131,7 +131,7 @@ cross join (values
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "synthetic_bloomberg", "synthetic_ore_samples_2016", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
@@ -152,7 +152,7 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    ('acme_demo', 'start_market_feeds', 60, '{"dataset": "synthetic.feeds.bloomberg"}'::jsonb),
+    ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a"}'::jsonb),
     -- One config per trading entity, each booking into the book that entity
     -- keeps its liquidity in. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the

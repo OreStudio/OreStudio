@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
 #+created: 2026-10-20
-#+updated: 2026-10-20
+#+updated: 2026-10-23
 
 * Summary
 
@@ -23,7 +23,8 @@ waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
 of each datum, it drops ticks that are too old, and it never lets a consumer wait
 for the store. Work is split into lanes. Each lane has one writer thread, a bounded
 ring buffer, a window of recent ticks in memory, and a batch write to the store.
-Charts and late joiners read the window and not the store. The design follows the
+A chart or a late joiner makes one history call. The window answers the recent span from
+memory, and the store answers the rest. The design follows the
 LMAX Disruptor where that helps, and it sets the rest aside.
 
 The target is tens of thousands of ticks each second, across every asset class and
@@ -58,7 +59,7 @@ what a feed owes the pipeline and what the pipeline owes the feed.
 ** Why the present path cannot meet them
 
 [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handles each tick on
-one thread, in arrival order. For each binding of the tick, it reads the series,
+one thread, in arrival order. For each route of the tick, it reads the series,
 inserts two observations, and publishes to JetStream. Each insert is a commit. The
 publish waits for an acknowledgement. The rule that the republish follows the stored
 row ties the live view to the speed of the database.
@@ -104,11 +105,11 @@ Two JetStream streams also store every tick. The stream =synthetic_ticks= covers
 producer subjects, and the stream =marketdata_ticks= covers the republish subjects. Both
 keep their messages in files for 7 days, and both have no consumer. A producer waits
 for an acknowledgement of each tick, and the ingest waits for one more for each
-binding. The streams give nothing that a client reads. In one environment the second
+route. The streams give nothing that a client reads. In one environment the second
 stream holds 1,812 subjects after two days.
 
 The demand is small today. One environment receives 13 ticks each second. Each tick
-reaches 4.6 bindings on average, and each binding stores two rows. That is about 120
+reaches 4.6 routes on average, and each route stores two rows. That is about 120
 rows each second against a ceiling of about 150. At 30,000 ticks each second the
 same fan-out is about 280,000 rows each second.
 
@@ -201,7 +202,7 @@ series that it shows, and the broker sends nothing else.
 
 The change touches every consumer of the stream. Hedgr is the only client today, and
 the Qt client no longer exists, so the cost of the change is at its lowest now. The
-producer subject, =synthetic.v1.ops.tick.<source>=, does not change.
+ingress subject, =marketdata.v1.ingress.<adapter>.<id token>=, does not change.
 
 *** The recent window
 
@@ -214,16 +215,16 @@ the ring, so the window is as fresh as the live path and does not wait for the s
   the last 600 ticks or the last 10 minutes, whichever is smaller. A datum with no
   watcher keeps only its last tick, so the memory use follows the number of watched
   datums and not the number of all datums.
-- *Who reads it.* A consumer that joins late asks for the last value of a datum. A
-  chart that opens or reconnects asks for the recent ticks of a series. The lane that
-  owns the datum answers both from memory, and the store takes no part. The read checks
-  the tenant and the party of the caller against the bindings of the datum, as any
-  read of the store does.
+- *Who reads it.* The history call reads it. A chart that opens or reconnects, and a
+  consumer that joins late, call for the ticks of a span that ends now. The lane that
+  owns the datum answers the part of the span that the window covers from memory. The
+  read checks the tenant and the party of the caller against the routes of the datum,
+  as any read of the store does.
 - *How a read reaches it.* The lane worker is the only writer of the window. A read
   is a request that the lane worker answers between two cycles from the window of
   its own lane. The reader never touches the window, so the single writer rule holds.
-- *Where it ends.* A request for data older than the window goes to the store. The
-  reader merges by time, as Hedgr already does for a backfill and a live point.
+- *Where it ends.* A span older than the window comes from the store, and the history
+  call joins the two in one reply. See [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 - *What it can differ on.* The window holds every tick that the lane took, and the
   store may hold fewer when a lane is catching up or shedding. A reader that sees both
   prefers the window for the span that it covers.
@@ -236,7 +237,7 @@ The same cycle writes every tick that passed the age gate in one transaction, wi
 multi-row insert or a =COPY=. One commit now covers hundreds or thousands of rows.
 The cost of the commit is shared by all of them.
 
-- The series identity of each key comes from a cache in memory. A binding event
+- The series identity of each key comes from a cache in memory. A route event
   clears the cache. A series that does not exist yet is created on a slow path,
   outside the batch.
 - The shape check and the manual point check run once for the batch.
@@ -346,7 +347,7 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   quote for a current one. A series with no tick at or before the date has no line in the file. A
   development environment that needs quotes for a past date gets them from a seed or a
   backfill, not from the ingest.
-- *One row for each party.* A tick is stored once for each binding. The cost grows
+- *One row for each party.* A tick is stored once for each route. The cost grows
   with the number of parties that consume a source. It is an open question whether
   the store should keep one row for each source and let parties read it through a
   view.
@@ -383,7 +384,7 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   must choose between the policy and the compression, and that is a new decision.
 - *One row for each source.* The largest factor that the design controls is the
   fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
-  each source, with parties reading it through the bindings, removes both factors.
+  each source, with parties reading it through the routes, removes both factors.
 - *A batch belongs to one tenant.* The row-level security policy checks the tenant of
   each row against the tenant of the connection, and the connection takes its tenant
   when it is acquired. One transaction therefore holds the rows of one tenant. A lane
@@ -475,7 +476,7 @@ loop has one =if= for the CRM bridge today. The pipeline replaces it with taps.
 - A tap runs outside the lanes, because a derived value can depend on inputs from
   several lanes.
 - A derived value enters the pipeline again as a tick with its own source and
-  producer kind =DERIVED=. It follows the same rules as any other tick.
+  source kind =derived=. It follows the same rules as any other tick.
 
 *** Time
 
@@ -572,7 +573,7 @@ When the pipeline replaces the loop, these notes change: the ingest loop note, w
 states that a republish follows the stored row; the note on adding an asset class,
 which gains the rules above; the PostgreSQL architecture note, which states that a
 time-series table sets the notification knob to false; the notes on the producer
-subject and the market tick, which state the live subject; and the feed binding note.
+subject and the market tick, which state the live subject; and the subscription note.
 No client of the observation change event exists. Hedgr has none, and the Qt client is
 decommissioned.
 
@@ -612,19 +613,20 @@ Hedgr repository, shows how a real consumer reads the pipeline.
   from tens of thousands of ticks each second to at most ten for each datum. A
   consumer that wants less conflates for itself, as Hedgr does.
 - *The subject is scoped to a party.* The live publish must still go to one subject
-  for each binding. Its cost is small compared with a commit, because core NATS
+  for each route. Its cost is small compared with a commit, because core NATS
   carries it without an acknowledgement. The cost grows with the number of parties
   that watch a source.
-- *Hedgr seeds a chart from the store.* On open, on reconnect and on a manual
-  refresh it asks for the newest 2,000 points of a series. The recent window of the
-  lane serves the part that it covers from memory, and the store serves the rest.
+- *Hedgr seeds a chart with one history call.* On open, on reconnect and on a manual
+  refresh it asks for a span of time and merges the reply with its live ticks. See
+  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 - *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
   it is full. Its source comment gives the reason: a tick is worth less than the
   progress of the dispatch thread, and the chart shows the points it did receive.
   The freshness rule says to overwrite the oldest. The two rules differ only when the
   frame loop stalls by more than 4,096 buckets, but they should agree.
 - *The reconnect gap.* Hedgr loses the ticks between a drop and a reconnect, and it
-  fills the gap with a backfill read. The recent window serves that read from memory.
+  fills the gap with a history call from its newest tick. The recent window serves the
+  recent part of that call from memory.
 
 ** How tick systems are built in practice
 
@@ -870,7 +872,7 @@ Four conclusions follow.
   party isolation shows.
 - *A row for each tenant makes small transactions.* At 100 tenants the append-only table
   falls from 185,000 to 63,000 rows each second, and the observation shape to 16,000. A
-  row for each source, with the tenants reading it through the bindings, keeps one large
+  row for each source, with the tenants reading it through the routes, keeps one large
   transaction. This turns that open question into a requirement.
 - *The append-only table meets the target on two connections, or on one with one row for
   each source.* With today's fan-out the
@@ -1009,8 +1011,8 @@ Five findings follow.
 - *A multi-row =INSERT= with the policy.* It gives up =COPY=. It was not measured.
 - *One row for each source.* A tick belongs to a series, and the series belongs to a
   party. A blended or vendor series exists only for its party, and a valuation must
-  reproduce the tick that the party observed. A binding that only passes a series
-  through inside one tenant could read the source series through the binding. That is an
+  reproduce the tick that the party observed. A route that only passes a series
+  through inside one tenant could read the source series through the route. That is an
   optimisation to evaluate later, and it is not part of the base design.
 
 *** What stays untested
@@ -1029,7 +1031,7 @@ Five findings follow.
 | Risk | What would show it | What changes if it is true |
 |------+--------------------+----------------------------|
 | PostgreSQL cannot sustain the batch rate. The target is about 280,000 rows each second with today's fan-out. Step 0 shows that the present table cannot, at 8,300 each second for each connection, and that an append-only table can, at 187,000. | The next pass of step 0, from the application. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
-| The write for each party multiplies with the number of parties. | The count of bindings for each source, against the row rate. | Keep one row for each source and let a party read through a view. |
+| The write for each party multiplies with the number of parties. | The count of routes for each source, against the row rate. | Keep one row for each source and let a party read through a view. |
 | One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
 | One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
 | The volume of rows exceeds what the store holds. | The bytes for each row and the rows each day, measured in step 0. | Store bars only for the high-rate classes, and keep raw ticks for a short time. |
@@ -1061,9 +1063,9 @@ a burst of ticks at a chosen rate and times the drain.
    of a loaded system. The ten-fold gain is a target and not a result until step 0
    confirms it.
 2. *Lanes, the ring, the age gate, the overload states and the recent window.*
-   Add a read operation for the last value and for the recent ticks of a series, and
+   Add the history call, which the window and the store answer in one reply, and
    split the live subject into tokens. Move Hedgr to both: a subscription for each
-   watched series, and a read of the window. Acceptance: a burst of ten times the sustained rate leaves
+   watched series, and a history call. Acceptance: a burst of ten times the sustained rate leaves
    no backlog after the burst ends. The lag of the live path stays below the age
    limit at all times. A chart opens from the window in under 100 ms and does not
    read the store for the span that the window covers.
@@ -1122,5 +1124,7 @@ a burst of ticks at a chosen rate and times the drain.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the code this note proposes to change.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
-- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the source of the fan-out.
+- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]], how a client reads the window and the store.
+- [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]], the contract of that read.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]], the source of the fan-out.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub for this cluster.

@@ -41,14 +41,11 @@ struct market_data_generation_config_key {
 
 struct market_data_generation_config_write {
     boost::uuids::uuid id;
-    domain::scope scope;
-    domain::binding_mode binding_mode;
     std::string name;
     std::string description;
     bool enabled;
     std::optional<boost::uuids::uuid> dataset_id;
     std::string provider_code;
-    std::optional<boost::uuids::uuid> run_grant_id;
 };
 
 struct market_data_generation_config_change {

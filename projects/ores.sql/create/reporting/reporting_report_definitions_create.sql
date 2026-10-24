@@ -59,6 +59,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "prepared_input_key" text null,
     "post_processing" text not null,
     "is_official" boolean not null default true,
+    "regulatory_book_type" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -112,12 +113,36 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate regulatory_book_type (optional soft FK to ores_refdata_regulatory_book_types_tbl)
+    if NEW.regulatory_book_type is not null then
+        if not exists (
+            select 1 from ores_refdata_regulatory_book_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.regulatory_book_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid regulatory_book_type: %. No active regulatory book type found with this code.', NEW.regulatory_book_type
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- An official definition reads no sandbox: it cannot become official
     -- while the scope of one of its risk report configurations names a
     -- sandbox portfolio or a virtual book.
     if NEW.is_official
        and ores_reporting_definition_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
         raise exception 'Invalid is_official: report definition % has sandbox portfolios or virtual books in its scope.',
+            NEW.id
+            using errcode = '23514';
+    end if;
+
+    -- A typed report reads the books of its type only: it cannot be typed
+    -- while the scope of one of its risk report configurations names a book
+    -- of another type.
+    if NEW.regulatory_book_type is not null
+       and ores_reporting_definition_scope_names_other_type_fn(
+               NEW.tenant_id, NEW.id, NEW.regulatory_book_type) then
+        raise exception 'Invalid regulatory_book_type: report definition % has books of another regulatory book type in its scope.',
             NEW.id
             using errcode = '23514';
     end if;

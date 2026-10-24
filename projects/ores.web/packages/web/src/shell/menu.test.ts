@@ -101,11 +101,12 @@ describe('the menu', () => {
 describe('the Reporting area', () => {
     const reportRead = 'reporting::report_definitions:read';
     const pricingRead = 'analytics::pricing_model_configs:read';
+    const settingsRead = 'reporting::engine_settings:read';
     const entry = entryAt('/reporting');
 
     it('is in the menu, guarded by the read of each of its screens', () => {
         expect(entry.to).toBe('/reporting');
-        expect([entry.permission].flat().sort()).toEqual([pricingRead, reportRead]);
+        expect([entry.permission].flat().sort()).toEqual([pricingRead, settingsRead, reportRead]);
     });
 
     it('is drawn for a person who holds either read', () => {

@@ -82,12 +82,13 @@ TEST_CASE("app_version_commands_registers_every_derived_verb", tags) {
              std::string{"app_versions put-many"},
              std::string{"app_versions delete"},
              std::string{"app_versions delete-many"},
+             std::string{"app_versions by-app-id"},
              std::string{"app_versions versions"},
              std::string{"app_versions version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
 }
 
 TEST_CASE("app_version_commands_process_list_requires_a_session", tags) {
@@ -159,7 +160,7 @@ TEST_CASE("app_version_commands_process_add_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    app_version_commands::process_add(out, session, tokens(5));
+    app_version_commands::process_add(out, session, tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -193,7 +194,7 @@ TEST_CASE("app_version_commands_process_set_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    app_version_commands::process_set(out, session, tokens(5));
+    app_version_commands::process_set(out, session, tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -227,7 +228,7 @@ TEST_CASE("app_version_commands_process_put_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    app_version_commands::process_put_many(out, session, tokens(5));
+    app_version_commands::process_put_many(out, session, tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -279,6 +280,40 @@ TEST_CASE("app_version_commands_process_delete_many_requires_a_session", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("app_version_commands_process_by_app_id_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    app_version_commands::process_by_app_id(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("app_version_commands_process_by_app_id_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    app_version_commands::process_by_app_id(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 

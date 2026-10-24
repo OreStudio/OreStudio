@@ -67,8 +67,10 @@ struct result_lookup {
 
 struct results_filter {
     std::optional<boost::uuids::uuid> workunit_id;
+    std::optional<int> outcome;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> workunit_id_one_of;
+    std::optional<std::vector<int>> outcome_one_of;
 };
 
 struct result_event {

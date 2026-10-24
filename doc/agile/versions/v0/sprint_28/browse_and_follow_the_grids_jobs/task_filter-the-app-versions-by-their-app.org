@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: E45D7BDF-DC20-40C8-A5E3-DA53629E3061
+:END:
+#+title: Task: Filter the app versions by their app
+#+description: The app version page reads every app version of the catalogue and keeps those of one app, because the generated list has no filter by app.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/filter-the-app-versions-by-their-app
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated app version list takes an app id, and the app version page reads only the versions of its app.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The app version model declares a list by app_id, and the generated list and its protocol carry it.
+- The app version page reads the versions of its app with that list.
+
+* Plan
+
+The workunit and the result already declare a list by their parent with =:list_by: true= on the
+foreign key. Do the same for =app_id= on the app version, regenerate the files it drives, and read
+the versions of an app through the generated list, in place of the whole catalogue.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compute core tests, with the list by app case | pass | =ctest -R ores.compute.core.tests= | aa4605e98d plus the working tree |
+| BFF app version tests | 12 pass | =npx vitest run src/grid-app-versions.test.ts= in =packages/bff= | aa4605e98d plus the working tree |
+| The page's other versions as super_admin | 1.8.17.0 and 1.8.16.0 of ORE | =curl= on the app version route | aa4605e98d plus the working tree |
+
+* Notes
+
+- This is the last PR of the story, so every gate ran on the final tree (see the table).
+  Three things outside the task surfaced and are fixed in the PR: main could not build
+  the database until it merged PR 3669, three marketdata domain models declared an unused
+  =<optional>=, which a codegen test flagged, and the shell scripts of the engine settings
+  recipes were never committed.
+
+- No schema change, so no recreate is needed. The list is a read by an existing column.
+- The shell gains the verb =app_versions by-app-id=, and the recipe and scripts are regenerated.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #3670 | [compute] Filter the app versions by their app |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The default limit is 100 | grid-app-versions.ts | No change | The wire schema sends a limit of 1000, the most a page holds. |
+| 2 | The sort is within one page | grid-app-versions.ts | No change | The page holds up to 1000 versions of one app, and the sort covers the whole answer. |
+| 3 | The filter and the path both name an app | app_version_protocol.hpp | Noted | The generator emits this shape for every scoped list. |
+| 4 | Unused service helpers | app_version_service.hpp | Noted | The generator emits them for every relation. |
+| 5 | The refusals have no test | service_app_version_republish_tests.cpp | Fixed | A test covers the subtree and the order the list cannot serve. |
+
+* Result
+
+The app version model declares a list by =app_id=. The app version page reads the versions of its
+app through it and no longer reads the whole catalogue.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 98E49FCD-10E4-4DCE-9099-E728359B6D60
+:END:
+#+title: Quality checks run between mapping and storage and ignore the source kind
+#+description: The checks the service applies to every mapped tick, the reasons for a drop, and why a simulated tick passes through the same checks.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:quality:ingest:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+
+* Summary
+
+The service checks every mapped tick before it stores the tick. The checks are
+the same for a live source and a simulated source. A simulated source can
+produce a bad tick on purpose, so the checks are tested against real faults.
+
+* Detail
+
+** The checks
+
+| Check | Drop reason | Rule |
+|-------+-------------+------|
+| Mapping exists | =unmapped= | The tick's id has a mapping for its provider. |
+| Value is a number | =not_a_number= | The text parses as a decimal. |
+| Value is in range | =out_of_range= | The value is inside the bounds set for the item. |
+| Tick is fresh | =stale= | The tick is not older than 5 seconds when the worker takes it. |
+| Tick is newer | =out_of_order= | The vendor time is not before the last stored vendor time of the series. |
+
+A drop is counted for each adapter and each reason. The loop logs the first
+drop of a reason for an id and not each one.
+
+** Conflation
+
+When several ticks of one key are in one batch, the loop keeps the last one.
+Conflation is a property of the batch and not of the source.
+
+** Why the kind does not matter
+
+The simulator is the only source that can inject faults on demand. A check that
+skipped simulated ticks would hide the faults that the simulator exists to
+produce. See [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]] — completes: the stage order in which these checks run.
+- [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — exemplifies: fault injection exercises these checks.

@@ -182,8 +182,8 @@ changed".
    told, and the change is found only at the next read.
 6. *No read maps a published curve to its consumers.* Nothing returns which
    people or services read a given published curve, so the screen cannot list
-   who is affected. The candidate is a read over the feed bindings or a
-   subscription record. Until then the consumers panel names the roles that
+   who is affected. The candidate is a read over the party
+   subscriptions. Until then the consumers panel names the roles that
    read curves in general, not the ones bound to this curve.
 7. *There is no delta against the last published.* A replacement is a change,
    and there is no baseline to show what it changes. The candidate is the delta

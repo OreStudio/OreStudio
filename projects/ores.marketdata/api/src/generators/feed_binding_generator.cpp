@@ -49,6 +49,8 @@ domain::feed_binding generate_synthetic_feed_binding(utility::generation::genera
     r.party_id = ctx.generate_uuid();
     r.source_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.producer_kind = std::string("VENDOR");
+    r.provider_code = std::string("ore");
+    r.source_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

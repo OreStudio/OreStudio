@@ -89,6 +89,8 @@ public:
     delete_app_version(const messaging::delete_app_version_request& request);
     messaging::delete_many_app_versions_response
     delete_many_app_versions(const messaging::delete_many_app_versions_request& request);
+    messaging::list_by_app_id_app_versions_response
+    list_by_app_id_app_versions(const messaging::list_by_app_id_app_versions_request& request);
     messaging::list_app_version_versions_response
     list_app_version_versions(const messaging::list_app_version_versions_request& request);
     messaging::get_app_version_version_response
@@ -113,6 +115,27 @@ public:
 
 
     /**
+     * @brief Lists app versions filtered by app_id, with pagination.
+     *
+     * @param app_id The app_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching app versions for the requested page.
+     */
+    std::vector<domain::app_version> list_app_versions_by_app_id(const std::string& app_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active app versions filtered by app_id.
+     *
+     * @param app_id The app_id to filter by.
+     * @return Total number of matching app versions.
+     */
+    std::uint32_t count_app_versions_by_app_id(const std::string& app_id);
+
+
+    /**
      * @brief Retrieves a single app version as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
@@ -131,19 +154,6 @@ public:
      * @return The app version if found, std::nullopt otherwise.
      */
     std::optional<domain::app_version> get_app_version(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Retrieves a single app version by the key the model
-     * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
-     *
-     * @return The app version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::app_version>
-    get_app_version_by_wrapper_version(const std::string& wrapper_version);
 
     /**
      * @brief Retrieves a batch of app versions by primary key.
@@ -181,11 +191,9 @@ public:
     /**
      * @brief Retrieves all historical versions of a app version.
      *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::app_version> get_app_version_history(const std::string& key);
+    std::vector<domain::app_version> get_app_version_history(const std::string& id);
 
 private:
     context ctx_;

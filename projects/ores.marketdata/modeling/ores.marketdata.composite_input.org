@@ -1,0 +1,201 @@
+:PROPERTIES:
+:ID: 550A5D7F-92B7-430F-977E-73DD2A298698
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.composite_input
+#+description: Codegen entity model for the marketdata composite_inputs table; one quote series that a composite reads.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: composite_input
+#+entity_plural: composite_inputs
+#+entity_title: Composite Input
+#+brief: One quote series that a composite reads.
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+A composite input is one quote series of one provider that a composite reads. The inputs of a composite are
+read in the order of their position. The set of inputs also says which providers a party needs the =derived= right
+on, and which items the service demands on a party's behalf when the party uses the composite.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this input.
+
+** composite_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:nullable: false
+:END:
+
+References =composite.id=: the composite this input feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable: true
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+References =provider.code=: the provider whose quote series the input is. A party needs the derived right on this provider.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+** oresmd_uri
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:nullable: false
+:END:
+
+The item of the input, as its oresmd quote URI.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable: false
+:default_value: 0
+:END:
+
+The place of the input in the order the rule reads, from zero. A waterfall reads the inputs in this order.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 5)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_composite_inputs_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "provider_code" <> '' |
+| "oresmd_uri" <> '' |
+| "position" >= 0 |
+
+** Indexes
+
+| name     | columns                          | unique | current_only | where_extra |
+|----------+----------------------------------+--------+--------------+-------------|
+| position | tenant_id, composite_id, position | true   | true         |             |
+
+Two inputs of a composite never share a place, so the order a rule reads does not depend on the order the rows come back in.
+
+
+* Insert trigger
+** Validations
+
+
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: composite_input
+:entity_plural_short:   composite_inputs
+:entity_singular_words: composite input
+:system_tenant_visible: true
+:entity_plural_words:   composite inputs
+:END:
+
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: com
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/composite_input.hpp
+:domain_class:            ores::marketdata::domain::composite_input
+:protocol_include:        ores.marketdata.api/messaging/composite_input_protocol.hpp
+:collection_name:         composite_inputs
+:key_field:               oresmd_uri
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field         | label    | widget       | type      | is_key | is_required | placeholder         |
+|---------------+----------+--------------+-----------+--------+-------------+---------------------|
+| provider_code | Provider | providerEdit | line_edit |        | true        | Enter provider code |
+| oresmd_uri    | Item     | itemEdit     | line_edit | true   | true        | Enter item URI      |
+
+*** Columns
+
+| enum_name    | field         | header   | type   | width |
+|--------------+---------------+----------+--------+-------|
+| ProviderCode | provider_code | Provider | string | 140   |
+| OresmdUri    | oresmd_uri    | Item     | string | 400   |
+| Position     | position      | Position | int    | 80    |
+| Version      | version       | Version  | int    | 80    |
+
+* See also
+
+- [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]] -- the inputs this table records.
+

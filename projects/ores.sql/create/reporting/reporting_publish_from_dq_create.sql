@@ -88,7 +88,7 @@ begin
         tenant_id, id, version, party_id, name,
         description, report_type, schedule_expression, concurrency_policy,
         fsm_state_id, scheduler_job_id,
-        pre_processing, prepared_input_key, post_processing,
+        pre_processing, prepared_input_key, post_processing, regulatory_book_type,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
@@ -96,7 +96,7 @@ begin
         gen_random_uuid(), 0, v_root_party_id, a.name,
         coalesce(a.description, ''), a.report_type, a.schedule_expression, a.concurrency_policy,
         null, null,
-        'execute', null, 'execute',
+        'execute', null, 'execute', a.regulatory_book_type,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a
@@ -232,8 +232,8 @@ begin
                   'configuration_analytic_parameters', 'configuration_market_bindings'],
             array[]::text[],
             jsonb_build_object('configuration_analytic_parameters', jsonb_build_object(
-                'parameter_definition_id',
-                'select d.id from ores_reporting_parameter_definitions_tbl d '
+                'ore_parameter_id',
+                'select d.id from ores_reporting_ore_parameters_tbl d '
                 || 'join ores_dq_configuration_analytics_artefact_tbl p '
                 || 'on p.dataset_id = a.dataset_id and p.id = a.configuration_analytic_id '
                 || 'where d.tenant_id = ores_utility_system_tenant_id_fn() '
@@ -353,3 +353,285 @@ comment on function ores_reporting_publish_engine_settings_from_dq_fn(uuid, uuid
 'Publishes the engine settings a dataset stages for the target party, each
  registered as a reporting configuration. A publish only inserts, so the mode
  has no effect.';
+
+-- =============================================================================
+-- Ore Parameter Value Domains: reporting.v1.ops.publish_ore_parameter_value_domains_from_dq
+-- =============================================================================
+
+create or replace function ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_exists boolean;
+    v_unchanged boolean;
+    v_new_version integer;
+begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    -- replace_all closes every current row of the target tenant, not only the
+    -- rows this dataset wrote, because the dataset is the table's only writer.
+    if p_mode = 'replace_all' then
+        update ores_reporting_ore_parameter_value_domains_tbl
+        set valid_to = clock_timestamp()
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select
+            dq.code,
+            dq.name,
+            dq.storage_kind,
+            dq.referenced_entity
+        from ores_dq_ore_parameter_value_domains_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+    loop
+        select exists (
+            select 1 from ores_reporting_ore_parameter_value_domains_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        select exists (
+            select 1 from ores_reporting_ore_parameter_value_domains_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and (existing.name, existing.storage_kind, existing.referenced_entity)
+                  is not distinct from (r.name, r.storage_kind, r.referenced_entity)
+        ) into v_unchanged;
+
+        -- A row the tenant holds with the same values is left alone, so a
+        -- repeat publish adds no version.
+        if v_unchanged then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_reporting_ore_parameter_value_domains_tbl (
+            tenant_id,
+            code, version,
+            name, storage_kind, referenced_entity,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id,
+            r.code, 0,
+            r.name, r.storage_kind, r.referenced_entity,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        )
+        returning version into v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the ORE parameter value domains a dataset stages into the target tenant,
+ each replacing the row the tenant holds under its code. A row with the same values
+ is skipped, so a repeat publish adds no version. An upsert never closes a domain a
+ later dataset version drops. A replace_all closes every current row of the target
+ tenant, because the dataset is the only writer of the table.';
+
+-- =============================================================================
+-- Ore Parameters: reporting.v1.ops.publish_ore_parameters_from_dq
+-- =============================================================================
+
+create or replace function ores_reporting_publish_ore_parameters_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_exists boolean;
+    v_unchanged boolean;
+    v_new_version integer;
+begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    -- replace_all closes every current row of the target tenant, not only the
+    -- rows this dataset wrote, because the dataset is the table's only writer.
+    if p_mode = 'replace_all' then
+        update ores_reporting_ore_parameters_tbl
+        set valid_to = clock_timestamp()
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select
+            dq.id,
+            dq.scope,
+            dq.subtype,
+            dq.name,
+            dq.schema_name,
+            dq.xpath,
+            dq.position,
+            dq.ore_parameter_value_domain_code,
+            dq.is_required,
+            dq.label,
+            dq.help,
+            dq.description,
+            dq.default_text,
+            dq.format,
+            dq.introduced_in,
+            dq.removed_in
+        from ores_dq_ore_parameters_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+    loop
+        select exists (
+            select 1 from ores_reporting_ore_parameters_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.id = r.id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        select exists (
+            select 1 from ores_reporting_ore_parameters_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.id = r.id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and (existing.scope, existing.subtype, existing.name, existing.schema_name, existing.xpath, existing.position, existing.ore_parameter_value_domain_code, existing.is_required, existing.label, existing.help, existing.description, existing.default_text, existing.format, existing.introduced_in, existing.removed_in)
+                  is not distinct from (r.scope, r.subtype, r.name, r.schema_name, r.xpath, r.position, r.ore_parameter_value_domain_code, r.is_required, r.label, r.help, r.description, r.default_text, r.format, r.introduced_in, r.removed_in)
+        ) into v_unchanged;
+
+        -- A row the tenant holds with the same values is left alone, so a
+        -- repeat publish adds no version.
+        if v_unchanged then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_reporting_ore_parameters_tbl (
+            tenant_id,
+            id, version,
+            scope, subtype, name, schema_name,
+            xpath, position, ore_parameter_value_domain_code, is_required,
+            label, help, description, default_text,
+            format, introduced_in, removed_in,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id,
+            r.id, 0,
+            r.scope, r.subtype, r.name, r.schema_name,
+            r.xpath, r.position, r.ore_parameter_value_domain_code, r.is_required,
+            r.label, r.help, r.description, r.default_text,
+            r.format, r.introduced_in, r.removed_in,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        )
+        returning version into v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_reporting_publish_ore_parameters_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the ORE parameter documentation a dataset stages into the target tenant,
+ each replacing the row the tenant holds under its id. A row with the same values
+ is skipped, so a repeat publish adds no version. The value domains are published
+ first, because the insert checks the domain of each parameter. An upsert never
+ closes a parameter that a later dataset version drops. A replace_all closes every
+ current row of the target tenant, because the dataset is the only writer of the
+ table. The id comes from the XPath of the leaf, so a renamed leaf is a new row.';

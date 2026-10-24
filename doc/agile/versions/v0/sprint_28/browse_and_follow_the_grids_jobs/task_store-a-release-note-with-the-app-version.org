@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: A2D86110-9343-487F-990E-C8AA4A491575
+:END:
+#+title: Task: Store a release note with the app version
+#+description: The app version model has no release note. A job pins a version and a person cannot read what changed in it. Add the note to the version, and publish it with the bundle.
+#+type: task
+#+level: s1
+#+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/store-a-release-note-with-the-app-version
+#+pr: 3651
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An app version holds a release note as text, written by the same call that publishes its package, and the generated read returns it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The app_version entity has a release_note text column, and the generated table, protocol and wire type carry it.
+- compute publish-package takes the note from a file and stores it with the version.
+- A republish without a note keeps the stored note.
+- The glossary and the app_version model page name the field.
+
+* Plan
+
+Add =release_note= to the app_version model as a text column that defaults to
+the empty string, and regenerate the C++, SQL, TypeScript and shell recipe
+files. Add =--release-note-file= to =compute publish-package=. The command reads
+the file and writes the note with the version. A republish without the flag
+keeps the stored note. Add the glossary entry.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| App version after a publish with a note file | the note is stored and listed | =compute publish-package ... --release-note-file= then =app_versions list= as =super_admin= | aa4605e98d plus the working tree |
+| App version after a republish without a note file | the stored note is unchanged | the same command without the flag, wrapper version 2.0.0 | aa4605e98d plus the working tree |
+| Shell and API unit tests | 2 suites pass | =ctest -R "ores.shell.compute.tests\|ores.compute.api.tests"= | aa4605e98d plus the working tree |
+
+* Notes
+
+- The service reads the version precondition of an app version by =wrapper_version=
+  alone, because that is the model's key field. Two versions that share a wrapper
+  version, such as the two ORE builds with wrapper 1.0.0, read each other's row. A
+  second republish of such a version fails with a version conflict. This is not
+  new: the key was already so. The check used wrapper version 2.0.0 for a clean
+  row. The task Key the app version by its app, engine and wrapper versions
+  records the gap.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #3651 | [compute] Store a release note with the app version |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The table output shows no note | app_version_table.cpp | Declined | The shell prints the list as JSON, which carries the note. The table is generated and the generator did not change it. |
+| 2 | Add and set take the note as one token | app_version_commands.cpp | Declined | A follow-up may add a file flag there. |
+| 3 | A directory path opens and reads empty | compute_commands.cpp | Fixed | The command now checks for a regular file. |
+| 4 | No unit test for the keep-on-republish rule | compute_commands.cpp | Declined | The live check covers it. |
+
+* Result
+
+An app version holds a release note as text. =compute publish-package= writes it
+from the file named by =--release-note-file=, and a republish without the flag
+keeps the stored note. The generated read returns the note, and the wire type
+carries it. The glossary defines the term.

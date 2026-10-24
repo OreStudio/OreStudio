@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2
+:END:
+#+title: Generators belong to the system tenant and the system party
+#+description: Why every collection, folder and generator is system-owned, who may author them, and how a party can still look at one.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:generators:ownership:
+#+created: 2026-10-06
+#+updated: 2026-10-22
+
+* Summary
+
+A simulated feed stands in for one real-world observation. There is one value for
+each vendor feed, so every party and every tenant must see the same value. All
+collections, folders and generators therefore belong to the system tenant and the
+system party. No generator is party-owned or tenant-owned.
+
+* Detail
+
+** Ownership
+
+- The system tenant and the system party own all generator rows.
+- Row-level security lets every tenant read them and only the system tenant write
+  them.
+- A party reads a generator to find out how a simulated value is made. The
+  simulator does not hide itself.
+
+** Who authors
+
+A person with the generator permission in the system tenant authors collections,
+folders and generators. A tenant administrator has no write path. A tenant that
+wants different data takes a different provider or a different source.
+
+** Why not party scope
+
+A party-scoped generator would give two parties two values for one vendor
+instrument. A vendor does not do that. It would also need a binding step between
+a generator and a party, and the system would then know that the source is
+simulated.
+
+** How a generator reaches a party
+
+It does not. A generator serves the simulator's universe. The simulator publishes
+ticks. The service delivers them according to subscriptions and routes. See
+[[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the component that runs the generators.
+- [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: how the generators arrive.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — answers: how a party gets simulated data without owning it.

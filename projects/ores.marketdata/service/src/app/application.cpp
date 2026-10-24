@@ -24,17 +24,39 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_source_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_vendor_instrument_event.hpp"
+#include "ores.marketdata.api/eventing/route_event.hpp"
+#include "ores.marketdata.api/eventing/subscription_event.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.service/app/adapter_supervisor.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/app/usage_recorder.hpp"
+#include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
+#include "ores.marketdata.service/messaging/bill_handler.hpp"
+#include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
+#include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/rate_card_component_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/subscription_interval_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_event.hpp"
@@ -122,6 +144,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     }
     auto ingest =
         std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge, ticks);
+    auto supervisor = std::make_shared<adapter_supervisor>(nats, make_context(cfg.database));
+    auto meter = std::make_shared<delivery_meter>();
+    auto usage = std::make_shared<usage_recorder>(make_context(cfg.database), meter);
+    ingest->set_delivery_meter(meter);
+    supervisor->set_catalogue_listener(
+        [usage](const demand_catalogue& catalogue, std::chrono::system_clock::time_point now) {
+            usage->sync(catalogue, now);
+        });
 
     namespace ev = ores::eventing;
     namespace mdm = ores::marketdata::messaging;
@@ -136,6 +166,27 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // with a mapping no one registered, so nothing they wrote reached NATS.
     auto feed_binding_sub =
         mdsm::register_feed_binding_event_mapping(event_source, event_bus, nats);
+    auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
+    auto market_data_source_sub =
+        mdsm::register_market_data_source_event_mapping(event_source, event_bus, nats);
+    auto market_data_vendor_instrument_sub =
+        mdsm::register_market_data_vendor_instrument_event_mapping(event_source, event_bus, nats);
+    auto market_data_mapping_sub =
+        mdsm::register_market_data_mapping_event_mapping(event_source, event_bus, nats);
+    auto subscription_sub =
+        mdsm::register_subscription_event_mapping(event_source, event_bus, nats);
+    auto route_sub = mdsm::register_route_event_mapping(event_source, event_bus, nats);
+    auto composite_input_sub =
+        mdsm::register_composite_input_event_mapping(event_source, event_bus, nats);
+    auto composite_sub = mdsm::register_composite_event_mapping(event_source, event_bus, nats);
+    auto rate_card_component_sub =
+        mdsm::register_rate_card_component_event_mapping(event_source, event_bus, nats);
+    auto delivery_count_sub =
+        mdsm::register_delivery_count_event_mapping(event_source, event_bus, nats);
+    auto demand_interval_sub =
+        mdsm::register_demand_interval_event_mapping(event_source, event_bus, nats);
+    auto subscription_interval_sub =
+        mdsm::register_subscription_interval_event_mapping(event_source, event_bus, nats);
     auto market_series_sub =
         mdsm::register_market_series_event_mapping(event_source, event_bus, nats);
     auto market_fixing_sub =
@@ -153,6 +204,41 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<mdm::feed_binding_event>([ingest](const mdm::feed_binding_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
             ingest->refresh();
+        });
+
+    // A route, a subscription, a source, a vendor instrument or a mapping changes what the loop
+    // maps and to whom it stores, and what each adapter is asked to publish. Each of them
+    // refreshes both, the way a binding refreshes the loop.
+    auto route_refresh_sub =
+        event_bus.subscribe<mdm::route_event>([ingest, supervisor](const mdm::route_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop and demand.";
+            ingest->refresh();
+            supervisor->refresh();
+        });
+    auto subscription_refresh_sub =
+        event_bus.subscribe<mdm::subscription_event>([supervisor](const mdm::subscription_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Subscription changed — refreshing adapter demand.";
+            supervisor->refresh();
+        });
+    auto source_refresh_sub = event_bus.subscribe<mdm::market_data_source_event>(
+        [ingest, supervisor](const mdm::market_data_source_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop and demand.";
+            ingest->refresh();
+            supervisor->refresh();
+        });
+    auto vendor_instrument_refresh_sub =
+        event_bus.subscribe<mdm::market_data_vendor_instrument_event>(
+            [ingest, supervisor](const mdm::market_data_vendor_instrument_event&) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Vendor instrument changed — refreshing ingest loop and demand.";
+                ingest->refresh();
+                supervisor->refresh();
+            });
+    auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
+        [ingest, supervisor](const mdm::market_data_mapping_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";
+            ingest->refresh();
+            supervisor->refresh();
         });
 
     // Refdata owns these tables and publishes their changes. This service
@@ -188,7 +274,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg, ingest, &svc_nats, crm_bridge](auto& n, auto c, auto v) {
+        [&cfg, ingest, supervisor, &svc_nats, crm_bridge](auto& n, auto c, auto v) {
             auto subs = ores::marketdata::messaging::registrar::register_handlers(
                 n, c, svc_nats, v, cfg.http_base_url);
 
@@ -208,6 +294,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::crm_handler h(n, c, v, crm_bridge);
                                       h.rates(std::move(msg));
                                   }));
+            subs.push_back(n.queue_subscribe(std::string(mm::compute_bill_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::bill_handler h(n, c, v);
+                                                 h.compute(std::move(msg));
+                                             }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::list_adapter_status_request::nats_subject),
+                                  queue,
+                                  [&n, c, v, supervisor](ores::nats::message msg) mutable {
+                                      mm::adapter_status_handler h(n, c, v, supervisor);
+                                      h.list(std::move(msg));
+                                  }));
             subs.push_back(n.queue_subscribe(std::string(mm::republish_curve_request::nats_subject),
                                              queue,
                                              [&n, c, v](ores::nats::message msg) mutable {
@@ -222,11 +321,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                              }));
             return subs;
         },
-        [&nats, ingest](boost::asio::io_context& ioc) {
+        [&nats, ingest, supervisor, usage](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
             ingest->start();
+            supervisor->start();
+            usage->start();
         });
 
     event_source.stop();

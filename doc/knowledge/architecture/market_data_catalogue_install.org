@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 922C155B-6733-4D2B-A675-A7361A5BDC63
+:END:
+#+title: A system bundle installs the catalogue and the simulator installs its own universe
+#+description: Where each market data definition lives, which component installs it, and how an adapter's advertised universe is only a check.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:catalogue:bundle:provisioning:
+#+created: 2026-10-22
+#+updated: 2026-10-23
+
+* Summary
+
+Every definition has one home. The market data service holds the catalogue:
+providers, sources, vendor instruments, mappings and rate cards. The simulator
+holds its generators and its universe. A system bundle installs both, in the
+system tenant and the system party. An adapter's announced universe is checked
+against the catalogue and never defines it.
+
+* Detail
+
+** Where each definition lives
+
+| Definition | Home | Installed by | Changed by |
+|------------+------+--------------+------------|
+| Provider, source, rate card | =ores.marketdata= | System bundle | System administrator |
+| Vendor instrument and mapping | =ores.marketdata= | System bundle | System administrator |
+| Generator, collection, folder | =ores.marketdata.synthetic= | System bundle | Simulator author |
+| Simulator universe | =ores.marketdata.synthetic= | System bundle (from the generators) | Simulator author |
+| Subscription and route | =ores.marketdata= | Profile or party administrator | Party administrator |
+
+This table answers the question of where a feed is defined. The provider's feed is
+a set of catalogue rows. The simulator's way to produce it is a generator.
+
+** The universe check
+
+At announce, the adapter sends its universe. The service compares it with the
+catalogue rows of its provider.
+
+- An id in the catalogue and in the universe is served.
+- An id in the catalogue and not in the universe cannot be demanded. The source
+  screen lists it.
+- An id in the universe and not in the catalogue is ignored and logged.
+
+** Why two homes
+
+The service must own the catalogue because the mapping is the same for every
+source of a provider. The simulator must own its generators because only it needs
+them. A real adapter has no generators.
+
+** What the bundle holds
+
+The bundle installs five providers: =bloomberg=, =lseg=, =ice=, =tradeweb= and =ore=. The data
+format of each is on its own page, for example [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]]. The provider =ore= has three
+sources of fixed ids: =ore-import= of kind =replay=, which the ORE import and the data quality
+publish use; =ore-simulated= of kind =simulated=; and =ore-derived= of kind =derived=, which
+the service uses for the values it computes, such as a bootstrapped curve. An observation
+records the id of its source, and the series it lands in belongs to the provider.
+
+** The system bundle
+
+The bundle publishes into the system tenant only. A tenant's own setup never
+writes the catalogue. A new tenant gets no market data rows, only subscriptions
+and routes.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] — completes: the rows the bundle installs.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the generators and the universe on the simulator side.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: why the generators are system-owned.

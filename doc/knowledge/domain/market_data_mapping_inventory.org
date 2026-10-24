@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 3D0E46BD-02A4-4A2F-863A-B948B7E44FCD
+:END:
+#+title: The mapping inventory lists the vendor instruments each provider carries
+#+description: Which vendor instruments the catalogue installs for Bloomberg, LSEG and the fictional provider Demo, what each maps to, which rows need a check against the vendor, and what is not inventoried yet.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:catalogue:mapping:inventory:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+The inventory lists the vendor instruments that the system bundle installs and the oresmd item that each
+maps to. It covers the 26 FX spot pairs that the simulated feeds quote, in the notation of Bloomberg, LSEG
+and Demo. The three providers quote the same item, so a party that changes its provider keeps its series.
+The rows that name a market with a non-deliverable variant are marked for a check against the vendor's own
+screen. The rate curves, ICE and Tradeweb have no rows yet.
+
+* Detail
+
+** The FX spot pairs
+
+Each pair is in market quoting order, as the feeds quote it. All three providers map to the item
+=oresmd://fx/<base>?type=quote&instrument=fx_spot&quote=rate&ccy=<quote>=.
+
+| Item | Bloomberg (=bbg_ticker=, =PX_LAST=) | LSEG (=ric=, =BID=) | Demo (=demo_key=, =value=) | Check |
+|------+------------------------------------+---------------------+--------------------------+-------|
+| EUR/USD | =EURUSD Curncy= | ~EUR=~ | =EUR/USD= | standard |
+| GBP/USD | =GBPUSD Curncy= | ~GBP=~ | =GBP/USD= | standard |
+| AUD/USD | =AUDUSD Curncy= | ~AUD=~ | =AUD/USD= | standard |
+| NZD/USD | =NZDUSD Curncy= | ~NZD=~ | =NZD/USD= | standard |
+| USD/CAD | =USDCAD Curncy= | ~CAD=~ | =USD/CAD= | standard |
+| USD/CHF | =USDCHF Curncy= | ~CHF=~ | =USD/CHF= | standard |
+| USD/DKK | =USDDKK Curncy= | ~DKK=~ | =USD/DKK= | standard |
+| USD/INR | =USDINR Curncy= | ~INR=~ | =USD/INR= | to confirm |
+| USD/JPY | =USDJPY Curncy= | ~JPY=~ | =USD/JPY= | standard |
+| USD/MXN | =USDMXN Curncy= | ~MXN=~ | =USD/MXN= | standard |
+| USD/NOK | =USDNOK Curncy= | ~NOK=~ | =USD/NOK= | standard |
+| USD/SEK | =USDSEK Curncy= | ~SEK=~ | =USD/SEK= | standard |
+| USD/ZAR | =USDZAR Curncy= | ~ZAR=~ | =USD/ZAR= | standard |
+| USD/HKD | =USDHKD Curncy= | ~HKD=~ | =USD/HKD= | standard |
+| USD/SGD | =USDSGD Curncy= | ~SGD=~ | =USD/SGD= | standard |
+| USD/CNH | =USDCNH Curncy= | ~CNH=~ | =USD/CNH= | standard |
+| USD/KRW | =USDKRW Curncy= | ~KRW=~ | =USD/KRW= | to confirm |
+| USD/TWD | =USDTWD Curncy= | ~TWD=~ | =USD/TWD= | to confirm |
+| USD/PLN | =USDPLN Curncy= | ~PLN=~ | =USD/PLN= | standard |
+| USD/CZK | =USDCZK Curncy= | ~CZK=~ | =USD/CZK= | standard |
+| USD/HUF | =USDHUF Curncy= | ~HUF=~ | =USD/HUF= | standard |
+| USD/TRY | =USDTRY Curncy= | ~TRY=~ | =USD/TRY= | standard |
+| USD/ILS | =USDILS Curncy= | ~ILS=~ | =USD/ILS= | standard |
+| USD/BRL | =USDBRL Curncy= | ~BRL=~ | =USD/BRL= | to confirm |
+| USD/CLP | =USDCLP Curncy= | ~CLP=~ | =USD/CLP= | to confirm |
+| USD/COP | =USDCOP Curncy= | ~COP=~ | =USD/COP= | to confirm |
+
+** How the ids are written
+
+- Bloomberg: the pair as six letters, a space and the yellow key =Curncy=, with the field =PX_LAST=.
+  See [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]].
+- LSEG: the currency that is not USD, followed by an equals sign, with the field =BID=. See
+  [[id:A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D][LSEG data format]].
+- Demo: the pair with a slash, =<base>/<quote>=, with the field =value=. The provider is fictional and exists
+  for exercises and demonstrations.
+
+No id is minted. Each follows the vendor's own notation, so no row needs a deviation note.
+
+** Rows to confirm
+
+Six currencies trade as deliverable spot and as a non-deliverable forward: INR, KRW, TWD, BRL, CLP and COP.
+For these the plain ticker or RIC may name the onshore market or the offshore one, and a pricing source may
+be needed. The rows are installed as written and marked =to confirm=. A person with access to the vendor's
+screen confirms or corrects them before a live adapter relies on them. The simulator publishes them as
+they stand.
+
+** Not inventoried yet
+
+- *Rate curves.* The simulated feeds quote a short-rate curve for 28 currencies, with pillars from deposits
+  to a ten year swap. The vendors' tickers for these pillars are not written down, and inventing them
+  would give a list nobody has checked. A curve tick from a vendor adapter is dropped as =unmapped= until
+  the rows exist. When a pillar has no single vendor id, the row is minted with a deviation note, as
+  [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] describes.
+- *ICE and Tradeweb.* The feeds simulate no instrument that these providers carry today. Their public
+  documents give no id grammar for the asset classes they serve, so the inventory has no row for them.
+  See [[id:72848BB7-9ADE-49CF-8D33-008ED7C1DF29][ICE data format]] and [[id:22DDAB03-5CD7-4E14-B1B0-23DB61F2DC95][Tradeweb data format]].
+- *Other fields.* Only one field of each id is mapped: the last price for Bloomberg, the bid for LSEG.
+  A bid and ask series, or a mid, is a further row for each field.
+
+** Checked against the identifier survey
+
+The notation agrees with the examples of [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]]:
+=EURUSD Curncy= is a Bloomberg ticker with its yellow key, and ~EUR=~ is an FX spot RIC. The survey says the authoritative definitions of Bloomberg and LSEG notation are behind
+the vendors' logins, so the rows marked =standard= follow their documented examples and the common
+convention, and a person with a login confirms them with the rows marked =to confirm=.
+
+** Where the rows come from
+
+The rows are installed by =marketdata_vendor_instruments_populate.sql=. The ids of the vendor instruments
+come from their identity, so a second run writes the same rows. The mapping of each row holds from
+2026-01-01.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: the rows of the table are the mappings of this page.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the left side of each row.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — completes: the survey that the notation is checked against.

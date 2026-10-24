@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/update-the-configuration-prototypes
-#+pr:
+#+pr: 3720
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3720][#3720]] | [doc] Name the two engine configurations apart and link them |
 
 * Review
 

@@ -17,6 +17,8 @@ Sprint 28 set out to finish the work carried from sprint 27 and to add no new sc
 
 ![ore_studio-v0.0.28.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28.png)
 
+*The system administration dashboard: tenants, services, the compute grid and the message queue.*
+
 
 # 🛠️ Key Improvements
 
@@ -60,6 +62,8 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 ![ore_studio-v0.0.28-synthetic-price-behaviour.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png)
 
+*The price behaviour of the synthetic AUD/USD feed: the mixture of two Gaussians, the return distribution and sample paths.*
+
 
 ## Security & Tenancy
 
@@ -75,7 +79,11 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 ![ore_studio-v0.0.28-grid-overview.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-grid-overview.png)
 
+*The compute grid over the last hour: load, fleet, throughput and outcomes.*
+
 ![ore_studio-v0.0.28-grid-usage.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-grid-usage.png)
+
+*Usage by party: the outcomes of the finished results and each party's share.*
 
 
 ## Web & Journeys
@@ -97,7 +105,11 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 ![ore_studio-v0.0.28-grid-jobs.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-grid-jobs.png)
 
+*The grid's batches, workunits and results as a tree, with the detail of one result.*
+
 ![ore_studio-v0.0.28-engine-settings.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28-engine-settings.png)
+
+*An engine settings page with the documentation of each ORE parameter.*
 
 
 ## Codegen & Tooling

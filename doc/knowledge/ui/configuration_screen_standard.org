@@ -90,8 +90,8 @@ the =Setup= block names it through =pricingEnginesFile=.
 
 The screen name is the kind's subject. Where the subject alone would name the
 instances rather than the configuration, the name carries the word
-*configuration*. No two kinds share a head noun, and no kind is named for one
-thing inside it.
+*configuration*. Two kinds never differ only by that word, and no kind is named
+for one thing inside it.
 
 | Kind code | Screen name | What it decides |
 |-----------+-------------+-----------------|
@@ -325,7 +325,8 @@ The rule:
    run reads.
 2. On the same configuration, a write to an operational section lands directly,
    with a change reason and a history entry.
-3. On a configuration that no report binds, every section changes in place.
+3. A configuration that no report binds is a *draft*, and every section changes
+   in place. It becomes governed the moment a report binds it.
 4. An approved version never changes in place. *Edit* is *Propose a change*.
 5. The person who proposed a change cannot sign it off, even when they hold a
    part.

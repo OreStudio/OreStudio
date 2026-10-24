@@ -26,11 +26,11 @@ One record says which party consumes which source. The task decides whether the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Writing the decision.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record the decision in the story and list the follow-on tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -62,7 +62,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Consumer paths in the ingest refresh | 2 | =grep -c "read_latest_all_tenants(ctx_)" projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= | 7c49ca340e |
+| Services that write a feed binding | 1 | =grep -rln "feed_binding_repository" projects/ores.marketdata/core/src/service= | 7c49ca340e |
+| Seeds that insert a feed binding | 0 | =grep -rln "insert into .*feed_bindings" projects/ores.sql projects/ores.seeder= | 7c49ca340e |
+| Policies on the two binding tables | 2 | =grep -rc "create policy" projects/ores.sql/create/marketdata/marketdata_feed_binding*_create.sql= | 7c49ca340e |
+| Guard exceptions that name a feed binding | 1 | =grep -c feed_bindings_tbl_tenant_isolation_policy projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py= | 7c49ca340e |
+| Bindings web routes | 2 | =grep -c PATHS.bindings projects/ores.web/packages/web/src/AppRoutes.tsx= | 7c49ca340e |
 
 * Notes
 
@@ -90,3 +95,67 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The binding retires. The route is the one record that says which source serves
+a party for a provider, and so which party consumes which source. The binding
+is not kept as a projection of the routes: a projection keeps two records for
+one fact and needs a writer to hold them in step, where the route already
+answers the question.
+
+** The evidence
+
+- The ingest reads two consumer paths. =refresh()= reads the feed bindings,
+  then reads the routes and turns each route into a binding-shaped consumer, so
+  both arrive in one snapshot: =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp=,
+  =consumer_of= at line 163, the two reads at lines 179 and 194, the merge at
+  line 201.
+- Nothing derives one path from the other. Only =feed_binding_service= writes
+  a binding, and neither =subscription_service= nor =route_service= writes one.
+- No seed and no provisioning step inserts a binding. A fresh database has an
+  empty binding table, and the routes supply every consumer.
+- The architecture pages describe routes and subscriptions only. No page of
+  the market data cluster names a feed binding.
+- The newer screens task retires the bindings screen and replaces it with the
+  subscriptions screen: =task_build_the_market_data_screens.org=, line 38.
+- The simulator move is done. Its result says the old control plane still
+  publishes =market_tick= on its binding subject, and the screens task retires
+  it: =task_move_the_simulator_to_ores_marketdata_synthetic.org=.
+- The activity row is keyed (tenant, party, source_name), not by a binding id,
+  so it needs no binding to survive:
+  =projects/ores.sql/create/marketdata/marketdata_feed_binding_activity_create.sql=,
+  line 39.
+
+This reverses the Sprint 27 decision "consumption is a binding, not a copy".
+When the routes did not exist, the binding was the only consumption record.
+The route now holds the same fact with a provider, a source, a validity window
+and an audit trail. The binding duplicates it, and its =enabled= flag repeats
+what the absence of a route already says.
+
+** The consequence
+
+- *Ingest:* read the routes only. Remove the binding read, the =consumer_of=
+  copy and the binding change-event subscription.
+- *Web:* retire the bindings list and record page, the BFF read and the menu
+  card. The subscriptions screen and the source status screen take their place.
+- *SQL:* drop =ores_marketdata_feed_bindings_tbl= and
+  =ores_marketdata_feed_binding_activity_tbl= with their triggers, event
+  mappings and two policies. Remove =feed_bindings_tbl_tenant_isolation_policy=
+  from the widening guard when the table drops. The audit story records the
+  decision for that policy as "retired", not "role-scoped".
+- *Stories:* the bindings screen story =AE947749= closes as superseded by the
+  service screens task. The subscribe story =3BAE4AAA= is reworded to
+  subscriptions and routes.
+
+** The tasks this decision unblocks
+
+1. Read the consumers from the routes only.
+2. Retire the bindings screen, its BFF read and its menu card.
+3. Drop the binding tables, triggers, event mappings and policies, and update
+   the widening guard.
+4. Reconcile the two Sprint 29 stories: close =AE947749= and reword =3BAE4AAA=.
+
+** The measurement gap
+
+No database was reachable in this worktree, so the row count of an existing
+database was not measured. The drop task counts the rows first and moves any
+that exist onto routes.

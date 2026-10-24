@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-14
-#+updated: 2026-10-14
+#+updated: 2026-10-24
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,31 +21,28 @@ The NATS service pattern library states how a service must address, subscribe, p
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-14                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- Every NATS call site in projects/ is classified against the pattern library, and the inventory is recorded on the story.
-- Each deviation names the pattern it breaks, the file and line, and the fix; each non-deviation is recorded as deliberate with the pattern page that licenses it.
-- The fixes are made: generated call sites through their codegen templates, hand-written ones directly, with no compatibility shim left behind.
-- A pattern that the code proves wrong is amended, so the library and the code agree.
-- The full local gate is green.
+The story closes on the tasks it finished:
+
+- Give the step commands one consumer per service.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C68D6FDE-E82F-4E7C-BD13-646D8FA347B6][Scaffold story: Bring the service code onto the NATS patterns]] | STARTED | 2026-10-14 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:11F9A445-13B3-43E0-A674-BE8C5E9E9A79][Audit the NATS call sites against the pattern library]] | STARTED | 2026-10-14 | | Classify every NATS call site against the pattern library, record the inventory, and fix the deviations. |
 | [[id:553F8B23-3912-4AA6-8542-99B55719433B][Give the step commands one consumer per service]] | DONE | 2026-10-15 | 2026-10-17 | Replace the per-subject durable consumers with one consumer per service, own and prune those consumers, make the handler answer the delivery, claim a step atomically, reconcile the entity mirrors and bound the stream retention. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 1 done tasks. The 2 open tasks and the original acceptance moved to [[id:38DDDD12-6C66-422E-AE49-0C408AEE3F42][Bring the service code onto the NATS patterns — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

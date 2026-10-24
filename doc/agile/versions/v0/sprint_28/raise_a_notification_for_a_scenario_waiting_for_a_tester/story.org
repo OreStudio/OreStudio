@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-11
-#+updated: 2026-10-13
+#+updated: 2026-10-24
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,30 +21,28 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG |
+| State         | DONE |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task that settles the open questions. |
-| Last touched  | 2026-10-13 |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24 |
 
 * Acceptance
 
-- A tester role and a permission for the Development module exist, and the QA and agile routes refuse a signed-in user who does not hold the permission.
-- A scenario that waits for a tester raises an inbox notification, once for each scenario, and the bell shows it. The notification goes to every person who holds the permission. If the story takes assignment, it goes to the assigned tester only.
-- A tester opens the scenario from the notification.
-- The story records whether the module runs in production, and what changes if it does.
-- A prototype of the bell entry is accepted before the web screen is built.
+The story closes on the tasks it finished:
+
+- Scaffold story: Raise a notification for a scenario waiting for a tester.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3F112CEB-56D8-40F9-AA01-1C02DB0C370F][Scaffold story: Raise a notification for a scenario waiting for a tester]] | DONE | 2026-10-11 | 2026-10-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B2206389-EB1E-414C-BD5A-B36E191C3C50][Settle the open questions of the story]] | BACKLOG | | | Answer the four open questions of the story, record the answers in its Decisions, and break the story into tasks. The questions are who raises the notification and when, whether the module runs in production, what once for each scenario means, and whether assignment is in the story. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 1 done tasks. The 1 open tasks and the original acceptance moved to [[id:C76D7295-D2DB-4329-A1AC-9D5F7EE31E51][Raise a notification for a scenario waiting for a tester — the remaining work]] in the product backlog inbox.
 These come from what the code does today. They hold unless an answer under Open questions changes them.
 
 - The inbox raises a notification for a kind and a permission audience. A raise resolves the audience, at that moment, to the people of the tenant who hold the permission, so a tester role is a permission and nothing more. A kind of notification is data: a seed row, with a code prefixed by the component that raises it. The story adds a kind and a permission, and no new mechanism.

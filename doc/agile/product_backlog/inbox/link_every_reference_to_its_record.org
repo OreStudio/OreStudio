@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 86BB338B-809C-4079-972A-6B5C1BA740D7
+:END:
+#+title: Story: Link every reference to its record
+#+description: Replace the per-screen address functions with one system-wide mechanism, so every foreign key a web screen shows is a link to the page of the record it names.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:product_backlog:inbox:
+#+created: 2026-10-11
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A value that names another record, such as a currency, a country, a calendar, a party or an account, is a link to that record's page, drawn the same way on every screen. Today each screen uses the address function of the kind it knows, personPath, currencyPath, calendarPath, pairPath, deskGroupPath or classificationsPath, and some references, such as a country code, are plain text. The story builds one mechanism: a registry that maps a kind of record and its key to an address and to the permission that opens it, and one component that draws the reference with its name, its flag or its photo, and the link, or plain text where the reader may not open it, the record has no page, or it is the page already open. Then every screen moves onto it. The first task is an audit of every value that is a key in ores.web, listed in a table on the story by screen, kind of record and whether it is a link today. The rule is in the entity screen specification, under References are links.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13 |
+
+* Acceptance
+
+- The entity screen specification states the rule, with a table of the kinds of record, their addresses and what stands beside the text.
+- Every foreign key that ores.web draws is classified in a table on the story as a link today, a gap in the screen, or a kind of record without a page.
+- One registry holds the address and the read of each kind of record, and no screen builds a record address in its own code.
+- One component draws a reference with its name, its flag or photo, and its link, and draws plain text in the four cases the specification names.
+- A check fails the build when a screen writes a record address by hand.
+- A country page, or the decision not to have one, is recorded in the story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

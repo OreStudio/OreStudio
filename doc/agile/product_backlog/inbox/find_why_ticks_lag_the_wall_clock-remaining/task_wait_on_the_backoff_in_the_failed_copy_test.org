@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: D1D8273D-DC95-4C69-8FBE-FCD8F30B9FB6
+:END:
+#+title: Task: Wait on the backoff in the failed copy test
+#+description: The test of a failed copy sleeps a fixed 1500 ms for the store backoff and assumes the queue drops no tick, so it can fail on a loaded machine.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock-remaining:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The test of a failed copy does not fail on a loaded machine. It waits for the store to answer again, and it sends a burst that the queue of ticks does not overflow.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- The test =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits= has no fixed sleep for the backoff of the store. It waits until the store takes a probe tick, or reads the end of the backoff from the loop.
+- The burst of the test is smaller than the queue of ticks, so the count of the republish cannot fall short because the queue dropped a tick.
+- The counts of the test do not change with the number of probe ticks.
+- The test passes ten times in a row at a load of 20 on 8 CPUs.
+- A test that waits for a count of republished ticks does not wait out its deadline when a tick is dropped as stale or by the queue. It reads the drop counters of the loop, or it states the drop in its failure message, so the cause shows.
+- The tests =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits= and =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= both follow this rule.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Observed while reviewing the quiet loop (PR #3628): at a load of 16 to 43 on 8 CPUs, the failed copy test failed in 3 of 10 runs with the quiet path turned off and in about 3 of 9 runs with it on. The failing check is the wait for =republished == sent= after the burst of 20,000 ticks. The cause is a guess: a tick older than =max_tick_age= (5 s) is dropped when the machine is slow, so the count falls short. No run read the drop counters to confirm it. The failure is therefore not new with the quiet path.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-15
-#+updated: 2026-10-15
+#+updated: 2026-10-24
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,16 +24,35 @@ The investigation this story commissioned is
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The core is done. A clean recreate and one provision produce 32 bonds, they converge on a second run, and a report over them prices every bond. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Extend past bonds, then narrow the trader by the Trading role. |
-| Last touched  | 2026-10-16                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
--
+The story closes on the tasks it finished:
+
+- Fix composite versioning for the bond hierarchy.
+- Wire trading staff to their party.
+- Broaden the tradeable party-counterparty links.
+- Confirm the writing party comes from the token.
+- Model the trade generation config.
+- Write generated trades through the trading operation.
+- Anchor the dates and seed the content.
+- Resolve the references the trade names.
+- Give each trade a deterministic Internal identifier.
+- Generate the bond population into the ACME books.
+- Prove a bond rewrite versions the parent.
+- Add the generate_trades step to the ACME profile.
+- Prove the population converges across two provisions.
+- File the ACME trade population analysis as an investigation.
+- Stream the workflow execution step subjects.
+- Write a bond issue as one unit.
+- Book a bond trade as one unit.
+- Generate the instrument writer for every kind.
 
 * Tasks
 
@@ -50,22 +69,17 @@ The investigation this story commissioned is
 | [[id:34F9483C-16D0-4913-BB76-6095AEA812DA][Give each trade a deterministic Internal identifier]] | DONE | | 2026-10-15 | Derive an Internal trade identifier from stable inputs so a re-provision upserts rather than duplicates. Build the trade and its identifier in one write, because the identifier is a composite child that bumps its parent. |
 | [[id:A7600639-BBC8-472E-94BE-9B24BF7F300E][Generate the bond population into the ACME books]] | DONE | 2026-10-19 | 2026-10-20 | Bonds first, into each party's bond book, across a range of counterparties and tenors, so the pattern is proved on one instrument family before it is repeated. |
 | [[id:CF5876D6-721E-434C-83FD-286D861EF265][Prove a bond rewrite versions the parent]] | DONE | | 2026-10-16 | Rewrite a bond leg and show the parent version moves and the as-of read reports the right legs. This is what demonstrates the versioning fix on real generated data rather than declaring it done. |
-| [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | BACKLOG | | | Repeat the pattern for the remaining families, each landing with its own acceptance rather than a general claim of coverage. Order the work from the ORE generator's coverage list and the shipped sample corpus. |
 | [[id:6172EE1E-5895-4F11-A6A0-08989B4D15A2][Add the generate_trades step to the ACME profile]] | DONE | | 2026-10-16 | ACME provisioning runs the population, so the step belongs in the acme_demo profile after load_staff and start_market_feeds. One step or one per party depends on the party question, which decide rather than discover. |
 | [[id:A40DD310-3C6C-4681-87BB-802890B3E93D][Prove the population converges across two provisions]] | DONE | | 2026-10-16 | Provision ACME twice and assert that no trade duplicated and no trade's version advanced. This is the acceptance that catches an unstable seed and the shift-after-insert design at once. |
 | [[id:DEA0A754-9D39-41B7-8194-DD068C37B179][File the ACME trade population analysis as an investigation]] | DONE | | 2026-10-15 | The analysis under doc/analysis was written at the wrong level, so it is the story's record and belongs beside the story. Scaffold it as an investigation, move the content into the six required sections, and delete the analysis. |
 | [[id:CE31D1C2-95B0-4F8C-BA7B-3DA99E938DCE][Stream the workflow execution step subjects]] | DONE | | 2026-10-15 | The step-command stream mechanism covers each service's publish-from-DQ steps only. The operational steps an execution workflow dispatches have no stream, so js_publish times out and the workflow never starts. Reporting declares its two publish subjects and omits reporting.v1.ops.gather_market_data, and ore and compute declare none at all. |
-| [[id:367745B6-DC78-4400-B010-257A3F35236E][Create the intraday reports every ACME entity needs]] | BACKLOG | | | ACME's reports are end of day. Every ACME entity needs intraday reports as well. Begin by reading the report documentation to establish which intraday reports are required and for which entity, then build them. A report that runs intraday values at the present moment rather than at the previous close, so it also decides what the market data must supply during the day. |
 | [[id:7311A270-A180-4BE0-8583-2498D6BAB99D][Write a bond issue as one unit]] | DONE | 2026-10-21 | 2026-10-22 | One trading operation writes a bond issue with its leg, amounts, rate and schedule in one unit of work, so a security is whole or absent. |
 | [[id:AC90851C-3318-4EB3-8780-D7D78DD4F88E][Book a bond trade as one unit]] | DONE | 2026-10-23 | 2026-10-23 | book_trade takes the identifiers and the instrument of the trade and writes them with the anchor in one unit of work. Synthetic and the final booking use the same call. |
 | [[id:FE1630AE-44AE-4851-B83A-82284E074294][Generate the instrument writer for every kind]] | DONE | 2026-10-23 | 2026-10-23 | Generate the dispatch from instrument_batch to the repositories for all instrument kinds, so book_trade books any trade the export can read. |
-| [[id:D4A62343-5E5B-46B6-84F5-51F008FC4A11][Record where a trade came from]] | BACKLOG | | | Every trade states an immutable origin from a lookup and an origin reference, so reports and rollbacks can separate manual, API, ORE import and synthetic trades. |
-| [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
-| [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
-| [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Define the synthetic planner extension point]] | BACKLOG | | | Split synthetic generation into one planner for each asset class and one shared writer, so a new asset class adds a planner and nothing else. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 18 done tasks. The 6 open tasks and the original acceptance moved to [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

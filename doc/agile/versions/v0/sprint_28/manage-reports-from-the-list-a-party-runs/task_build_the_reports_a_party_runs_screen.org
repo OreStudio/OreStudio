@@ -35,11 +35,11 @@ screen those two describe and closes nothing else.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
-| Now          | The branch builds the route, the three endpoints and the two screens, and the tests cover them. |
+| Now          | Nothing. |
 | Waiting on   | A review of the pull request.          |
-| Next         | Close this task when the pull request merges. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

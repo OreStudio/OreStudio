@@ -67,7 +67,9 @@ task and name that file in the Command column.
 | Added stories that are CI or hotfix work | 34 | an estimate: titles matching hotfix, cache, CI, build-time and warning words | this branch |
 | Undecomposed stories | 8, all BACKLOG | =story.org= with no =task_*.org= beside it | this branch |
 | Stories with ten or more tasks, still STARTED | 10 | the same read | this branch |
-| Audit findings | 95 before the repairs, 26 after | =compass sprint audit= | =b99ecf86a4= and this branch |
+| Audit findings | 95 before the repairs, 26 after, 0 after the sprint close | =compass sprint audit= | =b99ecf86a4= and this branch |
+| Stories after the sprint close | 125: 87 DONE, 38 ABANDONED (carried to the inbox) | the =State= of every row of the sprint table | this branch |
+| Tasks after the sprint close | 321: 315 DONE, 6 ABANDONED | the =State= of every =task_*.org= under the sprint | this branch |
 | DONE tasks with no PR or no branch recorded | 88 and 45 before; 100 tasks changed | a script over the =Task-ID= trailers, then the branch name | =b99ecf86a4= |
 | Charts window | 2026-10-13 to 2026-10-24: 14 days of activity, 484 merged PRs, 61 story transitions. The default window stops at 2026-10-21, the sprint's end date plus one day. | =compass sprint charts --sprint 28 --end-date 2026-10-24= | =b99ecf86a4= |
 
@@ -210,12 +212,10 @@ task against the story's own acceptance) before the next sprint opens:
 | Trade Blotter | 13 | 5 | 7 BACKLOG, 1 ABANDONED |
 | See and change everything a report runs | 19 | 18 | 1 BACKLOG |
 
-This review applied the test to the last one, which is its author's own. Its
-acceptance names a six-tab report page and a choice of convention set. The 18
-done tasks deliver the engine settings arc, not that acceptance, and the one
-remaining task is the analysis of the report page. Closing the story would
-record the report page as delivered. It stays STARTED, and its Now, Waiting on
-and Next cells were rewritten to say so.
+The owner then asked for the close of the sprint: every story ends with only
+closed tasks, or close to it. The section "Sprint close: closes, splits and
+carries" below records what that did to these numbers. The table above is the
+state before the close.
 
 Verdict AMBER: the ratio is green, but eight stories are opaque and ten large
 stories hold most of the open task count.
@@ -258,7 +258,7 @@ Verdict AMBER.
 
 *** Bookkeeping repaired by this review
 
-The audit reported 95 findings. After the repairs below it reports 26.
+The audit reported 95 findings. After the repairs below it reported 26. After the sprint close it reports none.
 
 | Repair | Count | Evidence |
 |--------+-------+----------|
@@ -281,7 +281,7 @@ The audit named a fourth story and this review rejects it.
 
 | Story | Tasks | Decision | Evidence |
 |-------+-------+----------+----------|
-| [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]] | 1/1 DONE | Left BACKLOG | Its only task is "Describe the story and its open decisions" (PR #3043). It writes the story and builds nothing the acceptance names. Closing would record undelivered work as delivered. The same story was rejected in the sprint 27 review. |
+| [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]] | 1/1 DONE | Left BACKLOG here, then carried to the inbox at the sprint close | Its only task is "Describe the story and its open decisions" (PR #3043). It writes the story and builds nothing the acceptance names. Closing would record undelivered work as delivered. The same story was rejected in the sprint 27 review. |
 
 Duplicates resolved: none. The title comparison found two families of near
 matches, the three instrument-family audits (FX, rates, bonds) and the
@@ -290,20 +290,78 @@ hotfixes for the debug builds cover different platforms. None overlaps.
 
 What remains for the owners, not decided here:
 
-- Twenty-five open tasks whose pull requests have all merged (for example the
-  four market data tasks of the tick-lag story). A merged PR does not prove the
-  task is finished, because several PRs merged per task, so each is the owner's
-  call.
 - The 51 DONE tasks with no PR recorded. Most are scaffold tasks.
-- Eight undecomposed stories and ten sprawling stories, listed above.
+- The eight undecomposed stories, now in the product backlog inbox.
+
+*** Sprint close: closes, splits and carries
+
+The owner asked for two things: close every open task and story that is done,
+and split each story that holds many closed tasks into a closed story and a
+backlog story. After the work, the sprint table holds 87 stories DONE and 38
+ABANDONED (carried to the inbox), and no story STARTED or BACKLOG. The sprint
+holds 315 DONE tasks and 6 ABANDONED tasks, and no open task. The audit reports
+no finding.
+
+Open tasks closed DONE. Each has a written =* Result= and every pull request it
+names merged.
+
+| Task | Pull requests |
+|------+---------------|
+| Store the inflation swap and return its index | #3546 |
+| Keep a floor a floor and hold the whole collar | #3553 |
+| Build the list of kinds and the list of documents | #3620 |
+| Run a quiet loop in one thread | #3628 |
+| Build the reports a party runs screen and its endpoint | #3558 |
+| Close the gaps the reports a party runs screen records | #3484, #3501 |
+| Carry an entity-changed time to the browser | #3099 |
+| Link each convention to its market data series | #2922 |
+
+The other 17 tasks of the audit's list stayed open and moved to the inbox with
+their stories. Each has no =* Result=, or its own text says the work is partial
+(for example "Partly delivered in PR 3128. The task stays STARTED."). A merged
+pull request did not prove those finished.
+
+Stories closed DONE because every task is done: Carry the rates family's fields
+across the ORE boundary (3 of 3).
+
+Stories split. Each closed story keeps its done tasks and narrows its
+Acceptance to them. Its remaining tasks and its original Acceptance moved to a
+new story, "<title> — the remaining work", in the product backlog inbox. The
+closed story names the new story in its Decisions. 26 stories were split and 119
+tasks moved. The largest splits are Rework the market data feeds (20 done, 16
+moved), Find why market data ticks lag the wall clock (10 done, 20 moved),
+Browse and follow the grid's jobs (19 done, 5 moved), Populate the ACME books
+(18 done, 6 moved) and Build the bindings screen (15 done, 1 moved).
+
+Stories carried whole. 17 stories had no done task. Each moved by file or by
+folder into the inbox with its =:ID:= intact, and its sprint row is ABANDONED
+with the close date. They include the eight undecomposed stories, "Author the
+report configurations on guided screens" and "Complete the ACME report inputs
+and prove they run".
+
+Two closes needed judgment, and the tool's default was wrong for both:
+
+- "See and change everything a report runs" has 18 done tasks that deliver the
+  engine settings arc. Its acceptance names a six-tab report page that nothing
+  built. The story closed DONE with the engine settings arc as its scope, and
+  the report page, with its analysis task, moved to the new story.
+- "Find a trade by its identifiers, state, book and date from one list" has one
+  task, ABANDONED because the Trade Blotter story absorbed it. The story closed
+  ABANDONED, not DONE, since nothing shipped under it.
+
+The closed stories "Decide the XML strategy" and "Trade Blotter" keep ABANDONED
+tasks in their tables. Their Acceptance lists only the DONE tasks.
 
 *** What this review did not check
 
-It did not read the acceptance of the 10 sprawling stories. It did not verify
-that the equity round trip is lossless: it relied on the standing gate. It did
-not open the 25 task files named by the audit. The "CI or hotfix" count is an
-estimate by title. The number of carried stories is the sprint's own claim of 41,
-and the creation-date count of 25 is a floor.
+It did not read the acceptance of the 10 sprawling stories before the owner asked
+for the close. It did not verify that the equity round trip is lossless: it
+relied on the standing gate. The audit's 25 task files were read for their
+=* Result= and their Now cell only, not for the code. The "CI or hotfix" count is
+an estimate by title. The number of carried stories is the sprint's own claim of
+41, and the creation-date count of 25 is a floor. The narrowed Acceptance of each
+closed story lists its done tasks by title. It does not restate each task's
+result, so the owner may refine it.
 
 *** Overall verdict
 

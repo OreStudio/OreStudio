@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 6FF11957-0CCE-4B12-BDE5-7AD2BE882000
+:END:
+#+title: Story: Bring the role screens to the standard
+#+description: Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-13
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- The roles list and role page use the shared record parts.
+- Server paging reads the roles and the people who hold a role.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BB15DD97-53FF-47AE-AAA1-8675BCFB9882][Bring the role screens to the standard]] | BACKLOG | | | Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role. |
+
+* Decisions
+
+* Out of scope
+
+-

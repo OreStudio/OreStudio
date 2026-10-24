@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: AE947749-7D9D-4336-BED9-78F69187AD4D
+:END:
+#+title: Story: Build the bindings screen and clear the oresmd snags — the remaining work
+#+description: A person lists bindings, says what each source writes and when it last ticked, binds and rebinds a party to a source, enables and disables a binding, and starts or stops the feed behind it, with the oresmd snags cleared.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person lists bindings, says what each source writes and when it last ticked, binds and rebinds a party to a source, enables and disables a binding, and starts or stops the feed behind it, with the oresmd snags cleared.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]], which closed in sprint 28 with its done tasks.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- The bindings list and record page is drawn from the shared record parts, with the details, the oresmd links with Inspect, the status and the last tick.
+- A binding can be added, edited and deleted, and its history is drawn as the shared timeline with the revert dialog.
+- Bindings has a card in the Market data menu with its route, its trail and its words in English, French and Portuguese.
+- Server reads say which sources a party may bind, and a binding's history is scoped to its party.
+- The screen is checked against the signed-off prototype on the running server, and the oresmd feed list and series page snags are cleared.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EEC492A7-D1FC-4CC0-B8DF-7A67EBC82D7E][Add a language control to the site]] | BACKLOG | | | Give the site a control that changes the language, so a person can reach the French and Portuguese catalogues. |
+
+* Decisions
+
+- Split from [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

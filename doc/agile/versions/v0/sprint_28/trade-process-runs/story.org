@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-08
-#+updated: 2026-10-13
+#+updated: 2026-10-24
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,33 +24,28 @@ process be undone or repeated.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG |
+| State         | DONE |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started. |
-| Waiting on    | One process with a real client, the funding roll or the spot sweep, to settle the run model against. |
-| Next          | Choose the pilot and study it.          |
-| Last touched  | 2026-10-13 |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing.          |
+| Last touched  | 2026-10-24 |
 
 * Acceptance
 
-- The process enumeration is seeded, so a run names which process ran.
-- A run has an identity and a state machine over its evolution.
-- A trade group carries a foreign key to its run, and its membership names each trade and the role it played.
-- One detail table per kind of run records what that kind of run records.
-- An ORE import is one run.
+The story closes on the tasks it finished:
+
+- Scaffold story: Trace a process run and the trade groups it creates.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2E3F0B24-2449-4E4D-9D59-1D49A49ABC2D][Scaffold story: Trace a process run and the trade groups it creates]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:703C2FB3-F211-46F7-925D-4B2DA4C9E35A][Add the process run record]] | BACKLOG | | | Seed the process enumeration and add the run table with its identity, its process and its state machine. |
-| [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] | BACKLOG | | | Add the trade group a run creates and the membership that names each trade it read or wrote and the role it played. |
-| [[id:610BCC5C-073D-4FF0-86D3-0EAA4727306A][Add the run detail tables]] | BACKLOG | | | Add one detail table per kind of run, keyed by the run, for the facts that kind records. |
-| [[id:6165BF44-FAB9-4B94-B9FA-71292E0853AC][Record an ORE import as one run]] | BACKLOG | | | Make an ORE import one run, with every imported trade in its group and an import detail row keyed by the run. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 1 done tasks. The 4 open tasks and the original acceptance moved to [[id:A01A9EC4-4436-4A15-BBF7-FF46BD62443A][Trace a process run and the trade groups it creates — the remaining work]] in the product backlog inbox.
 ** The run is modelled against a client process, not in the abstract
 
 Taken 2026-10-08 with the owner. A process run exists so that a process

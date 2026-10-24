@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-24
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,31 +21,34 @@ One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Four of five tasks are done.           |
+| Now           | Nothing.           |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the last task.                  |
+| Next          | Nothing.                  |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- The NPV report of ACME Corporation HK Ltd completes on its 8 synthetic bonds.
-- Each issue met is recorded with its symptom, cause and state: fixed, open or handed on.
-- Each fix has a test or a re-run that proves it.
+The story closes on the tasks it finished:
+
+- Record the issues of an end to end run.
+- Export market data without a query per series.
+- Name a slow statement in the service log.
+- Carry the bulk observation reads in the models.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B418C38D-D16B-4256-9B13-01EEA59A2A28][Record the issues of an end to end run]] | DONE | | 2026-10-21 | The log of every issue met while one report ran from the trigger to a completed instance: symptom, cause, state and fix. |
-| [[id:9A64C459-EF1D-47B4-B526-73AA6753FEEB][Show a report run in the grid]] | BACKLOG | | | The grid views must show the jobs a report run sends to the grid, to every account that may watch it. |
 | [[id:FC1CEA57-FD12-4ACA-B9FD-9FCE4E4B136A][Export market data without a query per series]] | DONE | | 2026-10-23 | The market data export read each series with its own statements, so a tenant with 306 series needed 38 seconds and the report run timed out at 30. Read the tenant in two statements and log each phase. |
 | [[id:1FC5ADBC-D550-4111-B736-26A2BDD689E5][Name a slow statement in the service log]] | DONE | | 2026-10-23 | A slow statement hid inside the total of a request. The database executors now log the statement's duration, with the connect, session and statement parts, as a warning from 250 ms. |
 | [[id:887E639C-1733-4FD1-937A-D5D8DF0476CD][Carry the bulk observation reads in the models]] | DONE | | 2026-10-23 | Commit b06ddccb2f hand-edited generated marketdata files, so the component drift gate fails on main. Move the bulk reads and the export handler into their models and regenerate. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 4 done tasks. The 1 open tasks and the original acceptance moved to [[id:C2F8D1F0-335E-4AE0-BDD7-2FCECB2C769E][Run a report end to end on a synthetic bond population — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

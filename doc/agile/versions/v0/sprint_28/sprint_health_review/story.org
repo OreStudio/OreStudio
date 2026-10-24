@@ -51,10 +51,14 @@ A System 2 review of sprint 28 at its close. Each review measures the dimensions
   it: only sprints 20 and 21 carry a =timeline/= directory.
 - The three finished stories the audit named are closed. The fourth is rejected
   because its only task writes the story rather than building its acceptance.
-- The 25 open tasks whose pull requests all merged are left to their owners. A
-  merged PR does not prove a task is finished.
+- Of the 25 open tasks whose pull requests all merged, the 8 with a written
+  =* Result= are closed DONE. The other 17 move to the inbox with their stories,
+  because a merged PR does not prove a task is finished.
+- At the owner's request the review also closes the sprint's stories. Each story
+  with done and open tasks splits into a closed story and an inbox story. Each
+  story with no done task moves whole to the inbox.
 
 * Out of scope
 
-- Closing or splitting the ten sprawling stories. Their owners apply the split
-  test before the next sprint opens.
+- The 51 DONE tasks with no PR recorded.
+- Triage of the stories now in the product backlog inbox.

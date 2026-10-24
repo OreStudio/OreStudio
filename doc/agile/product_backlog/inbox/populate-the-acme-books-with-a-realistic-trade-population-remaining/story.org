@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D
+:END:
+#+title: Story: Populate the ACME books with a realistic trade population — the remaining work
+#+description: ACME's books hold no trades, so a report package is structurally valid and substantively empty. Populate them from a synthetic generator in present time, referencing ACME's own books, counterparties and staff, starting with bonds and extending to every instrument.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+The investigation this story commissioned is
+[[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME with a trade population]]. It is the record of what was measured and which mechanism was chosen. It is a snapshot, not a description of the system.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]], which closed in sprint 28 with its done tasks. |
+| Waiting on    | Nothing. |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | BACKLOG | | | Repeat the pattern for the remaining families, each landing with its own acceptance rather than a general claim of coverage. Order the work from the ORE generator's coverage list and the shipped sample corpus. |
+| [[id:367745B6-DC78-4400-B010-257A3F35236E][Create the intraday reports every ACME entity needs]] | BACKLOG | | | ACME's reports are end of day. Every ACME entity needs intraday reports as well. Begin by reading the report documentation to establish which intraday reports are required and for which entity, then build them. A report that runs intraday values at the present moment rather than at the previous close, so it also decides what the market data must supply during the day. |
+| [[id:D4A62343-5E5B-46B6-84F5-51F008FC4A11][Record where a trade came from]] | BACKLOG | | | Every trade states an immutable origin from a lookup and an origin reference, so reports and rollbacks can separate manual, API, ORE import and synthetic trades. |
+| [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
+| [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
+| [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Define the synthetic planner extension point]] | BACKLOG | | | Split synthetic generation into one planner for each asset class and one shared writer, so a new asset class adds a planner and nothing else. |
+
+* Decisions
+
+- Split from [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

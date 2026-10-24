@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:data-model:data-oriented:instrument:credit:refactor:sprint_28:v0:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-24
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,29 +24,28 @@ and fx variants are not touched here; other environments own them.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-17                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- No credit payload carries a std::variant field; the credit carrier holds one typed array per concrete fact type, joined by key.
-- credit_fact_variant.hpp is deleted and no consumer references it.
-- The ORE import and export round trip and the credit suites pass unchanged.
-- The rates, equity and fx variants are untouched by this work.
+The story closes on the tasks it finished:
+
+- Implement Replace the instrument variants with typed arrays.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B4CC636C-FF97-422A-991E-47CAB36A8F99][Scaffold story: Replace the instrument variants with typed arrays]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:4B474F5E-8F38-488E-AD62-806C4CA167C6][Implement Replace the instrument variants with typed arrays]] | DONE | | 2026-10-17 | Initial task for: Replace the instrument variants with typed arrays |
 
 * Decisions
 
+- Closed at sprint 28 close with its 1 done tasks. The 1 open tasks and the original acceptance moved to [[id:A9DA8BAC-D62D-4AC1-921F-B9A41FBD164B][Replace the credit fact variant with typed arrays — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

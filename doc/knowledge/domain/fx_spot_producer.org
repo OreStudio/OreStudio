@@ -48,6 +48,11 @@ The sleep is taken in slices of one hundred milliseconds rather than in one
 block, so a =stop()= arriving during a long period is seen promptly and the
 join does not wait out the period.
 
+The clock lives in =ores.analytics.quant= and takes its gaps from an arrival
+process. A periodic one gives the equal period described here. A Poisson or
+Hawkes one gives random and bursty gaps. See
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]].
+
 =stop_flag_= is deliberately not reset at the top of =start()=. A =stop()=
 that lands between the thread spawn and the first loop test would otherwise
 be clobbered, and the loop and its join would never finish.
@@ -97,6 +102,7 @@ seed a running feed used.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], which this feed reads.
 - [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one child row per weighted Gaussian.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the process this feed steps.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]], which replaces the fixed period of the tick clock with an arrival process.
 - [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]], the contract this generator's adapter shares with a live adapter.
 - [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]], the subject the adapter publishes on.
 - [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]], where =fx_spot_generator_kind= selects this builder.

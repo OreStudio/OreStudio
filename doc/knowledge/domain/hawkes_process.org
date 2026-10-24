@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: D72B9899-C7EC-4F27-BE17-89AE6FC18A7A
+:END:
+#+title: Hawkes Process
+#+description: The self-exciting point process — each event raises the rate of further events for a while — its exponential-kernel form, the branching ratio that decides stability, and two exact ways to simulate it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:hawkes:ore:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+A *Hawkes process* is a [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][point process]]
+in which every event raises the rate of further events, and the raise fades
+with time. A burst of events therefore breeds more events, and a quiet spell
+stays quiet until something starts it. Real tick streams behave like this. A
+[[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson process]] cannot reproduce
+it, because a Poisson process forgets every event at once. Hawkes (1971)
+introduced the process. Bacry, Mastromatteo and Muzy (2015) review its use in
+finance. This note covers the univariate process with an exponential kernel:
+one stream of events, one fading memory.
+
+* Layperson's mental model
+
+Think of a room where people talk. When the room is silent, someone speaks now
+and then, at a low steady rate. Each remark prompts replies, and each reply
+prompts more, so a remark can start a conversation. The conversation dies away
+when the replies stop coming. The low steady rate is the *baseline* $\mu$.
+How many replies one remark brings is the *branching ratio* $n$. How fast
+the prompting fades is the *decay* $\beta$.
+
+#+begin_src cpp
+// the rate just before the next event, a gap after the last one
+double rate = baseline + (rate_after_last_event - baseline) * std::exp(-decay * gap);
+// the rate jumps by alpha at each event
+rate += alpha;
+#+end_src
+
+* Detail
+
+** The intensity
+
+With event times $t_1 < t_2 < \dots$ the
+[[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][conditional intensity]] is
+
+\begin{equation}
+\lambda(t) = \mu + \sum_{t_k < t} \phi(t - t_k), \qquad
+\phi(x) = \alpha\, e^{-\beta x}
+\end{equation}
+
+$\mu > 0$ is the baseline rate. The *kernel* $\phi$ is the extra rate that an
+event adds, $x$ time units later. With the exponential kernel the jump at an
+event is $\alpha$ and the decay is $\beta$.
+
+** The branching ratio and stability
+
+The kernel integrates to the *branching ratio*
+
+\begin{equation}
+n = \int_0^\infty \phi(x)\,dx = \frac{\alpha}{\beta}
+\end{equation}
+
+$n$ is the mean number of events that one event causes directly. The process
+is stable, with a finite long-run rate, only when $n < 1$. For $n \ge 1$ the
+count grows without bound, as a family tree that never dies out. For $n < 1$:
+
+- The long-run mean rate is $\bar\lambda = \mu / (1 - n)$.
+- The long-window Fano factor, the variance of the count over its mean, is
+  $1/(1-n)^2$. At $n = 0$ it is one, the Poisson value. At $n = 0.8$ it is 25.
+- The mean number of events in the family that one outside event starts is
+  $1/(1-n)$.
+
+Filimonov and Sornette (2012) call $n$ the *endogeneity* or *reflexivity*
+ratio: the share of events that earlier events caused rather than outside news.
+They fit E-mini S&P 500 futures from 1998 to 2010 and report that the share of
+price changes that outside news caused fell from about 70% in 1998 to under 30%
+after 2007, so the endogenous share rose to about 70% or more. Hardiman, Bercot and Bouchaud (2013) argue
+that a kernel with a power-law tail gives an $n$ close to one.
+
+** The cluster view
+
+Hawkes and Oakes (1974) showed that the process is a family tree. Outside
+events, called *immigrants*, arrive as a [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson process]] of rate
+$\mu$. Each event, an immigrant or not, has a Poisson number of children with
+mean $n$, and each child comes after its parent by a gap drawn from the
+kernel scaled to a density, which is $\text{Exp}(\beta)$ here. The cluster view
+gives the three results above and it is the plain way to explain the process to
+a reader who has not met intensities.
+
+** A different parametrisation
+
+The triple $(\mu, \alpha, \beta)$ is the usual one, and the control panel of the
+approach note names it. It mixes a rate that a person can measure with two
+that are hard to feel. The triple $(\bar\lambda, n, \beta)$ is easier to set:
+
+\begin{equation}
+\mu = \bar\lambda\,(1 - n), \qquad \alpha = n\,\beta
+\end{equation}
+
+$\bar\lambda$ is the long-run rate, which the person already knows from a
+ticks-per-hour setting. $n$ is how clustered the stream is, from 0 to just under
+1. $1/\beta$ is how long a burst lasts. Changing $n$ then changes the clustering
+and leaves the load unchanged.
+
+** The memory is one number
+
+With the exponential kernel the whole history reduces to the current
+intensity. Between events, $\lambda(t) - \mu$ decays by $e^{-\beta\,\Delta}$ over
+a gap $\Delta$, and each event adds $\alpha$. So the intensity, and nothing
+else, is the state of the process, and it is a
+[[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov]] process in that state. A
+simulator keeps one number and never reads back the list of events. Other
+kernels, such as the power law, lack this property and cost more for each event.
+
+** Two exact ways to simulate
+
+*Thinning* (Ogata 1981), the general method, works for any kernel. Between
+events, the exponential-kernel intensity only falls, so its value just after
+the last event bounds it. Draw a candidate gap from an exponential law at that
+bound. Read the true intensity there. Keep the candidate with probability
+true over bound, otherwise move on from the candidate with the lower bound.
+Rejected candidates cost a draw each and carry no event.
+
+*Direct inversion* (Dassios and Zhao 2013) needs no rejection for the
+exponential kernel. The next event is the earlier of two competing arrivals: a
+baseline arrival and an arrival from the fading excess. Let $\lambda^+$ be the
+intensity just after the last event.
+
+1. Draw the baseline gap $S_1 = -\ln(U_1)/\mu$.
+2. Compute $D = 1 + \beta\,\ln(U_2) / (\lambda^+ - \mu)$.
+3. If $D > 0$, the excess gap is $S_2 = -\ln(D)/\beta$. If $D \le 0$ the excess
+   never produces an event, and $S_2$ is infinite.
+4. The gap is $\min(S_1, S_2)$.
+5. The new $\lambda^+$ is $\mu + (\lambda^+ - \mu)\,e^{-\beta\,\text{gap}} +
+   \alpha$.
+
+Both methods draw from the same law. Direct inversion draws two uniforms for
+each event, always. It does not extend to a power-law kernel, and thinning does.
+
+** Checking a simulated stream
+
+Two checks need no data. The mean rate over a long run should be
+$\mu/(1-n)$, and the Fano factor of counts over a window much longer than
+$1/\beta$ should be $1/(1-n)^2$. A sharper check is the time-rescaling test of
+the point process note: the rescaled gaps must follow $\text{Exp}(1)$.
+
+** The multivariate form
+
+A Hawkes process can have many streams, each one exciting the others through
+a matrix of kernels. That models, for example, a trade tick that excites a quote
+tick, or one currency pair that excites another. This note, and the
+implementation in ORE Studio, treat one stream. The reason is in
+[[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]].
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
+- [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]] — the intensity, the compensator and the time-rescaling test.
+- [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] — the case $n = 0$.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — the same clustering seen in the size of price moves, where this note sees it in the timing of events.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the intensity is the Markov state.
+- [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the library whose ideas this implementation follows, and where they differ.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] — how a feed uses the process as its clock.
+
+** Further reading
+
+- Hawkes, A. G. (1971). "Spectra of some self-exciting and mutually exciting
+  point processes." /Biometrika/, 58(1), 83-90. The original paper.
+- Hawkes, A. G., & Oakes, D. (1974). "A cluster process representation of a
+  self-exciting process." /Journal of Applied Probability/, 11(3), 493-503.
+- Ogata, Y. (1981). "On Lewis' simulation method for point processes." /IEEE
+  Transactions on Information Theory/, 27(1), 23-31.
+- Dassios, A., & Zhao, H. (2013). "Exact simulation of Hawkes process with
+  exponentially decaying intensity." /Electronic Communications in
+  Probability/, 18(62), 1-13. doi:10.1214/ECP.v18-2717.
+- Filimonov, V., & Sornette, D. (2012). "Quantifying reflexivity in financial
+  markets: Toward a prediction of flash crashes." /Physical Review E/, 85(5),
+  056108. doi:10.1103/PhysRevE.85.056108. arXiv:1201.3572.
+- Hardiman, S. J., Bercot, N., & Bouchaud, J.-P. (2013). "Critical reflexivity
+  in financial markets: a Hawkes process analysis." /European Physical Journal
+  B/ (2013). doi:10.1140/epjb/e2013-40107-3. arXiv:1302.1405. Fits the
+  E-mini S&P 500 future and finds a kernel that integrates to about one in
+  every period from 1998 to 2011.
+- Bacry, E., Mastromatteo, I., & Muzy, J.-F. (2015). "Hawkes processes in
+  finance." /Market Microstructure and Liquidity/, 1(1), 1550005.
+  doi:10.1142/S2382626615500057. arXiv:1502.04592.
+- Bacry, E., Bompaire, M., Gaïffas, S., & Poulsen, S. (2017). "tick: a Python
+  library for statistical learning, with a particular emphasis on
+  time-dependent modelling." arXiv:1707.03003. The journal version, with Philip
+  Deegan as a fifth author and the title "tick: a Python Library for
+  Statistical Learning, with an emphasis on Hawkes Processes and Time-Dependent
+  Models", is /Journal of Machine Learning Research/ 18(214), 1-5 (2018).
+- Wikipedia: [[https://en.wikipedia.org/wiki/Hawkes_process][Hawkes process]].

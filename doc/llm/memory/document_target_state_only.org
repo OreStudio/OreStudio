@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 68AFCBB6-0E0B-4F5A-B737-CBD4073A3E10
+:END:
+#+title: Document the target state only
+#+description: Knowledge notes describe the target state, never legacy or history.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+Knowledge notes describe the target state of the system. They do not describe legacy or historical code, what changed, or what a task will move or add.
+
+*Why:* The owner corrected notes that said a class moves, gains a method or keeps today's behaviour. A note that narrates change goes stale the day the change lands.
+
+*How to apply:* When a note covers code that does not exist yet, write it as if the code exists. Put the history and the plan in the story and task notes, not in the knowledge note.

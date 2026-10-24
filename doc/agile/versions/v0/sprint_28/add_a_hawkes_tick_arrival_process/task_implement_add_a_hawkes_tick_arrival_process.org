@@ -1,0 +1,320 @@
+:PROPERTIES:
+:ID: D02DB9B0-C62A-4DDA-B64E-2A720BC324B4
+:END:
+#+title: Task: Analyse the tick Hawkes simulation and the cost of the port
+#+description: Initial task for: Add a Hawkes tick arrival process to analytics.quant
+#+type: task
+#+level: s1
+#+filetags: :add_a_hawkes_tick_arrival_process:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-add-a-hawkes-tick-arrival-process
+#+pr: 3705
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Know what the tick library does, what the port into ores.analytics.quant needs, and where the process fits in the generator design, before any code changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
+| Now          | Nothing. |
+| Waiting on   | The owner's choices in the Result.     |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
+
+* Acceptance
+
+- The analysis names each tick source file the port needs, its dependencies and its licence terms.
+- The analysis says where an arrival process fits beside the value processes of the generator library.
+- The analysis gives the port size and the risks, and the owner chooses the interface.
+- The attribution to the tick developers is settled before any ported code lands.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+This task changes no code. It reads the tick library, reads how ORE Studio
+documents and builds stochastic processes, and states what the port costs.
+
+1. Read the tick Hawkes simulation: the algorithm, the kernels, the baselines
+   and the dependencies each one pulls in.
+2. Read the generator library and the stochastic process notes: the interface,
+   the factory and the hub note.
+3. Place the new process in the documents and in the code.
+4. State the port size, the risks, the attribution terms and the choices the
+   owner must make.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Lines in the tick Hawkes simulation, its kernels, baselines and the Rand class (.cpp and .h) | 2,858 | =wc -l= on =lib/cpp/hawkes/simulation/**=, =lib/include/tick/hawkes/simulation/**=, =lib/cpp/random/rand.cpp=, =lib/include/tick/random/rand.h= in =/home/marco/Vault/Development/tick= | tick =a40d19f868= |
+| Lines the minimum port reads: point process, Hawkes, kernel base, exponential kernel, constant baseline, Rand | about 1,860 | the same =wc -l=, on those six pairs of files | tick =a40d19f868= |
+| Lines of tick base and array headers the simulation includes | 7,466 | =wc -l include/tick/base/*.h include/tick/array/*.h include/tick/base/*/*.h= | tick =a40d19f868= |
+| Authors of the simulation files in the tick history | Philip Deegan (6 commits), Martin Bompaire, Claudio Bellani | =git log --format=%an -- lib/cpp/hawkes/simulation lib/include/tick/hawkes/simulation= | tick =a40d19f868= |
+| Licence of tick | BSD 3-clause, "Copyright (c) 2015-2018, the tick developers" | =LICENSE.txt= | tick =a40d19f868= |
+| Process classes in =ores.analytics.quant= today | 13 value processes, 0 arrival processes | =ls projects/ores.analytics/quant/src/service/processes= | ORE Studio =8e34df3ba4= |
+| Members of =IStochasticProcess= | 2 (=next()= returns a price, =current()=) | =i_stochastic_process.hpp= | ORE Studio =8e34df3ba4= |
+
+* Notes
+
+** What tick does
+
+tick is a Python library with a C++ core, by researchers at CMAP, École
+Polytechnique (Bacry, Gaïffas, Bompaire, Poulsen and others). The part this
+story reads is =lib/cpp/hawkes/simulation=. The Python wrappers add checks
+and multi-run helpers and are not needed.
+
+A Hawkes process is a point process whose rate rises after each event and then
+decays. For node $i$ the rate is
+
+\begin{equation}
+\lambda_i(t) = \mu_i(t) + \sum_j \sum_{t^j_k < t} \phi_{ij}(t - t^j_k)
+\end{equation}
+
+with a baseline $\mu_i$ and a kernel $\phi_{ij}$ for each pair of nodes.
+
+The simulator (=PP::simulate= in =simu_point_process.cpp=) is Ogata's thinning.
+
+1. Sum a bound on the future total rate. For a kernel that only falls between
+   events, the current rate is itself the bound.
+2. Draw the wait to the next candidate from an exponential law at that bound.
+3. Move the clock, and read the true rate of each node.
+4. Pick node $i$ with probability $\lambda_i$ over the bound. If the draw
+   falls past the last node, discard the candidate and go back to 1.
+5. Otherwise record the event time on node $i$ and add its kernel to the rates.
+
+An exponential kernel keeps one running sum that decays by $e^{-\beta\,\Delta t}$
+between events. Each event then costs O(1) for each kernel, so a one-node
+process costs O(1) an event and a $d$-node process costs $O(d^2)$.
+
+** The tick parameter names
+
+=HawkesKernelExp(intensity, decay)= is
+$\phi(x) = \text{intensity} \cdot \text{decay} \cdot e^{-\text{decay}\,x}$.
+So tick's =intensity= is the branching ratio $n = \alpha / \beta$, and the
+usual $\alpha$ is =intensity * decay=. The generation note names $\mu$, $\alpha$
+and $\beta$. The port must state this conversion in one place, or users will
+read =intensity= as $\alpha$ and run a process nine times too hot or too cold.
+The process is stable only when the spectral radius of the branching matrix is
+below one. tick does not check this.
+
+** What the port needs from tick
+
+| tick file | Lines (.cpp + .h) | Needed? |
+|-----------+-------------------+---------|
+| =simu_point_process= | 641 | Yes, the algorithm. Not as a class: it carries the intensity track and compensator tracks the story does not need. |
+| =simu_hawkes= | 306 | Yes, the intensity update. |
+| =hawkes_kernel= (base) | 259 | Yes, in a reduced form. |
+| =hawkes_kernel_exp= | 333 | Yes. |
+| =hawkes_kernel_sum_exp= | 398 | Probably. It is the common way to fit two time scales. |
+| =hawkes_baselines/constant_baseline= | 68 | Yes. |
+| =hawkes_baselines/timefunction_baseline= and =base/time_func= | 83 and more | For an intraday profile only. |
+| =hawkes_kernel_power_law=, =_time_func=, =_0= | 261 | Not for the first cut. |
+| =simu_poisson_process=, =simu_inhomogeneous_poisson= | 217 | The Poisson clock is a separate, simpler item. |
+| =random/rand= | 253 | No. It wraps =std::mt19937_64=. We use =<random>= as the other processes do. |
+| =tick/array=, =tick/base=, cereal, =DLL_PUBLIC=, =TICK_ERROR=, Python guards | 7,466 lines of headers | No. This is the cost of a verbatim copy, and it is the reason not to copy. |
+
+** Where the process fits in the documents
+
+The Stochastic Processes hub lists value processes only: a price that wanders
+and a rate that reverts. Each atomic note there states a process that returns a
+level. A Hawkes process returns /times/. It is a third family, point processes.
+
+The note "Synthetic market data generation: approach" already names it. Its
+tick clock table lists four modes for the time between ticks: Fixed, Poisson,
+Regime-switching and Hawkes, with $\mu$, $\alpha$ and $\beta$ as the Hawkes
+parameters, and the control panel section repeats them. So the note planned a
+tick clock, and the code has none. Every feed today ticks on a fixed timer.
+
+The new notes and edits follow from that:
+
+- A new atomic note, "Hawkes Process", in =doc/knowledge/domain=. It follows the
+  shape of the Ornstein-Uhlenbeck note: summary, a layperson's model, the
+  intensity equation, the simulation, the parameter table and the stability
+  condition.
+- A new section in the hub, "Point processes (arrival times)". The hub's
+  summary says "six concrete processes" and "two families". Both counts change.
+- A new section in "The generator library" for the third interface and the
+  third factory entry.
+- An entry in "ores.analytics.quant" component overview under Inputs, Outputs
+  and Entry points.
+- A new external note, =doc/knowledge/external/tick.org=, in the shape of the
+  =quantlib= and =open_source_risk_engine= notes: what tick is, the version we
+  read, the licence, the paper, and which ORE Studio files derive from it.
+
+** Where the process fits in the code
+
+=IStochasticProcess= has =next()= return the new price. A Hawkes process cannot
+be that class without changing what =next()= means. Two choices:
+
+- *A new interface, =ITickClock=.* =next()= returns the time of the next tick,
+  or the wait to it. The factory gets a third entry, =make_tick_clock=, beside
+  =make_process= and =make_yield_curve_process=. A feed owns one value process and
+  one clock. Fixed and Poisson clocks join it with no change to the interface.
+  This is the recommendation.
+- *A new method on the existing interface.* It mixes two jobs in one class and
+  makes every value process carry a clock it does not use.
+
+The component keeps its rule of no database, no messaging and no logging, so
+the clock takes plain parameters and a seed, like the other processes.
+
+** Risks
+
+1. *Attribution.* See the next section. It must be done before code lands.
+2. *No bit-for-bit match with tick.* tick draws from =std::mt19937_64= through
+   its own =Rand=. We use =std::mt19937= with a 32-bit seed. A port will not
+   reproduce tick's numbers for one seed. The tests check the law instead:
+   the mean rate is $\mu / (1 - n)$, the count variance exceeds the Poisson
+   variance when $n > 0$, and the compensator residuals are exponential (the
+   time-rescaling check; tick has =evaluate_compensator= for this).
+3. *Explosive parameters.* With $n \ge 1$ the count grows without bound. The
+   validation in =process_parameter_validation= must reject it, and the clock
+   needs a cap on events for each request as a second guard.
+4. *Time units.* The value processes take =dt= as a year fraction. Hawkes
+   parameters are per second in the approach note. One convention must hold.
+5. *Known rough edges in tick.* The simulator tests =time == 0= to decide to
+   initialise, so a reset at time zero re-initialises. Its own comment warns that
+   stopping at a number of points biases the result. A kernel throws if asked
+   for an earlier time unless it is rewound. The port should avoid all three.
+6. *Scope growth.* Multivariate nodes, marks and cross-excitation are easy to
+   add and hard to justify without a consumer.
+
+** Attribution
+
+The owner decided on 2026-10-23 that the port copies no tick source. The code
+is a new implementation of tick's ideas in the style of =ores.analytics.quant=,
+so the ORE Studio licence applies and tick's BSD 3-clause notice does not
+travel. Each source file carries a comment that says it is inspired by tick and
+points at the [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] note, which
+lists the ideas we take and every difference. The paper is cited in the Hawkes
+note. If a later change copies tick source, the BSD terms apply to that part.
+
+** Port size
+
+Two ways to port:
+
+- *Copy tick's classes.* About 2,900 lines of simulation code plus the array and
+  base headers they include, serialisation through cereal, and a rewrite of the
+  export macros and errors. The result is large, hard to read beside the other
+  processes, and carries code the story does not use. Not recommended.
+- *Re-implement the algorithm.* Keep Ogata's thinning, the exponential and
+  sum-of-exponentials kernels, the constant baseline and tick's parameter
+  names. Use =<random>=, =std::vector= and the exception style of the other
+  processes. Estimate: one header and one source of about 250 lines for a
+  one-node clock, about 400 if the multivariate form is in, and a test file of
+  about 200 lines. The work is small. The attribution and the interface choice
+  take more thought than the code does. Recommended.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3705][#3705]] | [doc] Design the tick arrival process and document point processes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The port is small and the code is not the hard part.
+
+1. *Size.* A re-implementation of the algorithm is one header and one source of
+   about 250 lines, and about 200 lines of tests. A copy of tick's classes is
+   not worth its cost.
+2. *Fit.* The process is an arrival process and does not fit
+   =IStochasticProcess=. The approach note already plans it as a tick clock.
+   It needs a new interface and a new factory entry beside the value processes.
+3. *Documents.* One new atomic note, one new external note, and edits to the
+   hub, the generator library note and the component overview.
+4. *Licence.* The owner chose a new implementation of tick's ideas, with no
+   copied source. The ORE Studio licence applies and each file says it is
+   inspired by tick.
+
+Decisions of the owner, 2026-10-23:
+
+1. *Interface.* A new interface, not a method on =IStochasticProcess=. Its name
+   is =i_arrival_process=, in snake_case. The existing =IStochasticProcess=,
+   =IYieldCurveProcess= and =IFeed= are CamelCase and get renamed in their own
+   task.
+2. *Shape.* One stream. No consumer needs cross-excitation.
+3. *Neighbours.* The periodic and Poisson arrival processes come in this story.
+4. *Kernels.* The exponential kernel only. A stream of ticks clusters with one
+   decay, and direct inversion is exact for it. The sum of exponentials is the
+   first extension and needs thinning.
+5. *Licence.* The ORE Studio licence, with the "inspired by tick" comment.
+6. *Units.* Seconds. The existing =tick_clock= sleeps in wall time and its
+   config unit is ticks per hour, so the factory converts once. No template
+   parameter is needed.
+
+What changed in the plan: the story now has three code tasks, to rename the
+interfaces, to implement the arrival processes and to pace a feed by one. The
+documents come first and are done: the point process, Poisson and Hawkes
+notes, the tick arrival note, the tick note, and edits to the hub, the
+generator library, the FX spot producer, the approach note, the market data
+architecture note and the external index.
+
+Second round, 2026-10-24. The owner made three more decisions.
+
+1. *Plug into the clock.* =tick_clock= stays the only clock. It takes its gaps
+   from an =i_arrival_process=. The tick arrival note says so in its first
+   section.
+2. *A regular clock stays.* The fixed timer becomes the
+   =periodic_arrival_process=, so a feed can still be fully non-stochastic.
+   "Steady" was rejected because =steady_clock= and the asio =steady_timer=
+   mean "never goes backwards". "Periodic" is the term for a point process with
+   equal gaps.
+3. *Close the =dt= gap now.* The value process gains =next(elapsed)=, with
+   =elapsed= counted in nominal ticks. The geometric and arithmetic mixtures and
+   the Ornstein-Uhlenbeck process take it. The others throw for an elapsed other
+   than one, and validation refuses a non-periodic mode for them. A fourth
+   task, "Step a value process by the elapsed time", carries this.
+
+Third round, 2026-10-24. The owner decided that all new logic lives in the
+core libraries and that =tick_clock= moves to =ores.analytics.quant=. It has
+only standard library dependencies. The synthetic side keeps the feeds, the
+config columns and the editors, and nothing else.
+
+Findings from the first round:
+
+Two findings changed the design. First, =ores.synthetic.api/feeds/tick_clock.hpp=
+already exists and paces every feed with one fixed period, so the arrival
+process replaces its constant and does not need a second clock. Second, the
+value processes take =dt= once, at construction. A variable gap would need a
+per-step =dt= to be exact for a mean-reverting process. The tick arrival note
+states that gap. The story leaves it open.

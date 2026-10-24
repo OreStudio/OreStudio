@@ -23,6 +23,11 @@ though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 - [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] — the open-source quantitative-finance library ORE
   itself builds on.
 
+* Statistical libraries
+
+- [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the point-process learning library whose Hawkes simulation
+  inspired the tick arrival process.
+
 * File formats and protocols
 
 - [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML

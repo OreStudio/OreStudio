@@ -317,6 +317,11 @@
 # links, and a policy runs with the privileges of the caller.
 - ores_iam_account_parties_
 
+** Select tables
+
+# A view is not a table, so the prefix grants above do not reach it.
+- table=ores_trading_trade_summaries_vw
+
 ** Extra args
 
 - --http-base-url http://localhost:{http_port}

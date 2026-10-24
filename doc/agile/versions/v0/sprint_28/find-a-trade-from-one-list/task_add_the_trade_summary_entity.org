@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED (absorbed by [[id:1B5F994B-274F-48BB-A41B-6B52917CC6B2][Read the trade list rows]]) |
 | Parent story | [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

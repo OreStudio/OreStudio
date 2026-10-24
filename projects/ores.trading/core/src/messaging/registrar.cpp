@@ -116,6 +116,7 @@
 #include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
+#include "ores.trading.core/messaging/trade_summary_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
 #include <memory>
 
@@ -207,6 +208,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_identifier_handlers(nats, ctx, verifier));
     append(register_trade_party_role_handlers(nats, ctx, verifier));
     append(register_trade_state_handlers(nats, ctx, verifier));
+    append(register_trade_summary_handlers(nats, ctx, verifier));
 
     auto& hist_registry = history_registry();
     register_activity_category_history_provider(hist_registry);

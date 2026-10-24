@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A0B50FB0-A546-4A02-B25D-D3C5C0C78238
+:END:
+#+title: Narrow the inbox raise to one security-definer function
+#+description: Gated services write five inbox tables to raise a request. Give them EXECUTE on one inbox function instead, so the inbox owns the write rules and the grant surface shrinks. The call still runs in the caller's transaction, so the request and the held change still commit together. Refdata and trading both use the wide grants today (service_registry.org). Found while checking whether the trading raise crosses an owner.
+#+type: capture
+#+level: cross
+#+filetags: :capture:inbox:refdata:trading:sprint_28:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

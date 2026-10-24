@@ -120,6 +120,15 @@ model states how the parent is seeded.
 :rls_tenant_isolation: true
 :END:
 
+** Indexes
+
+| name  | columns             | unique | current_only | where_extra |
+|-------+---------------------+--------+--------------+-------------|
+| trade | tenant_id, trade_id | false  | true         |             |
+
+The trade list reads the newest request of each trade, so the lookup goes by
+trade and not by request.
+
 * C++
 
 ** Flags

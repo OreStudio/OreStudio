@@ -1475,6 +1475,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_authorisation_requests:read',         'View trade authorisation requests');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_authorisation_requests:write',        'Create and modify trade authorisation requests');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_authorisation_requests:delete',       'Delete trade authorisation requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_summaries:read',                       'View the trade summary');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_additional_fields:read',               'View trade additional fields');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_additional_fields:write',              'Create and modify trade additional fields');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_additional_fields:delete',             'Delete trade additional fields');

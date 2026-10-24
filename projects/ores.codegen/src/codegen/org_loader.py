@@ -1574,6 +1574,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 }
                 for r in _parse_org_table_rows(pins_section) if r.get("name")
             ]
+        # A read-model entity has a view in place of a table: the model states
+        # the select the view is created from.
+        view_section = _section(sql_section, "View")
+        if view_section and "select" in view_section.src_blocks:
+            de.setdefault("sql", {})["view_select"] = (
+                view_section.src_blocks["select"].strip().rstrip(";"))
         indexes_section = _section(sql_section, "Indexes")
         if indexes_section and indexes_section.tables:
             rows = _parse_org_table_rows(indexes_section)

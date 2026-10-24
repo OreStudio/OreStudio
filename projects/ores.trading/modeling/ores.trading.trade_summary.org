@@ -1,0 +1,330 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: 60BD8367-892A-4521-8B25-25B9C722D32F
+:END:
+#+title: ores.trading.trade_summary
+#+description: Codegen entity model for the trade summary read model: one row for each trade or structure, read through a view.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One row for each trade or structure, with its book, state, counterparty, authorisation status and identifiers.
+#+entity_singular: trade_summary
+#+entity_plural: trade_summaries
+#+entity_title: Trade Summary
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+The read model under the trade list. A row holds a trade with its book, its
+current state, its booking, its counterparty, its instrument type and its
+authorisation status, and every identifier of the trade as one search text.
+The service pages, sorts and filters, so the client does no joining.
+
+The row reads the current state of every part. It offers no =as_of=: a view
+cannot take the instant, and the trade list does not need it yet.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:profile:       read-model
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:primary_key: true
+:END:
+
+The trade or the structure this row stands for.
+
+** row_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:filterable: true
+:sortable: true
+:END:
+
+Whether the row is a =trade= or a =structure=.
+
+#+begin_src cpp :name generator
+std::string("trade")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The legal entity that owns the trade or the structure.
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:filterable: true
+:END:
+
+The party the firm faces. Absent only on an intra-entity trade.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** book_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:filterable: true
+:END:
+
+The book the trade sits in. A structure row has none.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** instrument_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:filterable: true
+:sortable: true
+:END:
+
+The trade type code of a trade, or the kind of a structure.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:filterable: true
+:sortable: true
+:END:
+
+The state of the trade in the trade status machine. A structure row has none.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** authorisation_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:filterable: true
+:sortable: true
+:END:
+
+Where Operations stands on the trade: the state of its authorisation request, =not_requested= when a live actual trade has no request yet, or =not_required= for a test trade.
+
+#+begin_src cpp :name generator
+std::string("not_required")
+#+end_src
+
+** trade_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:filterable: true
+:sortable: true
+:END:
+
+The date the trade was agreed. Absent when the source does not state it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** trade_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The number of trades the row stands for: one for a trade, the member count for a structure.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** search_text
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:searchable: true
+:END:
+
+Every identifier of the trade as one text, which the list searches.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_summaries_vw
+:END:
+
+** View
+
+The select the view is created from. A trade row reads the current row of each
+part. The authorisation status comes from the newest request that details the
+trade and from the state of that request in the inbox.
+
+A structure row has its own party, counterparty and kind. It has no book, state,
+date or authorisation status, so a filter on one of those columns leaves it out.
+Its search text holds the identifiers of its member trades, so a search finds a
+structure through any of its trades.
+
+#+begin_src sql :name select
+select
+    t.tenant_id,
+    t.id,
+    'trade'::text as row_kind,
+    t.party_id,
+    t.counterparty_id,
+    b.book_id,
+    t.trade_type as instrument_type,
+    ores_trading_status_name_fn(ts.status_id) as status,
+    case
+        when ar.state_code is not null then ar.state_code
+        when t.booking_nature = 'actual' then 'not_requested'
+        else 'not_required'
+    end as authorisation_status,
+    b.trade_date,
+    1 as trade_count,
+    t.id::text || ' ' || coalesce(ids.id_values, '') as search_text
+from ores_trading_trades_tbl t
+left join ores_trading_trade_bookings_tbl b
+  on b.tenant_id = t.tenant_id
+ and b.trade_id = t.id
+ and b.valid_to = ores_utility_infinity_timestamp_fn()
+left join ores_trading_trade_states_tbl ts
+  on ts.tenant_id = t.tenant_id
+ and ts.trade_id = t.id
+ and ts.valid_to = ores_utility_infinity_timestamp_fn()
+left join lateral (
+    select r.state_code
+    from ores_trading_trade_authorisation_requests_tbl a
+    join ores_inbox_approval_requests_tbl r
+      on r.tenant_id = a.tenant_id
+     and r.id = a.request_id
+     and r.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.tenant_id = t.tenant_id
+      and a.trade_id = t.id
+      and a.valid_to = ores_utility_infinity_timestamp_fn()
+    order by a.trade_version desc
+    limit 1
+) ar on true
+left join lateral (
+    select string_agg(i.id_value, ' ' order by i.id_type) as id_values
+    from ores_trading_trade_identifiers_tbl i
+    where i.tenant_id = t.tenant_id
+      and i.trade_id = t.id
+      and i.valid_to = ores_utility_infinity_timestamp_fn()
+) ids on true
+where t.valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select
+    s.tenant_id,
+    s.id,
+    'structure'::text as row_kind,
+    s.party_id,
+    s.counterparty_id,
+    null::uuid as book_id,
+    s.kind as instrument_type,
+    null::text as status,
+    'not_applicable'::text as authorisation_status,
+    null::date as trade_date,
+    coalesce(m.member_count, 0)::integer as trade_count,
+    s.id::text || ' ' || coalesce(m.id_values, '') as search_text
+from ores_trading_structures_tbl s
+left join lateral (
+    select
+        count(distinct sm.trade_id) as member_count,
+        string_agg(i.id_value, ' ' order by i.id_type) as id_values
+    from ores_trading_structure_members_tbl sm
+    left join ores_trading_trade_identifiers_tbl i
+      on i.tenant_id = sm.tenant_id
+     and i.trade_id = sm.trade_id
+     and i.valid_to = ores_utility_infinity_timestamp_fn()
+    where sm.tenant_id = s.tenant_id
+      and sm.structure_id = s.id
+      and sm.valid_to = ores_utility_infinity_timestamp_fn()
+) m on true
+where s.valid_to = ores_utility_infinity_timestamp_fn()
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_summary
+:entity_plural_short:   trade_summaries
+:entity_singular_words: trade summary
+:entity_plural_words:   trade summaries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ts
+:END:
+
+** Table display
+
+| column               | header         |
+|----------------------+----------------|
+| id                   | Trade          |
+| row_kind             | Kind           |
+| instrument_type      | Instrument     |
+| status               | Status         |
+| authorisation_status | Authorisation  |
+| trade_date           | Trade Date     |
+| trade_count          | Trades         |
+
+** Custom repository methods
+
+* See also
+
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade blotter]] -- the domain reference this read model serves.

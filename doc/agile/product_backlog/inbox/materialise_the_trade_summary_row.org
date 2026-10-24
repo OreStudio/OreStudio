@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 66157B83-53BD-476E-8F49-2D0EE45921BD
+:END:
+#+title: Materialise the trade summary row for very large lists
+#+description: The trade summary view builds every row for every page, about 37 microseconds a trade. Store the row when a tenant outgrows the view.
+#+type: capture
+#+level: cross
+#+filetags: :trade-blotter:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Store the trade summary row in a table, kept up to date by the booking path or by triggers, when a tenant outgrows the view. The table takes a trigram index on the search text and pages in milliseconds.
+
+* Why
+
+The trade summary is a view. A view cannot push the page limit below the sort, so every page builds every row. At 102,432 trades the page takes about 4 s and an identifier search about 2.7 s, which is about 37 microseconds a trade. The view is fine up to about 20,000 trades for each tenant. A stored row removes the limit, and it costs a table to keep consistent with six sources, a backfill and change events. Take this capture when a tenant holds more than about 20,000 live trades, or when a screen needs a faster page.
+
+* References
+
+- [[id:1B5F994B-274F-48BB-A41B-6B52917CC6B2][Task: Read the trade list rows]], Measurements table.
+
+* See also
+
+-

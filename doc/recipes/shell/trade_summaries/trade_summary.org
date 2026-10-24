@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 32919539-25F3-5114-A247-55F2839102D5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the trade_summaries commands from the shell?
+#+description: Every command the trade_summaries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_summaries:
+
+This file documents the trade_summaries resource at the shell, one section per command. Every command is a subcommand of =trade_summaries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E8F1E241-D825-5F5D-83D1-E983DE38AFB1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_summaries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_summaries.list=.
+
+#+name: trade_summaries-list
+#+begin_src ores-shell :tangle trade_summaries-list.ores :exports none
+trade_summaries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2CFF987F-9D49-5EB1-9E19-E6E0BAE20329
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_summaries get <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_summaries.get=.
+
+#+name: trade_summaries-get
+#+begin_src ores-shell :tangle trade_summaries-get.ores :exports none
+trade_summaries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F22FA627-1CE2-507D-A7F9-A20CFFE0425B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_summaries get-many <id>
+#+end_example
+
+It is addressed at =trading.v1.trade_summaries.get_many=.
+
+#+name: trade_summaries-get-many
+#+begin_src ores-shell :tangle trade_summaries-get-many.ores :exports none
+trade_summaries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+

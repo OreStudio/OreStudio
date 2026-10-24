@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: F859B6F8-85EB-4F2F-8E19-DDFF24A0CEE0
+:END:
+#+title: Profile: Read model
+#+description: Read-only entity over a database view: list and get on the wire, no write verb, no history, no change event, and a view in place of a table.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+A list screen shows one row that joins several tables. A read model answers that
+row with one query that the service pages, sorts and filters. The row has no
+table of its own, so nothing writes it, nothing versions it and nothing
+announces a change to it.
+
+The profile keeps the read-only current-state surface: =list=, =get= and
+=get_many=, with no write verb and no version read. It replaces the table with a
+view. The model states the select in its =* SQL ** View= section, and the
+generated view is =security_invoker=, so the tenant policies of the base tables
+apply to the caller.
+
+* Reference entity
+
+None yet. The first model to bind it is the trade summary, in =ores.trading=.
+
+* Assignments
+
+| Feature | Value |
+|------+-------|
+| [[id:E13F0F34-2407-4C66-92F3-AA09E543377E][read_only]] | true |
+| [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]] | true |
+
+* Physical space
+
+One row per physical-space address this profile fixes admission for --
+any address not listed here is left to whatever else resolves it. A bound
+entity's own Physical space table (if any) always wins over these.
+
+| Address | Enabled |
+|---------------------------------------------+---------|
+| ores.sql.schema.domain_entity_create        | false   |
+| ores.sql.schema.domain_entity_drop          | false   |
+| ores.sql.schema.domain_entity_view_create   | true    |
+| ores.sql.schema.domain_entity_view_drop     | true    |
+| ores.sql.schema.notify_trigger              | false   |
+| ores.sql.schema.notify_trigger_drop         | false   |
+
+A view has no rows of its own to announce, so the eventing facets go with the
+notify trigger. A hard gate in =resolve_targets= withdraws them, for the same
+reason as for the staging profile: a shape profile fixes
+=ores.cpp.eventing-integration-test= to true, and two profiles that fix one
+address differently are a binding the loader refuses.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the model this profile instantiates.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the catalogue of named profiles.
+- [[id:0AB24790-8CF2-466A-9B49-257A1A49C75B][Read-only current-state]] — the surface this profile keeps.

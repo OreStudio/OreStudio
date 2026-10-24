@@ -94,6 +94,7 @@ set(files
     "trade_link_type_commands_tests.cpp"
     "trade_party_role_commands_tests.cpp"
     "trade_state_commands_tests.cpp"
+    "trade_summary_commands_tests.cpp"
     "trade_type_commands_tests.cpp"
     "vanilla_swap_instrument_commands_tests.cpp"
 )

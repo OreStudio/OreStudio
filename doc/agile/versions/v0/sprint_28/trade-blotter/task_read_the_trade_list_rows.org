@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-the-trade-list-rows
+#+pr: 3706
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,44 @@ Build the read model under the trade list. A row holds the trade or the structur
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-23                               |
 
 * Acceptance
 
 - One query returns trade rows and structure rows.
 - The query pages, sorts and filters in the service.
 - A row names the authorisation status.
+- A structure row matches a search through any of its trades. It has no book, state, date or authorisation status, so a filter on one of those columns leaves it out.
+- The summary reads the current state of every part. It offers no =as_of=. A later task adds =as_of= when a screen needs it.
+- The generator supports a read-model entity whose relation is a view, with no events and no history.
+- The summary filters by state, book, counterparty, trade type and the enum columns, and searches every identifier.
+- The identifier search is measured on a large list. A trigram index is added if the scan is too slow. Measured: about 2.7 s at 100,000 trades. A trigram index needs a stored column, so it is not added. Decision (2026-10-24): accept the view. The capture [[id:66157B83-53BD-476E-8F49-2D0EE45921BD][Materialise the trade summary row for very large lists]] holds the stored row for a tenant past about 20,000 live trades.
+- A portfolio scope over more than 1000 books is refused by the client, never truncated.
+- A repository test covers each filter, the search and the total.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The design is already settled. This task builds it. It does not redesign it.
+
+- The entity protocol specification defines the read model: =list= and =get= only, the standard filter record over the columns of every part, one =as_of= for all parts, its own key and permission, and no change event.
+- The story [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]] holds the task [[id:95E127BE-AFC8-4CF6-8DB4-961135A76C19][Add the trade summary entity]]. That task asks for the same read model. Its three blockers are done: the spike, the specification and the by-trade reads.
+- The trade list also needs two things that task does not state: structure rows at the same level, and the authorisation status.
+
+Decision (2026-10-22): this task absorbs the trade summary task. The summary entity is the first part of the work, so the two tasks would build one thing twice if they stayed apart. The old task is ABANDONED and points here. Its acceptance moves into this task.
+
+Steps, once the decision is made:
+
+1. Generator: a profile =read-model= for an entity whose relation is a view. It drops the events, the notify trigger and the history files, and it emits =create view= from a select in the model. The view uses =security_invoker=, so the tenant policies of the base tables apply.
+2. SQL view: one row for each trade, with the book, the current state, the booking, the counterparty, the instrument type and the identifiers as one search text.
+3. Add the authorisation status to the row. Read it from the =trade_authorisation_request= detail row and the inbox request status, for the trade version that is current at =as_of=.
+4. Add the structure rows. A structure row has no state, notional or version of its own. It carries the count of its trades. It matches a search when one of its trades does. A filter on a column only a trade has leaves it out.
+5. Declare the model, then generate the protocol, repository, service, handler and TypeScript twin.
+6. Repository tests for each filter, the search, the total, =as_of= and the structure rows.
 
 * Measurements
 
@@ -57,9 +77,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files one table-backed entity generates | 41 (4 SQL, 34 C++, 2 TypeScript, 1 recipe) | =codegen.sh generate --model projects/ores.trading/modeling/ores.trading.trade_authorisation_request.org --address <ores.sql, ores.cpp, ores.ts, ores.doc> --dry-run= | 2b8f31b18c |
+| Facets a read model never needs, first count | 10 (superseded by the next row) | the same dry-run | 2b8f31b18c |
+| Facets the profile =read-only-current-state= already drops | 5 history files: the history provider and its registrar, the field mapper pair. The profile gates them in =generate.py= (=_NO_TEMPORAL_HISTORY_ARCHETYPES=) | dry-run of =ores.iam.login_info.org=, which binds the profile | 25d8ad99f1 |
+| Facets still wrong for a view | 6: table create and drop, notify trigger create and drop, event, event registrar. The event pair and the eventing test already have a gate set (=_STAGING_ONLY_EVENTING_FACETS=) | the same dry-run, read against =generate.py= | 25d8ad99f1 |
+| PostgreSQL version of the dev server | 18.6, and the build links 18.4. =security_invoker= needs 15 or later | =psql --version=, and =PG_VERSION= in the vcpkg =pg_config.h= | ec01ab89e4 |
+| Views that already use =security_invoker= | 8, one for each asset class in =marketdata_series_identity_views_create.sql= | =grep -n security_invoker projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql= | ec01ab89e4 |
+| Code in =sqlgen= that checks a table exists | 0 hits for =information_schema=, =pg_class= and =pg_tables= | =grep -rIn= over the =sqlgen= headers | ec01ab89e4 |
+| Trade summary tests against the view | 15 cases, 44 assertions pass: counterparty, instrument type, book, trade date, authorisation status (waiting, not requested, not required), state name, identifier and id search, structure rows and their trade count, structure found by a member identifier, paging, sort, total | =ores.trading.core.tests "[trade_summary],the_summary*"= with =.env= loaded | this commit |
+| Search on 102,432 trades, before the request index | 10.0 s for an identifier search; 8.6 s for a count. The request lookup scanned every request of the tenant for each trade (6.9 million buffer hits) | =measure.sql= in the scratchpad: 32 provisioned trades copied 3,200 times in one rolled-back transaction, then =explain (analyze)= on =ores_trading_trade_summaries_vw= | c0cb9a8abe |
+| Search on 102,432 trades, after the request index | 2.7 s for an identifier search; 4.0 s for a page of 50 sorted by instrument type. Most of the time is the identifier aggregate (about 0.013 ms a trade) and the joins; the sort is 0.4 s. A view cannot push the page limit below the sort, so every row is built for every page. The copies carry no bookings or states, so the joins are cheaper than in real data | the same script, with the index =trade_authorisation_requests_trade_idx= | this commit |
+| Models that opt a facet out with =enabled: false= | 0 | =grep -rhn "^:ores\.[a-z_.]*enabled: *false" projects/*/modeling/*.org= | 2b8f31b18c |
+| Models marked read only that drop any facet | 0: =book_change= generates the same set of files | dry-run of =ores.refdata.book_change.org= | 2b8f31b18c |
 
 * Notes
+
+** The generator gap, measured
+
+The table is not only in the SQL facet. The entity struct carries =tablename=. The repository reads it with =sqlgen::read= and builds the filter, the order, the page and the total on it. The history, event and notify facets all assume a table with a version timeline. The =read_only= flag removes the write verbs and no facet. The profile =read-only-current-state= (reference: =ores.iam.login_info=) removes the write verbs, the version read and the five history files, so the measured gap is smaller than the first count. No model opts a facet out today.
+
+There is one precedent for a function-backed read: the hierarchy read calls =<table>_hierarchy_fn= with raw SQL and maps the columns by hand. It does not filter, order or page, so it cannot carry a list.
+
+Three ways to close the gap:
+
+| Option | What it changes | Risk |
+|--------+-----------------+------|
+| A. A view as the table | The SQL facet emits =create view= from a select in the model. The entity =tablename= names the view. The generated repository, filter, order, page and total work unchanged. A new profile =read-model= binds =read_only= and =current_state=, adds the view, and reuses the existing gate set that drops the event facets and the notify trigger. The view carries no =as_of=, so the entity does not offer it. The specification allows this: a read model that cannot honour =as_of= does not offer it. | Low. =sqlgen= emits a plain select on the name and never inspects the catalogue, so a view reads like a table. The view is not yet read through generated code. |
+| B. A function, and =as_of= | A view cannot take =as_of=. A function can, but =sqlgen= cannot read from a function with an argument, so the repository must build the filter, order and page as raw SQL. | High. It duplicates the filter record in SQL. |
+| C. A view and a session setting | The view reads a transaction-local setting for the instant. It needs the setting and the read on one connection. | Medium. A read outside a unit of work opens its own connection. |
+
+Recommendation: A for this task. The trade list prototype states no =as_of=. Add =as_of= in a later task when a screen needs it. That task chooses between B and C with the view already in place.
 
 * Test Scenarios
 
@@ -76,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3706][#3706]] | [trading] Read the trade list rows |
 
 * Review
 
@@ -85,3 +132,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped the read model under the trade list.
+
+- A generator profile =read-model= for an entity whose relation is a view. It keeps the read-only current-state surface, swaps the table create and drop for a =create or replace view= with =security_invoker=, and withdraws the notify trigger and the facets that announce a change. The model states the select in its =* SQL ** View= section.
+- The entity =ores.trading.trade_summary=, read through =ores_trading_trade_summaries_vw=. A trade row holds the book, the state, the counterparty, the instrument type, the trade date, the authorisation status and the identifiers as one search text. A structure row holds its kind and the count of its trades, and its search text holds the identifiers of its trades. The protocol, repository, service, handler, shell command and TypeScript twin are generated. The service pages, sorts and filters.
+- The state name comes from =ores_trading_status_name_fn=, a security definer function, because the trade status machine is system reference data that a tenant policy does not show.
+- An index on the authorisation request by trade, which cut the identifier search at 102,432 trades from 10.0 s to 2.7 s.
+- 15 repository and service tests that cover every filter, the search, the total, paging, sorting, the state name, the request status and the structure rows.
+
+Acceptance met, with three changes:
+
+- A filter on a column only a trade has (book, state, date, authorisation status) leaves a structure row out. A search reaches a structure through the identifiers of its trades.
+- The trigram index is not added. A page takes about 4 s at 100,000 trades. The view is accepted, and the capture [[id:66157B83-53BD-476E-8F49-2D0EE45921BD][Materialise the trade summary row for very large lists]] holds the stored row.
+- The client-side refusal of a scope over 1000 books belongs to the trade list screen task.
+
+Open from this task:
+
+- The synthetic population books actual trades into real books, so a provisioned Acme tenant holds 32 requests in the Operations queue. The task [[id:BA9F70BA-4521-47F5-B5D1-835B01265D52][Keep seeded trades out of the authorisation queue]] holds it.

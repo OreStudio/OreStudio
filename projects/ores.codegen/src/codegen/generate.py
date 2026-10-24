@@ -647,6 +647,13 @@ def resolve_targets(
             # component also models.
             gen_facets = {f for f in gen_facets
                           if f not in _STAGING_ONLY_EVENTING_FACETS}
+        if "read-model" in {
+                p.strip() for p in (entity.get("profile") or "").split(",")}:
+            # Hard gate, like the staging one above: a view has no rows to
+            # announce, so the event type, its registrar and its integration
+            # test have no publisher.
+            gen_facets = {f for f in gen_facets
+                          if f not in _STAGING_ONLY_EVENTING_FACETS}
         if sql_flags.get("current_state"):
             # A current-state entity has no version rows, so the history
             # dialog's field mapper (which reads the domain type's recorded_at

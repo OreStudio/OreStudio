@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/decide-the-bindings-place-in-the-route-architecture
-#+pr:
+#+pr: 3719
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3719][#3719]] | [agile] Decide the binding's place and plan its retirement |
 
 * Review
 

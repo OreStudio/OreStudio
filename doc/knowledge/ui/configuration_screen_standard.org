@@ -95,7 +95,7 @@ for one thing inside it.
 
 | Kind code | Screen name | What it decides |
 |-----------+-------------+-----------------|
-| =pricing_engines= | Pricing engine configuration | Which model and engine price each product type, and their parameters |
+| =pricing_engines= | Product pricing | How each product type is priced: the model, the engine and their parameters |
 | =engine_settings= | Engine run settings | How the engine prepares its inputs and runs the job: fixings, building, execution |
 | =todays_market= | Today's market | How the curves and surfaces of a run are built |
 | =curve_configuration= | Curve configuration | How each curve is defined and bootstrapped |
@@ -121,8 +121,8 @@ numbers.
 
 Three words are fixed by this table and replace the earlier screen words:
 
-- *Pricing engines* becomes *Pricing engine configuration*. It lists
-  configurations, not engines.
+- *Pricing engines* becomes *Product pricing*. It names the job: how each product
+  type is priced.
 - *Engine settings* becomes *Engine run settings*. It does not hold the settings
   of a pricing engine.
 - The pricing page has no *Settings* tab and no *Parameters* tab. A product's

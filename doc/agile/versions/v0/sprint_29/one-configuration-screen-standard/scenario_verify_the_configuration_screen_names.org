@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: D016A4AC-F649-4900-ABF7-A3A49B5CBDD7
+:END:
+#+title: Test Scenario: Verify the configuration screen names
+#+description: Check that the two configuration screens carry their decided names and words in English, French and Portuguese, and that the configuration type names match.
+#+type: test_scenario
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: solid_dirac
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]. It checks the screen names and the words around them in three languages. Record the outcome by hand in =* Results=.
+
+* Before you start
+
+The session already did the following. Confirm the system is in this state before you start; do not repeat the work.
+
+- The build is current for the branch =feature/rename-the-configuration-screens=.
+- The database was recreated and seeded after the rename, so the configuration type names are current.
+- Acme Corporation is provisioned: 34 parties, 23 pricing configurations, 28 engine settings, 78 report definitions.
+- All 24 services are active. The web answers on the standard port =http://localhost:21002=; no development server is running.
+- You need =super_admin= / =Secure-Password-123=. The tenant is =acme_corporation=.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | Reporting → Product pricing, and Reporting → Engine run settings, on http://localhost:21002 |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the super administrator
+
+- Open =http://localhost:21002=.
+- Log in as =super_admin= with password =Secure-Password-123=.
+- Select the tenant =Acme Corporation= if the screen asks for one.
+- The reporting area opens. If it does not, the login or the tenant failed; stop here.
+
+** Open Product pricing from the menu
+
+- Open Reporting, then Product pricing.
+- The breadcrumb reads Home › Reporting › Product pricing.
+- The page title reads *Product pricing*.
+- The area card in the Reporting menu reads *Product pricing*.
+- The lead sentence says how each product type is priced.
+- No visible text calls this screen *Pricing engines*.
+
+** Open one pricing configuration
+
+- Click any row in the list.
+- The page opens on the configuration; the breadcrumb ends at its name.
+- No heading on the page repeats the old screen name.
+
+** Open the engine run settings screen
+
+- Go back to Reporting, then Engine run settings.
+- The page title reads *Engine run settings*.
+- The area card reads *Engine run settings*.
+- The lead sentence says how the engine runs every report.
+- No visible text calls this screen *Engine settings* on its own.
+
+** Switch the language to French
+
+- Open the account menu and set the language to French.
+- Product pricing reads *Tarification des produits*, in the menu and on the page.
+- Engine run settings reads *Réglages d'exécution du moteur*.
+
+** Switch the language to Portuguese
+
+- Set the language to Portuguese.
+- Product pricing reads *Preços por produto*, in the menu and on the page.
+- Engine run settings reads *Configurações de execução do motor*.
+
+** Check the configuration type on a report
+
+- Set the language back to English.
+- Open Reporting, then Reports, then open any report.
+- Find the list of configurations the report binds.
+- The pricing binding is labelled *Product pricing*, not *Pricing engines*.
+- The engine binding is labelled *Engine run settings*, not *Engine settings*.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The pricing page still carries its old tabs (Details, Products, Settings). The five-tab design is the apply task, not this rename; do not fail the scenario on it.
+- A database that was seeded before this change keeps the old configuration type names until it is recreated and seeded again.

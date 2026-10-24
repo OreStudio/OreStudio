@@ -4687,7 +4687,7 @@ const pt: SourceCatalogue = {
 
     // engineSettings:begin
     engineSettings: {
-        title: 'Configurações do motor',
+        title: 'Configurações de execução do motor',
         lead: 'As configurações nomeadas com que o motor de risco é executado. Um relatório vincula uma, e vários relatórios podem compartilhá-la.',
         columns: {
             name: 'Nome',
@@ -4877,7 +4877,7 @@ const pt: SourceCatalogue = {
             authorBody:
                 'Escolha os produtos, o modelo e o motor de cada um e as definições, e guarde uma configuração.',
         },
-        title: 'Motores de avaliação',
+        title: 'Preços por produto',
         lead: 'As configurações de motor de avaliação da parte em que trabalha, com os produtos e as definições de cada uma.',
         columns: {
             name: 'Configuração',
@@ -4986,10 +4986,10 @@ const pt: SourceCatalogue = {
             title: 'Relatórios',
             lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
             screens: {
-                engineSettings: 'Configurações do motor',
+                engineSettings: 'Configurações de execução do motor',
                 engineSettingsBody:
                     'Com quais configurações o motor executa os relatórios, para a parte em que você trabalha.',
-                pricingEngines: 'Motores de avaliação',
+                pricingEngines: 'Preços por produto',
                 pricingEnginesBody:
                     'Que modelo e que motor avaliam cada produto, para a parte em que trabalha.',
                 reports: 'Relatórios',

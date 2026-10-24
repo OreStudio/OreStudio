@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment: prime_origin
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The conventions have the same list screens as every other record kind. The list 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] |
-| Now          | Built and tested in a static render. Not yet run in a browser against the server. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run it against the services, then review and merge. |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

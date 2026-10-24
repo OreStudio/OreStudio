@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/gate-the-scanner-on-the-xml-corpus
-#+pr:
+#+pr: 3437
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -80,7 +80,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3437][#3437]] | [ore] Parse every XML document in the repository on every test run |
+| [[https://github.com/OreStudio/OreStudio/pull/3439][#3439]] | [ore] Bind a document into one record as the scanner walks past it |
 
 * Review
 

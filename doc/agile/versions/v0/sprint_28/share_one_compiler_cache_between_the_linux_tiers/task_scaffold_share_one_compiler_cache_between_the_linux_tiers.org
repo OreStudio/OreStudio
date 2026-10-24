@@ -29,7 +29,7 @@ identically, and wire the story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |

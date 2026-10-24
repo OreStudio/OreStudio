@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :overlay_the_libarchive_port_to_silence_its_unused_variable:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/overlay-the-libarchive-port-to-silence-its-unused-variable
+#+pr: 3370
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -28,7 +28,7 @@ The macOS vcpkg install reports no unused-variable warning from the libarchive p
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |
@@ -82,7 +82,7 @@ and that the portfile still runs.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3370][#3370]] | [cmake] Overlay the libarchive port to list its unused variable |
 
 * Review
 

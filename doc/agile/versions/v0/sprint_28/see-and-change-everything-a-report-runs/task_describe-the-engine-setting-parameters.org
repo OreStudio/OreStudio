@@ -8,7 +8,7 @@
 #+filetags: :see-and-change-everything-a-report-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/describe-the-engine-setting-parameters
-#+pr:
+#+pr: none (committed directly)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22

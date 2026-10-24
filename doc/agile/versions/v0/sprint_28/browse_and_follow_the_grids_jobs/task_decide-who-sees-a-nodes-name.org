@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/decide-who-sees-a-nodes-name
-#+pr:
+#+pr: 3672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22

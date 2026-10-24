@@ -8,7 +8,7 @@
 #+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/carry-the-bulk-reads-in-the-models
-#+pr:
+#+pr: 3694
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3694][#3694]] | Carry the bulk observation reads and the export handler in their models |
 
 * Review
 

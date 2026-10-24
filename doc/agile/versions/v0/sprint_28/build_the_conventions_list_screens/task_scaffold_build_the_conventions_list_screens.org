@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

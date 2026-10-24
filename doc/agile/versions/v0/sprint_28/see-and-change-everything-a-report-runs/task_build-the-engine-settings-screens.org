@@ -28,9 +28,9 @@ A person lists the engine settings configurations of a party and opens one page 
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Done.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Run the report with engine settings bound.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-23                               |
 
 * Acceptance

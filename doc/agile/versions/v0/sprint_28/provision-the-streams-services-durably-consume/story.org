@@ -23,7 +23,7 @@ Streams are not provisioned for the subjects services durably consume, and two d
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | All seven tasks are done.               |
+| Now           | Nothing.               |
 | Waiting on    | Nothing.                               |
 | Next          | None.                                   |
 | Last touched  | 2026-10-18                               |

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :fix-the-site-build-id-link:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: none (committed directly)
+#+pr: none (committed directly)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20

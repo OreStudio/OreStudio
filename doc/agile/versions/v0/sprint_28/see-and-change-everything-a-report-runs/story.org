@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-24
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -17,29 +17,47 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 A person who opens a report sees, on one page, what the report is, what it runs with, and which conventions it reads, and can change each of them in the place that owns it. Today the page shows the definition and a list of bindings, and nothing can be changed except the definition's own fields: the configurations are read-only and the conventions binding is a header with no effect, because a run reads every convention document of the party.
 
+This story delivered the engine settings arc only: the model, the documentation of the ORE parameters, the screens, the party rules, the history and the refresh. The report page with its six tabs moved to [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]].
+
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The report page analysis, the engine settings design and the prototype are merged. The engine settings data model, the seed, the export and the import are in one PR, and the 19 engine columns of the run settings are gone. |
-| Waiting on    | Review of the data model PR. Owner answers to the open questions under Design that still stand. |
-| Next          | Move the currency and the market kind to the report definition, record what a run used, and build the engine settings screens. |
-| Last touched  | 2026-10-22                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- The report page has six tabs, Definition, Scope, Analytics, Market and pricing, Conventions and History, and each tab says what a change on it reaches.
-- A person can choose the convention set a report reads, and a run reads the documents of that set and no others.
-- The prototype is signed off by the owner before the screens are built.
+The story closes on the tasks it finished:
+
+- Scaffold story: See and change everything a report runs.
+- Design the engine settings and prototype their screen.
+- Model the engine settings.
+- Describe the engine setting parameters.
+- Rename the parameter definition to ore parameter.
+- Document the analytic ORE parameters.
+- Document the Setup, Markets and Logging ORE parameters.
+- Deepen the analytic parameter texts.
+- Build the engine settings screens.
+- Serve the engine settings.
+- Test the engine settings.
+- Publish the ore parameters through DQ.
+- Edit a row only in its owning party.
+- Show and filter by the owning party.
+- Name the Acme engine settings by purpose.
+- Show a field error on the field.
+- Add a language selector.
+- Correct the engine settings scenario.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:62942996-F5FB-4F8F-B443-3A42E37753F8][Scaffold story: See and change everything a report runs]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:234A92D9-3843-4D18-9684-788F4EBE6201][Analyse the report page and prototype the tabs]] | BACKLOG | | | Initial task for: See and change everything a report runs |
 | [[id:7CC2A4D9-6A46-4EA7-8556-9AC25537DB4F][Design the engine settings and prototype their screen]] | DONE | 2026-10-21 | 2026-10-21 | Task for: See and change everything a report runs |
 | [[id:EA01F699-420E-4889-95EF-E7FAFA2DD646][Model the engine settings]] | DONE | 2026-10-22 | 2026-10-22 | Store the engine settings as a named configuration with a central row and three parts. |
 | [[id:B722E327-40BE-472B-8868-1D08F4B50583][Describe the engine setting parameters]] | DONE | 2026-10-22 | 2026-10-22 | Give the parameter definition the fields a screen presents, and seed the 15 engine settings with their full text. |
@@ -326,6 +344,7 @@ disagrees with the guide. The importer warns about parameters it drops.
 
 * Decisions
 
+- Closed at sprint 28 close with its 18 done tasks. The 1 open task and the original acceptance moved to [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]] in the product backlog inbox.
 - The page has six tabs and no Run settings tab. Decided by the owner on 2026-10-21.
 - A report has a report currency, drawn with its flag. The column keeps the name =base_currency=.
 - The definition states end of day or intraday and never a date. The run carries its own time point.

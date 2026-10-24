@@ -25,7 +25,7 @@ Close the faults that the stop and start test of every feed group found, so that
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Capture: revoke a collection's run grant on delete. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-19                               |
 
 * Acceptance

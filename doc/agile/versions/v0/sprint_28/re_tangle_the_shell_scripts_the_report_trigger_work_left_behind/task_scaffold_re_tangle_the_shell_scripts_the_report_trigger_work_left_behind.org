@@ -29,7 +29,7 @@ into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |

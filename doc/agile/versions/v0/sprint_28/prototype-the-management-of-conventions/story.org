@@ -21,13 +21,12 @@ A person can see, from clickable prototypes, how conventions are managed. Each p
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The four journeys and the four prototypes are written and wait for review. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Review, then decide the server work: an approval kind for a convention, a term filter and the convention set entity. |
-| Last touched  | 2026-10-19                               |
-
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 * Acceptance
 
 - The journey catalogue is checked against the five existing conventions journeys, and the owner agrees it before any journey is written.

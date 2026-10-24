@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/lay-out-the-job-page-as-its-prototype
-#+pr:
+#+pr: 3701
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24

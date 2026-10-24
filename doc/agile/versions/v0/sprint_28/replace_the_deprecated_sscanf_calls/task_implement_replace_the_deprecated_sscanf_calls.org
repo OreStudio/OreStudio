@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :replace_the_deprecated_sscanf_calls:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/replace-the-deprecated-sscanf-calls
+#+pr: 3377
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -28,7 +28,7 @@ No translation unit calls a C runtime function that MSVC's STL deprecates, so th
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |
@@ -95,7 +95,7 @@ reader would widen what the check accepts rather than preserve it.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3377][#3377]] | [reporting] Parse the run date with the platform's ISO 8601 reader |
 
 * Review
 

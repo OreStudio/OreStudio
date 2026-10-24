@@ -28,9 +28,9 @@ The analytic parameters that a report screen shows first have a description of t
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] |
-| Now          | Done.                                  |
+| Now          | Nothing.                                  |
 | Waiting on   | Nothing.                               |
-| Next         | Build the engine settings screens.     |
+| Next         | Nothing.     |
 | Last touched | 2026-10-23                               |
 
 * Acceptance

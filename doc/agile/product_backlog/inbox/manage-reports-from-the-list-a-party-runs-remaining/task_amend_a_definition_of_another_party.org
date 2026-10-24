@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: A8F378DA-BD06-4AA2-85C5-C660FCD9AE04
+:END:
+#+title: Task: Amend a definition that belongs to another party
+#+description: A tenant administrator sees the definitions of every party under the login party, and an amend of one that belongs to a party other than the acting party is refused by the store with a duplicate-key fault on report_definitions_name_party_id_uniq_idx. The write's row-level scope cannot see the current row the insert trigger must close, so the trigger inserts a new current row instead of superseding the old one, and the unique index on (tenant, name, party) refuses it. Either the write scope must reach the parties the person reads, or the refusal must say in words that a definition of another party cannot be amended here. Measured on the live environment: a PUT by id of the ACCOHK definition returned that fault while a PUT of the ACMCOR definition wrote version 2 of the row it read.
+#+type: task
+#+level: s1
+#+filetags: :manage-reports-from-the-list-a-party-runs-remaining:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9200121-7FCB-4677-89E5-608F6B53E8A9][Manage reports from the list a party runs — the remaining work]] story, beside
+[[id:66B7603A-16EE-4B5E-8A73-24784A73AB38][Close the gaps the reports a party runs screen records]]. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the page that opened a definition save it, whichever party owns it.
+
+The reporting list spans the parties the session sees: for the tenant
+administrator of ACME that is the login party and the three below it, 78
+definitions across four parties. Opening one of them works, because the row is
+read by its id. Saving one that belongs to a party other than the acting party
+does not: the insert trigger refuses the write.
+
+The fault is not the definition's. It is the write's row-level scope. The
+trigger supersedes the current row by looking it up under the write's scope, and
+a row of another party is not in that scope, so the trigger finds nothing, treats
+the write as a new row, and inserts it against a table whose unique index on
+(tenant, name, party) still holds the old current row. The person sees a
+database fault about a constraint, which says nothing about what they did.
+
+* Acceptance
+
+- An amend of a definition of any party the person reads either lands, or is
+  refused in words that say a definition of another party is not amended from
+  here.
+- The refusal is a refusal and not a fault: no constraint name reaches the
+  screen.
+- A write to the acting party's own definition is unchanged.
+- The write still claims the version it was read at, and a stale version is still
+  a conflict.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:66B7603A-16EE-4B5E-8A73-24784A73AB38][Manage reports from the list a party runs]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+*Measured on the live environment*, 2026-10-19, signed in as
+=tenant_admin@acme_corporation= acting for ACMCOR:
+
+- =PUT /api/reporting/reports/35378ea1-…= (the ACCOHK definition of Audit Trail
+  Summary) answered =Repository error: Executing INSERT failed: ERROR: duplicate
+  key value violates unique constraint "report_definitions_name_party_id_uniq_idx"=.
+- =PUT /api/reporting/reports/08e10d24-…= (the ACMCOR definition of Board Risk
+  Dashboard) wrote version 2 of that row and closed version 1, as it should.
+- The ACCOHK row was left untouched at version 1: the write went where it was
+  asked to go. Only the amend of another party's row fails.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

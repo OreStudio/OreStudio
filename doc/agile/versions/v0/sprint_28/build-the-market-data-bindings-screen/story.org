@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-10-24
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,20 +21,32 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- The bindings list and record page is drawn from the shared record parts, with the details, the oresmd links with Inspect, the status and the last tick.
-- A binding can be added, edited and deleted, and its history is drawn as the shared timeline with the revert dialog.
-- Bindings has a card in the Market data menu with its route, its trail and its words in English, French and Portuguese.
-- Server reads say which sources a party may bind, and a binding's history is scoped to its party.
-- The screen is checked against the signed-off prototype on the running server, and the oresmd feed list and series page snags are cleared.
+The story closes on the tasks it finished:
+
+- Add a time window to the series page.
+- Add, edit and delete a binding.
+- Build the bindings list and record page.
+- Check the bindings screen on the running server.
+- Find a convention stored under the reverse pair.
+- Find why the synthetic feed went quiet.
+- Give hints a tooltip with keyboard access.
+- Link the oresmd URI column of the feed lists.
+- Move the series page state into a pure function.
+- Put Bindings in the Market data menu.
+- Run the series title test in CI.
+- Say which sources a party may bind.
+- Scope a binding's history to its party.
+- Share one copy hook between the oresmd dialogs.
+- Show a binding's history as the timeline.
 
 * Tasks
 
@@ -55,10 +67,10 @@ A person lists bindings, says what each source writes and when it last ticked, b
 | [[id:8B5BF9AD-4A3F-423D-BAE8-76DCB17A68B1][Scope a binding's history to its party]] | DONE | 2026-10-17 | 2026-10-17 | The server reads a binding's history by source name and takes the newest row of any party that holds the name, so a party can be shown another party's history. Scope the read to the caller's party. |
 | [[id:4F0E896D-0C89-4698-B218-3D0C084C5AF0][Share one copy hook between the oresmd dialogs]] | DONE | 2026-10-18 | 2026-10-18 | The editor and the read-only view of an oresmd URL each hold the same copy-to-clipboard code: a timer, an unmount cleanup and a try and catch. Move it into one hook. |
 | [[id:9044BB8A-1D69-4C59-89B6-4CE93DCE34E1][Show a binding's history as the timeline]] | DONE | 2026-10-17 | 2026-10-18 | Draw the History tab of a binding as the shared timeline, with the revert dialog and the checks the prototype shows. |
-| [[id:EEC492A7-D1FC-4CC0-B8DF-7A67EBC82D7E][Add a language control to the site]] | BACKLOG | | | Give the site a control that changes the language, so a person can reach the French and Portuguese catalogues. |
 
 * Decisions
 
+- Closed at sprint 28 close with its 15 done tasks. The 1 open task and the original acceptance moved to [[id:AE947749-7D9D-4336-BED9-78F69187AD4D][Build the bindings screen and clear the oresmd snags — the remaining work]] in the product backlog inbox.
 - A binding is named for what it writes, not for what it consumes. The output target is the title of the record page and the first column of the list; the source it consumes follows, and stays in the key line. Marco decided this on 2026-10-15, reversing the prototype's order, which named the page for the source and put the series in the subtitle.
 - The series on the list is plain text, not a link. Marco decided this on 2026-10-15; the link misled.
 - The access mark is drawn before the Edit action exists; the actions arrive with the task Add, edit and delete a binding. Marco accepted the mark standing alone on 2026-10-15.

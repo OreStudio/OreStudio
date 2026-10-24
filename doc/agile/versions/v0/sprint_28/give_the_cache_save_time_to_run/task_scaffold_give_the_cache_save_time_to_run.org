@@ -8,7 +8,7 @@
 #+filetags: :give_the_cache_save_time_to_run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/give-the-cache-save-time-to-run
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14

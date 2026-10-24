@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :fix_the_compass_prune_baseline:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/fix-the-compass-prune-baseline
 #+pr: 3454
 #+blocked_on:
 #+blocked_since:

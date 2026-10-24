@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: C76D7295-D2DB-4329-A1AC-9D5F7EE31E51
+:END:
+#+title: Story: Raise a notification for a scenario waiting for a tester — the remaining work
+#+description: Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox notification and the bell shows it. Add a tester role and an assignment, and a permission for the Development module. Today any signed-in user may call the QA routes. Also settle whether the module runs in production, since a deployed BFF has no work tree.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox notification and the bell shows it. Add a tester role and an assignment, and a permission for the Development module. Today any signed-in user may call the QA routes. Also settle whether the module runs in production, since a deployed BFF has no work tree.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:F9B752A6-65E1-4250-B1AC-1A901394ECEB][Raise a notification for a scenario waiting for a tester]], which closed in sprint 28 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-10-24 |
+
+* Acceptance
+
+- A tester role and a permission for the Development module exist, and the QA and agile routes refuse a signed-in user who does not hold the permission.
+- A scenario that waits for a tester raises an inbox notification, once for each scenario, and the bell shows it. The notification goes to every person who holds the permission. If the story takes assignment, it goes to the assigned tester only.
+- A tester opens the scenario from the notification.
+- The story records whether the module runs in production, and what changes if it does.
+- A prototype of the bell entry is accepted before the web screen is built.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B2206389-EB1E-414C-BD5A-B36E191C3C50][Settle the open questions of the story]] | BACKLOG | | | Answer the four open questions of the story, record the answers in its Decisions, and break the story into tasks. The questions are who raises the notification and when, whether the module runs in production, what once for each scenario means, and whether assignment is in the story. |
+
+* Decisions
+
+- Split from [[id:F9B752A6-65E1-4250-B1AC-1A901394ECEB][Raise a notification for a scenario waiting for a tester]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Open questions
+
+- *Who raises it, and when?* The BFF can scan the scenario docs when someone lists them, or on a timer. A scan on a list raises nothing until somebody opens the tab, which defeats a notification. A timer needs a tenant to raise for and a session or service identity to raise as. Which does the story take?
+- *Does the module run in production?* A deployed BFF has no work tree, so it has no scenario docs to scan or to write results into. If the answer is no, the notification is a development-environment feature and the permission can say so. If the answer is yes, scenarios and results need a store other than files, which is a story of its own.
+- *What does once for each scenario mean?* The notification needs a key so that a rescan does not raise it again. A scenario that is reopened after a retest could raise again or not.
+- *Is an assignment in this story?* The capture asks for one. An assignment names a tester for a scenario and the notification goes to that one person. Without it the notification goes to every holder of the permission.
+
+* Plan
+
+A provisional order, to be made into tasks when the questions are answered.
+
+| Step | Work | Needs |
+|------+------+-------|
+| 1 | Decide where the module runs and who raises the notification | the answers above |
+| 2 | Add the tester permission and role to the seed data | 1 |
+| 3 | Gate the QA and agile routes on the permission | 2 |
+| 4 | Add the notification kind for a waiting scenario | 1 and 2 |
+| 5 | Raise the notification for a waiting scenario, once for each | 3 and 4 |
+| 6 | Prototype the bell entry, then show it and open the scenario from it | 5 |
+| 7 | Assign a scenario to a tester, if the story takes assignment | 5 |
+
+* Out of scope
+
+- A store other than files for scenarios and results. That follows if the module runs in production.
+- Mail copies of the notification. The in-application copy is the story.
+- Starting or closing tasks from the browser.
+
+* Promoted from capture
+
+Captured 2026-10-11 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox notification and the bell shows it. Add a tester role and an assignment, and a permission for the Development module. Today any signed-in user may call the QA routes. Also settle whether the module runs in production, since a deployed BFF has no work tree.
+
+** Why
+
+Story 3 of the QA runner arc. Today nobody is told that a scenario waits, and any signed-in user may call the QA routes.
+
+** References
+
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]
+
+** See also
+
+- [[id:79DA69BB-0711-40E6-8400-1B2DAC2FA40D][Bring the QA validation runner to ores.web]]

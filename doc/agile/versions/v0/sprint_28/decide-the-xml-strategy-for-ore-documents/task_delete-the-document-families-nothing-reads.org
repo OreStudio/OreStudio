@@ -33,9 +33,9 @@ if a feature ever needs one.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Eight families are classified unused, and the tests and the mapper that served them are deleted. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The remaining mapper families, then xsdcpp itself. |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

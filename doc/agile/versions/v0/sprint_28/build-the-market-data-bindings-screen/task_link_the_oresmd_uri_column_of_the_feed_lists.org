@@ -29,7 +29,7 @@ The detail view of a feed draws its oresmd URI as a link to the series with an I
 | State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Nothing. |
-| Waiting on   | The root's verification.               |
+| Waiting on   | Nothing.               |
 | Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 

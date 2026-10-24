@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 9A64C459-EF1D-47B4-B526-73AA6753FEEB
+:END:
+#+title: Task: Show a report run in the grid
+#+description: The grid views must show the jobs a report run sends to the grid, to every account that may watch it.
+#+type: task
+#+level: s1
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds-remaining:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2F8D1F0-335E-4AE0-BDD7-2FCECB2C769E][Run a report end to end on a synthetic bond population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who watches the compute grid sees the load of the whole grid and can follow a report run from its trigger to its compute result. The system tenant sees the fleet and the work in flight of every tenant. A tenant sees the fleet and its own work. No read crosses a tenant, and no policy widens.
+
+Today the system tenant sees 22 hosts and no jobs. The fleet is the installation's and every session reads it. The work belongs to the tenant, and a cross-tenant total is not a fact the installation owns, so the stored sample of the system tenant counts the system tenant's own work only.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C2F8D1F0-335E-4AE0-BDD7-2FCECB2C769E][Run a report end to end on a synthetic bond population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The system tenant reads the work of all tenants: the queue, the jobs in progress, the active batches and the outcomes. It reads them from a table the installation owns, which only a session of the system tenant reads. (Done.)
+- The poller writes that table by entering each tenant, as it does for the tenant rows. No function reads across tenants, and no function runs with its owner's rights for this. (Done.)
+- A tenant administrator sees the hosts of the grid and the tenant's own jobs on the same screen.
+- A report run shows in the grid as a batch with its workunit, host and result, linked to the report instance.
+- The exceptions register has an entry for the new table, and the security page "Data read across tenants" and the ownership page state the rule for installation-wide work totals. (Done.)
+- A test proves that a tenant session reads none of the new table. (Done, as a repository test.) A test proves that the stats function reads one tenant only. (Not done.)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** What the design says
+
+The pages to read first are [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]], [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]], the [[id:07177FE0-F0B9-44E8-B67C-CEAA6DCC696A][RLS and permission exceptions register]] and the memory [[id:C3D570EF-468D-427D-B355-30C0443BCDDF][Read another tenant's data from inside it]].
+
+- The fleet is the installation's. The work counts are the tenant's.
+- A total of every tenant's work is a fact about several tenants at once. The way to compute it is to act inside each tenant. The poller already does this (entry E5 of the register).
+- A system tenant session reads no other tenant's rows, and the operator's breakdown by tenant already enters each tenant from the BFF (entry E7).
+- The work ledger (entry E4) is the installation's table. It holds the entries that wait or run, and no finished work, so it cannot give the outcomes or the totals.
+- A function that runs with its owner's rights and takes a tenant is readable by every database role, unless its EXECUTE is revoked from public and granted by name (the memory on definer functions).
+
+** What was tried and withdrawn
+
+The first change made the fleet row of the system tenant count the work of every tenant. It made the function ores_compute_grid_stats_fn run with its owner's rights. A read-only database role could then read the job counts of any tenant and party through it, and every tenant session reads the fleet row. The change was reverted in the pull request #3607 before it merged.
+
+** Options for the stored total
+
+| Option | What it is | Verdict |
+|--------+------------+---------|
+| A | A table of the installation with one row for each sample. The poller sums the counts it reads inside each tenant and writes the sum. The policy admits a session of the system tenant only, as for the work ledger. | Fits the design. It needs a register entry and a decision on the audit. |
+| B | Add finished-work counters to the work ledger, so the ledger holds the operation as a fact. | The journey Watch the grid names this. It is a larger change to the claim and the reaper. |
+| C | Keep the sum in the fleet row. | Rejected. Every tenant session reads that row. |
+
+** Decision
+
+The owner chose option A on 2026-10-21. Option A can move to B later.
+
+** What was built
+
+- The table =ores_compute_work_totals_tbl=, hand-written, with the policy =tenant_id = current and tenant_id = system=.
+- The repository =work_total_repository=, and the poller sums the counters it reads inside each tenant and writes the sum. A poll that could not read a tenant writes none.
+- =get_grid_stats= and =get_grid_series= take the job counters from the totals for a session of the system tenant.
+- Entry E8 of the exceptions register, and the rule on the ownership page and on the page "Data read across tenants".
+- Repository tests for the sum, the read and the tenant isolation.
+
+** Checked live
+
+- The poller wrote a totals row with 2 tenants counted, 4 workunits and 4 results done.
+- =compute grid-stats= as =super_admin@localhost= reads 22 hosts, 4 workunits, 4 batches and 4 results done.
+
+** Not done
+
+- A tenant admin reads the 22 hosts and zero jobs through =compute grid-stats=. That read returns the newest row, which is the system tenant's. The tenant series read serves the tenant's own jobs, and I did not check it.
+- A report run does not show as a batch linked to its report instance.
+- The register entry has no review or sign-off.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :size_the_compiler_cache_per_variant:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/size-the-compiler-cache-per-variant
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19

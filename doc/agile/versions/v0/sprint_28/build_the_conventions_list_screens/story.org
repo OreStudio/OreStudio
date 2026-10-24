@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-24
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,25 +21,25 @@ The conventions have the same list screens as every other record kind. The list 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-21                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- The list of kinds and the list of a kind's documents draw as the merged prototype does, in English, French and Portuguese.
-- Every line of the screen review checklist that applies to a list is marked Meets, Gap or N/A in the task.
-- Define instrument conventions opens from the Workflows menu and no longer from the area page.
+The story closes on the tasks it finished:
+
+- Build the list of kinds and the list of documents.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:951CF9D3-CE1D-4847-A13E-5323BA81DB2C][Scaffold story: Build the conventions list screens]] | STARTED | 2026-10-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A7F8CE08-A441-4008-8C44-DC9FABDFA59B][Build the list of kinds and the list of documents]] | STARTED | 2026-10-21 | | Initial task for: Build the conventions list screens |
+| [[id:A7F8CE08-A441-4008-8C44-DC9FABDFA59B][Build the list of kinds and the list of documents]] | DONE | 2026-10-21 | 2026-10-24 | Initial task for: Build the conventions list screens |
+| [[id:951CF9D3-CE1D-4847-A13E-5323BA81DB2C][Scaffold story: Build the conventions list screens]] | ABANDONED | 2026-10-21 | 2026-10-24
 
 * Decisions
 

@@ -34,7 +34,7 @@ of the 30 =Trading=-role holders.
 | State        | DONE                                |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
 | Now          | Nothing. |
-| Waiting on   | The step-command stream gap (=main=: most step subjects have no stream, so a tenant provision stalls after the IAM step). |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 

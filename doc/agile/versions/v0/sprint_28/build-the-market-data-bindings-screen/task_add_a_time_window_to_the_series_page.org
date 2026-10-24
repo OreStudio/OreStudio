@@ -29,7 +29,7 @@ The series page asks for the latest 500 observations. A synthetic tick every two
 | State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Nothing. |
-| Waiting on   | review.                                |
+| Waiting on   | Nothing.                                |
 | Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 

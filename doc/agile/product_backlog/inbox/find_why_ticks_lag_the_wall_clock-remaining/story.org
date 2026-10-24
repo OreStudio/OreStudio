@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 42252DB8-F87A-4DAD-925D-655AA43FDD60
+:END:
+#+title: Story: Find why market data ticks lag the wall clock — the remaining work
+#+description: A tick on the chart was stamped 71 minutes behind the wall clock and drained its backlog at only 1.16 times real time. Find where the backlog sits and fix it.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ticks:performance:investigation:product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Find where the backlog of ticks builds up between the feed and the chart, why it builds, and how long it takes to drain. Then state the fix.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]], which closed in sprint 28 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- The place where ticks queue is found, with a measurement.
+- The cause is stated, and it explains why the lag drains at 1.16 times real time.
+- The fix is stated, and a follow-up story or task exists for it.
+- A tick that is late shows how old it is, or the reason it does not is recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:77DEA267-2F6B-4743-AE62-7DEF0A80C394][Store ticks in an append-only table]] | STARTED | 2026-10-21 | | Step 1b of the tick ingest pipeline: ticks get their own hypertable with no trigger and one index. |
+| [[id:309485D7-EE4C-4E50-B382-B8323AD060EA][Profile and tidy the batch writer]] | BACKLOG | | | Find why a batch costs about four times in the client what it costs in the database, and clear the minor review items of step 1. |
+| [[id:B586BDFF-258A-458E-B661-D9DA340717B3][Drop the old notification trigger on existing databases]] | BACKLOG | | | A fresh install has no notification trigger on market observations. An existing database keeps it. |
+| [[id:2F65445F-FA3D-43DE-8282-F2FC3D98034C][Build the lanes, the ring and the overload states]] | BACKLOG | | | Step 2 of the tick ingest pipeline: replace the queue and the one worker by lanes that are keyed by series. |
+| [[id:40FF1BFA-3D50-45FE-88D0-A48CD8AA9770][Add the recent window and its read operation]] | BACKLOG | | | Step 2 of the tick ingest pipeline: each lane keeps recent ticks in memory, and a read operation serves them. |
+| [[id:1EF9ABC3-849F-418E-BE5F-FB1B83332E8D][Split the live tick subject into tokens]] | BACKLOG | | | Step 2 of the tick ingest pipeline: a consumer selects a class, a series or a datum on the broker. |
+| [[id:9B956121-B924-42B9-A592-844C6DDA080F][Add the tick policy table, the durable tier and the taps]] | BACKLOG | | | Step 3 of the tick ingest pipeline: every per-class rule is data, and a new feed needs no code in the pipeline. |
+| [[id:F3766975-F8CE-4CF3-BBED-AD32EEFD72E5][Scale out the tick ingest]] | BACKLOG | | | Step 3 of the tick ingest pipeline: tens of thousands of ticks each second across every asset class. |
+| [[id:1C91DFA6-CC96-4FD9-B0EC-978D4B3055BA][Move Hedgr to the tick pipeline]] | BACKLOG | | | The Hedgr client reads the live tick stream. Three of its choices need to follow the pipeline. The work is in the Hedgr repository. |
+| [[id:AC0375AA-E296-41DF-BA1D-025ABD8D1B6E][Stop the generator emitting event types for a table without events]] | BACKLOG | | | The generated protocol and the web TypeScript still define market_observation_event, although nothing publishes it. |
+| [[id:C0DB57DB-D087-4608-802C-E333D095410C][Keep the tick tables immutable and pruned]] | BACKLOG | | | The service role can change and delete tick rows, and the dictionary and activity rows stay when a series or a binding goes. |
+| [[id:A174746A-6725-45A9-864F-749D0A24A6B3][One valuation date for a report run]] | BACKLOG | | | The run document and the market data export each compute the valuation date from the clock, and a configuration of type date with no date exports the whole history. |
+| [[id:95D8CC5B-6C6F-409C-BDC1-1A75EECDF547][Tidy the tick readers: record time, docs and tests]] | BACKLOG | | | The record time of a tick, the knowledge page of the readers, and the new tests need small corrections. |
+| [[id:F11C89A4-3484-487E-B12B-181EB1825000][Drop old ticks without the Timescale licence]] | BACKLOG | | | The retention policy of the tick table needs the timescale licence, so on the Apache build nothing drops old ticks and the table grows without bound. |
+| [[id:3397BE56-F060-40B2-8962-F759D20692D2][Measure and trim the dated export]] | BACKLOG | | | A dated export makes three reads for each series, where the export without a date made one. |
+| [[id:4782C6AA-E569-4333-8E24-7E22B6D4FB04][Overlap the copy with the next batch]] | STARTED | 2026-10-21 | | The worker prepares a batch and then waits for its COPY, so the drain through NATS reaches about 98,000 rows per second against a target of more than 100,000. |
+| [[id:EBB7CB46-E476-4547-B63A-9FE78A075E8C][Remove the session functions from the policies]] | BACKLOG | | | The row-level security policies of the other tables call session functions, which cost about seven times a policy in the scalar subquery form on an indexed read. |
+| [[id:D1D8273D-DC95-4C69-8FBE-FCD8F30B9FB6][Wait on the backoff in the failed copy test]] | BACKLOG | | | The test of a failed copy sleeps a fixed 1500 ms for the store backoff and assumes the queue drops no tick, so it can fail on a loaded machine. |
+| [[id:B466DF8C-E7EF-4046-A577-1AF120C991A7][Interrupt a wait on a portable stop]] | BACKLOG | | | A thread that waits on a stop state wakes at once on a stop on every platform, and Apple's libc++ uses a fallback that the unit tests also run on Linux. |
+| [[id:B7CA8A2C-4478-4F25-9298-60DE3945C6EB][Read the ticks of a series with one history call]] | STARTED | 2026-10-23 | | A client that plots a live series gets no ticks, because the observation list reads the observation table and the ingest writes ticks to the tick table only. Add one history call that returns every tick of a range in one reply. |
+| [[id:A4AAEA01-7F27-4FA0-81D1-BBD4B02CD99B][Subscribe every Acme party to market data]] | STARTED | 2026-10-24 | | Provisioning gives the parent party Acme Corporation Plc no subscription and no route, so no series of Plc ticks. The subscribe step asks for the subscriptions the party holds, and a parent session sees its children's too, so the step finds the children's subscription and skips the parent. |
+
+* Decisions
+
+- Split from [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- A column store for the history. The decision waits for the measurement of the task "Measure
+  the write ceiling from the application" and for the task "Scale out the tick ingest".
+- A GPU. The path waits for commits and acknowledgements and does little arithmetic.

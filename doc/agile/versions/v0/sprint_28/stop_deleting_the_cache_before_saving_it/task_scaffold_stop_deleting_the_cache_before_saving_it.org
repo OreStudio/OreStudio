@@ -8,7 +8,7 @@
 #+filetags: :stop_deleting_the_cache_before_saving_it:sprint_28:v0:
 #+owner: marco
 #+branch: feature/stop-deleting-the-cache-before-saving-it
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14

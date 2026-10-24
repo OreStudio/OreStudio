@@ -8,7 +8,7 @@
 #+filetags: :browse_and_follow_the_grids_jobs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/draw-the-lineage-as-a-chart
-#+pr:
+#+pr: 3703
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -29,7 +29,7 @@ The job page draws the lineage as a column of nodes: the report definition, the 
 | State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing for the report definition, the run, the batch and the jobs. The scheduled job node waits for the task Read a scheduled job by its id. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 

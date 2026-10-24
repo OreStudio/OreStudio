@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :isolate_the_version_component:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/isolate-the-version-component
+#+pr: 3290
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3290][#3290]] | [ores.utility,docker,compass] Read the build stamp from a manifest |
 
 * Review
 

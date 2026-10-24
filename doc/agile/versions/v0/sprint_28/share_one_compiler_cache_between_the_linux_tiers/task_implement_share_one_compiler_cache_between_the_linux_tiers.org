@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :share_one_compiler_cache_between_the_linux_tiers:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/share-one-compiler-cache-between-the-linux-tiers
+#+pr: 3383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -28,7 +28,7 @@ One compiler cache entry serves each Linux variant, restored and replaced by eit
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |
@@ -80,7 +80,7 @@ through the prune.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3383][#3383]] | [ci] Share one compiler cache between the Linux tiers |
 
 * Review
 

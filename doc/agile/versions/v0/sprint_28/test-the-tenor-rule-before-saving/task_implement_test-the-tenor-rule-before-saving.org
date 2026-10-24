@@ -8,7 +8,7 @@
 #+filetags: :test-the-tenor-rule-before-saving:sprint_28:v0:
 #+owner: marco
 #+branch: feature/test-the-tenor-rule-before-saving
-#+pr:
+#+pr: 3423
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3423][#3423]] | [web] Test the drafted tenor rule before saving it |
 
 * Review
 

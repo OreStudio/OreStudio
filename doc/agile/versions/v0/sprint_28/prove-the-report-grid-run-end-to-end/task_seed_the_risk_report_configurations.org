@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end:sprint_28:v0:
 #+owner: marco
 #+branch: feature/seed-the-risk-report-configurations
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07

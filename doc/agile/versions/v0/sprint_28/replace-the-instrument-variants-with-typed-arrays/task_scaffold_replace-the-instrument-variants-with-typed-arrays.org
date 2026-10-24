@@ -16,7 +16,7 @@
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the instrument variants with typed arrays]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the credit fact variant with typed arrays]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the instrument variants with typed arrays]] |
-| Now          | Not yet started.                       |
+| State        | ABANDONED                              |
+| Parent story | [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the credit fact variant with typed arrays]] |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

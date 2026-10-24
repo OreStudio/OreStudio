@@ -8,7 +8,7 @@
 #+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/export-market-data-without-a-query-per-series
-#+pr:
+#+pr: 3688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23

@@ -29,7 +29,7 @@ share a key namespace.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:FC9DEEA3-58F1-4E00-985A-6DB12AA45DAF][Give the Nightly Build its own cache keys]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |

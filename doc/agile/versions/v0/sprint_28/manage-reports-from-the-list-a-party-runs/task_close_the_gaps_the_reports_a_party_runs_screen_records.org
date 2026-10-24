@@ -26,11 +26,11 @@ Close each gap the reports-a-party-runs specification records, in the three phas
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
-| Now          | Phases 1 and 2 are closed on their branches: the grants, the filter, the latest-run read, the problem count, the health word and the next fire time. |
+| Now          | Nothing. |
 | Waiting on   | The owner decision (G10), which no code can make. |
-| Next         | Phase 3, in a task of its own.         |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

@@ -36,7 +36,7 @@ an FX one. The family is where it lands first.
 | State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
 | Now          | Nothing. |
-| Waiting on   | The review of its PR. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 

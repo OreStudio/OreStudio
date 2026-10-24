@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 72C97475-DA02-4C38-ACF2-B5C3072516F9
+:END:
+#+title: Story: Find a trade by its identifiers, state, book and date from one list — the remaining work
+#+description: A person finds a trade by its identifier, state, book, date, counterparty, trade type or enum column from one list.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person finds a trade by its identifier, state, book, date, counterparty, trade type or enum column from one list.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]], which closed in sprint 28 with its done tasks.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- A read-only trade summary entity lists trades with their current state and booking, and filters by state, book and counterparty.
+- The trade summary searches every identifier of a trade, ignoring case and literally, and filters by trade date.
+- A scoped read carries as_of when the entity's list does.
+- The review journey and the backlog capture state what the trade list filters.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7FB8A3F6-DCDF-4E42-B8EC-3EABEB2EC023][Carry as_of on a scoped read]] | BACKLOG | | | A scoped read is list exactly, so it carries as_of when the entity's list does. The generator emits no as_of on a list_by request; this task makes it so. |
+| [[id:9FE2CBEA-053D-4007-89D0-40936F96233D][Document the trade list filters]] | BACKLOG | | | State in the specification, the review journey and the backlog capture what the trade list now filters. |
+
+* Decisions
+
+- Split from [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

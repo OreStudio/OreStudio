@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-17
-#+updated: 2026-10-18
+#+updated: 2026-10-24
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,22 +21,24 @@ A convention is declared once, in its own entity, and carries only its own field
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The registry, the generated per-family apply, the bundle import with its staging tables, and the NATS import path are merged. The aggregate =conventions_document= still carries every family and still feeds the run store. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Work task 1 to completion. That deletes the aggregate. |
-| Last touched  | 2026-10-18                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- Each convention family has its own operation model, generated from its entity, and no reflected type in refdata carries every family.
-- One generated list names the families, their scope, and their repository, and nothing hand-maintained duplicates it.
-- An import applies its families in one unit of work and reports an outcome for each family. A failure rolls the whole import back and leaves it staging.
-- The ORE conventions file crosses into and out of refdata as a package. No component shares a type that holds every family.
-- The web reads the family list from the generated registry rather than a hand-written table.
-- The configuration document protocol compiles on MSVC without a compiler flag that deepens constexpr evaluation.
-- Every read an export takes is taken at one bitemporal instant.
+The story closes on the tasks it finished:
+
+- Model each convention family on its own.
+- Generate a protocol and handler per family.
+- Declare the conventions bundle.
+- Rewire the ORE path to families and packages.
+- Replace the web family list with the registry.
+- Reconcile the record with the merged work.
+- Split the ORE side into per-family units.
 
 * Tasks
 
@@ -47,14 +49,12 @@ A convention is declared once, in its own entity, and carries only its own field
 | [[id:DF403F87-5783-4145-A143-BCF03D54CFBE][Declare the conventions bundle]] | DONE | 2026-10-17 | 2026-10-18 | A bundle is a set of related families of one owner applied as one unit. The import applies every family refdata owns in one unit of work, atomically, and reports per family. |
 | [[id:61D203C8-663C-408D-9940-F6100996861A][Rewire the ORE path to families and packages]] | DONE | 2026-10-17 | 2026-10-19 | The importer maps a conventions file into per-family messages or one bundle request. The ORE file is a package at the boundary, never a wire type. The exporter reassembles from per-family reads taken at one instant. |
 | [[id:B1C4EB87-A3D4-42A6-94A6-73FDC56C868E][Replace the web family list with the registry]] | DONE | 2026-10-19 | 2026-10-19 | The web BFF stops carrying a hand-maintained family table and reads the generated registry, so adding a family needs no edit there. |
-| [[id:264CDF6F-0674-4951-BCEA-334EBE68114F][Prove the Windows build]] | BACKLOG | | | An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS. |
-| [[id:2DAA2FFE-2346-42DB-B865-32ACAEB2FB64][Use as_of consistently for reads]] | BACKLOG | | | Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest. |
-| [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]] | BACKLOG | | | The curve configuration document is the same defect: one aggregate carrying every curve family, still on the wire in the translation unit that failed on MSVC. Move it onto its families and a bundle, as the conventions document was moved. |
 | [[id:6D9C9C2F-7C45-4811-95BE-B9FC1AF63687][Reconcile the record with the merged work]] | DONE | 2026-10-18 | 2026-10-18 | Correct the story and its tasks so the record states what merged and what remains. Stamp the delivered tasks DONE, record their PRs, write the acceptance criteria and results the scaffold left blank, and name the decisions the tasks settled. |
 | [[id:795E541C-1D22-4CFE-9686-2AD7E019560D][Split the ORE side into per-family units]] | DONE | 2026-10-19 | 2026-10-19 | Task for: Refactor conventions onto families and bundles |
 
 * Decisions
 
+- Closed at sprint 28 close with its 7 done tasks. The 3 open tasks and the original acceptance moved to [[id:62370F84-69A5-4980-9774-28F49EF0C61C][Refactor conventions onto families and bundles — the remaining work]] in the product backlog inbox.
 - A bundle is the largest atomic unit. The import stages one row per family and applies them in one unit of work, so a reader sees either all of the bundle or none of it. Nothing smaller is atomic and nothing larger is offered.
 - The family list is generated once and every consumer derives from it. A hand-maintained list beside it is a second source of truth and drifts.
 - The registry cannot dispatch by itself. A table of strings cannot call a typed repository, so the same generation emits the per-family apply, and the service calls generated functions instead of listing families by hand.

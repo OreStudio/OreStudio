@@ -28,9 +28,9 @@ Booking an actual trade into a real book commits the trade in one trading transa
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-23                               |
 
 * Acceptance

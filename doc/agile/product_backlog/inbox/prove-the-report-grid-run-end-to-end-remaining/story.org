@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 90A8E8FB-F103-42D1-9C57-517D7F0694B3
+:END:
+#+title: Story: Prove the report grid run end to end — the remaining work
+#+description: The ACME report definition runs to completion against the compute grid from an input bundle that already exists, the compute results are retrieved, and the run is reproducible from a freshly recreated database.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ACME report definition runs to completion against the compute grid from an input bundle that already exists, the compute results are retrieved, and the run is reproducible from a freshly recreated database.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Split from [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]], which closed in sprint 28 with its done tasks.                       |
+| Waiting on    | A live run on a database built from nothing.                               |
+| Next          | Triage into a sprint.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- The ACME definition triggers from the shell, the instance travels pending, running and completed through the FSM guard, and the compute results are retrieved.
+- The run is reproducible from a freshly recreated database, and every report ACME is seeded with has the risk report configuration its run needs.
+- The run's portfolio input is ORE-readable at the path the run document names, and the engine proceeds past Build Portfolio.
+- A job whose engine reports an error and writes no analytics is recorded as a failed result, and a stored assignment whose result is gone is not replayed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | STARTED | | | Every report ACME is seeded with needs a risk report configuration, built from the external/ore examples, and scoped to a root portfolio. A report names a root portfolio, and a method resolves that root to every book under it, which is the scope the run executes over. |
+| [[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | STARTED | | | Task for: Run an example bundle through the compute grid from a report definition |
+
+* Decisions
+
+- Split from [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-

@@ -36,7 +36,7 @@ the work that follows is broken into tasks.
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. A fresh profile of the portfolio read and a peak memory measurement follow as their own tasks. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-20                               |
 
 * Acceptance

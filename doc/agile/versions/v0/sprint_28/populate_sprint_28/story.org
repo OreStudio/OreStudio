@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Move sprint 27's carried stories and their successors from the product backlog inbox into sprint 28, and wire them into the sprint table.
 
 * Status
 
@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C7E8D49E-0303-4D5A-924D-7B5FB4838B05][Populate sprint 28 with the carried stories]] | BACKLOG | | | Pull the 41 sprint 27 stories back from the inbox into sprint 28. |
+| [[id:C7E8D49E-0303-4D5A-924D-7B5FB4838B05][Populate sprint 28 with the carried stories]] | DONE | | | 2026-10-13
 
 * Decisions
 

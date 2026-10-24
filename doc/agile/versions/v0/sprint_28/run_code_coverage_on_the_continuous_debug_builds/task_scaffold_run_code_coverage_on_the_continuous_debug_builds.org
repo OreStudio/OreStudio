@@ -29,7 +29,7 @@ story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |

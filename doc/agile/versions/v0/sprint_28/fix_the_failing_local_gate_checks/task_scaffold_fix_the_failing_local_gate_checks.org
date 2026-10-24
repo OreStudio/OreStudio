@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :fix_the_failing_local_gate_checks:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-the-failing-local-gate-checks
+#+pr: 3293
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3293][#3293]] | [compass,sql,marketdata] Fix the failing local gate checks |
 
 * Review
 

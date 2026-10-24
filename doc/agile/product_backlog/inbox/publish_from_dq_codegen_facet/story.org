@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 53116563-2667-48CD-941E-8521D3E42CBC
+:END:
+#+title: Story: Codegen facet: generate the DQ publish-from-dq pattern
+#+description: Add an ores.codegen facet that generates the SECURITY DEFINER publish-from-dq SQL function for the homogeneous family — about 29 of the 57 hand-written copies — from a declaration on the entity's codegen model, and unify the eight per-service publish_from_dq handlers rather than generating 57 of them.
+#+type: story
+#+level: s2
+#+filetags: :codegen:dq:publish:librarian:product_backlog:inbox:
+#+created: 2026-07-02
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Generate the mechanical part of the DQ publish-from-dq pattern from the
+entity's own codegen model, and stop hand-writing it. The pattern is the
+=SECURITY DEFINER= =ores_<component>_publish_<plural>_from_dq_fn= that reads
+an artefact table and writes the owning service's tables.
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] states its contract;
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] has
+the end-to-end walkthrough and the codegen value assessment this story acts on.
+
+The scope is narrower than this story first claimed. The measurements below are
+the reason, and two things follow from them:
+
+- *Generate the functions that are genuinely the same.* About 29 of the 57 are
+  one plain per-row upsert into one target table, honouring =mode=, matched on
+  the entity's natural key. That family is a template.
+- *Do not generate the handlers.* The eight =publish_from_dq_handler= files are
+  already one generic handler per service, not one per entity. Fifty-seven
+  generated handlers would be fifty-seven copies of something that is not
+  copied. They should be unified instead.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started. Re-cut on 2026-10-15 against the tree; the first draft described a tree that no longer exists. |
+| Waiting on    | The declaration unit (see Decisions). It is the one choice that has to be made before the rest of the tasks can be cut. |
+| Next          | Decide the declaration unit. |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- The declaration unit is decided and recorded, and it expresses the real
+  relation: 122 models opt into an artefact table and 57 functions publish
+  them, so one function covers many artefact tables.
+- Enabling the facet on an entity model generates its publish function for the
+  plain one-table per-row upsert family, with no hand-written SQL beyond the
+  declaration.
+- Regenerating one existing hand-written instance produces a semantic zero-diff
+  against the hand-written version, which is then deleted. Use =asset_classes=
+  or =countries=; =report_definitions= is a helper-delegating set-based
+  document and is the wrong first instance.
+- The functions that do not fit the family are named and recorded as
+  deliberately hand-written, with the reason, so the facet's boundary is a
+  statement rather than an omission.
+- The eight =publish_from_dq_handler= files are unified, or the reason they
+  cannot be is recorded. Generating 57 handlers is explicitly not the answer.
+- =dq_artefact_types_populate.sql=, =entity_table_writes_baseline.json= and the
+  pgTAP publish tests are updated for whatever moves.
+
+* Measurements
+
+Taken on =main= at =a0408fb02d=.
+
+| What | Value | Command |
+|------+-------+---------|
+| Publish functions | 57 across 7 components | =grep -rhoE "create or replace function ores_[a-z_]+_publish_[a-z0-9_]+_from_dq_fn" projects/ores.sql/create/ \| sort -u \| wc -l= |
+| Their spread | refdata 47; analytics, iam, reporting, synthetic 2 each; assets, marketdata 1 each | the same command, per file |
+| A second convention | 6 x =ores_dq_<x>_publish_fn=, so 63 across 8 services | =grep -rhoE "ores_dq_[a-z_]+_publish_fn" projects/ores.sql/create/dq/= |
+| Handlers | 8 per-service =.cpp=, one of which (=ores.dq=) has no =from_dq_fn= | =grep -rl publish_from_dq_handler projects/= |
+| Models that opt into an artefact table | 122 | =domain_entity_artefact_create= enablements |
+| Plain per-row upsert family | 27, plus 2 with a =p_params= filter | a structural classifier over the 57 bodies |
+| Distinct structural shapes | 25 across the remainder | the same classifier |
+| Validate =mode= | 33 of 57; the other 24 ignore it or never validate it | the same classifier |
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5E609A05-A173-4092-BCBB-264FD256FEA6][Decide the publish declaration unit]] | BACKLOG | | | A publish function does not correspond to one entity: 122 models opt into an artefact table and 57 functions publish them, and curve_configuration alone publishes 31 artefact tables. Decide what a single declaration is — one per publish function, or a document that groups the artefact tables a publication writes — and record it, because no other task in the story can be cut until it is settled. |
+
+* Decisions
+
+- *The declaration unit is not decided, and it is the first task.* A publish
+  function does not correspond to one entity: =curve_configuration= publishes
+  31 artefact tables and analytics' today's market publishes 5, while 122
+  models opt into staging. The facet has to express "these artefact tables are
+  published together by this function" before anything else can be cut.
+- *The C++ half is unification, not generation.* =subject_to_fn= is already
+  generic in every handler, and synthetic's validates against an allow-list.
+  What differs is the subject spelling and the allow-list, not the handler.
+- *This story no longer retires the =lookup_entity= shadow models.* The DQ
+  artefact migration already did: no =#+type: ores.codegen.lookup_entity= model
+  is left, and the =sql_schema_artefact_create= template is deleted.
+- *The =model_type == 'schema'= enrichment bug is moot.* It was raised as a
+  prerequisite for rendering from a =lookup_entity= model. That path is gone.
+- *Subject constants are partly modelled already.* =ores.codegen.operation=
+  renders C++ protocol from =ores.analytics.publish_operations.org=,
+  =ores.iam.account_messages.org= and =ores.reporting.operations.org=; refdata,
+  assets, dq and marketdata still hand-spell subjects in =registrar.cpp=. A
+  facet should use the operation models where they exist rather than add a
+  fourth way to name a subject.
+
+* Out of scope
+
+- The artefact table itself. That half is done
+  ([[id:5B8F3C2A-6E1D-4A9F-8C3B-1D7A9E2F4B6C][ores.sql.schema.domain_entity_artefact_create]]).
+- The bundle and dataset registration rows, which are one-liners.
+- The ~28 functions that are genuinely bespoke: helper-delegating documents,
+  multi-table publishes, and party-scoped publishes with their own =p_params=
+  contract.

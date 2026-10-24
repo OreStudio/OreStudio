@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 4185CBED-B457-4623-A798-144EE34EC1F1
+:END:
+#+title: Story: Give each tenant its own buckets and scope the reaper
+#+description: A tenant owns a bucket per data class, the storage service derives the tenant from the bucket, a step service reaches its tenant's buckets with its run token, a run's inputs and outputs are removed at run end with a 24-hour backstop, and the compute reaper acts inside each tenant.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-13
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A tenant owns a bucket per data class, the storage service derives the tenant from the bucket, a step service reaches its tenant's buckets with its run token, a run's inputs and outputs are removed at run end with a 24-hour backstop, and the compute reaper acts inside each tenant.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-13                               |
+
+* Acceptance
+
+- A tenant owns an inputs bucket and an outputs bucket, and the platform owns the package and artefact buckets.
+- Storage derives the tenant from the bucket, and a step service reaches its tenant's buckets with its run token.
+- A run's inputs and outputs are removed when the run ends and its data is in the database, with a 24-hour backstop, and a tenant's data leaves with its buckets.
+- The compute reaper acts inside each tenant, so a stale host's work is requeued.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:85B38AFE-2388-4436-B620-07B351B8F4E9][Scope the reaper to each tenant]] | BACKLOG | | | The compute service's reap() lists InProgress results and hosts with the service's own system-tenant context. Results are tenant rows and the RLS policy scopes each tenant to its own, so the reaper sees nothing and a stale host's work is never requeued. It needs the same tenant scoping the submit path now uses: act inside each tenant, or iterate the tenants that have work in flight. |
+
+* Decisions
+
+* Out of scope
+
+-

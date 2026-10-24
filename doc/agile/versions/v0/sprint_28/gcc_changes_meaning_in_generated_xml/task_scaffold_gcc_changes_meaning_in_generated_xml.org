@@ -8,7 +8,7 @@
 #+filetags: :gcc_changes_meaning_in_generated_xml:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/gcc-changes-meaning-in-generated-xml
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19

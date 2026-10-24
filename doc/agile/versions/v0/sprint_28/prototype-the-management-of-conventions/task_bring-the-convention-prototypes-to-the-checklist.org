@@ -28,9 +28,9 @@ The screen review checklist was written after the convention prototypes. Tick ea
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
-| Now          | The list prototype meets the checklist, with four named exceptions. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge, then build the list screen. |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

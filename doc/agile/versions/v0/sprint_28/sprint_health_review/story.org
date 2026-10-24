@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 64CD9F6E-D983-4580-851C-6C0985C303C8
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 28, covering goal alignment, load, PR velocity, story and task balance, focus signal, and bookkeeping hygiene.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A System 2 review of sprint 28 at its close. Each review measures the dimensions the skill names, challenges its own readings, repairs the agile bookkeeping it finds, and writes one verdict with the evidence behind it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- The review measures the dimensions the skill names: goal alignment, sprint
+  load, PR velocity, story and task balance, focus signal, velocity and the
+  overall verdict.
+- Every number in the review is a measurement with the command that produced it
+  and the commit it was taken at, or is marked as an estimate with its basis.
+- The findings, the reconciliations and the close decisions are written into the
+  review task's =* Result=, and the sprint's =* Health Review= table carries the
+  review's summary row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FFAAAC6D-7477-4A27-B7D3-DD592E6CC192][Health review 1 — sprint 28 close analysis]] | DONE | 2026-10-24 | 2026-10-24 | System 2 health review 1 of sprint 28. |
+
+* Decisions
+
+- The timeline regeneration the runbook names is not applied. Sprint 27 retired
+  it: only sprints 20 and 21 carry a =timeline/= directory.
+- The three finished stories the audit named are closed. The fourth is rejected
+  because its only task writes the story rather than building its acceptance.
+- Of the 25 open tasks whose pull requests all merged, the 8 with a written
+  =* Result= are closed DONE. The other 17 move to the inbox with their stories,
+  because a merged PR does not prove a task is finished.
+- At the owner's request the review also closes the sprint's stories. Each story
+  with done and open tasks splits into a closed story and an inbox story. Each
+  story with no done task moves whole to the inbox.
+
+* Out of scope
+
+- The 51 DONE tasks with no PR recorded.
+- Triage of the stories now in the product backlog inbox.

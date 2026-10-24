@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :marketdata:tenor:calendar:web:sprint_28:v0:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-24
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,19 +21,19 @@ A person picks a tenor convention, a calendar and a horizon date in ores.web. Th
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The scaffold is done and its PR is under review. |
-| Waiting on    | The scaffold PR.                       |
-| Next          | Start "Resolve a convention's tenors in one call". |
-| Last touched  | 2026-10-21                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                       |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 
-- One wire call resolves all the tenors of a convention on a calendar and a horizon date, and returns a date or a refusal for each.
-- A preview page in ores.web lets a person pick a convention, a calendar and a horizon date. It lists each tenor of the convention with its resolved date, in tenor order.
-- A tenor that cannot resolve shows the server's refusal in its row and does not hide the other rows.
-- The page has a loading state and a retry, as the entity screen specification requires.
+The story closes on the tasks it finished:
+
+- Scaffold story: Preview a convention's term structure on a calendar.
+- Resolve a convention's tenors in one call.
 
 * Tasks
 
@@ -41,9 +41,10 @@ A person picks a tenor convention, a calendar and a horizon date in ores.web. Th
 |------+-------+-------+-----+-------------|
 | [[id:7CD9CAE0-5DAF-4ED0-8226-08ADD2635D43][Scaffold story: Preview a convention's term structure on a calendar]] | DONE | 2026-10-21 | 2026-10-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6C11D66B-19F4-4152-B9F1-F6253A195083][Resolve a convention's tenors in one call]] | DONE | 2026-10-21 | 2026-10-22 | Initial task for: Preview a convention's term structure on a calendar |
-| [[id:2C7A4944-5175-40BE-9906-5D74CFD024C4][Show a convention's term structure on a page]] | BACKLOG | | | A page in ores.web lists each tenor of a chosen convention with the date it resolves to on a chosen calendar and horizon date. |
 
 * Decisions
+
+- Closed at sprint 28 close with its 2 done tasks. The 1 open task and the original acceptance moved to [[id:0D825C70-655C-4D0A-8E9E-9D45C4B51C46][Preview a convention's term structure on a calendar — the remaining work]] in the product backlog inbox.
 
 * Out of scope
 

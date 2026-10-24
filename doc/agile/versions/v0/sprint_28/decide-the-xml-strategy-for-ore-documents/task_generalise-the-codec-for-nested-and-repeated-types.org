@@ -30,9 +30,9 @@ the table rather than in the engine.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

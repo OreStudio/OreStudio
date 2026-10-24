@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end:sprint_28:v0:
 #+owner: marco
 #+branch: feature/retrieve-compute-results
-#+pr:
+#+pr: 2899
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -29,7 +29,7 @@ collect_compute_results completes without downloading anything, and ores.reporti
 | State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing. The live run belongs to Prove the run end to end and keep it repeatable. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2899][#2899]] | [reporting] Retrieve a run's compute results |
 
 * Review
 

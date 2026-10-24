@@ -8,7 +8,7 @@
 #+filetags: :prototype-the-management-of-conventions:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-prototype-the-management-of-conventions
-#+pr:
+#+pr: 3581
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3581][#3581]] | [prototypes] Journeys and prototypes for managing conventions |
 
 * Review
 

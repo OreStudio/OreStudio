@@ -8,7 +8,7 @@
 #+filetags: :fix_the_compass_prune_baseline:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-compass-prune-baseline
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17

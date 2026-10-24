@@ -8,7 +8,7 @@
 #+filetags: :run-a-report-end-to-end-on-synthetic-bonds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/name-a-slow-statement-in-the-service-log
-#+pr:
+#+pr: 3692
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23

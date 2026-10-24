@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Four CI failures on main: range-loop-construct error in xml_document_tests.cpp (gcc), incomplete component_trade type in deque on windows-msvc, workflow_engine_tests SIGABRT (std::system_error Invalid argument), and the site build broken link to ID 465ca244 in the time-series plot capture.
 
 * Status
 

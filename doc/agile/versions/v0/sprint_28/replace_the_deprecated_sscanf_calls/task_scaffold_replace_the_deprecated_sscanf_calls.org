@@ -29,7 +29,7 @@ and wire the story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |

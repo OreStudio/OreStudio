@@ -8,7 +8,7 @@
 #+filetags: :keep_the_record_screens_up_to_date:sprint_28:v0:
 #+owner: marco
 #+branch: feature/keep-the-record-screens-up-to-date
-#+pr:
+#+pr: 3277
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3277][#3277]] | [agile] Close four completed tasks on the record screens story |
 
 * Review
 

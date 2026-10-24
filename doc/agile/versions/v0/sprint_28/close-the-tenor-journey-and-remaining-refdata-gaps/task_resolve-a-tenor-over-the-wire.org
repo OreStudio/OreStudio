@@ -29,7 +29,7 @@ Journey 9's resolution column and resolved-dates step show a date the server res
 | State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
 | Now          | Nothing. |
-| Waiting on   | Review of the pull request.            |
+| Waiting on   | Nothing.            |
 | Next         | Nothing. |
 | Last touched | 2026-10-16                             |
 

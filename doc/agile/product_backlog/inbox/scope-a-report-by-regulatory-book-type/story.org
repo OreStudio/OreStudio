@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: E661D6CE-3D33-4256-BBC0-0DE8A14D9F3D
+:END:
+#+title: Story: Scope a report by regulatory book type
+#+description: A report states the regulatory book type of the books it may read, from the same vocabulary a book uses, so a trading book report never prices the banking book.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-10-21
+#+updated: 2026-10-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report that is a regulatory trading book measure reads trading books only, and the system knows it from one vocabulary: the regulatory book type that a book already carries. There is no second enum for the report.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Raised from the review of the end to end run. |
+| Waiting on    | Nothing.                               |
+| Next          | Decide the rule, then build it.        |
+| Last touched  | 2026-10-21                               |
+
+* Acceptance
+
+- A report definition states a regulatory book type, or none for a report that reads any book, and the value comes from the regulatory book type table that books use.
+- The scope of a configuration is checked against the report: a book whose regulatory book type differs from the report's is refused, with a message that names the book and the report.
+- The seed states the type of the regulatory trading book measures (FRTB SA Capital, Stressed VaR and P&L Attribution) and leaves the other reports with none.
+- The report page shows and edits the type, and the configuration page tags each report that binds it with its type. The refusal reaches the person in the edit form, because the configuration page changes nothing.
+- A test proves that a trading book report scoped to the whole entity reads trading books only, or is refused, as the rule decides.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:760C022D-FAB5-4223-B8F3-60075C6FE45E][Define the report book scope rule]] | STARTED | 2026-10-21 | | Initial task for: Scope a report by regulatory book type |
+| [[id:15BEF777-543D-453C-847F-0A50E8719BE6][Refuse a book type change under a typed report]] | BACKLOG | | | A book whose regulatory book type changes after a typed report binds it is dropped from that report without a word, so the report reads fewer books or none. |
+
+* Decisions
+
+** One vocabulary, not two
+
+A book already carries a regulatory book type, a code of the table =ores_refdata_regulatory_book_types_tbl=: =Trading= and =Banking=. The system tenant owns the table and a book is checked against it when it is written. The report does not get an enum of its own. A report definition gets one optional column, =regulatory_book_type=, that holds a code of the same table. An empty value means the report reads any book.
+
+A second enum with the values =any=, =trading= and =banking= would say =Trading= and =Banking= a second time. A third type added to the table would then need a change in two places. "Any" is the absence of a value and needs no code.
+
+** Where the rule lives
+
+The type is a property of the report, so it sits on the report catalogue and on the definition made from it. The scope is a property of the risk report configuration, which a definition binds by name. The check therefore runs in two places: when a definition binds a configuration, and when the scope of a configuration changes.
+
+The rule reaches from the reporting tables to a refdata code. The pattern for this is the existence check of the page [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]], block 5, and the function =ores_refdata_validate_regulatory_book_type_fn= already exists.
+
+** What the rule does
+
+| Option | Rule | Verdict |
+|--------+------+---------|
+| A | Refuse a scope that holds a book of another type. | The whole entity is then invalid for every typed report, so each typed report needs a narrower scope in the seed. |
+| B | Read only the books of the report's type, and say nothing. | A person who names a banking book for FRTB gets an empty report that reads as a success. This is issue 8 of the end to end run. |
+| C | Read only the books of the report's type when the scope is a portfolio, refuse when the scope names a book of another type, and refuse when no book of the type is left. | Chosen by the owner on 2026-10-21. |
+
+The owner chose option C on 2026-10-21. It keeps the whole entity as the default scope, as decided the same day, and a typed report never prices a book of the other type. The refusals cover the two mistakes a person can make: a named book of the wrong type, and a scope with nothing to read.
+
+** Reports that read both books
+
+A report with no type reads both books. Several reports need that:
+
+- Valuation and fair value cover every position, and the banking book needs a fair value too.
+- Counterparty exposure, CVA and large exposure limits are measured per counterparty over all its derivatives, in whichever book they sit.
+- The liquidity coverage ratio, the net stable funding ratio and the leverage ratio are measures of the whole balance sheet.
+- A banking book position is often hedged by a trading book derivative, so net FX and net interest rate risk are right only over both books.
+- A report that monitors reclassifications between the books must see both.
+- Data quality, trade reporting by instrument and audit do not depend on the book.
+
+The empty value covers them, so the table of codes needs no entry for "both".
+
+** What follows in the code
+
+- The report catalogue and the report definition gain =regulatory_book_type=. The seed states =Trading= for three reports, FRTB SA Capital, Stressed VaR and P&L Attribution. The catalogue text names each as a trading book regulatory measure (FRTB, Basel 2.5 and the P&L attribution test). The intraday monitor and the headline position are trader views and not regulatory measures, and the sensitivity reports feed capital but are not capital, so they stay empty with the valuation, data and liquidity reports.
+- =gather_trades= reads the books of the scope and keeps the books of the report's type.
+- The configuration page shows the type of a report, and the refusal with the names of the book and the report.
+- Rule D10 of the generator =generate_risk_config_data.py= is replaced by this rule.
+
+** Open questions
+
+- Which reports are =Banking=? The banking book measures (interest rate risk in the banking book, credit risk standardised approach) are candidates, and the catalogue does not name them yet.
+- A virtual book belongs to no regulatory type. The rule must say whether it is read.
+- A book that changes type after a definition bound its configuration. The check on the scope change does not see it, so the gather step must still filter.
+
+* Out of scope
+
+- A total capital report. It adds market risk capital on the trading book to credit risk capital on the banking book, with a different method for each. It reads both books, but it needs a different analytic setup for each type, so it is two typed runs and a combined view and not one untyped run. A story of its own decides how a report holds more than one setup.
+- A third regulatory book type. The table can hold one, and the rule reads the table, but no report states it.

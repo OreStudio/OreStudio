@@ -8,7 +8,7 @@
 #+filetags: :stop_the_windows_debug_builds:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/stop-the-windows-debug-builds
-#+pr:
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19

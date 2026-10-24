@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/broaden-the-tradeable-party-counterparty-links
-#+pr:
+#+pr: 3361
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3361][#3361]] | [seeder] Read the ACME tradeable counterparties from GLEIF |
 
 * Review
 

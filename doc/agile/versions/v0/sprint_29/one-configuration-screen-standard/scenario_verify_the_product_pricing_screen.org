@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 804EEE6C-772B-4BAA-8378-A6747F16E0B6
+:END:
+#+title: Test Scenario: Verify the Product pricing screen
+#+description: Check the five tabs of a product pricing configuration, the tree by asset class, the product workbench with its model and engine groups, the reach and the history.
+#+type: test_scenario
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: solid_dirac
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]. It checks the screen this task built: the five tabs, the tree by asset class, the product workbench with its model and engine groups, the reach and the history. Record the outcome by hand in =* Results=.
+
+* Before you start
+
+The session already did the following. Confirm the system is in this state before you start; do not repeat the work.
+
+- The build is current for the branch =feature/apply-the-standard-to-the-pricing-engine-configuration=.
+- The database was recreated on the schema this build expects, and Acme Corporation is provisioned: 6 configurations for the HK party, 34 parties, 23 pricing configurations, 28 engine settings, 78 report definitions.
+- All 24 services are active. The web answers on the standard port =http://localhost:21002=.
+- You need =tenant_admin@acme_corporation= / =Secure-Password-123=. Choose the party *ACME Corporation HK Ltd*.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | Reporting → Product pricing, on http://localhost:21002 |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open =http://localhost:21002=.
+- Log in as =tenant_admin@acme_corporation= with password =Secure-Password-123=.
+- Choose the party *ACME Corporation HK Ltd*.
+- The reporting area opens. If it does not, the login or the party failed; stop here.
+
+** Open a product pricing configuration
+
+- Open Reporting, then Product pricing.
+- The list shows the configurations the HK party holds.
+- Open the one named *XVA Overnight*.
+- The page title is the configuration name.
+
+** Check the five tabs
+
+- The page shows these tabs, in this order: Details, Global parameters, Products, Reports, History.
+- The first tab is open.
+- Reload the page with a tab chosen; the same tab is open after the reload.
+
+** Read the details
+
+- The Details tab shows the name, the party, the variant, the person who changed it and when.
+- The description reads.
+- The header offers Edit and the page offers no field to type in.
+- Clicking Edit opens a dialog that asks for a change reason.
+
+** Read the product tree
+
+- Open the Products tab.
+- The left side lists the configuration's products under their asset class.
+- The products of one asset class sit together.
+- Selecting another product changes the workbench on the right.
+
+** Read the workbench
+
+- The workbench states the product, its asset class and its instrument.
+- It then states what a model is, names the model in force, and gives the model's description.
+- It lists the model's parameters; each has its value and a Documentation disclosure.
+- It then does the same for the engine: what an engine is, the engine in force, its description, then its parameters.
+- Opening a Documentation disclosure shows the parameter's help, its format and whether it is required.
+
+** Edit a product parameter
+
+- Click Edit on the workbench.
+- Change the value of one parameter, give a change reason, and save.
+- Reopen the product: the new value is in force.
+- The History tab gains a version.
+
+** Read the global parameters
+
+- Open the Global parameters tab.
+- The tab states that these parameters apply to the whole document.
+- It lists the global parameters with their values.
+- Each row has a Documentation disclosure.
+
+** Read the reach
+
+- Open the Reports tab.
+- The tab states that a report needs a price for every product type in its portfolio.
+- It lists the reports that bind the configuration; open one and its page opens.
+
+** Read the history
+
+- Open the History tab.
+- The timeline lists the versions, newest first, each with who changed it and why.
+- The save made in the edit step is in the list.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The Product dialog is the only write on the page; the page itself is read only.
+- The global parameters do not carry documentation yet. The task that moves the pricing documentation onto the ORE parameter contract owns that.

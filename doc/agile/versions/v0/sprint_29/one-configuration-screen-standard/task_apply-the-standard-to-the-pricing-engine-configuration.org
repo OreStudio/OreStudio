@@ -72,7 +72,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web tests | 1972 pass | =npx vitest run= in =packages/web= | see the branch head |
+| BFF tests | 941 pass | =npx vitest run= in =packages/bff= | see the branch head |
+| Configurations, HK party | 6 | =GET /api/reporting/pricing-engines= | see the branch head |
+| Product types with an asset class | 108 | =GET /api/reporting/pricing-engines/vocabulary= | see the branch head |
+| Reports bound to one configuration | 3 | =GET /api/reporting/pricing-engines/{id}= | see the branch head |
 
 * Notes
 
@@ -85,7 +89,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_verify_the_product_pricing_screen.org][Verify the Product pricing screen]] | PENDING | The five tabs, the tree, the workbench, the reach and the history |
 
 * PRs
 

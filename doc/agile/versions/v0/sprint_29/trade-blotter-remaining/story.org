@@ -63,6 +63,8 @@ authorisation queue (see =* Decisions=).
 | [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] | BACKLOG | | | Build the Operations screen that works the operational authorisation queue. |
 | [[id:BB607AAF-4438-4A99-A539-A7822A0224A2][Raise an authorisation request when a draft is executed]] | BACKLOG | | | A draft that goes live through the Execute transition raises the operational authorisation request, as a booking does. |
 | [[id:BA9F70BA-4521-47F5-B5D1-835B01265D52][Keep seeded trades out of the authorisation queue]] | BACKLOG | | | The synthetic population books actual trades into real books, so each raises an authorisation request. Seeded data must not fill the Operations queue. |
+| [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
+| [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
 
 * Decisions
 

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: A5DA1085-F781-4467-92AE-6D4A8769FE79
+:END:
+#+title: Task: Populate the inflation family
+#+description: Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/populate-the-inflation-family
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ACME's books hold inflation-linked trades. The refdata asset class names inflation, but the trade type catalogue carries exactly one inflation code, InflationSwap, and it routes to rate_instrument under the swap product type. The planner therefore selects by trade type and not by product type, and the class carries 3% of the population.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The mapping from the inflation asset class to its trade types is declared, because the catalogue has no inflation product type.
+- InflationSwap books a trade, and the index the trade names is one the tenant holds fixings for.
+- The class share of the population matches its weight within tolerance.
+- The family exports as the ORE portfolio the engine reads, and reverse-maps without loss.
+- The report that prices the family runs against the inflation fixing curve and its seasonality, or the task states which pricing it cannot prove yet.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

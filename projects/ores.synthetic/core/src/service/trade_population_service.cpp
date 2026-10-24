@@ -27,7 +27,7 @@ trade_population_service::trade_population_service(trade_population_writer& writ
 
 trade_population_run trade_population_service::run(const boost::uuids::uuid& config_id) {
     const auto scope = writer_.resolve_scope(config_id);
-    const auto plan = plan_population(scope);
+    const auto plan = planner_for(scope.asset_class_code).plan(scope);
 
     trade_population_run run;
     run.config_id = scope.config_id;

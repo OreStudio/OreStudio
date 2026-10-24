@@ -46,7 +46,7 @@ declare
 begin
     for v_kind in
         select * from (values
-            ( 1, 'pricing_engines',          'Pricing engines',          'PricingEngines',          'ores.analytics', 'pricingEnginesFile'),
+            ( 1, 'pricing_engines',          'Product pricing',          'PricingEngines',          'ores.analytics', 'pricingEnginesFile'),
             ( 2, 'todays_market',            'Today''s market',          'TodaysMarket',            'ores.analytics', 'marketConfigFile'),
             ( 3, 'simulation',               'Simulation',               'Simulation',              'ores.analytics', 'simulationConfigFile'),
             ( 4, 'sensitivity',              'Sensitivity analysis',     'SensitivityAnalysis',     'ores.analytics', 'sensitivityConfigFile'),
@@ -64,7 +64,7 @@ begin
             (16, 'counterparty_information', 'Counterparty information', 'CounterpartyInformation', 'ores.refdata',   'counterpartyFile'),
             (17, 'netting_set_definitions',  'Netting set definitions',  'NettingSetDefinitions',   'ores.trading',   'csaFile'),
             (18, 'risk_report_config',       'Risk report configuration', 'ORE',                    'ores.reporting', null),
-            (19, 'engine_settings',          'Engine settings',          'ORE',                     'ores.reporting', null)
+            (19, 'engine_settings',          'Engine run settings',          'ORE',                     'ores.reporting', null)
         ) as k(display_order, code, name, ore_root_element, owning_component, run_parameter)
     loop
         -- Every version of a kind that predates the mapping columns, current or

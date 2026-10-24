@@ -4648,8 +4648,8 @@ export const en: SourceCatalogue = {
 
     // engineSettings:begin
     engineSettings: {
-        title: 'Engine settings',
-        lead: 'The named settings the risk engine runs with. A report binds one, and several reports can share it.',
+        title: 'Engine run settings',
+        lead: 'How the engine runs a report: the fixings and cash flows, the market and trade building, and the execution. A report binds one.',
         columns: {
             name: 'Name',
             party: 'Party',
@@ -4679,7 +4679,7 @@ export const en: SourceCatalogue = {
             changed: 'Last changed',
         },
         tabs: {
-            label: 'Engine settings',
+            label: 'Engine run settings',
             details: 'Details',
             reports: 'Used by',
             history: 'History',
@@ -4837,8 +4837,8 @@ export const en: SourceCatalogue = {
             authorBody:
                 'Choose the products, the model and engine for each, and the settings, then save one configuration.',
         },
-        title: 'Pricing engines',
-        lead: 'The pricing engine configurations the party you work in holds, with the products and settings of each.',
+        title: 'Product pricing',
+        lead: 'How each product type is priced for the party you work in: the model, the engine and their parameters.',
         columns: {
             name: 'Configuration',
             party: 'Party',
@@ -4945,12 +4945,12 @@ export const en: SourceCatalogue = {
             title: 'Reporting',
             lead: 'The reports a party runs, and how the latest run of each one went.',
             screens: {
-                engineSettings: 'Engine settings',
+                engineSettings: 'Engine run settings',
                 engineSettingsBody:
-                    'Which settings the engine runs reports with, for the party you work in.',
-                pricingEngines: 'Pricing engines',
+                    'How the engine runs every report: the fixings, the building and the execution.',
+                pricingEngines: 'Product pricing',
                 pricingEnginesBody:
-                    'Which model and engine price each product, for the party you work in.',
+                    'How each product type is priced: the model, the engine and their parameters.',
                 reports: 'Reports',
                 reportsBody:
                     'The definitions the parties you work in run, and the health of each latest run.',

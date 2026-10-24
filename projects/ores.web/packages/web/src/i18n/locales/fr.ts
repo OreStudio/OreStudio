@@ -4718,7 +4718,7 @@ const fr: SourceCatalogue = {
 
     // engineSettings:begin
     engineSettings: {
-        title: 'Paramètres du moteur',
+        title: "Réglages d'exécution du moteur",
         lead: 'Les paramètres nommés avec lesquels le moteur de risque s’exécute. Un rapport en lie un, et plusieurs rapports peuvent le partager.',
         columns: {
             name: 'Nom',
@@ -4749,7 +4749,7 @@ const fr: SourceCatalogue = {
             changed: 'Dernière modification',
         },
         tabs: {
-            label: 'Paramètres du moteur',
+            label: "Réglages d'exécution du moteur",
             details: 'Détails',
             reports: 'Utilisé par',
             history: 'Historique',
@@ -4908,7 +4908,7 @@ const fr: SourceCatalogue = {
             authorBody:
                 'Choisissez les produits, le modèle et le moteur de chacun et les paramètres, puis enregistrez une configuration.',
         },
-        title: 'Moteurs de valorisation',
+        title: 'Tarification des produits',
         lead: 'Les configurations de moteur de valorisation de la partie dans laquelle vous travaillez, avec les produits et les paramètres de chacune.',
         columns: {
             name: 'Configuration',
@@ -5017,10 +5017,10 @@ const fr: SourceCatalogue = {
             title: 'Rapports',
             lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
             screens: {
-                engineSettings: 'Paramètres du moteur',
+                engineSettings: "Réglages d'exécution du moteur",
                 engineSettingsBody:
                     'Avec quels paramètres le moteur exécute les rapports, pour la partie dans laquelle vous travaillez.',
-                pricingEngines: 'Moteurs de valorisation',
+                pricingEngines: 'Tarification des produits',
                 pricingEnginesBody:
                     'Quel modèle et quel moteur valorisent chaque produit, pour la partie dans laquelle vous travaillez.',
                 reports: 'Rapports',

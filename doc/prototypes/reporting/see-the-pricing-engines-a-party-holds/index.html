@@ -315,6 +315,32 @@ const SETTINGS = {
   ]
 };
 const GLOBAL_KNOWN = [{ name: 'ContinueOnCalibrationError', kind: 'select', opts: ['true', 'false'], usual: 'true', note: 'Whether a failed calibration stops the run. True prices the product with the last good fit and records the error.' }];
+const MODEL_NOTES = {
+  CrossAssetModel: 'A multi-factor model that values every asset class on one correlated set of risk factors. ORE uses it for the American Monte Carlo engine, where a single simulation feeds the whole portfolio.',
+  BlackBachelier: 'Black or Bachelier on the forward swap rate, chosen by the volatility surface: lognormal for Black, normal for Bachelier. The standard model for European swaptions and caps.',
+  LGM: 'The linear Gauss-Markov model, a one-factor short-rate model calibrated to swaptions. It gives a lattice or a grid for products whose exercise depends on later dates, such as Bermudan swaptions.',
+  IborCapModel: 'A model for caps and floors built on the caplet volatility surface. Each caplet is priced from its own volatility, so the model needs no joint dynamics.',
+  DiscountedCashflows: 'The product is a set of known cash flows. The model discounts each one on its own curve, with no dynamics and no calibration.',
+  GarmanKohlhagen: 'The Black-Scholes model extended to two currencies: the FX forward follows from the two money market curves, and the option is priced on it.',
+  LinearTSR: 'The linear terminal swap rate model. It approximates the value of a swap by a linear function of the terminal swap rate, which makes CMS and CMS spread legs tractable.',
+  BlackScholesMerton: 'Black-Scholes with a continuous dividend yield. The forward follows from the equity curve and the dividend curve, and the option is priced on it.'
+};
+const ENGINE_NOTES = {
+  AMC: 'American Monte Carlo. It simulates the risk factors and values the portfolio on every path, using regression to decide exercise, so it can price early exercise and exposures together.',
+  BlackBachelierSwaptionEngine: 'The closed-form swaption engine. It reads the forward swap rate, the annuity and the swaption volatility, and prices the option in one formula.',
+  Grid: 'A grid or lattice engine. It steps the model over a grid of dates and states, which is what a Bermudan exercise needs because each date depends on the ones after it.',
+  IborCapEngine: 'The cap and floor engine. It prices each caplet or floorlet from the caplet surface and sums them.',
+  DiscountingSwapEngine: 'The discounting engine for swaps. It discounts each leg on its own curve and adds the two.',
+  DiscountingRiskyBondEngine: 'The discounting engine for bonds. It discounts the coupons and the redemption on the risk-free curve plus the issuer spread.',
+  DiscountingFxForwardEngine: 'The discounting engine for FX forwards. It discounts each currency leg on its own curve and converts at the spot rate.',
+  DiscountingCrossCurrencySwapEngine: 'The discounting engine for cross-currency swaps. It discounts each currency leg on its own curve and joins them with the FX rate.',
+  AnalyticEuropeanEngine: 'The closed-form engine for European options. It prices from the forward, the volatility and the discount factor in one formula.',
+  LinearTSRPricer: 'The pricer for CMS and CMS spread legs under the linear terminal swap rate model. It reads the swap curve and the volatility of the tenors involved.',
+  MidPointCdsEngine: 'The engine for credit default swaps. It discounts the premium leg and the protection leg on the credit curve and takes the difference.'
+};
+const definition = (kind) => kind === 'model'
+  ? 'A model is the mathematical description of how the product behaves: its dynamics, the assumptions and what it is calibrated to. It decides what the numbers mean.'
+  : 'An engine is the implementation that computes the price from the model: a closed formula, a lattice, a grid, a finite difference scheme or a simulation. It decides how the number is reached.';
 const settingsFor = (t, m, e) => SETTINGS[t + '|' + m + '|' + e] || [];
 const noteOf = name => {
   for (const list of Object.values(SETTINGS)) { const hit = list.find(x => x.name === name); if (hit) return hit; }
@@ -610,6 +636,8 @@ function productCard(c, p) {
   const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
   const pairs = TRIPLES.filter(x => x[0] === p.type).map(x => [x[1], x[2]]);
   const known = settingsFor(p.type, p.model, p.engine);
+  const modelOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type).map(x => x[1]))].sort();
+  const engineOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort();
   const params = p.params.length ? p.params.map(x => { const k = known.find(y => y.name === x.name); const note = k ? k.note : 'The documentation of this setting is not held.'; return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(x.scope)} · ${esc(p.type)}</div></div><div class="sval mono">${esc(x.value)}</div></div>
     <details class="doc" ${new URLSearchParams(location.search).get('doc') === x.name ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']/Parameter[@name='${esc(x.name)}']</span></div><div>Format ${esc(k ? k.kind : 'text')}</div><div>Introduced in 1.8.0.7</div></div>` : ''}</div></details></div>`; }).join('') : '<p class="muted">This product carries no setting. The engine uses its own defaults.</p>';
   const pairList = pairs.length ? `<ul>${pairs.map(([m, e]) => `<li><span class="mono">${esc(m)} / ${esc(e)}</span>${m === p.model && e === p.engine ? ' <span class="tag ok">in use</span>' : ''}</li>`).join('')}</ul>` : '<p class="muted">No pair is known for this product type.</p>';
@@ -687,6 +715,8 @@ function productScreen(c, want) {
   const p = c.products.find(x => x.type === want) || c.products[0];
   const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
   const known = settingsFor(p.type, p.model, p.engine);
+  const modelOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type).map(x => x[1]))].sort();
+  const engineOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort();
   const group = scope => { const rows = known.filter(k => k.scope === scope); return rows.length ? rows.map(k => settingRow(scope, k, p)).join('') : `<div class="setting"><span class="muted">No documented ${scope} setting for this model and engine.</span></div>`; };
   const head = `<div class="titlebar"><div><div class="crumbs">Home › Reporting › Product pricing</div><h1>Product pricing</h1><div class="sub">${esc(c.name)} · version ${c.ver} · ${c.products.length} products</div></div>
     <div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div><span class="access">✎ Editable</span></div></div>`;
@@ -698,12 +728,14 @@ function productScreen(c, want) {
         ${cls ? `<p class="help"><b>Asset class ${esc(cls.name)}</b> — ${esc(cls.what)}</p>` : ''}
       </div></details></div>
     </div></div>
-    <div class="card"><div class="gh"><div><h3>How it is priced</h3><div class="faint">The model and the engine that value this product type.</div></div></div><div class="body" style="grid-template-columns:1fr 1fr">
-      <div><div class="faint">Model</div><select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px">${MODELS.map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select><p class="help" style="margin-top:6px">The model ORE uses to price this product type.</p></div>
-      <div><div class="faint">Engine</div><select data-pengine style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px">${enginesFor(p.model).map(e => `<option ${e === p.engine ? 'selected' : ''}>${esc(e)}</option>`).join('')}</select><p class="help" style="margin-top:6px">The engine that implements the model. ${knownPair(p.model, p.engine) ? 'This pair is known to work.' : 'This pair is not known to work for this product.'}</p></div>
-    </div></div>
-    <div class="card"><div class="gh"><div><h3>Model parameters</h3><div class="faint">Every parameter the model of this product takes.</div></div></div>${group('model')}</div>
-    <div class="card"><div class="gh"><div><h3>Engine parameters</h3><div class="faint">Every parameter the engine of this product takes.</div></div></div>${group('engine')}</div>
+    <div class="card"><div class="gh"><div><h3>Model</h3><div class="faint">${definition('model')}</div></div></div>
+      <div class="body" style="grid-template-columns:1fr">
+        <div class="wide"><div class="faint">Model</div><select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(modelOptions.length ? modelOptions : MODELS).map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select><p class="help" style="margin-top:8px">${esc(MODEL_NOTES[p.model] || 'No description is held for this model.')}</p></div>
+      </div>${group('model')}</div>
+    <div class="card"><div class="gh"><div><h3>Engine</h3><div class="faint">${definition('engine')}</div></div></div>
+      <div class="body" style="grid-template-columns:1fr">
+        <div class="wide"><div class="faint">Engine</div><select data-pengine style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(engineOptions.length ? engineOptions : enginesFor(p.model)).map(e => `<option ${e === p.engine ? 'selected' : ''}>${esc(e)}</option>`).join('')}</select><p class="help" style="margin-top:8px">${esc(ENGINE_NOTES[p.engine] || 'No description is held for this engine.')}</p><p class="help">${knownPair(p.model, p.engine) ? 'This model and engine are known to work together.' : 'This model and engine are not known to work together for this product.'}</p></div>
+      </div>${group('engine')}</div>
     <div class="card"><div class="gh"><div><h3>Change</h3><div class="faint">A change to an approved configuration is proposed for sign-off.</div></div></div><div class="body" style="grid-template-columns:1fr 2fr">
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>
@@ -723,7 +755,7 @@ function wire() {
   document.querySelectorAll('[data-pt]').forEach(x => x.onclick = () => nav({ product: x.dataset.pt }));
   document.querySelectorAll('[data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; render(); });
   document.querySelectorAll('[data-pset]').forEach(x => x.onchange = () => { const cur = p.params.find(y => y.name === x.dataset.pset); if (cur) cur.value = x.value; else p.params.push({ scope: 'model', name: x.dataset.pset, value: x.value }); });
-  const m = document.querySelector('[data-pmodel]'); if (m) m.onchange = () => { p.model = m.value; p.engine = enginesFor(p.model)[0]; render(); };
+  const m = document.querySelector('[data-pmodel]'); if (m) m.onchange = () => { p.model = m.value; const es = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort(); p.engine = es[0] || p.engine; render(); };
   const e = document.querySelector('[data-pengine]'); if (e) e.onchange = () => { p.engine = e.value; render(); };
   const s = document.getElementById('p-save'); if (s) s.onclick = () => { document.getElementById('p-msg').textContent = 'A proposal is recorded in the prototype only. Nothing is written.'; };
 }

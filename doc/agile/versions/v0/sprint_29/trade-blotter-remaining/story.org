@@ -35,7 +35,7 @@ authorisation queue (see =* Decisions=).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started. Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing. |
@@ -56,7 +56,7 @@ authorisation queue (see =* Decisions=).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] | BACKLOG | | | Build the trade list and the trade page in the web client from the two prototypes. |
+| [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] | STARTED | 2026-10-24 | | Build the trade list and the trade page in the web client from the two prototypes. |
 | [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | BACKLOG | | | Build the booking screen from its prototype, with the structure card for a leg. |
 | [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] | BACKLOG | | | Build the structure page from its prototype: members, leg checks, a Price tab and history. |
 | [[id:0FDD4D67-C1EF-4D8A-9A1D-8F652362893A][Import real deals through the authorisation queue]] | BACKLOG | | | Make the ORE import raise authorisation requests, report the rows it cannot book, and prove a second run is safe. |

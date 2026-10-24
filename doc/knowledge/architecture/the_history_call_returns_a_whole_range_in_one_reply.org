@@ -17,14 +17,19 @@ ticks than the ceiling is refused, and the refusal names the ceiling. The servic
 returns part of a span as if it were the whole. The client that calls it is described in
 [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 
-The shell command =marketdata ticks <series-id>= calls it. The command takes =--from=,
-=--to=, =--coordinate= and =--csv=. A span with no =--from= starts 10 minutes ago.
+The shell command =marketdata ticks= calls it. The command names the series with =--asset=,
+=--scope=, =--instrument=, =--quote=, =--fields= and =--party=, and it takes =--from=, =--to=,
+=--coordinate= and =--csv=. A span with no =--from= starts 10 minutes ago.
 
 * Detail
 
 ** The request
 
-- *The series,* named by its series id, the id that the series catalogue returns.
+- *The series,* named by its typed identity, the one the slice, evolution and snapshot reads
+  take. The caller never holds a series id, and no caller builds an oresmd URI. The service
+  resolves the identity inside the session. An identity that no series carries gives an empty
+  reply. An identity that the series of more than one party carry is refused with
+  =series_ambiguous=, and the caller states the party to name one.
 - *From,* the first instant of the span, inclusive.
 - *To,* the end of the span, exclusive. A request without it means now.
 - *The coordinates,* optional. A client that plots one pillar of a curve names it, and the

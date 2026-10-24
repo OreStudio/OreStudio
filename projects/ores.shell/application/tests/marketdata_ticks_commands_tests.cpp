@@ -174,7 +174,7 @@ TEST_CASE("a_history_tick_row_escapes_a_coordinate_with_a_comma", tags) {
           "2026-10-23 00:00:00.000000Z,\"oresmd://x/a,b\",2.5");
 }
 
-TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_series_id", tags) {
+TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_identity", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -182,7 +182,7 @@ TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_series_id", tags) {
 
     marketdata_commands::process_ticks(out, session, {});
 
-    CHECK(out.str().find("Usage: marketdata ticks <series-id>") != std::string::npos);
+    CHECK(out.str().find("Usage: marketdata ticks --asset") != std::string::npos);
 }
 
 TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in", tags) {
@@ -191,7 +191,45 @@ TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in", tags) {
     nats_client session;
     std::ostringstream out;
 
-    marketdata_commands::process_ticks(out, session, {"0098beb3-ccf8-4c0a-8ebc-8e1d957daf7f"});
+    marketdata_commands::process_ticks(out,
+                                       session,
+                                       {"--asset",
+                                        "fx",
+                                        "--scope",
+                                        "AUD",
+                                        "--instrument",
+                                        "fx_spot",
+                                        "--quote",
+                                        "rate",
+                                        "--fields",
+                                        "ccy=USD"});
 
     CHECK(out.str().find("Not logged in.") != std::string::npos);
+}
+
+TEST_CASE("identity_fields_are_read_as_name_value_pairs_in_the_order_given", tags) {
+    const auto fields =
+        marketdata_commands::parse_identity_fields("curve_id=EUR-6M,day_counter=A365");
+
+    REQUIRE(fields);
+    REQUIRE(fields->size() == 2);
+    CHECK(fields->front().name == "curve_id");
+    CHECK(fields->front().text == "EUR-6M");
+    CHECK(fields->back().name == "day_counter");
+    CHECK(fields->back().text == "A365");
+}
+
+TEST_CASE("no_identity_fields_is_an_empty_list_and_not_an_error", tags) {
+    const auto fields = marketdata_commands::parse_identity_fields("");
+
+    REQUIRE(fields);
+    CHECK(fields->empty());
+}
+
+TEST_CASE("an_identity_field_with_no_name_or_no_value_is_refused_with_its_text", tags) {
+    for (const auto* text : {"ccy", "=USD", "ccy="}) {
+        const auto fields = marketdata_commands::parse_identity_fields(text);
+        REQUIRE_FALSE(fields);
+        CHECK(fields.error().find(text) != std::string::npos);
+    }
 }

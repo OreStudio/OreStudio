@@ -19,8 +19,10 @@
  */
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/series_ticks_handler.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -28,6 +30,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
@@ -82,6 +85,7 @@ struct handler_fixture {
     boost::uuids::uuid party;
     ores::database::context owner;
     boost::uuids::uuid series;
+    std::string curve = ores::marketdata::tests::fresh_curve_id();
     int number;
 
     handler_fixture()
@@ -91,6 +95,12 @@ struct handler_fixture {
         , series(boost::uuids::random_generator{}())
         , number(ores::marketdata::repository::tick_coords_repository{}.resolve(
               owner, party, series, "oresmd://test/series_ticks_handler")) {
+        auto generation = ores::testing::make_generation_context(db);
+        auto row = ores::marketdata::generators::generate_synthetic_market_series(generation);
+        row.id = series;
+        row.party_id = party;
+        row.oresmd_uri = ores::marketdata::tests::zero_uri(curve);
+        ores::marketdata::repository::market_series_repository{}.write(db.context(), row);
         nats.connect();
         REQUIRE(nats.is_connected());
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
@@ -110,7 +120,7 @@ struct handler_fixture {
     get_series_ticks_request span(std::chrono::system_clock::time_point from,
                                   std::chrono::system_clock::time_point to) const {
         get_series_ticks_request request;
-        request.series_id = series;
+        request.identity = ores::marketdata::tests::zero_identity(curve);
         request.from_instant = from;
         request.to_instant = to;
         return request;

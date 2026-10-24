@@ -1295,7 +1295,7 @@ struct get_series_ticks_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    boost::uuids::uuid series_id;
+    resolve_series_identity_request identity;
     std::chrono::system_clock::time_point from_instant;
     std::optional<std::chrono::system_clock::time_point> to_instant;
     std::vector<std::string> coordinates;

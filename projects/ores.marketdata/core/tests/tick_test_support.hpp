@@ -24,15 +24,43 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <string>
 
 namespace ores::marketdata::tests {
+
+/// A curve id no earlier run used, so the series is this test's alone.
+inline std::string fresh_curve_id() {
+    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
+    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
+    return tag;
+}
+
+inline std::string zero_uri(const std::string& curve_id) {
+    return "oresmd://ir/EUR?type=series&instrument=zero&quote=rate&curve_id=" + curve_id +
+           "&day_counter=A365";
+}
+
+/// The zero coupon curve of @p curve_id, as the resolver names one.
+inline ores::marketdata::messaging::resolve_series_identity_request
+zero_identity(const std::string& curve_id) {
+    ores::marketdata::messaging::resolve_series_identity_request id;
+    id.asset = "ir";
+    id.scope = "EUR";
+    id.instrument_type = "zero";
+    id.quote_type = "rate";
+    id.fields.push_back({"curve_id", curve_id});
+    id.fields.push_back({"day_counter", "A365"});
+    return id;
+}
 
 /// The session of a series' party, which the party policy of the tick table needs.
 inline ores::database::context party_context(ores::testing::database_helper& h,

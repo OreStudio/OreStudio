@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/service/series_tick_reader.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/repository/tick_repository.hpp"
 #include <map>
 #include <string>
@@ -58,9 +59,20 @@ series_tick_reader::read(ores::database::context ctx,
         return response;
     }
 
+    // The series, named the way the resolver names one, so no caller builds an oresmd URI. A
+    // series that no row carries has no ticks, and the answer is an empty reply.
+    const auto series = repository::market_series_identity_reader::read(ctx, request.identity);
+    if (series.empty())
+        return response;
+    if (series.size() > 1) {
+        response.result = refuse(outcome_code::series_ambiguous,
+                                 {.entity = "ticks", .value = std::to_string(series.size())});
+        return response;
+    }
+
     // One tick more than the ceiling tells a span over it from a span at it.
     const auto ticks = repository::tick_repository{}.read_range(
-        ctx, request.series_id, request.from_instant, to, request.coordinates, max_ticks + 1);
+        ctx, series.front().id, request.from_instant, to, request.coordinates, max_ticks + 1);
     if (ticks.size() > max_ticks) {
         response.result = refuse(outcome_code::range_too_large,
                                  {.entity = "ticks", .limit = std::to_string(max_ticks)});

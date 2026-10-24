@@ -47,11 +47,15 @@ const std::string tags("[service][ticks]");
 using namespace ores::marketdata::generators;
 using namespace std::chrono_literals;
 using ores::marketdata::messaging::get_series_ticks_request;
+using ores::marketdata::messaging::resolve_series_identity_request;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::tick_coords_repository;
 using ores::marketdata::service::series_tick_reader;
+using ores::marketdata::tests::fresh_curve_id;
 using ores::marketdata::tests::insert_tick;
 using ores::marketdata::tests::party_context;
+using ores::marketdata::tests::zero_identity;
+using ores::marketdata::tests::zero_uri;
 using ores::testing::database_helper;
 using ores::utility::domain::outcome;
 
@@ -64,22 +68,29 @@ struct owned_series {
     ores::marketdata::domain::market_series series;
     ores::database::context owner;
     int number;
+    resolve_series_identity_request identity;
 };
 
-owned_series make_series(database_helper& h) {
+/// A series of @p curve_id owned by @p party, or by a new party when @p party is nil.
+owned_series make_series(database_helper& h,
+                         const std::string& curve_id = fresh_curve_id(),
+                         const boost::uuids::uuid& party = boost::uuids::nil_uuid()) {
     auto ctx = ores::testing::make_generation_context(h);
     auto s = generate_synthetic_market_series(ctx);
+    if (!party.is_nil())
+        s.party_id = party;
+    s.oresmd_uri = zero_uri(curve_id);
     market_series_repository{}.write(h.context(), s);
     auto owner = party_context(h, s.party_id);
     const auto number = tick_coords_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
-    return {std::move(s), std::move(owner), number};
+    return {std::move(s), std::move(owner), number, zero_identity(curve_id)};
 }
 
 get_series_ticks_request span(const owned_series& o,
                               std::chrono::system_clock::time_point from,
                               std::chrono::system_clock::time_point to) {
     get_series_ticks_request request;
-    request.series_id = o.series.id;
+    request.identity = o.identity;
     request.from_instant = from;
     request.to_instant = to;
     return request;
@@ -316,7 +327,7 @@ TEST_CASE("a_request_that_names_too_many_coordinates_is_refused", tags) {
 TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     const auto t0 = now_second();
     get_series_ticks_request request;
-    request.series_id = boost::uuids::random_generator{}();
+    request.identity = zero_identity("curve");
     request.from_instant = t0;
     request.to_instant = std::nullopt;
     request.coordinates = {R"(oresmd://test/a,"b")"};
@@ -324,7 +335,9 @@ TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     const auto& codec = ores::nats::default_wire_codec();
     const auto sent = codec.decode<get_series_ticks_request>(codec.encode(request));
     REQUIRE(sent);
-    CHECK(sent->series_id == request.series_id);
+    CHECK(sent->identity.scope == "EUR");
+    REQUIRE(sent->identity.fields.size() == 2);
+    CHECK(sent->identity.fields.front().value == "curve");
     CHECK(sent->from_instant == t0);
     CHECK_FALSE(sent->to_instant.has_value());
     CHECK(sent->coordinates == request.coordinates);
@@ -345,4 +358,48 @@ TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     CHECK(received->gaps_us == reply.gaps_us);
     CHECK(received->coordinate_indexes == reply.coordinate_indexes);
     CHECK(received->values == reply.values);
+}
+
+TEST_CASE("an_identity_no_series_carries_gives_an_empty_reply_and_success", tags) {
+    database_helper h;
+    const auto o = make_series(h);
+    auto request = span(o, now_second() - 1min, now_second() + 1min);
+    request.identity = zero_identity(fresh_curve_id());
+
+    const auto reply = series_tick_reader::read(o.owner, request);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one", tags) {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto first = make_series(h, curve);
+    const auto second = make_series(h, curve);
+    const auto t0 = now_second();
+    insert_tick(first.owner, first.series.party_id, first.series.id, first.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(first.owner, span(first, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::invalid);
+    CHECK(reply.result.code == "series_ambiguous");
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto first = make_series(h, curve);
+    const auto second = make_series(h, curve);
+    const auto t0 = now_second();
+    insert_tick(first.owner, first.series.party_id, first.series.id, first.number, t0, 1.0);
+    insert_tick(second.owner, second.series.party_id, second.series.id, second.number, t0, 2.0);
+
+    auto request = span(second, t0 - 1s, t0 + 1min);
+    request.identity.party_id = boost::uuids::to_string(second.series.party_id);
+    const auto reply = series_tick_reader::read(second.owner, request);
+
+    CHECK(reply.result.outcome == outcome::ok);
+    CHECK(reply.values == std::vector<double>{2.0});
 }

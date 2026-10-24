@@ -83,7 +83,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Party isolation still ANDs on top of the new policy | route and subscription models | Accepted: noted | The service session sets no visible party set, so the passthrough applies. A live run confirms it: with Acme provisioned, 5 routes are read and bloomberg-a accepts 26 of 26 ids. |
+| 2 | The role-name check depends on the =_marketdata_service= suffix | marketdata_route_visibility_test.sql | Declined | Every environment names the role =ores_<env>_marketdata_service=. A custom role name is not supported. |
+| 3 | No pgTAP test that reads as the service role | marketdata_route_visibility_test.sql | Declined | The test user is not a member of the service role, so it cannot set that role. The live run covers the read. |
+| 4 | The codegen test slices the template text | test_rls_service_read_role.py | Declined | It is a cheap guard against a =for all= policy. Rendering a fixture would cost more than it protects. |
+| 5 | The folder test hard-codes 4 folders | synthetic_provider_feeds_publish_test.sql | Declined | The count is the depth of the chain, and a change of depth should fail the test. |
 
 * Result
 

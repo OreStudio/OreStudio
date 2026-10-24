@@ -2,7 +2,7 @@
 :ID: 27EC7A6F-64F6-4079-AE79-F94FA68D12C4
 :END:
 #+title: Task: A recreated database leaves open browsers on the first-run wizard
-#+description: A browser session opened before compass db recreate holds a token minted against accounts the recreate replaced. Every read through it fails, the setup gate reads onboardingComplete as false, and the signed-in system administrator is held on the first-run wizard; the wizard's seed-profile read is refused, so it falls back to its Bare system card.
+#+description: A browser session opened before a database recreate is held on the first-run wizard and cannot read the starting points.
 #+type: task
 #+level: s1
 #+filetags: :web:iam:compass:inbox:product_backlog:agile:
@@ -19,12 +19,46 @@
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
-
 A browser left open across a database recreate must say that it is signed out. Today it says the
 installation still needs setting up, and offers to set it up again.
 
-* Notes
 
+* Status
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+
+* Acceptance
+-
+
+
+* Plan
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+* Measurements
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+
+* Notes
 Seen on 2026-10-24 on brave_hopper after `compass db recreate -y -k` with the services up.
 
 A session minted before the recreate names accounts the recreate replaced with new ids. Its token
@@ -48,45 +82,8 @@ Three things to decide:
 3. The wizard's fallback card should not stand in for a read that failed. When the starting points
    cannot be read, say so and stop; a card that creates no tenant is not an answer to a refusal.
 
-* Status
-
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
-
-* Acceptance
-
--
-
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
-
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
-
-* Notes
 
 * Test Scenarios
-
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
@@ -96,16 +93,16 @@ via its "Verifies task" field.
 |----------+-------+-------|
 |          |       |       |
 
-* PRs
 
+* PRs
 | PR | Title |
 |----+-------|
-|    |       |
+| #3724 | [iam] Add the Northwind Traders demonstration tenant |
 
 * Review
-
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
 
 * Result

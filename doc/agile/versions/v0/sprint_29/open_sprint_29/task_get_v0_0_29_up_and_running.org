@@ -2,7 +2,7 @@
 :ID: 75C7ABFA-04FC-4C9C-A72C-D8CB1D9689C2
 :END:
 #+title: Task: Get v0.0.29 up and running
-#+description: After the sprint 29 opening, bring v0.0.29 up on a fresh environment. The ORE provider must not show in the web client, and the feeds screen must show the feeds that run.
+#+description: Bring v0.0.29 up on a fresh environment, for the web client and the feeds.
 #+type: task
 #+level: s1
 #+filetags: :open_sprint_29:sprint_29:v0:

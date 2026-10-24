@@ -2,7 +2,7 @@
 :ID: 06434819-C366-4DFD-A040-FCBC0C427E5C
 :END:
 #+title: Task: A stale compute node holds a job it cannot submit
-#+description: A compute node deployed before the submit protocol gained duration_ms claims its job, runs it, and has every submit refused as an unreadable request. The job stays leased, so the batch never drains. The remote nodes on newton, goedel and laptop all run such an image.
+#+description: A compute node older than the submit protocol claims a job it can never hand back, so the batch never drains.
 #+type: task
 #+level: s1
 #+filetags: :compute:storage:iam:inbox:product_backlog:agile:
@@ -19,13 +19,47 @@
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
-
 A batch dispatched to the grid must drain whatever mix of node versions is online. Today a node
 that is older than the serving service takes work it can never hand back, and the work is lost to
 every other node until its lease is reclaimed.
 
-* Notes
 
+* Status
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+
+* Acceptance
+-
+
+
+* Plan
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+* Measurements
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+
+* Notes
 Found on 2026-10-24 while proving a multi-tenant grid run on brave_hopper.
 
 The submit request gained one field, =duration_ms=, in commit =1cefe41612= ("[compute] Record when a
@@ -75,45 +109,8 @@ mint is then denied ("mint denied: the caller lacks iam::storage_capabilities:mi
 compute service fixes it. The documented order, =compass services stop && compass db recreate=,
 avoids it; =db recreate= on its own does not restart anything.
 
-* Status
-
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
-
-* Acceptance
-
--
-
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
-
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
-
-* Notes
 
 * Test Scenarios
-
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
@@ -123,16 +120,16 @@ via its "Verifies task" field.
 |----------+-------+-------|
 |          |       |       |
 
-* PRs
 
+* PRs
 | PR | Title |
 |----+-------|
-|    |       |
+| #3724 | [iam] Add the Northwind Traders demonstration tenant |
 
 * Review
-
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
 
 * Result

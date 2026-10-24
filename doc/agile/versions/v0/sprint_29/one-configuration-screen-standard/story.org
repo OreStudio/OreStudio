@@ -76,6 +76,10 @@ binds.
   2026-10-24.* A write to a section that changes the numbers a run computes is
   a proposal and needs the kind's sign-off. A write to an operational section
   lands directly with a reason and a history entry. One record may hold both.
+- *A configuration no report binds is a draft and changes in place, following
+  the draft rule the pricing engine configuration already has. It becomes
+  governed the moment a report binds it. Decided with the section rule on
+  2026-10-24.*
 - *The journeys and prototypes come first.* The owner signs them off before the
   standard is written and before any code changes. Decided by the owner on
   2026-10-24.

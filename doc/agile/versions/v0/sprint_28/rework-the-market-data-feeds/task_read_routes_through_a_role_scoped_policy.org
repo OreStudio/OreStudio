@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
 #+branch: feature/read-routes-through-a-role-scoped-policy
-#+pr:
+#+pr: 3704
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3704][#3704]] | [marketdata,sql] Read routes through a role-scoped policy |
 
 * Review
 

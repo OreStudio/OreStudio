@@ -161,7 +161,7 @@ per-kind choice.
    it names no market data: the reference data lists a convention picks from are
    untouched.
 
-3. *The pricing engines it binds.* A pricing engine configuration is ORE's
+3. *The pricing engine configuration it binds.* A pricing engine configuration is ORE's
    =pricingengine.xml=. For each product it names the pricing model, the
    numerical engine that evaluates the model, and the parameters the two take.
    Binding it decides how a trade is priced, not what it is priced from: a
@@ -369,7 +369,7 @@ per-kind choice.
 One screen on the standard steps UI: the rail the system bootstrap journey draws,
 with the step list as its only source. The rail is fixed at eight steps, and it
 does not move while the person works: *What it is*, *The conventions it binds*,
-*The pricing engines it binds*, *The market data it binds*, *The curve
+*The pricing engine configuration it binds*, *The market data it binds*, *The curve
 configuration it binds*, *The run settings it binds*, *What it runs*, then
 *Review and save*. The configuration steps follow the order
 =report_type_configuration_types= states and the seeder writes. The rail marks

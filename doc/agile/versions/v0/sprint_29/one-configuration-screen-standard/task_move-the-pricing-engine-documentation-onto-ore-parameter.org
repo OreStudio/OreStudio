@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: C9C764D9-99DF-4327-8FE6-87704D32B34C
+:END:
+#+title: Task: Move the pricing engine documentation onto the one contract
+#+description: Extract the pricing engine pairs, models, engines and parameters from the ORE guide and source into the one documentation contract, with the format, the release and the XPath.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every pricing engine choice and parameter carries the same documentation fields as an engine run setting, so one screen pattern reads both.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- Every pricing model, engine, pair and setting carries the contract's fields: label, help, description, default, format, introduced in, removed in, XPath and whether it changes the numbers.
+- The extraction reads the ORE guide chapter and the ORE source, and records the ORE commit it measured.
+- A missing entry shows the ORE name and a note on the screen.
+- The vocabulary tables keep the mappings a person chooses from, and no longer hold the wording.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

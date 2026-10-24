@@ -38,7 +38,7 @@ tenant, on a configuration their party owns.
 The trigger is a figure the desk disputes, a model the desk has changed its mind
 about, or a parameter that is wrong for the book. The journey starts on the
 Products tab of a configuration in
-[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]
+[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]]
 and ends on the same page, with the proposal shown as a banner and on the History
 tab. The sign-off itself is
 [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]].
@@ -197,9 +197,9 @@ configuration version a run used. Switches: =?status=approved|draft=,
 
 * Related journeys
 
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — where this journey starts and ends
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — the combo boxes and the notes the dialog shares
-- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — a file that replaces the rows rather than changing one
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]] — a file that replaces the rows rather than changing one
 - [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — what happens to the proposal this journey submits
 - [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the same reach statement, for the analytics
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — where the person sees the effect of the change

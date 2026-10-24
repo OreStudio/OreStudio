@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: BC2066E8-C595-47C0-97CE-19DF182F616E
 :END:
-#+title: User Journey: Bring in a pricing engines file
-#+description: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
+#+title: User Journey: Bring in a pricing engine configuration file
+#+description: A market-risk owner or tenant administrator brings in an ORE pricing engine configuration file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-20
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator brings in an ORE pricing engines file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator brings in an ORE pricing engine configuration file, reads what it holds against what the party already has, and saves it as a new draft or as a proposal for a new version of a configuration.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -38,7 +38,7 @@ tenant, for their own party.
 The trigger is a file from a quant, from an ORE example, or from another
 installation, or a change to a configuration the quants maintain in a file. The
 journey starts from *Workflows* on the list in
-[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]],
+[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]],
 or from step 1 of
 [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]],
 and ends on the saved configuration's page.
@@ -106,13 +106,13 @@ One workflow, five panels: the file and what it holds, what the system does not
 know, the target, the difference, and the review. The difference is the screen's
 reason to exist, so it has the width.
 
-#+caption: Bring in a pricing engines file: what the file holds, what the system does not know, and the difference against a configuration the party holds.
+#+caption: Bring in a pricing engine configuration file: what the file holds, what the system does not know, and the difference against a configuration the party holds.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_bring_in_a_pricing_engines_file.png]]
 
 * Prototype
 
-The [[file:../../prototypes/reporting/bring-in-a-pricing-engines-file/][bring in a pricing engines file prototype]] owns this journey, and
+The [[file:../../prototypes/reporting/bring-in-a-pricing-engines-file/][bring in a pricing engine configuration file prototype]] owns this journey, and
 [[file:../../prototypes/reporting/bring-in-a-pricing-engines-file.org][its design note]] says what it argues, which states it can reach and what is
 fake. It belongs at =doc/prototypes/reporting/bring-in-a-pricing-engines-file/=.
 
@@ -140,7 +140,7 @@ fixture.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| 2, parse | Turn the file into a pricing engines document | (no operation for a person's file) | missing |
+| 2, parse | Turn the file into a pricing engine configuration document | (no operation for a person's file) | missing |
 | 3, the types | List the product types | =analytics.v1.pricing_engine_types.list= | exists |
 | 3, a new type | Write a product type | =analytics.v1.pricing_engine_types.put= | exists |
 | 4, the target | List the configurations | =analytics.v1.pricing_model_configs.list= | exists |
@@ -182,7 +182,7 @@ fixture.
 
 * Related journeys
 
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — where this journey starts and ends
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — step 1 hands a person here, and takes the rows back
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the reach statement, and the changes one row at a time
 - [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — where a proposal from a file goes

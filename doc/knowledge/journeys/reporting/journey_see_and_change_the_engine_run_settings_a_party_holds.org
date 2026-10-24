@@ -1,0 +1,248 @@
+:PROPERTIES:
+:ID: 29C26BB5-2F89-448C-8E1E-BAA60C91B327
+:END:
+#+title: User Journey: See and change the engine run settings a party holds
+#+description: A market-risk owner or tenant administrator reads and adjusts how the engine runs a report: the fixings and cash flows, the market and trade building, and the execution, as a named configuration a report binds.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator reads and adjusts how the engine runs a report: the fixings and cash flows, the market and trade building, and the execution, as a named configuration a report binds.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Which settings does the engine run my reports with, and which reports share
+them?" The person owns reports for a party. A figure disagrees with the desk, a
+new book needs different fixings, or a run takes too long, and the question is
+about the whole run rather than one product. The journey is done when the
+person has found the configuration, read every setting in force with its
+default, changed the group they meant to change, and knows which reports the
+change reaches.
+
+* Actor and trigger
+
+A market-risk owner or a tenant administrator runs this journey. The person acts
+inside their own tenant and reads and changes the configurations their party
+owns. A configuration is party-scoped by row-level security, so nobody sees
+another party's.
+
+The trigger is one of three. A result disagrees with the desk and the person
+suspects how the engine built its inputs. A new book needs different fixings or
+cash-flow treatment. A run takes too long and the person wants more threads or
+a different observation model. The journey starts on the list and ends on the
+configuration's page after a save or a proposal.
+
+* This is not the pricing engine configuration
+
+Two configurations carry the word "engine" and a person must not confuse them.
+This journey is about the second only.
+
+| | Pricing engine configuration | Engine run settings |
+|--+------------------------------+---------------------|
+| Question | Which model and engine price this product, and how are they set? | How does the engine run this report? |
+| ORE document | =pricingengine.xml= | =ore.xml=, the =Setup= block |
+| Unit | One product type | The whole run |
+| Holds | Product rows, each with a model, an engine and their parameters | Three groups of fixed settings: fixings, building, execution |
+| Journey | [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] | this page |
+
+The run document joins them. Its =Setup= block is the engine run settings, and
+it names the pricing engine document through =pricingEnginesFile=. A change
+here applies to every product of the run. A change there applies to one product
+type.
+
+No screen, card or journey calls this configuration *engine settings* alone,
+and no screen calls the pricing page's parameter tab *Settings*.
+
+* How a change is governed
+
+The configuration has three sections. Each section declares whether it changes
+the numbers a run computes, or is operational.
+
+| Section | Settings | Changes the numbers |
+|---------+----------+---------------------|
+| Fixings and cash flows | Imply today's fixings, include today's cash flows, include reference date events, enrich index fixings, ignore fixing lag, ignore fixing lead | yes |
+| Market and trade building | Observation model, lazy market building, build failed trades, continue on error, use at par coupons on curves, use at par coupons on trades | yes |
+| Execution | Threads, log mask, gzip compression level | no |
+
+The lifecycle attaches to the section.
+
+- A write to a section that changes the numbers, on a configuration that at
+  least one report binds, is a *proposal*. The version in force stays in force
+  until the proposal is signed off. The person who proposed it cannot sign it
+  off.
+- A write to an operational section lands directly with a change reason and a
+  history entry.
+- A configuration that no report binds changes in place, section by section.
+- A revert of a numbers-changing section is a proposal too. A revert of the
+  execution section is a direct write.
+
+Who signs off is the kind's decision, and model risk confirms the approval
+parts. Until then the journey says that the parts are assumed.
+
+* Steps
+
+** Step 1: the list
+
+1. *Open the list.* The person opens *Engine run settings* under the reporting
+   area. The screen is a record list as the
+   [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws one:
+   breadcrumb, the plural title, one sentence, *Refresh*, *Workflows* and *Add*,
+   a search, a filter, a paged table, and the four states.
+2. *Read a row.* A row is one configuration: its name, its party, how many of
+   its three groups are set, the thread count when the execution group is set,
+   the count of reports that bind it, and when it last changed. A pending
+   proposal carries a tag.
+3. *Find one.* The search runs on the server over the name and the description.
+   A filter narrows by *Used by reports*: bound by a report, or bound by none.
+4. *Start a change from the list.* *Add* opens the standard create dialog: a
+   name, a description and a change reason. Every setting starts at the engine
+   default, and the person sets the groups on the page.
+
+** Step 2: one configuration
+
+5. *Open the page.* A click opens the record page: the name as the title, a
+   lead line with the version, how many groups are set and how many reports
+   bind it, the access mark, and the actions for a person who may take them. A
+   banner states a pending proposal and that the version in force stays in
+   force. The tabs are held in the address.
+6. *Read Details.* The name, the party, the description, the version, the count
+   of groups set, the reports that bind the configuration, the reporting
+   configuration row it is bound through, and the last-changed line. The tab
+   opens with the sentence that says what this configuration decides, and a
+   *Related configurations* card.
+7. *Read a section.* Each section is a card. The card says whether the section
+   changes the numbers or is operational, and shows its own version. A section
+   with no row says *not set*, and the engine uses its default for every
+   setting in it. Each setting shows the value in force: the set value, or
+   *Default: Yes*, so the value the engine uses is never hidden. The
+   documentation is collapsed under the setting. A button opens or closes all
+   of it. A setting whose documentation entry is missing shows its ORE name and
+   a note, so the gap is visible.
+8. *Narrow the section.* *Set in this configuration* hides the settings left at
+   their default. *Changes the numbers* hides the operational settings. Simple
+   and Advanced are the shared switch: Advanced adds the ORE XML argument, the
+   release that introduced the setting, the release that removed it, and its
+   format.
+9. *Change a section.* *Edit* turns the card into a form in place. There is no
+   dialog, so nothing hides the documentation. Each setting becomes a control,
+   and its first option is the default, which unsets it. A setting that differs
+   from the saved value is marked, and the foot of the card counts the changes.
+   The foot states how many reports the section reaches. For a numbers-changing
+   section it says that the change alters the numbers, and asks for a change
+   reason and a commentary; *Save* submits a proposal. For an operational
+   section it asks for a change reason and *Save* writes. *Cancel* leaves the
+   card as it was. The write claims the version the page read, and a section
+   that changed since is a conflict, which offers to read again.
+10. *Read Used by.* The reports that bind the configuration, each with a link to
+    its page. The tab states the rule: a change reaches the next run of each
+    report below, and a run already produced keeps what it ran with.
+11. *Read History.* The shared timeline of the configuration and its sections,
+    newest first. A change to a section is one entry, and it moves the version
+    of the whole configuration. A proposal that waits shows at the top and is
+    not a version in force. *Revert* writes the values a section held before as
+    a new version, and on a numbers-changing section it writes them as a
+    proposal.
+12. *Leave.* The person goes to a report that binds the configuration, or to
+    [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][the pricing engine configurations]] when the question was about a product's
+    model or engine.
+
+* Screens and wireframes
+
+Two screens: the list and the record page with six tabs. A group is not a
+screen: the page carries all three, each as a card on its own tab.
+
+#+caption: The engine run settings list, and one configuration's page: the details with the related configurations card, and a numbers-changing section in edit.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_see_the_engine_run_settings_a_party_holds.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/see-the-engine-settings-a-party-holds/][see the engine run settings a party holds prototype]] owns this journey, and
+[[file:../../prototypes/reporting/see-the-engine-settings-a-party-holds.org][its design note]] says what it argues, what it reaches and what is fake. The
+prototype keeps its earlier file name; the screen it draws is *Engine run
+settings*.
+
+It must draw the list and the record page as the Record screen standard draws
+them. The page must carry Details, the three sections, Used by and History. A
+section that changes the numbers must offer *Propose a change* when the
+configuration is bound by a report, and *Edit* when it is not. An operational
+section must offer *Edit*. Every setting must show its value in force and its
+documentation, and Advanced must show the schema entry.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =engine_settings= | The configuration: =name=, =description= and the link to the reporting configuration | [[id:AD4E924C-932C-4C55-B57A-D07A441FE5AC][ores.reporting.engine_settings]] |
+| =engine_settings_fixings= | The fixings and cash flows section, and its version | the fixings part |
+| =engine_settings_building= | The market and trade building section, and its version | the building part |
+| =engine_settings_execution= | The execution section, and its version | the execution part |
+| =ore_parameter= | The documentation of each setting: label, help, description, default, format, releases and ORE path | [[id:3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184][ores.reporting.ore_parameter]] |
+| =configuration= | The reporting row a definition binds, of type =engine_settings= | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The slot that binds the configuration to a definition | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+
+A write to any section bumps the central row's version in the same transaction.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1 | List the configurations of the party | =reporting.v1.engine_settings.list= | exists |
+| 2 | Read the documentation of every setting | =reporting.v1.ore_parameters.list= | exists |
+| 2 | Read one configuration with its three sections | =reporting.v1.engine_settings.get= | exists |
+| 9 | Write one section against its version | =reporting.v1.engine_settings_<section>.put= | exists |
+| 10 | Read the reports that bind a configuration | =reporting.v1.report_configurations.list_by_configuration_id= | exists |
+| 11 | Read the history of the configuration and its sections | =reporting.v1.engine_settings_versions.list= | exists |
+| 11 | Write a section's earlier values as a new version | the same part put, with the earlier values | exists |
+| 9 | Submit a numbers-changing section as a proposal | (no subject) | missing |
+| 11 | Read and decide a proposal | the inbox approval subjects | partial; no engine run settings kind |
+| The screen | Read and write engine run settings from the browser | =/api/reporting/engine-settings= and its routes | exists |
+
+* What is missing
+
+1. *A lifecycle for a numbers-changing section.* No operation holds a proposal
+   for this kind, and the inbox has no approval kind for it. The screen says
+   that the change is proposed and that the version in force stays in force;
+   today nothing records the proposal. This is the task
+   [[id:4EC59CB6-0169-485F-9F85-889A9BFC0535][Put the numbers-changing engine run settings through sign-off]].
+2. *Who signs off.* The kind's approval parts are not decided. Model risk
+   confirms them.
+3. *The version a run used.* A run does not record the version of the engine run
+   settings it read, so the page cannot name the runs a change reached.
+4. *The build a setting needs.* A report does not state the ORE build it runs
+   on, so the page cannot warn that a setting is newer than the build.
+
+* Related journeys
+
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — when the question is a
+  product's model or engine rather than the run.
+- [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the pricing change a person may confuse with
+  a change here.
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — where a definition binds this configuration and
+  the other configurations it reads.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against.
+
+* Related knowledge
+
+- [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]] — the boundary and the
+  linkages between the two.
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the =ore.xml= document and how it maps to these
+  tables.
+- [[id:3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184][ores.reporting.ore_parameter]] — the documentation contract.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list and the page.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows.

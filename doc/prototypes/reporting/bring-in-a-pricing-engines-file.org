@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8F406288-43AF-42DB-8487-C5D6AF920BDD
 :END:
-#+title: Bring in a pricing engines file prototype
-#+description: Bringing in an ORE pricing engines file as a workflow of five steps: what the file holds, what the system does not know, the target, the difference against a configuration the party holds, and the review.
+#+title: Bring in a pricing engine configuration file prototype
+#+description: Bringing in an ORE pricing engine configuration file as a workflow of five steps: what the file holds, what the system does not know, the target, the difference against a configuration the party holds, and the review.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -19,7 +19,7 @@
 
 This prototype draws the import of an ORE =pricingengine.xml= as a workflow of five steps on the standard steps UI. The difference is the screen's reason to exist: a file is a replacement for a document the party may already hold, and a person who brings one in must read what it adds, what it changes and, above all, what it leaves out. A file never becomes official directly. A new file is saved as a draft. A file put into an approved configuration is a proposal for a new version, and waits for sign-off. A file put into a draft changes the draft in place.
 
-The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
 
 * Detail
 
@@ -44,7 +44,7 @@ The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring
 
 ** What is fake
 
-Every value, and the parse. The three files are fixtures standing in for a file the person chooses. No operation turns a person's file into a pricing engines document, and no operation returns a diff, so the screen computes the difference over two documents. The data quality publisher saves what it reads, so a parse that writes nothing is a new operation. The XML document codec prototype shows the shape it would take.
+Every value, and the parse. The three files are fixtures standing in for a file the person chooses. No operation turns a person's file into a pricing engine configuration document, and no operation returns a diff, so the screen computes the difference over two documents. The data quality publisher saves what it reads, so a parse that writes nothing is a new operation. The XML document codec prototype shows the shape it would take.
 
 ** Where the code lives
 
@@ -68,6 +68,6 @@ None yet. This page is on the branch that proposes it and waits for review.
 * See also
 
 - [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
-- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — the journey this prototype answers.
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]] — the journey this prototype answers.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
 - [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

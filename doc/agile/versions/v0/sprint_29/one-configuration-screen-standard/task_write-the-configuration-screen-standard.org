@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 0A7787A1-4AAA-4B68-B425-DB82E856C9A3
+:END:
+#+title: Task: Write the configuration screen standard
+#+description: Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One standard page states the words, the list, the record page, the sections, the documentation, the reach, the history, the import, the lifecycle and the naming rules for every configuration screen, with the engine run settings as the reference and the pricing engine configuration as the second application.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | Paused until the journeys and prototypes are signed off. |
+| Waiting on   | The owner's sign-off of the journeys and prototypes. |
+| Next         | Write the standard from the signed-off journeys and prototypes. |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The standard is a knowledge page in doc/knowledge/ui and is wired into the UX hub reading order.
+- The screen review checklist carries one line per rule, naming the standard and its section.
+- The standard fixes the screen words for every configuration kind and states which model names they replace.
+- The standard states which rules are universal and which a kind declares, including its sections and its lifecycle.
+- The standard carries a conformance table for the two configuration screens that exist, with each gap named.
+- The standard states the prototype changes it requires, and the story carries those tasks.
+- The standard follows ASD-STE100 and the UX Language.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Conformance of the two configuration screens today
+
+Measured on =origin/main= at the time of the investigation, from the BFF routes and
+the web screens. This is the gap list the standard must normalise; it is not the
+standard.
+
+| # | Rule | Engine run settings | Pricing engine configuration |
+|---+------+---------------------+------------------------------|
+| 1 | A named, party-owned, versioned configuration bound in a slot | Meets | Meets |
+| 2 | Details, one tab per section, Used by and History | Meets | Gap: Details, Products and Settings are stacked sections; no Used by and no History |
+| 3 | A group edits in place; a collection edits in dialogs | Meets | Meets for the collection dialogs |
+| 4 | One documentation contract, keyed by schema and XPath | Meets, from =ore_parameter= | Gap: wording lives in =pricing_model=, =pricing_method=, =pricing_pair_setting= and =sensitivity_template= |
+| 5 | The value in force and its default, with Simple and Advanced | Meets | Partial: usual values, no default-in-force and no schema panel |
+| 6 | Reach is read, not guessed | Meets: the BFF reads the bindings by configuration id | Gap: the page states that the reach cannot be read |
+| 7 | History is the shared timeline with Revert | Meets | Gap: no History tab |
+| 8 | A numbers-changing change is a proposal; an operational change lands directly | Gap: every section edits in place | Gap: the model has no status, cycle or sign-off; the prototype draws them |
+| 9 | Import parses on the server, states findings and difference, and drops nothing in silence | Gap: no screen; the run document import drops with a warning | Gap: no parse or diff operation |
+| 10 | The page says what it decides and lists the related configurations | Partial: the lead says what it is; no relationship, no card | Partial: the lead says what it is; no relationship, no card |
+
+Reads behind the table: =projects/ores.web/packages/bff/src/engine-settings.ts=,
+=projects/ores.web/packages/bff/src/pricing-engines.ts=,
+=projects/ores.web/packages/web/src/engineSettings/=,
+=projects/ores.web/packages/web/src/pricingEngines/= and
+=projects/ores.reporting/modeling/=.
+
+** Where the rules come from
+
+The ten rules are distilled from the engine run settings arc and the ORE source
+extraction in the investigation. Each one names the page and section that will
+state it, and the checklist will copy one line per rule.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

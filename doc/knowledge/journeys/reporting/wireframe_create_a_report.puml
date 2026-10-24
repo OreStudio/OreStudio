@@ -28,7 +28,7 @@ salt
     Step | Entry | State
     Y  | What it is | done
     Y  | The conventions it binds | done
-    Y  | The pricing engines it binds | done
+    Y  | The pricing engine configuration it binds | done
     Y  | The market data it binds | done
     Y  | The curve configuration it binds | done
     Y  | The run settings it binds | done
@@ -107,7 +107,7 @@ salt
   Binding it decides what a trade means. The same trade read under two convention
   sets gives two different numbers, and neither of them is a mistake.
   --
-  <b>STEP 3 - THE PRICING ENGINES IT BINDS</b>
+  <b>STEP 3 - THE PRICING ENGINE CONFIGURATION IT BINDS</b>
   --
   {#
     Part | What the step says

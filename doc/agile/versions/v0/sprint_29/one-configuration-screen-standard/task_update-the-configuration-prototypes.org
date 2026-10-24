@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: AF272041-13E2-4525-B634-7BA1A81031A5
+:END:
+#+title: Task: Update the configuration journeys and prototypes
+#+description: Bring the pricing engine configuration and engine run settings journeys and prototypes onto the standard, and add the cross-links that say how the two configurations relate.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch: feature/update-the-configuration-prototypes
+#+pr: 3720
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The two configuration journeys and their prototypes say the same thing in the
+same words, state what each configuration decides and how the two relate, and
+the owner signs them off before any code changes.
+
+The journeys are the design of record. They must carry the decided screen
+words, the relationship between the two configurations and the lifecycle rule,
+and they must not describe a tree that has since changed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | The journeys and the prototypes are being updated. |
+| Waiting on   | The owner's sign-off.                  |
+| Next         | Review the prototypes, then write the standard. |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- A journey exists for the engine run settings, and it names the pricing engine configuration and states how the two differ.
+- The pricing engine journeys use *Pricing engine configuration* throughout, not *Pricing engines* or *Pricing model config*.
+- The engine run settings journey uses *Engine run settings* throughout, not *Engine settings* alone.
+- Each journey states, where a person meets the other configuration, what it decides and links to it.
+- The pricing journey's Parameters tab is drawn as *Parameters*, and no screen or journey calls it *Settings*.
+- The engine run settings lifecycle follows the section rule: a numbers-changing group is proposed and signed off; an operational group writes directly.
+- The journeys no longer describe a tree that has changed, including the routes that exist and the defaults the source sets.
+- Both configuration prototypes draw the standard words, the related configurations card and the link to the other configuration.
+- Each prototype's design note states what changed and why, and the reporting group page is updated.
+- check_prototype_inventory.py passes.
+- The owner signs the journeys and prototypes off before any code change.
+
+* Plan
+
+** Why
+
+The two configurations a report binds that carry the word "engine" were designed
+at different times and in different words. The journey of record for the engine
+run settings did not exist, and the pricing journeys still said "pricing
+engines". A person reading either screen learned the wrong name for the other.
+The owner decided the words and the lifecycle rule on 2026-10-24, and asked for
+the journeys and prototypes first, so the standard can describe what has been
+signed off rather than propose it.
+
+** What was done
+
+1. Read the ORE 1.8.17.0 source and the ORE Studio tree to establish the
+   boundary and the linkages. The record is the investigation.
+2. Wrote the journey for the engine run settings, with the section lifecycle
+   and the related configurations.
+3. Renamed the five pricing journeys, and added the disambiguation section and
+   the cross-links.
+4. Updated the two prototypes: the standard words, the "what this decides"
+   sentence, the related configurations card, and the section lifecycle on the
+   engine run settings.
+5. Corrected facts the source contradicts: =buildFailedTrades= defaults to Yes
+   in the ORE source, and the engine run settings have three sections, not five.
+6. Updated the two design notes, the reporting group page and the two
+   prototype counts.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Reporting journeys | 15 | =ls doc/knowledge/journeys/reporting/journey_*.org | wc -l= | =d6370328bb= |
+| Prototypes in the inventory | 88, in 20 groups | =python3 build/scripts/check_prototype_inventory.py= | =eda8b9be5d= |
+| ORE Setup parameters read | 51 | see the investigation | ORE v1.8.17.0 =3d75a6908= |
+
+* Notes
+
+* Notes
+
+- The service names, the configuration type codes and the API routes keep their
+  spelling. Only the screen words and the journey words change.
+- The prototypes keep their earlier file names; each design note says which
+  screen it draws now.
+- The section lifecycle is drawn, not implemented: no operation holds a
+  proposal for this kind. The journey and the prototype say so.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3720][#3720]] | [doc] Name the two engine configurations apart and link them |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

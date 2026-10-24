@@ -547,14 +547,17 @@ function reportsTab(c) {
   <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
 }
 
-const actor = 'analyst';
+const actor = 'analyst', state = 'all';
 KEEP = ['mode', 'doc'];
 const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
 let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple');
-const route = () => { const p = new URLSearchParams(location.search); return { tab: p.get('tab') || 'details', product: p.get('product') }; };
-const byId = () => CONFIGS[0];
+const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details', product: p.get('product') }; };
+CONFIGS.push({ ...clone(CONFIGS[0]), id: 'c2', name: 'Intraday pricing', cycle: 'intraday', variant: '', reports: CONFIGS[0].reports.slice(0, 2) });
+CONFIGS.push({ ...clone(CONFIGS[0]), id: 'c3', name: 'US swaptions SABR trial', status: 'draft', cycle: '', variant: 'SABR', reports: [] });
+CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+const byId = id => CONFIGS.find(c => c.id === id) || CONFIGS[0];
 const LIST = () => href({ tab: 'details' });
 const OTHER = { add: '../author-a-pricing-engine-configuration/', change: '../change-how-a-product-is-priced/', imp: '../bring-in-a-pricing-engines-file/', sign: SIGNOFF };
 function visible() {
@@ -618,12 +621,17 @@ function detailsTab(c) {
   return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
 }
 
+function globalParams(c) {
+  const rows = c.globals.map(x => { const k = noteOf(x.name), open = new URLSearchParams(location.search).get('doc') === x.name; return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">global · every product</div></div><div class="sval mono">${esc(x.value)}</div></div><details class="doc" ${open ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(k ? k.note : 'The documentation of this parameter is not held.')}</p></div></details></div>`; }).join('');
+  return `<div class="card"><div class="gh"><div><h3>Global parameters</h3><div class="faint">Parameters that apply to the whole document.</div></div></div>${rows || '<div class="setting"><span class="muted">None. The document carries no global parameter.</span></div>'}</div>`;
+}
+
 function recordScreen(c) {
   const r = route();
   if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], ['Not found']]) + '<div class="notice">This pricing engine configuration does not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
-  const tabs = [['details', 'Details'], ['products', 'Products'], ['parameters', 'Parameters'], ['reports', 'Reports'], ['history', 'History']];
-  const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
+  const tabs = [['details', 'Properties'], ['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
+  const body = { details: (cc) => detailsTab(cc) + globalParams(cc), products: (cc) => productTab(cc, r.product), reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
     <div class="actions"><span class="access">✎ Editable</span></div></div>
@@ -711,7 +719,7 @@ function settingRow(scope, k, p) {
 }
 
 /** The product, taking the rest of the screen: what it is, how it is priced, and every field. */
-function productScreen(c, want) {
+function productTab(c, want) {
   const p = c.products.find(x => x.type === want) || c.products[0];
   const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
   const known = settingsFor(p.type, p.model, p.engine);
@@ -740,24 +748,27 @@ function productScreen(c, want) {
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>
     </div><div class="foot"><button class="btn primary" id="p-save">Submit as a proposal</button> <span class="faint" id="p-msg"></span></div></div>`;
-  return `${head}<div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}</div></div>`;
+  return `<div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}</div></div>`;
 }
 
 function render() {
   const r = route();
-  document.getElementById('app').innerHTML = productScreen(byId(), r.product);
+  document.getElementById('app').innerHTML = r.screen === 'list' ? listScreen() : recordScreen(byId(r.id));
   document.getElementById('bar').hidden = true;
-  document.getElementById('note').textContent = 'Prototype · the product pricing journey · ' + REV + ' · mock data, nothing is written to a server';
+  document.getElementById('note').textContent = 'Prototype · the pricing engine configuration journey · ' + REV + ' · mock data, nothing is written to a server';
   wire();
 }
 function wire() {
-  const r = route(), c = byId(), p = c.products.find(x => x.type === r.product) || c.products[0];
-  document.querySelectorAll('[data-pt]').forEach(x => x.onclick = () => nav({ product: x.dataset.pt }));
+  const r = route(), c = byId(r.id);
+  document.querySelectorAll('#app [data-open]').forEach(x => { const go = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = go; x.onkeydown = e => { if (e.key === 'Enter') go(e); }; });
+  if (r.screen === 'list') return;
+  document.querySelectorAll('[data-pt]').forEach(x => x.onclick = () => nav({ screen: 'record', id: c.id, tab: 'products', product: x.dataset.pt }));
   document.querySelectorAll('[data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; render(); });
-  document.querySelectorAll('[data-pset]').forEach(x => x.onchange = () => { const cur = p.params.find(y => y.name === x.dataset.pset); if (cur) cur.value = x.value; else p.params.push({ scope: 'model', name: x.dataset.pset, value: x.value }); });
-  const m = document.querySelector('[data-pmodel]'); if (m) m.onchange = () => { p.model = m.value; const es = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort(); p.engine = es[0] || p.engine; render(); };
-  const e = document.querySelector('[data-pengine]'); if (e) e.onchange = () => { p.engine = e.value; render(); };
-  const s = document.getElementById('p-save'); if (s) s.onclick = () => { document.getElementById('p-msg').textContent = 'A proposal is recorded in the prototype only. Nothing is written.'; };
+  const p = c.products.find(y => y.type === r.product) || c.products[0];
+  document.querySelectorAll('[data-pset]').forEach(x => x.onchange = () => { const cur = p.params.find(y => y.name === x.dataset.pset); if (cur) cur.value = x.value; });
+  const mo = document.querySelector('[data-pmodel]'); if (mo) mo.onchange = () => { p.model = mo.value; const es = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort(); p.engine = es[0] || p.engine; render(); };
+  const en = document.querySelector('[data-pengine]'); if (en) en.onchange = () => { p.engine = en.value; render(); };
+  const sv = document.getElementById('p-save'); if (sv) sv.onclick = () => { document.getElementById('p-msg').textContent = 'A proposal is recorded in the prototype only. Nothing is written.'; };
 }
 render();
 

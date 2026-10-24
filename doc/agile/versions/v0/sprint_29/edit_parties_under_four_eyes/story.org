@@ -39,7 +39,7 @@ A party is edited on one standard entity page, in dialogs on its cards, like a c
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit a party on a standard entity page]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4E67658D-2523-4DC8-8C72-309F9721E5A7][Scaffold story: Edit a party on a standard entity page]] | DONE | 2026-10-11 | 2026-10-24 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:775FD373-90C1-469E-8FCA-0A5210858813][Edit a party on a standard entity page]] | BACKLOG | | | Build the party list, page and dialogs from the shared record parts, and remove the party wizards. |
 | [[id:29FD1A91-A43D-4909-9E84-4A3513E9606B][Label the party picture as a logo]] | BACKLOG | | | The Details card calls the party's picture Flag, which is the currency's word. A party's picture is its logo. |
 | [[id:D5732874-20A0-45C8-BDC2-8F191419121D][Show a party's history]] | BACKLOG | | | The History tab of a party is empty. The server keys a party's versions by its short code, and the page asked with the identifier. The identifiers, contacts and business units may be keyed in their own way too. |

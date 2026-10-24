@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21546E45-9DD3-4406-B5EB-86C87C88524D][Bring the existing screens to the entity screen specification]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story documents and their sprint wiring exist. The task raised no PR
+of its own. The work of the story landed in PR #3087. The task closed on
+2026-10-24.

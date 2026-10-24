@@ -21,12 +21,12 @@ Every existing screen follows the entity screen specification: paging on the ser
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-13 |
+| Next          | Nothing. |
+| Last touched  | 2026-10-24 |
 
 * Acceptance
 
@@ -36,11 +36,17 @@ Every existing screen follows the entity screen specification: paging on the ser
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:270AE199-79D2-40C5-9786-6B0F618049E8][Scaffold story: Bring the existing screens to the entity screen specification]] | STARTED | 2026-10-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:37289A3C-DEA7-4D6D-8E53-697241E3D201][Check the existing screens against the specification and fix them]] | STARTED | 2026-10-10 | | Initial task for: Bring the existing screens to the entity screen specification |
+| [[id:270AE199-79D2-40C5-9786-6B0F618049E8][Scaffold story: Bring the existing screens to the entity screen specification]] | DONE | 2026-10-10 | 2026-10-24 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:37289A3C-DEA7-4D6D-8E53-697241E3D201][Check the existing screens against the specification and fix them]] | DONE | 2026-10-10 | 2026-10-24 | Initial task for: Bring the existing screens to the entity screen specification |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+PR #3087 carries the check of every existing screen against the entity
+screen specification, and the fixes it found. The two tasks of the story
+are DONE. The story closed on 2026-10-24.

@@ -51,7 +51,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:164BE033-72BE-436D-B49A-1AE99F95B875][Audit the policies that let the system tenant read every tenant]] | BACKLOG | | | Each policy that lets the system tenant read every tenant is either replaced by acting inside the tenant or listed as a reviewed exception with its reason, and a check fails the build on an unlisted one. |
 | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] | STARTED | | | A person creates and edits a report configuration on screens that guide each step. A configuration holds many related entities, so each entity gets a screen that helps the person choose, check and connect its parts. The configuration screens link later to the report definition screens. |
 | [[id:63B65A47-B7F8-4ABB-95C8-C5B747BF0EA9][Bring the FX spot conventions onto the market standard]] | BACKLOG | | | Correct the FX spot conventions where they disagree with the market: the pair's spot lag, the quote precision, the spot tick size and the end-of-month roll, and record the evidence behind each. |
-| [[id:21546E45-9DD3-4406-B5EB-86C87C88524D][Bring the existing screens to the entity screen specification]] | BACKLOG | | | Check the currency screens and every other existing screen against the entity screen specification and the record screen standard, and fix each difference in one PR. |
+| [[id:21546E45-9DD3-4406-B5EB-86C87C88524D][Bring the existing screens to the entity screen specification]] | DONE | | 2026-10-24 | Check the currency screens and every other existing screen against the entity screen specification and the record screen standard, and fix each difference in one PR. |
 | [[id:6FF11957-0CCE-4B12-BDE5-7AD2BE882000][Bring the role screens to the standard]] | BACKLOG | | | Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role. |
 | [[id:38DDDD12-6C66-422E-AE49-0C408AEE3F42][Bring the service code onto the NATS patterns — the remaining work]] | BACKLOG | | | Audit every NATS call site against the NATS service pattern library, and fix each deviation from it. |
 | [[id:D74BD97E-EA25-4F08-BF00-183A02DB4D75][Browse and follow the grid's jobs — the remaining work]] | BACKLOG | | | The grid screen counts batches, workunits and results and shows no row of any of them. The journeys Browse the grid's jobs and Follow a job are written and prototyped. This story builds the screens: the paged tree of batches, workunits and results, the details of each, the job page, and the file download, for the operator, the tenant administrator and the party member. |
@@ -125,7 +125,7 @@ health review (promote to a story, move to =next=, or discard).
 #+ATTR_HTML: :class hug-leading
 | Capture | Tags | Description |
 |---------+------+-------------|
-|         |      |             |
+| [[id:AEF17C45-3FE6-4139-83BE-A264A9C5879F][Write the rest of a booked trade]] | trading, booking | The instrument writer leaves three gaps: the bond remainder members, the child-to-header check and the round trip for every family. Close them so book_trade writes whatever the export reads. |
 
 * Health Review
 

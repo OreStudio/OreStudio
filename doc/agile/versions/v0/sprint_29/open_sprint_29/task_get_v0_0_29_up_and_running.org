@@ -85,3 +85,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+PR #3724 brings the environment up on a fresh database. ACME Corporation and
+the new Northwind Traders demonstration tenant both provision to active, with
+their staff, books, report documents and trades. Northwind is generated from
+the classic Northwind Traders sample, carries its own staff photographs, and
+its recipe runs after ACME.
+
+The grid was exercised on the five Wiener wrappers: a 15-minute soak of 624
+jobs and a 5-minute soak of 197 jobs, every good job succeeding and every
+client error the corrupt input the soak injects.
+
+Two acceptance bullets remain open:
+
+- The web client still lists the ORE provider.
+- The feeds screen has not been checked against a feed that ticks as running.
+
+Two defects found on the way are captured in the inbox: a compute node older
+than the submit protocol holds work it cannot hand back, and a browser session
+that survives a database recreate lands on the first-run wizard.

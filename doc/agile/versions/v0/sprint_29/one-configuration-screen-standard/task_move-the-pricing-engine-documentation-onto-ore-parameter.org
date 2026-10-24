@@ -28,9 +28,9 @@ Every pricing engine choice and parameter carries the same documentation fields 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The contract carries every pricing parameter, and the screen reads it. |
+| Now          | Every ORE description on the screen comes from the contract: settings, globals, models, engines and pairs. |
 | Waiting on   | The owner's test of the screen.        |
-| Next         | Drop the duplicate wording from the vocabulary tables. |
+| Next         | Drop the unused wording columns from the vocabulary tables. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -61,6 +61,9 @@ task and name that file in the Command column.
 | Pricing setting rows | 646 unique (type, scope, name) | =generate_ore_parameters_dataset.py= | see the branch head |
 | Global parameters documented | 17 | =generate_ore_parameters_dataset.py= | see the branch head |
 | Settings documented on the live API | 834 of 834 | =GET /api/reporting/pricing-engines/vocabulary= | see the branch head |
+| Models documented | 25 of 25 | same | see the branch head |
+| Engines documented | 74 of 74 | same | see the branch head |
+| Pairs documented | 194 of 194 | same | see the branch head |
 | Web tests | 1972 pass | =npx vitest run= in =packages/web= | see the branch head |
 | BFF tests | 941 pass | =npx vitest run= in =packages/bff= | see the branch head |
 | ORE commit measured | =3d75a6908= | =git -C /home/marco/Vault/Development/ORE/Engine rev-parse --short HEAD= | — |
@@ -104,6 +107,14 @@ The vocabulary joins the rows by (scope, product type, name), so the Product
 pricing screen reads one field shape: 834 of 834 settings on the live API carry
 their documentation, and the Global parameters tab reads the globals array.
 
-One acceptance item remains: the vocabulary tables still carry the wording in
-their =note= column, which the authoring journey reads. Drop it once the journey
-reads the contract.
+The models, the engines and the pairs joined the same contract: 956 pricing rows
+in all, with 25 models, 74 engines and 194 pairs documented on the live API. The
+vocabulary no longer serves its own wording: the settings carry no =note=, and
+the model, engine and pair text comes from the contract. The authoring journey
+reads =help=, not =note=.
+
+One acceptance item remains, and it is now only dead data: the vocabulary tables
+still carry the wording columns (=note= on the pairs and settings, and the
+description and detail on the models and methods). The API no longer reads
+them. Drop the columns in a codegen change, so no later reader can take the
+wording from the wrong place.

@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_29:sprint_29:v0:
 #+owner: marco
 #+branch: feature/get-v0-0-29-up-and-running
-#+pr:
+#+pr: 3724
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3724][#3724]] | [iam] Add the Northwind Traders demonstration tenant |
 
 * Review
 

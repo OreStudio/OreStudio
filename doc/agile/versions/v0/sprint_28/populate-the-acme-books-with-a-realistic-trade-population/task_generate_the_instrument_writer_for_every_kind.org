@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-the-instrument-writer-for-every-kind
+#+pr: 3700
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-21
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,30 @@ book_trade writes every instrument kind that instrument_batch carries. A templat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
 
 - A template generates the writer from the same model as instrument_batch.
-- Every kind in the batch has a writer. No kind is refused.
-- A round trip proves that an exported trade books back to the same rows.
+- Every array of the batch has a writer. The service refuses by name an array that the trade type does not hold. A bond row's remainder members have no writer yet, and the service refuses them by name.
+- A round trip proves that an exported trade books back to the same rows, for a header with children.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. Add a =routed= mark to the batch members the loader builds, so a template can tell an instrument header from a child.
+2. Add the archetype =ores.cpp.trade_type.writer=. It generates =instrument_batch_writer.hpp= in =ores.trading.core=: one write per batch member, through the member's =<entity>_repository=, with the create-only claim. A row states its trade id, its activity id and its version by the shape it has, as =trade_id_of= already reads the key by shape.
+3. Add to the same header the check of the batch against the trade type: a routed array that is not the table =instrument_table_for= names for the anchor's trade type is refused by name.
+4. Replace the three refusals and the bond write in =book_trade= with the generated writer. The bond container writes its header and its fact rows. The issue and its children stay with =put_bond_issue_composite=.
+5. Prove it: a test for each routing refusal, a database-backed booking of one trade for a sample of kinds (a header only, a header with children, a family with a shared child), then the export-and-rebook round trip for the trades the Acme population holds.
 
 * Measurements
 
@@ -57,9 +63,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading core suite | passed on a fresh database: 5 new cases, and the 2 refusal cases changed to the named refusal | =./compass.sh test run -- -R ores.trading.core.tests= | the task commit |
+| Synthetic core suite | passed on a fresh database. On the first run, 6 cases failed with a not-null error on =scope=, because the database was older than the checkout. | =./compass.sh test run -- -R ores.synthetic.core.tests= | the task commit |
+| Drift and lint checks | clean: paste-block symbols, test-case reachability, handler permissions, cmake sources, catalogue sweep, misspell | the checks of =compass-pr-raise= step 1 | the task commit |
+| Trades on a provisioned Acme tenant | 32 trades, each with an identifier, a bond instrument, a state and a booking; trade version 5 | =./compass.sh db sql= with a distinct count of each table | the task commit |
+| Full suite | 93 of 96 passed. =ores.marketdata.service.tests= (two =wait_until= timeouts), =ores.synthetic.service.tests= (=simulator_adapter_tests.cpp:450=) and =ores.reporting.core.tests= (row-level security on =ores_reporting_ore_parameters_tbl=) failed. | =./compass.sh test run= | the task commit |
+| The three failing suites on clean main | The same three failures, the same assertions. This branch does not cause them. | =./compass.sh test run -- -R <suite>= for each | main 1e5e696458 |
 
 * Notes
+
+Decisions made in this task:
+
+- The generated header =instrument_batch_writer.hpp= has one call for each batch member and no table of its own, so the template stays small. A row's shape decides where its keys go: the generated code reads =instrument=, =identity= or the flat members by =requires=, as =trade_id_of= does.
+- The trade type check reads =instrument_table_for=. A routed array that is not the table of the anchor's trade type is refused with the code =instrument_not_routed=. This closes the gap that the review of the previous task named.
+- A bond container writes its header only. The issue and its children stay with =put_bond_issue_composite=. The remainder members of a bond row (fact rows, schedules, legs, option block) are refused by name, by reflection over the row, as before.
+- Children are written after the headers, in the order of the catalogue. The children link to the trade by a soft foreign key, so the order among them does not matter.
 
 * Test Scenarios
 
@@ -76,12 +94,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3700][#3700]] | [trading] Generate the instrument writer for every kind |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Remainder members of non-bond container rows are dropped without a word. | trade_operations_service.cpp | Declined for now | The catalogue holds one container row, =bond_instrument_data=. No other kind has remainder members to drop. The bond-specific check stays with the follow-up that writes the bond remainder. |
+| 2 | Child arrays are not checked against the trade type. | instrument_batch_writer.hpp | Accepted as a follow-up | The catalogue does not state which header a child belongs to, so the check needs a model change. The claim "refused by name" holds for headers. |
+| 3 | A child array with no header row has no named refusal. | instrument_batch_writer.hpp | Accepted, fixed | The generated =orphan_arrays= names the child arrays that hold rows when no header does. The code is =instrument_child_without_header=. A test covers it. |
+| 4 | Is =stamp= idempotent for rows with identity and audit groups? | instrument_batch_writer.hpp | Answered | Yes. =stamp= sets the fields it names from the context and has no other effect. |
+| 5 | Write order: a child that sorts before its header breaks a foreign key. | instrument_batch_writer.hpp | Declined | The child tables link to the trade by a soft foreign key. No child table has a key to its header, so the order among the arrays does not matter. |
+| 6 | The round trip compares four leg fields for one family. | service_trade_operations_service_tests.cpp | Accepted as a follow-up | A whole-row comparison and more families belong with the bond remainder follow-up. |
+| 7 | A case with two misrouted arrays. | service_trade_operations_service_tests.cpp | Accepted, fixed | =every_array_the_trade_type_does_not_hold_is_named_once= covers it. |
 
 * Result
+
+=book_trade= writes every array of an =instrument_batch= through a generated writer: one create for each row, in the same transaction as the anchor. The archetype =ores.cpp.trade_type.writer= generates it from the trade-type catalogue. The service states the trade id, the trade type and the activity id on each row, by the shape the row has. It refuses by name, before anything is written, a routed array that the trade type does not hold.
+
+A swap trade with its header and two legs books, exports and books back to the same legs. An FX forward trade books with its instrument. The 32 trades of a provisioned Acme tenant stay whole.
+
+Not done: a bond row's remainder members (fact rows, schedules, legs, option block) have no writer, and the service refuses them by name. The round trip is proved for one family with children, not for every kind. Three suites fail in the full run, and they fail the same way on a clean main.

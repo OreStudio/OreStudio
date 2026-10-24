@@ -36,6 +36,7 @@
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
+#include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -102,9 +103,6 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
         ores::service::messaging::stamp(row, ctx);
 }
 
-// The kinds the booking writes so far. A batch array of another kind, or a bond
-// row that carries more than the instrument header, names itself in a refusal
-// before anything is written.
 /**
  * @brief True when a member of a bond row holds data: an engaged optional or a
  * string or a vector that is not empty.
@@ -119,15 +117,12 @@ bool holds_data(const T& value) {
         return false;
 }
 
-std::vector<std::string> unsupported_instrument_parts(const domain::instrument_batch& batch) {
+// Booking writes the header of a bond row. Every other member of the row that
+// can hold data, apart from the issue, which the caller has stored already,
+// belongs to a writer that does not exist yet, so the row names the member in a
+// refusal before anything is written.
+std::vector<std::string> unsupported_bond_parts(const domain::instrument_batch& batch) {
     std::vector<std::string> names;
-    rfl::to_view(batch).apply([&](const auto& field) {
-        if (field.name() != "bond_instruments" && !field.value()->empty())
-            names.emplace_back(field.name());
-    });
-    // Booking writes the header of a bond row. Every other member that can
-    // hold data, apart from the issue, which the caller has stored already,
-    // belongs to a writer that does not exist yet.
     for (const auto& bond : batch.bond_instruments) {
         bool refused = false;
         rfl::to_view(bond).apply([&](const auto& field) {
@@ -141,6 +136,13 @@ std::vector<std::string> unsupported_instrument_parts(const domain::instrument_b
             break;
     }
     return names;
+}
+
+std::string join(const std::vector<std::string>& names) {
+    std::string joined;
+    for (const auto& name : names)
+        joined += (joined.empty() ? "" : ", ") + name;
+    return joined;
 }
 
 }
@@ -161,14 +163,26 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     messaging::book_trade_response response;
 
-    if (const auto unsupported = unsupported_instrument_parts(request.instruments);
+    if (const auto misrouted = service::misrouted_arrays(request.instruments, anchor.trade_type);
+        !misrouted.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "instrument_not_routed";
+        response.result.message = "The trade type " + anchor.trade_type +
+                                  " does not hold the instrument arrays: " + join(misrouted) + ".";
+        return response;
+    }
+    if (const auto orphans = service::orphan_arrays(request.instruments); !orphans.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "instrument_child_without_header";
+        response.result.message =
+            "The batch holds rows for " + join(orphans) + " and no instrument header.";
+        return response;
+    }
+    if (const auto unsupported = unsupported_bond_parts(request.instruments);
         !unsupported.empty()) {
-        std::string names;
-        for (const auto& name : unsupported)
-            names += (names.empty() ? "" : ", ") + name;
         response.result.outcome = outcome::failed;
         response.result.code = "instrument_not_supported";
-        response.result.message = "Booking writes no instrument yet for: " + names + ".";
+        response.result.message = "Booking writes no instrument yet for: " + join(unsupported) + ".";
         return response;
     }
 
@@ -232,18 +246,10 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         identifier_repository.write(ctx, identifier, must_not_exist);
     }
 
-    auto bonds = request.instruments.bond_instruments;
-    repository::bond_instrument_repository bond_repository;
-    for (auto& bond : bonds) {
-        auto& row = bond.instrument;
-        row.identity.trade_id = anchor.id;
-        row.identity.trade_type_code = anchor.trade_type;
-        row.identity.trade_activity_id = activity.id;
-        row.identity.version = 0;
-        stamp(row.identity, ctx_);
-        stamp(row.audit, ctx_);
-        bond_repository.write(ctx, row, must_not_exist);
-    }
+    auto instruments = request.instruments;
+    const service::instrument_keys keys{anchor.id, anchor.trade_type, activity.id};
+    service::write_instrument_batch(
+        ctx, instruments, keys, [&](auto& row) { stamp(row, ctx_); }, must_not_exist);
 
     // A trade booked live in a real book awaits Operations. The request joins
     // this transaction, so a trade is never live without one.

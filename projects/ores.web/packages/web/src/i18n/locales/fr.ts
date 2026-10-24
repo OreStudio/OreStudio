@@ -4931,6 +4931,8 @@ const fr: SourceCatalogue = {
                 'Aucun paramètre. Le modèle ou le moteur utilise ses propres valeurs par défaut.',
             documentation: 'Documentation',
             format: 'Format',
+            default: 'Valeur par défaut',
+            introduced: 'Introduit dans',
             required: 'Requis',
             options: 'Options',
             runSettings:

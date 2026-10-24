@@ -57,6 +57,7 @@ export type KnownTemplate = PricingVocabulary['templates'][number];
 
 /** A vocabulary that knows nothing, for a screen that has not read one yet. */
 export const EMPTY_VOCABULARY: PricingVocabulary = {
+    globals: [],
     types: [],
     pairs: [],
     settings: [],

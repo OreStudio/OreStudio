@@ -4859,6 +4859,8 @@ export const en: SourceCatalogue = {
             noParameters: 'No parameters. The model or the engine uses its own defaults.',
             documentation: 'Documentation',
             format: 'Format',
+            default: 'Default',
+            introduced: 'Introduced in',
             required: 'Required',
             options: 'Options',
             runSettings:

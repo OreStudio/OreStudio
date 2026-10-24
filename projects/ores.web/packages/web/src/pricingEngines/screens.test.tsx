@@ -124,6 +124,7 @@ const DOCUMENT: PricingDocument = {
 };
 
 const VOCABULARY: PricingVocabulary = {
+    globals: [],
     types: [
         {
             code: 'BermudanSwaption',

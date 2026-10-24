@@ -370,14 +370,9 @@ function GlobalParametersTab({
                         <ParameterRow
                             key={parameter.id}
                             parameter={parameter}
-                            note={
-                                vocabulary?.settings.find(
-                                    (setting) => setting.name === parameter.name,
-                                )?.note ?? ''
-                            }
-                            kind={undefined}
-                            required={false}
-                            options={[]}
+                            doc={(vocabulary?.globals ?? []).find(
+                                (entry) => entry.name === parameter.name,
+                            )}
                         />
                     ))}
                 </div>
@@ -583,6 +578,21 @@ function Workbench({
 }
 
 /** One of the two roles a product's price comes from: the model or the engine. */
+type SettingDoc = PricingVocabulary['settings'][number];
+
+/** The documentation fields a parameter may carry, from the one contract. */
+interface ParameterDoc {
+    readonly label?: string | undefined;
+    readonly help?: string | undefined;
+    readonly description?: string | undefined;
+    readonly format?: string | undefined;
+    readonly defaultText?: string | undefined;
+    readonly introducedIn?: string | undefined;
+    readonly removedIn?: string | undefined;
+    readonly xpath?: string | undefined;
+    readonly required?: boolean | undefined;
+}
+
 function RoleCard({
     title,
     definition,
@@ -601,17 +611,7 @@ function RoleCard({
     readonly detail: string;
     readonly source: string;
     readonly parameters: readonly PricingParameter[];
-    readonly settingOf: (
-        scope: string,
-        name: string,
-    ) =>
-        | {
-              readonly note: string;
-              readonly kind: string;
-              readonly options: readonly string[];
-              readonly required: boolean;
-          }
-        | undefined;
+    readonly settingOf: (scope: string, name: string) => SettingDoc | undefined;
     readonly pairKnown?: boolean | undefined;
 }): ReactNode {
     const { t } = useTranslation();
@@ -649,65 +649,77 @@ function RoleCard({
                         {t('pricingEngines.workbench.noParameters')}
                     </p>
                 ) : (
-                    parameters.map((parameter) => {
-                        const setting = settingOf(parameter.scope, parameter.name);
-                        return (
-                            <ParameterRow
-                                key={parameter.id}
-                                parameter={parameter}
-                                note={setting?.note ?? ''}
-                                kind={setting?.kind}
-                                required={setting?.required ?? false}
-                                options={setting?.options ?? []}
-                            />
-                        );
-                    })
+                    parameters.map((parameter) => (
+                        <ParameterRow
+                            key={parameter.id}
+                            parameter={parameter}
+                            doc={settingOf(parameter.scope, parameter.name)}
+                        />
+                    ))
                 )}
             </div>
         </section>
     );
 }
 
-/** One parameter: its value, and its documentation collapsed under it. */
+/**
+ * One parameter: the value in force, and the documentation of it from the one
+ * contract under a disclosure.
+ */
 function ParameterRow({
     parameter,
-    note,
-    kind,
-    required,
-    options,
+    doc,
 }: {
     readonly parameter: PricingParameter;
-    readonly note: string;
-    readonly kind: string | undefined;
-    readonly required: boolean;
-    readonly options: readonly string[];
+    readonly doc: ParameterDoc | undefined;
 }): ReactNode {
     const { t } = useTranslation();
+    const label = doc?.label !== undefined && doc.label !== '' ? doc.label : parameter.name;
+    const help = doc?.help ?? '';
+    const description = doc?.description ?? '';
     return (
         <div className="border-t border-line-subtle py-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-sm">{parameter.name}</span>
+                <span className="text-sm">{label}</span>
                 <span className="font-mono text-xs">{parameter.value}</span>
             </div>
+            <div className="font-mono text-[10px] text-ink-faint">{parameter.name}</div>
+            {help !== '' && <p className="pt-1 text-xs text-ink-muted">{help}</p>}
             <details className="mt-1">
                 <summary className="cursor-pointer text-xs text-ink-faint">
                     {t('pricingEngines.workbench.documentation')}
                 </summary>
                 <div className="space-y-1 pt-1 text-xs text-ink-muted">
-                    <p>{note === '' ? t('pricingEngines.globals.noDocumentation') : note}</p>
-                    {kind !== undefined && (
-                        <p className="text-ink-faint">
-                            {t('pricingEngines.workbench.format')}: {kind}
-                            {' · '}
-                            {t('pricingEngines.workbench.required')}:{' '}
-                            {required ? t('common.yes') : t('common.no')}
-                            {options.length > 0 && (
-                                <>
-                                    {' · '}
-                                    {t('pricingEngines.workbench.options')}: {options.join(', ')}
-                                </>
+                    {description !== '' && description !== help && <p>{description}</p>}
+                    {doc === undefined ? (
+                        <p>{t('pricingEngines.globals.noDocumentation')}</p>
+                    ) : (
+                        <>
+                            {doc.format !== undefined && doc.format !== '' && (
+                                <p className="text-ink-faint">
+                                    {t('pricingEngines.workbench.format')}: {doc.format}
+                                </p>
                             )}
-                        </p>
+                            {doc.defaultText !== undefined && doc.defaultText !== '' && (
+                                <p className="text-ink-faint">
+                                    {t('pricingEngines.workbench.default')}:{' '}
+                                    <span className="font-mono">{doc.defaultText}</span>
+                                </p>
+                            )}
+                            {doc.required === true && (
+                                <p className="text-ink-faint">
+                                    {t('pricingEngines.workbench.required')}
+                                </p>
+                            )}
+                            {doc.introducedIn !== undefined && doc.introducedIn !== '' && (
+                                <p className="text-ink-faint">
+                                    {t('pricingEngines.workbench.introduced')}: {doc.introducedIn}
+                                </p>
+                            )}
+                            {doc.xpath !== undefined && doc.xpath !== '' && (
+                                <p className="font-mono text-[10px] text-ink-faint">{doc.xpath}</p>
+                            )}
+                        </>
                     )}
                 </div>
             </details>

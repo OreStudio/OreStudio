@@ -35,6 +35,7 @@ import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
+import { subjects as oreParameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -388,7 +389,7 @@ const PERIOD_CODE = /^\d+[DWMY]$/;
 async function vocabulary(session: LiveSession): Promise<Readonly<Record<string, unknown>>> {
     const rows = (subject: string, key: string) =>
         readAll(session, subject, key, { filter: null, as_of: null });
-    const [types, pairs, settings, models, methods, templates, tenors, instruments] =
+    const [types, pairs, settings, models, methods, templates, tenors, instruments, docs] =
         await Promise.all([
             rows(typeSubjects.list_pricing_engine_types_request, 'types'),
             rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
@@ -398,10 +399,21 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
             rows(tenorSubjects.list_tenors_request, 'tenors'),
             rows(instrumentCodeSubjects.list_instrument_codes_request, 'instruments'),
+            rows(oreParameterSubjects.list_ore_parameters_request, 'parameters'),
         ]);
     const assetClassOf = new Map(
         instruments.map((row) => [text(row['code']), text(row['asset_class'])]),
     );
+    const documented = new Map(
+        docs
+            .filter((row) => text(row['schema_name']) === 'ore.xsd')
+            .map((row) => [
+                `${text(row['scope'])}|${text(row['subtype'])}|${text(row['name'])}`,
+                row,
+            ]),
+    );
+    const docOf = (scope: string, subtype: string, name: string) =>
+        documented.get(`${scope}|${subtype}|${name}`);
     const described = (row: Readonly<Record<string, unknown>>) => ({
         code: text(row['code']),
         description: text(row['description']),
@@ -422,18 +434,54 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             usual: row['is_usual'] === true,
             note: text(row['note']),
         })),
-        settings: settings.map((row) => ({
-            typeCode: text(row['pricing_engine_type_code']),
-            model: text(row['model']),
-            engine: text(row['engine']),
-            scope: text(row['scope']),
-            name: text(row['name']),
-            kind: text(row['kind']),
-            usual: text(row['usual_value']),
-            options: text(row['options']) === '' ? [] : text(row['options']).split(','),
-            required: row['is_required'] === true,
-            note: text(row['note']),
-        })),
+        settings: settings.map((row) => {
+            const scope = text(row['scope']);
+            const typeCode = text(row['pricing_engine_type_code']);
+            const doc = docOf(
+                scope === 'model' ? 'ModelParameters' : 'EngineParameters',
+                typeCode,
+                text(row['name']),
+            );
+            return {
+                typeCode,
+                model: text(row['model']),
+                engine: text(row['engine']),
+                scope,
+                name: text(row['name']),
+                kind: text(row['kind']),
+                usual: text(row['usual_value']),
+                options: text(row['options']) === '' ? [] : text(row['options']).split(','),
+                required: row['is_required'] === true,
+                note: text(row['note']),
+                documented: doc !== undefined,
+                label: text(doc?.['label']),
+                help: text(doc?.['help']),
+                description: text(doc?.['description']),
+                defaultText: text(doc?.['default_text']),
+                format: text(doc?.['format']),
+                introducedIn: text(doc?.['introduced_in']),
+                removedIn: text(doc?.['removed_in']),
+                xpath: text(doc?.['xpath']),
+            };
+        }),
+        globals: docs
+            .filter(
+                (row) =>
+                    text(row['schema_name']) === 'ore.xsd' &&
+                    text(row['scope']) === 'GlobalParameters',
+            )
+            .map((row) => ({
+                name: text(row['name']),
+                label: text(row['label']),
+                help: text(row['help']),
+                description: text(row['description']),
+                defaultText: text(row['default_text']),
+                format: text(row['format']),
+                introducedIn: text(row['introduced_in']),
+                removedIn: text(row['removed_in']),
+                xpath: text(row['xpath']),
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name)),
         models: models.map(described),
         methods: methods.map(described),
         templates: templates.map((row) => ({

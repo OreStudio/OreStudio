@@ -125,9 +125,33 @@ const vocabularySchema = z.object({
             options: z.array(z.string()),
             required: z.boolean(),
             note: z.string(),
+            documented: z.boolean().default(false),
+            label: z.string().default(''),
+            help: z.string().default(''),
+            description: z.string().default(''),
+            defaultText: z.string().default(''),
+            format: z.string().default(''),
+            introducedIn: z.string().default(''),
+            removedIn: z.string().default(''),
+            xpath: z.string().default(''),
         }),
     ),
     models: z.array(described),
+    globals: z
+        .array(
+            z.object({
+                name: z.string(),
+                label: z.string().default(''),
+                help: z.string().default(''),
+                description: z.string().default(''),
+                defaultText: z.string().default(''),
+                format: z.string().default(''),
+                introducedIn: z.string().default(''),
+                removedIn: z.string().default(''),
+                xpath: z.string().default(''),
+            }),
+        )
+        .default([]),
     methods: z.array(described),
     templates: z.array(
         z.object({

@@ -4899,6 +4899,8 @@ const pt: SourceCatalogue = {
             noParameters: 'Sem parâmetros. O modelo ou o motor usa os seus próprios valores.',
             documentation: 'Documentação',
             format: 'Formato',
+            default: 'Valor por omissão',
+            introduced: 'Introduzido em',
             required: 'Obrigatório',
             options: 'Opções',
             runSettings:

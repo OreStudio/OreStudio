@@ -226,6 +226,25 @@ function vocabularyReads(): Record<string, unknown> {
             result: ok,
             instruments: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
         },
+        'reporting.v1.ore_parameters.list': {
+            result: ok,
+            parameters: [
+                {
+                    schema_name: 'ore.xsd',
+                    scope: 'EngineParameters',
+                    subtype: 'BermudanSwaption',
+                    name: 'SensitivityTemplate',
+                    label: 'Sensitivity template',
+                    help: 'The sensitivity template of the product.',
+                    description: 'The sensitivity template of the product.',
+                    default_text: 'IR_FD',
+                    format: 'The code of a sensitivity template.',
+                    introduced_in: '1.8.0.7 or earlier',
+                    removed_in: '',
+                    xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
+                },
+            ],
+        },
         'analytics.v1.pricing_model_engine_pairs.list': {
             result: ok,
             pairs: [
@@ -252,6 +271,18 @@ function vocabularyReads(): Record<string, unknown> {
                     options: 'Bootstrap,BestFit,None',
                     is_required: true,
                     note: 'How the model is fitted.',
+                },
+                {
+                    pricing_engine_type_code: 'BermudanSwaption',
+                    model: 'LGM',
+                    engine: 'Grid',
+                    scope: 'engine',
+                    name: 'SensitivityTemplate',
+                    kind: 'reference',
+                    usual_value: 'IR_FD',
+                    options: '',
+                    is_required: false,
+                    note: 'The sensitivity template of the product.',
                 },
             ],
         },
@@ -415,6 +446,18 @@ describe('pricing engine routes', () => {
         });
         expect(response.json().settings[0].options).toEqual(['Bootstrap', 'BestFit', 'None']);
         expect(response.json().settings[0].required).toBe(true);
+        const documented = response
+            .json()
+            .settings.find((setting: { name: string }) => setting.name === 'SensitivityTemplate');
+        expect(documented).toMatchObject({
+            documented: true,
+            label: 'Sensitivity template',
+            help: 'The sensitivity template of the product.',
+            defaultText: 'IR_FD',
+            format: 'The code of a sensitivity template.',
+            xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
+        });
+        expect(response.json().globals).toEqual([]);
     });
 
     it('describes each model, engine and sensitivity template', async () => {

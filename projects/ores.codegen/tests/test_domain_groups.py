@@ -45,6 +45,14 @@ ENTITY = """\
 #+entity_title: Thing
 #+brief: Probe entity.
 
+* Flags
+:PROPERTIES:
+:schema:       public
+:product:      ores
+:component:    probe
+:subcomponent: api
+:END:
+
 * Columns
 
 ** id
@@ -63,16 +71,17 @@ Key.
 | member | field_group      |
 |--------+------------------|
 | bits   | ores.probe.thing_bits |
-{extra_cpp}
+{extra_rows}{extra_cpp}
 """
 
 
-def _write(tmp_path, extra_columns="", extra_cpp=""):
+def _write(tmp_path, extra_columns="", extra_cpp="", extra_rows=""):
     (tmp_path / "ores.probe.thing_bits_field_group.org").write_text(
         GROUP, encoding="utf-8")
     p = tmp_path / "ores.probe.thing.org"
     p.write_text(
-        ENTITY.format(extra_columns=extra_columns, extra_cpp=extra_cpp),
+        ENTITY.format(extra_columns=extra_columns, extra_cpp=extra_cpp,
+                      extra_rows=extra_rows),
         encoding="utf-8")
     return p
 
@@ -123,3 +132,19 @@ def test_an_unknown_field_group_is_refused(tmp_path):
         encoding="utf-8")
     with pytest.raises(ValueError, match="does not exist"):
         load_org_model(p)
+
+
+def test_a_cross_component_group_is_found_in_its_own_component(tmp_path):
+    """ores.dq.audit_record is not beside a refdata model, and does not
+    need to be: its dotted name says which component's modeling tree
+    holds it."""
+    p = _write(tmp_path, extra_rows="| audit  | ores.dq.audit_record |\n")
+    de = load_org_model(p)["domain_entity"]
+    assert [f["name"] for f in de["domain_group_fields"]] == [
+        "bits.id",
+        "audit.modified_by",
+        "audit.performed_by",
+        "audit.change_reason_code",
+        "audit.change_commentary",
+        "audit.recorded_at",
+    ]

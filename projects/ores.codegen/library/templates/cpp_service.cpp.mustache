@@ -746,10 +746,12 @@ ores::utility::domain::result
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-{{#domain_entity.stamp_members}}
+{{#domain_entity.has_stamp_members}}
     // The audit reaches the row through whichever member carries it, so a
     // grouped entity is stamped member by member; stamping it whole would
     // find no audit column and leave the row without one.
+{{/domain_entity.has_stamp_members}}
+{{#domain_entity.stamp_members}}
     stamp(out.{{member}}, ctx_,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
@@ -1001,9 +1003,9 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
 {{#has_domain_groups}}
-{{#domain_groups}}
+{{#domain_entity.stamp_members}}
     stamp(t.{{member}}, ctx_);
-{{/domain_groups}}
+{{/domain_entity.stamp_members}}
 {{/has_domain_groups}}
 {{^has_domain_groups}}
     stamp(t, ctx_);
@@ -1034,9 +1036,9 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     auto ts = {{entity_plural_short}};
     for (auto& e : ts) {
 {{#has_domain_groups}}
-{{#domain_groups}}
+{{#domain_entity.stamp_members}}
         stamp(e.{{member}}, ctx_);
-{{/domain_groups}}
+{{/domain_entity.stamp_members}}
 {{/has_domain_groups}}
 {{^has_domain_groups}}
         stamp(e, ctx_);

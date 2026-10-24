@@ -4130,10 +4130,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # through its identity slot and its audit member; a flat entity is
         # stamped whole. Naming the members here stops the service template
         # from stamping a struct that carries no audit column of its own.
+        #
+        # A stamped member is one that carries a field stamp() writes, found
+        # by the field rather than by the member's name, which is the model
+        # author's to choose. Listing every group instead would emit a call
+        # per leg form, and stamp()'s own if-constexpr guards would discard
+        # each of them.
+        stamped_field_names = {'tenant_id', 'party_id', 'modified_by',
+                               'performed_by', 'change_reason_code'}
+        member_fields: dict[str, set] = {}
+        for field in domain_entity.get('domain_group_fields') or []:
+            member, _, name = field['name'].partition('.')
+            member_fields.setdefault(member, set()).add(name)
         stamp_members = []
         if domain_groups:
             for group in domain_groups:
-                stamp_members.append({'member': group['member']})
+                if member_fields.get(group['member'], set()) & stamped_field_names:
+                    stamp_members.append({'member': group['member']})
         else:
             for prefix in (domain_entity['scaffold_prefix'],
                            domain_entity['audit_prefix']):
@@ -4141,6 +4154,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 if name and name not in [m['member'] for m in stamp_members]:
                     stamp_members.append({'member': name})
         domain_entity['stamp_members'] = stamp_members
+        domain_entity['has_stamp_members'] = bool(stamp_members)
         # Primary-key columns live in a separate 'primary_key' dict, not in
         # 'columns' (see org_loader._parse_columns), so they need the same
         # flag set independently -- otherwise repository-layer helpers like

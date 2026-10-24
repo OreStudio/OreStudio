@@ -2149,6 +2149,27 @@ def load_org_model(path: Path | str) -> dict[str, Any]:
     return model
 
 
+def _field_group_model_path(field_group: str, entity_path: Path) -> Path:
+    """Where a domain group's field group model lives.
+
+    A group from the entity's own component sits beside the entity
+    model, which is where every same-component group has always been
+    found. A group from another component -- ores.dq.audit_record, say,
+    which is what a grouped entity names for its audit tail -- has no
+    reason to be there, so its dotted name is read as
+    ``<product>.<component>.<name>`` and the model is looked for in that
+    component's own modeling directory.
+    """
+    beside = entity_path.with_name(f"{field_group}_field_group.org")
+    if beside.exists() or field_group.count(".") != 2:
+        # A name that is not the three-part dotted form is left to the
+        # caller's own "does not exist" error rather than guessed at.
+        return beside
+    return (Path(__file__).resolve().parents[3] / f"{field_group.split('.')[0]}"
+            f".{field_group.split('.')[1]}" / "modeling"
+            / f"{field_group}_field_group.org")
+
+
 def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
     """Attach each domain group's field types to the entity.
 
@@ -2184,7 +2205,7 @@ def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
         )
     resolved: list[dict[str, str]] = []
     for group in groups:
-        fg_path = path.with_name(f"{group['field_group']}_field_group.org")
+        fg_path = _field_group_model_path(group["field_group"], path)
         if not fg_path.exists():
             raise ValueError(
                 f"{path}: domain group '{group['member']}' names field group "

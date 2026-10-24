@@ -306,6 +306,10 @@ const SETTINGS = {
 };
 const GLOBAL_KNOWN = [{ name: 'ContinueOnCalibrationError', kind: 'select', opts: ['true', 'false'], usual: 'true', note: 'Whether a failed calibration stops the run. True prices the product with the last good fit and records the error.' }];
 const settingsFor = (t, m, e) => SETTINGS[t + '|' + m + '|' + e] || [];
+const noteOf = name => {
+  for (const list of Object.values(SETTINGS)) { const hit = list.find(x => x.name === name); if (hit) return hit; }
+  return GLOBAL_KNOWN.find(x => x.name === name) || null;
+};
 const P = (scope, name, value) => ({ scope, name, value });
 const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
 const clone = x => JSON.parse(JSON.stringify(x));
@@ -563,10 +567,11 @@ function coverageLine(c) {
   return `${base}${un.length ? ` Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : ' Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures.</span>`;
 }
 function paramsTab(c) {
-  const one = (scope, applies, x) => `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(scope)} · ${esc(applies)}</div></div><div class="sval mono">${esc(x.value)}</div></div></div>`;
+  const one = (scope, applies, x) => { const k = noteOf(x.name); return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(scope)} · ${esc(applies)}</div></div><div class="sval mono">${esc(x.value)}</div></div>
+    <details class="doc" ${new URLSearchParams(location.search).get('doc') === x.name ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(k ? k.note : 'The documentation of this setting is not held.')}</p>${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Parameter[@name='${esc(x.name)}']</span></div><div>Format ${esc(k ? k.kind : 'text')}</div><div>Introduced in 1.8.0.7</div></div>` : ''}</div></details></div>`; };
   const globals = c.globals.map(x => one('global', 'every product', x));
   const product = c.products.flatMap(pr => pr.params.map(x => one(x.scope, pr.type, x)));
-  return `<div class="card"><div class="gh"><div><h3>Parameters</h3><div class="faint">Every setting the document carries, with the scope it applies to.</div></div></div>${globals.concat(product).join('') || '<div class="setting"><span class="muted">No setting. The engine uses its own defaults.</span></div>'}<div class="foot">The same name can sit in two scopes, so the scope is named.</div></div>`;
+  return `<div class="card"><div class="gh"><div><h3>Parameters</h3><div class="faint">Every setting the document carries, with the scope it applies to.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div></div></div>${globals.concat(product).join('') || '<div class="setting"><span class="muted">No setting. The engine uses its own defaults.</span></div>'}<div class="foot">The same name can sit in two scopes, so the scope is named.</div></div>`;
 }
 function detailsTab(c) {
   return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
@@ -636,6 +641,7 @@ function wire() {
   document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
   document.querySelectorAll('#app [data-product]').forEach(x => x.onclick = e => { e.preventDefault(); const p = c.products.find(y => y.type === x.dataset.product); if (p) productCard(c, p); });
   document.querySelectorAll('#app [data-class]').forEach(x => x.onclick = e => { e.preventDefault(); assetClassCard(c, x.dataset.class); });
+  document.querySelectorAll('#app [data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; render(); });
   const wantCard = new URLSearchParams(location.search).get('card'), wantClass = new URLSearchParams(location.search).get('class');
   if (r.screen === 'record' && c && wantCard && !document.querySelector('.dlg')) { const p = c.products.find(y => y.type === wantCard); if (p) productCard(c, p); }
   if (r.screen === 'record' && c && wantClass && !document.querySelector('.dlg')) assetClassCard(c, wantClass);

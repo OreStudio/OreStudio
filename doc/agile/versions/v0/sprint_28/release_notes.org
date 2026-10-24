@@ -26,6 +26,8 @@ Sprint 28 set out to finish the work carried from sprint 27 and to add no new sc
 - *Grid jobs and reports.* A person browses the grid's batches, workunits and results, triggers a report on demand or by schedule, and manages the reports a party runs from one list.
 - *CI cheaper and steadier.* The continuous Linux jobs carry less work, share one compiler cache and save it on every exit. The nightly builds report under their own CDash group.
 
+[[proj:assets/images/ore_studio-v0.0.28.png]]
+
 * 🛠️ Key Improvements
 
 A story marked "Partly delivered" closed with its finished tasks. The count shows how much of its first plan it delivered. The rest is in the product backlog as "the remaining work".
@@ -63,6 +65,8 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Cut the feed ingest round trips*: The database round trips that the feed ingest pays per stored tick are fewer, and a measurement proves it.
 - *Find why market data ticks lag the wall clock* (Partly delivered, 10 of 32 tasks): The investigation found where the backlog of ticks builds up. The per-row costs of the ingest are removed, and a quiet loop runs in one thread. The remaining 21 tasks, among them the tick tables, the lanes and the history call, are not closed.
 
+[[proj:assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png]]
+
 ** Security & Tenancy
 
 - *A feed runs as the tenant that owns it*: A feed acts for its owning tenant with the narrowest authority, whoever or whatever started it.
@@ -73,6 +77,10 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Prove the report grid run end to end* (Partly delivered, 4 of 8 tasks): The trades export as the ORE portfolio the engine reads, the compute results come back, an engine error counts as a failed result, and the risk report configurations are seeded. The proof that the run completes and repeats from a recreated database is not done.
 - *Run a report end to end on a synthetic bond population* (Partly delivered, 4 of 5 tasks): The NPV report of an ACME party runs from the trigger to a completed report instance, and each issue met is written down with its cause and its fix or its owner. The grid views of the run are not built.
 - *Gather each trade set and its market data* (Partly delivered, 1 of 8 tasks): Each convention links to its market data series. The trade sets, their archives and the package assembly are not built.
+
+[[proj:assets/images/ore_studio-v0.0.28-grid-overview.png]]
+
+[[proj:assets/images/ore_studio-v0.0.28-grid-usage.png]]
 
 ** Web & Journeys
 
@@ -90,6 +98,10 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Draw every coded value as its badge* (Partly delivered, 1 of 7 tasks): The coded-value badges and the shared control are built. The census of screens, the missing badges, the mapping fixes and the gate that holds the rule are not.
 - *Trade Blotter* (Partly delivered, 5 of 13 tasks): The prototypes meet the entity screen specification, the operational authorisation kind is seeded and the trade list rows are read. The blotter screen itself is not built.
 - *Give the web one way to handle time and timestamps*: One place writes, reads and converts a timestamp in ores.web.
+
+[[proj:assets/images/ore_studio-v0.0.28-grid-jobs.png]]
+
+[[proj:assets/images/ore_studio-v0.0.28-engine-settings.png]]
 
 ** Codegen & Tooling
 

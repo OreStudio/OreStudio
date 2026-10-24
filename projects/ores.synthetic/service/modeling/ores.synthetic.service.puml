@@ -177,7 +177,6 @@ driven with no database.
 end note
 
 class ores::synthetic::service::feed_controller {
-    +feed_controller(nats : nats::client&, auth_nats : nats_client&, bindings : shared_ptr<feed_binding_store>)
     +~feed_controller()
     +start(feed : shared_ptr<i_feed>, binding_mode : binding_mode, caller_bearer_token : string) : start_result
     +add(feed : shared_ptr<i_feed>, binding_mode : binding_mode, caller_bearer_token : string, out_conflicting_source_name : string*) : bool
@@ -206,9 +205,7 @@ path (boot auto-start, the folder cascade); start(i_feed) is
 the on-demand path and distinguishes already_running from
 qualifier_conflict. Both call bind_feed after releasing the
 mutex, so a bound feed creates or confirms its marketdata
-feed_binding and a sandboxed feed never does, for every
 asset class; the marketdata round-trip sits behind
-feed_binding_store. A re-start of an already-running feed
 keeps the mode it is running with and still confirms its
 binding. An internal start with no end-user session has no
 party to bind under and skips the bind. One tick thread per
@@ -216,10 +213,6 @@ feed, plus one status thread that logs publish counts every
 minute.
 end note
 
-class ores::synthetic::service::feed_binding_store {
-    +save_if_absent(source_name : string, caller_bearer_token : string) : expected<void,string>
-}
-note right of "ores::synthetic::service::feed_binding_store"
 The marketdata round-trip seam a feed_controller binds through. The controller
 owns the one rule, a bound feed is bound and a sandboxed feed is not; the
 store owns the list-then-write over NATS, so the rule is testable without a

@@ -164,7 +164,7 @@ on conflict (service_name) do update set
 
 insert into ores_telemetry_expected_services_tbl
     (service_name, replicas, display_name, description, service_account)
-values ('ores.marketdata.service', 1, 'Market Data Service', 'Serves market series, observations, fixings and feed bindings.',
+values ('ores.marketdata.service', 1, 'Market Data Service', 'Serves market series, observations and fixings.',
         :'marketdata_service_user')
 on conflict (service_name) do update set
     replicas = excluded.replicas,

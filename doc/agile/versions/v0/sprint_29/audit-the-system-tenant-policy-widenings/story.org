@@ -30,7 +30,7 @@ Each policy that lets the system tenant read every tenant is either replaced by 
 
 * Acceptance
 
-- The workflow instance, workflow batch link, scheduler job definition and marketdata feed binding policies each have a decision.
+- The workflow instance, workflow batch link, scheduler job definition and retired marketdata feed binding policies each have a decision.
 - A check fails on a system tenant widening that the exception list does not name.
 
 * Tasks
@@ -40,6 +40,8 @@ Each policy that lets the system tenant read every tenant is either replaced by 
 | [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let the system tenant read every tenant]] | BACKLOG | | | Task for: Read each tenant's cache partition inside its tenant |
 
 * Decisions
+
+- The marketdata feed binding policy is retired with its table (2026-10-24). The route is the one consumer record, so the guard no longer lists a binding widening.
 
 * Out of scope
 

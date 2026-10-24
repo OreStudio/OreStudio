@@ -87,7 +87,6 @@ namespace ores #F2F2F2 {
                     -crm_bridge_ : shared_ptr<crm_ingest_bridge>
                     -mu_ : mutable mutex
                     -tick_sub_ : optional<ores::nats::service::subscription>
-                    -bindings_by_source_ : map<string, vector<domain::feed_binding>>
                     -stats_ : map<binding_key, shared_ptr<feed_stats>>
                     -classifiers_ : map<string, shared_ptr<const core::series_classifier>>
                     -unbound_warned_ : set<string>
@@ -102,7 +101,6 @@ namespace ores #F2F2F2 {
                     +start() : void
                     +refresh() : void
                     -on_tick(const ores::nats::message& msg) : void
-                    -persist(const domain::feed_binding& binding, const datum::market_datum& tick_datum, const messaging::market_tick& tick) : bool
                     -classifier_for(const ores::database::context& tenant_ctx) : shared_ptr<const core::series_classifier>
                     -status_loop() : void
                     -log_status() : void
@@ -117,7 +115,6 @@ namespace ores #F2F2F2 {
                     not_a_number
                 }
                 class tick_target <<struct>> {
-                    +binding : domain::feed_binding
                     +subject : string
                 }
                 class tick_plan <<struct>> {
@@ -173,7 +170,6 @@ ores::marketdata::service::config::parser ..> ores::marketdata::service::config:
 
 note as OresMarketdataPlanTick
     Free function in ores::marketdata::service::app:
-    plan_tick(tick : const messaging::market_tick&, bindings : const vector<domain::feed_binding>&) : expected<tick_plan, tick_drop>
     Decides what happens to one tick, in the order the ingest loop
     reports it: an empty bindings is unbound_source, then the oresmd
     URI must name a datum the ORE key codec can write, then the value
@@ -192,7 +188,6 @@ end note
 note as OresMarketdataEventRegistrars
     Free functions in ores::marketdata::service::messaging, one per table
     that publishes a change event:
-    register_feed_binding_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
     register_market_fixing_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
     register_market_observation_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
     register_market_series_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription

@@ -29,7 +29,7 @@ from own-tenant-only to own-tenant *or* system-tenant
 (=tenant_id = ores_iam_current_tenant_id_fn() or tenant_id =
 ores_utility_system_tenant_id_fn()==). The T2 shape — used by tables a
 system-tenant service must read across tenants (e.g.
-=feed_bindings=, compute platforms). Requires
+=routes=, compute platforms). Requires
 =:rls_tenant_isolation:=; without it this flag has no effect.
 
 * Structural consequence

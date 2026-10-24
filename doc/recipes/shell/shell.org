@@ -1327,10 +1327,6 @@ tangled into the runnable script library
 
 - [[id:5906C072-05A5-5A3E-B9AB-5B34089834D4][How do I run the netting_set_identifiers commands from the shell?]]
 
-* Feed Bindings
-
-- [[id:407A432A-C73D-5633-872A-5DC9D39E2394][How do I run the feed_bindings commands from the shell?]]
-
 * Market Fixings
 
 - [[id:3B4C29BE-8FA9-505B-B3DD-D322676AC7A8][How do I run the market_fixings commands from the shell?]]

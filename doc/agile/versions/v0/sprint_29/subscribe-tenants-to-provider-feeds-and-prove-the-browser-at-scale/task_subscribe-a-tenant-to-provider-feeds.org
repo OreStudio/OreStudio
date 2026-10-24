@@ -2,10 +2,10 @@
 :ID: CDA9C6C5-3D37-4736-8C1F-2DE8918696E4
 :END:
 #+title: Task: Subscribe a tenant to provider feeds
-#+description: A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the feed bindings that subscribe and unsubscribe.
+#+description: A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the subscription and the route that subscribe and unsubscribe.
 #+type: task
 #+level: s1
-#+filetags: :marketdata:web:feed_bindings:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:sprint_29:v0:
+#+filetags: :marketdata:web:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:

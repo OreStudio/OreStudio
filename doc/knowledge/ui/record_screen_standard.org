@@ -565,7 +565,6 @@ and in its journey, never found later.
 | /Shaped by its source/ | Tabs depend on what the record is made of, such as a QuantLib, derived or bespoke calendar |
 | /Singleton/ | One record by definition: no list, no Add, no Delete |
 | /Accumulating/ | Most recent first; Delete usually refused |
-| /Feed binding/ | The key is the source name and it can be edited: Edit offers it, with help that says it switches the ingest source without restarting a producer, because that is how a party rebinds. A vendor binding is read only and has no Edit, but it keeps Delete, so a stale one can be removed |
 | /Mixture/ | A set of parts that are read and judged as one, such as an FX feed's Gaussians. The tab lists the set across the full width, with the previews it implies side by side below it and the engine's note under them. A row opens the part in a dialog; each row moves up or down and is deleted from the set; Add opens the dialog empty. What is not saved is marked: a new row, a changed cell, a moved row, and a deleted row kept struck through with Undo, with a count beside Save. Save is one button beside Add, enabled while there are changes; it opens a dialog that asks the reason and says when the parent uses the change. The part's history is not offered row by row: the parent's History tab is one stream of the parent and every part, the timeline of the entity screen specification, with Revert on each older version |
 
 An exception decides which parts exist and which actions show. It never changes

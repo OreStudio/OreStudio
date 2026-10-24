@@ -2,7 +2,7 @@
 :ID: 3BAE4AAA-71DC-4583-A1AD-B3F0BB87E82D
 :END:
 #+title: Story: Subscribe tenants to provider feeds and prove the browser at scale
-#+description: A tenant or party subscribes to a provider's feeds through feed bindings, the feed screen standard states the browser, the two scopes and the subscription, and the feed browser is proved with tens of thousands of feeds.
+#+description: A tenant or party subscribes to a provider's feeds through a subscription and a route, the feed screen standard states the browser, the two scopes and the subscription, and the feed browser is proved with tens of thousands of feeds.
 #+type: story
 #+level: s2
 #+filetags: :sprint_29:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A tenant or party subscribes to a provider's feeds through feed bindings, the feed screen standard states the browser, the two scopes and the subscription, and the feed browser is proved with tens of thousands of feeds.
+A tenant or party subscribes to a provider's feeds through a subscription and a route, the feed screen standard states the browser, the two scopes and the subscription, and the feed browser is proved with tens of thousands of feeds.
 
 * Status
 
@@ -30,7 +30,7 @@ A tenant or party subscribes to a provider's feeds through feed bindings, the fe
 
 * Acceptance
 
-- A screen shows what each provider offers, what a tenant or party consumes and since when, and writes the feed bindings.
+- A screen shows what each provider offers, what a tenant or party consumes and since when, and writes the subscription and the route.
 - The feed screen standard states the browser, the two scopes and the subscription, and the FX price feed screen conforms.
 - Tens of thousands of feeds are generated, the tree, lists, running read, folder cascade and tick buffers are measured, and what does not hold is fixed.
 
@@ -38,7 +38,7 @@ A tenant or party subscribes to a provider's feeds through feed bindings, the fe
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]] | BACKLOG | | | A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the feed bindings that subscribe and unsubscribe. |
+| [[id:CDA9C6C5-3D37-4736-8C1F-2DE8918696E4][Subscribe a tenant to provider feeds]] | BACKLOG | | | A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the subscription and the route that subscribe and unsubscribe. |
 | [[id:5CFE1A3A-5CCC-4C7D-A399-02A623B907C5][Prove the feeds at scale]] | BACKLOG | | | Generate tens of thousands of feeds, measure the tree, the lists, the running read, the folder cascade and the tick buffers, fix what does not hold, and record the numbers. |
 | [[id:CD538F61-3C81-4522-9508-992432FE093B][State providers and scope in the feed screen standard]] | BACKLOG | | | The feed screen standard gains the browser, the two scopes and the subscription, and the FX price feed screen is brought to it. |
 

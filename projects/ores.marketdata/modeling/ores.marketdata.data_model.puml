@@ -258,16 +258,6 @@ namespace ores #F2F2F2 {
                     +value : string
                     +source : optional<string>
                 }
-                class feed_binding <<struct>> <<orm>> #99CB99 {
-                    +version : int
-                    +tenant_id : tenant_id
-                    +id : uuid
-                    +party_id : uuid
-                    +oresmd_uri : domain::oresmd_uri
-                    +source_name : string
-                    +asset_class : optional<domain::asset_class>
-                    +enabled : bool
-                }
                 class observation_lineage <<struct>> <<orm>> #99CB99 {
                     +version : int
                     +tenant_id : tenant_id
@@ -358,7 +348,6 @@ ores::marketdata::domain::persistence::market_observation --> ores::marketdata::
 ores::marketdata::domain::persistence::market_fixing --> ores::marketdata::domain::persistence::market_series : series_id
 ores::marketdata::domain::persistence::observation_lineage --> ores::marketdata::domain::persistence::market_series : series_id
 ores::marketdata::domain::persistence::curve_build --> ores::marketdata::domain::persistence::market_series : series_id
-ores::marketdata::domain::persistence::feed_binding o-- ores::marketdata::domain::oresmd_uri : oresmd_uri
 ores::marketdata::domain::persistence::market_series o-- ores::marketdata::domain::oresmd_uri : oresmd_uri
 ores::marketdata::domain::persistence::curve_point *-- ores::marketdata::domain::persistence::curve_build : build_id
 ores::marketdata::domain::persistence::curve_point ..> ores::marketdata::domain::persistence::market_observation : same point composite

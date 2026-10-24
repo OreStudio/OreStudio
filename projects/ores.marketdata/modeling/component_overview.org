@@ -2,7 +2,7 @@
 :ID: F2FA516C-1F86-43EF-80D4-E92F640B6CFD
 :END:
 #+title: ores.marketdata
-#+description: Market data component: market series, observations, fixings, feed bindings and their oresmd representation, with NATS services.
+#+description: Market data component: market series, observations, fixings, routes and their oresmd representation, with NATS services.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :marketdata:component:
@@ -18,7 +18,7 @@
 
 =ores.marketdata= owns the market data the platform quotes against: the
 series that name a curve, surface or fixing, the observations and fixings
-that fill it, and the feed bindings that say where it comes from. It
+that fill it, and the routes that say where it comes from. It
 represents ORE market data in an ORE Studio native form through =oresmd=,
 an identifier grammar and projection layer covering every series type ORE's
 shape table defines, and it imports the ORE-format files themselves.

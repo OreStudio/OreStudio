@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/reconcile-the-binding-stories-and-docs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The stories and the docs agree that the route says which party consumes which so
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ The stories and the docs agree that the route says which party consumes which so
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Close the bindings screen story and move its one live task out.
+2. Reword the subscribe story and its task to the subscription and the route.
+3. Record the retired policy in the system tenant policy audit.
+4. Remove the binding from the screen standard, the recipes, the telemetry
+   description, the registry, the examples and the diagrams.
+5. Leave the historical sprint records as they are.
 
 * Measurements
 
@@ -57,7 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files changed against main | 35 (356 insertions, 896 deletions) | =git diff --shortstat origin/main..HEAD= | 06d1c2434b |
+| Remaining current docs that name a binding | 0 | =grep -rn "feed binding\|feed_binding" doc/knowledge doc/recipes projects/modeling projects/ores.codegen/docs= | 06d1c2434b |
 
 * Notes
 
@@ -85,3 +89,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The record says the route is the consumer and the binding is gone.
+
+- The bindings screen story =AE947749= is ABANDONED. Its one live task, the site
+  language control, became the capture
+  =3AAC91D5-EB59-46ED-BC49-CDBE25ABCC32=, because it was never about the
+  binding.
+- The subscribe story =3BAE4AAA= and its task now name the subscription and
+  the route, and its =feed_bindings= tag is gone.
+- The system tenant policy audit records the feed binding policy as retired,
+  and its acceptance no longer asks for a decision the retirement already made.
+- The record screen standard loses the feed binding row. The shell recipe is
+  deleted, and the recipe index no longer lists it.
+- The telemetry service description, the service registry, the variability
+  note, the codegen paste-block example, the wireframe, the prototype note and
+  the refdata model comments name the route instead. The component diagrams
+  lose the binding classes.
+- The historical sprint records are untouched: they describe what was true when
+  they were written.
+
+The gate: lint and the org links pass, the backlog indexes regenerate, and the
+ER diagrams for refdata regenerate with the edited comments.

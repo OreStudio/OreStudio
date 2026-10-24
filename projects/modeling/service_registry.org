@@ -431,7 +431,7 @@
 :iam_role:    MarketdataService
 :description: Market Data
 :display_name: Market Data Service
-:summary:     Serves market series, observations, fixings and feed bindings.
+:summary:     Serves market series, observations and fixings.
 :email:       marketdata_service@system.ores
 :replicas:    1
 :enabled:     true

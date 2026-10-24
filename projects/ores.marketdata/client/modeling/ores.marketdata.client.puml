@@ -31,8 +31,6 @@ namespace ores #F2F2F2 {
                 +save_observations(const vector<domain::market_observation>& observations) : [[nodiscard]] expected<int, string>
                 +list_observations(const string& series_id) : [[nodiscard]] expected<vector<domain::market_observation>, string>
                 +list_observations_page(const string& series_id, uint32_t offset, uint32_t limit) : [[nodiscard]] expected<vector<domain::market_observation>, string>
-                +list_feed_bindings() : [[nodiscard]] expected<vector<domain::feed_binding>, string>
-                +save_feed_binding(const domain::feed_binding& binding) : [[nodiscard]] expected<bool, string>
             }
         }
     }

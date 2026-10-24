@@ -2,109 +2,118 @@
 :ID: 9F374ABC-8D56-45DE-9A0F-8D811AD9B319
 :END:
 #+title: Product pricing prototype
-#+description: The pricing engine configurations list and one configuration page, drawn only as the Record screen standard draws a record screen, with a status and an official cycle for each configuration, a coverage strip on the Products tab, the reach on the Reports tab, and the link to the engine run settings.
+#+description: The list of product pricing configurations, and the page of one: Details, Global parameters, Products, Reports and History, with a tree by asset class and the product taking the rest of the width.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-19
 #+updated: 2026-10-24
 
-| Item          | Where                                             |
-|---------------+---------------------------------------------------|
-| Prototype     | [[file:product-pricing/][the prototype]] |
-| Gemini review | none                                              |
-| Group         | [[file:index.org][Reporting prototypes]]            |
+| Item          | Where                                                 |
+|---------------+-------------------------------------------------------|
+| Prototype     | [[file:product-pricing/][the prototype]]             |
+| Gemini review | none                                                  |
+| Group         | [[file:index.org][Reporting prototypes]]                |
 
 * Summary
 
-This prototype draws the list of pricing engine configurations and the page of one, and nothing else. It keeps its earlier file name; the screen it draws is *Pricing engine configurations*. It invents no layout. The list is the standard list: breadcrumb, plural title, one sentence, Refresh, Workflows and Add, a search, three filters, the table, the pager and the four states. The page is the standard record page: the lead line, the access mark, the actions only for a person who may take them, and the tabs Details, Products, Parameters, Reports and History with Revert.
+This prototype draws the product pricing screen: the list of configurations,
+and one configuration with five tabs. The Products tab is a tree of the
+configuration's product types grouped by asset class, beside the product
+itself. The product takes the rest of the width: what it is, its model with its
+parameters, and its engine with its parameters.
 
-A party holds few official configurations, one for each cycle, and model risk signs them off. The prototype draws that. Each configuration has a status (approved, in review, draft or retired), and the one that is official for a cycle carries an *Official for* tag. An approved configuration offers *Propose a change* in place of *Edit*, and no *Delete*. A pending proposal shows as a banner and in the History tab. A draft edits and deletes as the standard says.
+The screen is read-only until *Edit* or *Propose a change*. In edit mode the
+values become controls and the change reason and commentary appear.
 
-The page explains itself from the product side, not by comparing itself with another screen. The
-Products tab leads with the product type and the asset class, and each opens a card that says what the
-thing is. There is no cross-link to the engine run settings: a shared configuration does not need to
-explain its siblings, and the place where the two are bound together is the report.
-
-The two other additions are the two things a market-risk owner asks that the standard does not answer. The Products tab opens with a *coverage strip*: how many of the product types the reports that bind the configuration need have a row, and which do not. The Reports tab opens with the rule and the reach: a report needs a price for every product type in its portfolio, a change reaches the next run of each report named once it is approved, and a run already produced keeps what it ran with. It lists each report with its cycle, its portfolio, and what the configuration leaves unpriced for it.
-
-The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+It is throwaway. It reads no service and writes nothing to one.
 
 * Detail
 
-** The product card and the asset class card
-
-The Products tab is a table of product types, and each row can be read in two
-directions.
-
-- Clicking the product type opens a card that says what the product is: a
-  paragraph, the instrument it maps to and that instrument's paragraph, the asset
-  class and that class's paragraph, the model and engine in force, the settings
-  of this product, and the known model and engine pairs with the one in use
-  marked, and the settings of the product with their documentation collapsed
-  under each one. Simple and Advanced are the same switch as the engine settings:
-  Advanced adds the ORE argument, the format and the release that introduced the
-  setting.
-- Clicking the asset class opens a card that says what the class is, and lists
-  the product types of this configuration that sit in it.
-
-The cards exist because the table's words are the ORE vocabulary, and a person
-who does not know what a Bermudan swaption is cannot judge the model and engine
-chosen for it. The explanation belongs beside the row, not in a comparison with
-another screen.
-
-The instrument and asset class descriptions already exist in the data:
-=ores_refdata_instrument_codes_tbl.description= and
-=ores_refdata_asset_class_codes_tbl.description= are paragraphs. The product type
-description is the humanised label, so the product card needs a verbose field
-beside it.
-
 ** The question the screen answers
 
-"Which engine prices my swaptions, and which of my reports use it?" The screen answers it in two reads: the list, to find the configuration, and the page, to read what it prices with and who binds it. The coverage strip answers the third question, what is left unpriced.
+"Which model and engine price my Bermudan swaptions, and how are they set?" The
+tree finds the product; the pane answers with the choice, the parameters and
+the documentation of each.
+
+** The list
+
+Three configurations: the approved EOD pricing, the approved intraday pricing
+and the SABR draft. The columns are name, status, official for, variant,
+products, reports and last changed. A row opens the configuration.
+
+** The configuration page
+
+Five tabs, in this order:
+
+| Tab | Holds |
+|-----+-------|
+| Details | The configuration's own fields: name, status, official for, version, signed off by, variant, products, bound by, description, reporting row, last changed |
+| Global parameters | The document-level parameters, with their documentation collapsed |
+| Products | The tree and the product workbench |
+| Reports | The reports that bind the configuration, and the reach rule |
+| History | The shared timeline |
+
+** The Products workbench
+
+- The tree groups the configuration's product types by asset class, with a
+  count per class. Selecting a type swaps the pane.
+- The pane opens with the product, its asset class and instrument, and one
+  documentation disclosure for all three.
+- *Model*: a definition of what a model is, the select, a description of the
+  chosen model, then the model parameters.
+- *Engine*: the same for the engine, the select, a description, whether the
+  pair is known to work, then the engine parameters.
+- A parameter shows its value in read mode, and a control in edit mode, with
+  its documentation collapsed under it. Simple and Advanced govern the depth;
+  Advanced adds the ORE argument, the format and the release.
+- A quiet sentence at the top of the tab says that this page sets how each
+  product is priced, and that how the engine runs every product is the engine
+  run settings, with a link.
+
+** Edit and propose
+
+Read mode shows values and names, and no change fields. *Edit* on a draft, or
+*Propose a change* on an approved configuration, enters edit mode: the values
+become controls and the change reason and commentary appear with *Propose* and
+*Cancel*. Propose or Cancel returns to read mode.
 
 ** States and switches
 
-- =?screen=list= and =?screen=record&id=c1|c2|c3&tab=...=. =c1= is the approved Intraday pricing, official for the intraday cycle, with eleven products and two reports. =c2= is the approved EOD pricing, official for the EOD cycle, with eleven products, four reports, four versions each signed off by three approval parts, and a proposal for version 5 that waits for sign-off. =c3= is a draft that no report binds.
-- =?state=all|empty|error|loading= for the four list states.
-- =?actor=viewer|analyst|admin=: a viewer reads, an analyst adds and edits, and only the administrator deletes. An action a person may not take is not drawn.
-- Delete is offered on a draft only. A report that binds a draft is refused, and the page says that no service refuses it today.
-- On an approved configuration, *Propose a revert* is offered on any version older than the one in force, and writes its values as a new proposal. On a draft, *Revert* writes them back as a new version.
+=&tab=details|globals|products|reports|history= picks the tab; =&product=<type>=
+picks a product; =&mode=simple|advanced= sets the documentation depth;
+=&doc=<name>= opens one documentation entry.
 
 ** What is fake
 
-The product type and instrument paragraphs are fixtures written for this page.
-The asset class paragraphs follow the seeded descriptions. Every other value
-is a fixture. The product and report counts in the list are fixtures, because no operation returns a count for a list row. The traded product types are a fixture, because no operation returns them. The reports on the Reports tab are names, because no read lists the reports that bind one configuration. The status, the cycle, the sign-off, the proposal and the portfolios of the reports are fixtures: no operation holds them. The first version of each official configuration is marked as provisioned by the seed, with no sign-off. The product, model and engine rows are real triples counted from the ORE example files, and the settings of the Bermudan swaption are the ones most example files carry.
-
-** Where the code lives
-
-=doc/prototypes/reporting/product-pricing/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
+Every value. The status, the cycle, the sign-off, the proposal, the report
+counts and the portfolios are fixtures: no operation holds them. The product,
+model and engine triples are counted from the ORE example files. The product,
+instrument and asset-class paragraphs are fixtures; the asset class text follows
+the seeded descriptions. The model and engine descriptions are written for this
+page.
 
 ** What it argues
 
-- The Products tab leads with the product, not the configuration: the product type and the asset class are links to a card that says what each one is. The explanation is beside the row, not in a comparison with another screen.
-- The Products tab explains the product and the asset class in a card beside the row, so the explanation is where the question is asked.
-- The History tab draws the shared timeline as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws it: an event chart split by kind, a rail grouped by day with the time in the left gutter, one header line for each entry, the note on its own line, a collapsed detail, the current-version emblem and the *Hide system activity* toggle. The prototype does not draw batches of entries that are one act, and the toggle is always on, because the fixture has no reader without the account permission.
-- The list is drawn as the record screen standard draws it, without a variation.
-- The coverage strip belongs on the Products tab, above the table, and states the products left unpriced by name.
-- The Reports tab states the rule and the reach before it lists a report.
-- An approved version does not change in place. The screen offers a proposal, and shows a pending one.
-- The list says that the official configurations are few, and marks which one is official for each cycle.
-
-** The verdict
-
-None yet. This page is on the branch that proposes it and waits for review.
+- The product takes the width because the parameters are the density; the tree
+  is navigation, not content.
+- A model and its parameters are one group, and an engine and its parameters are
+  one group, as the ORE document arranges them.
+- The page is read-only until Edit, and the change fields appear only there.
+- One disclosure carries the product, the instrument and the asset class.
+- One scoped sentence points at the engine run settings, at the top of the tab;
+  there is no family card.
 
 ** What it does not settle
 
-- Whether the list columns product count and report count are worth a second read per row. The prototype draws them; a build can drop them.
-- Whether the coverage strip should also appear on the list, as a count per row. A configuration that leaves a needed product unpriced is the one a person wants to find first.
-- Whether a party may hold more than one official configuration for a cycle. The prototype draws one, and marks it. Model risk decides.
+- Whether a model or engine change is edited per group or for the whole
+  workbench. The prototype edits the workbench.
+- Whether the edit dialog for the configuration's own fields belongs on Details
+  or in the page header.
 
 * See also
 
-- [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — the journey this prototype answers.
-- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
-- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.
+- [[file:index.org][Reporting prototypes]] — the group.
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — the journey.
+- [[id:29C26BB5-2F89-448C-8E1E-BAA60C91B327][See and change the engine run settings a party holds]] — the other engine-facing configuration.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shell.

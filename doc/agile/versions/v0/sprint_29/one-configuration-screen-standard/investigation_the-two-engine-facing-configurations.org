@@ -433,7 +433,7 @@ A name is good when it meets all five.
 
 | Option | First | Second | Meets | Fails |
 |--------+-------+--------+-------+-------|
-| A | Pricing engine configuration | Engine run settings | C1, C3, C4, C5 (with the Settings tab renamed Parameters), C6, C7 | C2 only partly: both share the modifier *engine* |
+| A | Pricing engine configuration | Engine run settings | C1, C3, C4, C5 (with no Settings tab: the product's parameters live in its workbench and the global parameters have their own tab), C6, C7 | C2 only partly: both share the modifier *engine* |
 | B | Pricing engine configuration | Engine behaviour | C1, C3, C5, C6, C7 | C2 partly; C4: ORE calls it Setup, not behaviour; *behaviour* sounds like monitoring |
 | C | Product pricing | Engine run settings | C2, C5, C6, C7 | C1: hides that models and engines are chosen; C4: not ORE's word |
 | D | Pricing engine configuration | Run setup | C1, C2, C4 (Setup is ORE's word) | C5: the application already has a Setup area for installation and tenants |
@@ -449,8 +449,8 @@ that the current pages lack.
 
 Two supporting changes make A work.
 
-- Rename the pricing page's *Settings* tab to *Parameters*, which is the ORE
-  element name and removes the third collision.
+- Drop the pricing page's *Settings* tab. The parameters of a product live in its
+  workbench, and the document's global parameters have a tab of their own.
 - Never print either name alone. A card, a page title and a breadcrumb carry
   the name and, on a card and a page, its one-line definition.
 
@@ -492,8 +492,8 @@ same report binds, and a link in both directions.
 * Open questions
 
 1. *The screen words.* Decided on 2026-10-24: option A. The pricing engine
-   configuration and the engine run settings, with the Settings tab renamed
-   Parameters.
+   configuration and the engine run settings, with no Settings tab: the product's
+   parameters live in its workbench and the global parameters have their own tab.
 2. *The dropped Setup choices.* Six live choices that can change the numbers
    are not in the engine run settings model. The documented-only rule dropped
    them. Does the standard keep that rule, or does the model hold every live

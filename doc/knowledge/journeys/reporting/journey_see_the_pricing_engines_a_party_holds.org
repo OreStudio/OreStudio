@@ -62,8 +62,8 @@ carries a *Related configurations* card that lists the other configurations
 the same report binds, with a link.
 
 No screen, card or journey calls this configuration *pricing engines*, *pricing
-model config* or *the pricing engine* alone. Its page has a *Parameters* tab,
-never a *Settings* tab.
+model config* or *the pricing engine* alone. Its page has no *Parameters* tab: the parameters of a product live in its
+workbench, and the document's global parameters have a tab of their own.
 
 * Official, approved and draft
 
@@ -134,12 +134,15 @@ tag. The list is short on purpose, and the screen says so.
    covers, in =position= order: the product type with its description, the model,
    the engine, and the count of parameters the row carries. The product type is a
    code from the pricing engine type vocabulary, and the row shows the instrument
-   type it maps to. The tab offers *Add* under the table and *Edit* on a row, as
-   the standard draws a parts panel.
-8. *Read Parameters.* The settings in three groups: the *global* parameters of
-   the whole document, the *model* parameters of each product and the *engine*
-   parameters of each product. A parameter is a name and a text value. The tab
-   says where each one applies, because the same name can sit in two scopes.
+   type it maps to. The tab is a tree by asset class beside the product: the
+   product takes the rest of the width, with its model group and its engine group,
+   each with a definition, a select, a description and its parameters. The page is
+   read-only until *Propose a change*, which draws the controls and the change
+   fields.
+8. *Read the global parameters.* The document-level parameters, each with its
+   value in force and its documentation collapsed under it. Advanced adds the ORE
+   argument, the format and the release. The product's own parameters are not
+   here: they sit on the product in the Products tab.
 9. *Read Reports.* The report definitions that bind this configuration, each with
    a link to its page, its cycle, its portfolio, the product types it needs, what
    this configuration leaves unpriced for it, and the version it runs with. A
@@ -170,12 +173,13 @@ tag. The list is short on purpose, and the screen says so.
 
 * Screens and wireframes
 
-Two screens: the list, and the record page with five tabs. The sign-off has its own
-screen, in its own journey. A journey is one
-screen composed around a goal, so the Products tab carries the coverage strip and
-the Reports tab carries the reach, rather than a separate screen for each.
+Two screens: the list, and the record page with five tabs, Details, Global
+parameters, Products, Reports and History. The sign-off has its own screen, in its
+own journey. A journey is one screen composed around a goal, so the Products tab
+carries the coverage line in its card foot and the Reports tab carries the reach,
+rather than a separate screen for each.
 
-#+caption: The pricing engine configurations list and one configuration's page: the details with the related configurations card, the Products tab with the coverage strip, and the Reports tab.
+#+caption: The product pricing list, and one configuration's page: the Products tab with the tree, the model group and the engine group.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_see_the_pricing_engines_a_party_holds.png]]
 
@@ -192,10 +196,11 @@ change, a server search, a variant filter, a status filter and a used-by filter,
 the pager, and the states first load, empty, nothing matches and error. It must
 show an approved configuration that is official for a cycle, with a pending
 proposal, and a draft. An approved configuration must offer *Propose a change* and
-no *Delete*. The record page must carry Details, Products, Parameters, Reports and
-History. The Products tab must carry the coverage strip with a product type the
-party trades and the configuration does not cover. The Reports tab must state the
-rule and the reach, with a row for each report and what it leaves unpriced. Every value is a fixture and the page says so.
+no *Delete*. The record page must carry Details, Global parameters, Products,
+Reports and History. The Products tab must carry the tree, the model group and the
+engine group, and the coverage line with a product type the party trades and the
+configuration does not cover. The Reports tab must state the rule and the reach,
+with a row for each report and what it leaves unpriced. Every value is a fixture and the page says so.
 
 * Entities composed
 
@@ -236,7 +241,7 @@ party-scoped.
 1. *The tabs.* The BFF routes under =/api/reporting/pricing-engines= serve the list
    and the document, and the list and the page exist. The page draws Details,
    Products and Settings as stacked sections, not the five tabs of the prototype,
-   and it has no *Used by* tab and no *History* tab.
+   and it has no *Global parameters*, *Reports* or *History* tab.
 2. *Reads of the parts by configuration.* The document read returns the whole
    document, which is enough for a page. The list of configurations needs a count
    of products and a count of reports for each row, and no operation returns a

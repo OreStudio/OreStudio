@@ -32,11 +32,11 @@ and they must not describe a tree that has since changed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The journeys and the prototypes are being updated. |
+| Now          | Nothing. |
 | Waiting on   | The owner's sign-off.                  |
-| Next         | Review the prototypes, then write the standard. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -132,3 +132,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in #3720. The prototype is =doc/prototypes/reporting/product-pricing/=: the
+list of configurations, the configuration page with Details, Global parameters,
+Products, Reports and History, and the Products workbench with a tree by asset
+class and the product filling the width. The page is read-only until Edit or
+Propose a change.
+
+The pricing journeys carry the decided words and the engine run settings. The new
+engine run settings journey exists with its wireframe. The design note, the group
+page and the investigation were corrected to the signed-off page, and the dead
+prototype functions were removed.

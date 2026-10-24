@@ -8,36 +8,55 @@
 #+filetags: :web:ux:reporting:configuration:sprint_29:v0:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+One screen standard covers every configuration that comes off an ORE XML
+document: the same list, the same record page, the same sections, the same
+documentation, the same reach, the same history, the same import and the same
+lifecycle. A person who learns one configuration screen knows them all.
+
+Two configurations carry the word "engine" and a person confuses them today.
+The standard gives each one a name that says what it decides, and every page
+says what the configuration is and which other configurations the same report
+binds.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Now           | The investigation is written and the standard is being written. |
+| Waiting on    | The owner's decision on the screen words. |
+| Next          | Finish the standard, then update the prototypes. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
 
--
+- One knowledge page states the standard for every configuration screen, and
+  the UX hub and the screen review checklist point to it.
+- The screen words are fixed for every configuration kind, and no two kinds
+  share a head noun.
+- Every configuration page says what it decides and lists the other
+  configurations the same report binds.
+- The engine run settings keep the pattern they set, and the pricing engine
+  configuration follows it.
+- A change that alters the numbers a run computes goes through a proposal and a
+  sign-off, whichever kind it is.
+- The two configuration prototypes follow the standard and the owner signs them
+  off before any code change.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] | BACKLOG | | | Establish what the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names and patterns follow. |
-| [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | BACKLOG | | | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
+| [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | STARTED | 2026-10-24 | | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
 | [[id:AF272041-13E2-4525-B634-7BA1A81031A5][Update the configuration prototypes to the standard]] | BACKLOG | | | Bring the pricing engine configuration and engine run settings prototypes onto the standard, and add the cross-links that say how the two configurations relate. |
 | [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] | BACKLOG | | | Apply the standard's screen words to the area cards, the list and record pages, the journeys and the translations. |
 | [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] | BACKLOG | | | Bring the pricing engine configuration list, page, dialogs, journey and import onto the standard. |

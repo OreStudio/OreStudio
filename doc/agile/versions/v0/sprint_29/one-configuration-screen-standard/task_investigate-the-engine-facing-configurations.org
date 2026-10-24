@@ -26,11 +26,11 @@ A point-in-time investigation that reads the ORE source and the ORE Studio tree,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | The investigation is written. The owner decides the screen words. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The configuration screen standard.                  |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -60,9 +60,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Setup parameters ORE reads | 51: 16 document names, 4 paths and dates, 31 choices | =grep -o '"setup", "[^"]*"' OREAnalytics/orea/app/inputparameters.cpp= | ORE v1.8.17.0 =3d75a6908= |
+| Engine run settings held | 15, in 3 groups | =projects/ores.reporting/modeling/ores.reporting.engine_settings*.org= | =9838f83ef5= |
+| Pricing engine product types | 104 | =python3= over =pricing_vocabulary.json= | =9838f83ef5= |
+| Pricing engine pairs | 194 | same | =9838f83ef5= |
+| Distinct models and engines | 25 and 74 | same | =9838f83ef5= |
+| Pricing parameter rows | 834, over 124 distinct names | same | =9838f83ef5= |
 
 * Notes
+
+The record is [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]].
+
+The two-line answer: the pricing engine configuration chooses and configures
+the valuation method for each product type, and the engine run settings decide
+how the engine prepares the inputs and runs the job for every product at once.
+The run document joins them: its =Setup= block is the engine run settings, and
+it names the pricing engine document through =pricingEnginesFile=.
 
 * Test Scenarios
 
@@ -88,3 +101,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The investigation is written: responsibilities, boundary, five overlap zones,
+five linkages, the data model and the UX of each, the naming collisions, five
+naming options against seven criteria, and ten rules the standard must carry.
+
+Recommendation: name the first *Pricing engine configuration* and the second
+*Engine run settings*, and rename the pricing page's *Settings* tab to
+*Parameters*. The owner decides.

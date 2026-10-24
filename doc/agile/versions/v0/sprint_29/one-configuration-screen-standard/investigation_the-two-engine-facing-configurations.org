@@ -1,0 +1,442 @@
+:PROPERTIES:
+:ID: 146461B4-C00E-4FA7-A01D-DEFBC862BC73
+:END:
+#+title: Investigation: the two engine-facing configurations
+#+description: What the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names follow.
+#+type: investigation
+#+level: s1
+#+filetags: :web:ux:reporting:configuration:sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+A point-in-time record, written on 2026-10-24, of the two named configurations
+that a report binds and that both carry the word "engine": the pricing engine
+configuration and the engine run settings.
+
+It answers one question. Can one UX standard serve both, and if so, what must
+each one be called so that a person never confuses them?
+
+It is a snapshot, not the rule. The durable conclusions move to the
+configuration screen standard, and the rules there are the ones a reviewer
+checks against.
+
+* Context
+
+ORE Studio holds two configurations that a report definition binds and that a
+reader cannot tell apart from their names.
+
+- *Pricing engines* is the page built in
+  [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]].
+  It lists the pricing engine configurations of a party, and one page shows the
+  products, the model and engine of each, and the parameters of each.
+- *Engine settings* is the page built in
+  [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]].
+  It lists the named engine settings of a party, and one page shows three groups
+  of documented settings.
+
+The second page set a pattern. The first predates it. The names collide, and so
+do two of the words on the pages: the pricing page has a tab called *Settings*,
+and a separate screen is called *Engine settings*.
+
+Before a standard can be written, and before anything is renamed, this record
+establishes what each one is responsible for, where one ends and the other
+starts, and how they are linked.
+
+* Methodology
+
+The ORE source is the authority, and it was read at the version the repository
+records.
+
+- ORE Engine v1.8.17.0, commit =3d75a6908=, at
+  =/home/marco/Vault/Development/ORE/Engine=. The version matches
+  =external/ore/catalogue/ore_version.txt=.
+- The schemas =xsd/ore.xsd= and =xsd/pricingengines.xsd=.
+- The guide =Docs/UserGuide/parameterisation/ore.tex= and
+  =Docs/UserGuide/pricing/pricingengines.tex=.
+- The loader =OREAnalytics/orea/app/inputparameters.cpp= and its defaults in
+  =OREAnalytics/orea/app/inputparameters.hpp=.
+- The engine data =OREData/ored/portfolio/enginedata.hpp= and its readers in
+  =OREAnalytics/orea/app/oreapp.cpp= and =analytic.cpp=.
+- The ORE Studio tree at =origin/main= =9838f83ef5=: the models under
+  =projects/ores.reporting/modeling= and =projects/ores.analytics/modeling=,
+  the seeder dataset =projects/ores.seeder/datasets/ore_pricing_engines=, the
+  BFF and web screens under =projects/ores.web=, and the journeys and
+  prototypes under =doc=.
+
+Every count below was measured on that tree, not copied from an earlier task.
+
+* What the ORE source says
+
+** The run document and its Setup block
+
+The master input file, =ore.xml=, has the root =ORE= and the blocks =Setup=,
+=Logging=, =Markets=, =Analytics= and =Restore= (=ore.xsd= lines 3 to 11). The
+=Setup= block is a flat list of =Parameter name="..." value</Parameter=
+elements (=ore.xsd= lines 7 and 26 to 39).
+
+ORE reads 51 parameters from =Setup= (=inputparameters.cpp=, the
+=loadVariablesImpl= function, lines 46 to 207). They fall into three kinds.
+
+| Kind | Count | Examples |
+|------+-------+----------|
+| Names of other ORE documents | 16 | =pricingEnginesFile=, =curveConfigFile=, =conventionsFile=, =marketConfigFile=, =portfolioFile= |
+| Paths and dates | 4 | =inputPath=, =outputPath=, =asofDate=, =fixingCutOffDate= |
+| Choices: flags, counts and words | 31 | =nThreads=, =implyTodaysFixings=, =observationModel=, =gzipCompressionLevel= |
+
+The distinction matters. A name of a document is not a choice of the
+configuration. The run document names the file, and the file is a configuration
+of its own. ORE Studio already models this: in
+=run_document_projection.hpp=, =mapped_setup::files= holds the names and states
+that "a configuration does not name its files".
+
+Of the 31 choices, ORE Studio holds 15 in the engine settings model, in three
+groups. The source defaults are in =inputparameters.hpp= lines 81 to 105, and
+several disagree with the guide.
+
+| Group | Setting | Source default | Guide default |
+|-------+---------+----------------+---------------|
+| Fixings | =implyTodaysFixings= | false | Y in the example, no stated default |
+| Fixings | =includeTodaysCashFlows= | unset, QuantLib default | false |
+| Fixings | =includeReferenceDateEvents= | unset, QuantLib default | false |
+| Fixings | =enrichIndexFixings= | false | false |
+| Fixings | =ignoreFixingLead= | 0 | 0 |
+| Fixings | =ignoreFixingLag= | 0 | 0 |
+| Building | =observationModel= | None | Disable in the example |
+| Building | =lazyMarketBuilding= | true | true |
+| Building | =buildFailedTrades= | true | false |
+| Building | =continueOnError= | true | false |
+| Building | =useAtParCouponsCurves= | true | true |
+| Building | =useAtParCouponsTrades= | true | true |
+| Execution | =nThreads= | 1 | 1 |
+| Execution | =gzipCompressionLevel= | 6 | 6 |
+| Execution | =logMask= | read from =Logging=, which overrides =Setup= | 255 in the example |
+
+Three observations follow.
+
+1. The 15 are a *subset* of the 30 Setup choices. Other live choices that can
+   change the numbers are not held: =allowModelBuilderFallbacks= (default
+   true), =fixingCutOffDate=, =useMarketDataFixings= (true),
+   =eomInflationFixings= (true), =entireMarket= (false) and =allFixings=
+   (false). The documented-only rule dropped them.
+2. The guide is wrong on two defaults. =continueOnError= and
+   =buildFailedTrades= default to true in the source and the guide says false.
+   The screen must show the source default, as the engine settings design
+   already decided.
+3. =logMask= is a =Logging= parameter, not a =Setup= one, and the =Logging=
+   block overrides =Setup=. It is in the execution group on the screen, and the
+   design records it as an engine setting. The model is right about the effect
+   and loose about the block.
+
+** The pricing engine document
+
+The pricing engine configuration is its own ORE document, =pricingengine.xml=,
+with the root =PricingEngines= (=pricingengines.xsd= line 3). Its shape is:
+
+#+begin_src text
+PricingEngines
+  Product type="<product type>"        (unbounded)
+    Model                              (a model name)
+    ModelParameters
+      Parameter name="..."             (unbounded)
+    Engine                             (an engine name)
+    EngineParameters
+      Parameter name="..."             (unbounded)
+  GlobalParameters
+    Parameter name="..."               (unbounded)
+#+end_src
+
+The guide's own section title is *Pricing Engine Configuration*
+(=pricingengines.tex= line 2), and its first sentence says the file "is
+provided to select pricing models and pricing engines by product type".
+
+ORE reads the document into =EngineData= (=enginedata.hpp= line 41). That class
+holds, per product type, a model, its parameters, an engine, its parameters,
+and one list of global parameters (lines 58 to 94). =oreapp.cpp= lines 264 and
+550 pass the global parameters to
+=GlobalPseudoCurrencyMarketParameters=. They configure the pseudo-currency
+market that a model calibration reads, and they are not run settings.
+
+The ORE Studio extraction measured on 2026-10-24 from
+=pricing_vocabulary.json=:
+
+| What | Count |
+|------+-------|
+| Product types | 104 |
+| Model and engine pairs | 194 |
+| Distinct models | 25 |
+| Distinct engines | 74 |
+| Parameter rows, over all pairs | 834 |
+| Distinct parameter names | 124 |
+| Parameter scopes | =model=, =engine= |
+| Parameter kinds | =number=, =reference=, =tenor=, =select=, =text= |
+
+The build task recorded 108 product types; the current extraction finds 104.
+The difference is a measurement question for the extraction task, not a
+disagreement about the design.
+
+* The responsibilities
+
+The two configurations answer two different questions, and a person asks them at
+different moments.
+
+| | Pricing engine configuration | Engine run settings |
+|--+------------------------------+---------------------|
+| Question | Which model and engine price this product, and how are they set? | How does the engine run this report? |
+| ORE document | =pricingengine.xml=, root =PricingEngines= | =ore.xml=, the =Setup= block, root =ORE= |
+| Unit of decision | One product type | One run |
+| Scope | Per product type: a model, an engine and their parameters | Per run: fixings, market and trade building, execution |
+| Multiplicity | Many product rows, each with its own identity | A fixed, small set of scalar settings in three groups |
+| Reader | =EngineData= and the engine factory | =SetupVariables=, the market and fixing loaders, the thread pool |
+| Effect on a result | Always: it chooses the valuation method | Sometimes: the fixings and building groups change the numbers, the execution group changes cost and output |
+| Failure if absent | A product with no entry cannot be priced | The source default applies to every unset setting |
+| Who decides | A quant or market risk | A quant, and operations for the execution group |
+| Cardinality in a party | Few, one official per cycle | Few, shared by many reports |
+
+The boundary in one sentence: *the pricing engine configuration chooses and
+configures the valuation method for each product type; the engine run settings
+decide how the engine prepares the inputs and executes the run, for every
+product at once.*
+
+A practical test: a change that can make one product price differently and
+another stay the same belongs to the pricing engine configuration. A change
+that applies to every product of the run belongs to the engine run settings.
+
+** The overlap zones
+
+Five places look like one concept and are two.
+
+1. *Two global parameter bags.* The pricing document has =GlobalParameters=,
+   read into the pseudo-currency market for calibration. The run document has
+   =Setup=, read into the setup variables. Both are called global, both hold
+   =Parameter name="..."=, and neither reads the other.
+2. *Fixings.* =implyTodaysFixings=, =enrichIndexFixings=,
+   =ignoreFixingLead= and =ignoreFixingLag= change which fixings enter a
+   curve. Pricing parameters such as =IncludePastCashflows= and
+   =SensitivityTemplate= change what a result reports. Both read as "fixing
+   settings" on a screen.
+3. *Market construction.* =lazyMarketBuilding=, =observationModel= and
+   =useAtParCouponsCurves= change the market the engines price from. A pricing
+   parameter assumes that market exists. A reader who changes the first
+   expects the second to explain the difference, and it does not.
+4. *The same XML shape.* Both documents hold =Parameter name="..."=, so a
+   reader who learns one shape expects the other to behave the same way. The
+   namespaces of the names are disjoint and nothing enforces that.
+5. *One reach that is not visible.* Both are bound to reports, and the report
+   that binds one need not bind the other. A change to a shared engine run
+   setting reaches reports that do not appear on the pricing page.
+
+* The linkages
+
+The two are not independent, and the run document is where they meet.
+
+1. *The run document names the pricing file.* In =ore.xml=, the =Setup= block
+   holds =<Parameter name="pricingEnginesFile">pricingengine.xml</Parameter>=
+   (=ore.tex= lines 20 to 52, where line 35 is the parameter). ORE loads the
+   setup first, then reads the file that the setup names
+   (=inputparameters.cpp= line 130), then builds the engines. ORE Studio models
+   the file name in =mapped_setup::files=, and the engine settings never hold
+   it.
+2. *Both are sibling bindings of one report definition.*
+   =report_configuration= holds one row per configuration a definition binds,
+   and =configuration_type_code= is the slot. The two configurations are two
+   slots of the same definition, and a report may bind one without the other.
+3. *The run document is split in ORE Studio.* The single ORE =Setup= block is
+   held in two configurations: =risk_report_config= keeps the paths, the
+   currency, the market kind and the scope; =engine_settings= keeps the 15
+   engine choices. The =configuration_type= seed records both with the ORE
+   root element =ORE= and no =run_parameter=, because neither is a separate
+   document. The pricing engines row has =pricingEnginesFile=.
+4. *One documentation source.* Both sets of parameters are leaves of an ORE
+   schema, and the documentation contract is keyed by schema and XPath. Only
+   =ore.xsd= leaves are seeded today; the pricing parameters are documented in
+   the vocabulary tables instead.
+5. *One lifecycle rule.* The owner decided on 2026-10-24 that every
+   configuration whose change alters the numbers a run computes goes through
+   the proposal and sign-off lifecycle. That covers both, and it makes the
+   pricing group of the engine run settings a governed change for the first
+   time.
+
+* The ORE Studio data model
+
+| Concern | Pricing engine configuration | Engine run settings |
+|---------+------------------------------+---------------------|
+| Central row | [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][pricing_model_config]]: id, party, name, description, configuration_id | [[id:AD4E924C-932C-4C55-B57A-D07A441FE5AC][engine_settings]]: id, party, name, description, configuration_id |
+| Content | product rows, one per product type, and parameter rows scoped to model or engine | three part rows: fixings, building, execution |
+| Documentation | =pricing_model=, =pricing_method=, =pricing_pair_setting=, =sensitivity_template= | [[id:3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184][ore_parameter]] |
+| Documentation fields | code, description, detail, source; setting name, kind, usual value, options, required, note | label, help, description, default, format, introduced in, removed in, XPath, changes the numbers |
+| Binding | =report_configuration= slot =pricing_engines= | =report_configuration= slot =engine_settings= |
+| Reach today | not readable: no operation lists the reports that bind it | readable: the page has a Used by tab |
+| History today | provider exists, screen not built | built on the shared timeline |
+| Import today | not built | part of the run document; unknown parameters are dropped and reported |
+| Lifecycle today | status, proposal, four-eyes in the prototype only | none; a group is edited in place |
+
+Two documentation systems now describe the leaves of ORE documents. The
+investigation treats that as the main structural flaw the standard must
+address, because the engine run settings screen and the pricing engine screen
+read their words from different places in different shapes.
+
+* The UX built for each
+
+The engine run settings page is the reference. The pricing page is the older
+shape.
+
+| Rule | Engine run settings | Pricing engine configuration |
+|------+---------------------+------------------------------|
+| List | standard bar, four states, search, sort | standard bar, four states, search, sort |
+| Record page | Details, one tab per group, Used by, History | Details, Products, Settings; no Used by, no History |
+| Documentation | from =ore_parameter=, collapsed under each setting; Simple and Advanced | from the vocabulary tables, a line and a source mark per choice |
+| Editing | a group edited in place, one Save per group, conflict on a stale version | dialogs per product and per detail change |
+| Default | the first option of each control is the default | no default concept; a setting is present or absent |
+| Changes | a count of changes, reach and reason at the foot of the card | a change dialog with a reason |
+| Reach | a Used by tab and a reach sentence | a sentence that says the reach cannot be read |
+| History | the shared timeline with Revert | not built |
+| Import | no screen; the run document import drops and warns | journey and prototype exist, no operation |
+| Lifecycle | none | prototype only |
+
+Five gaps follow, and the standard must name them as gaps rather than as
+choices.
+
+1. The pricing page cannot say which reports a change reaches.
+2. The pricing page has no History.
+3. The pricing page's documentation is a second system.
+4. The engine run settings page has no lifecycle for the two groups that change
+   the numbers.
+5. Neither page says what the other is, or links to it.
+
+* The naming analysis
+
+** The names in use
+
+Five names describe two things.
+
+| Word | Where it appears | What it actually names |
+|------+------------------+------------------------|
+| Pricing engines | area card, page title, journey, prototype | the list of pricing engine *configurations*, not engines |
+| Pricing engine configuration | page lead, task titles, guide | the same object, named correctly |
+| Pricing model config | table and code | the same object, named for the model alone |
+| Engine settings | area card, page title, model, prototype | the run's =Setup= choices |
+| Settings | the pricing page's third tab | the 834 per-product =Parameter= rows |
+
+** The collisions
+
+1. *A catalogue of engines that is not.* The page titled *Pricing engines*
+   lists configurations. The product holds 74 engine names, so a reader who
+   wants the list of engines looks in the wrong place.
+2. *The settings of a pricing engine.* *Engine settings* reads as the settings
+   on a pricing engine, which is exactly what the pricing page's *Settings*
+   tab holds. The two words are the two entities, reversed.
+3. *A tab that repeats a screen name.* The pricing page has a *Settings* tab,
+   and another screen is called *Engine settings*. A person reading a
+   screenshot sees "Engine settings › Settings".
+4. *Two ORE terms missing.* ORE calls the first a *pricing engine
+   configuration* and the second the *Setup* block of the master input. ORE
+   Studio invented *engine settings* and shortened the first to *pricing
+   engines*.
+5. *One name, three spellings.* The same object is a pricing engine, a pricing
+   engine configuration and a pricing model config, depending on the page.
+
+** The criteria
+
+A name is good when it meets all five.
+
+- C1 It names the object, not one kind of the thing inside it.
+- C2 Its head noun differs from the other's, so the two never read as one.
+- C3 It says what the configuration decides, without the lead.
+- C4 It uses ORE's word where ORE's word is unambiguous.
+- C5 It collides with no other screen word, including a tab name.
+- C6 It translates to French and Portuguese without a false friend.
+- C7 It fits an area card and a breadcrumb.
+
+** The options
+
+| Option | First | Second | Meets | Fails |
+|--------+-------+--------+-------+-------|
+| A | Pricing engine configuration | Engine run settings | C1, C3, C4, C5 (with the Settings tab renamed Parameters), C6, C7 | C2 only partly: both share the modifier *engine* |
+| B | Pricing engine configuration | Engine behaviour | C1, C3, C5, C6, C7 | C2 partly; C4: ORE calls it Setup, not behaviour; *behaviour* sounds like monitoring |
+| C | Product pricing | Engine run settings | C2, C5, C6, C7 | C1: hides that models and engines are chosen; C4: not ORE's word |
+| D | Pricing engine configuration | Run setup | C1, C2, C4 (Setup is ORE's word) | C5: the application already has a Setup area for installation and tenants |
+| E | Pricing engines | Engine settings, unchanged | C7 | C1, C2, C3, C5 |
+
+Option A is the recommendation. The two heads are *configuration* and
+*settings*. The modifiers are *pricing engine* and *engine run*, and each says
+a different thing: the first is the object that prices, the second is the run
+the settings belong to. The shared word *engine* is honest, because both are
+about the ORE engine. The disambiguation is carried by the head noun, the
+one-line definition on every card and page, and the cross-link that the current
+pages lack.
+
+Two supporting changes make A work.
+
+- Rename the pricing page's *Settings* tab to *Parameters*, which is the ORE
+  element name and removes the third collision.
+- Never print either name alone. A card, a page title and a breadcrumb carry
+  the name and, on a card and a page, its one-line definition.
+
+** What a name change does not fix
+
+A rename is cheap on screen and expensive in the model. The recommendation
+changes the words only. The tables, the configuration type codes, the API
+routes and the component names keep their spelling, as the report currency
+kept =base_currency=.
+
+The relationship still needs drawing, and a name cannot draw it. The standard
+must require three things on every configuration page: a sentence that says
+what the configuration decides, a card that lists the other configurations the
+same report binds, and a link in both directions.
+
+* What this implies for the standard
+
+1. A configuration is a named, party-owned, versioned set of values that a
+   report definition binds in a slot. The kind is a =configuration_type= row
+   and its ORE root element says which document it is.
+2. Every configuration screen has the same list and the same page: Details,
+   one tab per section, Used by and History.
+3. A section is a group of scalar settings or a collection of elements. The
+   group edits in place and the collection edits in dialogs.
+4. One documentation contract serves every ORE leaf, keyed by schema and XPath,
+   with the label, help, description, default, format, releases, XPath and the
+   numbers flag. The screen never holds ORE text.
+5. The value in force is always visible, defaults included. Simple and Advanced
+   are the same switch on every configuration screen.
+6. Reach is read, not guessed. A configuration page says which reports bind it.
+7. History is the shared timeline on every configuration page.
+8. A change that alters the numbers goes through the proposal and sign-off
+   lifecycle of its kind. An operational change lands directly with a reason.
+9. Import parses on the server, states the findings and the difference, and
+   never drops a value in silence.
+10. Every configuration page says what it decides and which other
+    configurations the same report binds.
+
+* Open questions
+
+1. *The screen words.* The recommendation is option A. The owner decides.
+2. *The dropped Setup choices.* Six live choices that can change the numbers
+   are not in the engine run settings model. The documented-only rule dropped
+   them. Does the standard keep that rule, or does the model hold every live
+   choice?
+3. *A proposal for an unbound configuration.* A change to a configuration that
+   no report binds reaches no run. Does it still need a proposal, or a direct
+   write with a reason?
+4. *The unit of the lifecycle.* Is the lifecycle declared by the kind or by the
+   section? The engine run settings page has both kinds of section on one
+   record, so a kind-level rule cannot express it.
+5. *Where the pair-scoped documentation lives.* A pricing parameter's meaning
+   depends on the model and the engine pair. The XPath names the parameter, not
+   the pair. The documentation contract needs a key that includes the pair, or
+   a child table that does.
+
+* See also
+
+- [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story this record
+  serves.
+- [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] — the task.
+- [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] — where the durable rules go.
+- [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]] — the story
+  that set the engine run settings pattern.
+- [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] — the story that built
+  the pricing engine screens.
+- [[id:3D27C8F8-317E-41BC-8F1B-6FBD12836820][See and change everything a report runs]] — the design of the engine run
+  settings, with the documented-only rule and the documentation system.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and
+  [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the two
+  standards this one sits beside.

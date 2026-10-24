@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One standard page states the words, the list, the record page, the sections, the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

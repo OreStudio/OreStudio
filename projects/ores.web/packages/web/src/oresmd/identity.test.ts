@@ -59,6 +59,7 @@ describe('seriesOfUrl', () => {
                 quoteType: 'rate',
                 fields: 'cap_floor=Cap',
                 partyId: '',
+                providerCode: '',
             },
         });
     });
@@ -127,6 +128,7 @@ describe('seriesVerdict', () => {
         quoteType: 'rate',
         fields: 'cap_floor=Cap',
         partyId: '',
+        providerCode: '',
     };
     const listed = (fields: readonly [string, string][], axes: string[]): ListedSeries => ({
         series_id: 'series-1',

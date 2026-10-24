@@ -44,8 +44,8 @@ export type SeriesOfUrl =
  *
  * The words of the identity follow the series list's own: the asset class, the
  * path as the scope, the instrument type, the quote type, and the remaining
- * identity fields as `name=text` lines. The party is left empty, which asks
- * across the parties the person may see.
+ * identity fields as `name=text` lines. The party and the provider are left empty, which
+ * asks across the parties the person may see and across their providers.
  */
 export function seriesOfUrl(schema: OresmdSchema, parts: OresmdParseResult): SeriesOfUrl {
     if (!parts.success) return { ok: false, reason: 'refused', message: parts.message };
@@ -70,6 +70,7 @@ export function seriesOfUrl(schema: OresmdSchema, parts: OresmdParseResult): Ser
             quoteType: parts.quote,
             fields: lines.join('\n'),
             partyId: '',
+            providerCode: '',
         },
     };
 }

@@ -28,10 +28,10 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Now          | The arrival processes, the factory entry, the rules and the moved clock are in. Three suites pass. |
+| Waiting on   | The PR.                                |
+| Next         | Rebase on main and open the PR.        |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -42,9 +42,24 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Put the interface beside the value processes: one method, =next_gap()=,
+   returning seconds. A point process decides when, so folding it into
+   =i_stochastic_process= would make every value process carry a clock it never
+   uses.
+2. Implement the three modes. Periodic returns one gap. Poisson draws an
+   exponential. Hawkes uses direct inversion, which is exact for the exponential
+   kernel and never rejects, rather than thinning, which is the general method
+   and the first extension when a power-law kernel is wanted.
+3. Refuse what cannot settle. A branching ratio of one or more has no stationary
+   rate, so the Hawkes constructor refuses it and the rules refuse it first.
+4. Keep one conversion. The config speaks ticks per hour, the processes speak
+   arrivals per second, and the factory is the only place that divides by 3600.
+   An unknown mode throws rather than falling back to a periodic timer.
+5. Move =tick_clock= into the quant component and drive it from the process.
+   The feeds build a periodic process for now, which reproduces their old
+   behaviour; reading the mode from the config is the next task.
+6. Test the laws, not snapshots: mean rate, Fano factor, time rescaling, the
+   refusal, the conversion, and the clock with a scripted process.
 
 * Measurements
 
@@ -58,7 +73,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Headers and sources the task adds | 5 headers, 3 sources | =git show --stat 57697ad2ea= | 57697ad2ea |
+| Test files it adds | 2 (one moved from =ores.synthetic.api=) | the same | 57697ad2ea |
+| Test cases in those files | 12 | =grep -c "^TEST_CASE"= on the two files | 57697ad2ea |
+| Affected suites that pass | 3 of 3 | =compass test run -- -R "ores\.(analytics\.quant\|synthetic\.api\|synthetic\.service)\.tests"= | 57697ad2ea |
 
 * Notes
 
@@ -85,4 +103,48 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Notes
+
+** Units
+
+The arrival process works in seconds. The generation config speaks ticks per
+hour, and =make_arrival_process= divides once. A caller that built a process by
+hand passes arrivals per second, which the process docstrings say.
+
+** Direct inversion, not thinning
+
+The Hawkes note gives both. Direct inversion draws two uniforms per event and
+never rejects, and it is exact for the exponential kernel, which is the only
+kernel the story allows. Thinning is the general method and the way to extend to
+a power law, so the note keeps it as the first extension.
+
+** The tests are statistical
+
+A stream has no fixed answer, so the tests assert the law: the long-run mean
+rate, the Fano factor of the counts over windows ten bursts long, and the mean
+and variance of the time-rescaled gaps being one. Tolerances are wide enough to
+survive a different seed and narrow enough to catch a wrong parametrisation.
+
 * Result
+
+A caller can build a periodic, Poisson or Hawkes arrival process from a mode
+name and plain numbers, draw gaps in seconds, and pace a =tick_clock= with them.
+
+What is in:
+
+- =domain::i_arrival_process= with =next_gap()=, beside the value processes.
+- =periodic_arrival_process=, =poisson_arrival_process= and
+  =hawkes_arrival_process= under =service/processes/=.
+- =process_factory::make_arrival_process=, which converts the rate and refuses an
+  unknown mode.
+- =validate_arrival_process_parameters=, beside the value-process rules.
+- =service/tick_clock.hpp=, moved out of =ores.synthetic.api=, taking its gaps
+  from the process.
+
+The evidence: the three affected suites pass, including the statistical tests
+for the mean rate, the Fano factor, the time rescaling and the branching-ratio
+refusal.
+
+Left for the next task: the feeds still build a periodic process. Reading the
+mode, the branching ratio and the decay from the generation config is "Pace a
+synthetic feed by an arrival process".

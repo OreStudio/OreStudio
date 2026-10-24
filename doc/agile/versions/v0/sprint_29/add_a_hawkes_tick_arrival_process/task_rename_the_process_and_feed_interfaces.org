@@ -28,9 +28,9 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | The rename is applied and the generated output is regenerated. The build and the tests are running. |
-| Waiting on   | The build and the test run.            |
-| Next         | Commit the rename once the build and the tests are green. |
+| Now          | The rename is complete. The build and all four affected suites pass. |
+| Waiting on   | The PR.                                |
+| Next         | Rebase on main and open the PR.        |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -140,7 +140,7 @@ drew the committed files. Expect id churn beyond the rename in those two files.
 30 files under =doc/agile/= name an old interface. They are records of what was
 true then and keep the old spelling.
 
-** Verification so far
+** Verification
 
 - =--check= reports no editable file names an old interface.
 - Every one of the 12 changed translation units passes =clang++ -fsyntax-only=
@@ -149,9 +149,22 @@ true then and keep the old spelling.
 - =clang-format --dry-run --Werror= passes on the changed C++ files, except the
   one file that already failed before the change.
 - =check_component_drift.py --sweep= is clean.
-- The full build and the test run are still going. This task changes no
-  behaviour, so a green result confirms the rename; the other evidence already
-  shows it.
+- The full build passes: 4,491 of 4,491 steps, no failure.
+- =compass test run= passes all four affected suites: 4 of 4.
+
+| Suite | Test cases | Assertions |
+|-------+------------+------------|
+| =ores.analytics.quant.tests= | 435 | 2,144,901 |
+| =ores.marketdata.api.tests= | 59 | 773 |
+| =ores.synthetic.api.tests= | 80 | 286 |
+| =ores.synthetic.service.tests= | 78 | 525 |
+
+** The database the tests needed
+
+The local database refused every test with "could not access file
+timescaledb-2.30.1": the package had moved to 2.30.2 and the database was
+stamped with the old library. =compass db recreate -y -k= fixed it, and the
+schema then matched this checkout. Nothing about the rename caused it.
 
 * Test Scenarios
 
@@ -192,6 +205,5 @@ The evidence:
 - =check_component_drift.py --sweep= is clean.
 - =clang-format --dry-run --Werror= is clean on the changed files, save the one
   file that failed before the change.
-- The build and the test run were started after the last change. Their output
-  goes in the next commit, because the build takes hours on a tree that has not
-  been built since the sprint opened.
+- The full build passes, and =compass test run= passes all four affected
+  suites.

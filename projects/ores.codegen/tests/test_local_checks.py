@@ -58,19 +58,19 @@ def test_a_prose_only_change_builds_the_pages_and_nothing_else_heavy():
 
 def test_a_header_change_builds_and_tests():
     assert heavy(["projects/ores.iam/core/include/ores.iam.core/x.hpp"]) == {
-        "build", "db", "ctest", "step-consumers",
+        "build", "db", "ctest", "step-consumers", "ticks-smoke",
     }
 
 
 def test_a_source_change_builds_and_tests():
     assert heavy(["projects/ores.marketdata/core/src/a.cpp"]) == {
-        "build", "db", "ctest", "step-consumers",
+        "build", "db", "ctest", "step-consumers", "ticks-smoke",
     }
 
 
 def test_a_sql_change_rebuilds_the_database_and_runs_the_sql_suites():
     assert heavy(["projects/ores.sql/create/x.sql"]) == {
-        "build", "db", "ctest", "pgtap",
+        "build", "db", "ctest", "pgtap", "ticks-smoke",
     }
 
 
@@ -188,6 +188,7 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
         "pgtap",
         "ore-xml-roundtrip",
         "step-consumers",
+        "ticks-smoke",
     }
 
 

@@ -374,6 +374,106 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     return names;
 }
 
+/**
+ * @brief The child arrays of the batch that hold rows when no routed array
+ * holds one.
+ *
+ * A child belongs to the header of its family, so a batch with children and no
+ * header is not a booking.
+ */
+[[nodiscard]] inline std::vector<std::string> orphan_arrays(const domain::instrument_batch& batch) {
+    std::vector<std::string> names;
+    const bool headed =
+        !batch.bond_instruments.empty() || !batch.commodity_instruments.empty() ||
+        !batch.composite_instruments.empty() || !batch.credit_instruments.empty() ||
+        !batch.equity_accumulator_instruments.empty() ||
+        !batch.equity_asian_option_instruments.empty() ||
+        !batch.equity_barrier_option_instruments.empty() ||
+        !batch.equity_digital_option_instruments.empty() ||
+        !batch.equity_forward_instruments.empty() || !batch.equity_option_instruments.empty() ||
+        !batch.equity_position_instruments.empty() || !batch.equity_swap_instruments.empty() ||
+        !batch.equity_variance_swap_instruments.empty() ||
+        !batch.fx_accumulator_instruments.empty() || !batch.fx_asian_forward_instruments.empty() ||
+        !batch.fx_barrier_option_instruments.empty() ||
+        !batch.fx_digital_option_instruments.empty() || !batch.fx_forward_instruments.empty() ||
+        !batch.fx_vanilla_option_instruments.empty() ||
+        !batch.fx_variance_swap_instruments.empty() || !batch.rate_instruments.empty() ||
+        !batch.scripted_instruments.empty() || false;
+    if (headed)
+        return names;
+    if (!batch.balance_guaranteed_swap_instruments.empty())
+        names.emplace_back("balance_guaranteed_swap_instruments");
+    if (!batch.balance_guaranteed_swap_tranches.empty())
+        names.emplace_back("balance_guaranteed_swap_tranches");
+    if (!batch.balance_guaranteed_swap_tranche_notionals.empty())
+        names.emplace_back("balance_guaranteed_swap_tranche_notionals");
+    if (!batch.callable_swap_call_dates.empty())
+        names.emplace_back("callable_swap_call_dates");
+    if (!batch.callable_swap_instruments.empty())
+        names.emplace_back("callable_swap_instruments");
+    if (!batch.cap_floor_instruments.empty())
+        names.emplace_back("cap_floor_instruments");
+    if (!batch.commodity_basket_constituents.empty())
+        names.emplace_back("commodity_basket_constituents");
+    if (!batch.composite_legs.empty())
+        names.emplace_back("composite_legs");
+    if (!batch.credit_basket_constituents.empty())
+        names.emplace_back("credit_basket_constituents");
+    if (!batch.credit_default_swap_instruments.empty())
+        names.emplace_back("credit_default_swap_instruments");
+    if (!batch.credit_linked_swap_instruments.empty())
+        names.emplace_back("credit_linked_swap_instruments");
+    if (!batch.equity_position_option_underlyings.empty())
+        names.emplace_back("equity_position_option_underlyings");
+    if (!batch.flexi_swap_instruments.empty())
+        names.emplace_back("flexi_swap_instruments");
+    if (!batch.flexi_swap_lower_notionals.empty())
+        names.emplace_back("flexi_swap_lower_notionals");
+    if (!batch.fra_instruments.empty())
+        names.emplace_back("fra_instruments");
+    if (!batch.index_credit_default_swap_instruments.empty())
+        names.emplace_back("index_credit_default_swap_instruments");
+    if (!batch.index_credit_default_swap_option_instruments.empty())
+        names.emplace_back("index_credit_default_swap_option_instruments");
+    if (!batch.inflation_swap_instruments.empty())
+        names.emplace_back("inflation_swap_instruments");
+    if (!batch.instrument_options.empty())
+        names.emplace_back("instrument_options");
+    if (!batch.instrument_option_exercise_fees.empty())
+        names.emplace_back("instrument_option_exercise_fees");
+    if (!batch.instrument_option_exercise_prices.empty())
+        names.emplace_back("instrument_option_exercise_prices");
+    if (!batch.instrument_option_payment_dates.empty())
+        names.emplace_back("instrument_option_payment_dates");
+    if (!batch.instrument_option_premiums.empty())
+        names.emplace_back("instrument_option_premiums");
+    if (!batch.instrument_schedules.empty())
+        names.emplace_back("instrument_schedules");
+    if (!batch.instrument_schedule_dates.empty())
+        names.emplace_back("instrument_schedule_dates");
+    if (!batch.instrument_strikes.empty())
+        names.emplace_back("instrument_strikes");
+    if (!batch.knock_out_swap_instruments.empty())
+        names.emplace_back("knock_out_swap_instruments");
+    if (!batch.range_bounds.empty())
+        names.emplace_back("range_bounds");
+    if (!batch.risk_participation_agreement_instruments.empty())
+        names.emplace_back("risk_participation_agreement_instruments");
+    if (!batch.swap_legs.empty())
+        names.emplace_back("swap_legs");
+    if (!batch.swap_leg_amounts.empty())
+        names.emplace_back("swap_leg_amounts");
+    if (!batch.swap_leg_rates.empty())
+        names.emplace_back("swap_leg_rates");
+    if (!batch.swaption_instruments.empty())
+        names.emplace_back("swaption_instruments");
+    if (!batch.synthetic_cdo_instruments.empty())
+        names.emplace_back("synthetic_cdo_instruments");
+    if (!batch.vanilla_swap_instruments.empty())
+        names.emplace_back("vanilla_swap_instruments");
+    return names;
+}
+
 }
 
 #endif

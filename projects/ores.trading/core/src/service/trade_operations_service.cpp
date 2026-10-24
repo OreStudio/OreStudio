@@ -171,6 +171,13 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
                                   " does not hold the instrument arrays: " + join(misrouted) + ".";
         return response;
     }
+    if (const auto orphans = service::orphan_arrays(request.instruments); !orphans.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "instrument_child_without_header";
+        response.result.message =
+            "The batch holds rows for " + join(orphans) + " and no instrument header.";
+        return response;
+    }
     if (const auto unsupported = unsupported_bond_parts(request.instruments);
         !unsupported.empty()) {
         response.result.outcome = outcome::failed;

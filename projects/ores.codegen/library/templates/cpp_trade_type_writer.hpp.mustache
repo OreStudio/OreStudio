@@ -140,6 +140,38 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     return names;
 }
 
+/**
+ * @brief The child arrays of the batch that hold rows when no routed array
+ * holds one.
+ *
+ * A child belongs to the header of its family, so a batch with children and no
+ * header is not a booking.
+ */
+[[nodiscard]] inline std::vector<std::string>
+orphan_arrays(const domain::instrument_batch& batch) {
+    std::vector<std::string> names;
+    const bool headed =
+{{#trade_type_catalogue}}
+{{#batch}}
+{{#routed}}
+        !batch.{{name}}.empty() ||
+{{/routed}}
+{{/batch}}
+{{/trade_type_catalogue}}
+        false;
+    if (headed)
+        return names;
+{{#trade_type_catalogue}}
+{{#batch}}
+{{^routed}}
+    if (!batch.{{name}}.empty())
+        names.emplace_back("{{name}}");
+{{/routed}}
+{{/batch}}
+{{/trade_type_catalogue}}
+    return names;
+}
+
 }
 
 #endif

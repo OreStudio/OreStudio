@@ -100,7 +100,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Remainder members of non-bond container rows are dropped without a word. | trade_operations_service.cpp | Declined for now | The catalogue holds one container row, =bond_instrument_data=. No other kind has remainder members to drop. The bond-specific check stays with the follow-up that writes the bond remainder. |
+| 2 | Child arrays are not checked against the trade type. | instrument_batch_writer.hpp | Accepted as a follow-up | The catalogue does not state which header a child belongs to, so the check needs a model change. The claim "refused by name" holds for headers. |
+| 3 | A child array with no header row has no named refusal. | instrument_batch_writer.hpp | Accepted, fixed | The generated =orphan_arrays= names the child arrays that hold rows when no header does. The code is =instrument_child_without_header=. A test covers it. |
+| 4 | Is =stamp= idempotent for rows with identity and audit groups? | instrument_batch_writer.hpp | Answered | Yes. =stamp= sets the fields it names from the context and has no other effect. |
+| 5 | Write order: a child that sorts before its header breaks a foreign key. | instrument_batch_writer.hpp | Declined | The child tables link to the trade by a soft foreign key. No child table has a key to its header, so the order among the arrays does not matter. |
+| 6 | The round trip compares four leg fields for one family. | service_trade_operations_service_tests.cpp | Accepted as a follow-up | A whole-row comparison and more families belong with the bond remainder follow-up. |
+| 7 | A case with two misrouted arrays. | service_trade_operations_service_tests.cpp | Accepted, fixed | =every_array_the_trade_type_does_not_hold_is_named_once= covers it. |
 
 * Result
 

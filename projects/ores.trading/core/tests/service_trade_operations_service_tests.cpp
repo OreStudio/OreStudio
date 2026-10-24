@@ -584,3 +584,33 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
     }
     CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
 }
+
+TEST_CASE("a_child_array_with_no_header_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.trade_type = "Swap";
+    req.instruments.swap_legs.push_back(
+        ores::trading::generators::generate_synthetic_swap_leg(f.gen));
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_child_without_header");
+    CHECK(response.result.message.contains("swap_legs"));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.fx_forward_instruments.emplace_back();
+    req.instruments.rate_instruments.emplace_back();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.code == "instrument_not_routed");
+    CHECK(response.result.message.contains("fx_forward_instruments"));
+    CHECK(response.result.message.contains("rate_instruments"));
+}

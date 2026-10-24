@@ -7,12 +7,15 @@ three renames in one pass, so the diff reads as one shape and no corner of the
 tree keeps the old spelling.
 
 It edits hand-written text only. A file whose banner says the generator owns it
-is reported, not changed: regenerate it from its model instead. The component
-class diagrams and their SVGs are generated too, for the same reason.
+is reported, not changed: regenerate it from its model instead. The class
+diagrams are generated from the headers as well, so a full regeneration is the
+way back to a consistent diagram; four of them were renamed in place on
+purpose, because the generator would have brought unrelated drift with it.
 
 A record under doc/agile/ keeps the old spelling on purpose, because it says
 what was true when it was written. The check still reports those files, so the
-gate never hides a match.
+gate never hides a match. This script is such a file too: it must name both
+spellings to do its job.
 
 Run it from the repository root.
 
@@ -50,6 +53,7 @@ SUFFIXES = {
     ".svg",
     ".sql",
     ".ts",
+    ".py",
 }
 
 SKIP_DIR_NAMES = {
@@ -62,6 +66,10 @@ SKIP_DIR_NAMES = {
     "tmp",
 }
 
+# This file. It must name both spellings to rename them, so its own matches are
+# allowed and reported.
+SELF = "scripts/rename_interfaces_to_snake_case.py"
+
 # A record of what was true then, not a claim about the code today. The rename
 # task and the parent story live here too, and they must name the old spelling
 # to say what changed.
@@ -69,9 +77,9 @@ RECORD_PREFIXES = ("doc/agile/",)
 
 GENERATED_MARKERS = ("AUTO-GENERATED", "GENERATED FILE", "DO NOT EDIT MANUALLY")
 
-# Drawn from the headers and the SQL models by a generator, and committed as
-# output. They follow their source; they are never edited by hand.
-GENERATED_PATHS = (re.compile(r"^projects/.*/modeling/.*\.(puml|svg)$"),)
+# Generated class diagrams. Most of their body follows the headers, but a few
+# were renamed in place on purpose; see the task page.
+GENERATED_PUMUL = re.compile(r"^projects/.*/modeling/.*\.(puml|svg)$")
 
 PATTERNS = [
     (re.compile(r"\b" + re.escape(old) + r"\b"), new)
@@ -81,7 +89,7 @@ PATTERNS = [
 
 def is_generated(rel, text):
     """True when the file is output, so the model behind it must change."""
-    if any(pattern.match(rel) for pattern in GENERATED_PATHS):
+    if GENERATED_PUMUL.match(rel):
         return True
     head = "\n".join(text.splitlines()[:40])
     return any(marker in head for marker in GENERATED_MARKERS)
@@ -89,7 +97,12 @@ def is_generated(rel, text):
 
 def is_record(rel):
     """True when the file records history, so the old spelling belongs."""
-    return rel.startswith(RECORD_PREFIXES)
+    return rel.startswith(RECORD_PREFIXES) or rel == SELF
+
+
+def report(rel, count, suffix=""):
+    """One line of the report: count, path, and why the file is allowed."""
+    print(f"  {count:3d}  {rel}{suffix}")
 
 
 def candidates():
@@ -162,14 +175,14 @@ def main():
                     "Files must not name an old interface:", file=sys.stderr
                 )
                 for rel, count in problems:
-                    print(f"  {count:3d}  {rel}", file=sys.stderr)
+                    report(rel, count)
             for line in unreadable:
                 print(f"  unreadable: {line}", file=sys.stderr)
             return 1
         total = sum(count for _, count in records)
         print(f"No file names an old interface, except {len(records)} record(s).")
         for rel, count in records:
-            print(f"  {count:3d}  {rel}  (record, kept)")
+            report(rel, count, "  (record, kept)")
         print(f"{total} occurrence(s) allowed in records.")
         return 0
 
@@ -177,18 +190,18 @@ def main():
     total = sum(count for _, count in edited)
     print(f"{verb} {total} occurrences in {len(edited)} files:")
     for rel, count in edited:
-        print(f"  {count:3d}  {rel}")
+        report(rel, count)
 
     for label, rows in (
-        ("Generated files, which their models must change", generated),
-        ("Records, which keep the old spelling", records),
+        ("generated files, whose models must change", generated),
+        ("records, which keep the old spelling", records),
     ):
         if not rows:
             continue
         print()
         print(f"{len(rows)} {label}:")
         for rel, count in rows:
-            print(f"  {count:3d}  {rel}")
+            report(rel, count)
 
     if unreadable:
         print()
@@ -196,7 +209,10 @@ def main():
         for line in unreadable:
             print(f"  {line}", file=sys.stderr)
 
-    if not args.write:
+    if args.write:
+        return 1 if unreadable else 0
+
+    if edited:
         print()
         print("Rerun with --write to apply.")
     return 0

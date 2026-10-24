@@ -48,14 +48,17 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 
 * Decisions
 
-1. *One spelling before the new interface.* =i_arrival_process= is snake_case,
-   so the three interfaces beside it are renamed first, in their own task.
-2. *The agile record keeps the old spelling.* A sprint page says what was true
-   when it was written, so the rename leaves =doc/agile/= alone and the check
-   names the records it allows instead of hiding them.
-3. *The four component class diagrams are renamed in place.* A full
-   regeneration would add about 140 unrelated lines from the parser gap in
-   =doc/agile/product_backlog/inbox/diagram_parser_drops_wrapped_declarations.org=.
+- /One spelling first:/ =i_arrival_process= is snake_case, so the three
+  interfaces beside it are renamed before the new interface lands, in their own
+  task.
+- /The record keeps the old spelling:/ a sprint page says what was true when it
+  was written. The rename leaves =doc/agile/= alone, and the check names the
+  records it allows instead of hiding them. The rename script is a record too,
+  because it must name both spellings.
+- /The diagrams are renamed in place:/ a full regeneration of the four component
+  class diagrams would add about 140 unrelated lines from the parser gap in
+  =doc/agile/product_backlog/inbox/diagram_parser_drops_wrapped_declarations.org=.
+  The diagrams keep their shape and a later regeneration converges.
 
 * Out of scope
 

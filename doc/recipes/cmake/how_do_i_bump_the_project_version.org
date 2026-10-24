@@ -18,7 +18,7 @@ mentions it?
 
 * Answer
 
-Six files carry the version string or the last-released screenshot.
+Seven files carry the version string or the last-released screenshot.
 Edit them as a single commit.
 
 1. /Pick the new version/. The project follows =0.0.<N>= where =N=
@@ -46,6 +46,14 @@ Edit them as a single commit.
    - =nightly-windows.yml= — =OreStudio-0.0.<OLD>-win64.*=
 
    Each is a single =sed=-able substitution.
+
+   The *dsh plugin* =projects/ores.dsh_environment/package.json= carries the
+   same version, aligned with the product since sprint 28:
+
+   #+begin_src diff
+   -  "version": "0.0.<OLD>",
+   +  "version": "0.0.<NEW>",
+   #+end_src
 
 5. /=readme.org=/ — four things:
 
@@ -104,7 +112,8 @@ Edit them as a single commit.
 
    #+begin_src sh :results verbatim
    grep -rn "0\.0\.<OLD>" \
-       CMakeLists.txt vcpkg.json .github/workflows readme.org index.org
+       CMakeLists.txt vcpkg.json .github/workflows readme.org index.org \
+       projects/ores.dsh_environment/package.json
    #+end_src
 
    Expect zero matches.

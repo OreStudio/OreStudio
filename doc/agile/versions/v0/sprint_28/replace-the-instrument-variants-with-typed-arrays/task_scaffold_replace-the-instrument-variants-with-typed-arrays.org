@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: 951CF9D3-CE1D-4847-A13E-5323BA81DB2C
+:ID: B4CC636C-FF97-422A-991E-47CAB36A8F99
 :END:
-#+title: Task: Scaffold story: Build the conventions list screens
+#+title: Task: Scaffold story: Replace the instrument variants with typed arrays
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :build_the_conventions_list_screens-remaining:sprint_28:v0:
+#+filetags: :replace-the-instrument-variants-with-typed-arrays:sprint_28:v0:
 #+owner: marco
-#+branch: feature/build-the-conventions-list-screens
-#+pr:
+#+branch: feature/replace-the-instrument-variants-with-typed-arrays
+#+pr: 3450
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-21
-#+updated: 2026-10-21
-#+environment: prime_origin
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5936DC04-80F8-44AA-AA70-2A3CEB7492A0][Build the conventions list screens — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the credit fact variant with typed arrays]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:5936DC04-80F8-44AA-AA70-2A3CEB7492A0][Build the conventions list screens — the remaining work]] |
-| Now          | Not yet started.                       |
+| State        | ABANDONED                              |
+| Parent story | [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the credit fact variant with typed arrays]] |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-10-17                               |
 
 * Acceptance
 
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3450][#3450]] | [trading,ore] Replace the credit fact variant with typed arrays |
 
 * Review
 

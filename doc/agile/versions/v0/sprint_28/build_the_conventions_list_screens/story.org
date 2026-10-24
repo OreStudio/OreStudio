@@ -39,10 +39,10 @@ The story closes on the tasks it finished:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A7F8CE08-A441-4008-8C44-DC9FABDFA59B][Build the list of kinds and the list of documents]] | DONE | 2026-10-21 | 2026-10-24 | Initial task for: Build the conventions list screens |
+| [[id:951CF9D3-CE1D-4847-A13E-5323BA81DB2C][Scaffold story: Build the conventions list screens]] | ABANDONED | 2026-10-21 | 2026-10-24
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 1 open tasks and the original acceptance moved to [[id:5936DC04-80F8-44AA-AA70-2A3CEB7492A0][Build the conventions list screens — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

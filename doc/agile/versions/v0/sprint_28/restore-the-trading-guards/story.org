@@ -27,7 +27,7 @@ Two guarantees went out with the immutable profiles, and nothing replaced them:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE |
+| State         | ABANDONED |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -36,9 +36,7 @@ Two guarantees went out with the immutable profiles, and nothing replaced them:
 
 * Acceptance
 
-The story closes on the tasks it finished:
-
-- Scaffold story: Restore the trading guards the versioned model dropped.
+Nothing shipped under this story. Its one finished task only scaffolded the story. The tasks that carry the work moved to the story named in Decisions.
 
 * Tasks
 

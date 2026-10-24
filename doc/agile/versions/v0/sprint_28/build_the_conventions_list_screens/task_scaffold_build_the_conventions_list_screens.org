@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: B4CC636C-FF97-422A-991E-47CAB36A8F99
+:ID: 951CF9D3-CE1D-4847-A13E-5323BA81DB2C
 :END:
-#+title: Task: Scaffold story: Replace the instrument variants with typed arrays
+#+title: Task: Scaffold story: Build the conventions list screens
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :replace-the-instrument-variants-with-typed-arrays-remaining:sprint_28:v0:
+#+filetags: :build_the_conventions_list_screens:sprint_28:v0:
 #+owner: marco
-#+branch: feature/replace-the-instrument-variants-with-typed-arrays
-#+pr: 3450
+#+branch: feature/build-the-conventions-list-screens
+#+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-17
-#+updated: 2026-10-17
-#+environment: jolly_knuth
+#+created: 2026-10-21
+#+updated: 2026-10-21
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9DA8BAC-D62D-4AC1-921F-B9A41FBD164B][Replace the credit fact variant with typed arrays — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:A9DA8BAC-D62D-4AC1-921F-B9A41FBD164B][Replace the credit fact variant with typed arrays — the remaining work]] |
-| Now          | Not yet started.                       |
+| State        | ABANDONED                              |
+| Parent story | [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-10-21                               |
 
 * Acceptance
 
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/3450][#3450]] | [trading,ore] Replace the credit fact variant with typed arrays |
+|    |       |
 
 * Review
 

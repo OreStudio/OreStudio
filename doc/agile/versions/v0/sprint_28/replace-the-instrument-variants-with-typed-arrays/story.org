@@ -42,10 +42,10 @@ The story closes on the tasks it finished:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4B474F5E-8F38-488E-AD62-806C4CA167C6][Implement Replace the instrument variants with typed arrays]] | DONE | | 2026-10-17 | Initial task for: Replace the instrument variants with typed arrays |
+| [[id:B4CC636C-FF97-422A-991E-47CAB36A8F99][Scaffold story: Replace the instrument variants with typed arrays]] | ABANDONED | 2026-10-17 | 2026-10-24
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 1 open tasks and the original acceptance moved to [[id:A9DA8BAC-D62D-4AC1-921F-B9A41FBD164B][Replace the credit fact variant with typed arrays — the remaining work]] in the product backlog inbox.
 * Out of scope
 
 -

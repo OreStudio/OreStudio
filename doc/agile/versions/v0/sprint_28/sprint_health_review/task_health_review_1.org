@@ -68,8 +68,8 @@ task and name that file in the Command column.
 | Undecomposed stories | 8, all BACKLOG | =story.org= with no =task_*.org= beside it | this branch |
 | Stories with ten or more tasks, still STARTED | 10 | the same read | this branch |
 | Audit findings | 95 before the repairs, 26 after, 0 after the sprint close | =compass sprint audit= | =b99ecf86a4= and this branch |
-| Stories after the sprint close | 125: 87 DONE, 38 ABANDONED (carried to the inbox) | the =State= of every row of the sprint table | this branch |
-| Tasks after the sprint close | 321: 315 DONE, 6 ABANDONED | the =State= of every =task_*.org= under the sprint | this branch |
+| Stories after the sprint close | 125: 84 DONE, 41 ABANDONED (37 carried to the inbox, 4 closed with nothing shipped) | the =State= of every row of the sprint table | this branch |
+| Tasks after the sprint close | 323: 315 DONE, 8 ABANDONED | the =State= of every =task_*.org= under the sprint | this branch |
 | DONE tasks with no PR or no branch recorded | 88 and 45 before; 100 tasks changed | a script over the =Task-ID= trailers, then the branch name | =b99ecf86a4= |
 | Charts window | 2026-10-13 to 2026-10-24: 14 days of activity, 484 merged PRs, 61 story transitions. The default window stops at 2026-10-21, the sprint's end date plus one day. | =compass sprint charts --sprint 28 --end-date 2026-10-24= | =b99ecf86a4= |
 
@@ -297,9 +297,10 @@ What remains for the owners, not decided here:
 
 The owner asked for two things: close every open task and story that is done,
 and split each story that holds many closed tasks into a closed story and a
-backlog story. After the work, the sprint table holds 87 stories DONE and 38
-ABANDONED (carried to the inbox), and no story STARTED or BACKLOG. The sprint
-holds 315 DONE tasks and 6 ABANDONED tasks, and no open task. The audit reports
+backlog story. After the work, the sprint table holds 84 stories DONE and 41
+ABANDONED, and no story STARTED or BACKLOG. Of the 41, 37 moved to the inbox
+and 4 closed with nothing shipped. The sprint holds 315 DONE tasks and 8
+ABANDONED tasks, and no open task. The audit reports
 no finding.
 
 Open tasks closed DONE. Each has a written =* Result= and every pull request it
@@ -327,19 +328,19 @@ across the ORE boundary (3 of 3).
 Stories split. Each closed story keeps its done tasks and narrows its
 Acceptance to them. Its remaining tasks and its original Acceptance moved to a
 new story, "<title> — the remaining work", in the product backlog inbox. The
-closed story names the new story in its Decisions. 26 stories were split and 119
+closed story names the new story in its Decisions. 24 stories were split and 117
 tasks moved. The largest splits are Rework the market data feeds (20 done, 16
 moved), Find why market data ticks lag the wall clock (10 done, 20 moved),
 Browse and follow the grid's jobs (19 done, 5 moved), Populate the ACME books
 (18 done, 6 moved) and Build the bindings screen (15 done, 1 moved).
 
-Stories carried whole. 17 stories had no done task. Each moved by file or by
+Stories carried whole. 37 stories had no done task. Each moved by file or by
 folder into the inbox with its =:ID:= intact, and its sprint row is ABANDONED
 with the close date. They include the eight undecomposed stories, "Author the
 report configurations on guided screens" and "Complete the ACME report inputs
 and prove they run".
 
-Two closes needed judgment, and the tool's default was wrong for both:
+Four closes needed judgment, and the first pass was wrong for them:
 
 - "See and change everything a report runs" has 18 done tasks that deliver the
   engine settings arc. Its acceptance names a six-tab report page that nothing
@@ -348,6 +349,14 @@ Two closes needed judgment, and the tool's default was wrong for both:
 - "Find a trade by its identifiers, state, book and date from one list" has one
   task, ABANDONED because the Trade Blotter story absorbed it. The story closed
   ABANDONED, not DONE, since nothing shipped under it.
+- "Raise a notification for a scenario waiting for a tester", "Restore the
+  trading guards the versioned model dropped" and "Trace a process run and the
+  trade groups it creates" had only their scaffold task done. The release notes
+  pass found this. The three stories are ABANDONED, and their real tasks stay in
+  the backlog stories.
+- "Replace the credit fact variant with typed arrays" and "Build the conventions
+  list screens" left only a scaffold task. That is no work, so the split was
+  undone: each story is whole and DONE, with the scaffold task ABANDONED.
 
 The closed stories "Decide the XML strategy" and "Trade Blotter" keep ABANDONED
 tasks in their tables. Their Acceptance lists only the DONE tasks.

@@ -11,7 +11,7 @@
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]], carried unfinished from [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 

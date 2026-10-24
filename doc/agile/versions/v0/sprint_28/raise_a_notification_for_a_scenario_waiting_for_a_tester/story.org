@@ -21,7 +21,7 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE |
+| State         | ABANDONED |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -30,9 +30,7 @@ Story 3 of the QA runner arc. A scenario that waits for a tester raises an inbox
 
 * Acceptance
 
-The story closes on the tasks it finished:
-
-- Scaffold story: Raise a notification for a scenario waiting for a tester.
+Nothing shipped under this story. Its one finished task only scaffolded the story. The tasks that carry the work moved to the story named in Decisions.
 
 * Tasks
 

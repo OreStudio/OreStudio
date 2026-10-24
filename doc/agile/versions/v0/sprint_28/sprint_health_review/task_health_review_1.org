@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_28:v0:
 #+owner: marco
 #+branch: feature/sprint-28-health-review-1
-#+pr:
+#+pr: 3709
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3709][#3709]] | [agile] Close sprint 28: health review, story splits and release notes |
 
 * Review
 

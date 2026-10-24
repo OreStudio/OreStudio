@@ -357,13 +357,13 @@ A name is good when it meets all five.
 | D | Pricing engine configuration | Run setup | C1, C2, C4 (Setup is ORE's word) | C5: the application already has a Setup area for installation and tenants |
 | E | Pricing engines | Engine settings, unchanged | C7 | C1, C2, C3, C5 |
 
-Option A is the recommendation. The two heads are *configuration* and
-*settings*. The modifiers are *pricing engine* and *engine run*, and each says
-a different thing: the first is the object that prices, the second is the run
-the settings belong to. The shared word *engine* is honest, because both are
-about the ORE engine. The disambiguation is carried by the head noun, the
-one-line definition on every card and page, and the cross-link that the current
-pages lack.
+Option A is the decision. The owner chose it on 2026-10-24. The two heads are
+*configuration* and *settings*. The modifiers are *pricing engine* and *engine
+run*, and each says a different thing: the first is the object that prices, the
+second is the run the settings belong to. The shared word *engine* is honest,
+because both are about the ORE engine. The disambiguation is carried by the
+head noun, the one-line definition on every card and page, and the cross-link
+that the current pages lack.
 
 Two supporting changes make A work.
 
@@ -409,7 +409,9 @@ same report binds, and a link in both directions.
 
 * Open questions
 
-1. *The screen words.* The recommendation is option A. The owner decides.
+1. *The screen words.* Decided on 2026-10-24: option A. The pricing engine
+   configuration and the engine run settings, with the Settings tab renamed
+   Parameters.
 2. *The dropped Setup choices.* Six live choices that can change the numbers
    are not in the engine run settings model. The documented-only rule dropped
    them. Does the standard keep that rule, or does the model hold every live

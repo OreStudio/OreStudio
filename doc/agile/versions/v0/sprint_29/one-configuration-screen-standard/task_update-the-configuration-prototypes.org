@@ -1,45 +1,57 @@
 :PROPERTIES:
 :ID: AF272041-13E2-4525-B634-7BA1A81031A5
 :END:
-#+title: Task: Update the configuration prototypes to the standard
-#+description: Bring the pricing engine configuration and engine run settings prototypes onto the standard, and add the cross-links that say how the two configurations relate.
+#+title: Task: Update the configuration journeys and prototypes
+#+description: Bring the pricing engine configuration and engine run settings journeys and prototypes onto the standard, and add the cross-links that say how the two configurations relate.
 #+type: task
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/update-the-configuration-prototypes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The two configuration prototypes draw the standard page, the standard words and the related-configurations card, and their design notes state what changed and why.
+The two configuration journeys and their prototypes say the same thing in the
+same words, state what each configuration decides and how the two relate, and
+the owner signs them off before any code changes.
+
+The journeys are the design of record. They must carry the decided screen
+words, the relationship between the two configurations and the lifecycle rule,
+and they must not describe a tree that has since changed.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The journeys and the prototypes are being updated. |
+| Waiting on   | The owner's sign-off.                  |
+| Next         | Review the prototypes, then write the standard. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- see-the-pricing-engines-a-party-holds draws the standard page: the standard words, a Parameters tab, Used by, History, the documentation panel and the related configurations card.
-- see-the-engine-settings-a-party-holds draws the standard words and the related configurations card.
-- Each design note states what changed and why, and the reporting group page is updated.
+- A journey exists for the engine run settings, and it names the pricing engine configuration and states how the two differ.
+- The pricing engine journeys use *Pricing engine configuration* throughout, not *Pricing engines* or *Pricing model config*.
+- The engine run settings journey uses *Engine run settings* throughout, not *Engine settings* alone.
+- Each journey states, where a person meets the other configuration, what it decides and links to it.
+- The pricing journey's Parameters tab is drawn as *Parameters*, and no screen or journey calls it *Settings*.
+- The engine run settings lifecycle follows the section rule: a numbers-changing group is proposed and signed off; an operational group writes directly.
+- The journeys no longer describe a tree that has changed, including the routes that exist and the defaults the source sets.
+- Both configuration prototypes draw the standard words, the related configurations card and the link to the other configuration.
+- Each prototype's design note states what changed and why, and the reporting group page is updated.
 - check_prototype_inventory.py passes.
-- The owner signs the prototypes off before any code change.
+- The owner signs the journeys and prototypes off before any code change.
 
 * Plan
 

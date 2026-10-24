@@ -54,11 +54,14 @@ until the provision has run.
    returns no scope for every definition.
 
 2. /Trigger the definition./ The command creates the instance and returns its id.
+   Run this recipe with =compass shell -f=, which signs in from =.env= before it
+   loads the file. Replace both placeholders with the definition and tenant ids
+   from step 1.
 
 #+name: report-run-end-to-end
 #+begin_src ores-shell :tangle how_do_i_prove_a_report_runs_end_to_end.ores :exports none
 connect $ORES_NATS_URL
-report_operations trigger-report-instance <definition_id> <tenant_id>
+report_operations trigger-report-instance <report_definition_id> <tenant_id>
 exit
 #+end_src
 
@@ -79,8 +82,8 @@ exit
    external reference.
 
    #+begin_src sh :results verbatim
-   ./compass.sh sql -- -c "select b.external_ref, b.status, r.outcome,
-     r.server_state, r.duration_ms, r.error_message, r.output_uri
+   ./compass.sh sql -- -c "select b.external_ref, b.status, r.id as result_id,
+     r.outcome, r.server_state, r.duration_ms, r.error_message, r.output_uri
    from ores_compute_batches_tbl b
    join ores_compute_workunits_tbl w on w.batch_id = b.id and w.valid_to > now()
    join ores_compute_results_tbl r on r.workunit_id = w.id and r.valid_to > now()
@@ -91,10 +94,18 @@ exit
    engine writes the engine's own message into =error_message= and leaves
    =outcome= at anything but 1.
 
-5. /Download the output and read the analytics, not just the exit code./
+5. /Download the output and read the analytics, not just the exit code./ The
+   download is the step that brings the engine's bytes back; without it the
+   instance records a location and nothing has been read.
+
+#+name: report-download-output
+#+begin_src ores-shell :tangle how_do_i_prove_a_report_runs_end_to_end_download.ores :exports none
+connect $ORES_NATS_URL
+compute download-output <result_id> build/e2e/out
+exit
+#+end_src
 
    #+begin_src sh :results verbatim
-   ./compass.sh shell -f <the tangled .ores file>
    find build/e2e/out -maxdepth 1 -type f -printf '%s %f\n'
    grep -c "Built Portfolio" build/e2e/out/log.txt
    cat build/e2e/out/runtimes.csv
@@ -109,8 +120,9 @@ exit
 * Script
 
 =projects/ores.shell/scripts/library/report_operations/how_do_i_prove_a_report_runs_end_to_end.ores=
-contains the trigger step, generated from this recipe by =compass build --direct
-tangle_shell_scripts=. Do not edit the =.ores= by hand.
+triggers the definition, and
+=..._download.ores= brings the result back. Both are generated from this recipe
+by =compass build --direct tangle_shell_scripts=. Do not edit them by hand.
 
 * Tested by
 
@@ -131,7 +143,7 @@ The failure side was tested on the same day. A package whose =Input/portfolio.xm
 was removed produced the engine's own verdict, and the result recorded it:
 
 #+begin_example
-outcome 3, The engine reported a failed analytic. The engine reported:
+outcome 3, The engine's analytic failed. The engine reported:
   Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS
 #+end_example
 
@@ -140,8 +152,3 @@ ORE's bookkeeping files looked like analytics.
 
 Recorded on task [[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]].
 
-* See also
-
-- [[id:CC0A311E-7245-4694-86A1-3170023C385A][Run a compute job end to end]] — the compute layer underneath this chain.
-- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]] — the data this recipe runs on.
-- [[id:1E2BB523-4620-4F0D-AF2B-8D52CC03B26E][Make the system usable by running the ACME provisioning at runtime]] — why a fresh database has no definitions.

@@ -49,9 +49,9 @@ bool is_analytics(const std::string& file_name) {
  */
 constexpr std::string_view fatal_marker = "Error in ORE analytics";
 
-/** The messages of the engine's ERROR lines, in the order it wrote them. */
-std::vector<std::string> error_messages(std::string_view engine_log, std::size_t& total_lines) {
-    std::vector<std::string> errors;
+/** One parsed message per log line, with the line count. */
+template <typename Fn>
+void for_each_message(std::string_view engine_log, std::size_t& total_lines, Fn&& fn) {
     total_lines = 0;
 
     std::size_t first = 0;
@@ -61,37 +61,49 @@ std::vector<std::string> error_messages(std::string_view engine_log, std::size_t
             first, end == std::string_view::npos ? std::string_view::npos : end - first);
         ++total_lines;
 
-        if (const auto parsed = parse_ore_log_line(line); parsed && parsed->level == "error")
-            errors.push_back(parsed->message);
+        if (const auto parsed = parse_ore_log_line(line))
+            fn(*parsed);
 
         if (end == std::string_view::npos)
             break;
         first = end + 1;
     }
+}
 
+/** The messages of the engine's ERROR lines, in the order it wrote them. */
+std::vector<std::string> error_messages(std::string_view engine_log, std::size_t& total_lines) {
+    std::vector<std::string> errors;
+    for_each_message(engine_log, total_lines, [&](const auto& parsed) {
+        if (parsed.level == "error")
+            errors.push_back(parsed.message);
+    });
     return errors;
 }
 
-/** The engine's own verdicts that the analytics failed, deduplicated. */
+/** Whether a message says the same thing as one already collected. */
+bool restates(const std::vector<std::string>& failures, const std::string& message) {
+    return std::ranges::any_of(failures, [&](const auto& failure) {
+        return failure.find(message) != std::string::npos ||
+               message.find(failure) != std::string::npos;
+    });
+}
+
+/**
+ * @brief The engine's own verdicts that the analytics failed, one per distinct
+ * message.
+ *
+ * ORE writes the same sentence twice: on an ALERT line, and inside the
+ * structured warning that follows it. The first form is the shorter one, so it
+ * is the one reported.
+ */
 std::vector<std::string> fatal_messages(std::string_view engine_log) {
     std::vector<std::string> failures;
-
-    std::size_t first = 0;
-    while (first < engine_log.size()) {
-        const auto end = engine_log.find('\n', first);
-        const auto line = engine_log.substr(
-            first, end == std::string_view::npos ? std::string_view::npos : end - first);
-
-        if (const auto parsed = parse_ore_log_line(line);
-            parsed && parsed->message.starts_with(fatal_marker) &&
-            (failures.empty() || failures.back() != parsed->message))
-            failures.push_back(parsed->message);
-
-        if (end == std::string_view::npos)
-            break;
-        first = end + 1;
-    }
-
+    std::size_t ignored = 0;
+    for_each_message(engine_log, ignored, [&](const auto& parsed) {
+        if (parsed.message.find(fatal_marker) != std::string::npos &&
+            !restates(failures, parsed.message))
+            failures.push_back(parsed.message);
+    });
     return failures;
 }
 
@@ -124,7 +136,7 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
             return outcome;
         }
 
-        outcome.failure = "The engine reported a failed analytic." + reported_errors(failures);
+        outcome.failure = "The engine's analytic failed." + reported_errors(failures);
         return outcome;
     }
 

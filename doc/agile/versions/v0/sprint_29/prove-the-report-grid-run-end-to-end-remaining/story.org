@@ -58,6 +58,15 @@ The ACME report definition runs to completion against the compute grid from an i
 - 2026-10-24: Seven of the run's eight bonds have no reference data the engine
   can build, so they price nothing. The chain is correct and the run is honest
   about its output; the gap belongs to the instrument export, not to this story.
+- 2026-10-24: The acceptance bullet about a stored assignment whose result is
+  gone is already met by an earlier decision, not by this run. Sprint 28 retired
+  the assignments stream and the wrapper claims work from the ledger, so no
+  assignment outlives a recreate. That task was abandoned for the same reason.
+- 2026-10-24: The proof rides with a test-harness fix. Local test runs share the
+  NATS server with a running fleet, so the suites now use a =<prefix>.tests=
+  namespace and a fleet cannot answer their announces. The streams that
+  namespace creates are not purged yet; that is captured in
+  [[id:4FABC503-2218-42FA-9086-1E94A367A638][Purge the streams a test run creates]].
 
 * Out of scope
 

@@ -472,7 +472,9 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     fs::create_directories(pkg_cache_dir.parent_path());
     const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 
@@ -711,8 +713,8 @@ void process_assignment(ores::nats::service::client& nats,
 
             if (!verdict.succeeded) {
                 error_message = verdict.failure;
-                BOOST_LOG_SEV(lg, error) << "Engine produced no analytics for " << evt.result_id
-                                         << ": " << verdict.failure;
+                BOOST_LOG_SEV(lg, error)
+                    << "Engine run failed for " << evt.result_id << ": " << verdict.failure;
                 // ClientError.
                 outcome = 3;
             } else {

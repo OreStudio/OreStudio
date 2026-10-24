@@ -4,4 +4,4 @@
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 connect $ORES_NATS_URL
-report_operations trigger-report-instance <definition_id> <tenant_id>
+report_operations trigger-report-instance <report_definition_id> <tenant_id>

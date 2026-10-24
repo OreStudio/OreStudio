@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Sprint 29 is scaffolded and wired into the version manifest and the agile index, and PR 3713 merged it with the v0.0.28 release material: nine captioned ores.web screenshots, the release notes, the downloads page, the readme and a homepage carousel with no Qt screenshots. The rest of the open sprint recipe is in the task Finish opening sprint 29.

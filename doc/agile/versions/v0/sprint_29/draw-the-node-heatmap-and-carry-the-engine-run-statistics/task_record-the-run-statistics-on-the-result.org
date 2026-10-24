@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: CB30997D-D8FF-45FC-AD6E-BB5070863CE0
+:END:
+#+title: Task: Record the run statistics on the result
+#+description: Add started_at, finished_at, input_bytes, output_bytes and peak_memory_bytes to the result, and carry them in the submit message.
+#+type: task
+#+level: s1
+#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:sprint_29:v0:
+#+owner: marco
+#+branch: feature/record-the-run-statistics-on-the-result
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-13
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A result states when its run started and finished, how many bytes it read and wrote, and its peak memory, so the Jobs tab can show them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] |
+| Now          | Not built. Checked at 3425f340d7: the result table and the wrapper carry none of it.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Add the columns and carry them in the submit message.                  |
+| Last touched | 2026-10-21                               |
+
+* Acceptance
+
+- The result model and its SQL hold the five fields, nullable for runs in flight and for results written before the change.
+- compute.v1.ops.submit_result carries the five fields and the handler stores them.
+- The generated reads return them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

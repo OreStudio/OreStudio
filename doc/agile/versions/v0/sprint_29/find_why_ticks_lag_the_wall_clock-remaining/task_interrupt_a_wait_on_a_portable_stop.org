@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: B466DF8C-E7EF-4046-A577-1AF120C991A7
+:END:
+#+title: Task: Interrupt a wait on a portable stop
+#+description: A thread that waits on a stop state wakes at once on a stop on every platform. Linux uses the standard types, Apple's libc++ uses a portable subset, and the unit tests run both on Linux.
+#+type: task
+#+level: s1
+#+filetags: :find_why_ticks_lag_the_wall_clock-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/portable-stop-wait
+#+pr: 3634
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-22
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give ores.platform a stop state with an interruptible wait, so that the retry of the feed restore and the deadline watch of the workflow engine do not poll. A platform whose library has the C++20 stop types uses them, and Apple's libc++ uses a portable subset with the same names, so the wrapper can be deleted when Apple catches up. A check keeps the C++20 stop types out of code outside ores.platform.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] |
+| Now          | Review of the pull request.            |
+| Waiting on   | Nothing.                               |
+| Next         | Merge, then watch the nightly macOS build. |
+| Last touched | 2026-10-22                               |
+
+* Acceptance
+
+- stop_source has wait_for(span), which returns early on a stop and answers whether a stop was requested.
+- Where the library has them, the names are the standard types, and elsewhere they are a portable subset with the same spelling, so dropping the wrapper is a replacement of the namespace.
+- The portable types compile on every platform, and the unit tests run them on Linux beside the selected types.
+- A unit test shows that a stop wakes a wait at once, and it fails when the wake-up is removed.
+- The feed restore retry and the deadline watch call wait_for and do not poll.
+- A check fails on std::jthread, std::stop_token and std::stop_source outside ores.platform, and it runs in CI.
+
+* Plan
+
+1. Name =jthread=, =stop_token=, =stop_source= and =wait_for= in =ores::platform::concurrency=. Select the standard types when =__cpp_lib_jthread= is defined. Otherwise select the portable subset, which has a mutex and a condition variable that a stop wakes.
+2. Move the feed restore retry and the deadline watch of the workflow engine onto =wait_for=, and delete their polling loops.
+3. Test the wait on Linux, and check that the tests fail without the wake-up.
+4. Add a check that fails on the C++20 stop types outside =ores.platform=, and run it in CI and in the local gate.
+
+Decision. The first version of the change used the portable subset on every platform, so that the code macOS runs was the code Linux tests. The owner asked for the standard library on Linux, with the wrapper only as a fallback to delete once Apple's libc++ catches up. The portable subset is therefore always compiled, and the tests run it beside the selected types, which keeps the coverage. The names are the standard names, so the later removal is a replacement of the namespace.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| New unit tests, each run on the portable and the selected types, three runs | 20 cases, 54 assertions, all passed each time | =ores.platform.tests "[stoppable_thread]"= | this branch |
+| The same tests with =notify_all= removed from the portable =request_stop= | 3 of 20 cases failed, all on the portable types | =ores.platform.tests "[stoppable_thread]"= with the line removed | this branch |
+| Platform, synthetic service and workflow core suites | 177, 79 and 55 cases, all passed | each =*.tests= binary | this branch |
+| Uses of a C++20 stop type outside =ores.platform= | 0 | =check_portable_stop_types.py= | this branch |
+
+* Notes
+
+- The feed restore retry (#3633) polled in spans of 100 ms, and the deadline watch polled in spans of 250 ms. Both now wait on the stop state and wake at once.
+- The portable types follow the standard ones where the tests can see a difference: a token with no state is never stopped, and a moved-from source does nothing.
+- Defining =ORES_PLATFORM_PORTABLE_STOP= selects the portable types on any library. A probe of the callers' code compiled and ran with it on clang and gcc.
+- The standard =wait_for= makes a mutex and a condition variable on each call. Its callers wait for 2 s to 30 s between calls, so the cost does not matter.
+- The check is in its own workflow, =portable-stop-types.yml=, because the drift workflow runs only when models, tests or templates change, and a new use of a stop type is a change to a C++ source.
+- The macOS nightly build is the first run of this code on Apple's library. The tests run on Linux.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #3634 | [platform] Wake a wait on the stop state at once |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

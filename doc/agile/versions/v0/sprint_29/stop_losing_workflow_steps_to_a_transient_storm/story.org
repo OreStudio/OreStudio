@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: 03F84BC2-3F45-43EA-8924-FEA9246A1A9C
+:END:
+#+title: Story: Stop the workflow from losing steps to a transient storm
+#+description: A provisioning run lost its first step to a transient database connection storm. The engine published the step command, the iam service never handled it, and twenty minutes later the run failed with a message that names no cause. The command was dropped rather than retried, the pool storm left no explanation, and the handler has a path that discards a command in silence.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-14
+#+updated: 2026-10-24
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A workflow step must survive a transient failure of the service that
+serves it. The command must reach a handler or be retried until one is
+available, an intermittent error must not fail a run on its first
+occurrence, and a run that does fail must say what went wrong.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-14                               |
+
+* Acceptance
+
+- A step command is not lost when the serving service is briefly unable
+  to handle it. Either a handler takes it, or the run fails with a cause
+  that names the failing component.
+- Delivery is durable: a command published while no subscriber is
+  connected is delivered when one returns, rather than discarded.
+- An intermittent failure is retried with backoff inside a bounded
+  budget, so a storm shorter than the budget does not fail the run.
+- The engine can record a failure the handler reports, so a step that
+  throws shows the handler's message instead of a deadline expiry.
+- A handler never discards a command without both a log line and a reply.
+- A connection-pool rebuild storm is observable after the fact: how
+  often each service rebuilt its pool, and why, can be read from a record
+  rather than reconstructed by hand from the journal.
+
+* Incident record: the ACME provisioning run of 2026-10-14
+
+The evidence below comes from the environment database and the service
+journals. It is the reason this story exists.
+
+** The run
+
+| Field | Value |
+|---|---|
+| Workflow instance | =c4a57e83-1032-4dd9-b7c8-26bdf1e845d5= |
+| Workflow type | =tenant_setup_workflow= |
+| Tenant | =acme_corporation= (=db325ddd-f370-4fcb-a269-f70ee32b59d6=) |
+| Step | index 0, name =publish_bundle= |
+| Command subject | =iam.v1.ops.provision_tenant_step= |
+| Command published | 2026-10-14 10:56:53 |
+| Deadline expired | 2026-10-14 11:17:02, after 20m 9s |
+
+** What the engine recorded
+
+The step row is bitemporal, and its three versions tell the story:
+
+| command_published_at | started_at | response_json | valid_from | valid_to |
+|---|---|---|---|---|
+| | | NULL | 10:56:53.087 | 10:56:53.186 |
+| 10:56:53 | | NULL | 10:56:53.187 | 11:17:02.589 |
+| 10:56:53 | | NULL | 11:17:02.590 | (current) |
+
+=started_at= is NULL in every version. No =response_json= was ever
+written. The only =error= text is the deadline message itself, recorded
+at 11:17:02.
+
+The step payload was well formed, so a malformed command is not the
+explanation. It named =kind=publish_bundle=, a valid tenant and admin
+account, and four bundles plus two opted-in datasets.
+
+** What the service logged
+
+The handler logs one line per bundle on success:
+
+#+begin_example
+provision_step publish_bundle: gleif.lei_counterparties.small: completed
+#+end_example
+
+There is no such line for this instance, no =provision_step failed= line
+for it, and no line naming the subject. Other instances' =publish_bundle=
+steps on the same subject completed at 10:59:21, 10:59:52, 11:00:23 and
+11:00:53, so the subject, the handler and the bundles all work.
+
+** The storm
+
+The journal for the same period is dominated by pool rebuilds, roughly
+one every 18ms across several seconds:
+
+#+begin_example
+[WARN] [ores.database.domain.tenant_aware_pool] Pool connection dead
+  (ROLLBACK failed: Query execution failed: no connection to the server
+  ). Rebuilding pool...
+[INFO] [ores.database.domain.tenant_aware_pool] Pool rebuilt successfully.
+#+end_example
+
+The same pattern appears in the workflow service's journal, so this is
+not one service's problem.
+
+** What the environment says
+
+PostgreSQL is healthy and is not the cause:
+
+| Fact | Value |
+|---|---|
+| Postmaster started | 2026-10-13 02:37:57, up 1d 8h at the time of enquiry |
+| Connections in use | 43 of =max_connections= 1500 |
+| =idle_session_timeout= | 0 (disabled) |
+| =idle_in_transaction_session_timeout= | 0 (disabled) |
+| =statement_timeout= | 0 (disabled) |
+
+No server-side timeout is closing idle connections, and the server has
+not restarted. So the pool's "no connection to the server" is not
+explained by server reaping or by connection exhaustion.
+
+** A real error that the workflow never sees
+
+The same journal carries a genuine database defect, logged and discarded:
+
+#+begin_example
+[ERROR] [ores.geo.service.geolocation_service] Query failed: ERROR:
+  permission denied for table ores_geo_ip2country_tbl
+PL/pgSQL function ores_geo_ip2country_lookup_fn(uuid,inet) line 15
+#+end_example
+
+This fires on login geolocation. It is a grant or row-level-security
+defect in its own right, and it also demonstrates how a real error can
+exist in the log while the workflow reports only a timeout.
+
+* Why the failure names no cause
+
+Three mechanisms compound.
+
+** 1. The engine has no channel for the handler's error
+
+=workflow_engine.cpp:1061= =deadline_failure_text= assembles the message
+from exactly three inputs: the budget, the elapsed silence, and whether a
+service of that component was heartbeating. Its own comment states it
+stops there on purpose, because "a service that is running but wedged
+reports for duty as well, so presence is not proof of handling".
+
+The transport is core NATS request/reply, so "no reply arrived" is the
+only fact the engine can record. It cannot distinguish four very
+different situations: the command was never delivered, it was delivered
+and never entered a handler, it was entered and hung, or it was entered
+and the process died. All four produce the same text.
+
+** 2. A handler path discards a command in silence
+
+=ores.iam.core/messaging/tenant_provisioning_handler.hpp:587=:
+
+#+begin_src cpp
+auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
+if (!wf)
+    return;
+#+end_src
+
+When the workflow context cannot be built, the handler returns with no
+log line and no reply. For this class of failure there is no error to
+propagate, not to the engine and not to the service log. Every other
+failure path in that function catches, logs =provision_step failed=, and
+calls =wf->fail(...)=, which replies. This one is the exception.
+
+** 3. The engine never recorded a start
+
+=started_at= is NULL, so there is no handler-side state, no partial step
+log, and nothing to read after the fact. The deadline is the first and
+only event the run reports.
+
+* Findings
+
+** Delivery is at-most-once
+
+Step commands travel over core NATS. Core NATS does not persist a
+message: if no subscriber is connected at the instant of publish, the
+message is dropped, and neither side is told. A queue group gives load
+balancing, not durability. A command published while the only subscriber
+is disconnected, restarting, or unable to keep up is simply gone, and the
+engine's twenty-minute wait is the only symptom.
+
+This is the finding that most needs a decision. Options include JetStream
+with an explicit acknowledgement and a redelivery policy, a durable
+consumer per service, or an outbox on the engine side that re-publishes
+unacknowledged commands. The choice has to cover the case where the
+service is up but not consuming.
+
+** The pool storm is unexplained and unrecorded
+
+Services rebuilt their connection pools continuously for seconds at a
+time. Two things are missing: the reason a connection is considered dead,
+and any aggregate record of the storm. The =ROLLBACK= that detects the
+dead connection is itself the first operation to fail, so the pool learns
+that a connection is gone only after trying to use it, and it learns
+nothing about why.
+
+Worth investigating, in order: whether a pool rebuild invalidates
+connections that other threads have already borrowed, so one genuine
+failure starts a rebuild war between threads; whether the environment
+exhausts a per-role connection limit rather than the global one; and
+whether the pool holds connections across a long idle period that some
+intermediary closes. None of this can be answered from the current logs,
+because only the rebuild is logged, never its trigger.
+
+** Nothing retries an intermittent failure
+
+The step deadline is 20 minutes, but a command that is never received is
+not retried within it. The engine re-dispatches in-progress steps only on
+its recovery pass, which runs at engine construction. There is no retry
+with backoff for a transient fault, so a storm shorter than the deadline
+still fails the run.
+
+** Failures are not attributable
+
+A run's failure names a subject and a component, not a step identity, a
+handler attempt, or a cause. There is no per-attempt record: how many
+times a command was published, what each attempt returned, or whether any
+handler ever saw it.
+
+* Direction
+
+Four workstreams, to be broken into tasks:
+
+1. *Durable step delivery.* Choose and adopt a delivery mechanism that
+   survives a missing or busy subscriber, with acknowledgement and
+   redelivery. This is the change that stops the message being lost.
+2. *Retry with backoff for transient faults.* Bounded retries inside the
+   step's budget, so a storm does not consume the run. The retry must be
+   safe to repeat, which means the step's idempotency key has to be
+   honoured on every attempt.
+3. *Failure visibility.* An error channel from handler to engine, a
+   per-attempt record, and no silent discard path in any handler. The
+   engine's deadline text should remain, but only for the case where
+   nothing else is known.
+4. *Pool observability and repair.* Record why a connection is declared
+   dead and how often pools rebuild, per service. Then fix the storm.
+
+* Open questions
+
+- Should the engine own redelivery, or should the transport?
+- Does a durable consumer per service fit the queue-group semantics the
+  fleet relies on today, where more than one instance of a service may
+  share a group?
+- What is the correct budget for a retry before a step is considered
+  failed? The storm observed here lasted seconds, but the run's budget is
+  20 minutes.
+- Is the =ores_geo_ip2country_tbl= denial a missing grant or a policy
+  that has never been applied to this database?
+
+* Decisions
+
+* Out of scope
+
+- The geo permission defect is recorded above as evidence. Fixing it is
+  its own change, not part of this story.

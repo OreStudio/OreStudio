@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 11F9A445-13B3-43E0-A674-BE8C5E9E9A79
+:END:
+#+title: Task: Audit the NATS call sites against the pattern library
+#+description: Classify every NATS call site in projects/ against the NATS service pattern library, record the deviations with the pattern each breaks, and fix them.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_service_code_onto_the_nats_patterns-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/bring-the-service-code-onto-the-nats-patterns
+#+pr: 3355
+#+blocked_on:
++#+blocked_since:
++#+created: 2026-10-14
++#+updated: 2026-10-14
++#+environment:
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38DDDD12-6C66-422E-AE49-0C408AEE3F42][Bring the service code onto the NATS patterns — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Hold every NATS call site in =projects/= against the
+[[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]]
+library, and bring the code onto it.
+
+The audit covers the consumer variants (=queue_subscribe=, =subscribe=,
+=subscribe_buffered=, =js_queue_subscribe=), the publisher (=publish=,
+=js_publish=), the requester (=request_sync=, =request=,
+=authenticated_request= and their helpers), the stream provisioning
+(=ensure_stream=) and the handler error paths. Classify every call site as
+*conforms*, *deviation* or *deliberate*, and name the pattern that decides it.
+
+The deliverable is a durable inventory beside this task, not a prose summary: one
+row per call site or per uniform class of call sites, with the file and line, the
+pattern, the verdict, and for a deviation the fix. A class of generated call
+sites that is uniform in shape is one row with its count and a representative
+anchor, and the template that generates it named.
+
+Then fix the deviations, in this order:
+
+- A deviation in a generated call site is fixed in the codegen template, not in
+  the generated file, so regeneration cannot reintroduce it.
+- A deviation in a hand-written call site is fixed in place.
+- A deviation that is deliberate and correct is left alone, and the pattern page
+  is amended to state the exception and why it exists.
+
+A pattern the code proves wrong is amended rather than the code bent to fit it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:38DDDD12-6C66-422E-AE49-0C408AEE3F42][Bring the service code onto the NATS patterns — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Plan the audit and start the inventory. |
+| Last touched | 2026-10-14                               |
+
+* Acceptance
+
+- Every NATS call site in =projects/= carries a verdict against the pattern
+  library, and the inventory is recorded as a file beside this task.
+- Each deviation names the pattern it breaks, the file and line, and the fix;
+  each deliberate departure names the pattern page that licenses it.
+- The fixes are made: generated call sites through their codegen templates,
+  hand-written ones directly, with no compatibility shim left behind.
+- Where the fix is in a template, regeneration is run and the generated output is
+  unchanged apart from the fix.
+- A pattern the code proves wrong is amended, so the library and the code agree.
+- The full local gate is green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Consumer call sites | 3871 queue, 19 fan-out, 338 buffered, 3 durable | balanced-paren extraction over projects/ | =4fcab4aeed= |
+| Generated handler headers | 400, every one with a try/catch | scan for the AUTO-GENERATED marker | =4fcab4aeed= |
+| Hand-written handler headers with no catch | 30 of 89 | same scan, hand-written subset | =4fcab4aeed= |
+| Files calling log_handler_entry | 23 | grep -rl | =4fcab4aeed= |
+| Acknowledgment settings anywhere | 0 (=AckPolicy=, =AckWait=, =MaxDeliver=, =ManualAck=) | grep over projects/ | =4fcab4aeed= |
+| =Nats-Msg-Id= uses | 0 | grep over projects/ | =4fcab4aeed= |
+
+* Notes
+
+The inventory is at =evidence/inventory_nats_call_sites.org= beside this
+task. It classifies every call site against the library and names eight
+deviations (D1–D8) with the fix each needs.
+
+A starting lead from the pattern library's own reconnaissance, each to be
+re-derived and confirmed by the audit rather than trusted:
+
+- A workflow step-completion event published on core NATS rather than through
+  the stream, followed by the removal of the retry record that would have
+  re-sent it. The consumer of that subject is a durable JetStream consumer, and
+  the same subject is published durably elsewhere. This is a candidate for
+  [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]].
+- A request/reply subject subscribed without a queue group, so replicas each
+  answer. A candidate for
+  [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]].
+- A durable handler that catches a failure and returns, which under an
+  automatic acknowledgement acknowledges a message it did not handle. A
+  candidate for
+  [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]].
+- Handler failure logs that name the subject but not the tenant or the
+  correlation id. A candidate for
+  [[id:9E45F607-1829-4DA4-9FC6-D7E8F9011223][Announce Every Handled Message]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3355][#3355]] | [nats,service] Stream the remaining step-command subjects |
+| [[https://github.com/OreStudio/OreStudio/pull/3350][#3350]] | [nats,service] Cover every step-command subject with a stream |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+#+environment: brave_hopper

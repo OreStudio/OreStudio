@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 62370F84-69A5-4980-9774-28F49EF0C61C
+:END:
+#+title: Story: Refactor conventions onto families and bundles — the remaining work
+#+description: Conventions fail to build on MSVC because one aggregate carries every family. Refactor them onto the classification settled in the data model: one family per convention, a bundle per import applied in one unit of work, and the ORE file demoted to a package at the boundary.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A convention is declared once, in its own entity, and carries only its own fields. When this story closes, nothing in the code holds every family at the same time, so a change to one family cannot break another family's build. An import applies the families it carries as one unit of work, and a failure names the family that failed. The ORE conventions file is a package the boundary maps, not a type the components share.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started. Split from [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]], which closed in sprint 28 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+- Each convention family has its own operation model, generated from its entity, and no reflected type in refdata carries every family.
+- One generated list names the families, their scope, and their repository, and nothing hand-maintained duplicates it.
+- An import applies its families in one unit of work and reports an outcome for each family. A failure rolls the whole import back and leaves it staging.
+- The ORE conventions file crosses into and out of refdata as a package. No component shares a type that holds every family.
+- The web reads the family list from the generated registry rather than a hand-written table.
+- The configuration document protocol compiles on MSVC without a compiler flag that deepens constexpr evaluation.
+- Every read an export takes is taken at one bitemporal instant.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:264CDF6F-0674-4951-BCEA-334EBE68114F][Prove the Windows build]] | BACKLOG | | | An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS. |
+| [[id:2DAA2FFE-2346-42DB-B865-32ACAEB2FB64][Use as_of consistently for reads]] | BACKLOG | | | Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest. |
+| [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]] | BACKLOG | | | The curve configuration document is the same defect: one aggregate carrying every curve family, still on the wire in the translation unit that failed on MSVC. Move it onto its families and a bundle, as the conventions document was moved. |
+
+* Decisions
+
+- Split from [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- Collapsing the tenor basis swap family into one registry entry.
+- Changing the ORE XML model. The generated =conventions.hpp= stays as it is. This story changes what crosses a component boundary, not the file format.

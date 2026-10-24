@@ -423,8 +423,9 @@ function ready(saveId) {
   const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
   if (reason) { reason.onchange = check; note.oninput = check; check(); }
 }
+const REV = 'rev 2026-10-24c';
 function chrome(label, bars) {
-  document.getElementById('note').textContent = 'Prototype · ' + label + ' · mock data, nothing is written to a server';
+  document.getElementById('note').textContent = 'Prototype · ' + label + ' · ' + REV + ' · mock data, nothing is written to a server';
   const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
   document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
   document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });

@@ -12,7 +12,7 @@
 
 /October 2026/
 
-Sprint 28 set out to finish the work carried from sprint 27 and to add no new scope. It did not keep that promise or its size. The sprint ran twelve days instead of seven, merged 432 pull requests after the v0.0.27 tag and made about 2,500 commits (2,518 since 2026-10-13, from health review 1), so its load was RED against every target. Most of the carried stories shipped in part: the XML strategy, the instrument table rework, the conventions refactor, the market data service, the engine settings and the grid job screens are in. Eight in ten stories were new (101 of 126 were created after the sprint opened, from health review 1), and the report page with its six tabs is not built. At the close we split every unfinished story. Each keeps its finished tasks here, and the rest, 123 tasks in 25 stories plus 37 stories that never started, is in the product backlog.
+Sprint 28 set out to finish the work carried from sprint 27 and to add no new scope. It did not keep that promise or its size. The sprint ran twelve days instead of seven, merged 496 pull requests and made 2,615 commits (health review 1 and the sprint charts), so its load was RED against every target. Most of the carried stories shipped in part: the XML strategy, the instrument table rework, the conventions refactor, the market data service, the engine settings and the grid job screens are in. Eight in ten stories were new (101 of 126 were created after the sprint opened, from health review 1), and the report page with its six tabs is not built. At the close we split every unfinished story. Each keeps its finished tasks here, and the rest, 123 tasks in 25 stories plus 37 stories that never started, is in the product backlog.
 
 -----
 
@@ -144,6 +144,19 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Open sprint 28*: The sprint, its version manifest and its index exist, the project version is 0.0.28 and the vcpkg submodule is updated.
 - *Populate sprint 28 with the carried stories*: Sprint 27's carried stories are in sprint 28 and wired into its table.
 
+* 🔧 Also Shipped
+
+About a quarter of the sprint's pull requests name no story or task. These groups are real work that no story's task list records. Each group is a list of pull request numbers.
+
+- *Conventions import through staging tables* (#3462, #3465, #3467, #3469, #3474, #3475, #3481, #3482, #3485): a conventions import begins, stages one message per family and commits in one transaction. The ORE importer and exporter use it, and the staging is named for bundle import. Its story is in the product backlog with no task.
+- *Pricing engines on guided screens* (#3489, #3595, #3600, #3609): pricing engines read and write through the codec, a party sees, authors and changes its pricing engine configurations on screens, the report page lists its configurations, and the sign-off journey uses the inbox. Its story is in the product backlog, and one task is still STARTED.
+- *ORE codec and mappers* (#3486, #3499, #3505, #3513, #3583): the netting set XML mapper nothing reads is deleted, netting sets key on their credit limit, credit simulation reads and writes through the codec, the table generator reads a derived complex type, and each trade kind has its own column.
+- *Named engine settings* (#3630): the 19 engine columns of the run settings row become named engine settings that reports can share.
+- *Shell follows the provisioning run* (#3442): `provision tenant` reports ready only when the setup run ends. Its story is in the product backlog.
+- *Gates and build* (#3314, #3334, #3434, #3441, #3446, #3511, #3534, #3636): the ER diagram index renders from its template, derived files regenerate after drift, a gate holds the one-consumer-per-stream contract, the build lock holds in the network namespace, and several generated files catch up with their models.
+- *Dependency updates* (#3587, #3594, #3649, #3684): vite, fastify and zod.
+- *Documentation and records*: 23 agile bookkeeping pull requests, 9 nightly format runs and 12 documentation pull requests, among them the codegen pattern library and the atomised entity rules.
+
 * ⚠️ Known Issues & Postponed
 
 ** Delivered in part
@@ -166,11 +179,12 @@ The other 12 split stories each have one to six tasks remaining. The report page
 
 37 stories moved to the product backlog with no finished task. Their live pages are in the inbox, with their identifiers unchanged. They include:
 
-- *Author the report configurations on guided screens* and *Complete the ACME report inputs and prove they run*. Both have pull requests merged against their tasks, but no task met its acceptance.
+- *Author the report configurations on guided screens* and *Complete the ACME report inputs and prove they run*. Both have pull requests merged against their tasks, but no task met its acceptance. The pricing engine screens of the first are in "Also shipped".
 - *Edit a party on a standard entity page* (ten tasks), *End a session when its window closes, not when it is unattended* and *Raise approval requests from the remaining gated write paths*.
 - *Record system events in a central event log* and *Record service lifecycle events and surface them in system health*.
 - *Stop the workflow from losing steps to a transient storm*, *Follow the child run a workflow hands off* and *Subscribe tenants to provider feeds and prove the browser at scale*.
 - *Raise a notification for a scenario waiting for a tester*, *Restore the trading guards the versioned model dropped*, *Trace a process run and the trade groups it creates* and *Find a trade by its identifiers, state, book and date from one list* closed with nothing shipped. Only a scaffold task was done, or the one task went to another story. Their real tasks moved to the backlog.
+- *Import and export conventions without a document aggregate* and *Follow the child run a workflow hands off* have merged pull requests, listed in "Also shipped", and no task that records them.
 - Eight stories that were never broken into tasks, among them *Name the convention sets a report chooses*, *Link every reference to its record* and *Paint every web badge from the catalogue*.
 
 ** Known problems
@@ -190,8 +204,7 @@ A high commits-to-PR ratio may indicate scope creep.
 #+attr_html: :width 100%
 [[proj:doc/agile/versions/v0/sprint_28/prs_commits.png]]
 
-
-The sprint ran twelve days of work against a plan of seven, and every day merged pull requests. The peak is 2026-10-17: 85 merges and 403 commits,, the day with the most merged work of the sprint. 2026-10-18 follows with 68 merges. The rate falls after 2026-10-19, which is the planned close, but it does not stop: the last four days still merge 130 pull requests. The high commits-to-merge ratio on most days is the mark of a sprint that grew past its plan.
+The sprint ran twelve days of work against a plan of seven, and every day merged pull requests: 496 in all, with 2,615 commits, about five commits for each PR. The peak is 2026-10-17 with 81 PRs and 471 commits, followed by 2026-10-18 with 64 PRs and 334 commits. The rate falls after 2026-10-19, the planned close, and reaches its low on 2026-10-20 with 11 PRs. It does not stop: the last four days merge 121 PRs and 636 commits. The PR bars count merged pull requests, not merge commits. 2026-10-24 was a part day when the chart was drawn.
 
 ** Daily Line Churn
 
@@ -201,19 +214,18 @@ mostly additions; refactoring produces a mix.
 #+attr_html: :width 100%
 [[proj:doc/agile/versions/v0/sprint_28/line_churn.png]]
 
-
-Three days stand out. 2026-10-14 added 146,657 lines. 2026-10-17 added 151,669 lines and removed 42,255. 2026-10-19 removed 171,047 lines against 39,709 added, the deletion of the xsdcpp-generated domain once the document tables replaced it. A day of deletion larger than the day of addition is the sign of a replacement landing, not of growth.
+The sprint added 1,008,922 lines and deleted 376,726. The count includes generated files. Three days stand out. 2026-10-14 added 118,722 lines. 2026-10-17 added 162,816 lines and removed 44,368. 2026-10-19 removed 170,760 lines against 44,021 added, the deletion of the xsdcpp-generated domain once the document tables replaced it. A day of deletion larger than the day of addition is the sign of a replacement landing, not of growth. The two bars of a day sit side by side.
 
 ** PR Cycle Time
 
-Hours from PR open to merge, one bar per PR. Long bars indicate
-review bottlenecks.
+Hours from PR open to merge, one dot per PR for every PR merged in
+the sprint, on a log scale, with the median and the upper quartile as
+lines. High dots indicate review bottlenecks.
 
 #+attr_html: :width 100%
 [[proj:doc/agile/versions/v0/sprint_28/pr_cycle.png]]
 
-
-The chart shows the 20 slowest pull requests, from 13 to 48 hours. Most are large changes: the report list screen and endpoint (48.1 hours), the tenor basis swap atomisation (32.3) and the regulatory book scope (25.0). The census of all pull requests is far faster: the median is 0.1 hours and the 90th percentile is 5.3 hours, so the chart is the tail and not the typical case.
+The chart plots all 496 pull requests, one dot each, on a log scale. The median is 0.14 hours, about eight minutes, and the upper quartile is 1.3 hours. 74 pull requests merged within 18 seconds of opening and sit on the floor of the chart. Five took more than a day. The slowest are the report list screen and endpoint (48.1 hours), the nightly format run (34.7), the tenor basis swap atomisation (32.3) and the regulatory book scope (25.0). The 90th percentile is 5.2 hours.
 
 ** Cumulative Stories Done
 
@@ -223,13 +235,12 @@ Steady upward slope is healthy; plateauing signals a stall.
 #+attr_html: :width 100%
 [[proj:doc/agile/versions/v0/sprint_28/stories_done.png]]
 
-
-The line climbs from 2 to 60 stories between 2026-10-13 and 2026-10-21, a steady slope of about seven stories a day. The step to 125 on 2026-10-24 is the sprint close, not a day of delivery. It counts the 84 stories closed DONE and the 41 closed ABANDONED, of which 37 moved to the product backlog. Read the slope up to 2026-10-21 as the delivery rate.
+The line climbs from 2 to 60 stories between 2026-10-13 and 2026-10-21, about seven stories a day. It stays at 60 on 2026-10-22 and 2026-10-23, when no story closed. The step to 84 on 2026-10-24 is the sprint close: 24 stories closed that day with their finished tasks. The chart counts DONE stories only. The 41 stories closed ABANDONED, of which 37 moved to the product backlog, are not in the line. Read the slope up to 2026-10-21 as the delivery rate.
 
 * 📊 Time Summary
 
 - *Total effort*: not tracked
-- *PRs merged*: 432 after the v0.0.27 tag, 487 counting the PRs merged on 2026-10-13 before the tag (2026-10-13 to 2026-10-24)
+- *PRs merged*: 496 from 2026-10-13 to 2026-10-24, by local merge day (435 of them after the v0.0.27 tag commit; the other 61 merged on 2026-10-13 before it)
 - *Sprint duration*: 2026-10-13 → 2026-10-24 (twelve days, planned seven)
 
 -----

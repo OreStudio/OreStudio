@@ -49,6 +49,7 @@ A person who provisions a tenant should not be told it is ready while its setup 
 
 * Decisions
 
+- Pull request #3442 merged in sprint 28: the shell follows the run that `provision tenant` and `bootstrap setup` start, and reports ready only when the setup run ends. No task records it. The next owner should check the two tasks against it.
 - *Follow the child only in a tenant the session can read.* The child
   run is created in the tenant being provisioned, so the steps read
   refuses it to every caller outside that tenant except the system

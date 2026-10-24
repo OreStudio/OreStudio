@@ -40,6 +40,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Decisions
 
+- Pull requests merged in sprint 28 for this work, with no task to record them: #3462, #3465, #3467, #3469, #3474, #3475, #3481, #3482 and #3485. They stage a conventions import in two tables, apply it in one transaction, move the ORE path onto it, and rename the staging to bundle import. The story was carried with no task. The next owner should write the tasks and close the ones these PRs finished.
+
 * Out of scope
 
 -

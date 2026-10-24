@@ -3,6 +3,7 @@
 #
 # PRs & Commits per Day — standalone chart
 sprint_str = sprintf("%02d", sprint)
+if (!exists("datadir")) datadir = sprintf("build/output/sprint_%s", sprint_str)
 
 set terminal pngcairo size 800, 400 font "sans,11"
 set output sprintf("doc/agile/versions/v0/sprint_%s/prs_commits.png", sprint_str)
@@ -17,9 +18,12 @@ set ylabel "PRs"
 set y2label "Commits"
 set ytics nomirror
 set y2tics
-set title sprintf("Sprint %d — PRs & Commits per Day", sprint)
+set title sprintf("Sprint %d — PRs and Commits per Day", sprint)
+set yrange [0:*]
+set y2range [0:*]
+set boxwidth 0.7
 set xtics rotate by -45 font "sans,8"
 
-infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
+infile_act = datadir."/sprint_activity.csv"
 plot infile_act using 0:2:xticlabels(stringcolumn(1)) every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
      "" using 0:3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7

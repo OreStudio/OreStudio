@@ -56,9 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Commits since the sprint start | 2518 in 12 days (282, 199, 227, 185, 471, 334, 132, 87, 154, 151, 244, 52 for 10-13 to 10-24) | =git log origin/main --since=2026-10-13 --oneline= and =--format=%cd --date=short= | =b99ecf86a4= |
-| Pull requests merged since the sprint start | 484 (65, 40, 49, 37, 85, 61, 22, 17, 14, 38, 49, 7) | =gh pr list --state merged --search 'merged:>=2026-10-13' --limit 1000= | =b99ecf86a4= |
-| Merge cycle of those 484 | median 0.1 h, p90 5.3 h, max 48.1 h | the same list, =createdAt= to =mergedAt= | =b99ecf86a4= |
+| Commits since the sprint start | 2615 in 12 days (344, 199, 227, 185, 471, 334, 132, 87, 154, 150, 245, 87 for 10-13 to 10-24) | =compass sprint charts --sprint 28 --end-date 2026-10-24=: committer date, =--since-as-filter= from =2026-10-13T00:00:00= | =15d810796b= |
+| Pull requests merged since the sprint start | 496 (67, 40, 50, 39, 81, 64, 23, 11, 21, 28, 53, 19) | =gh pr list --state merged= bucketed by local merge day, from the same command | =15d810796b= |
+| Merge cycle of those 496 | median 0.14 h, upper quartile 1.3 h, p90 5.2 h, max 48.1 h | the same list, =createdAt= to =mergedAt= | =15d810796b= |
 | Open pull requests | 1 (#3705, opened 2026-10-24, a design document) | =gh pr list --state open= | =b99ecf86a4= |
 | Stories | 126: 60 DONE, 27 STARTED, 39 BACKLOG | the =State= of every =story.org= under the sprint | this branch |
 | Stories before this review's repairs | 125: 57 DONE, 29 STARTED, 39 BACKLOG | the same read before the edits | =b99ecf86a4= |
@@ -71,7 +71,7 @@ task and name that file in the Command column.
 | Stories after the sprint close | 125: 84 DONE, 41 ABANDONED (37 carried to the inbox, 4 closed with nothing shipped) | the =State= of every row of the sprint table | this branch |
 | Tasks after the sprint close | 323: 315 DONE, 8 ABANDONED | the =State= of every =task_*.org= under the sprint | this branch |
 | DONE tasks with no PR or no branch recorded | 88 and 45 before; 100 tasks changed | a script over the =Task-ID= trailers, then the branch name | =b99ecf86a4= |
-| Charts window | 2026-10-13 to 2026-10-24: 14 days of activity, 484 merged PRs, 61 story transitions. The default window stops at 2026-10-21, the sprint's end date plus one day. | =compass sprint charts --sprint 28 --end-date 2026-10-24= | =b99ecf86a4= |
+| Charts window | 2026-10-13 to 2026-10-24: 12 days of activity, 2615 commits, 496 merged PRs, 84 stories done. The default window stops at 2026-10-21, the sprint's end date plus one day. | =compass sprint charts --sprint 28 --end-date 2026-10-24= | =b99ecf86a4= |
 
 * Notes
 
@@ -144,25 +144,34 @@ describe what the sprint spent its capacity on.
 
 | Metric | Value | Target | Status |
 |--------+-------+--------+--------|
-| Commits since 2026-10-13 | 2518 | ≤ 1000 | RED |
-| Commits per day | 282, 199, 227, 185, 471, 334, 132, 87, 154, 151, 244, 52 | — | — |
-| Average | ≈ 210 per day over 12 days | ≤ 143 per day | RED |
+| Commits since 2026-10-13 | 2615 | ≤ 1000 | RED |
+| Commits per day | 344, 199, 227, 185, 471, 334, 132, 87, 154, 150, 245, 87 | — | — |
+| Average | ≈ 218 per day over 12 days | ≤ 143 per day | RED |
 | Window | day 12 of a planned 7 | 7 days | RED |
 
 The tree carries about two and a half times the commit ceiling. The rate is
 neither a stall nor a spike. Two peaks stand out, 471 on 10-17 and 334 on 10-18,
 and the sprint then slows to 87 and 154 on the days after its planned close.
 That slowdown is the planned close arriving while stories were still open: the
-work did not stop, it thinned out. The commits after 10-20 total 601.
+work did not stop, it thinned out. The commits after 10-20 total 636, and 10-24 was a part day when the count was taken.
 
 Verdict RED.
+
+Correction on 2026-10-24. The first version of this review counted commits
+with a bare =--since=2026-10-13=. Git reads a bare date as that date at the
+current time of day, so the early hours of 10-13 were lost, and plain =--since=
+stops at the first old commit of a rebased history. The first version said 2518
+commits and a first day of 282. The full count is 2615 and 344. The same two
+faults hit the charts, which also counted merge commits as PRs and plotted only
+the twenty slowest PRs. =compass sprint charts= is fixed, and the verdicts do
+not change.
 
 *** PR velocity
 
 | Metric | Value | Notes |
 |--------+-------+-------|
-| Merged PRs in the sprint | 484 (65, 40, 49, 37, 85, 61, 22, 17, 14, 38, 49, 7) | The target band is 100–120: four times it. |
-| Merge cycle | median 0.1 h, p90 5.3 h, max 48.1 h | A census of all 484, not a sample. The chart's own cycle file holds 20 rows, a collector cap. |
+| Merged PRs in the sprint | 496 (67, 40, 50, 39, 81, 64, 23, 11, 21, 28, 53, 19) | The target band is 100–120: four times it. |
+| Merge cycle | median 0.14 h, upper quartile 1.3 h, p90 5.2 h, max 48.1 h | A census of all 496. The cycle chart now plots every PR. |
 | Open PRs | 1 | #3705, opened today, a design document. |
 | Long-open WIP | none | No PR waited more than a day for a merge. |
 | Days with no merge | 0 | The slowest day merged 7, and it is a part day. |
@@ -242,17 +251,17 @@ Verdict RED.
 |--------+-------+-------|
 | Stories closed | 60 of 126 | 48%. |
 | Tasks closed | 309 of 534 | 58%. |
-| Story transitions in the chart | 61 | The cumulative chart ends at 2026-10-24 with 61 stories done. |
+| Stories done in the chart | 61 at review time, 84 after the close | The cumulative chart counts DONE rows only. The first version also counted ABANDONED rows, so a close that carries stories out looked like delivery. |
 | Window | day 12 of 7 | Four days over. |
 
 The default chart window is the sprint's end date plus one day, so a plain run
-shows work to 2026-10-21 only and leaves out the 94 PRs and 447 commits of 10-22
+shows work to 2026-10-21 only and leaves out the 100 PRs and 482 commits of 10-22
 to 10-24. The committed charts were rendered with =--end-date 2026-10-24=, so
 they cover the whole overrun. A sprint that runs past its end date needs that
-flag or an updated end date, or the charts under-report its close. Two points
-before the sprint, on 2026-09-27 and 2026-10-10, appear at the left of the
-commits chart. They are commits that pre-date the sprint and are not sprint
-work.
+flag or an updated end date, or the charts under-report its close. The first
+version of the commits chart showed two stray points before the sprint, on
+2026-09-27 and 2026-10-10. It bucketed by author date and filtered by committer
+date. It now uses the committer date for both, and the points are gone.
 
 Verdict AMBER.
 

@@ -630,8 +630,8 @@ function recordScreen(c) {
   const r = route();
   if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing', LIST()], ['Not found']]) + '<div class="notice">This configuration does not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
-  const tabs = [['details', 'Details'], ['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
-  const body = { details: (cc) => detailsTab(cc) + globalParams(cc), products: (cc) => productTab(cc, r.product), reports: reportsTab, history: historyTab }[r.tab](c);
+  const tabs = [['details', 'Details'], ['globals', 'Global parameters'], ['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
+  const body = { details: detailsTab, globals: globalParams, products: (cc) => productTab(cc, r.product), reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
     <div class="actions"><button class="btn" id="h-refresh">↻ Refresh</button><span class="access">✎ Editable</span>${c.status === 'draft' ? '<button class="btn" id="h-edit">✎ Edit</button><button class="btn danger" id="h-delete">🗑 Delete</button>' : '<button class="btn" id="h-propose">✎ Propose a change</button>'}</div></div>

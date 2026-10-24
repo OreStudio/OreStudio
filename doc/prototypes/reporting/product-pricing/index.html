@@ -748,7 +748,7 @@ function productTab(c, want) {
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>
     </div><div class="foot"><button class="btn primary" id="p-save">✓ Propose</button> <button class="btn" id="p-cancel">✕ Cancel</button> <span class="faint" id="p-msg"></span></div></div>`;
-  return `<div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}</div></div>`;
+  return `<div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}<div class="notice">This page sets how each product is priced. How the engine runs every product — fixings, market building, threads — is set once for the run in <a class="link" href="../see-the-engine-settings-a-party-holds/">Engine run settings</a>.</div></div></div>`;
 }
 
 function render() {

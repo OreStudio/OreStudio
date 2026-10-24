@@ -9,7 +9,7 @@
 #+target_dialog:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 

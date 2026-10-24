@@ -397,7 +397,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             rows(methodSubjects.list_pricing_methods_request, 'methods'),
             rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
             rows(tenorSubjects.list_tenors_request, 'tenors'),
-            rows(instrumentCodeSubjects.list_instrument_codes_request, 'instrument_codes'),
+            rows(instrumentCodeSubjects.list_instrument_codes_request, 'instruments'),
         ]);
     const assetClassOf = new Map(
         instruments.map((row) => [text(row['code']), text(row['asset_class'])]),

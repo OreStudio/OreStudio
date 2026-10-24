@@ -224,7 +224,7 @@ function vocabularyReads(): Record<string, unknown> {
         },
         'refdata.v1.instrument_codes.list': {
             result: ok,
-            instrument_codes: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
+            instruments: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
         },
         'analytics.v1.pricing_model_engine_pairs.list': {
             result: ok,

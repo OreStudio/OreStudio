@@ -26,11 +26,11 @@ A point-in-time investigation that reads the ORE source and the ORE Studio tree,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The investigation is written. The owner decides the screen words. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The configuration screen standard.                  |
+| Next         | Merge the PR.                  |
 | Last touched | 2026-10-24                               |
 
 * Acceptance

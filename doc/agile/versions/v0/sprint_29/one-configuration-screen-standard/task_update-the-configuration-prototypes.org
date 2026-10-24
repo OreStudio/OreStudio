@@ -55,9 +55,31 @@ and they must not describe a tree that has since changed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Why
+
+The two configurations a report binds that carry the word "engine" were designed
+at different times and in different words. The journey of record for the engine
+run settings did not exist, and the pricing journeys still said "pricing
+engines". A person reading either screen learned the wrong name for the other.
+The owner decided the words and the lifecycle rule on 2026-10-24, and asked for
+the journeys and prototypes first, so the standard can describe what has been
+signed off rather than propose it.
+
+** What was done
+
+1. Read the ORE 1.8.17.0 source and the ORE Studio tree to establish the
+   boundary and the linkages. The record is the investigation.
+2. Wrote the journey for the engine run settings, with the section lifecycle
+   and the related configurations.
+3. Renamed the five pricing journeys, and added the disambiguation section and
+   the cross-links.
+4. Updated the two prototypes: the standard words, the "what this decides"
+   sentence, the related configurations card, and the section lifecycle on the
+   engine run settings.
+5. Corrected facts the source contradicts: =buildFailedTrades= defaults to Yes
+   in the ORE source, and the engine run settings have three sections, not five.
+6. Updated the two design notes, the reporting group page and the two
+   prototype counts.
 
 * Measurements
 
@@ -71,9 +93,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reporting journeys | 15 | =ls doc/knowledge/journeys/reporting/journey_*.org | wc -l= | =d6370328bb= |
+| Prototypes in the inventory | 88, in 20 groups | =python3 build/scripts/check_prototype_inventory.py= | =eda8b9be5d= |
+| ORE Setup parameters read | 51 | see the investigation | ORE v1.8.17.0 =3d75a6908= |
 
 * Notes
+
+* Notes
+
+- The service names, the configuration type codes and the API routes keep their
+  spelling. Only the screen words and the journey words change.
+- The prototypes keep their earlier file names; each design note says which
+  screen it draws now.
+- The section lifecycle is drawn, not implemented: no operation holds a
+  proposal for this kind. The journey and the prototype say so.
 
 * Test Scenarios
 

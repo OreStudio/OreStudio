@@ -8,7 +8,7 @@
 #+filetags: :find_why_ticks_lag_the_wall_clock:sprint_28:v0:
 #+owner: marco
 #+branch: feature/name-a-series-in-the-history-call-by-identity
-#+pr:
+#+pr: 3711
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3711][#3711]] | [marketdata] Name a series in the history call by its identity |
 
 * Review
 

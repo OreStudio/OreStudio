@@ -566,8 +566,8 @@ function visible() {
   return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
 }
 function listScreen() {
-  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations']])}
-  <div class="titlebar"><div><h1>Pricing engine configurations</h1><div class="sub">The configurations that choose the model and the engine for each product type, and how they are set. A party holds few official ones, one for each cycle.</div></div>
+  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing']])}
+  <div class="titlebar"><div><h1>Product pricing</h1><div class="sub">The configurations that choose the model and the engine for each product type, and how they are set. A party holds few official ones, one for each cycle.</div></div>
     <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<details class="menu"><summary class="btn">Workflows ▾</summary><div class="items"><a href="${OTHER.imp}">Bring in a pricing engine configuration file</a><a href="${OTHER.sign}">Sign off a change</a></div></details><a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div>`;
   if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
   if (state === 'error') return head + '<div class="badbox">The pricing engine configurations could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
@@ -628,13 +628,13 @@ function globalParams(c) {
 
 function recordScreen(c) {
   const r = route();
-  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], ['Not found']]) + '<div class="notice">This pricing engine configuration does not exist.</div>';
+  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing', LIST()], ['Not found']]) + '<div class="notice">This configuration does not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
-  const tabs = [['details', 'Properties'], ['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
+  const tabs = [['details', 'Details'], ['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
   const body = { details: (cc) => detailsTab(cc) + globalParams(cc), products: (cc) => productTab(cc, r.product), reports: reportsTab, history: historyTab }[r.tab](c);
-  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
+  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
-    <div class="actions"><span class="access">✎ Editable</span></div></div>
+    <div class="actions"><button class="btn" id="h-refresh">↻ Refresh</button><span class="access">✎ Editable</span>${c.status === 'draft' ? '<button class="btn" id="h-edit">✎ Edit</button><button class="btn danger" id="h-delete">🗑 Delete</button>' : '<button class="btn" id="h-propose">✎ Propose a change</button>'}</div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
 }
@@ -747,7 +747,7 @@ function productTab(c, want) {
     <div class="card"><div class="gh"><div><h3>Change</h3><div class="faint">A change to an approved configuration is proposed for sign-off.</div></div></div><div class="body" style="grid-template-columns:1fr 2fr">
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>
-    </div><div class="foot"><button class="btn primary" id="p-save">Submit as a proposal</button> <span class="faint" id="p-msg"></span></div></div>`;
+    </div><div class="foot"><button class="btn primary" id="p-save">✓ Propose</button> <button class="btn" id="p-cancel">✕ Cancel</button> <span class="faint" id="p-msg"></span></div></div>`;
   return `<div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}</div></div>`;
 }
 
@@ -769,6 +769,11 @@ function wire() {
   const mo = document.querySelector('[data-pmodel]'); if (mo) mo.onchange = () => { p.model = mo.value; const es = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort(); p.engine = es[0] || p.engine; render(); };
   const en = document.querySelector('[data-pengine]'); if (en) en.onchange = () => { p.engine = en.value; render(); };
   const sv = document.getElementById('p-save'); if (sv) sv.onclick = () => { document.getElementById('p-msg').textContent = 'A proposal is recorded in the prototype only. Nothing is written.'; };
+  const cx = document.getElementById('p-cancel'); if (cx) cx.onclick = () => render();
+  const rf = document.getElementById('h-refresh'); if (rf) rf.onclick = () => render();
+  const ed = document.getElementById('h-edit'); if (ed) ed.onclick = () => { const m = document.getElementById('p-msg'); if (m) m.textContent = 'Edit opens the record dialog in the built screen.'; };
+  const pr = document.getElementById('h-propose'); if (pr) pr.onclick = () => { const m = document.getElementById('p-msg'); if (m) m.textContent = 'A change is proposed here; the sign-off is its own screen.'; };
+  const dl = document.getElementById('h-delete'); if (dl) dl.onclick = () => render();
 }
 render();
 

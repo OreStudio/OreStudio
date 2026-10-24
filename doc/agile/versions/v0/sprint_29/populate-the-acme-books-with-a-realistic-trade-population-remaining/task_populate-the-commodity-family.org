@@ -2,7 +2,7 @@
 :ID: 29DAA209-E62B-47C4-9220-51CA6622EC0C
 :END:
 #+title: Task: Populate the commodity family
-#+description: Book the twenty-five commodity trade types the catalogue routes, in the 5% share the weights page sets. No other class routes every type it declares.
+#+description: Folded into the seam task, which delivers the commodity planner whole. Kept as the record of why commodity came before the heavier classes.
 #+type: task
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
@@ -26,11 +26,11 @@ ACME's books hold commodity trades across all twenty-five routed types, which no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -87,3 +87,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Folded into [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Make the trade
+population plan family-neutral]] on 2026-10-24. That task needs a second
+planner to prove the seam, and commodity is the one class whose every
+declared type routes, so it is the only class that tests the plan without
+also testing routing work. Its acceptance now covers every commodity
+trade type, the class share and the export.
+
+Nothing was implemented under this task. Its branch,
+=feature/populate-the-commodity-family=, carries no commits and can be
+deleted.

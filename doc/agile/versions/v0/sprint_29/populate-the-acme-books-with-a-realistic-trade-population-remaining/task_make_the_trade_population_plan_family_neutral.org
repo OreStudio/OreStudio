@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Synthetic has one planner interface, one shared plan envelope and one shared writer. The plan carries a payload that belongs to its family, so a bond slot is a bond and an FX slot is an FX trade. The asset class a config names selects its planner, and a class with no planner is refused by name. The population size is a config field and not a constant. The bond planner is the first implementation and the commodity planner is the second, which proves that a new class adds a planner and nothing else.
+Synthetic has one planner interface, one shared plan envelope and one shared writer. The plan carries a payload that belongs to its family, so a bond slot is a bond and a commodity slot is a commodity trade. The asset class a config names selects its planner, and a class with no planner is refused by name. The population size is a config field and not a constant.
+
+The bond planner is the first implementation. The commodity planner is the second, and it is delivered whole rather than as a stub: every commodity trade type books through it, its share matches its weight, and it exports and reverse-maps. Commodity is the proof because it is the one class whose every declared type routes, so the seam is tested on the plan alone and not on routing work.
 
 * Status
 
@@ -44,7 +46,12 @@ Synthetic has one planner interface, one shared plan envelope and one shared wri
 - The bond planner implements the interface, and the old bond-only free
   function is deleted.
 - A commodity planner is added with no change to the writer, the plan
-  envelope or booking.
+  envelope or booking, and it books all twenty-five routed commodity
+  trade types.
+- The commodity share of the population matches its weight in Trade
+  Population Weights within tolerance.
+- The bond and commodity populations export as the ORE portfolio the
+  engine reads, and reverse-map without loss.
 - The population size is a config field, and the =trades_per_book=
   constant is gone.
 - A second run of any planner books nothing.

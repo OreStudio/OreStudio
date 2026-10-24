@@ -39,8 +39,8 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0CE719C2-C3F1-4CDC-BD00-0286526ACC50][Scaffold story: Add a Hawkes tick arrival process to analytics.quant]] | STARTED | 2026-10-23 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:D02DB9B0-C62A-4DDA-B64E-2A720BC324B4][Analyse the tick Hawkes simulation and the cost of the port]] | STARTED | 2026-10-23 | | Initial task for: Add a Hawkes tick arrival process to analytics.quant |
+| [[id:0CE719C2-C3F1-4CDC-BD00-0286526ACC50][Scaffold story: Add a Hawkes tick arrival process to analytics.quant]] | DONE | 2026-10-23 | 2026-10-24 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D02DB9B0-C62A-4DDA-B64E-2A720BC324B4][Analyse the tick Hawkes simulation and the cost of the port]] | DONE | 2026-10-23 | 2026-10-24 | Initial task for: Add a Hawkes tick arrival process to analytics.quant |
 | [[id:A2410300-BDDC-4738-8B02-3554BC7A5755][Rename the process and feed interfaces to snake_case]] | BACKLOG | | | IStochasticProcess, IYieldCurveProcess and IFeed use CamelCase where the rest of the source uses snake_case. Rename them and the documents that name them. |
 | [[id:3CF5D3C2-454C-4F27-B891-BFD4920144EC][Implement the periodic, Poisson and Hawkes arrival processes]] | BACKLOG | | | Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, inspired by the tick library. |
 | [[id:9CB20FCF-F732-4742-BC53-2F3C1E12E365][Pace a synthetic feed by an arrival process]] | BACKLOG | | | Let tick_clock draw each gap from an arrival process, and carry the mode and its parameters on the generation config and in the clients. |

@@ -26,11 +26,11 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Analysis written. No code changed.     |
+| Now          | Nothing. |
 | Waiting on   | The owner's choices in the Result.     |
-| Next         | Settle the interface and the attribution, then write the port. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -262,8 +262,9 @@ The port is small and the code is not the hard part.
    It needs a new interface and a new factory entry beside the value processes.
 3. *Documents.* One new atomic note, one new external note, and edits to the
    hub, the generator library note and the component overview.
-4. *Licence.* BSD 3-clause code may go into our GPL work if each derived file
-   keeps the notice and the licence text ships with binaries.
+4. *Licence.* The owner chose a new implementation of tick's ideas, with no
+   copied source. The ORE Studio licence applies and each file says it is
+   inspired by tick.
 
 Decisions of the owner, 2026-10-23:
 

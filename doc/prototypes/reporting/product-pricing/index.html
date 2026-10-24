@@ -587,35 +587,10 @@ function coverageStrip(c) {
   const un = gaps(c), n = needed(c).length;
   return `<div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage:</b> ${c.reports.length ? `the reports that bind it need ${n} product types, and ${n - un.length} have a row here.` : `no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row here.`} ${un.length ? `Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : 'Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures: no operation returns them.</span></div>`;
 }
-function productsTab(c) {
-  const want = new URLSearchParams(location.search).get('doc');
-  const rows = c.products.map(p => {
-    const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, note = WHAT[p.type] || (t ? t.desc : '');
-    const settings = p.params.map(x => { const k = noteOf(x.name); return `<div class="help"><span class="mono">${esc(x.name)}</span> — ${esc(k ? k.note : 'The documentation of this parameter is not held.')}</div>`; }).join('');
-    return `<div class="setting"><div class="shead">
-      <div><b>${esc(p.type)}</b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
-      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'parameter' : 'parameters'}</div></div>
-    </div>
-    <details class="doc" ${want === p.type ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>
-      ${t ? `<p class="help"><b>${esc(t.instrument)}</b> — ${esc(INSTRUMENTS[t.instrument] || '')}</p>` : ''}
-      ${cls ? `<p class="help"><b>${esc(cls.name)}</b> — ${esc(cls.what)}</p>` : ''}
-      ${settings}
-      ${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']</span></div><div>Model ${esc(p.model)} · Engine ${esc(p.engine)}</div><div>Introduced in 1.8.0.7</div></div>` : ''}
-    </div></details></div>`;
-  }).join('');
-  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div></div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
-}
 function coverageLine(c) {
   const un = gaps(c), n = needed(c).length;
   const base = c.reports.length ? `Coverage: ${n - un.length} of ${n} product types the reports need have a row.` : `Coverage: no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row.`;
   return `${base}${un.length ? ` Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : ' Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures.</span>`;
-}
-function paramsTab(c) {
-  const one = (scope, applies, x) => { const k = noteOf(x.name); return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(scope)} · ${esc(applies)}</div></div><div class="sval mono">${esc(x.value)}</div></div>
-    <details class="doc" ${new URLSearchParams(location.search).get('doc') === x.name ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(k ? k.note : 'The documentation of this setting is not held.')}</p>${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Parameter[@name='${esc(x.name)}']</span></div><div>Format ${esc(k ? k.kind : 'text')}</div><div>Introduced in 1.8.0.7</div></div>` : ''}</div></details></div>`; };
-  const globals = c.globals.map(x => one('global', 'every product', x));
-  const product = c.products.flatMap(pr => pr.params.map(x => one(x.scope, pr.type, x)));
-  return `<div class="card"><div class="gh"><div><h3>Parameters</h3><div class="faint">Every setting the document carries, with the scope it applies to.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div></div></div>${globals.concat(product).join('') || '<div class="setting"><span class="muted">No setting. The engine uses its own defaults.</span></div>'}<div class="foot">The same name can sit in two scopes, so the scope is named.</div></div>`;
 }
 function detailsTab(c) {
   return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
@@ -640,28 +615,6 @@ function recordScreen(c) {
 }
 
 /** One product type as the configuration prices it: what it is, its instrument and its class. */
-function productCard(c, p) {
-  const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
-  const pairs = TRIPLES.filter(x => x[0] === p.type).map(x => [x[1], x[2]]);
-  const known = settingsFor(p.type, p.model, p.engine);
-  const modelOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type).map(x => x[1]))].sort();
-  const engineOptions = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort();
-  const params = p.params.length ? p.params.map(x => { const k = known.find(y => y.name === x.name); const note = k ? k.note : 'The documentation of this setting is not held.'; return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(x.scope)} · ${esc(p.type)}</div></div><div class="sval mono">${esc(x.value)}</div></div>
-    <details class="doc" ${new URLSearchParams(location.search).get('doc') === x.name ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']/Parameter[@name='${esc(x.name)}']</span></div><div>Format ${esc(k ? k.kind : 'text')}</div><div>Introduced in 1.8.0.7</div></div>` : ''}</div></details></div>`; }).join('') : '<p class="muted">This product carries no setting. The engine uses its own defaults.</p>';
-  const pairList = pairs.length ? `<ul>${pairs.map(([m, e]) => `<li><span class="mono">${esc(m)} / ${esc(e)}</span>${m === p.model && e === p.engine ? ' <span class="tag ok">in use</span>' : ''}</li>`).join('')}</ul>` : '<p class="muted">No pair is known for this product type.</p>';
-  const body = `<p class="muted">Product type <span class="mono">${esc(p.type)}</span>${cls ? ` · asset class <span class="mono">${esc(cls.code)}</span>` : ''}</p>
-    <h3>What it is</h3><p>${esc(WHAT[p.type] || (t ? t.desc : 'No description is held.'))}</p>
-    ${t ? `<h3>Instrument: ${esc(t.instrument)}</h3><p>${esc(inst || 'No description is held.')}</p>` : ''}
-    ${cls ? `<h3>Asset class: ${esc(cls.name)}</h3><p>${esc(cls.what)}</p><p><button class="btn small" id="pc-class">Read about the ${esc(cls.name)} asset class</button></p>` : '<h3>Asset class</h3><p class="muted">This product type maps to no instrument, so it has no asset class. Leg and coupon pricers are the usual case.</p>'}
-    <h3>In this configuration</h3><p><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span>, with ${p.params.length} ${p.params.length === 1 ? 'parameter' : 'parameters'}.</p>
-    <h3>Settings of this product</h3><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>${params}
-    <h3>Known model and engine pairs</h3>${pairList}`;
-  dialog(`${p.type} — how this product is priced`, body, `<button class="btn" id="d-cancel">Close</button>${may('edit') ? `<a class="btn primary" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}`);
-  document.querySelectorAll('[data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; productCard(c, p); });
-  const b = document.getElementById('pc-class');
-  if (b && cls) b.onclick = () => assetClassCard(c, t.cls);
-}
-/** One asset class: what it is, and the product types of this configuration that sit in it. */
 function assetClassCard(c, key) {
   const cls = CLASSES[key], types = [...new Set(c.products.map(x => x.type))].filter(x => { const t = typeOf(x); return t && t.cls === key; });
   const body = `<p class="muted">Asset class <span class="mono">${esc(cls.code)}</span></p>
@@ -678,28 +631,6 @@ function deleteDialog(c) {
   if (!blocked) ready('d-save');
   document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
 }
-function wire() {
-  const r = route(), c = byId(r.id);
-  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
-  document.querySelectorAll('#app [data-sort]').forEach(x => x.onclick = () => { sortDir = sortKey === x.dataset.sort ? -sortDir : 1; sortKey = x.dataset.sort; render(); });
-  const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
-  const vf = document.getElementById('varf'); if (vf) vf.onchange = () => { variantF = vf.value; render(); };
-  const sf = document.getElementById('statusf'); if (sf) sf.onchange = () => { statusF = sf.value; render(); };
-  const uf = document.getElementById('usedf'); if (uf) uf.onchange = () => { usedF = uf.value; render(); };
-  const cl = document.getElementById('clear'); if (cl) cl.onclick = () => { search = ''; variantF = 'all'; usedF = 'any'; statusF = 'all'; render(); };
-  const rt = document.getElementById('retry'); if (rt) rt.onclick = () => { const p = new URLSearchParams(location.search); p.set('state', 'all'); location.search = p.toString(); };
-  const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
-  document.querySelectorAll('#app [data-delete]').forEach(x => x.onclick = () => deleteDialog(c));
-  document.querySelectorAll('#app [data-product]').forEach(x => x.onclick = e => { e.preventDefault(); const p = c.products.find(y => y.type === x.dataset.product); if (p) productCard(c, p); });
-  document.querySelectorAll('#app [data-class]').forEach(x => x.onclick = e => { e.preventDefault(); assetClassCard(c, x.dataset.class); });
-  document.querySelectorAll('#app [data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; render(); });
-  const wantCard = new URLSearchParams(location.search).get('card'), wantClass = new URLSearchParams(location.search).get('class');
-  if (r.screen === 'record' && c && wantCard && !document.querySelector('.dlg')) { const p = c.products.find(y => y.type === wantCard); if (p) productCard(c, p); }
-  if (r.screen === 'record' && c && wantClass && !document.querySelector('.dlg')) assetClassCard(c, wantClass);
-  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
-}
-
-/** The tree: asset classes, and the product types of this configuration in each. */
 function treePane(c, sel) {
   const byClass = Object.keys(CLASSES).map(k => [k, c.products.filter(p => { const t = typeOf(p.type); return t && t.cls === k; })]).filter(([, ps]) => ps.length);
   const items = byClass.map(([k, ps]) => `<div class="cls">${esc(CLASSES[k].name)} <span class="faint">${ps.length}</span></div>${ps.map(p => `<button class="pt ${p.type === sel ? 'on' : ''}" data-pt="${esc(p.type)}">${esc(p.type)}</button>`).join('')}`).join('');

@@ -148,7 +148,7 @@ level. Their consumer, and the interface they sit behind, are in
 =ores::analytics::quant::service::process_factory= constructs the
 concrete process an =ir_curve_generation_config= or
 =market_data_generation_config= names, behind the common
-=IStochasticProcess= interface every process implements — the
+=i_stochastic_process= interface every process implements — the
 generation loop that drives =next()= on whichever process was
 configured does not need to know which one it got. This is the first,
 not the only, place these processes are expected to be used in ORE

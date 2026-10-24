@@ -39,7 +39,7 @@ namespace ores::analytics::quant::service {
  * Live calibration to historical data is out of scope.
  */
 class ORES_ANALYTICS_QUANT_EXPORT gaussian_mixture_model_process final
-    : public ores::analytics::quant::domain::IStochasticProcess {
+    : public ores::analytics::quant::domain::i_stochastic_process {
 public:
     gaussian_mixture_model_process(std::vector<double> means,
                                    std::vector<double> stdevs,

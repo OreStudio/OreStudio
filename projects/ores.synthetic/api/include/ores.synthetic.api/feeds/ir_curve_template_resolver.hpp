@@ -41,7 +41,7 @@ namespace ores::synthetic::feed {
 
 /**
  * @brief Year-fraction one IR curve feed tick represents, matching the "1 tick == 1 calendar
- * day" convention documented on resolve() below. Passed as IYieldCurveProcess::dt wherever a
+ * day" convention documented on resolve() below. Passed as i_yield_curve_process::dt wherever a
  * process is constructed for this feed (auto-start, on-demand start, path simulation, shape
  * preview) so every consumer of that convention shares one definition rather than each
  * redeclaring its own copy.
@@ -59,7 +59,7 @@ struct ir_curve_schedule_step final {
 
 /**
  * @brief One ir_curve_template_entry, reduced to what a tick loop needs to derive its rate from a
- * IYieldCurveProcess::discount_factor() every tick, without re-touching the refdata catalog.
+ * i_yield_curve_process::discount_factor() every tick, without re-touching the refdata catalog.
  *
  * Ticks are calendar days from the config's horizon (see resolve()'s doc for why): a Phase-1
  * simplification appropriate for a synthetic PoC curve, deliberately not the full business-day/
@@ -126,7 +126,7 @@ ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generatio
  * Design decisions, deliberately simplified for this Phase-1 synthetic PoC (see the parent
  * task's Analysis section for the broader rationale of keeping this feed self-contained):
  *
- * - *1 tick == 1 calendar day.* IYieldCurveProcess::discount_factor()'s ticks_ahead is
+ * - *1 tick == 1 calendar day.* i_yield_curve_process::discount_factor()'s ticks_ahead is
  *   process-internal simulation time with no fixed calendar unit; ticks_per_hour governs
  *   real-time publish cadence only, not the model's own step size. A day-per-tick convention
  *   is the simplest mapping that lets every tenor (1M, 2Y, ...) resolve to a whole number of
@@ -175,7 +175,7 @@ build_ir_curve_refdata_context(ores::database::context ctx,
  * factored out rather than duplicated between them.
  */
 ORES_SYNTHETIC_API_EXPORT double
-price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
+price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_process& process,
                      const ir_curve_resolved_entry& entry);
 
 }

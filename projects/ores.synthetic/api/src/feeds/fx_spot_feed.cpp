@@ -151,7 +151,7 @@ fx_spot_feed::fx_spot_feed(
     std::string quote_uri,
     std::string source_name,
     std::string nats_subject,
-    std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
+    std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
     double ticks_per_hour,
     std::optional<adapter_target> adapter)
     : nats_(nats)

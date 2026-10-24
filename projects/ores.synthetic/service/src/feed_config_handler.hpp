@@ -296,7 +296,7 @@ private:
     // the dispatch needs no per-kind branching.
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
-                             std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
+                             std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         const auto source_name = feed->source_name();
         const auto series = feed->series_uris();
         const auto result = ctrl_->start(std::move(feed));

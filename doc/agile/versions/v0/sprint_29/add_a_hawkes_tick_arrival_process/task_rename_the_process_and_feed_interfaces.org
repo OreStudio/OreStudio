@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rename-the-process-and-feed-interfaces
+#+pr: 3723
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,23 +26,56 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Now          | Nothing. |
+| Waiting on   | The PR and its review.                 |
+| Next         | Nothing. |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- No class, file or document names IStochasticProcess, IYieldCurveProcess or IFeed.
-- The build and the tests pass with no behaviour change.
+- No class, file or document outside the agile record names IStochasticProcess,
+  IYieldCurveProcess or IFeed. The agile record keeps the old spelling, because
+  it says what was true when it was written. The rename script is a record too,
+  because it must name both spellings to rename them.
+- The build and the tests pass with no behaviour change. One suite case races a
+  live market data service and fails whenever the fleet is healthy; that case
+  predates this branch and is captured as its own item.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This task changes names only. It adds no behaviour and no build target, and it
+moves no file: the three headers are already =i_yield_curve_process.hpp=,
+=i_stochastic_process.hpp= and =i_feed.hpp=. The symbols inside them are not.
+
+1. Rename the three class names, and only the class names:
+
+   | Old                  | New                    |
+   |----------------------+------------------------|
+   | =IStochasticProcess= | =i_stochastic_process= |
+   | =IYieldCurveProcess= | =i_yield_curve_process= |
+   | =IFeed=              | =i_feed=               |
+
+2. Drive the rename with one scripted pass that a reviewer can rerun. The
+   script owns the file list and the substitutions, so the diff reads as one
+   shape and the old spelling cannot survive in a corner of the tree.
+3. Follow the dependency order inside the tree: =ores.analytics.quant= first,
+   then =ores.marketdata.api=, then the synthetic feeds, the service and the
+   clients that consume both.
+4. Leave the past agile records alone. A sprint org file from an earlier sprint
+   is a record of what was true then. It keeps the old spelling. This point
+   overrules point 2 for =doc/agile/=.
+5. Rewrite the eight current documents that name an interface. Regenerate the
+   codegen output of the three model files under
+   =projects/ores.synthetic/modeling/=. One exception: the four component class
+   diagrams under =projects/*/modeling/*.puml= are renamed in place, because a
+   full regeneration would add about 140 unrelated lines from the parser gap
+   recorded in
+   =doc/agile/product_backlog/inbox/diagram_parser_drops_wrapped_declarations.org=.
+6. Build and run the affected suites. The acceptance is no behaviour change, so
+   a green build and green tests are the proof. A =git diff --stat= that touches
+   no test expectation is the second proof.
 
 * Measurements
 
@@ -56,9 +89,118 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ files under =projects/= that name one of the three classes | 43 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed projects --include=*.hpp --include=*.cpp --include=*.h= (count the printed lines) | 9838f83ef5 |
+| Occurrences of the three names in those files | 104 | =grep -rho -e IStochasticProcess -e IYieldCurveProcess -e IFeed projects --include=*.hpp --include=*.cpp --include=*.h= (count the printed lines) | 9838f83ef5 |
+| Test files among those files | 4 | the same command with =--include=*_tests.cpp= | 9838f83ef5 |
+| Current documents that name one, outside =doc/agile/= | 8 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed doc projects --include=*.org --include=*.md --exclude-dir=agile --exclude-dir=.audit= | 9838f83ef5 |
+| Of those documents, codegen model sources | 3 | the same list, filtered to =projects/*/modeling/*.org= | 9838f83ef5 |
+| Of those documents, hand-written component overviews | 2 | the same list, filtered to =projects/*/modeling/component_overview.org= | 9838f83ef5 |
+| Past agile records that name one, left unchanged | 30 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed doc/agile= | 9838f83ef5 |
+| Header files already named in snake_case | 3 | =find projects -name "i_*.hpp"= | 9838f83ef5 |
+| Hand-written files the pass edited | 48 | =python3 scripts/rename_interfaces_to_snake_case.py=, report mode, on the tree before the rename | 5e4d42573d^ |
+| Occurrences renamed in them | 112 | the same | 5e4d42573d^ |
+| Files the pass edited that were generated output | 11 | the same report, the generated table | 5e4d42573d^ |
+| Files the pass edited that were hand-renamed diagrams | 4 | the same report, minus the component =.puml= | 5e4d42573d^ |
+
+The last two rows are the honest split of the 15 output files the pass reported.
+It classified the four component =.puml= as generated, and it was right to: they
+are drawn from the headers. They were then renamed in place rather than
+regenerated, so 52 files were edited by hand and 11 followed their models.
+
+These numbers describe the tree the pass ran on. Main retired the feed binding
+before this branch landed, so the count moved from 113 to 112 occurrences; the
+row cites the tree it was measured on, not a number that floats.
 
 * Notes
+
+** The pass
+
+=scripts/rename_interfaces_to_snake_case.py= carries the three substitutions.
+It edits hand-written text and leaves output to its generator.
+
+Its =--check= mode is the acceptance test. It exits non-zero when a hand-written
+file or a generated file still names an old interface, and non-zero when it
+cannot read a file. It names the files it allows and prints their counts, so the
+gate never hides a match. It refuses to run outside the repository root, because
+a run from elsewhere would find nothing and pass.
+
+** The generated addresses
+
+Three model files changed, so their output was regenerated rather than edited:
+
+| Model | Addresses regenerated |
+|-------+-----------------------|
+| =ores.synthetic.ir_curve_generation_config= | =ores.cpp.domain=, =ores.cpp.protocol=, =ores.ts.domain=, =ores.ts.protocol=, =ores.sql.schema= |
+| =ores.synthetic.yield_curve_process_type= | the same five |
+| =ores.synthetic.ir_curve_operations= | =ores.cpp.protocol=, =ores.ts.protocol= |
+
+The eye-check after each run: the diff held the rename and the line rewrap that
+follows from it, and nothing else.
+
+The ER diagrams came from =projects/ores.codegen/plantuml_er_generate.sh=: two
+=puml= files and the two SVGs drawn from them.
+
+The drift gate agrees: =check_component_drift.py --sweep= reports "Sweep clean:
+no file this branch touched would change". The plain =--all= mode is
+destructive, so only =--sweep= ran.
+
+** The component class diagrams are the exception
+
+The four component =.puml= files are generated by
+=build/scripts/generate_component_puml.py=. A full regeneration here would add
+about 140 unrelated lines, because the parser drops three declaration shapes
+(the capture is =doc/agile/product_backlog/inbox/diagram_parser_drops_wrapped_declarations.org=).
+So the class labels and the relations were renamed in place. The diagrams keep
+their shape, and a later full regeneration converges.
+
+** The SVG churn**
+
+The two SVGs were drawn with the installed PlantUML and Java build, which seeds
+different internal ids and prints a different Java version than the build that
+drew the committed files. Expect id churn beyond the rename in those two files.
+
+** The past records
+
+30 files under =doc/agile/= name an old interface. They are records of what was
+true then and keep the old spelling. The script itself names all three as well,
+because it must, so it is the 31st. =--check= prints each one, with its count, so
+the allowance is visible and nobody mistakes it for a clean tree.
+
+** Verification
+
+- =--check= reports no file names an old interface, and lists the 31 records it
+  allows, with 158 occurrences in them.
+- Every one of the 12 changed translation units passes =clang++ -fsyntax-only=
+  with its =compile_commands.json= command. The precompiled header is dropped
+  for that run, because the cache wrapper built it.
+- =clang-format --dry-run --Werror= passes on the changed C++ files, except the
+  one file that already failed before the change.
+- =check_component_drift.py --sweep= is clean.
+- The full build passes: 4,491 of 4,491 steps, no failure.
+- =compass test run= passes all four affected suites: 4 of 4.
+
+| Suite | Test cases | Assertions |
+|-------+------------+------------|
+| =ores.analytics.quant.tests= | 435 | 2,144,901 |
+| =ores.marketdata.api.tests= | 59 | 773 |
+| =ores.synthetic.api.tests= | 80 | 286 |
+| =ores.synthetic.service.tests= | 78 | 525 |
+
+** The rebase onto the feed-binding retirement
+
+Main retired the feed binding while this branch was under review (PR #3725).
+Four files overlapped: =feed_config_handler.hpp=, =feed_controller.hpp= and two
+test files. The conflict was resolved by taking main's version and re-applying
+the three substitutions, so the branch carries main's new code under the new
+names. The build and all four suites were rerun on the new base, and the
+pre-rename counts were measured again there: 48 files, 112 occurrences.
+
+** The database the tests needed
+
+The local database refused every test with "could not access file
+timescaledb-2.30.1": the package had moved to 2.30.2 and the database was
+stamped with the old library. =compass db recreate -y -k= fixed it, and the
+schema then matched this checkout. Nothing about the rename caused it.
 
 * Test Scenarios
 
@@ -75,12 +217,77 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3723][#3723]] | [analytics] Rename the quant and market data interfaces to snake_case |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =--check= swallows =OSError= and =UnicodeDecodeError=, so an unreadable file leaves the gate green | =scripts/rename_interfaces_to_snake_case.py= | Accepted | Unreadable files now fail =--check= and print on stderr |
+| 2 | The script does not check that it runs at the repository root, so a run elsewhere reports 0 matches and passes | the same | Accepted | It now refuses to run when a root is missing |
+| 3 | =--check= skipped every generated file, so a stale generated file passed | the same | Accepted | Generated files are now checked; a match fails the run |
+| 4 | Two of the three =GENERATED_PATHS= regexes were dead | the same | Accepted | The redundant regexes are gone |
+| 5 | =--check= cannot see =scripts/=, so it cannot check itself | the same | Accepted | =scripts= joined the roots |
+| 6 | The check hid the files it allowed instead of naming them | the same | Accepted | It now prints every record it allows, with its count |
+| 7 | Acceptance says "no document" but the agile record names the old spelling, including this page | =* Acceptance= | Accepted | The acceptance now exempts the agile record, and the Plan says why |
+| 8 | Plan point 5 says "regenerate, do not edit the output", which contradicts the four hand-edited diagrams | =* Plan= | Accepted | Point 5 now states the exception and points at the parser capture |
+| 9 | "63 files changed" understates the diff, which was 66 files then | =* Result= | Accepted | The Result now gives 68, 64, 52 and 11, each with its meaning |
+| 10 | "Generated files 16" is wrong: 15 tracked, plus one gitignored =dist= twin | =* Measurements= | Accepted | The row now says so |
+| 11 | "Generated modeling pages 5" mislabels three codegen model sources as output | =* Measurements= | Accepted | Split into model sources (3) and hand-written overviews (2) |
+| 12 | The owner's decisions behind the rename live only in task pages, not the story | =story.org= | Accepted | The two decisions are now in the story's =* Decisions= |
+| 13 | A =--check= pass proves less than the acceptance claims, because it cannot prove the build | the task | Declined | The build and the suites are the proof for that clause; the script is for the name clause only |
+| 14 | The drift sweep covers the synthetic component only, so two of the four diagrams are unchecked | the four =.puml= files | Accepted as risk | Recorded here; the diagrams are renamed in place and the drift gate cannot see them |
+| 15 | The local gate failed =backlog-indexes= because one backlog row was missing | =doc/agile/product_backlog/= | Accepted | The row was on main and the branch was behind; =compass pr sync= brought it |
+| 16 | The local gate failed =format= on =simulator_adapter_tests.cpp= | the test file | Accepted | The violation predated this branch, but the file is in the diff, so it is formatted here |
+| 17 | The local gate failed =db= because a service held a connection while the check recreated the database | the database | Accepted | The check was rerun with the fleet stopped |
+| 18 | =ores.synthetic.service.tests= fails its announce-retry case while the market data service runs | =simulator_adapter_tests.cpp:450= | Declined as out of scope | The live adapter supervisor answers the announce inside the test's 300 ms window. The suite passes with =ores.marketdata.service= stopped, and the test predates this branch. Captured in =doc/agile/product_backlog/inbox/adapter_announce_test_races_the_live_supervisor.org= |
+| 19 | Round 1 said =scripts/= joined the roots, but =.py= was not a suffix, so the check could not see the one file that names all three | =scripts/rename_interfaces_to_snake_case.py= | Accepted | =.py= is scanned, and the script is a named record because it must hold both spellings |
+| 20 | =--write= returned zero after skipping an unreadable file | the same | Accepted | It now returns non-zero, as =--check= already did |
+| 21 | The comment "they are never edited by hand" was false for the four diagrams this branch edits | the same | Accepted | The comment now says which diagrams were renamed in place, and why |
+| 22 | "Every changed file except the two SVGs carries the rename and nothing else" was false | =* Result= | Accepted | The Result now names five exceptions and gives each its reason |
+| 23 | The Result said 66 files and "the other two"; the branch is 68, and four are not renames | =* Result= | Accepted | Rewritten: 68 on the branch, 64 in the rename commit |
+| 24 | The measurement rows cited a commit where the script did not exist | =* Measurements= | Accepted | The two rows now cite =7df5db00ee^=, the tree they were measured on |
+| 25 | The report labels 15 files generated, but four were renamed by hand, so "48 hand-written, 15 generated" is not honest | =* Measurements=, =* Result= | Accepted | The split is now 52 hand-edited, 11 regenerated, with the reason stated |
+| 26 | Commit =646801ea67= lacks the =Environment:= and =Co-Authored-By:= trailers | the commit | Declined | =compass pr create= writes that commit; the tool does not offer the trailers, and this branch does not amend reviewed history |
+| 27 | The script carries more machinery than the job needs: a one-element tuple looped over, one prefix tuple, the same print format four times | =scripts/rename_interfaces_to_snake_case.py= | Partly accepted | One constant replaced the tuple, and one helper prints the report lines; the record/generated split stays |
+| 28 | Report mode prints "Rerun with --write to apply" when nothing would change | the same | Accepted | It prints only when there is work |
+| 29 | The story's Decisions did not follow the sibling style | =story.org= | Accepted | Rewritten as =- /Label:/= items |
+| 30 | The capture's remedy was wrong: no adapter id escapes the supervisor | the capture | Accepted | The capture now names the two remedies that work: an unknown provider code, or a quiet subject prefix |
+| 31 | The formatting of =simulator_adapter_tests.cpp= is scope creep | the test file | Recorded | The format gate fails on any changed file, so the choice is this change or a red gate. The Result states it |
 
 * Result
+
+The three interfaces are now =i_stochastic_process=, =i_yield_curve_process=
+and =i_feed=. No class, file or document outside the agile record names an old
+spelling.
+
+The rename is mechanical. The branch changes 68 files; the rename commit changes
+64 of them: 52 hand-edited files, 11 regenerated files, and the script. The
+remaining four are this page, its parent story, the backlog index and the new
+capture.
+
+Per file, the rename is all that changed except in five places, each with its own
+reason:
+
+| File or group | What else changed, and why |
+|---------------+----------------------------|
+| The two redrawn SVGs | PlantUML id and renderer-version churn from the machine that drew them |
+| =simulator_adapter_tests.cpp= | clang-format rewraps at two hunks; the file was unformatted before this branch and the format gate fails on any changed file |
+| Four component =.puml= | Renamed in place, because a full regeneration brings about 140 unrelated lines |
+| The backlog index and the capture | The capture records a race this branch found; the index gains its row |
+
+The evidence:
+
+- =scripts/rename_interfaces_to_snake_case.py --check= exits zero, and names
+  the 31 records it allows, the script included.
+- The 12 changed translation units pass =clang++ -fsyntax-only=.
+- =check_component_drift.py --sweep= is clean.
+- =clang-format --dry-run --Werror= is clean on the changed files, now including
+  =simulator_adapter_tests.cpp=, which was formatted for that reason.
+- The full build passes, and =compass test run= passes all four affected
+  suites.
+
+One caveat on that last line. =ores.synthetic.service.tests= passes only while
+=ores.marketdata.service= is not running: the live adapter supervisor answers
+the announce inside the 300 ms window that the test reserves for silence. The
+failure predates this branch and is captured as its own item.

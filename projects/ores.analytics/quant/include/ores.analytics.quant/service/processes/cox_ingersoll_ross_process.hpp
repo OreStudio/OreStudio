@@ -75,7 +75,7 @@ namespace ores::analytics::quant::service {
  * silently over-discounts by roughly 1/dt at fine tick granularities.
  */
 class ORES_ANALYTICS_QUANT_EXPORT cox_ingersoll_ross_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     cox_ingersoll_ross_process(double kappa,
                                double theta,

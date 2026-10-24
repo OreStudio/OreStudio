@@ -74,7 +74,7 @@ struct generator_counters {
     std::atomic<int> stopped{0};
 };
 
-class idle_generator final : public domain::IFeed {
+class idle_generator final : public domain::i_feed {
 public:
     explicit idle_generator(std::shared_ptr<generator_counters> counters)
         : counters_(std::move(counters)) {}
@@ -115,7 +115,7 @@ private:
 };
 
 // A generator whose tick loop fails at once, as a build that passed and a start that did not.
-class failing_generator final : public domain::IFeed {
+class failing_generator final : public domain::i_feed {
 public:
     const std::string& source_name() const override {
         return name_;
@@ -161,7 +161,7 @@ bool eventually(const std::function<bool()>& done) {
     return done();
 }
 
-class flat_process final : public ores::analytics::quant::domain::IStochasticProcess {
+class flat_process final : public ores::analytics::quant::domain::i_stochastic_process {
 public:
     double next() override {
         return 1.25;
@@ -296,7 +296,7 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{generator_offer{.id = bbg_id("EUR/USD"),
-                                           .make = []() -> std::shared_ptr<domain::IFeed> {
+                                           .make = []() -> std::shared_ptr<domain::i_feed> {
                                                throw std::runtime_error("no components");
                                            }},
                            idle_offer("GBP/USD", counters)};
@@ -312,9 +312,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
 
 TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -505,7 +504,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
     ores::synthetic::feed::feed_factory factory;
     factory.register_kind(
         std::string(ores::synthetic::feed::fx_spot_feed_kind),
-        [&built](const auto&, const auto& input) -> std::shared_ptr<domain::IFeed> {
+        [&built](const auto&, const auto& input) -> std::shared_ptr<domain::i_feed> {
             built.push_back(
                 *std::get<ores::synthetic::feed::fx_spot_feed_build_input>(input).adapter);
             return std::make_shared<idle_generator>(std::make_shared<generator_counters>());
@@ -541,10 +540,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);

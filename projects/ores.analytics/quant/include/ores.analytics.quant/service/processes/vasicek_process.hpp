@@ -40,7 +40,7 @@ namespace ores::analytics::quant::service {
  * the discount_factor() recursion this delegates to.
  */
 class ORES_ANALYTICS_QUANT_EXPORT vasicek_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     vasicek_process(double kappa,
                     double theta,

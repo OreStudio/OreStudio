@@ -304,9 +304,9 @@ namespace ores #F2F2F2 {
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class IFeed {
-                +IFeed()
-                +~IFeed()
+            class i_feed {
+                +i_feed()
+                +~i_feed()
                 +source_name() : const string&
                 +qualifier() : const string&
                 +role() : const string&

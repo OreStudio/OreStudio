@@ -224,7 +224,7 @@ build_ir_curve_refdata_context(ores::database::context ctx,
     return refctx;
 }
 
-double price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
+double price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_process& process,
                             const ir_curve_resolved_entry& e) {
     using ores::analytics::quant::service::curve_instrument_pricer;
 

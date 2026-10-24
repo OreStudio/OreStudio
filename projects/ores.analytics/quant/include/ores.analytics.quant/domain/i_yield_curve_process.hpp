@@ -30,7 +30,7 @@ namespace ores::analytics::quant::domain {
  * zero-coupon bond price -- the "latent curve" a single process state
  * implies at every maturity, not just the next scalar tick.
  *
- * IStochasticProcess::next()/current() still drive the short rate itself
+ * i_stochastic_process::next()/current() still drive the short rate itself
  * (r_t) tick by tick. discount_factor() answers, from the *current* state,
  * what P(t, t+ticks_ahead) the model implies -- so every instrument a
  * caller derives from one process (deposit, FRA, swap, at whatever tenor)
@@ -38,7 +38,7 @@ namespace ores::analytics::quant::domain {
  * whole set is a slice of one internally consistent curve rather than
  * independently-noised quotes.
  */
-class IYieldCurveProcess : public IStochasticProcess {
+class i_yield_curve_process : public i_stochastic_process {
 public:
     /**
      * @brief The model-implied zero-coupon bond price from the current

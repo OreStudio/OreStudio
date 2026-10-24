@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: D6E1F41B-1C92-4B1A-B75F-76F94FFBD390
+:END:
+#+title: The adapter announce test races a live market data service
+#+description: The synthetic service suite test 'the adapter announces again until the service answers' asserts that no reply arrives within 300 ms, but a running ores.marketdata.service adapter supervisor answers the announce subject in that window, so the suite fails whenever the fleet is healthy. Make the test answer-proof: announce with a provider code the catalogue does not hold, so a live supervisor replies rejected and the flag stays false.
+#+type: capture
+#+level: cross
+#+filetags: :test:flaky:marketdata:synthetic:adapter:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=synthetic/service/tests/simulator_adapter_tests.cpp= has a case, "the adapter
+announces again until the service answers". It starts an adapter, sleeps 300 ms,
+and requires that =announced()= is still false, because nothing should have
+answered yet. It then subscribes to the announce subject itself and waits for the
+flag to flip.
+
+A healthy fleet breaks the first requirement. =ores.marketdata.service= runs an
+adapter supervisor that subscribes to the same subject and replies to every
+announce. The reply arrives inside the 300 ms window, so the flag is already
+true and the case fails.
+
+* Why
+
+The check goes red only when the fleet is running, which is the normal state on
+a developer machine, so every branch fails a suite it did not touch. The
+reproduction is one command: stop =ores.marketdata.service= and the suite
+passes; start it and the suite fails.
+
+Two remedies, in order of preference:
+
+1. Announce with a provider code that the catalogue does not hold. The registry
+   then answers =rejected= with =success=false=, so =announced()= stays false
+   whatever a live supervisor does. The supervisor still answers, which is what
+   the test wants to prove is possible.
+2. Bind the test to its own announce subject prefix that the fleet does not
+   subscribe to.
+
+Do not try to pick an adapter id that no supervisor answers: =adapter_registry=
+accepts any non-empty id, and only =provider_known= gates the reply.
+
+* References
+
+- =projects/ores.synthetic/service/tests/simulator_adapter_tests.cpp= (the case)
+- =projects/ores.synthetic/service/src/simulator_adapter.cpp= (=announced_=)
+- =projects/ores.marketdata/service/src/app/adapter_supervisor.cpp= (=announce_message=)
+- =projects/ores.marketdata/service/src/app/adapter_registry.cpp= (=announce=)
+
+* See also
+
+-

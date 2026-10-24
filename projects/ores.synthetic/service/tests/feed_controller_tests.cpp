@@ -32,7 +32,7 @@ namespace {
 
 const std::string tags("[feed_controller]");
 
-using ores::marketdata::domain::IFeed;
+using ores::marketdata::domain::i_feed;
 using ores::synthetic::feed::producer_subject;
 using ores::synthetic::service::feed_controller;
 using ores::synthetic::service::feeds_conflict;
@@ -42,7 +42,7 @@ using ores::synthetic::service::feeds_conflict;
 // publishes nothing and its start() returns at once, so a controller can be
 // driven without a process, a NATS subject, or a tick thread that outlives
 // the test.
-class stub_feed final : public IFeed {
+class stub_feed final : public i_feed {
 public:
     stub_feed(std::string kind, std::string source, std::string oresmd_uri, std::string role)
         : kind_(std::move(kind))
@@ -91,7 +91,7 @@ struct controller_fixture {
         ctrl = std::make_shared<feed_controller>(nats);
     }
 
-    std::shared_ptr<IFeed> feed(const std::string& kind,
+    std::shared_ptr<i_feed> feed(const std::string& kind,
                                 const std::string& source,
                                 const std::string& oresmd_uri,
                                 const std::string& role = {}) {
@@ -145,7 +145,7 @@ TEST_CASE("starting a feed twice reports already_running, for FX and IR alike", 
     producer_kinds kinds;
     controller_fixture f;
 
-    const std::vector<std::shared_ptr<IFeed>> feeds{
+    const std::vector<std::shared_ptr<i_feed>> feeds{
         f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role),
         f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_oresmd_uri, kinds.ir_role)};
     for (const auto& feed : feeds) {

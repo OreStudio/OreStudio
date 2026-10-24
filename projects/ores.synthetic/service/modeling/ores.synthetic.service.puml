@@ -179,22 +179,22 @@ end note
 class ores::synthetic::service::feed_controller {
     +feed_controller(nats : nats::client&, auth_nats : nats_client&, bindings : shared_ptr<feed_binding_store>)
     +~feed_controller()
-    +start(feed : shared_ptr<IFeed>, binding_mode : binding_mode, caller_bearer_token : string) : start_result
-    +add(feed : shared_ptr<IFeed>, binding_mode : binding_mode, caller_bearer_token : string, out_conflicting_source_name : string*) : bool
+    +start(feed : shared_ptr<i_feed>, binding_mode : binding_mode, caller_bearer_token : string) : start_result
+    +add(feed : shared_ptr<i_feed>, binding_mode : binding_mode, caller_bearer_token : string, out_conflicting_source_name : string*) : bool
     +stop(key : string) : size_t
     +shutdown()
     +running_count() : size_t
     +list(kind : string) : vector<string>
     +running_source_name_for_conflict_key(conflict_key : string) : optional<string>
     -bind_feed(source_name : string, binding_mode : binding_mode, caller_bearer_token : string)
-    -find_conflict(feed : IFeed&, excluding_source_name : string) : optional<string>
-    -start_running(feed : shared_ptr<IFeed>, binding_mode : binding_mode)
+    -find_conflict(feed : i_feed&, excluding_source_name : string) : optional<string>
+    -start_running(feed : shared_ptr<i_feed>, binding_mode : binding_mode)
     -status_loop()
     -log_status()
 }
 note right of "ores::synthetic::service::feed_controller"
 One controller serves every asset class: feeds_ is keyed by
-source_name, and every feed enters through the IFeed
+source_name, and every feed enters through the i_feed
 interface, so the per-kind producers differ only in what
 they publish. At most one feed runs per (qualifier, role)
 pair -- feeds_conflict -- and a second one is refused by
@@ -202,7 +202,7 @@ name, never by stopping the first.
 end note
 note bottom of "ores::synthetic::service::feed_controller"
 Two ways in, one binding gate. add() is the config-driven
-path (boot auto-start, the folder cascade); start(IFeed) is
+path (boot auto-start, the folder cascade); start(i_feed) is
 the on-demand path and distinguishes already_running from
 qualifier_conflict. Both call bind_feed after releasing the
 mutex, so a bound feed creates or confirms its marketdata
@@ -231,7 +231,7 @@ class ores::synthetic::service::feed_config_handler {
     +start(msg : nats::message)
     +stop(msg : nats::message)
     +list(msg : nats::message)
-    -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<IFeed>, binding_mode : binding_mode, bearer : string)
+    -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<i_feed>, binding_mode : binding_mode, bearer : string)
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
 note right of "ores::synthetic::service::feed_config_handler"

@@ -591,7 +591,6 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'iam::*');
     -- Tenant provisioning reads the starting point's data from the components it seeds. Every read checks its code, so each is granted by name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'dq::datasets:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'marketdata::feed_bindings:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'refdata::parties:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'refdata::party_identifiers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'IamService', 'synthetic::folders:read');
@@ -722,7 +721,6 @@ BEGIN
     -- reads the series and observations of a vintage. Its ticks reach marketdata
     -- over NATS, not through a handler.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::run_grants:exchange');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::feed_bindings:write');
     -- The simulator serves a source of the catalogue, so it reads the sources through marketdata,
     -- which owns the table. A generator that starts from a vintage price reads the series and the
     -- observations as the service, since no run token stands in for a person any more.

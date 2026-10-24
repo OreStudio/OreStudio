@@ -57,7 +57,6 @@ EXCEPTIONS = {
     "workflow_plan_dependencies_tenant_isolation_policy": AUDIT,
     "workflow_instances_tenant_isolation_policy": AUDIT,
     "workflow_batch_links_tbl_tenant_isolation_policy": AUDIT,
-    "feed_bindings_tbl_tenant_isolation_policy": AUDIT,
     "subscription_intervals_tbl_tenant_isolation_policy": USAGE,
     "demand_intervals_tbl_tenant_isolation_policy": USAGE,
     "delivery_counts_tbl_tenant_isolation_policy": USAGE,

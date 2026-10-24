@@ -73,6 +73,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- =producer_kind= in refdata was the binding's producer classification. After
+  the deletion no code reads it, so the lookup itself is dead. It belongs to
+  refdata and goes in its own task, not this one.
+- The bindings screen story =AE947749= and the subscribe story =3BAE4AAA= still
+  name bindings. The follow-on task reconciles them.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

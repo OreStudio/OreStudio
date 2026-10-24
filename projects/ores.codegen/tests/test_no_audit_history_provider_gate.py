@@ -12,8 +12,7 @@ stamps) has no such member, so the generated registrar cannot compile
 for it. The gate in ``resolve_targets`` drops the registrar facet for
 such entities. The two live orgs below are the pair the gate must keep
 apart: the marketdata ``market_fixing`` entity declares
-``:no_audit_columns: true``, and its ``feed_binding`` entity declares
-none.
+``:no_audit_columns: true``, and its ``route`` entity declares none.
 """
 import sys
 from pathlib import Path
@@ -28,7 +27,7 @@ NO_AUDIT_ENTITY = (
     REPO_ROOT / "projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org"
 )
 AUDITED_ENTITY = (
-    REPO_ROOT / "projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org"
+    REPO_ROOT / "projects/ores.marketdata/modeling/ores.marketdata.route.org"
 )
 
 # The two templates the history-provider-registrar facet resolves for a

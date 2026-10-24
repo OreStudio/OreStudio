@@ -166,14 +166,6 @@ export const CARDS = {
         ],
         screenTitleKey: 'marketdata.synthetic.title',
     },
-    bindings: {
-        titleKey: 'marketdata.area.screens.bindings',
-        bodyKey: 'marketdata.area.screens.bindingsBody',
-        to: PATHS.bindings,
-        icon: 'chart',
-        permission: 'marketdata::feed_bindings:read',
-        screenTitleKey: 'marketdata.bindings.title',
-    },
     curveEvolution: {
         titleKey: 'market.evolution.title',
         bodyKey: 'marketdata.area.screens.evolutionBody',
@@ -338,7 +330,7 @@ export const AREA_CARDS = {
         'bookStructure',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
-    marketdata: ['synthetic', 'bindings', 'curveEvolution'],
+    marketdata: ['synthetic', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     reporting: ['reports', 'pricingEngines', 'engineSettings'],
     tenants: ['tenants'],

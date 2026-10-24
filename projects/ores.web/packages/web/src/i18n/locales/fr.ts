@@ -4194,39 +4194,6 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
-        bindings: {
-            title: 'Liaisons',
-            lead: "Les flux qui écrivent des données de marché pour cette partie : la source que chacun nomme, la série qu'il écrit et s'il tourne.",
-            allKinds: 'Tous les types',
-            series: 'Série',
-            status: 'Statut',
-            lastTick: 'Dernier tick',
-            feed: 'Flux',
-            folder: 'Dossier',
-            ticksPerHour: 'Ticks par heure',
-            seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
-            historyLead:
-                'Chaque version enregistrée de cette liaison et ce qui a changé, de la plus récente à la plus ancienne.',
-            historyGap:
-                "Une version dont la série est détenue par un flux en cours ne peut pas être rétablie ; elle n'offre donc pas de rétablissement.",
-            vendorNote:
-                'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
-            add: 'Ajouter une liaison',
-            addTitle: 'Ajouter une liaison',
-            sourceHelp: 'Le flux synthétique que cette partie consommera.',
-            enabledHelp:
-                "Tant qu'il est à Non, aucun tick n'est stocké pour cette partie. Le flux lui-même continue de tourner.",
-            held: "{source} écrit déjà cette série. Un seul flux en cours peut écrire une série, donc cette source ne peut pas être liée tant qu'il tourne.",
-            removeWarning:
-                "La liaison est supprimée et l'ingestion pour cette partie s'arrête. La série et ses observations restent, ainsi que l'historique de la liaison.",
-            statuses: {
-                running: 'En cours',
-                stopped: 'Arrêté',
-                disabled: 'Désactivé',
-                quiet: 'Silencieux',
-                unsupported: 'Non pris en charge',
-            },
-        },
         feeds: {
             targetUri:
                 'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
@@ -4238,9 +4205,6 @@ const fr: SourceCatalogue = {
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
-                bindings: 'Liaisons',
-                bindingsBody:
-                    'Les flux qui écrivent des données de marché pour cette partie : la série que chacun écrit et s’il tourne.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },

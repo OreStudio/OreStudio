@@ -621,9 +621,7 @@ struct burst_cleanup {
         std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
         if (PQstatus(conn.get()) != CONNECTION_OK)
             return;
-        for (const auto* table : {"ores_marketdata_ticks_tbl",
-                                  "ores_marketdata_tick_coords_tbl",
-                                  "ores_marketdata_feed_binding_activity_tbl"}) {
+        for (const auto* table : {"ores_marketdata_ticks_tbl", "ores_marketdata_tick_coords_tbl"}) {
             std::unique_ptr<PGresult, decltype(&PQclear)> r(
                 PQexec(conn.get(),
                        (std::string("delete from ") + table + " where tenant_id = '" + tenant + "'")

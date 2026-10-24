@@ -44,13 +44,10 @@
 \ir ./marketdata_market_data_sources_drop.sql
 \ir ./marketdata_providers_notify_trigger_drop.sql
 \ir ./marketdata_providers_drop.sql
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
 \ir ./marketdata_observation_lineages_notify_trigger_drop.sql
 \ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_feed_binding_activity_drop.sql
 \ir ./marketdata_tick_coords_drop.sql
 \ir ./marketdata_ticks_drop.sql
 \ir ./marketdata_market_observations_drop.sql

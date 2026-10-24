@@ -4168,39 +4168,6 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
-        bindings: {
-            title: 'Vínculos',
-            lead: 'Os feeds que escrevem dados de mercado para esta parte: a fonte que cada um nomeia, a série que escreve e se está em execução.',
-            allKinds: 'Todos os tipos',
-            series: 'Série',
-            status: 'Estado',
-            lastTick: 'Último tick',
-            feed: 'Feed',
-            folder: 'Pasta',
-            ticksPerHour: 'Ticks por hora',
-            seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
-            historyLead:
-                'Cada versão guardada deste vínculo e o que mudou em cada uma, da mais recente para a mais antiga.',
-            historyGap:
-                'Uma versão cuja série é detida por um feed em execução não pode ser reposta, por isso não oferece Reverter.',
-            vendorNote:
-                'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
-            add: 'Adicionar vínculo',
-            addTitle: 'Adicionar vínculo',
-            sourceHelp: 'O feed sintético que esta parte vai consumir.',
-            enabledHelp:
-                'Enquanto está em Não, nenhum tick é guardado para esta parte. O feed continua a correr.',
-            held: '{source} já escreve esta série. Só um feed em execução pode escrever uma série, por isso esta fonte não pode ser vinculada enquanto ele corre.',
-            removeWarning:
-                'O vínculo é eliminado e a ingestão para esta parte para. A série e as suas observações ficam, e o histórico do vínculo também.',
-            statuses: {
-                running: 'Em execução',
-                stopped: 'Parado',
-                disabled: 'Desativado',
-                quiet: 'Silencioso',
-                unsupported: 'Não suportado',
-            },
-        },
         feeds: {
             targetUri:
                 'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
@@ -4212,9 +4179,6 @@ const pt: SourceCatalogue = {
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
-                bindings: 'Vínculos',
-                bindingsBody:
-                    'Os feeds que escrevem dados de mercado para esta parte: a série que cada um escreve e se está em execução.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },

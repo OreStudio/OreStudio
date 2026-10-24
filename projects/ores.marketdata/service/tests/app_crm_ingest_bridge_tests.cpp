@@ -378,12 +378,12 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
 }
 
 TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine", tags) {
-    // A tick's feed_binding.party_id does not scope which party's CRM
+    // A tick's route party does not scope which party's CRM
     // engines get fed: update() takes only tenant_id_str. Two
     // parties in the same tenant, each with their own "majors" config and
     // an EUR/USD driver edge: a single update() call for that pair must
     // feed both, not just whichever party happened to own the originating
-    // feed_binding.
+    // the route.
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;

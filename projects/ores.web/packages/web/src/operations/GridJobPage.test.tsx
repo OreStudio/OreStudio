@@ -24,6 +24,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
+import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { GridJobPage, canonicalRun, findTarget, focusRun, secondsBetween } from './GridJobPage.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
@@ -308,7 +309,8 @@ describe('the layout and the finder of the job page', () => {
 });
 
 describe('where the find bar opens', () => {
-    const refuse = () => Promise.reject(new Error('not found'));
+    const refuse = () =>
+        Promise.reject(new ApiFailure(404, { code: 'not-found', message: 'no such record' }));
     const reads = (found: Partial<Record<'workunit' | 'result' | 'batch', string>>) => ({
         workunit: found.workunit ? () => Promise.resolve({ id: found.workunit as string }) : refuse,
         result: found.result
@@ -337,6 +339,21 @@ describe('where the find bar opens', () => {
 
     it('opens nothing for an id that is none of them', async () => {
         expect(await findTarget(ID, reads({}))).toBeNull();
+    });
+
+    it('moves on after a refusal and does not move on after a failure of the service', async () => {
+        const forbidden = () =>
+            Promise.reject(new ApiFailure(403, { code: 'forbidden', message: 'your role cannot' }));
+        const broken = () =>
+            Promise.reject(new ApiFailure(502, { code: 'upstream-unavailable', message: 'down' }));
+        const batch = () => Promise.resolve({ id: BATCH_ID });
+
+        expect(await findTarget(ID, { workunit: forbidden, result: refuse, batch })).toContain(
+            `open=${BATCH_ID}`,
+        );
+        await expect(findTarget(ID, { workunit: broken, result: refuse, batch })).rejects.toThrow(
+            'down',
+        );
     });
 
     it('lists the batches a part of a reference matches, without reading anything', async () => {

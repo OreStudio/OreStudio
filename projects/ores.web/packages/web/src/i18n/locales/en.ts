@@ -1775,6 +1775,7 @@ export const en: SourceCatalogue = {
                     placeholder: 'batch reference, job id or result id',
                     button: 'Find',
                     none: 'No job, result or batch matches this.',
+                    failed: 'The search could not be completed. Try again.',
                 },
                 batchRecordedAt: 'Batch Recorded At',
                 notYetKnown: 'not yet known',

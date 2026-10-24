@@ -1795,6 +1795,7 @@ const fr: SourceCatalogue = {
                     placeholder: 'référence de lot, id de travail ou de résultat',
                     button: 'Chercher',
                     none: 'Aucun travail, résultat ou lot ne correspond.',
+                    failed: 'La recherche n’a pas pu aboutir. Réessayez.',
                 },
                 batchRecordedAt: 'Lot enregistré le',
                 notYetKnown: 'pas encore connu',

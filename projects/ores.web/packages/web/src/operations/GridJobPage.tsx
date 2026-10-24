@@ -40,6 +40,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import {
@@ -631,8 +632,12 @@ export async function findTarget(wanted: string, reads: FinderReads): Promise<st
     for (const attempt of attempts) {
         try {
             return await attempt();
-        } catch {
-            // Not this kind of id, or not one the session may read: try the next.
+        } catch (error) {
+            // Not this kind of id, or not one the session may read: try the next. Any other
+            // failure is the search failing, and it is not read as an id that matches nothing.
+            if (!(error instanceof ApiFailure && (error.status === 404 || error.status === 403))) {
+                throw error;
+            }
         }
     }
     return null;
@@ -643,22 +648,27 @@ function JobFinder(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [text, setText] = useState('');
-    const [missing, setMissing] = useState(false);
+    const [outcome, setOutcome] = useState<'idle' | 'searching' | 'missing' | 'failed'>('idle');
     const find = async (): Promise<void> => {
         const wanted = text.trim();
-        setMissing(false);
-        if (wanted === '') {
+        if (wanted === '' || outcome === 'searching') {
             return;
         }
-        const target = await findTarget(wanted, {
-            workunit: (id) => api.gridJobWorkunit(id),
-            result: (id) => api.gridJobResult(id),
-            batch: (id) => api.gridJobBatch(id),
-        });
-        if (target === null) {
-            setMissing(true);
-        } else {
-            void navigate(target);
+        setOutcome('searching');
+        try {
+            const target = await findTarget(wanted, {
+                workunit: (id) => api.gridJobWorkunit(id),
+                result: (id) => api.gridJobResult(id),
+                batch: (id) => api.gridJobBatch(id),
+            });
+            if (target === null) {
+                setOutcome('missing');
+            } else {
+                setOutcome('idle');
+                void navigate(target);
+            }
+        } catch {
+            setOutcome('failed');
         }
     };
     return (
@@ -678,12 +688,13 @@ function JobFinder(): ReactNode {
                     onChange={(event) => setText(event.target.value)}
                 />
             </label>
-            <Button type="submit" variant="secondary">
+            <Button type="submit" variant="secondary" disabled={outcome === 'searching'}>
                 {t('operations.grid.job.find.button')}
             </Button>
-            {missing && (
-                <span className="text-sm text-warn">{t('operations.grid.job.find.none')}</span>
-            )}
+            <span role="status" className="text-sm text-warn">
+                {outcome === 'missing' && t('operations.grid.job.find.none')}
+                {outcome === 'failed' && t('operations.grid.job.find.failed')}
+            </span>
         </form>
     );
 }
@@ -711,6 +722,10 @@ export function GridJobPage(): ReactNode {
         meta: QUIET,
     });
     const trail = [{ label: t('operations.screens.grid'), to: '/operations/grid?tab=jobs' }];
+    const shown =
+        workunit.data === undefined || runs.data === undefined
+            ? undefined
+            : focusRun(workunit.data, runs.data.rows);
 
     return (
         <div className="space-y-6">
@@ -765,11 +780,7 @@ export function GridJobPage(): ReactNode {
                                 runs={runs.data.rows}
                             />
                             <RunsTable workunit={workunit.data} runs={runs.data.rows} />
-                            {focusRun(workunit.data, runs.data.rows) !== undefined && (
-                                <TimeBar
-                                    run={focusRun(workunit.data, runs.data.rows) as ResultView}
-                                />
-                            )}
+                            {shown !== undefined && <TimeBar run={shown} />}
                             <SiblingJobs workunit={workunit.data} />
                         </div>
                         <div className="min-w-0 space-y-6">

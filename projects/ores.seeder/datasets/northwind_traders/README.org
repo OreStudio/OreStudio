@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 8E2A4C61-7D93-4B60-A1F8-3C5B9E7D2A48
+:END:
+#+title: Northwind Traders dataset generator
+#+description: How the Northwind Traders demonstration tenant's populate SQL is generated, and where its source rows come from.
+
+Northwind Traders is ORE Studio's second demonstration tenant. This directory
+generates the SQL that registers and stages its data, under
+=projects/ores.sql/populate/northwind/=.
+
+* The source
+
+The company is the classic Northwind Traders sample: a fictional specialty-food
+importer and exporter. The rows that describe the company's people and its
+trading partners are vendored under =source/=, extracted from the sample's
+PostgreSQL dump. Six tables are kept:
+
+| File | Rows | What it provides |
+|------+------+------------------|
+| =employees.csv= | 9 | Names, titles, addresses, phones, cities and the reporting line |
+| =customers.csv= | 91 | The countries the company sells to |
+| =suppliers.csv= | 29 | The countries the company buys from |
+| =categories.csv= | 8 | Kept for reference; no dataset uses it |
+| =region.csv= | 4 | Kept for reference; no dataset uses it |
+| =territories.csv= | 53 | Kept for reference; no dataset uses it |
+
+The binary columns (=photo=, =picture=) and the =photo_path= column are dropped:
+ORE Studio carries staff photographs as its own image templates, and this
+dataset attaches none.
+
+* What the source decides, and what it does not
+
+The sample decides everything about the nine people: their names, job titles,
+addresses, phone numbers, cities and who reports to whom. The countries the
+company's customers and suppliers trade from become its =party_countries=.
+
+It decides nothing else. The sample is a food wholesaler, so its product
+categories do not describe an ORE book, and its customers are not the banks a
+treasury faces. The business units, portfolios, books and tradeable
+counterparties are therefore Northwind's own:
+
+- Six business units, from the sample's reporting line: executive, trading,
+  treasury, operations, and a London and a Seattle trading desk.
+- Six portfolios and seven books, named for what ORE's trade population writes
+  into them.
+- Twenty-four GLEIF counterparties, the same set every deployment publishes.
+
+The company's registered office is the London office its London staff work
+from, because the sample states no company address.
+
+* The legal entity
+
+The company's LEI is synthetic, on the =9695= test prefix ACME uses, with
+ISO 17442 mod-97 check digits computed by the generator. A fictional company
+has no entry in the public register, and the party has to come from somewhere.
+
+* The configuration documents and the reports
+
+The pricing-engine, curve, today's-market, risk-config, engine-settings and
+report-definition documents are the ones ACME Corporation already ships. A
+document names no legal entity except in its title and description, so the
+generator reads ACME's UK records, renames them and writes them under
+=northwind.*= dataset codes. One source for those documents means a correction
+to one of them reaches both tenants.
+
+* Regenerating
+
+#+begin_src sh
+cd projects/ores.seeder/datasets/northwind_traders
+python3 generate_sql.py
+#+end_src
+
+The generator rewrites every file in =projects/ores.sql/populate/northwind/=
+and nothing else. Do not edit that directory by hand.
+
+The seed profile that provisions the tenant — its steps, its arguments and the
+demonstration password — is hand-written, in
+=projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql=. The recipe that
+runs the tenant at a deployment is
+=doc/recipes/shell/provisioning/northwind_traders_provision.org=.

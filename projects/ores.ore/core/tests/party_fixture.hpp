@@ -24,6 +24,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <stdexcept>
@@ -67,6 +68,8 @@ inline two_parties make_two_parties(testing::scoped_database_helper& h) {
     };
     const auto a = make_party();
     const auto b = make_party();
+    // A run document names its parameters, and the system tenant describes them.
+    testing::seed_system_analytic_parameters(ctx, h.db_user(), gen_ctx);
     return {a, b, ctx.with_party(tid, a, {a}, ""), ctx.with_party(tid, b, {b}, "")};
 }
 

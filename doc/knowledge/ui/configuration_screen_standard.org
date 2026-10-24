@@ -327,11 +327,16 @@ The rule:
    with a change reason and a history entry.
 3. A configuration that no report binds is a *draft*, and every section changes
    in place. It becomes governed the moment a report binds it.
-4. An approved version never changes in place. *Edit* is *Propose a change*.
-5. The person who proposed a change cannot sign it off, even when they hold a
+4. A numbers-changing section never changes in place. On an approved
+   configuration, *Edit* is *Propose a change* for that section.
+5. A proposal names the version it was written on. The version in force keeps
+   its section versions until the sign-off completes.
+6. The person who proposed a change cannot sign it off, even when they hold a
    part.
-6. Making a proposal official changes the version in force in one step.
-7. A revert follows the same rule as the change it reverts.
+7. Making a proposal official changes the section versions in force in one step.
+8. An operational change moves the central version and leaves every section
+   version as it was.
+9. A revert follows the same rule as the change it reverts.
 
 A kind that has no lifecycle yet is a gap, not an exception: the screen still
 edits in place, and the history still records the change. The standard names the

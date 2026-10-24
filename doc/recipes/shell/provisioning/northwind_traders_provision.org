@@ -2,25 +2,26 @@
 :ID: 5C1D6A20-4B7E-4F31-9C2D-8A6E5B4F1D07
 :END:
 #+title: How do I provision a second tenant with Northwind Traders?
-#+description: Provision the Northwind Traders demonstration tenant after ACME, from the shell, with its own party, organisation, staff and reports.
+#+description: Provision the Northwind Traders demonstration tenant after ACME, from the shell.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:provisioning:northwind:
 #+created: 2026-10-24
 #+updated: 2026-10-24
 
-Northwind Traders is the second demonstration tenant: a fictional UK trading
-company built from the classic Northwind Traders sample. It exists so the
-system can be exercised with more than one tenant — the grid's per-tenant
-attribution, the scheduler's per-tenant work, and any screen whose answer must
-not leak across tenants — without a second ACME-sized dataset.
+Northwind Traders is the second demonstration tenant. It is a fictional UK
+trading company built from the classic Northwind Traders sample. The system
+needs more than one tenant for the grid's per-tenant attribution, for the
+scheduler's per-tenant work, and for any screen that must not leak across
+tenants. Northwind serves that purpose without a second ACME-sized dataset.
 
-It is deliberately lighter than
-[[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][Acme Corporation]]: one legal
-entity, one party, nine staff, six portfolios and seven books. Unlike ACME it
-carries its own report configuration documents, so its reports are configured
-with the documents they read and not only defined. The =ores-shell= block below is tangled into the runnable
-script library as =northwind_traders_provision.ores=.
+Northwind is lighter than
+[[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][Acme Corporation]]. It has one
+legal entity, one party, nine staff, six portfolios and seven books. It also
+carries its own report configuration documents. Its reports are therefore
+configured with the documents they read, and not only defined. The
+=ores-shell= block below is tangled into the runnable script library as
+=northwind_traders_provision.ores=.
 
 * Question
 
@@ -28,47 +29,67 @@ How do I add a second, ready-to-run tenant to a system that already holds ACME?
 
 * Answer
 
-Log in as =super_admin=, provision =northwind= from the =northwind= starting
-point, then log in as its administrator and set the party the account works in.
-The starting point's own steps do the rest server-side: they publish the firm's
-counterparties and reference data, import its synthetic legal entity, provision
-the party, load the nine staff, set their password, and generate two bond
-populations. =load='s stop-on-error semantics guarantee an error-free run ends
-fully provisioned.
+Log in as =super_admin=. Provision =northwind= from the =northwind= starting
+point. Then log in as its administrator and set the party the account works in.
 
-Expectations: the services are up (=compass services start=), the database is
-fresh (=compass db recreate -y -k=), and ACME is already provisioned — this
-script runs the tenant stage only, so it needs the system's first administrator
-and the system tenant's data.
+The starting point runs eight steps on the server:
 
-The tenant details are passed explicitly rather than read from the profile,
-because the shell sends what it is given: the browser's form is prefilled from
-the profile, the shell is not. The values match the profile's own prefill.
+1. =system_provision= publishes the installation's own data.
+2. =publish_bundle= publishes the base reference data and the GLEIF
+   counterparties.
+3. =import_lei_hierarchy= creates the tenant's party from its synthetic LEI.
+4. =provision_party= publishes the party's conventions and CRM topology.
+5. =load_staff= publishes the organisation, staff and report data.
+6. =set_staff_passwords= gives every staff account its password.
+7. =attach_photos= attaches each account's picture.
+8. =generate_trades= writes two bond populations.
 
-=connect= takes the endpoint from =$ORES_NATS_URL= and inherits the subject
-prefix and TLS context the shell was started with.
+=load='s stop-on-error semantics guarantee that an error-free run ends fully
+provisioned.
+
+Expectations:
+
+- The services are up (=compass services start=).
+- The database is fresh. Run =compass services stop=, then =compass db recreate
+  -y -k=, then start the services again. The stop is required. A service that
+  survives a recreate keeps a session that the recreate invalidates.
+- ACME is already provisioned. This script runs the tenant stage only, so the
+  system's first administrator and the system tenant's data must exist.
+
+The tenant details are passed explicitly. The shell sends what it is given. The
+browser's form is prefilled from the profile, and the shell is not. The values
+below match the profile's own prefill.
+
+=connect= takes the endpoint from =$ORES_NATS_URL=. It inherits the subject
+prefix and the TLS context that the shell was started with.
 
 ** Which company the data is
 
 The nine staff accounts, their addresses, phone numbers, cities and reporting
-line come from the sample's =Employees= table, vendored under
+line come from the sample's =Employees= table. It is vendored under
 =projects/ores.seeder/datasets/northwind_traders/source/=. The party countries
-come from the countries the sample's customers and suppliers trade from.
+come from the countries that the sample's customers and suppliers trade from.
 
-The company's own details are Northwind's. The sample has no registered office,
-so the London office its London staff work from is the company's own address.
-Its LEI is synthetic: =9695NORTHWIND0000065=, checksum-valid on the test prefix
-ACME uses, because a fictional company has no entry in the public register.
+The company's own details are Northwind's. The sample states no registered
+office, so the London office its London staff work from is the company's
+address. Its LEI is synthetic: =9695NORTHWIND0000065=. The LEI is checksum
+valid on the test prefix that ACME uses, because a fictional company has no
+entry in the public register.
 
-The business units, portfolios and books are Northwind's own, because the
-sample's food categories do not describe an ORE book. The books are named for
-what ORE's trade population writes into them.
+The business units, portfolios and books are Northwind's own. The sample's food
+categories do not describe an ORE book. The books are named for what ORE's
+trade population writes into them.
+
+The staff photographs are Northwind's own image templates. Each template is a
+facestudio face under the code =northwind_staff_photo:*=. The =attach_photos=
+step copies a template into the tenant and attaches it to the account.
 
 ** Running it again
 
-The tenant stage refuses a tenant code it already holds, so a second run
-against the same database fails before it creates anything. Reset the database
-(=compass db recreate -y -k=), provision ACME, then run this script again.
+The tenant stage refuses a tenant code that it already holds. A second run
+against the same database therefore fails before it creates anything. Reset the
+database with the stop, recreate and start sequence above. Then provision ACME,
+and run this script again.
 
 #+name: northwind-traders-provision
 #+begin_src ores-shell :exports none
@@ -96,30 +117,36 @@ EOF
 * Script
 
 =projects/ores.shell/scripts/library/provisioning/northwind_traders_provision.ores=
-— generated from this recipe's =ores-shell= block by =compass build --direct
-tangle_shell_scripts= (do not edit the =.ores= by hand).
+is generated from this recipe's =ores-shell= block by =compass build --direct
+tangle_shell_scripts=. Do not edit the =.ores= by hand.
 
 * Tested by
 
 Manual: =compass shell -f northwind_traders_provision.ores= against a freshly
-recreated database with ACME present. Proven on 2026-10-24 against
-=brave_hopper=: the tenant run completed all seven steps, =Northwind Traders
-Ltd= came out active under the synthetic LEI =9695NORTHWIND0000065=, and the
-party carried 6 business units, 6 portfolios, 7 books, 9 staff with their
-manager chain from the sample, 24 report definitions each bound to all six
-configuration documents, and 16 generated bonds.
+recreated database with ACME present.
 
-The tenant's own run is the child run the parent hands its work to, so a caller
-that cannot read the parent's progress read sees the command report a timeout
-and abort the script while the tenant's setup carries on. Reconnect and follow
-the child instance the parent's step result names; it is the run that ends with
-the tenant =active=.
+Proven on 2026-10-24 against =brave_hopper=. The tenant run completed all eight
+steps. =Northwind Traders Ltd= came out active under the synthetic LEI
+=9695NORTHWIND0000065=. The party carried:
+
+- 6 business units and 6 portfolios.
+- 7 books.
+- 9 staff accounts with their manager chain from the sample, each with a
+  picture.
+- 24 report definitions. Each one binds its conventions and the five
+  configuration documents.
+- 16 generated bonds.
+
+The tenant's own run is the child run that the parent hands its work to. A
+caller that cannot read the parent's progress read sees a timeout, and the
+script stops while the tenant's setup continues. Reconnect and follow the child
+instance that the parent's step result names.
 
 * See also
 
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system
-  with Acme Corporation (holding group)?]] — the first tenant.
+  with Acme Corporation (holding group)?]] is the first tenant.
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system
-  with Barclays (GLEIF)?]] — the GLEIF variant.
-- =projects/ores.seeder/datasets/northwind_traders/= — the generator that
+  with Barclays (GLEIF)?]] is the GLEIF variant.
+- =projects/ores.seeder/datasets/northwind_traders/= is the generator that
   writes the company's populate SQL.

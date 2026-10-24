@@ -1,5 +1,5 @@
 # How do I provision a second tenant with Northwind Traders?
-# Provision the Northwind Traders demonstration tenant after ACME, from the shell, with its own party, organisation, staff and reports.
+# Provision the Northwind Traders demonstration tenant after ACME, from the shell.
 #
 # GENERATED from doc/recipes/shell/provisioning/northwind_traders_provision.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts

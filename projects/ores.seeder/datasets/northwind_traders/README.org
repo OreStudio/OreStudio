@@ -24,9 +24,10 @@ PostgreSQL dump. Six tables are kept:
 | =region.csv= | 4 | Kept for reference; no dataset uses it |
 | =territories.csv= | 53 | Kept for reference; no dataset uses it |
 
-The binary columns (=photo=, =picture=) and the =photo_path= column are dropped:
-ORE Studio carries staff photographs as its own image templates, and this
-dataset attaches none.
+The binary columns (=photo=, =picture=) and the =photo_path= column are dropped
+from the vendored tables. The photographs themselves are Northwind's own
+templates, generated under =northwind_staff_photo:*= from the facestudio faces
+the generator selects.
 
 * What the source decides, and what it does not
 

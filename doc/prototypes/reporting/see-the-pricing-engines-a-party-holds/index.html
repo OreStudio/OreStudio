@@ -562,10 +562,10 @@ function productsTab(c) {
   const want = new URLSearchParams(location.search).get('doc');
   const rows = c.products.map(p => {
     const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, note = WHAT[p.type] || (t ? t.desc : '');
-    const settings = p.params.map(x => { const k = noteOf(x.name); return `<div class="help"><span class="mono">${esc(x.name)}</span> — ${esc(k ? k.note : 'The documentation of this setting is not held.')}</div>`; }).join('');
+    const settings = p.params.map(x => { const k = noteOf(x.name); return `<div class="help"><span class="mono">${esc(x.name)}</span> — ${esc(k ? k.note : 'The documentation of this parameter is not held.')}</div>`; }).join('');
     return `<div class="setting"><div class="shead">
       <div><b>${esc(p.type)}</b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
-      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}</div></div>
+      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'parameter' : 'parameters'}</div></div>
     </div>
     <details class="doc" ${want === p.type ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>
       ${t ? `<p class="help"><b>${esc(t.instrument)}</b> — ${esc(INSTRUMENTS[t.instrument] || '')}</p>` : ''}
@@ -617,7 +617,7 @@ function productCard(c, p) {
     <h3>What it is</h3><p>${esc(WHAT[p.type] || (t ? t.desc : 'No description is held.'))}</p>
     ${t ? `<h3>Instrument: ${esc(t.instrument)}</h3><p>${esc(inst || 'No description is held.')}</p>` : ''}
     ${cls ? `<h3>Asset class: ${esc(cls.name)}</h3><p>${esc(cls.what)}</p><p><button class="btn small" id="pc-class">Read about the ${esc(cls.name)} asset class</button></p>` : '<h3>Asset class</h3><p class="muted">This product type maps to no instrument, so it has no asset class. Leg and coupon pricers are the usual case.</p>'}
-    <h3>In this configuration</h3><p><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span>, with ${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}.</p>
+    <h3>In this configuration</h3><p><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span>, with ${p.params.length} ${p.params.length === 1 ? 'parameter' : 'parameters'}.</p>
     <h3>Settings of this product</h3><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>${params}
     <h3>Known model and engine pairs</h3>${pairList}`;
   dialog(`${p.type} — how this product is priced`, body, `<button class="btn" id="d-cancel">Close</button>${may('edit') ? `<a class="btn primary" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}`);
@@ -702,8 +702,8 @@ function productScreen(c, want) {
       <div><div class="faint">Model</div><select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px">${MODELS.map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select><p class="help" style="margin-top:6px">The model ORE uses to price this product type.</p></div>
       <div><div class="faint">Engine</div><select data-pengine style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px">${enginesFor(p.model).map(e => `<option ${e === p.engine ? 'selected' : ''}>${esc(e)}</option>`).join('')}</select><p class="help" style="margin-top:6px">The engine that implements the model. ${knownPair(p.model, p.engine) ? 'This pair is known to work.' : 'This pair is not known to work for this product.'}</p></div>
     </div></div>
-    <div class="card"><div class="gh"><div><h3>Model settings</h3><div class="faint">Every setting the model of this product takes.</div></div></div>${group('model')}</div>
-    <div class="card"><div class="gh"><div><h3>Engine settings</h3><div class="faint">Every setting the engine of this product takes.</div></div></div>${group('engine')}</div>
+    <div class="card"><div class="gh"><div><h3>Model parameters</h3><div class="faint">Every parameter the model of this product takes.</div></div></div>${group('model')}</div>
+    <div class="card"><div class="gh"><div><h3>Engine parameters</h3><div class="faint">Every parameter the engine of this product takes.</div></div></div>${group('engine')}</div>
     <div class="card"><div class="gh"><div><h3>Change</h3><div class="faint">A change to an approved configuration is proposed for sign-off.</div></div></div><div class="body" style="grid-template-columns:1fr 2fr">
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>

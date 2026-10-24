@@ -183,6 +183,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:4180C0D7-969A-4E78-94A0-C95BDEF2C0C0][Hotfix: fix the Linux sccache save]] | DONE | | 2026-10-21 | The debug saves fail on a tar race and the old cache is deleted before the save, so the next build starts cold. |
 | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] | DONE | 2026-10-22 | 2026-10-24 | The grid screen counts batches, workunits and results and shows no row of any of them. The journeys Browse the grid's jobs and Follow a job are written and prototyped. This story builds the screens: the paged tree of batches, workunits and results, the details of each, the job page, and the file download, for the operator, the tenant administrator and the party member. |
 | [[id:E8F993A5-AD96-4546-B970-753063F0F3D2][Build the conventions list screens]] | DONE | 2026-10-21 | 2026-10-24 | A person who reads conventions gets the plain entity screens the prototype draws: a list of kinds, grouped by asset class with the shared kinds in their own tab, and a list of one kind's documents. The guided run that authors a convention moves into the Workflows menu. |
+| [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] | STARTED | 2026-10-24 | | A synthetic feed can draw the times of its ticks from a self-exciting Hawkes point process, ported from the tick library (BSD 3-clause, the tick developers, CMAP), so bursts of ticks follow bursts of ticks as they do in a live market. |
 
 * Achievements
 

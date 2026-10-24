@@ -259,6 +259,13 @@ export interface SubmitResultRequest {
      * @brief Human-readable failure reason; empty on success.
      */
     error_message: string;
+    /**
+     * @brief How long the engine ran, in milliseconds, by the node's monotonic clock.
+     *
+     * -1 when the node did not run the engine, as when the input could not be fetched, or did
+     * not measure the time. The service stores nothing for -1, and a screen reads it as unknown.
+     */
+    duration_ms: number;
 }
 
 /**

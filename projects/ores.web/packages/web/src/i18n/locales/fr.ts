@@ -1820,6 +1820,14 @@ const fr: SourceCatalogue = {
                     received: 'Reçu {time} ({seconds} s)',
                     running: 'encore en cours',
                     hint: 'Le service enregistre quand l’exécution a été écrite et quand sa sortie est arrivée. Il n’enregistre rien entre les deux, donc la barre n’est pas découpée en phases.',
+                    phasesNote: 'de la prise en charge à l’arrivée',
+                    claimed: 'Pris en charge {time}',
+                    receivedAfter: 'Reçu {time} ({duration})',
+                    ran: 'Moteur exécuté {duration}',
+                    other: 'Transferts et surcoût {duration}',
+                    unreported: 'Le nœud n’a pas indiqué la durée d’exécution du moteur.',
+                    phasesHint:
+                        'Le serveur date la prise en charge et l’arrivée de la sortie. Le nœud chronomètre le moteur. Le reste est le téléchargement de l’entrée, l’envoi de la sortie et le retour.',
                 },
                 unreadable:
                     'La référence externe ne nomme aucune exécution de rapport que cette session peut lire.',

@@ -445,6 +445,12 @@ reproducing the intraday burst patterns seen in live FX markets.  For
 scenarios not requiring intraday resolution, Fixed (daily) is sufficient and
 computationally cheapest.
 
+The mathematics of the Poisson and Hawkes modes is in
+[[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] and
+[[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]. How a mode
+reaches the code, and the parameters it takes, is in
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]].
+
 *Derived-quantity update rule.* When a source asset class ticks, all derived
 quantities that depend on it must be updated immediately:
 

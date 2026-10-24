@@ -142,7 +142,7 @@ void result_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message> "
-        "<received_at> <reason> <commentary>");
+        "<received_at> <duration_ms> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void result_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message> "
-        "<received_at> <reason> <commentary> [--version <n>]");
+        "<received_at> <duration_ms> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void result_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> "
-        "<error_message> <received_at> <reason> <commentary>");
+        "<error_message> <received_at> <duration_ms> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -360,8 +360,8 @@ void result_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -373,6 +373,7 @@ void result_commands::process_add(std::ostream& out,
         read_token(req.change.write.output_uri, parsed->positionals[next++], "output_uri");
         read_token(req.change.write.error_message, parsed->positionals[next++], "error_message");
         read_token(req.change.write.received_at, parsed->positionals[next++], "received_at");
+        read_token(req.change.write.duration_ms, parsed->positionals[next++], "duration_ms");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -415,8 +416,8 @@ void result_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -428,6 +429,7 @@ void result_commands::process_set(std::ostream& out,
         read_token(req.change.write.output_uri, parsed->positionals[next++], "output_uri");
         read_token(req.change.write.error_message, parsed->positionals[next++], "error_message");
         read_token(req.change.write.received_at, parsed->positionals[next++], "received_at");
+        read_token(req.change.write.duration_ms, parsed->positionals[next++], "duration_ms");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,8 +484,8 @@ void result_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -497,6 +499,7 @@ void result_commands::process_put_many(std::ostream& out,
             read_token(change.write.output_uri, parsed->positionals[next++], "output_uri");
             read_token(change.write.error_message, parsed->positionals[next++], "error_message");
             read_token(change.write.received_at, parsed->positionals[next++], "received_at");
+            read_token(change.write.duration_ms, parsed->positionals[next++], "duration_ms");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -61,7 +61,7 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 10 done tasks. The 20 open tasks and the original acceptance moved to [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 10 done tasks. The 21 open tasks and the original acceptance moved to [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] in the product backlog inbox.
 - A quote is perishable. A stale tick is worse than a lost tick, so the pipeline keeps the
   newest tick, drops what has aged out, and never lets a consumer wait for the store.
 - Quotes travel on core NATS. The two JetStream tick streams stored every tick for seven days

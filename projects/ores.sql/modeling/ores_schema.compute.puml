@@ -330,6 +330,8 @@ package "compute" #EDE7F6 {
           output_uri : text
           error_message : text
           received_at : timestamptz
+          started_at : timestamptz
+          duration_ms : bigint
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

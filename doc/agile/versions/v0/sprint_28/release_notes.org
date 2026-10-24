@@ -61,7 +61,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Feeds start and restart the same way every time*: The stop and start faults of every feed group are closed, so each group shows the documented behaviour.
 - *Tenant auto-start feeds are not restored after a services restart*: After a services restart every tenant's auto-start feeds run again, so ingest stores ticks and the plots fill.
 - *Cut the feed ingest round trips*: The database round trips that the feed ingest pays per stored tick are fewer, and a measurement proves it.
-- *Find why market data ticks lag the wall clock* (Partly delivered, 10 of 31 tasks): The investigation found where the backlog of ticks builds up. The per-row costs of the ingest are removed, and a quiet loop runs in one thread. The remaining 20 tasks, among them the tick tables, the lanes and the history call, are not closed.
+- *Find why market data ticks lag the wall clock* (Partly delivered, 10 of 32 tasks): The investigation found where the backlog of ticks builds up. The per-row costs of the ingest are removed, and a quiet loop runs in one thread. The remaining 21 tasks, among them the tick tables, the lanes and the history call, are not closed.
 
 ** Security & Tenancy
 
@@ -84,7 +84,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Close the tenor journey and the remaining refdata gaps* (Partly delivered, 3 of 10 tasks): The tenor resolution engine, the resolve operation and its screen are built. The party membership versions, the convention family mapping and term rules, and the party reads are not.
 - *See and change everything a report runs* (Partly delivered, 18 of 19 tasks): A person sees and changes the engine settings of a report in the party that owns them. 610 ORE parameters are documented and published through the data quality pipeline. The report page with its six tabs is not built.
 - *Manage reports from the list a party runs* (Partly delivered, 4 of 6 tasks): The list of reports a party runs, its detail and its edit form are built, with the grants, the filter, the latest run and the next fire time. Amending a definition of another party is not done.
-- *Browse and follow the grid's jobs* (Partly delivered, 19 of 24 tasks): A person sees the batches, workunits and results the session may see, as a tree with the details of each record.
+- *Browse and follow the grid's jobs* (Partly delivered, 20 of 24 tasks): A person sees the batches, workunits and results the session may see, as a tree with the details of each record.
 - *Keep the record screens up to date* (Partly delivered, 5 of 16 tasks): The browser holds one change stream for the signed-in session, and the record screens watch it. Naming the changed record in each event is not done.
 - *Build the retire or reset tenant journey* (3 of 4 tasks): The three finished tasks concern the ACME risk report configurations: the generated output is committed, every seeded report is configured, and an invalid scaffold is removed. The retire and reset operations, which give the story its name, are not landed.
 - *Draw every coded value as its badge* (Partly delivered, 1 of 7 tasks): The coded-value badges and the shared control are built. The census of screens, the missing badges, the mapping fixes and the gate that holds the rule are not.
@@ -150,7 +150,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 21 stories closed with their finished tasks. Each has a story in the product backlog named "<title> — the remaining work". The largest remainders are:
 
-- *Find why market data ticks lag the wall clock*: 20 tasks remain.
+- *Find why market data ticks lag the wall clock*: 21 tasks remain.
 - *Rework the market data feeds into a market data service with adapters*: 16 tasks remain, among them the adapters for public sources.
 - *Keep the record screens up to date*: 11 tasks remain.
 - *Add entity groups and finish the remaining codegen work*: 11 tasks remain.
@@ -158,7 +158,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Trade Blotter*: 7 tasks remain, among them the blotter screen.
 - *Gather each trade set and its market data*: 7 tasks remain.
 - *Populate the ACME books with a realistic trade population*: 6 tasks remain.
-- *Browse and follow the grid's jobs*: 5 tasks remain.
+- *Browse and follow the grid's jobs*: 4 tasks remain.
 
 The other 12 split stories each have one to six tasks remaining. The report page with its six tabs, the composite family get and put for conventions, and the audit of the NATS call sites are among them.
 
@@ -175,6 +175,7 @@ The other 12 split stories each have one to six tasks remaining. The report page
 
 ** Known problems
 
+- One story is still STARTED in the sprint: *Add a Hawkes tick arrival process to analytics.quant*. It opened during the close, in another environment, so it is outside the close.
 - Two scenarios for shipped screens were never run: "Verify the coded value badges" and "Verify the tenor resolution screen". Both are PENDING.
 - 51 finished tasks carry no pull request in their record. Most are scaffold tasks.
 - The sprint overran its size by a wide margin. See the sprint health review, which rates it RED.

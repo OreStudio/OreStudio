@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 46CC91F8-3591-44EE-B19F-31CBC6D7AFA6
+:END:
+#+title: Point Process and Conditional Intensity
+#+description: A point process is a random set of event times, described by the rate at which an event is expected next given everything that has happened so far.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:ore:
+#+created: 2026-10-23
+#+updated: 2026-10-23
+
+* Summary
+
+A *point process* is a random set of times at which events happen. The
+processes in [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]
+that came before this one all answer the question "what is the level now?".
+A point process answers a different question: "when does the next event
+happen?". For a market data feed the event is a tick, and the question is when
+the next tick arrives.
+
+One quantity describes every point process in this cluster: the *conditional
+intensity* $\lambda(t)$, the rate at which an event is expected at time $t$,
+given every event before $t$. The [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson process]]
+is the case where $\lambda$ never changes. The
+[[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes process]] is the case where
+each event raises $\lambda$ for a while.
+
+* Layperson's mental model
+
+Picture a gauge that shows how likely a tick is in the next instant. When the
+gauge is high, ticks come close together. When it is low, they come far apart.
+A point process is a rule for how the gauge moves. In a Poisson process the
+gauge stays where it is. In a Hawkes process every tick pushes the gauge up,
+and the gauge then sinks back by itself.
+
+* Detail
+
+** The counting process and the intensity
+
+The *counting process* $N(t)$ is the number of events in $(0, t]$. It starts at
+zero and goes up by one at each event. The *history* $\mathcal{H}_t$ is the list
+of event times up to $t$. The conditional intensity is
+
+\begin{equation}
+\lambda(t) = \lim_{h \to 0} \frac{1}{h}\,
+  P\big(N(t+h) - N(t) = 1 \mid \mathcal{H}_t\big)
+\end{equation}
+
+A small $h$ gives $P \approx \lambda(t)\,h$. So $\lambda$ has the unit of events
+for each unit of time. It is a rate, not a probability, and it can be larger
+than one.
+
+** The compensator and the test of a fit
+
+The *compensator* $\Lambda(t) = \int_0^t \lambda(s)\,ds$ is the number of events
+the model expects up to $t$. The *time-rescaling theorem* says that if the
+model is right, the gaps $\Lambda(t_k) - \Lambda(t_{k-1})$ between rescaled
+event times are independent and follow the unit exponential law. That gives a
+test that works for every point process in this cluster. Compute the rescaled
+gaps and check that they look like a sample from $\text{Exp}(1)$. Brown and
+others (2002) describe the test for spike trains. The same test checks a
+simulated tick stream against its own parameters.
+
+** Two ways to simulate
+
+- *Inversion.* Draw $E \sim \text{Exp}(1)$ and solve $\Lambda(t_k) -
+  \Lambda(t_{k-1}) = E$ for the next time. This works when $\Lambda$ has an
+  inverse in closed form, as it does for a constant rate.
+- *Thinning.* Find a bound $\bar\lambda \ge \lambda(s)$ for the next stretch of
+  time. Draw candidate times at rate $\bar\lambda$, and keep each candidate with
+  probability $\lambda(s)/\bar\lambda$. Lewis and Shedler (1979) introduced
+  this for a rate that changes with time. Ogata (1981) extended it to a rate
+  that depends on the history, which is the case here.
+
+** Why ticks are a point process
+
+Each tick is an event with a time stamp. A fixed timer, in which a tick comes
+every $T$ seconds, is the degenerate case: the gaps do not vary. Real tick
+streams show bursts and quiet spells, so the gaps vary and they are not
+independent of each other. The notes linked below give the two simplest
+models of that variation. How the system uses them is in
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][the tick arrival note]].
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub; this note is the foundation of its point-process family.
+- [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] — the intensity that never changes.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the intensity that each event raises.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — a point process with a constant intensity has no memory; an intensity that depends on the history does.
+
+** Further reading
+
+- Daley, D. J., & Vere-Jones, D. (2003). /An Introduction to the Theory of
+  Point Processes/, vol. 1, 2nd ed. Springer. The standard text; defines the
+  conditional intensity and the compensator.
+- Lewis, P. A. W., & Shedler, G. S. (1979). "Simulation of nonhomogeneous
+  Poisson processes by thinning." /Naval Research Logistics Quarterly/,
+  26(3), 403-413. doi:10.1002/nav.3800260304.
+- Ogata, Y. (1981). "On Lewis' simulation method for point processes." /IEEE
+  Transactions on Information Theory/, 27(1), 23-31. Thinning for an
+  intensity that depends on the history.
+- Brown, E. N., Barbieri, R., Ventura, V., Kass, R. E., & Frank, L. M.
+  (2002). "The time-rescaling theorem and its application to neural spike
+  train data analysis." /Neural Computation/, 14(2), 325-346.
+  doi:10.1162/08997660252741149.
+- Wikipedia: [[https://en.wikipedia.org/wiki/Point_process][Point process]].

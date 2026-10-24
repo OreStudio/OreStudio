@@ -1800,6 +1800,14 @@ export const en: SourceCatalogue = {
                     received: 'Received {time} ({seconds} s)',
                     running: 'still running',
                     hint: 'The service stores when the run was written and when its output arrived. It stores nothing between, so the bar is not split into phases.',
+                    phasesNote: 'claim to arrival',
+                    claimed: 'Claimed {time}',
+                    receivedAfter: 'Received {time} ({duration})',
+                    ran: 'Engine ran {duration}',
+                    other: 'Transfers and overhead {duration}',
+                    unreported: 'The node did not report how long the engine ran.',
+                    phasesHint:
+                        'The server stamps the claim and the arrival of the output. The node times the engine. The rest is the download of the input, the upload of the output and the hand back.',
                 },
                 unreadable: 'The External Ref names no report run that this session can read.',
                 siblings: {

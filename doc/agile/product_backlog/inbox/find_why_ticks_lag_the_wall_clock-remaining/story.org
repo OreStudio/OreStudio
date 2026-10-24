@@ -59,6 +59,7 @@ Find where the backlog of ticks builds up between the feed and the chart, why it
 | [[id:D1D8273D-DC95-4C69-8FBE-FCD8F30B9FB6][Wait on the backoff in the failed copy test]] | BACKLOG | | | The test of a failed copy sleeps a fixed 1500 ms for the store backoff and assumes the queue drops no tick, so it can fail on a loaded machine. |
 | [[id:B466DF8C-E7EF-4046-A577-1AF120C991A7][Interrupt a wait on a portable stop]] | BACKLOG | | | A thread that waits on a stop state wakes at once on a stop on every platform, and Apple's libc++ uses a fallback that the unit tests also run on Linux. |
 | [[id:B7CA8A2C-4478-4F25-9298-60DE3945C6EB][Read the ticks of a series with one history call]] | STARTED | 2026-10-23 | | A client that plots a live series gets no ticks, because the observation list reads the observation table and the ingest writes ticks to the tick table only. Add one history call that returns every tick of a range in one reply. |
+| [[id:A4AAEA01-7F27-4FA0-81D1-BBD4B02CD99B][Subscribe every Acme party to market data]] | STARTED | 2026-10-24 | | Provisioning gives the parent party Acme Corporation Plc no subscription and no route, so no series of Plc ticks. The subscribe step asks for the subscriptions the party holds, and a parent session sees its children's too, so the step finds the children's subscription and skips the parent. |
 
 * Decisions
 

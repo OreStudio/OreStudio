@@ -63,6 +63,11 @@ domain::result result_mapper::map(const result_entity& v) {
         r.received_at = timestamp_to_timepoint(*v.received_at);
     else
         r.received_at = {};
+    if (v.started_at)
+        r.started_at = timestamp_to_timepoint(*v.started_at);
+    else
+        r.started_at = {};
+    r.duration_ms = v.duration_ms;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -93,6 +98,10 @@ result_entity result_mapper::map(const domain::result& v) {
     r.received_at = v.received_at != std::chrono::system_clock::time_point{} ?
                         std::optional(ores::platform::time::datetime::to_db_string(v.received_at)) :
                         std::nullopt;
+    r.started_at = v.started_at != std::chrono::system_clock::time_point{} ?
+                       std::optional(ores::platform::time::datetime::to_db_string(v.started_at)) :
+                       std::nullopt;
+    r.duration_ms = v.duration_ms;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

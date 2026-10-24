@@ -48,6 +48,8 @@ std::vector<ores::diff::domain::field_value> render_result_fields(const domain::
     fields.push_back({.name = "Error Message", .value = v.error_message});
     fields.push_back({.name = "Received At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.received_at)});
+    fields.push_back({.name = "Started At",
+                      .value = ores::platform::time::datetime::to_iso8601_utc(v.started_at)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

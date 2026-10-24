@@ -51,6 +51,7 @@ The story closes on the tasks it finished:
 - Name things on the grid job screens.
 - Draw the lineage of a job as a chart.
 - Lay out the job page as its prototype.
+- Record when a run starts and how long it took.
 
 * Tasks
 
@@ -74,11 +75,12 @@ The story closes on the tasks it finished:
 | [[id:E45D7BDF-DC20-40C8-A5E3-DA53629E3061][Filter the app versions by their app]] | DONE | 2026-10-23 | 2026-10-23 | The app version page reads every app version of the catalogue and keeps those of one app, because the generated list has no filter by app. |
 | [[id:018356B7-4EE4-46E8-8636-391512377021][Name things on the grid job screens]] | DONE | | 2026-10-23 | The Jobs tab, the job page and the report run page show UUIDs where a person needs names. A report-driven batch reads as its run id, a party as its id, and the link to the report as 'Open the report'. |
 | [[id:555DB7C2-CACC-45B7-8B1C-FF2CFE8218D4][Draw the lineage of a job as a chart]] | DONE | | 2026-10-24 | The job page lists the batch, the workunit and the runs. The Follow a job journey draws the chain from the scheduled job to the result as one column of nodes. The report definition, the report run, the batch and the jobs can be drawn now. |
+| [[id:CA5100E1-85C7-4E74-AD99-38ACED1C2E02][Record when a run starts and how long it took]] | DONE | | 2026-10-24 | A result stores when it was written and when its output arrived, and nothing between. The time bar cannot show phases and the neighbour charts have no duration to draw. |
 | [[id:DDE74125-CD08-4E31-A0DE-AA2202599739][Lay out the job page as its prototype]] | DONE | | 2026-10-24 | The approved job page prototype has two columns, a Find bar and a link back to the job's batch. The built page stacks every panel in one wide column, has no Find bar and links back to the Jobs tab. |
 
 * Decisions
 
-- Closed at sprint 28 close with its 19 done tasks. The 5 open tasks and the original acceptance moved to [[id:D74BD97E-EA25-4F08-BF00-183A02DB4D75][Browse and follow the grid's jobs — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 20 done tasks. The 4 open tasks and the original acceptance moved to [[id:D74BD97E-EA25-4F08-BF00-183A02DB4D75][Browse and follow the grid's jobs — the remaining work]] in the product backlog inbox.
 - 2026-10-22: The story builds what the journeys Browse the grid's jobs and Follow a job already specify. It adds no screen they do not draw. The reads for batches, workunits and results exist as generated subjects, so the first slice is the BFF route and the screen, not new compute code.
 - 2026-10-22: The job page links to a page for the app version, and the page shows a release note stored on the version. The model has no such column, so the story adds one, =release_note=, to =app_version=, not to the package. A release is one engine build and one wrapper build, packaged for several platforms, and one note describes the release. The shell's =compute publish-package= writes the note with the bundle.
 - 2026-10-22: The prototypes come before the build. The Jobs tab prototype was compared with the acceptance and redrawn, and the job page and the app version page were drawn. The screens use the model's own field names and add no other term. The glossary defines target redundancy and canonical result.

@@ -298,7 +298,7 @@ What remains for the owners, not decided here:
 The owner asked for two things: close every open task and story that is done,
 and split each story that holds many closed tasks into a closed story and a
 backlog story. After the work, the sprint table holds 84 stories DONE and 41
-ABANDONED, and no story STARTED or BACKLOG. Of the 41, 37 moved to the inbox
+ABANDONED, and no story STARTED or BACKLOG, except one that opened during the close (see below). Of the 41, 37 moved to the inbox
 and 4 closed with nothing shipped. The sprint holds 315 DONE tasks and 8
 ABANDONED tasks, and no open task. The audit reports
 no finding.
@@ -330,8 +330,8 @@ Acceptance to them. Its remaining tasks and its original Acceptance moved to a
 new story, "<title> — the remaining work", in the product backlog inbox. The
 closed story names the new story in its Decisions. 25 stories were split and 123
 tasks moved. The largest splits are Rework the market data feeds (20 done, 16
-moved), Find why market data ticks lag the wall clock (10 done, 20 moved),
-Browse and follow the grid's jobs (19 done, 5 moved), Populate the ACME books
+moved), Find why market data ticks lag the wall clock (10 done, 21 moved),
+Browse and follow the grid's jobs (20 done, 4 moved), Populate the ACME books
 (18 done, 6 moved) and Build the bindings screen (15 done, 1 moved).
 
 Stories carried whole. 37 stories had no done task. Each moved by file or by
@@ -364,6 +364,16 @@ Five closes needed judgment, and the first pass was wrong for them:
 
 The closed stories "Decide the XML strategy" and "Trade Blotter" keep ABANDONED
 tasks in their tables. Their Acceptance lists only the DONE tasks.
+
+One story is outside the close. "Add a Hawkes tick arrival process to analytics.quant"
+was scaffolded on main by another environment (prime_origin) while this close
+was in review. It is STARTED with 2 tasks done and 4 open, and its branch is
+live, so moving it would pull the story from under that branch. It stays in
+sprint 28 and needs its own decision. A task "Subscribe every Acme party to
+market data" also arrived on main under the ticks story, with PR #3710 merged
+and no Result, and moved to that story's remaining-work story. Another
+environment finished "Record when a run starts and how long it took" (PR #3707)
+during the same window. It is DONE and stays in its closed story.
 
 *** What this review did not check
 

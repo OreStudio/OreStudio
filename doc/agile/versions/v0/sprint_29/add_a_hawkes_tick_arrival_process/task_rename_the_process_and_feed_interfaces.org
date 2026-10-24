@@ -26,11 +26,11 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | The rename is complete. The build and all four affected suites pass. |
-| Waiting on   | The PR.                                |
-| Next         | Rebase on main and open the PR.        |
+| Now          | Nothing. |
+| Waiting on   | The PR and its review.                 |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance

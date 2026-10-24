@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A result carries the time its run started and the duration of the run, so a scre
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing. It changes the result model. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,7 @@ A result carries the time its run started and the duration of the run, so a scre
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add two columns to the result and fill them where each is known. The server stamps =started_at= when it marks a run InProgress at the claim, so the start needs no agreement between the clock of a node and the clock of the server. The node times the engine with its monotonic clock, which the wrapper already did for its heartbeat, and sends =duration_ms= with the result. The submit handler stores it, and treats -1 as unknown. The job page then splits the time from the claim to the arrival into the engine's time and the rest. A run that predates the columns has no start, and the page draws its two stored times as before.
 
 * Measurements
 
@@ -57,9 +55,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A real NPV run of ACME Corporation HK Ltd: claim, arrival, engine time | claimed 01:31:57, received 01:31:59, engine 101 ms | =compass db sql=, the result of the batch of instance 4c86fe13 | this branch |
+| The same run through the BFF | started_at 01:31:57, received_at 01:31:59, duration_ms 101 | =GET /api/operations/grid/jobs/workunits/<id>/results= | this branch |
+| Market data export of that run, on a recreated database | 0.6 s for 204 series | the reporting service log, instance 4c86fe13 | this branch |
 
 * Notes
+
+A result row is made when a run is queued and rewritten at the claim and again at its end. Each version keeps what it knew: the unsent row has neither column, the claimed row has the start and no duration, and the finished row has both. The page reads the current version.
+
+Timestamps of the repository read back in whole seconds, for every entity, so the start and the arrival are good to a second and the engine time is stored in milliseconds. At job level seconds are enough, and the page shows whole seconds, with "< 1 s" for a run under half a second. This run: 101 ms of engine time in 2 s on the grid, so the page draws a small green share and a long blue one.
+
+The wait before the claim is not on the current row, because the row is rewritten, and the download and the upload are not timed apart. The wrapper's own timestamps for those are the next step, and the journey records them as the missing piece. The time bar of the journey stays two parts until then.
+
+The recreate of the database showed a second problem that is not part of this task: a service binary that is older than main fails a provisioning step it does not know ("the seed profile orders the step kind subscribe_market_data, which this deployment does not know"). A recreate after a pull needs every service rebuilt.
 
 * Test Scenarios
 
@@ -85,3 +93,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A result carries =started_at=, the server's clock at the claim, and =duration_ms=, how long the engine ran by the node's clock. The wrapper sends the duration, the submit handler stores it, and an unreported duration stays unknown. The job page splits the run's time into the engine's share and the rest, and keeps the old two-time bar for a run with no recorded start. The repository has three new tests, the page and the view have twelve, and the split was checked on a real NPV run.

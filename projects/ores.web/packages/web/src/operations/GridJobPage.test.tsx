@@ -31,7 +31,15 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { GridJobPage, canonicalRun, findTarget, focusRun, secondsBetween } from './GridJobPage.js';
+import {
+    GridJobPage,
+    canonicalRun,
+    findTarget,
+    focusRun,
+    formatDuration,
+    phasesOf,
+    secondsBetween,
+} from './GridJobPage.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
 import { REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
@@ -91,6 +99,8 @@ function run(overrides: Partial<ResultView> = {}): ResultView {
         output_uri: '/api/v1/storage/ores/compute/output/result.tar.gz',
         error_message: null,
         received_at: '2026-10-13 02:27:38.000000Z' as NonNullable<ResultView['received_at']>,
+        started_at: null,
+        duration_ms: null,
         modified_by: 'ores_compute_service',
         recorded_at: '2026-10-13 02:27:28.000000Z' as ResultView['recorded_at'],
         ...overrides,
@@ -446,6 +456,100 @@ describe('where the find bar opens', () => {
         });
 
         expect(target).toBe('/operations/grid?tab=jobs&find=order');
+    });
+});
+
+describe('the phases of a run', () => {
+    const at = (time: string) => time as NonNullable<ResultView['started_at']>;
+
+    it('splits the time from the claim to the arrival by what the engine ran', () => {
+        const phases = phasesOf(
+            run({
+                started_at: at('2026-10-13 02:27:30.000000Z'),
+                received_at: at('2026-10-13 02:27:40.000000Z'),
+                duration_ms: 7000,
+            }),
+        );
+
+        expect(phases).toEqual({ totalMs: 10000, ranMs: 7000, otherMs: 3000 });
+    });
+
+    it('states no split when the node did not report the engine time', () => {
+        const phases = phasesOf(
+            run({
+                started_at: at('2026-10-13 02:27:30.000000Z'),
+                received_at: at('2026-10-13 02:27:40.000000Z'),
+                duration_ms: null,
+            }),
+        );
+
+        expect(phases).toEqual({ totalMs: 10000, ranMs: null, otherMs: null });
+    });
+
+    it('cuts an engine time that exceeds the whole to the whole', () => {
+        const phases = phasesOf(
+            run({
+                started_at: at('2026-10-13 02:27:30.000000Z'),
+                received_at: at('2026-10-13 02:27:31.000000Z'),
+                duration_ms: 5000,
+            }),
+        );
+
+        expect(phases).toEqual({ totalMs: 1000, ranMs: 1000, otherMs: 0 });
+    });
+
+    it('has no phases for a run with no recorded claim or one still in flight', () => {
+        expect(phasesOf(run({ started_at: null }))).toBeNull();
+        expect(
+            phasesOf(run({ started_at: at('2026-10-13 02:27:30.000000Z'), received_at: null })),
+        ).toBeNull();
+    });
+
+    it('writes a time span in whole seconds, then minutes', () => {
+        expect(formatDuration(0)).toBe('< 1 s');
+        expect(formatDuration(400)).toBe('< 1 s');
+        expect(formatDuration(850)).toBe('1 s');
+        expect(formatDuration(2400)).toBe('2 s');
+        expect(formatDuration(95000)).toBe('1 min 35 s');
+    });
+});
+
+describe('the time bar of the job page', () => {
+    const at = (time: string) => time as NonNullable<ResultView['started_at']>;
+
+    it('names the claim, the engine time and the rest when the run has a recorded claim', () => {
+        const html = render(workunit(), [
+            run({
+                started_at: at('2026-10-13 02:27:30.000000Z'),
+                received_at: at('2026-10-13 02:27:40.000000Z'),
+                duration_ms: 7000,
+            }),
+        ]);
+
+        expect(html).toContain('Claimed');
+        expect(html).toContain('Engine ran 7 s');
+        expect(html).toContain('Transfers and overhead 3 s');
+        expect(html).toContain('claim to arrival');
+    });
+
+    it('says the engine time was not reported, and draws no split', () => {
+        const html = render(workunit(), [
+            run({
+                started_at: at('2026-10-13 02:27:30.000000Z'),
+                received_at: at('2026-10-13 02:27:40.000000Z'),
+                duration_ms: null,
+            }),
+        ]);
+
+        expect(html).toContain('The node did not report how long the engine ran.');
+        expect(html).not.toContain('Engine ran');
+    });
+
+    it('keeps the two stored times for a run with no recorded claim', () => {
+        const html = render(workunit(), [run({ started_at: null, duration_ms: null })]);
+
+        expect(html).toContain('two stored times');
+        expect(html).not.toContain('claim to arrival');
     });
 });
 

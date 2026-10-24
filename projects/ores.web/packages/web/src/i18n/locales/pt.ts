@@ -1810,6 +1810,14 @@ const pt: SourceCatalogue = {
                     received: 'Recebido {time} ({seconds} s)',
                     running: 'ainda a executar',
                     hint: 'O serviço guarda quando a execução foi escrita e quando a sua saída chegou. Não guarda nada entre os dois, por isso a barra não se divide em fases.',
+                    phasesNote: 'da reivindicação à chegada',
+                    claimed: 'Reivindicado {time}',
+                    receivedAfter: 'Recebido {time} ({duration})',
+                    ran: 'Motor executado {duration}',
+                    other: 'Transferências e sobrecarga {duration}',
+                    unreported: 'O nó não indicou quanto tempo o motor correu.',
+                    phasesHint:
+                        'O servidor regista a reivindicação e a chegada da saída. O nó cronometra o motor. O resto é a descarga da entrada, o envio da saída e o retorno.',
                 },
                 unreadable:
                     'A referência externa não nomeia nenhuma execução de relatório que esta sessão possa ler.',

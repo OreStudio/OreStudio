@@ -87,7 +87,7 @@ public:
 
     /**
      * @brief add <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message>
-     * <received_at> <reason> <commentary>
+     * <received_at> <duration_ms> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -95,7 +95,7 @@ public:
 
     /**
      * @brief set <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message>
-     * <received_at> <reason> <commentary> [--version <n>]
+     * <received_at> <duration_ms> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -103,7 +103,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <workunit_id> <host_id> <server_state> <outcome>
-     * <output_uri> <error_message> <received_at> <reason> <commentary>
+     * <output_uri> <error_message> <received_at> <duration_ms> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

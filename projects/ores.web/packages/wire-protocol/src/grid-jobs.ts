@@ -111,6 +111,9 @@ const resultSchema = z.object({
     output_uri: text,
     error_message: text,
     received_at: wireTimestampSchema,
+    // A compute service that predates the two columns omits them, and they read as unknown.
+    started_at: wireTimestampSchema.default(() => wireTimestampSchema.parse(EPOCH)),
+    duration_ms: z.int().nonnegative().nullable().default(null),
     modified_by: text,
     performed_by: text,
     change_reason_code: text,
@@ -278,7 +281,10 @@ export type WorkunitView = z.infer<typeof workunitViewSchema>;
  *
  * `host_hidden` says the session may not read the node, so a screen states
  * that rather than the node not yet being known. A run in flight has no node
- * and no output yet, and states `null` for both.
+ * and no output yet, and states `null` for both. `started_at` is when a node
+ * took the run, by the server's clock, and `duration_ms` is how long the engine
+ * ran by the node's clock. Each is `null` when unknown, which a screen never
+ * reads as zero.
  */
 export const resultViewSchema = z.object({
     id: z.string(),
@@ -290,6 +296,8 @@ export const resultViewSchema = z.object({
     output_uri: z.string().nullable(),
     error_message: z.string().nullable(),
     received_at: nullableWireTimestampSchema,
+    started_at: nullableWireTimestampSchema,
+    duration_ms: z.int().nonnegative().nullable(),
     modified_by: z.string(),
     recorded_at: wireTimestampSchema,
 });
@@ -369,6 +377,8 @@ export function toResultView(result: Result, mayReadHost: boolean): ResultView {
         output_uri: orNull(result.output_uri),
         error_message: orNull(result.error_message),
         received_at: result.received_at === EPOCH ? null : result.received_at,
+        started_at: result.started_at === EPOCH ? null : result.started_at,
+        duration_ms: result.duration_ms,
         modified_by: result.modified_by,
         recorded_at: result.recorded_at,
     });

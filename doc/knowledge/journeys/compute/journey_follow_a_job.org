@@ -82,9 +82,11 @@ control, and it is deferred.
 6. *Read where the time went.* The system draws one bar for the run, from its
    dispatch to its output, and splits the batch's jobs into one row each, so the
    person sees which jobs overlapped and which waited. Inside the bar the
-   system can show only what it stores: the job was queued, then it ran, then
-   its output arrived. The phases between those points are not recorded, and
-   the waterfall must say so rather than draw a guessed split.
+   system can show only what it stores: a node took the job, the engine ran for
+   the time the node reports, and the output arrived. The rest of that span is the
+   download of the input and the upload of the output, not timed apart, and the
+   waterfall says so rather than draw a guessed split. A run that predates the
+   start time shows its two stored times only.
 7. *Read the release that ran it.* The system states the workunit's
    =app_version_id= and, through it, the app's =engine_version= and the
    =wrapper_version=. This is the release the job runs: the version of ORE
@@ -284,15 +286,19 @@ a compute screen yet.
    screen
    ([[id:77DA388B-FC5A-41AE-B88C-4BF34C82D7C9][A tenant cannot list its own
    jobs]]).
-2. *No per-phase times.* The waterfall wants queued, dispatched, downloaded,
-   running, uploaded and validated. The service records the run's creation and
-   its output's arrival, and nothing between, so the waterfall can draw a bar
-   with two ends and no phases. Per-phase timestamps on the result, written by
-   the dispatcher and the wrapper, are the missing piece.
-3. *No per-result duration.* The result carries no start time and no duration,
-   and =node_sample= carries interval means and maxima, not per-result values.
-   The duration distribution and duration by node charts therefore compare
-   nodes over an interval rather than placing this job in a distribution.
+2. *Per-phase times are partly recorded.* The waterfall wants queued, dispatched,
+   downloaded, running, uploaded and validated. The result now carries =started_at=,
+   the server's clock when a node took the run, and =duration_ms=, how long the engine
+   ran by the node's clock. With =received_at= they split the run into the engine's time
+   and the rest: the download, the upload and the hand back. The wait before the claim is
+   not on the current row, because the row is rewritten when the run ends, and the
+   download and the upload are not timed apart. Their timestamps from the wrapper are
+   the missing piece. A run that predates the columns has no start, and reads as
+   unknown.
+3. *Each result carries a duration, and the charts still have little to compare.* The
+   result now states how long the engine ran. The duration distribution and duration by
+   node charts can place this job among its neighbours once enough runs carry the
+   value. =node_sample= still carries interval means and maxima, not per-result values.
 4. *A run in flight may show no node.* On the JetStream path the dispatcher
    creates the result without a =host_id= and the submit binds it at the end,
    so the node is known only when the run is done. The screen must say the node

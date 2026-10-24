@@ -109,6 +109,22 @@ struct result final {
     std::chrono::system_clock::time_point received_at = {};
 
     /**
+     * @brief When a node took the run, by the server's clock at the claim. The claim marks the run
+     * InProgress, and this is the time of that mark. The server writes it, so it needs no agreement
+     * between the clock of the node and the clock of the server. The epoch means no claim was
+     * recorded: a run that predates the column, or one that the server ended without a claim.
+     */
+    std::chrono::system_clock::time_point started_at = {};
+
+    /**
+     * @brief How long the engine ran, in milliseconds, by the monotonic clock of the node that ran
+     * it. It does not include the download of the input or the upload of the output. Null until the
+     * run ends, and for a run whose node did not run the engine or did not report the time. A
+     * screen reads null as unknown and never as zero.
+     */
+    std::optional<std::int64_t> duration_ms;
+
+    /**
      * @brief Username of the person who last modified this compute result.
      */
     std::string modified_by;

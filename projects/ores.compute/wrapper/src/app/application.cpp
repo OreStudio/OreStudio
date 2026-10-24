@@ -348,6 +348,7 @@ void submit_result(ores::nats::service::client& nats,
                    const std::string& output_uri,
                    int outcome,
                    const std::string& error_message,
+                   std::int64_t duration_ms,
                    auto& lg) {
 
     const auto& codec = ores::nats::default_wire_codec();
@@ -356,7 +357,8 @@ void submit_result(ores::nats::service::client& nats,
                                                         .host_id = host_id,
                                                         .output_uri = output_uri,
                                                         .outcome = outcome,
-                                                        .error_message = error_message};
+                                                        .error_message = error_message,
+                                                        .duration_ms = duration_ms};
     const auto reply = nats.request_sync(compute::messaging::submit_result_request::nats_subject,
                                          codec.encode(req));
 
@@ -555,6 +557,7 @@ void process_assignment(ores::nats::service::client& nats,
                       3,
                       "The assignment waited in the queue longer than its storage token lives, "
                       "so the node did not start it.",
+                      -1,
                       lg);
         return;
     }
@@ -569,7 +572,8 @@ void process_assignment(ores::nats::service::client& nats,
     std::string error_message;
     std::int64_t input_bytes = 0;
     std::int64_t output_bytes = 0;
-    std::int64_t duration_ms = 0;
+    // -1 until the engine has run, so a job that fails before it reports no duration.
+    std::int64_t duration_ms = -1;
 
     try {
         const fs::path package_root = cfg.package_dir.empty() ?
@@ -752,8 +756,15 @@ void process_assignment(ores::nats::service::client& nats,
             reporter->record_task_failed();
     }
 
-    submit_result(
-        nats, evt.result_id, evt.tenant_id, cfg.host_id, output_uri, outcome, error_message, lg);
+    submit_result(nats,
+                  evt.result_id,
+                  evt.tenant_id,
+                  cfg.host_id,
+                  output_uri,
+                  outcome,
+                  error_message,
+                  duration_ms,
+                  lg);
 }
 
 } // namespace

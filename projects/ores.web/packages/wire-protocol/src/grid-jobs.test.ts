@@ -303,6 +303,45 @@ describe('the views', () => {
         });
     });
 
+    it('state when a node took the run and how long the engine ran', async () => {
+        const { caller } = callerAnswering({
+            'compute.v1.results.get': {
+                result: OK,
+                result_value: wireResult({
+                    started_at: '2026-10-13 02:27:40.000000Z',
+                    duration_ms: 9500,
+                }),
+            },
+        });
+        const result = await readResult(caller, RESULT);
+
+        expect(toResultView(result!, true)).toMatchObject({
+            started_at: '2026-10-13 02:27:40.000000Z',
+            duration_ms: 9500,
+        });
+    });
+
+    it('read an unset start and an unreported duration as unknown, and never as zero', async () => {
+        const { caller } = callerAnswering({
+            'compute.v1.results.get': {
+                result: OK,
+                result_value: wireResult({ started_at: EPOCH, duration_ms: null }),
+            },
+        });
+        const result = await readResult(caller, RESULT);
+
+        expect(toResultView(result!, true)).toMatchObject({ started_at: null, duration_ms: null });
+    });
+
+    it('read a run from a service that predates the two columns as unknown', async () => {
+        const { caller } = callerAnswering({
+            'compute.v1.results.get': { result: OK, result_value: wireResult() },
+        });
+        const result = await readResult(caller, RESULT);
+
+        expect(toResultView(result!, true)).toMatchObject({ started_at: null, duration_ms: null });
+    });
+
     it('withhold the node from a reader who may not see it, and say so', async () => {
         const { caller } = callerAnswering({
             'compute.v1.results.get': { result: OK, result_value: wireResult() },

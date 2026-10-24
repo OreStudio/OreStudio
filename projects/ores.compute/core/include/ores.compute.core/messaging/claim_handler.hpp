@@ -238,6 +238,7 @@ private:
             // InProgress.
             taken.server_state = 4;
             taken.host_id = host;
+            taken.started_at = std::chrono::system_clock::now();
             taken.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
             taken.change_commentary = "Claimed by a node";
             ores::service::messaging::stamp(taken, tenant_ctx);

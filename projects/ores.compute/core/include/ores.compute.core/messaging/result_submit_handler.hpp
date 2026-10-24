@@ -149,6 +149,10 @@ public:
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;
+                // A node that did not run the engine, or did not time it, sends -1, and the
+                // duration stays unknown.
+                if (req->duration_ms >= 0)
+                    r.duration_ms = req->duration_ms;
                 if (!req->host_id.empty()) {
                     try {
                         r.host_id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);

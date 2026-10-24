@@ -44,7 +44,8 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 2 done tasks. The 1 open tasks and the original acceptance moved to [[id:0D825C70-655C-4D0A-8E9E-9D45C4B51C46][Preview a convention's term structure on a calendar — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 2 done tasks. The 1 open task and the original acceptance moved to [[id:0D825C70-655C-4D0A-8E9E-9D45C4B51C46][Preview a convention's term structure on a calendar — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 - Editing a convention or its tenor rules. The preview only reads them.

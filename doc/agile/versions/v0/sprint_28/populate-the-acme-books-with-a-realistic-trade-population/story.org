@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+ACME's books hold no trades, so a report package is structurally valid and substantively empty. Populate them from a synthetic generator in present time, referencing ACME's own books, counterparties and staff, starting with bonds and extending to every instrument.
 
 The investigation this story commissioned is
 [[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME with a trade population]]. It is the record of what was measured and which mechanism was chosen. It is a snapshot, not a description of the system.
@@ -80,6 +80,7 @@ The story closes on the tasks it finished:
 * Decisions
 
 - Closed at sprint 28 close with its 18 done tasks. The 6 open tasks and the original acceptance moved to [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

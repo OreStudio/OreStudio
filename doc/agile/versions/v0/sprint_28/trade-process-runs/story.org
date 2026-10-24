@@ -43,7 +43,7 @@ Nothing shipped under this story. Its one finished task only scaffolded the stor
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 4 open tasks and the original acceptance moved to [[id:A01A9EC4-4436-4A15-BBF7-FF46BD62443A][Trace a process run and the trade groups it creates — the remaining work]] in the product backlog inbox.
+- Closed ABANDONED at sprint 28 close: nothing shipped under this story. The 4 open tasks and the original acceptance moved to [[id:A01A9EC4-4436-4A15-BBF7-FF46BD62443A][Trace a process run and the trade groups it creates — the remaining work]] in the product backlog inbox.
 ** The run is modelled against a client process, not in the abstract
 
 Taken 2026-10-08 with the owner. A process run exists so that a process

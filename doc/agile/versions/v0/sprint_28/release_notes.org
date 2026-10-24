@@ -12,7 +12,7 @@
 
 /October 2026/
 
-Sprint 28 set out to finish the work carried from sprint 27 and to add no new scope. It did not keep that promise or its size. The sprint ran twelve days instead of seven, merged 432 pull requests after the v0.0.27 tag and made about 2,500 commits, so its load was RED against every target. Most of the carried stories shipped in part: the XML strategy, the instrument table rework, the conventions refactor, the market data service, the engine settings and the grid job screens are in. Eight in ten stories were new, and the report page with its six tabs is not built. At the close we split every unfinished story. Each keeps its finished tasks here, and the rest, 117 tasks in 24 stories plus 37 stories that never started, is in the product backlog.
+Sprint 28 set out to finish the work carried from sprint 27 and to add no new scope. It did not keep that promise or its size. The sprint ran twelve days instead of seven, merged 432 pull requests after the v0.0.27 tag and made about 2,500 commits (2,518 since 2026-10-13, from health review 1), so its load was RED against every target. Most of the carried stories shipped in part: the XML strategy, the instrument table rework, the conventions refactor, the market data service, the engine settings and the grid job screens are in. Eight in ten stories were new (101 of 126 were created after the sprint opened, from health review 1), and the report page with its six tabs is not built. At the close we split every unfinished story. Each keeps its finished tasks here, and the rest, 123 tasks in 25 stories plus 37 stories that never started, is in the product backlog.
 
 -----
 
@@ -87,7 +87,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Browse and follow the grid's jobs* (Partly delivered, 19 of 24 tasks): A person sees the batches, workunits and results the session may see, as a tree with the details of each record.
 - *Keep the record screens up to date* (Partly delivered, 5 of 16 tasks): The browser holds one change stream for the signed-in session, and the record screens watch it. Naming the changed record in each event is not done.
 - *Build the retire or reset tenant journey* (3 of 4 tasks): The three finished tasks concern the ACME risk report configurations: the generated output is committed, every seeded report is configured, and an invalid scaffold is removed. The retire and reset operations, which give the story its name, are not landed.
-- *Draw every coded value as its badge*: A code is shown the way the rest of the platform shows it.
+- *Draw every coded value as its badge* (Partly delivered, 1 of 7 tasks): The coded-value badges and the shared control are built. The census of screens, the missing badges, the mapping fixes and the gate that holds the rule are not.
 - *Trade Blotter* (Partly delivered, 5 of 13 tasks): The prototypes meet the entity screen specification, the operational authorisation kind is seeded and the trade list rows are read. The blotter screen itself is not built.
 - *Give the web one way to handle time and timestamps*: One place writes, reads and converts a timestamp in ores.web.
 
@@ -148,7 +148,7 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 
 ** Delivered in part
 
-24 stories closed with their finished tasks. Each has a story in the product backlog named "<title> — the remaining work". The largest remainders are:
+21 stories closed with their finished tasks. Each has a story in the product backlog named "<title> — the remaining work". The largest remainders are:
 
 - *Find why market data ticks lag the wall clock*: 20 tasks remain.
 - *Rework the market data feeds into a market data service with adapters*: 16 tasks remain, among them the adapters for public sources.
@@ -159,9 +159,8 @@ A story marked "Partly delivered" closed with its finished tasks. The count show
 - *Gather each trade set and its market data*: 7 tasks remain.
 - *Populate the ACME books with a realistic trade population*: 6 tasks remain.
 - *Browse and follow the grid's jobs*: 5 tasks remain.
-- *Trace a process run and the trade groups it creates*: 4 tasks remain.
 
-The other 14 split stories each have one to four tasks remaining. The report page with its six tabs, the composite family get and put for conventions, and the audit of the NATS call sites are among them.
+The other 12 split stories each have one to six tasks remaining. The report page with its six tabs, the composite family get and put for conventions, and the audit of the NATS call sites are among them.
 
 ** Not started
 
@@ -176,7 +175,7 @@ The other 14 split stories each have one to four tasks remaining. The report pag
 
 ** Known problems
 
-- The goal of seven finished stories still holds the scaffold placeholder text. This page states their outcomes from their descriptions.
+- Two scenarios for shipped screens were never run: "Verify the coded value badges" and "Verify the tenor resolution screen". Both are PENDING.
 - 51 finished tasks carry no pull request in their record. Most are scaffold tasks.
 - The sprint overran its size by a wide margin. See the sprint health review, which rates it RED.
 
@@ -234,4 +233,4 @@ The line climbs from 2 to 60 stories between 2026-10-13 and 2026-10-21, a steady
 
 -----
 
-/Next sprint: triage the product backlog inbox, which now holds the remainder of 24 split stories and 37 stories that never started, and limit the stories in flight before it starts any./
+/Next sprint: triage the product backlog inbox, which now holds the remainder of 25 split stories and 37 stories that never started, and limit the stories in flight before it starts any./

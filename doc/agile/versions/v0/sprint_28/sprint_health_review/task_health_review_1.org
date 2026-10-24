@@ -328,7 +328,7 @@ across the ORE boundary (3 of 3).
 Stories split. Each closed story keeps its done tasks and narrows its
 Acceptance to them. Its remaining tasks and its original Acceptance moved to a
 new story, "<title> — the remaining work", in the product backlog inbox. The
-closed story names the new story in its Decisions. 24 stories were split and 117
+closed story names the new story in its Decisions. 25 stories were split and 123
 tasks moved. The largest splits are Rework the market data feeds (20 done, 16
 moved), Find why market data ticks lag the wall clock (10 done, 20 moved),
 Browse and follow the grid's jobs (19 done, 5 moved), Populate the ACME books
@@ -340,7 +340,7 @@ with the close date. They include the eight undecomposed stories, "Author the
 report configurations on guided screens" and "Complete the ACME report inputs
 and prove they run".
 
-Four closes needed judgment, and the first pass was wrong for them:
+Five closes needed judgment, and the first pass was wrong for them:
 
 - "See and change everything a report runs" has 18 done tasks that deliver the
   engine settings arc. Its acceptance names a six-tab report page that nothing
@@ -357,6 +357,10 @@ Four closes needed judgment, and the first pass was wrong for them:
 - "Replace the credit fact variant with typed arrays" and "Build the conventions
   list screens" left only a scaffold task. That is no work, so the split was
   undone: each story is whole and DONE, with the scaffold task ABANDONED.
+- "Draw every coded value as its badge" was DONE with six open tasks listed as
+  plain rows with no task file, so the first pass did not see them. The PR
+  review found it. The story is split: it keeps its one done task, and the six
+  open rows moved to a new inbox story.
 
 The closed stories "Decide the XML strategy" and "Trade Blotter" keep ABANDONED
 tasks in their tables. Their Acceptance lists only the DONE tasks.

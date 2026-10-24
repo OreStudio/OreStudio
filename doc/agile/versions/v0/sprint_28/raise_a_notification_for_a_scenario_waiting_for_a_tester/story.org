@@ -40,7 +40,7 @@ Nothing shipped under this story. Its one finished task only scaffolded the stor
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 1 open tasks and the original acceptance moved to [[id:C76D7295-D2DB-4329-A1AC-9D5F7EE31E51][Raise a notification for a scenario waiting for a tester — the remaining work]] in the product backlog inbox.
+- Closed ABANDONED at sprint 28 close: nothing shipped under this story. The 1 open task and the original acceptance moved to [[id:C76D7295-D2DB-4329-A1AC-9D5F7EE31E51][Raise a notification for a scenario waiting for a tester — the remaining work]] in the product backlog inbox.
 These come from what the code does today. They hold unless an answer under Open questions changes them.
 
 - The inbox raises a notification for a kind and a permission audience. A raise resolves the audience, at that moment, to the people of the tenant who hold the permission, so a tester role is a permission and nothing more. A kind of notification is data: a seed row, with a code prefixed by the component that raises it. The story adds a kind and a permission, and no new mechanism.

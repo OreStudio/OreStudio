@@ -40,7 +40,8 @@ Nothing shipped under this story. Its one task was absorbed by the Read the trad
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 2 open tasks and the original acceptance moved to [[id:72C97475-DA02-4C38-ACF2-B5C3072516F9][Find a trade by its identifiers, state, book and date from one list — the remaining work]] in the product backlog inbox.
+- Closed ABANDONED at sprint 28 close: nothing shipped under this story. The 2 open tasks and the original acceptance moved to [[id:72C97475-DA02-4C38-ACF2-B5C3072516F9][Find a trade by its identifiers, state, book and date from one list — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

@@ -48,7 +48,8 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 2 done tasks. The 1 open tasks and the original acceptance moved to [[id:6BBFB679-DFDC-466E-8C80-6ABBF62F395B][Build the retire or reset tenant journey — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 3 done tasks. The 1 open task and the original acceptance moved to [[id:6BBFB679-DFDC-466E-8C80-6ABBF62F395B][Build the retire or reset tenant journey — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 - The unguarded system-tenant delete and the sign-in path that ignores

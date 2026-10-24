@@ -344,7 +344,7 @@ disagrees with the guide. The importer warns about parameters it drops.
 
 * Decisions
 
-- Closed at sprint 28 close with its 18 done tasks. The 1 open tasks and the original acceptance moved to [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 18 done tasks. The 1 open task and the original acceptance moved to [[id:E7F55AB4-A6F5-46B4-8B0C-5306E8582E1B][See and change everything a report runs — the remaining work]] in the product backlog inbox.
 - The page has six tabs and no Run settings tab. Decided by the owner on 2026-10-21.
 - A report has a report currency, drawn with its flag. The column keeps the name =base_currency=.
 - The definition states end of day or intraday and never a date. The run carries its own time point.

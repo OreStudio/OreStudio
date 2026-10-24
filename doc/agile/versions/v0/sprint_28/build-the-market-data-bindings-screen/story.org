@@ -70,7 +70,7 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 15 done tasks. The 1 open tasks and the original acceptance moved to [[id:AE947749-7D9D-4336-BED9-78F69187AD4D][Build the bindings screen and clear the oresmd snags — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 15 done tasks. The 1 open task and the original acceptance moved to [[id:AE947749-7D9D-4336-BED9-78F69187AD4D][Build the bindings screen and clear the oresmd snags — the remaining work]] in the product backlog inbox.
 - A binding is named for what it writes, not for what it consumes. The output target is the title of the record page and the first column of the list; the source it consumes follows, and stays in the key line. Marco decided this on 2026-10-15, reversing the prototype's order, which named the page for the source and put the series in the subtitle.
 - The series on the list is plain text, not a link. Marco decided this on 2026-10-15; the link misled.
 - The access mark is drawn before the Edit action exists; the actions arrive with the task Add, edit and delete a binding. Marco accepted the mark standing alone on 2026-10-15.

@@ -42,7 +42,8 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 7 open tasks and the original acceptance moved to [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 1 done task. The 7 open tasks and the original acceptance moved to [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

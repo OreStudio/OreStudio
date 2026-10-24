@@ -65,7 +65,7 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 6 done tasks. The 7 open tasks and the original acceptance moved to [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 5 done tasks. The 7 open tasks and the original acceptance moved to [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] in the product backlog inbox.
 The design is in [[id:04CE05B4-CA42-4C40-A119-61C36C69A953][Investigation: the blotter and import design]]. These
 decisions come from it.
 

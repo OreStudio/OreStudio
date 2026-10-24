@@ -45,6 +45,7 @@ The story closes on the tasks it finished:
 * Decisions
 
 - Closed at sprint 28 close with its 2 done tasks. The 11 open tasks and the original acceptance moved to [[id:47F42FD5-F267-4F2B-8395-AF1293F6A72A][Add entity groups and finish the remaining codegen work — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

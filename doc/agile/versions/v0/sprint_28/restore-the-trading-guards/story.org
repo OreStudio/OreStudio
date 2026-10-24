@@ -46,7 +46,8 @@ Nothing shipped under this story. Its one finished task only scaffolded the stor
 
 * Decisions
 
-- Closed at sprint 28 close with its 1 done tasks. The 2 open tasks and the original acceptance moved to [[id:781F84FB-3A7A-4495-80E4-D326BBB43046][Restore the trading guards the versioned model dropped — the remaining work]] in the product backlog inbox.
+- Closed ABANDONED at sprint 28 close: nothing shipped under this story. The 2 open tasks and the original acceptance moved to [[id:781F84FB-3A7A-4495-80E4-D326BBB43046][Restore the trading guards the versioned model dropped — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

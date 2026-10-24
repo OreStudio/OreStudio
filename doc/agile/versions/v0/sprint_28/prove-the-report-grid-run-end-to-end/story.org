@@ -49,7 +49,7 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 5 done tasks. The 3 open tasks and the original acceptance moved to [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 4 done tasks. The 3 open tasks and the original acceptance moved to [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] in the product backlog inbox.
 - 2026-10-21: The task about stale assignments is abandoned. The assignments
   stream was retired (74b9989f14) and the wrapper claims its work from the work
   ledger (40880bca00), so no assignment outlives a database recreate.

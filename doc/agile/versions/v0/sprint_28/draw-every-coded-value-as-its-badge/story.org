@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:refdata:badges:sprint_28:v0:
 #+created: 2026-10-16
-#+updated: 2026-10-16
+#+updated: 2026-10-24
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -37,29 +37,19 @@ code as text and never builds its own pill. See =CodedValue= in
 
 * Acceptance
 
-- Every field whose value is a catalogue code is drawn through =CodedValue=, and
-  no screen renders one as bare text.
-- A code the catalogue paints shows the badge's label and colours; a code it
-  does not paint shows the code, not the Unmapped badge, because a form field
-  is not a row that is expected to be labelled.
-- Every domain a screen draws from has badge definitions, so the fields people
-  meet first are painted rather than falling back.
-- A gate holds the rule: a new screen that prints a code as text fails the
-  check rather than passing review by eye.
+The story closes on the task it finished:
+
+- Land the coded-value badges and the shared control.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| Census the screens that print a code as text | BACKLOG | | | List every screen that renders a catalogue code as bare text rather than through CodedValue, so the work is sized before it starts: the fields, their code domains, and the screens that own them. |
-| Define the badges the drawn domains are missing | BACKLOG | | | A domain a screen draws from must have badges of its own. Known today: =tenor_resolution_algorithm= (ANCHOR_OFFSET, SCHEDULE_STEP) and =business_day_convention_type= (Following, ModifiedFollowing, Preceding, ModifiedPreceding, HalfMonthModifiedFollowing, Nearest, Unadjusted) have no mappings at all, so those fields fall back to their codes. Define the badges with their colours and map the domains to them. |
-| Stop the mappings borrowing another domain's badge | BACKLOG | | | A mapping may point at any badge, and many point at one that belongs to a different domain: every business day convention in =currency_pair_convention_business_day_convention= is mapped to =active=, =tenant_bootstrapping=, =origin_primary=, =account_type_service= or =treatment_enriched=, so a roll rule reads "Active" or "Tenant Bootstrapping" on screen. A census by =badge_code= claimed by more than one domain finds 19 such codes; the rule to enforce is that a badge code is prefixed by the domain that owns it, so a mapping cannot name a badge from elsewhere. Fix the mappings the census names, and add the check. |
-| Republishing a mapping must supersede the row it replaces | BACKLOG | | | Publishing =ore.badge_mappings= with 'upsert' leaves the previous row current instead of closing it, so a code ends up with two rows that both read as current: after repointing =tenor_unit= to its own badges, =DAY= held both =origin_primary= (2026-10-15) and =tenor_unit_day= (2026-10-16), each with =valid_to= at infinity. The reader takes whichever it meets last, so which badge a screen shows depends on row order, and the census by shared badge code counts rows that are already superseded. Found 2026-10-16; it gates the mapping fixes, because a fix that leaves the old row in place cannot be trusted. |
-| Draw the remaining coded fields as badges | BACKLOG | | | Take the census list and move each field onto CodedValue, one screen at a time, each with the tests that prove a painted code shows its badge and an unpainted one shows its code. |
-| Hold the rule with a check | BACKLOG | | | A check that fails when a screen prints a code as text, so the rule survives the next screen rather than depending on review. |
 | [[id:D651CC6F-F3AC-4510-B484-586C2FB520A5][Land the coded-value badges and the shared control]] | DONE | 2026-10-17 | 2026-10-17 | Task for: Draw every coded value as its badge |
 
 * Decisions
+
+- Closed at sprint 28 close with its 1 done task. The 0 open tasks and the original acceptance moved to [[id:5E2985D5-0D07-444B-917D-A334FB66F2CF][Draw every coded value as its badge — the remaining work]] in the product backlog inbox.
 
 * Out of scope
 

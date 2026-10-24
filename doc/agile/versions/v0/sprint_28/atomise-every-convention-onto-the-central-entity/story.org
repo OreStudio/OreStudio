@@ -44,7 +44,8 @@ The story closes on the tasks it finished:
 
 * Decisions
 
-- Closed at sprint 28 close with its 2 done tasks. The 1 open tasks and the original acceptance moved to [[id:E8AAAAAC-F562-4F57-AC12-FC88E8EF5741][Atomise every convention onto the central entity — the remaining work]] in the product backlog inbox.
+- Closed at sprint 28 close with its 2 done tasks. The 1 open task and the original acceptance moved to [[id:E8AAAAAC-F562-4F57-AC12-FC88E8EF5741][Atomise every convention onto the central entity — the remaining work]] in the product backlog inbox.
+
 * Out of scope
 
 -

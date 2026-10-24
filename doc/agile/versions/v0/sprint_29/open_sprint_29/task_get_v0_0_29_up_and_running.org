@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 75C7ABFA-04FC-4C9C-A72C-D8CB1D9689C2
+:END:
+#+title: Task: Get v0.0.29 up and running
+#+description: Bring v0.0.29 up on a fresh environment, for the web client and the feeds.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_29:sprint_29:v0:
+#+owner: marco
+#+branch: feature/get-v0-0-29-up-and-running
+#+pr: 3724
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fresh database, built services and a provisioned Acme tenant give a web client that shows no ORE provider and shows each running feed as running.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The web client lists no ORE provider.
+- The feeds screen shows a feed that ticks as running.
+- Services start and Acme provisions on the new build.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3724][#3724]] | [iam] Add the Northwind Traders demonstration tenant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+PR #3724 brings the environment up on a fresh database. ACME Corporation and
+the new Northwind Traders demonstration tenant both provision to active, with
+their staff, books, report documents and trades. Northwind is generated from
+the classic Northwind Traders sample, carries its own staff photographs, and
+its recipe runs after ACME.
+
+The grid was exercised on the five Wiener wrappers: a 15-minute soak of 624
+jobs and a 5-minute soak of 197 jobs, every good job succeeding and every
+client error the corrupt input the soak injects.
+
+Two acceptance bullets remain open:
+
+- The web client still lists the ORE provider.
+- The feeds screen has not been checked against a feed that ticks as running.
+
+Two defects found on the way are captured in the inbox: a compute node older
+than the submit protocol holds work it cannot hand back, and a browser session
+that survives a database recreate lands on the first-run wizard.

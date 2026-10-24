@@ -103,6 +103,33 @@ on conflict (code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+-- Northwind Traders: the second demonstration tenant, and the one whose party
+-- is a fictional company rather than a public registry hierarchy. It prefills
+-- its own identity because there is nothing for a person to choose: a fictional
+-- company has no entry in the register, so its legal entity ships with the
+-- dataset, on a checksum-valid synthetic LEI. It takes no parameter.
+insert into ores_iam_seed_profiles_tbl (
+    id, code, name, summary, audience, bullets_json,
+    tenant_type, tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
+    inherits_admin_password, force_password_change, display_order,
+    version, modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    gen_random_uuid(),
+    'northwind',
+    'Northwind Traders',
+    'A fictional UK trading company',
+    'For demos and testing',
+    '["One legal entity and nine staff, from the Northwind Traders sample", "Six portfolios and seven books", "Its own pricing engine, curve and report documents"]'::jsonb,
+    'evaluation', 'Northwind Traders', 'northwind', 'northwind',
+    'tenant_admin', 'admin@northwind',
+    false, false, 25,
+    0, current_user, current_user, 'system.initial_load',
+    'Initial population of seed profiles'
+)
+on conflict (code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
 -- The ordered step kinds. The arguments are the step kind's own: the kind
 -- fixes their shape in code and the profile supplies the values. The bundles
 -- differ between the two profiles, which is what makes them data.
@@ -177,6 +204,43 @@ cross join (values
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK bond population",
          "description": "The bonds ACME HK Ltd books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42}
+    ]}'::jsonb),
+    -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
+    -- one legal entity, one party, nine staff and seven books -- and its party
+    -- carries its own report documents, so its reports run. Every value the run
+    -- needs is stated here: the root LEI of its synthetic entity, the bundle its
+    -- party publishes, and the demonstration password. No parameter, because a
+    -- fictional company has no register to choose from.
+    ('northwind', 'system_provision', 5, '{}'::jsonb),
+    ('northwind', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
+    ('northwind', 'import_lei_hierarchy', 20, '{"bundles": ["northwind_lei_import"], "root_lei": "9695NORTHWIND0000065"}'::jsonb),
+    ('northwind', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('northwind', 'load_staff', 40, '{"parties": [
+        {"name": "Northwind Traders Ltd", "bundles": ["northwind_uk"], "default": true}
+    ]}'::jsonb),
+    -- DEVELOPMENT DATA, NOT A PRODUCTION CREDENTIAL. The demonstration password
+    -- the nine staff accounts are given, set through the server's own password
+    -- API. Change it here and nowhere else.
+    ('northwind', 'set_staff_passwords', 50, '{"password": "Secure-Password-123"}'::jsonb),
+    -- The nine faces come from the Acme demonstration dataset, already seeded
+    -- in the system tenant, so the party's accounts are given pictures the same
+    -- way Acme's are.
+    ('northwind', 'attach_photos', 55, '{"parties": [
+        {"name": "Northwind Traders Ltd", "dataset": "northwind.accounts"}
+    ]}'::jsonb),
+    -- Two populations, one per traded currency, so a report run finds trades and
+    -- the second tenant has work of its own to put on the grid.
+    ('northwind', 'generate_trades', 60, '{"configs": [
+        {"party": "Northwind Traders Ltd", "name": "Northwind GBP bond population",
+         "description": "The bonds Northwind Traders books in its London GBP book, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "GBP Bonds Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+        {"party": "Northwind Traders Ltd", "name": "Northwind USD bond population",
+         "description": "The bonds Northwind Traders books in its London USD book, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "USD Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "100000", "max_notional": "10000000", "seed": 42}
     ]}'::jsonb)

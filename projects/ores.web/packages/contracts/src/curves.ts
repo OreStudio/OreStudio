@@ -88,6 +88,8 @@ export const curveIdentitySchema = z.object({
     instrument_type: z.string(),
     quote_type: z.string(),
     party_id: z.string(),
+    /** The provider of the series, or empty for every provider. */
+    provider_code: z.string(),
     fields: z.array(z.object({ name: z.string(), text: z.string() })),
 });
 export type CurveIdentity = z.infer<typeof curveIdentitySchema>;

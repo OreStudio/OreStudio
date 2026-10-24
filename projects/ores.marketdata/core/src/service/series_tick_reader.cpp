@@ -21,7 +21,9 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/repository/tick_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <map>
+#include <set>
 #include <string>
 
 namespace ores::marketdata::service {
@@ -65,8 +67,19 @@ series_tick_reader::read(ores::database::context ctx,
     if (series.empty())
         return response;
     if (series.size() > 1) {
-        response.result = refuse(outcome_code::series_ambiguous,
-                                 {.entity = "ticks", .value = std::to_string(series.size())});
+        std::set<std::string> parties;
+        std::set<std::string> providers;
+        for (const auto& s : series) {
+            parties.insert(boost::uuids::to_string(s.party_id));
+            providers.insert(s.provider_code);
+        }
+        std::string provider_list;
+        for (const auto& p : providers)
+            provider_list += (provider_list.empty() ? "" : ", ") + p;
+        const auto reason = std::to_string(parties.size()) + " parties; providers " + provider_list;
+        response.result =
+            refuse(outcome_code::series_ambiguous,
+                   {.entity = "ticks", .value = std::to_string(series.size()), .reason = reason});
         return response;
     }
 

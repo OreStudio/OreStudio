@@ -183,6 +183,7 @@ TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_identity", tags) {
     marketdata_commands::process_ticks(out, session, {});
 
     CHECK(out.str().find("Usage: marketdata ticks --asset") != std::string::npos);
+    CHECK(out.str().find("--provider <code>") != std::string::npos);
 }
 
 TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in", tags) {

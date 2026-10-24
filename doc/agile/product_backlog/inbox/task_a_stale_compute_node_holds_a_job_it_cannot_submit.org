@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 06434819-C366-4DFD-A040-FCBC0C427E5C
+:END:
+#+title: Task: A stale compute node holds a job it cannot submit
+#+description: A compute node older than the submit protocol claims a job it can never hand back, so the batch never drains.
+#+type: task
+#+level: s1
+#+filetags: :compute:storage:iam:inbox:product_backlog:agile:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+A batch dispatched to the grid must drain whatever mix of node versions is online. Today a node
+that is older than the serving service takes work it can never hand back, and the work is lost to
+every other node until its lease is reclaimed.
+
+
+* Status
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+
+* Acceptance
+-
+
+
+* Plan
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+* Measurements
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+
+* Notes
+Found on 2026-10-24 while proving a multi-tenant grid run on brave_hopper.
+
+The submit request gained one field, =duration_ms=, in commit =1cefe41612= ("[compute] Record when a
+run starts and how long the engine ran"). A node built before that commit sends the older msgpack
+shape, and the service's decode refuses it. Newton's node 2 shows the whole cycle, in its own log:
+
+: Claimed result e8044b54-... (attempt 1)
+: Job complete: e8044b54-...
+: results.submit failed: Failed to decode request
+: Claimed result e8044b54-... (attempt 2)
+: Job complete: e8044b54-...
+: results.submit failed: Failed to decode request
+: Claimed result e8044b54-... (attempt 3)
+: Job complete: e8044b54-...
+: results.submit failed: Failed to decode request
+
+The node gives up after three attempts and the result stays leased to it. The grid counts that node
+as online, because it heartbeats, so the reaper does not treat it as stale; five jobs from the smoke
+batches sat in =ores_compute_work_ledger_tbl= in state =claimed= with a lease that was never renewed
+and never reclaimed.
+
+The images each remote host runs, read from =podman ps= on each:
+
+| Host | Image | Serving build |
+|------+-------+---------------|
+| newton (192.168.1.22) | =ores-compute-wrapper:0.0.28-467fa878e5= | v0.0.29, 11 nodes |
+| goedel (192.168.1.199) | =ores-compute-wrapper:0.0.28-467fa878e5= | v0.0.29 |
+| laptop (192.168.1.11) | =ores-compute-wrapper:0.0.27-5418a8db36= | v0.0.29 |
+| simba (192.168.1.178) | unreachable when checked | — |
+
+The five wrappers on the serving host itself run v0.0.29 and complete work normally: a 3-job batch
+dispatched after the investigation drained 3/3 in about 100 ms each, on local hosts.
+
+Two things to decide:
+
+1. Redeploy the compute role on each host (=compass env deploy <host> --role compute=) and make the
+   deploy refuse a node image older than the serving build, so this cannot recur silently. The
+   profiles already point at this environment's NATS.
+2. Make a node whose submit is refused visible: the service answers, but nothing surfaces the
+   refusals as a failed result, and the leased job waits on a node that heartbeats. Either the
+   service ends the result with the node's error, or the reaper reclaims work from a node that has
+   failed to submit repeatedly.
+
+Not the cause, and worth knowing for the next recreate: a compute service that stays up through
+=compass db recreate= keeps a session minted against the old database, and every storage capability
+mint is then denied ("mint denied: the caller lacks iam::storage_capabilities:mint"). Restarting the
+compute service fixes it. The documented order, =compass services stop && compass db recreate=,
+avoids it; =db recreate= on its own does not restart anything.
+
+
+* Test Scenarios
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+
+* PRs
+| PR | Title |
+|----+-------|
+| #3724 | [iam] Add the Northwind Traders demonstration tenant |
+
+* Review
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+
+* Result

@@ -43,6 +43,7 @@ const FORM = {
     quoteType: 'rate_lnvol',
     fields: 'ccy=PLN',
     partyId: '',
+    providerCode: '',
 };
 
 describe('identityOf', () => {
@@ -55,6 +56,7 @@ describe('identityOf', () => {
                 instrument_type: 'fx_option',
                 quote_type: 'rate_lnvol',
                 party_id: '',
+                provider_code: '',
                 fields: [{ name: 'ccy', text: 'PLN' }],
             },
         });
@@ -92,6 +94,7 @@ const LISTED: ListedSeries = {
         instrument_type: 'fx_option',
         quote_type: 'rate_lnvol',
         party_id: PARTY,
+        provider_code: 'bloomberg',
         fields: [{ name: 'ccy', text: 'USD' }],
     },
     axes: ['expiry', 'strike_label'],
@@ -118,6 +121,18 @@ describe('the series picker helpers', () => {
         };
         const identity = identityOf(formFrom(tricky));
         expect(identity.ok && identity.identity).toEqual(tricky.identity);
+    });
+
+    it('keeps the provider of a picked series, so the read names that series and no other', () => {
+        const form = formFrom(LISTED);
+        expect(form.providerCode).toBe('bloomberg');
+        const identity = identityOf(form);
+        expect(identity.ok && identity.identity.provider_code).toBe('bloomberg');
+    });
+
+    it('states no provider for an identity the person typed', () => {
+        const identity = identityOf(FORM);
+        expect(identity.ok && identity.identity.provider_code).toBe('');
     });
 
     it('states no party for an identity the person typed', () => {

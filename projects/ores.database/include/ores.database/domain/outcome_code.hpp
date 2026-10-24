@@ -292,8 +292,8 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
             return detail::fill(
                 "The range holds more than {limit} {entity}; ask for a shorter range.", a);
         case outcome_code::series_ambiguous:
-            return detail::fill("The identity names {value} series of the {entity}; state the "
-                                "party so that it names one.",
+            return detail::fill("The identity names {value} series of the {entity} ({reason}); "
+                                "state the party or the provider so that it names one.",
                                 a);
         case outcome_code::internal_error:
             return detail::fill("The store refused the write: {reason}", a);

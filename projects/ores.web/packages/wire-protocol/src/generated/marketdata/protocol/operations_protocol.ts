@@ -48,6 +48,9 @@ export interface SeriesIdentityField {
  *
  * `party_id` states whose series is wanted. An empty one asks across the
  * parties the caller can see, which is why the answer is a list.
+ *
+ * `provider_code` states which provider's series is wanted. A party holds one
+ * series of an identity for each provider, so an empty one can match several.
  */
 export interface ResolveSeriesIdentityRequest {
     asset: string;
@@ -55,6 +58,7 @@ export interface ResolveSeriesIdentityRequest {
     instrument_type: string;
     quote_type: string;
     party_id: string;
+    provider_code: string;
     /**
      * @brief The identity's remaining fields, such as ccy or curve_id.
      *

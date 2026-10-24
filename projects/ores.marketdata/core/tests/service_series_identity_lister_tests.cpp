@@ -162,11 +162,37 @@ TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", tags) {
     CHECK(mine[0].identity.instrument_type == "zero");
     CHECK(mine[0].identity.quote_type == "rate");
     CHECK(mine[0].identity.party_id == boost::uuids::to_string(party));
+    CHECK(mine[0].identity.provider_code == "ore");
 
     // The identity is what the curve reads take: resolving it finds the series.
     const auto resolved = market_series_identity_reader::read(h.context(), mine[0].identity);
     REQUIRE(resolved.size() == 1);
     CHECK(resolved[0].id == written.id);
+}
+
+TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_series", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    const auto curve = fresh_curve_id();
+    const auto from_ore = series_at(h, party, zero_uri(curve));
+    auto from_bloomberg = series_at(h, party, zero_uri(curve));
+    from_bloomberg.provider_code = "bloomberg";
+    market_series_repository{}.write(h.context(), from_ore);
+    market_series_repository{}.write(h.context(), from_bloomberg);
+
+    const auto listed = series_identity_lister::list(h.context(), list_series_identities_request{});
+
+    REQUIRE(listed.success);
+    const auto mine = with_curve(listed.series, curve);
+    REQUIRE(mine.size() == 2);
+    for (const auto& entry : mine) {
+        const auto resolved = market_series_identity_reader::read(h.context(), entry.identity);
+        REQUIRE(resolved.size() == 1);
+        CHECK(boost::uuids::to_string(resolved[0].id) == entry.series_id);
+        CHECK(resolved[0].provider_code == entry.identity.provider_code);
+    }
 }
 
 TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys", tags) {

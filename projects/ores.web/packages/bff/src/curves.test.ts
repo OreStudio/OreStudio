@@ -132,6 +132,7 @@ const IDENTITY = {
     instrument_type: 'fx_option',
     quote_type: 'quote',
     party_id: '',
+    provider_code: '',
     fields: [
         { name: 'ccy1', text: 'NZD' },
         { name: 'ccy2', text: 'PLN' },
@@ -175,6 +176,20 @@ describe('the curve read routes', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ series: [{ id: 'a' }] });
         expect(calls[0]?.body).toEqual(IDENTITY);
+    });
+
+    it('forwards the provider of an identity, so a party that holds two providers names one', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.resolve_series_identity': {
+                success: true,
+                message: '',
+                series: [{ id: 'a' }],
+            },
+        });
+        const identity = { ...IDENTITY, provider_code: 'bloomberg' };
+        const response = await send(server, sessionId, 'POST', '/api/curves/series', { identity });
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({ provider_code: 'bloomberg' });
     });
 
     it('lists the series the session can see, as identities the other reads take', async () => {

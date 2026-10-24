@@ -1,3 +1,7 @@
+![ore_studio-v0.0.28.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28.png)
+
+*The system administration dashboard: tenants, services, the compute grid and the message queue.*
+
 *October 2026*
 
 Sprint 28 set out to finish the work carried from sprint 27 and to add no new scope. It did not keep that promise or its size. The sprint ran twelve days instead of seven, merged 432 pull requests after the v0.0.27 tag and made about 2,500 commits (2,518 since 2026-10-13, from health review 1), so its load was RED against every target. Most of the carried stories shipped in part: the XML strategy, the instrument table rework, the conventions refactor, the market data service, the engine settings and the grid job screens are in. Eight in ten stories were new (101 of 126 were created after the sprint opened, from health review 1), and the report page with its six tabs is not built. At the close we split every unfinished story. Each keeps its finished tasks here, and the rest, 123 tasks in 25 stories plus 37 stories that never started, is in the product backlog.
@@ -14,10 +18,6 @@ Sprint 28 set out to finish the work carried from sprint 27 and to add no new sc
 -   **Engine settings and 610 ORE parameters.** The ORE parameters now reach every tenant through the data quality pipeline, with documentation, party rules, a history and a refresh that follow the screen standard.
 -   **Grid jobs and reports.** A person browses the grid's batches, workunits and results, triggers a report on demand or by schedule, and manages the reports a party runs from one list.
 -   **CI cheaper and steadier.** The continuous Linux jobs carry less work, share one compiler cache and save it on every exit. The nightly builds report under their own CDash group.
-
-![ore_studio-v0.0.28.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.28.png)
-
-*The system administration dashboard: tenants, services, the compute grid and the message queue.*
 
 
 # 🛠️ Key Improvements

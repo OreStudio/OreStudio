@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-configuration-screen-standard
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ One standard page states the words, the list, the record page, the sections, the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
 | Now          | Paused until the journeys and prototypes are signed off. |
 | Waiting on   | The owner's sign-off of the journeys and prototypes. |
@@ -45,9 +45,41 @@ One standard page states the words, the list, the record page, the sections, the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Why
+
+The engine run settings work of sprint 28 produced a screen shape that every
+configuration coming off an ORE document can use: a named configuration, a tab
+per section, documentation read from data, editing in place, a read of the reach
+and the shared timeline. The pricing engine configuration predates it and does
+some of those things differently. The two kinds also carry names that a person
+confuses. The owner decided the screen words and the per-section lifecycle on
+2026-10-24, and asked that the journeys and prototypes carry them before this
+page was written.
+
+** What this page states
+
+- The words, and the name of each of the 19 configuration kinds.
+- The family: a configuration is a named, party-owned, versioned set that a
+  report binds in a slot.
+- The list, the record page and the fixed tab order.
+- The two section shapes: a group edited in place, a collection edited in
+  dialogs.
+- Reading a group and changing it, including the value in force and the default.
+- The one documentation contract.
+- The reach, the history and the per-section lifecycle.
+- The import and the export.
+- The sentence that says what a configuration decides, and the related
+  configurations card.
+- The states, the owning-party rule, and how to add a kind.
+- The conformance of the two screens that exist today, and the prototype changes
+  the page still requires.
+
+** Where it is wired
+
+- The UX hub reading order, after the feed standard.
+- The screen review checklist, as 14 lines that name this page.
+- The menu structure, where the Reporting area now names its configuration
+  screens.
 
 * Measurements
 
@@ -61,7 +93,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Configuration kinds named | 19 | the =configuration_type= seed | =546313dbbf= |
+| Checklist lines added | 14 | the section this page adds | the standard branch |
+| Rules in the conformance table | 10 across 2 screens | the table below | the standard branch |
 
 * Notes
 
@@ -111,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+|    | The draft PR is opened after this page is written. |
 
 * Review
 

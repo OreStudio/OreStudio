@@ -62,6 +62,32 @@ task and name that file in the Command column.
 
 * Notes
 
+** Rebased onto main 2026-10-24, and the premise of the acceptance moved
+
+The branch is rebased onto main at =e622e7fd0b= and carries the codegen
+support the remodel needs. The remodel itself is not re-applied, because
+the tree it was written against no longer exists.
+
+- =761c859fef= (2026-10-15) atomised the convention into a central row and
+  the two part tables =tenor_basis_swap_pay_receive= and
+  =tenor_basis_swap_long_short=, and dropped
+  =refdata_tenor_basis_swap_conventions=. The "24 flat members in one
+  table" this task describes are therefore gone.
+- The acceptance says "its SQL schema and database entity are unchanged".
+  Against main that is no longer true, so re-applying the branch as it
+  stood would revert the atomisation.
+- What survives and is kept: the codegen support (cross-component field
+  group resolution, and stamping only the members that carry a stampable
+  field), with its tests. Codegen suite: 1590 passed.
+- Parked with the pre-rebase branch: the field-group models, the
+  regenerated domain and JSON, the conventions mapper, the
+  =ores.dq.api= public dependency and the aggregate =stamp_document= walk.
+
+To resume: re-scope this task against the atomised model, following the
+standard the price engine settings establish, and say whether the field
+groups attach to the central row, to the parts, or to both.
+
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

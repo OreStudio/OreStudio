@@ -41,7 +41,10 @@ directions.
   paragraph, the instrument it maps to and that instrument's paragraph, the asset
   class and that class's paragraph, the model and engine in force, the settings
   of this product, and the known model and engine pairs with the one in use
-  marked.
+  marked, and the settings of the product with their documentation collapsed
+  under each one. Simple and Advanced are the same switch as the engine settings:
+  Advanced adds the ORE argument, the format and the release that introduced the
+  setting.
 - Clicking the asset class opens a card that says what the class is, and lists
   the product types of this configuration that sit in it.
 

@@ -55,6 +55,9 @@ td.num{text-align:right;font-family:var(--mono)}
 .setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
 .shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
 .setting .help{color:var(--ink-faint);font-size:.8rem}
+.setting details.doc>summary{cursor:pointer;color:var(--ink-faint);font-size:.85rem;width:fit-content}.setting details.doc>summary:hover{color:var(--ink)}
+.docbody{display:grid;gap:8px;margin-top:8px}
+.adv{border-top:1px dashed var(--line);padding-top:8px;color:var(--ink-faint);font-size:.8rem;display:grid;gap:3px}
 
 .dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
 a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
@@ -514,7 +517,7 @@ KEEP = ['state', 'actor'];
 const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
-let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1;
+let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple');
 const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details' }; };
 const byId = id => CONFIGS.find(c => c.id === id);
 byId('c2').proposal = proposalIn('partly');
@@ -586,16 +589,19 @@ function recordScreen(c) {
 function productCard(c, p) {
   const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, inst = t ? INSTRUMENTS[t.instrument] : null;
   const pairs = TRIPLES.filter(x => x[0] === p.type).map(x => [x[1], x[2]]);
-  const params = p.params.length ? `<table><thead><tr><th>Scope</th><th>Setting</th><th>Value</th></tr></thead><tbody>${p.params.map(x => `<tr><td>${esc(x.scope)}</td><td class="mono">${esc(x.name)}</td><td class="mono">${esc(x.value)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">This product carries no setting. The engine uses its own defaults.</p>';
+  const known = settingsFor(p.type, p.model, p.engine);
+  const params = p.params.length ? p.params.map(x => { const k = known.find(y => y.name === x.name); const note = k ? k.note : 'The documentation of this setting is not held.'; return `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(x.scope)} · ${esc(p.type)}</div></div><div class="sval mono">${esc(x.value)}</div></div>
+    <details class="doc" ${new URLSearchParams(location.search).get('doc') === x.name ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']/Parameter[@name='${esc(x.name)}']</span></div><div>Format ${esc(k ? k.kind : 'text')}</div><div>Introduced in 1.8.0.7</div></div>` : ''}</div></details></div>`; }).join('') : '<p class="muted">This product carries no setting. The engine uses its own defaults.</p>';
   const pairList = pairs.length ? `<ul>${pairs.map(([m, e]) => `<li><span class="mono">${esc(m)} / ${esc(e)}</span>${m === p.model && e === p.engine ? ' <span class="tag ok">in use</span>' : ''}</li>`).join('')}</ul>` : '<p class="muted">No pair is known for this product type.</p>';
   const body = `<p class="muted">Product type <span class="mono">${esc(p.type)}</span>${cls ? ` · asset class <span class="mono">${esc(cls.code)}</span>` : ''}</p>
     <h3>What it is</h3><p>${esc(WHAT[p.type] || (t ? t.desc : 'No description is held.'))}</p>
     ${t ? `<h3>Instrument: ${esc(t.instrument)}</h3><p>${esc(inst || 'No description is held.')}</p>` : ''}
     ${cls ? `<h3>Asset class: ${esc(cls.name)}</h3><p>${esc(cls.what)}</p><p><button class="btn small" id="pc-class">Read about the ${esc(cls.name)} asset class</button></p>` : '<h3>Asset class</h3><p class="muted">This product type maps to no instrument, so it has no asset class. Leg and coupon pricers are the usual case.</p>'}
     <h3>In this configuration</h3><p><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span>, with ${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}.</p>
-    <h3>Settings of this product</h3>${params}
+    <h3>Settings of this product</h3><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>${params}
     <h3>Known model and engine pairs</h3>${pairList}`;
   dialog(`${p.type} — how this product is priced`, body, `<button class="btn" id="d-cancel">Close</button>${may('edit') ? `<a class="btn primary" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}`);
+  document.querySelectorAll('[data-pmode]').forEach(x => x.onclick = () => { mode = x.dataset.pmode; productCard(c, p); });
   const b = document.getElementById('pc-class');
   if (b && cls) b.onclick = () => assetClassCard(c, t.cls);
 }

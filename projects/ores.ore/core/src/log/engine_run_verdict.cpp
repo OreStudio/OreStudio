@@ -42,6 +42,13 @@ bool is_analytics(const std::string& file_name) {
     return !file_name.empty() && file_name != engine_log_name;
 }
 
+/**
+ * @brief The marker ORE writes when the analytic it was asked for did not run.
+ *
+ * ORE logs it at the end of a failed analytics run and still exits 0.
+ */
+constexpr std::string_view fatal_marker = "Error in ORE analytics";
+
 /** The messages of the engine's ERROR lines, in the order it wrote them. */
 std::vector<std::string> error_messages(std::string_view engine_log, std::size_t& total_lines) {
     std::vector<std::string> errors;
@@ -65,17 +72,60 @@ std::vector<std::string> error_messages(std::string_view engine_log, std::size_t
     return errors;
 }
 
+/** The engine's own verdicts that the analytics failed, deduplicated. */
+std::vector<std::string> fatal_messages(std::string_view engine_log) {
+    std::vector<std::string> failures;
+
+    std::size_t first = 0;
+    while (first < engine_log.size()) {
+        const auto end = engine_log.find('\n', first);
+        const auto line = engine_log.substr(
+            first, end == std::string_view::npos ? std::string_view::npos : end - first);
+
+        if (const auto parsed = parse_ore_log_line(line);
+            parsed && parsed->message.starts_with(fatal_marker) &&
+            (failures.empty() || failures.back() != parsed->message))
+            failures.push_back(parsed->message);
+
+        if (end == std::string_view::npos)
+            break;
+        first = end + 1;
+    }
+
+    return failures;
+}
+
+/** The trailing clause that names the errors, capped for readability. */
+std::string reported_errors(const std::vector<std::string>& errors) {
+    const auto omitted = errors.size() > max_reported_errors ? errors.size() - max_reported_errors :
+                                                               static_cast<std::size_t>(0);
+    std::string out = omitted == 0 ?
+                          " The engine reported:" :
+                          std::format(" The engine reported {} errors; the last {} are:",
+                                      errors.size(),
+                                      max_reported_errors);
+    for (auto it = errors.begin() + static_cast<std::ptrdiff_t>(omitted); it != errors.end(); ++it)
+        out += "\n  " + *it;
+    return out;
+}
+
 }
 
 engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_names,
                                     std::string_view engine_log) {
     engine_run_outcome outcome;
 
-    // A run that wrote analytics did the job, whatever it also logged. Failing
-    // it here would turn a working run into a failed one, which is the opposite
-    // of what this check is for.
     if (std::ranges::any_of(output_file_names, is_analytics)) {
-        outcome.succeeded = true;
+        // The files are not enough on their own. ORE writes its calibration and
+        // timing reports whether or not the analytic it was asked for ran, so a
+        // failed run leaves files behind too. Its own verdict outranks them.
+        const auto failures = fatal_messages(engine_log);
+        if (failures.empty()) {
+            outcome.succeeded = true;
+            return outcome;
+        }
+
+        outcome.failure = "The engine reported a failed analytic." + reported_errors(failures);
         return outcome;
     }
 
@@ -89,16 +139,7 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
         return outcome;
     }
 
-    const auto omitted = errors.size() > max_reported_errors ? errors.size() - max_reported_errors :
-                                                               static_cast<std::size_t>(0);
-    outcome.failure += omitted == 0 ?
-                           " The engine reported:" :
-                           std::format(" The engine reported {} errors; the last {} are:",
-                                       errors.size(),
-                                       max_reported_errors);
-    for (auto it = errors.begin() + static_cast<std::ptrdiff_t>(omitted); it != errors.end(); ++it)
-        outcome.failure += "\n  " + *it;
-
+    outcome.failure += reported_errors(errors);
     return outcome;
 }
 

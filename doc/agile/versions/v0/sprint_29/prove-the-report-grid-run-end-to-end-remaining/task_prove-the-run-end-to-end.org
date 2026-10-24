@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-10-24
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Run the ACME definition against a freshly recreated database, record the instanc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Every code task of the story is in place. No run has been recorded.                       |
-| Waiting on   | A live run on a database built from nothing.                               |
-| Next         | Run one report end to end and record the instance states, the compute job and where the output landed.                  |
-| Last touched | 2026-10-21                               |
+| Now          | The run is witnessed on a database built from nothing, and the failure path now records a failed result. Waiting on review.                       |
+| Waiting on   | Review of the pull request.                               |
+| Next         | Address review, then close.                  |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
@@ -41,18 +41,84 @@ Run the ACME definition against a freshly recreated database, record the instanc
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Run the chain the way an operator does: recreate the database, provision it
+from =acme_demo=, trigger a definition the session's party owns, and watch the
+instance, the batch and the result. Every step that could differ across
+environments is read from the database rather than assumed, because the previous
+attempts failed on data shape rather than on code.
+
+The chain was found sound where it was suspected: the config lookup resolves the
+binding to the risk configuration row before resolving scope, so the scope
+returns books. The investigation that mattered was the failure path, described
+under =* Notes=.
+
+The repeatable artefact is a recipe, not a bespoke script, because the run needs
+prose steps between the commands: [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How do I prove a report runs end to end?]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| report definitions after provision | 78 | =select count(*) from ores_reporting_report_definitions_tbl where valid_to > now()= | 8a7478393e + working tree |
+| definitions whose config resolves to books | 78 of 78 | =resolve_book_ids_for_config_fn(d.tenant_id, r.id, d.id)= over =risk_report_configs.configuration_id = bindings.configuration_id= | 8a7478393e + working tree |
+| portfolio scope rows | 46 | =select count(*) from ores_reporting_risk_report_config_portfolios_tbl where valid_to > now()= | 8a7478393e + working tree |
+| book scope rows | 0 | =select count(*) from ores_reporting_risk_report_config_books_tbl where valid_to > now()= | 8a7478393e + working tree |
+| books under each Global Portfolio | 20, 8, 8 | =ores_trading_get_book_ids_by_portfolio_fn= | 8a7478393e + working tree |
+| trades owned by the holding party | 8 | =select count(*) from ores_trading_trades_tbl where party_id = ...= | 8a7478393e + working tree |
+| reports run through the grid | 4 completed, 2 failed as designed | instance and result tables | 8a7478393e + working tree |
+| engine time for PORTFOLIO_DETAILS | 10000 ms | =Output/runtimes.csv= of the first run | 8a7478393e + working tree |
 
 * Notes
 
-* Test Scenarios
+*What the chain does, confirmed.* =gather_trades= resolves the definition's
+binding to the central configuration row, then reads the =risk_report_configs=
+row whose =configuration_id= holds it, then resolves scope with the risk
+configuration id and the definition id. Joining on the central id returns no
+scope for every definition, which is what made the first reading look like a
+failure. It was a wrong join, not a defect.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+*A working run.* Instance =97e9d3c2= walked pending, running, running and
+completed in nine seconds. The batch closed with one workunit, the result had
+outcome 1 and server state 5, and the output archive held =log.txt=,
+=runtimes.csv=, =pricingstats.csv=, =counterparties.csv= and the tradewise
+analytics. The engine logged =Built Portfolio. Initial size = 8, size now 8,
+built 0 failed trades=, so the package the chain builds is ORE-readable and the
+engine proceeds past Build Portfolio.
+
+*The defect the proof exposed.* A job whose engine failed was recorded as
+Success. ORE writes =runtimes.csv=, =pricingstats.csv=, =log_structured.json=
+and =todaysmarketcalibration*.csv= whether or not the analytic it was asked for
+ran, and =judge_engine_run= treated any file other than =log.txt= as evidence
+that the run worked. It returned success before it ever read the log. The same
+broken package that returned outcome 1 before the change returns outcome 3 after
+it, carrying ORE's own line:
+
+#+begin_example
+The engine reported a failed analytic. The engine reported:
+  Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS
+#+end_example
+
+The fix reads the engine's own verdict: a line whose message starts with =Error
+in ORE analytics= fails the run whatever else it wrote, while a run that wrote
+analytics and logged no such verdict still succeeds. The file-based rule stays
+for the case where nothing but the log was written.
+
+*The gap that remains.* Seven of the eight bonds in the run have no reference
+data the engine can build, so the engine warns and prices nothing for them. The
+chain completes and the run is honest about its output, but a pricing analytic
+will produce no numbers until the bond reference data reaches the package. This
+is recorded here rather than fixed, because it belongs to the instrument export
+rather than to the chain.
+
+*Where it runs.* The proof uses the five local wrapper hosts of this
+environment. The LAN hosts serve other environments and were stale: goedel and
+Newton ran =0.0.28= and the laptop =0.0.27=, against =0.0.29= on main. They are
+not part of this environment's grid, so they are not part of this proof.
+
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -71,3 +137,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The run works end to end, and the failure path now reports failure.
+
+- *A recreated database is runnable after one provision.* The recreate leaves
+  schema and staged artefacts only. =bootstrap setup ... --profile acme_demo=
+  publishes 78 report definitions, 46 portfolio scope rows and both ORE engine
+  packages. Every one of the 78 definitions then resolves to books, through the
+  risk configuration row rather than the central one.
+- *Four report runs completed through the grid.* Each walked pending, running
+  and completed, each left =reporting/runs/<instance>/output.tar.gz= in
+  storage, and each closed a compute batch whose external reference is the
+  instance id, with outcome 1 and server state 5.
+- *The engine reads the package the chain builds.* ORE logged =Built Portfolio.
+  Initial size = 8, size now 8, built 0 failed trades= and ran
+  PORTFOLIO_DETAILS for ten seconds.
+- *A failed analytic is now a failed result.* =judge_engine_run= read the files
+  alone, and ORE's bookkeeping files made every failed run look successful. The
+  function now fails a run whose log carries the engine's own =Error in ORE
+  analytics= verdict. The same broken package returns outcome 1 before the
+  change and outcome 3 after it, with the engine's message on the result, and a
+  working run still returns outcome 1.
+- *The run is repeatable.* [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How do I prove a report runs end to end?]]
+  records the steps and its script tangles into the shell library. The generated
+  script ran a fifth instance to completion.

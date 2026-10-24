@@ -54,6 +54,11 @@ struct engine_run_outcome {
  * behind is the verdict: a run that wrote no analytics failed, and the engine's
  * own =ERROR= lines say why.
  *
+ * The files alone are not the verdict either. ORE writes its calibration and
+ * timing reports whether or not the analytic it was asked for ran, so a failed
+ * run leaves files behind. The engine's own =Error in ORE analytics= lines fail
+ * the run whatever else it wrote.
+ *
  * The log is *not* evidence that anything was computed. The engine writes it
  * beside its results, so a directory holding only the log is a run that
  * produced nothing.

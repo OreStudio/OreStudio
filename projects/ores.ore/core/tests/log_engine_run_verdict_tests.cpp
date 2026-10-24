@@ -81,6 +81,29 @@ TEST_CASE("an error does not fail a run that still wrote analytics", tags) {
     CHECK(outcome.failure.empty());
 }
 
+TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote", tags) {
+    // ORE writes its calibration and timing reports even when the analytic it
+    // was asked for produced nothing, so the files alone say the run worked.
+    const auto log =
+        line("ALERT", "Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS") +
+        line("WARNING",
+             "StructuredMessage { \"category\": \"Warning\", \"message\": "
+             "\"Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS\" }");
+
+    const auto outcome = judge_engine_run({"log.txt",
+                                           "log_structured.json",
+                                           "pricingstats.csv",
+                                           "runtimes.csv",
+                                           "todaysmarketcalibration.csv",
+                                           "todaysmarketcalibration_cashflows.csv"},
+                                          log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure ==
+          "The engine reported a failed analytic. The engine reported:\n"
+          "  Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS");
+}
+
 TEST_CASE("a refusal says how many errors it left out", tags) {
     std::string log;
     for (int i = 1; i <= 7; ++i)

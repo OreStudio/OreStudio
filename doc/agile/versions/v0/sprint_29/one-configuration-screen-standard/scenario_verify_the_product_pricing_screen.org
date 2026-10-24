@@ -117,4 +117,4 @@ The session already did the following. Confirm the system is in this state befor
 * Notes
 
 - The Product dialog is the only write on the page; the page itself is read only.
-- The global parameters do not carry documentation yet. The task that moves the pricing documentation onto the ORE parameter contract owns that.
+- Every parameter carries a label, a help line, a format and the XPath of its leaf. A parameter the contract does not hold says so.

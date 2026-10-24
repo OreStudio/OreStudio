@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/apply-the-standard-to-the-pricing-engine-configuration
+#+pr: 3730
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every pricing engine choice and parameter carries the same documentation fields 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The contract carries every pricing parameter, and the screen reads it. |
+| Waiting on   | The owner's test of the screen.        |
+| Next         | Drop the duplicate wording from the vocabulary tables. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -58,7 +58,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pricing setting rows | 646 unique (type, scope, name) | =generate_ore_parameters_dataset.py= | see the branch head |
+| Global parameters documented | 17 | =generate_ore_parameters_dataset.py= | see the branch head |
+| Settings documented on the live API | 834 of 834 | =GET /api/reporting/pricing-engines/vocabulary= | see the branch head |
+| Web tests | 1972 pass | =npx vitest run= in =packages/web= | see the branch head |
+| BFF tests | 941 pass | =npx vitest run= in =packages/bff= | see the branch head |
+| ORE commit measured | =3d75a6908= | =git -C /home/marco/Vault/Development/ORE/Engine rev-parse --short HEAD= | — |
 
 * Notes
 
@@ -86,3 +91,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every pricing parameter now carries the one contract: a label, a help line, the
+description from the ORE user guide, the value the examples use, the format, the
+release it entered and the XPath of the leaf. 646 setting rows cover every
+(type, scope, name) the guide describes, and 17 global rows cover the guide's
+global section and the pseudo-currency block the ORE source reads. The release
+each parameter entered is measured from the ORE release tags and kept in
+=pricing_parameter_releases.json=.
+
+The vocabulary joins the rows by (scope, product type, name), so the Product
+pricing screen reads one field shape: 834 of 834 settings on the live API carry
+their documentation, and the Global parameters tab reads the globals array.
+
+One acceptance item remains: the vocabulary tables still carry the wording in
+their =note= column, which the authoring journey reads. Drop it once the journey
+reads the contract.

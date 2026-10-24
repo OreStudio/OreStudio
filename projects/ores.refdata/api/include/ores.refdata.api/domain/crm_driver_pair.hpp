@@ -83,7 +83,7 @@ struct crm_driver_pair final {
 
     /**
      * @brief Whether this edge currently participates in the topology. Disabling (rather than
-     * deleting) preserves history, matching feed_binding.
+     * deleting) preserves history, matching the route.
      */
     bool enabled = false;
 

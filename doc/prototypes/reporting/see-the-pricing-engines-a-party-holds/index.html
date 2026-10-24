@@ -173,7 +173,7 @@ label.plain{white-space:nowrap}
   and lists the related configurations the same report binds.
   Add, Edit and the file import are the other three prototypes of this journey group.
 
-  Addresses: ?screen=list | record&id=c1|c2|c3&tab=details|products|parameters|reports|history
+  Addresses: the record page, with &tab=details|products|parameters|reports|history, &mode=simple|advanced, &doc=<setting or product type>
     &card=<product type> opens the product card; &class=<asset class> opens the asset class card
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
@@ -368,17 +368,11 @@ const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(
 const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
 const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
 const CONFIGS = [
-  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
-    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
-      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
-  { id: 'c2', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+  { id: 'c1', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
     versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
       { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
-      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
-  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
-    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
-    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] }
 ];
 CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
 // A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
@@ -517,16 +511,15 @@ function reportsTab(c) {
   <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
 }
 
-const state = P0.get('state') || 'all', actor = P0.get('actor') || 'analyst';
-KEEP = ['state', 'actor'];
+const actor = 'analyst';
+KEEP = ['mode', 'doc'];
 const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
 let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple');
-const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details' }; };
-const byId = id => CONFIGS.find(c => c.id === id);
-byId('c2').proposal = proposalIn('partly');
-const LIST = () => href({ screen: 'list' });
+const route = () => { const p = new URLSearchParams(location.search); return { tab: p.get('tab') || 'details' }; };
+const byId = () => CONFIGS[0];
+const LIST = () => href({ tab: 'details' });
 const OTHER = { add: '../author-a-pricing-engine-configuration/', change: '../change-how-a-product-is-priced/', imp: '../bring-in-a-pricing-engines-file/', sign: SIGNOFF };
 function visible() {
   let rows = CONFIGS.filter(c => (!search || (c.name + ' ' + c.desc).toLowerCase().includes(search.toLowerCase())) && (variantF === 'all' || (c.variant || 'none') === variantF) && (usedF === 'any' || (usedF === 'yes') === (c.reports.length > 0)) && (statusF === 'all' || c.status === statusF));
@@ -561,8 +554,8 @@ function productsTab(c) {
     const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null, note = WHAT[p.type] || (t ? t.desc : '');
     const settings = p.params.map(x => { const k = noteOf(x.name); return `<div class="help"><span class="mono">${esc(x.name)}</span> — ${esc(k ? k.note : 'The documentation of this setting is not held.')}</div>`; }).join('');
     return `<div class="setting"><div class="shead">
-      <div><b><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a></b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
-      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}${may('edit') ? ` · <a class="link" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${c.status === 'approved' ? 'Propose' : 'Change'}</a>` : ''}</div></div>
+      <div><b>${esc(p.type)}</b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
+      <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}</div></div>
     </div>
     <details class="doc" ${want === p.type ? 'open' : ''}><summary>Documentation</summary><div class="docbody"><p class="help">${esc(note)}</p>
       ${t ? `<p class="help"><b>${esc(t.instrument)}</b> — ${esc(INSTRUMENTS[t.instrument] || '')}</p>` : ''}
@@ -571,7 +564,7 @@ function productsTab(c) {
       ${mode === 'advanced' ? `<div class="adv"><div>ORE argument <span class="mono">/PricingEngines/Product[@type='${esc(p.type)}']</span></div><div>Model ${esc(p.model)} · Engine ${esc(p.engine)}</div><div>Introduced in 1.8.0.7</div></div>` : ''}
     </div></details></div>`;
   }).join('');
-  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div>${may('add') ? `<button class="btn small" disabled title="Add a product opens the same dialog as Edit, with the product type empty">${G.add} Add product</button>` : ''}</div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
+  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions"><div class="seg" role="radiogroup" aria-label="Documentation depth"><button data-pmode="simple" class="${mode === 'simple' ? 'on' : ''}">Simple</button><button data-pmode="advanced" class="${mode === 'advanced' ? 'on' : ''}">Advanced</button></div></div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
 }
 function coverageLine(c) {
   const un = gaps(c), n = needed(c).length;
@@ -597,7 +590,7 @@ function recordScreen(c) {
   const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
-    <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('edit') ? `<a class="btn" href="${OTHER.change}?config=${c.id}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}${may('delete') && c.status !== 'approved' ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
+    <div class="actions"><span class="access">✎ Editable</span></div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
 }
@@ -661,8 +654,9 @@ function wire() {
 }
 function render() {
   const r = route();
-  document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
-  chrome('see the pricing engine configurations a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  document.getElementById('app').innerHTML = recordScreen(byId());
+  document.getElementById('bar').hidden = true;
+  document.getElementById('note').textContent = 'Prototype · the pricing engine configuration journey · ' + REV + ' · mock data, nothing is written to a server';
   wire();
 }
 render();

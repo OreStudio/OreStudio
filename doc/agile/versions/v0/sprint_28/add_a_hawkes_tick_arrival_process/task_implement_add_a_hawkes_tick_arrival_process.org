@@ -8,7 +8,7 @@
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-add-a-hawkes-tick-arrival-process
-#+pr:
+#+pr: 3705
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -242,7 +242,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3705][#3705]] | [doc] Design the tick arrival process and document point processes |
 
 * Review
 

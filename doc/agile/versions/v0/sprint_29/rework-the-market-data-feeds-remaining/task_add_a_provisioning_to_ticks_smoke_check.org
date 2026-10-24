@@ -65,11 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Smoke unit tests | 10 passed | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_smoke.py -q= | pending |
-| Ticks on a fresh database | 5,460 | =./compass.sh smoke ticks --start-services= | pending |
-| Subscriptions and routes of the provisioned tenant | 10 and 10 | same run | pending |
-| Ids the simulated adapter accepted | 26 of 26 | same run | pending |
-| First tick after the services start | 80s | same run (00:16:04 to 00:17:24) | pending |
+| Smoke unit tests | 10 passed | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_smoke.py -q= | 7f616622e7 |
+| Ticks on a fresh database | 5,460 | =./compass.sh smoke ticks --start-services= | 7f616622e7 |
+| Subscriptions and routes of the provisioned tenant | 10 and 10 | same run | 7f616622e7 |
+| Ids the simulated adapter accepted | 26 of 26 | same run | 7f616622e7 |
+| First tick after the services start | 80s | same run (00:16:04 to 00:17:24) | 7f616622e7 |
 
 * Notes
 

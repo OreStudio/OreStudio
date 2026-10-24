@@ -139,7 +139,7 @@ conditional intensity that all of them share.
   breed bursts. It reduces to the Poisson process when its branching ratio
   is zero.
 
-These do not implement =IStochasticProcess=, because =next()= there returns a
+These do not implement =i_stochastic_process=, because =next()= there returns a
 level. Their consumer, and the interface they sit behind, are in
 [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]].
 

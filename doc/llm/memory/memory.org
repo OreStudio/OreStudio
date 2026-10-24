@@ -96,6 +96,7 @@ of these exclusions, push back: the right home is somewhere else.
   [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] first; skills are building blocks, not workflows.
 - [[id:AB7A3391-9FDD-478D-B700-B53E61E0E97F][Never type org-roam UUIDs from memory]] — copy from the target's
   =:ID:= drawer; generated UUIDs silently break the link graph.
+- [[id:68AFCBB6-0E0B-4F5A-B737-CBD4073A3E10][Document the target state only]] — knowledge notes describe the target system, never legacy code, history or planned moves; history lives in story and task notes.
 - [[id:99D08493-2142-4536-B2A5-0F1B0E68313E][Cap C++ compilation builds at -j2]] — never =-j $(nproc)=; Emacs-only cmake targets need no cap.
 - [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][Fix codegen templates — never work around codegen gaps]] — fix the template; regenerate; never hand-write into generated files.
 - [[id:9EEF7590-86C3-449F-8387-A21B5B62EF87][Regen byproduct hygiene]] — every phase that regenerates code must sweep for unexpected untracked files and account for each one; the drift check runs in two modes only; blocked deletions dispose via tagged stash and drop.

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-24
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ One run of the NPV report of ACME Corporation HK Ltd goes from the trigger to a 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-21                               |
+| Now           | The NPV report of ACME runs from the trigger to a completed instance on a clean database. The market data export, which timed out at 38 seconds on a polluted database, takes under a second, and the logs say what each phase did. |
+| Waiting on    | Nothing. |
+| Next          | Show a report run in the grid, then the report soak that drives real report runs and checks the grid screens. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 

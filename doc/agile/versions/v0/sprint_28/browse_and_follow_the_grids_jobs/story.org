@@ -23,10 +23,10 @@ A person sees the batches, workunits and results that the session may see, as a 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The prototypes of the Jobs tab, the job page and the app version page are approved. No build task has started.                       |
-| Waiting on    | Nothing. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics.                               |
-| Next          | Start Serve the paged job tree through the BFF.            |
-| Last touched  | 2026-10-22                               |
+| Now           | The Jobs tab, the job page, the app version page, the report run page and the downloads are built and merged. The job page has its prototype's layout, Find bar and lineage chart, and a run's time splits by what the engine ran. |
+| Waiting on    | Nothing for the neighbour charts, which the start time and duration of a run now allow. The scheduled job node of the lineage waits for a read of one scheduler job instance by id. The timing and size columns wait for the run statistics of Draw the node heatmap and carry the engine run statistics. |
+| Next          | Draw the neighbour charts of a job. Then read a scheduled job by its id, link a job to the failure and grid screens, and let a party member download its own files. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 

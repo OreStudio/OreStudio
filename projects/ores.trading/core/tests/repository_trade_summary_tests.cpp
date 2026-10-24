@@ -113,7 +113,8 @@ struct fixture {
         return activity.id;
     }
 
-    uuid write(const std::string& type, const uuid& counterparty_id,
+    uuid write(const std::string& type,
+               const uuid& counterparty_id,
                ores::trading::domain::booking_nature nature =
                    ores::trading::domain::booking_nature::actual) {
         auto gen = ores::testing::make_generation_context(h);
@@ -262,8 +263,7 @@ TEST_CASE("a trade with no booking has no book", tags) {
 TEST_CASE("the authorisation status of an actual trade with no request is not requested", tags) {
     fixture f;
     const auto actual = f.write("Swap", f.counterparty);
-    const auto test = f.write("Swap", f.counterparty,
-                              ores::trading::domain::booking_nature::test);
+    const auto test = f.write("Swap", f.counterparty, ores::trading::domain::booking_nature::test);
 
     auto filter = on(f.counterparty);
     filter.authorisation_status = "not_requested";

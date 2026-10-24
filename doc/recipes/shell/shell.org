@@ -1773,3 +1773,7 @@ tangled into the runnable script library
 * Subscription Intervals
 
 - [[id:6F51E66D-F98B-5C72-AA5D-729D5DD86589][How do I run the subscription_intervals commands from the shell?]]
+
+* Trade Summaries
+
+- [[id:32919539-25F3-5114-A247-55F2839102D5][How do I run the trade_summaries commands from the shell?]]

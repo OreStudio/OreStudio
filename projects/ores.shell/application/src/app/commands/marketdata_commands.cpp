@@ -39,6 +39,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -191,6 +192,15 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         },
         "Re-project the tenant's series identities, writing only the rows that changed",
         {"[--party <party_id>]"});
+
+    marketdata_menu->Insert(
+        "ticks",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_ticks(std::ref(out), std::ref(session), args);
+        },
+        "Read the ticks of one series over a span of time, in one call",
+        {"<series-id> [--from <date|instant>] [--to <date|instant>] [--coordinate <oresmd-uri>] "
+         "[--csv <path>]"});
 
     marketdata_menu->Insert("stream",
                             [&session](std::ostream& out, std::vector<std::string> args) {
@@ -490,6 +500,147 @@ stream_output marketdata_commands::run_stream(
     if (csv.is_open())
         csv.flush();
     return output;
+}
+
+std::expected<std::chrono::system_clock::time_point, std::string>
+marketdata_commands::parse_span_bound(std::string_view text) {
+    std::string wire(text);
+    // A date is ten characters, and it means midnight UTC.
+    if (wire.size() == 10)
+        wire += " 00:00:00Z";
+    try {
+        return ores::platform::time::datetime::from_iso8601_utc(wire);
+    } catch (const std::exception&) {
+        return std::unexpected(std::format("'{}' is neither a date (YYYY-MM-DD) nor an instant "
+                                           "(YYYY-MM-DD HH:MM:SS[.ffffff]Z).",
+                                           text));
+    }
+}
+
+std::expected<std::vector<history_tick>, std::string>
+marketdata_commands::history_ticks(const marketdata::messaging::get_series_ticks_response& reply) {
+    const auto count = reply.values.size();
+    if (reply.gaps_us.size() != count || reply.coordinate_indexes.size() != count)
+        return std::unexpected("The reply is malformed: its arrays differ in length.");
+    std::vector<history_tick> ticks;
+    ticks.reserve(count);
+    if (count == 0)
+        return ticks;
+    if (!reply.first_instant)
+        return std::unexpected("The reply is malformed: it holds ticks and no first instant.");
+    auto at = *reply.first_instant;
+    for (std::size_t i = 0; i != count; ++i) {
+        const auto index = reply.coordinate_indexes[i];
+        if (index < 0 || static_cast<std::size_t>(index) >= reply.coordinates.size())
+            return std::unexpected(
+                std::format("The reply is malformed: tick {} names coordinate {} "
+                            "and the reply holds {}.",
+                            i,
+                            index,
+                            reply.coordinates.size()));
+        at += std::chrono::microseconds(reply.gaps_us[i]);
+        ticks.push_back({at, reply.coordinates[static_cast<std::size_t>(index)], reply.values[i]});
+    }
+    return ticks;
+}
+
+std::string marketdata_commands::history_tick_line(const history_tick& tick) {
+    return std::format("{}  {}  {}",
+                       ores::platform::time::datetime::to_iso8601_utc(tick.at),
+                       tick.oresmd_uri,
+                       tick.value);
+}
+
+std::string marketdata_commands::history_tick_row(const history_tick& tick) {
+    return std::format("{},{},{}",
+                       csv_field(ores::platform::time::datetime::to_iso8601_utc(tick.at)),
+                       csv_field(tick.oresmd_uri),
+                       csv_field(std::format("{}", tick.value)));
+}
+
+void marketdata_commands::process_ticks(std::ostream& out,
+                                        nats_client& session,
+                                        const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "from", .requires_value = true, .default_value = ""},
+                              {.name = "to", .requires_value = true, .default_value = ""},
+                              {.name = "coordinate", .requires_value = true, .default_value = ""},
+                              {.name = "csv", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Usage: marketdata ticks <series-id> [--from <date|instant>] "
+                     "[--to <date|instant>] [--coordinate <oresmd-uri>] [--csv <path>]"
+                  << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    marketdata::messaging::get_series_ticks_request req;
+    try {
+        req.series_id = boost::uuids::string_generator()(parsed->positionals[0]);
+    } catch (const std::exception&) {
+        fail(out) << "'" << parsed->positionals[0] << "' is not a series id (a UUID)." << std::endl;
+        return;
+    }
+    if (parsed->flag("from").empty()) {
+        req.from_instant = std::chrono::system_clock::now() - std::chrono::minutes(10);
+    } else {
+        const auto from = parse_span_bound(parsed->flag("from"));
+        if (!from) {
+            fail(out) << "--from: " << from.error() << std::endl;
+            return;
+        }
+        req.from_instant = *from;
+    }
+    if (!parsed->flag("to").empty()) {
+        const auto to = parse_span_bound(parsed->flag("to"));
+        if (!to) {
+            fail(out) << "--to: " << to.error() << std::endl;
+            return;
+        }
+        req.to_instant = *to;
+    }
+    if (!parsed->flag("coordinate").empty())
+        req.coordinates.push_back(parsed->flag("coordinate"));
+
+    BOOST_LOG_SEV(lg(), info) << "Reading the ticks of series " << parsed->positionals[0];
+    auto result = do_auth_request<marketdata::messaging::get_series_ticks_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to read the ticks: " << result->result.message << " ("
+                  << result->result.code << ")" << std::endl;
+        return;
+    }
+
+    const auto ticks = history_ticks(*result);
+    if (!ticks) {
+        fail(out) << ticks.error() << std::endl;
+        return;
+    }
+    for (const auto& tick : *ticks)
+        out << history_tick_line(tick) << std::endl;
+    out << "✓ " << ticks->size() << " tick(s) of " << result->coordinates.size()
+        << " coordinate(s)." << std::endl;
+
+    const auto& csv_path = parsed->flag("csv");
+    if (!csv_path.empty()) {
+        std::string body = "time,coordinate,value\n";
+        for (const auto& tick : *ticks)
+            body += history_tick_row(tick) + "\n";
+        if (!write_file(csv_path, body)) {
+            fail(out) << "Cannot write file: " << csv_path << std::endl;
+            return;
+        }
+        out << "Wrote " << csv_path << std::endl;
+    }
 }
 
 void marketdata_commands::process_stream(std::ostream& out,

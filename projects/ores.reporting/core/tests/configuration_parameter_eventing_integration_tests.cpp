@@ -60,9 +60,9 @@
 // Parent-seed snippet includes (ores_reporting_ore_parameters_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
-#include "ore_parameter_test_fixture.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -190,7 +190,7 @@ TEST_CASE("write_configuration_parameter_publishes_an_event", tags) {
     configuration_id_repo.write(party_ctx, configuration_id_parent);
     v.configuration_id = configuration_id_parent.id;
     v.ore_parameter_id =
-        ores::reporting::tests::write_system_parameters(party_ctx, h.db_user(), ctx).front();
+        ores::testing::write_system_parameters(party_ctx, h.db_user(), ctx).front();
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Configuration Parameter: " << v;
 

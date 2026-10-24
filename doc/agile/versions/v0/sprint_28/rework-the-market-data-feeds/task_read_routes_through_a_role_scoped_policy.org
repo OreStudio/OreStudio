@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-routes-through-a-role-scoped-policy
+#+pr: 3704
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The marketdata service reads the routes and subscriptions of every tenant throug
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -77,12 +77,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3704][#3704]] | [marketdata,sql] Read routes through a role-scoped policy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Party isolation still ANDs on top of the new policy | route and subscription models | Accepted: noted | The service session sets no visible party set, so the passthrough applies. A live run confirms it: with Acme provisioned, 5 routes are read and bloomberg-a accepts 26 of 26 ids. |
+| 2 | The role-name check depends on the =_marketdata_service= suffix | marketdata_route_visibility_test.sql | Declined | Every environment names the role =ores_<env>_marketdata_service=. A custom role name is not supported. |
+| 3 | No pgTAP test that reads as the service role | marketdata_route_visibility_test.sql | Declined | The test user is not a member of the service role, so it cannot set that role. The live run covers the read. |
+| 4 | The codegen test slices the template text | test_rls_service_read_role.py | Declined | It is a cheap guard against a =for all= policy. Rendering a fixture would cost more than it protects. |
+| 5 | The folder test hard-codes 4 folders | synthetic_provider_feeds_publish_test.sql | Declined | The count is the depth of the chain, and a change of depth should fail the test. |
 
 * Result
+
+The routes and subscriptions policies hold the own-tenant shape again. A new model property, =rls_service_read_role=, makes the generator write one select-only policy =to :marketdata_service_user using (true)=, as the CRM configs already have by hand. The two temporary exceptions are gone from =check_rls_system_tenant_widenings.py=, which passes. A system-tenant session of any other role now reads no route of another tenant and writes none.
+
+On a fresh database with the services started first and Acme provisioned after, ticks flow: 6890 rows in 130 series (5 parties, 26 pairs), none dated in the future. All pgTAP files pass, including the route visibility test (11 assertions, 5 of them on the policies and the role it names). Two defects came up on the way. The first policy name was longer than 63 characters, and Postgres cut it. The name now leaves the role out. A folder test in the synthetic feeds suite counted folders by name, so it broke once other providers had folders of the same names. It now follows the folder chain of one feed.

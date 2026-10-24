@@ -1737,6 +1737,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/index_credit_default_swap_instrument_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/inflation_swap_instrument_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/instrument_batch_writer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/instrument_option_exercise_fee_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/instrument_option_exercise_price_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/instrument_option_payment_date_service.hpp"

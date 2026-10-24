@@ -1780,7 +1780,9 @@ def validate_rls_isolation(model):
             declares no party_id, if rls_party_isolation is set without
             rls_tenant_isolation, if rls_own_or_system_tenant_rows is set
             without rls_tenant_isolation, or if rls_own_or_system_tenant_rows
-            and rls_system_tenant_visible are both set.
+            and rls_system_tenant_visible are both set, or if
+            rls_service_read_role is set without rls_tenant_isolation, on a
+            junction, or with a name that is not a psql variable.
     """
     sql_section = model.get('sql', {})
     name = model.get('entity_singular') or model.get('name_singular') or '?'
@@ -1808,6 +1810,19 @@ def validate_rls_isolation(model):
         raise ValueError(
             f"{name}: rls_own_or_system_tenant_rows and "
             f"rls_system_tenant_visible are mutually exclusive")
+    role = sql_section.get('rls_service_read_role')
+    if role:
+        if not sql_section.get('rls_tenant_isolation'):
+            raise ValueError(
+                f"{name}: rls_service_read_role requires rls_tenant_isolation")
+        if not model.get('entity_singular'):
+            raise ValueError(
+                f"{name}: rls_service_read_role is emitted for domain entities "
+                f"only")
+        if not re.fullmatch(r'[a-z][a-z0-9_]*', str(role)):
+            raise ValueError(
+                f"{name}: rls_service_read_role must name a psql variable, "
+                f"such as marketdata_service_user, not '{role}'")
 
 
 def validate_explorer_interface(domain_entity):

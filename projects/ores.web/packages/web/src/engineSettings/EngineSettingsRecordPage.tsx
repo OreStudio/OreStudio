@@ -33,7 +33,7 @@
  * setting, so the wording is edited in the data.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -47,11 +47,26 @@ import {
 import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
+import { type WatchedEntity } from '../events/EntityEvents.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { DeleteDialog, LeavingFooter, RecordHeader, useCloseGuard } from '../refdata/records.js';
+import { TabPane } from '../refdata/parties.js';
+import {
+    DeleteDialog,
+    LeavingFooter,
+    RecordHeader,
+    markStale,
+    useCloseGuard,
+} from '../refdata/records.js';
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
+import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
+import { api } from '../api/client.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { orderTimeline, wireTimestamp, type TimelineEvent } from '@ores/wire-protocol/browser';
+import { useActingPartyId, useSwitchParty } from '../session/SessionProvider.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath } from '../shell/paths.js';
@@ -70,7 +85,6 @@ import {
     Textarea,
 } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
-import { ENGINE_SETTINGS_EVENTS } from './EngineSettingsPage.js';
 import {
     NO_FILTERS,
     changedColumns,
@@ -89,6 +103,7 @@ import {
     visibleSettings,
     type Change,
     type Draft,
+    type Problem,
     type EngineGroup,
     type Filters,
     type Step,
@@ -101,6 +116,25 @@ export function engineSettingsKey(id: string): readonly unknown[] {
 
 /** Where the documentation is cached. It does not change while a person works. */
 export const DOCUMENTATION_KEY = ['engine-settings-documentation'] as const;
+
+/**
+ * What the page shows, for the change news to be heard about it. The configuration
+ * is named by its key, so the page does not turn Refresh gold for another
+ * configuration. A group is keyed by something else and makes the page stale for any
+ * configuration's group.
+ */
+export function engineWatches(name: string | undefined): readonly WatchedEntity[] {
+    return [
+        {
+            component: 'reporting',
+            entity: 'engine_settings',
+            ...(name === undefined ? {} : { record: { name } }),
+        },
+        { component: 'reporting', entity: 'engine_settings_fixings' },
+        { component: 'reporting', entity: 'engine_settings_building' },
+        { component: 'reporting', entity: 'engine_settings_execution' },
+    ];
+}
 
 /** Where the history of one configuration is cached. */
 export function historyKey(id: string): readonly unknown[] {
@@ -142,6 +176,28 @@ export function EngineSettingsRecordPage(): ReactNode {
         queryFn: () => engineSettings.read(id),
         meta: { quiet: true },
     });
+    const acting = useActingPartyId();
+    const switchParty = useSwitchParty();
+    const owner = open.data?.partyId;
+    const parties = useQuery({
+        queryKey: MY_PARTIES_QUERY_KEY,
+        queryFn: api.myParties,
+        enabled: switchParty !== undefined,
+        meta: { quiet: true },
+    });
+    // The switch works only to a party the account works in. Until the parties are
+    // read, or when the owner is not one of them, the notice states the fact and
+    // offers no button that would fail.
+    const mayReach =
+        switchParty !== undefined &&
+        owner !== undefined &&
+        parties.data?.parties.some((party) => party.partyId === owner) === true;
+    const switchToOwner = useMutation({
+        mutationFn: async () => {
+            await switchParty?.(owner ?? '');
+        },
+        onSuccess: () => queries.invalidateQueries(),
+    });
     const documentation = useQuery({
         queryKey: DOCUMENTATION_KEY,
         queryFn: engineSettings.documentation,
@@ -149,7 +205,7 @@ export function EngineSettingsRecordPage(): ReactNode {
         meta: { quiet: true },
     });
     const load = useLoadState([['engine-settings', id]]);
-    const news = useEntityChanges([ENGINE_SETTINGS_EVENTS], load);
+    const news = useEntityChanges(engineWatches(open.data?.name), load);
     const tabs = useTabs({
         label: t('engineSettings.tabs.label'),
         tabs: TABS,
@@ -160,6 +216,12 @@ export function EngineSettingsRecordPage(): ReactNode {
                     : `engineSettings.groups.${tab}.title`,
             ),
     });
+    // A tab the person has opened stays drawn and is hidden while another is open,
+    // so leaving a tab never unmounts its reads and what was typed in it is kept.
+    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([tabs.tab]));
+    useEffect(() => {
+        setSeen((before) => (before.has(tabs.tab) ? before : new Set(before).add(tabs.tab)));
+    }, [tabs.tab]);
     const trail = [...area, { label: t('engineSettings.title'), to: PATHS.engineSettings }];
 
     if (open.isPending) {
@@ -202,10 +264,20 @@ export function EngineSettingsRecordPage(): ReactNode {
     }
 
     const document = open.data;
-    const group = documentation.data?.groups.find((candidate) => candidate.id === tabs.tab);
+    // A configuration is read and written under the party that owns it, so a person
+    // who sees it from a parent party reads it and changes it only after switching.
+    const foreign = acting !== undefined && acting !== document.partyId;
+    const mayChange = mayWrite && !foreign;
+    const mayRemove = mayDelete && !foreign;
+    const ownerName = document.partyName === '' ? document.partyId : document.partyName;
     const reload = (): void => {
         void queries.invalidateQueries({ queryKey: engineSettingsKey(id) });
     };
+    const pane = (name: string, children: ReactNode): ReactNode => (
+        <TabPane name={name} tab={tabs.tab} seen={seen}>
+            {children}
+        </TabPane>
+    );
 
     return (
         <div className="space-y-4">
@@ -215,35 +287,75 @@ export function EngineSettingsRecordPage(): ReactNode {
                 recordKey={shortId(document.id)}
                 version={document.version}
                 subdued
-                access={mayWrite}
+                access={mayChange}
                 own={<RefreshButton onClick={reload} load={load} news={news} />}
-                onEdit={mayWrite ? () => setDialog('rename') : undefined}
-                onDelete={mayDelete ? () => setDialog('delete') : undefined}
+                onEdit={mayChange ? () => setDialog('rename') : undefined}
+                onDelete={mayRemove ? () => setDialog('delete') : undefined}
             />
-            {tabs.bar}
-            {tabs.tab === 'details' && <DetailsTab document={document} />}
-            {group !== undefined && (
-                <GroupTab key={group.id} document={document} group={group} mayWrite={mayWrite} />
-            )}
-            {GROUP_TABS.has(tabs.tab) && group === undefined && documentation.isPending && (
-                <p className="text-sm text-ink-muted" role="status">
-                    {t('common.loading')}
-                </p>
-            )}
-            {GROUP_TABS.has(tabs.tab) && documentation.isError && (
-                <Notice tone="error">
-                    {t('engineSettings.documentationUnread', {
-                        message: documentation.error.message,
-                    })}
+            {foreign && (
+                <Notice tone="info">
+                    <span>{t('engineSettings.otherParty.notice', { party: ownerName })}</span>{' '}
+                    {mayReach && (
+                        <Button
+                            variant="ghost"
+                            pending={switchToOwner.isPending}
+                            onClick={() => switchToOwner.mutate()}
+                        >
+                            {t('engineSettings.otherParty.switch', { party: ownerName })}
+                        </Button>
+                    )}
+                    {switchToOwner.isError && (
+                        <span role="alert">
+                            {' '}
+                            {t('engineSettings.otherParty.failed', {
+                                message: switchToOwner.error.message,
+                            })}
+                        </span>
+                    )}
                 </Notice>
             )}
-            {tabs.tab === 'reports' && <ReportsTab document={document} />}
-            {tabs.tab === 'history' && (
-                <HistoryTab
-                    document={document}
-                    groups={documentation.data?.groups ?? []}
-                    mayWrite={mayWrite}
-                />
+            {tabs.bar}
+            {pane('details', <DetailsTab document={document} />)}
+            {GROUP_IDS.map((groupId) => {
+                const group = documentation.data?.groups.find(
+                    (candidate) => candidate.id === groupId,
+                );
+                return pane(
+                    groupId,
+                    group !== undefined ? (
+                        <GroupTab
+                            key={group.id}
+                            document={document}
+                            group={group}
+                            mayWrite={mayChange}
+                        />
+                    ) : documentation.isError ? (
+                        <Notice tone="error">
+                            {t('engineSettings.documentationUnread', {
+                                message: documentation.error.message,
+                            })}
+                        </Notice>
+                    ) : (
+                        <p className="text-sm text-ink-muted" role="status">
+                            {t('common.loading')}
+                        </p>
+                    ),
+                );
+            })}
+            {pane('reports', <ReportsTab document={document} />)}
+            {pane(
+                'history',
+                foreign ? (
+                    <Notice tone="info">
+                        {t('engineSettings.otherParty.history', { party: ownerName })}
+                    </Notice>
+                ) : (
+                    <HistoryTab
+                        document={document}
+                        groups={documentation.data?.groups ?? []}
+                        mayWrite={mayChange}
+                    />
+                ),
             )}
             {dialog === 'rename' && (
                 <RenameDialog document={document} onClose={() => setDialog(null)} />
@@ -277,7 +389,7 @@ export function EngineSettingsRecordPage(): ReactNode {
     );
 }
 
-const GROUP_TABS: ReadonlySet<string> = new Set(['fixings', 'building', 'execution']);
+const GROUP_IDS = ['fixings', 'building', 'execution'] as const;
 
 /** The name, who holds the configuration, how much of it is set and who reaches it. */
 function DetailsTab({ document }: { readonly document: EngineDocument }): ReactNode {
@@ -364,7 +476,7 @@ function GroupTab({
                       return [setting.column, value === 'invalid' ? null : value];
                   }),
               );
-    const problems =
+    const found =
         editing === null
             ? []
             : group.settings.flatMap((setting) => {
@@ -373,13 +485,21 @@ function GroupTab({
                       editing[setting.column] ?? '',
                       labelOf(setting),
                   );
-                  return problem === null ? [] : [problem];
+                  return problem === null ? [] : [{ column: setting.column, problem }];
               });
+    const problems = found.map((entry) => entry.problem);
+    const problemOfColumn = new Map(found.map((entry) => [entry.column, entry.problem]));
     const changes = draft === null ? [] : changedColumns(group, saved, draft);
     const reason = useReason('amend', changes.length > 0);
     const missing = reason.needsCommentary && commentary.trim() === '';
     const reach = document.reports === null ? null : document.reports.length;
     const visible = visibleSettings(group, saved, filters);
+    // A problem shows beside its field. A field a filter hides cannot show it, so
+    // the group states that one, or Save would be disabled with no reason.
+    const shownColumns = new Set(visible.map((setting) => setting.column));
+    const hiddenProblems = found
+        .filter((entry) => !shownColumns.has(entry.column))
+        .map((entry) => entry.problem);
     const allOpen = visible.length > 0 && visible.every((setting) => opened.has(setting.column));
     const leave = (): void => {
         setEditing(null);
@@ -400,8 +520,7 @@ function GroupTab({
             );
         },
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             leave();
         },
         onError: (error) => setConflict(error instanceof ApiFailure && error.status === 409),
@@ -505,6 +624,7 @@ function GroupTab({
                             saved={saved[setting.column] ?? null}
                             text={editing === null ? null : (editing[setting.column] ?? '')}
                             changed={changes.includes(setting.column)}
+                            problem={problemOfColumn.get(setting.column) ?? null}
                             open={opened.has(setting.column)}
                             mode={mode}
                             onToggle={() => toggle(setting.column)}
@@ -555,7 +675,7 @@ function GroupTab({
                             </Button>
                         </Notice>
                     )}
-                    {problems.map((problem) => (
+                    {hiddenProblems.map((problem) => (
                         <Notice key={problem.key + JSON.stringify(problem.params)} tone="error">
                             {t(problem.key, problem.params)}
                         </Notice>
@@ -625,11 +745,12 @@ function FilterChip({
 }
 
 /** One setting: its label, its value or its control, and its documentation. */
-function SettingRow({
+export function SettingRow({
     setting,
     saved,
     text,
     changed,
+    problem,
     open,
     mode,
     onToggle,
@@ -641,6 +762,8 @@ function SettingRow({
     /** The text of the control while the group is being changed, else null. */
     readonly text: string | null;
     readonly changed: boolean;
+    /** What is wrong with the text typed for this setting, drawn beside the control. */
+    readonly problem: Problem | null;
     readonly open: boolean;
     readonly mode: EditingMode;
     readonly onToggle: () => void;
@@ -678,14 +801,28 @@ function SettingRow({
                             <span className="font-mono text-xs">{shown}</span>
                         )
                     ) : (
-                        <Control
-                            setting={setting}
-                            label={label}
-                            text={text}
-                            unset={unset}
-                            onText={onText}
-                            onFocus={onFocus}
-                        />
+                        <>
+                            <Control
+                                setting={setting}
+                                label={label}
+                                text={text}
+                                unset={unset}
+                                describedBy={
+                                    problem === null ? undefined : `problem-${setting.column}`
+                                }
+                                onText={onText}
+                                onFocus={onFocus}
+                            />
+                            {problem !== null && (
+                                <p
+                                    id={`problem-${setting.column}`}
+                                    role="alert"
+                                    className="mt-1 text-xs text-down"
+                                >
+                                    {t(problem.key, problem.params)}
+                                </p>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
@@ -710,6 +847,7 @@ function Control({
     label,
     text,
     unset,
+    describedBy,
     onText,
     onFocus,
 }: {
@@ -717,6 +855,8 @@ function Control({
     readonly label: string;
     readonly text: string;
     readonly unset: string;
+    /** The id of the problem text, when the text typed is not a value the setting takes. */
+    readonly describedBy: string | undefined;
     readonly onText: (text: string) => void;
     readonly onFocus: () => void;
 }): ReactNode {
@@ -725,6 +865,8 @@ function Control({
         return (
             <Input
                 aria-label={label}
+                aria-invalid={describedBy !== undefined}
+                aria-describedby={describedBy}
                 inputMode="numeric"
                 value={text}
                 placeholder={unset}
@@ -743,6 +885,8 @@ function Control({
     return (
         <Select
             aria-label={label}
+            aria-invalid={describedBy !== undefined}
+            aria-describedby={describedBy}
             value={text}
             onFocus={onFocus}
             onChange={(event) => onText(event.target.value)}
@@ -852,7 +996,65 @@ function ChangeList({
     );
 }
 
-/** Every version of the configuration and of its groups, newest first, with a revert for a group. */
+const HISTORY_ENTITY = 'ores.reporting.engine_settings';
+
+/** The entity type a history entry carries, so the timeline pairs the versions of one record. */
+function entityOf(kind: EngineHistoryEntry['kind']): string {
+    return kind === 'central' ? HISTORY_ENTITY : `${HISTORY_ENTITY}_${kind}`;
+}
+
+/**
+ * The history as the entries the shared timeline draws. A group's entry carries the
+ * label and the value of each setting, and the configuration's carries its name and
+ * description, so the timeline shows each change as the difference it made. A
+ * version that only moved the configuration's version number, because a group
+ * changed, carries the same fields as the one before it and the timeline leaves it out.
+ */
+function eventsOf(
+    document: EngineDocument,
+    steps: readonly Step[],
+    groups: readonly EngineGroup[],
+    t: Translate,
+): TimelineEvent[] {
+    return steps.map(({ entry }) => {
+        const group = groups.find((candidate) => candidate.id === entry.kind);
+        const values = entry.values;
+        let fields: { name: string; value: string }[] = [];
+        if (values !== null && entry.kind === 'central') {
+            fields = [
+                { name: t('engineSettings.fields.name'), value: String(values['name'] ?? '') },
+                {
+                    name: t('engineSettings.fields.description'),
+                    value: String(values['description'] ?? ''),
+                },
+            ];
+        } else if (values !== null && group !== undefined) {
+            fields = group.settings.map((setting) => ({
+                name: labelOf(setting),
+                value:
+                    valueLabel(values[setting.column] ?? null, t) ??
+                    t('engineSettings.default', { value: shortDefault(setting.defaultText) }),
+            }));
+        }
+        return {
+            entityType: entityOf(entry.kind),
+            entityId: entry.kind === 'central' ? document.id : `${document.id}:${entry.kind}`,
+            kind: entry.version === 1 ? 'raised' : 'changed',
+            at: wireTimestamp(entry.recordedAt),
+            actor: entry.modifiedBy,
+            version: entry.version,
+            reasonCode: entry.changeReason,
+            commentary: entry.changeCommentary,
+            fields,
+        };
+    });
+}
+
+/**
+ * Every version of the configuration and of its groups, drawn by the shared
+ * timeline as the entity screen specification draws a history. A group's version
+ * older than the current one offers Revert to a person who may write.
+ */
 function HistoryTab({
     document,
     groups,
@@ -863,6 +1065,9 @@ function HistoryTab({
     readonly mayWrite: boolean;
 }): ReactNode {
     const { t } = useTranslation();
+    const holds = useHolds();
+    const pictureOf = useActorPictures();
+    const { isService } = usePeopleDirectory();
     const history = useQuery({
         queryKey: historyKey(document.id),
         queryFn: () => engineSettings.history(document.id),
@@ -880,96 +1085,62 @@ function HistoryTab({
         return <Notice tone="error">{history.error.message}</Notice>;
     }
     const steps = stepsOf(history.data);
+    const stepOf = (event: TimelineEvent): Step | undefined =>
+        steps.find(
+            (step) =>
+                entityOf(step.entry.kind) === event.entityType &&
+                step.entry.version === event.version,
+        );
+    const groupOf = (step: Step): EngineGroup | undefined =>
+        groups.find((candidate) => candidate.id === step.entry.kind);
     return (
-        <section className="card space-y-3 p-4">
-            <h2 className="text-sm font-medium">{t('engineSettings.tabs.history')}</h2>
-            <p className="text-sm text-ink-muted">{t('engineSettings.history.lead')}</p>
-            <ol className="space-y-4">
-                {steps.map((step) => (
-                    <HistoryStep
-                        key={`${step.entry.kind}-${String(step.entry.version)}`}
-                        step={step}
-                        group={groups.find((candidate) => candidate.id === step.entry.kind)}
-                        mayRevert={mayWrite}
-                        onRevert={() => setReverting(step)}
-                    />
-                ))}
-            </ol>
+        <div className="space-y-3">
+            <Timeline
+                timeline={{
+                    subject: 'engine_settings',
+                    id: document.id,
+                    events: orderTimeline(eventsOf(document, steps, groups, t)),
+                    gaps: [],
+                }}
+                hideUnchanged
+                recordName={(event) =>
+                    event.entityType === HISTORY_ENTITY
+                        ? t('engineSettings.history.central')
+                        : t(
+                              `engineSettings.groups.${event.entityType.slice(HISTORY_ENTITY.length + 1)}.title`,
+                          )
+                }
+                actorPath={actorPathFor(holds('iam::accounts:read'))}
+                actorPicture={pictureOf}
+                isService={isService}
+                renderActions={(event) => {
+                    const step = stepOf(event);
+                    const group = step === undefined ? undefined : groupOf(step);
+                    if (!mayWrite || step === undefined || group === undefined) {
+                        return undefined;
+                    }
+                    return revertValues(group, step) === null ? undefined : (
+                        <div className="mt-2 flex justify-end">
+                            <Button size="sm" icon="revert" onClick={() => setReverting(step)}>
+                                {t('engineSettings.history.revert')}
+                            </Button>
+                        </div>
+                    );
+                }}
+            />
             {reverting !== null && (
                 <RevertDialog
                     document={document}
-                    group={groups.find((candidate) => candidate.id === reverting.entry.kind)}
+                    group={groupOf(reverting)}
                     step={reverting}
                     onClose={() => setReverting(null)}
                 />
             )}
-        </section>
+        </div>
     );
 }
 
-function HistoryStep({
-    step,
-    group,
-    mayRevert,
-    onRevert,
-}: {
-    readonly step: Step;
-    readonly group: EngineGroup | undefined;
-    readonly mayRevert: boolean;
-    readonly onRevert: () => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const entry: EngineHistoryEntry = step.entry;
-    const what =
-        entry.kind === 'central'
-            ? t('engineSettings.history.central')
-            : t(`engineSettings.groups.${entry.kind}.title`);
-    const changes =
-        group === undefined || entry.values === null
-            ? []
-            : differenceOf(
-                  group,
-                  step.previous === null
-                      ? defaultsOf(group)
-                      : draftFromValues(group, step.previous),
-                  draftFromValues(group, entry.values),
-              );
-    const revert = group === undefined ? null : revertValues(group, step);
-    return (
-        <li className="space-y-1 border-l-2 border-line pl-3">
-            <div className="flex flex-wrap items-baseline gap-2 text-sm">
-                <Tag tone={step.first ? 'up' : 'neutral'} small>
-                    {step.first
-                        ? t('engineSettings.history.created')
-                        : t('engineSettings.history.changed')}
-                </Tag>
-                <span className="font-medium">{what}</span>
-                <span className="text-xs text-ink-faint">
-                    {t('engineSettings.history.version', { version: String(entry.version) })}
-                </span>
-                {step.current && (
-                    <Tag tone="accent" small>
-                        {t('engineSettings.history.current')}
-                    </Tag>
-                )}
-            </div>
-            <div className="text-xs text-ink-faint">
-                {entry.modifiedBy} · <RelativeTime at={entry.recordedAt} /> · {entry.changeReason}
-                {entry.changeCommentary !== '' && ` · “${entry.changeCommentary}”`}
-            </div>
-            {group !== undefined && changes.length > 0 && (
-                <ChangeList group={group} changes={changes} />
-            )}
-            {mayRevert && revert !== null && (
-                <Button size="sm" variant="ghost" icon="revert" onClick={onRevert}>
-                    {t('engineSettings.history.revert')}
-                </Button>
-            )}
-        </li>
-    );
-}
-
-/** Writes the values a group had before a step as a new version, with a reason. */
+/** Writes the values a group held at an earlier version as a new version, with a reason. */
 function RevertDialog({
     document,
     group,
@@ -1006,8 +1177,7 @@ function RevertDialog({
             );
         },
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             onClose();
         },
     });
@@ -1077,8 +1247,7 @@ function RenameDialog({
                 intent: { reason_code: reason.code, commentary: commentary.trim() },
             }),
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: engineSettingsKey(document.id) });
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
             onClose();
         },
     });

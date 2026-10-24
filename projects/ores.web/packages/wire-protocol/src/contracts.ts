@@ -293,6 +293,7 @@ export const apiErrorSchema = z.object({
         'session-expired',
         'forbidden',
         'conflict',
+        'other-party',
         'invalid-request',
         'not-found',
         'bootstrap-mode',

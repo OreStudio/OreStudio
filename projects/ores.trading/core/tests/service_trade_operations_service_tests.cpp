@@ -36,16 +36,23 @@
 #include "ores.trading.api/generators/bond_issue_leg_amount_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_leg_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_leg_schedule_date_generator.hpp"
+#include "ores.trading.api/generators/fx_forward_instrument_generator.hpp"
+#include "ores.trading.api/generators/rate_instrument_generator.hpp"
+#include "ores.trading.api/generators/swap_leg_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/rate_instrument_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
+#include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -471,7 +478,7 @@ TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
               .empty());
 }
 
-TEST_CASE("an_instrument_of_a_kind_with_no_writer_is_refused_by_name", tags) {
+TEST_CASE("an_array_the_trade_type_does_not_hold_is_refused_by_name", tags) {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.instruments.fx_forward_instruments.emplace_back();
@@ -479,11 +486,53 @@ TEST_CASE("an_instrument_of_a_kind_with_no_writer_is_refused_by_name", tags) {
     const auto response = trade_operations_service(f.ctx).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
-    CHECK(response.result.code == "instrument_not_supported");
+    CHECK(response.result.code == "instrument_not_routed");
     CHECK(response.result.message.contains("fx_forward_instruments"));
     CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
               .empty());
+}
+
+TEST_CASE("an_fx_forward_trade_is_booked_with_its_instrument", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.trade_type = "FxForward";
+    req.instruments.fx_forward_instruments.push_back(
+        ores::trading::generators::generate_synthetic_fx_forward_instrument(f.gen));
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    const auto stored =
+        ores::trading::repository::fx_forward_instrument_repository().read_latest(f.ctx, id);
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front().identity.trade_id == req.anchor.id);
+    CHECK(stored.front().identity.trade_activity_id == *response.activity_id);
+}
+
+TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.trade_type = "Swap";
+    req.instruments.rate_instruments.push_back(
+        ores::trading::generators::generate_synthetic_rate_instrument(f.gen));
+    for (int leg_number = 1; leg_number <= 2; ++leg_number) {
+        auto leg = ores::trading::generators::generate_synthetic_swap_leg(f.gen);
+        leg.identity.leg_number = leg_number;
+        req.instruments.swap_legs.push_back(leg);
+    }
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    CHECK(ores::trading::repository::rate_instrument_repository().read_latest(f.ctx, id).size() ==
+          1);
+    const auto legs =
+        ores::trading::repository::swap_leg_repository().read_latest_by_trade_id(f.ctx, id, 0, 10);
+    REQUIRE(legs.size() == 2);
+    CHECK(legs.front().identity.trade_id == req.anchor.id);
 }
 
 TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
@@ -510,13 +559,89 @@ TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_mem
     CHECK(response.result.message.contains("bond_instruments.option_data"));
 }
 
-TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_the_database", tags) {
+TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", tags) {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.anchor.trade_type = "Swap";
 
-    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
 
-    const auto id = boost::uuids::to_string(req.anchor.id);
-    CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_not_routed");
+    CHECK(response.result.message.contains("bond_instruments"));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
+    fixture f;
+    auto first = f.request();
+    first.anchor.trade_type = "Swap";
+    first.instruments.rate_instruments.push_back(
+        ores::trading::generators::generate_synthetic_rate_instrument(f.gen));
+    for (int leg_number = 1; leg_number <= 2; ++leg_number) {
+        auto leg = ores::trading::generators::generate_synthetic_swap_leg(f.gen);
+        leg.identity.leg_number = leg_number;
+        first.instruments.swap_legs.push_back(leg);
+    }
+    REQUIRE(trade_operations_service(f.ctx).book_trade(first).result.outcome == outcome::ok);
+
+    ores::trading::domain::instrument_batch exported;
+    ores::trading::service::trade_export_service(f.ctx).export_books(
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+    REQUIRE(ores::trading::domain::find(exported.rate_instruments, first.anchor.id) != nullptr);
+
+    auto second = f.request();
+    second.anchor.trade_type = "Swap";
+    second.instruments.rate_instruments.push_back(
+        *ores::trading::domain::find(exported.rate_instruments, first.anchor.id));
+    second.instruments.swap_legs =
+        ores::trading::domain::find_all(exported.swap_legs, first.anchor.id);
+    REQUIRE(second.instruments.swap_legs.size() == 2);
+    REQUIRE(trade_operations_service(f.ctx).book_trade(second).result.outcome == outcome::ok);
+
+    ores::trading::domain::instrument_batch again;
+    ores::trading::service::trade_export_service(f.ctx).export_books(
+        {boost::uuids::to_string(f.book_id)}, 0, 100, again);
+    const auto legs = ores::trading::domain::find_all(again.swap_legs, second.anchor.id);
+    const auto original = ores::trading::domain::find_all(again.swap_legs, first.anchor.id);
+    REQUIRE(legs.size() == original.size());
+    for (std::size_t i = 0; i < legs.size(); ++i) {
+        CHECK(legs[i].identity.leg_number == original[i].identity.leg_number);
+        CHECK(legs[i].leg_type_code == original[i].leg_type_code);
+        CHECK(legs[i].currency == original[i].currency);
+        CHECK(legs[i].day_count_fraction_code == original[i].day_count_fraction_code);
+    }
+    CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
+}
+
+TEST_CASE("a_child_array_with_no_header_is_refused_by_name", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.trade_type = "Swap";
+    req.instruments.swap_legs.push_back(
+        ores::trading::generators::generate_synthetic_swap_leg(f.gen));
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "instrument_child_without_header");
+    CHECK(response.result.message.contains("swap_legs"));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", tags) {
+    fixture f;
+    auto req = f.bond_request(f.stored_issue());
+    req.instruments.fx_forward_instruments.emplace_back();
+    req.instruments.rate_instruments.emplace_back();
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.code == "instrument_not_routed");
+    CHECK(response.result.message.contains("fx_forward_instruments"));
+    CHECK(response.result.message.contains("rate_instruments"));
 }

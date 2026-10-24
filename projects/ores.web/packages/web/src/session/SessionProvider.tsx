@@ -131,6 +131,16 @@ export function useActingPartyId(): string | undefined {
     return value?.state.status === 'authenticated' ? value.state.session.party.id : undefined;
 }
 
+/**
+ * Re-scopes the open session to another of the account's own parties, or nothing
+ * outside a signed-in session. A screen that offers the switch asks for it here
+ * and not through useSession, which refuses to run outside the provider.
+ */
+export function useSwitchParty(): ((partyId: string) => Promise<void>) | undefined {
+    const value = use(SessionContext);
+    return value?.state.status === 'authenticated' ? value.switchParty : undefined;
+}
+
 export function useSession(): SessionContextValue {
     const value = use(SessionContext);
     if (value === undefined) {

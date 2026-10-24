@@ -68,6 +68,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "rls_party_isolation": "sql",
     "rls_system_tenant_visible": "sql",
     "rls_own_or_system_tenant_rows": "sql",
+    "rls_service_read_role": "sql",
     "has_pagination": "presentation",
     "has_uuid_primary_key": "presentation",
     "has_change_reason_cache": "presentation",
@@ -7022,7 +7023,9 @@ def _trade_type_batch(
     routed instrument, which is how a family whose document shape is a
     container over its rows crosses as the container rather than as the
     entity. ``* Batch/Children`` names the child tables the batch carries
-    beside the instruments.
+    beside the instruments. A member states ``routed`` when it is a routed
+    instrument table's header and not a child, so the writer archetype can
+    check the header against the trade type.
 
     Every override must name a routed instrument and every child an entity
     some model declares, so a typo fails codegen rather than emitting an array
@@ -7079,12 +7082,14 @@ def _trade_type_batch(
             "entity": entity,
             "name": plural_of[entity],
             "cpp_type": overrides.get(entity, entity),
+            "routed": True,
         })
     for child in children:
         members.append({
             "entity": child,
             "name": plural_of[child],
             "cpp_type": child,
+            "routed": False,
         })
 
     names = [member["name"] for member in members]

@@ -17,6 +17,9 @@ ticks than the ceiling is refused, and the refusal names the ceiling. The servic
 returns part of a span as if it were the whole. The client that calls it is described in
 [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
 
+The shell command =marketdata ticks <series-id>= calls it. The command takes =--from=,
+=--to=, =--coordinate= and =--csv=. A span with no =--from= starts 10 minutes ago.
+
 * Detail
 
 ** The request

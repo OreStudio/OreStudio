@@ -1146,6 +1146,20 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#domain_entity.sql.rls_system_tenant_visible}}
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}
 );
+{{#domain_entity.sql.rls_service_read_role}}
+
+-- Cross-tenant read for one service role: a second, permissive, SELECT-only
+-- policy is OR'd with the tenant policy above, so the role reads every
+-- tenant's rows. No other role gains a read, and nobody gains a write.
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_cross_tenant_read_policy
+    on {{domain_entity.sql_name_base}}_tbl;
+
+create policy {{domain_entity.rls_table_base}}_tbl_cross_tenant_read_policy
+on {{domain_entity.sql_name_base}}_tbl
+for select
+to :{{domain_entity.sql.rls_service_read_role}}
+using (true);
+{{/domain_entity.sql.rls_service_read_role}}
 {{#domain_entity.sql.rls_party_isolation}}
 
 -- Party isolation (RESTRICTIVE): ANDed with the permissive tenant

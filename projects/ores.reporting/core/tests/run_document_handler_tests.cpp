@@ -26,6 +26,7 @@
 #include "ores.testing/handler_test_support.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -79,6 +80,8 @@ struct fixture {
         nats.connect();
         REQUIRE(nats.is_connected());
         party = system_party(db);
+        auto gen = ores::testing::make_generation_context(db);
+        ores::testing::seed_system_analytic_parameters(db.context(), db.db_user(), gen);
         subscribe("save_run_document",
                   [this](ores::nats::message m) { handler().save_run_document(std::move(m)); });
         subscribe("bind_configuration",

@@ -131,10 +131,21 @@ select is(
 );
 
 select is(
-    (select count(*)::int from ores_synthetic_folders_tbl f
-     where f.tenant_id = ores_utility_system_tenant_id_fn()
-       and f.valid_to = ores_utility_infinity_timestamp_fn()
-       and f.name in ('Synthetic', 'LSEG', 'FX', 'FX Rates')),
+    (with recursive chain as (
+         select f.id, f.parent_id, f.tenant_id
+         from ores_synthetic_fx_spot_generation_configs_tbl x
+         join ores_synthetic_folders_tbl f on f.id = x.folder_id
+          and f.valid_to = ores_utility_infinity_timestamp_fn()
+         where x.source_name = 'synthetic.lseg.eurgbp'
+           and x.valid_to = ores_utility_infinity_timestamp_fn()
+         union all
+         select p.id, p.parent_id, p.tenant_id
+         from ores_synthetic_folders_tbl p
+         join chain c on p.id = c.parent_id
+          and p.valid_to = ores_utility_infinity_timestamp_fn()
+     )
+     select count(*)::int from chain
+     where tenant_id = ores_utility_system_tenant_id_fn()),
     4,
     'another tenant reads the folders of the system collection, the root above it included'
 );

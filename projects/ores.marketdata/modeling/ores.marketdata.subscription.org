@@ -122,7 +122,7 @@ false
 :tablename:                 ores_marketdata_subscriptions_tbl
 :rls_tenant_isolation:      true
 :rls_party_isolation:       true
-:rls_system_tenant_visible: true
+:rls_service_read_role:    marketdata_service_user
 :END:
 
 ** Checks

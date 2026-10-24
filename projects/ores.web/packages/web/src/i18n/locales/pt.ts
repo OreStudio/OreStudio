@@ -90,6 +90,7 @@ const pt: SourceCatalogue = {
             refdata: 'Dados de referência',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
+            language: 'Idioma',
             changeParty: 'Mudar de parte',
             changePartyFailed: 'Não foi possível mudar de parte.',
             changePartyHint: 'Escolha a parte em nome da qual atua.',
@@ -1811,6 +1812,8 @@ const pt: SourceCatalogue = {
                     running: 'ainda a executar',
                     hint: 'O serviço guarda quando a execução foi escrita e quando a sua saída chegou. Não guarda nada entre os dois, por isso a barra não se divide em fases.',
                 },
+                unreadable:
+                    'A referência externa não nomeia nenhuma execução de relatório que esta sessão possa ler.',
                 siblings: {
                     title: 'Trabalhos do lote',
                     count: {
@@ -1831,7 +1834,19 @@ const pt: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Linhagem',
-                    reportRun: 'Abrir a execução de relatório nomeada pela referência externa',
+                    reportRun: 'Execução de relatório',
+                    scheduled: 'Trabalho agendado',
+                    scheduledNote:
+                        'Ainda não mostrado: o agendador não tem leitura de uma instância de trabalho por id.',
+                    definition: 'Definição de relatório',
+                    definitionNote: 'por scheduler_job_id',
+                    runNote: 'por definition_id e trigger_run_id',
+                    batchUnchecked:
+                        'O lote nomeia a execução na sua referência externa. O modelo não a declara como relação.',
+                    siblings: {
+                        one: '{count} unidade de trabalho irmã no mesmo lote, listada ao lado',
+                        other: '{count} unidades de trabalho irmãs no mesmo lote, listadas ao lado',
+                    },
                     noReport:
                         'Nenhum relatório está por trás deste lote. A shell enviou-o, e a sua referência externa é uma cadeia de operador.',
                     workunit: 'Unidade de trabalho {id} (este trabalho)',
@@ -4772,6 +4787,14 @@ const pt: SourceCatalogue = {
             none: 'Nenhuma configuração corresponde aos filtros.',
         },
         noRow: 'Esta configuração não tem linha para {group}. O motor usa o padrão para cada configuração aqui.',
+        allParties: 'Todas as partes',
+        otherParty: {
+            notice: 'Estas configurações do motor pertencem a {party}. Você atua noutra parte, por isso pode lê-las mas não alterá-las.',
+            switch: 'Mudar para {party}',
+            history:
+                'O histórico está disponível na parte proprietária. Mude para {party} para lê-lo.',
+            failed: 'Não foi possível mudar de parte: {message}',
+        },
         rowBy: 'Última alteração por {who}.',
         changesTheNumbers: 'Estas configurações alteram os números que uma execução calcula.',
         reach: {
@@ -4802,17 +4825,12 @@ const pt: SourceCatalogue = {
             count: '{count} relatórios',
         },
         history: {
-            lead: 'Cada versão destas configurações do motor e de seus grupos, da mais recente para a mais antiga. Reverter escreve os valores que um grupo tinha antes de uma alteração como uma nova versão.',
             central: 'A configuração',
-            created: 'Criado',
-            changed: 'Alterado',
-            version: 'versão {version}',
-            current: 'atual',
             revert: 'Reverter',
         },
         revert: {
             title: 'Reverter o grupo',
-            lead: 'Isto escreve os valores que o grupo tinha antes da alteração como uma nova versão. O histórico mantém a versão que ela substitui.',
+            lead: 'Isto grava como nova versão os valores que o grupo tinha nesta versão. O histórico mantém a versão que ela substitui.',
             nothing: 'O grupo já contém estes valores.',
         },
         rename: {

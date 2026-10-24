@@ -91,6 +91,7 @@ export const en: SourceCatalogue = {
             refdata: 'Reference data',
             access: 'My access',
             whereIWork: 'Where I work',
+            language: 'Language',
             changeParty: 'Change party',
             changePartyFailed: 'The party could not be changed.',
             changePartyHint: 'Choose the party to act for.',
@@ -1800,6 +1801,7 @@ export const en: SourceCatalogue = {
                     running: 'still running',
                     hint: 'The service stores when the run was written and when its output arrived. It stores nothing between, so the bar is not split into phases.',
                 },
+                unreadable: 'The External Ref names no report run that this session can read.',
                 siblings: {
                     title: 'Jobs of the batch',
                     count: {
@@ -1820,7 +1822,19 @@ export const en: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Lineage',
-                    reportRun: 'Open the report run named by the External Ref',
+                    reportRun: 'Report run',
+                    scheduled: 'Scheduled job',
+                    scheduledNote:
+                        'Not shown yet: the scheduler has no read of one job instance by id.',
+                    definition: 'Report definition',
+                    definitionNote: 'by scheduler_job_id',
+                    runNote: 'by definition_id and trigger_run_id',
+                    batchUnchecked:
+                        'The batch names the run in its External Ref. The model does not state this as a relationship.',
+                    siblings: {
+                        one: '{count} sibling workunit in the same batch, listed beside',
+                        other: '{count} sibling workunits in the same batch, listed beside',
+                    },
                     noReport:
                         'No report is behind this batch. The shell dispatched it, and its External Ref is an operator string.',
                     workunit: 'Workunit {id} (this job)',
@@ -4734,6 +4748,13 @@ export const en: SourceCatalogue = {
             none: 'No setting matches the filters.',
         },
         noRow: 'This configuration holds no row for {group}. The engine uses its default for every setting here.',
+        allParties: 'All parties',
+        otherParty: {
+            notice: 'These engine settings belong to {party}. You act in another party, so you can read them but not change them.',
+            switch: 'Switch to {party}',
+            history: 'The history is available in the owning party. Switch to {party} to read it.',
+            failed: 'Could not switch party: {message}',
+        },
         rowBy: 'Last changed by {who}.',
         changesTheNumbers: 'These settings change the numbers a run computes.',
         reach: {
@@ -4764,17 +4785,12 @@ export const en: SourceCatalogue = {
             count: '{count} reports',
         },
         history: {
-            lead: 'Every version of these engine settings and of its groups, newest first. Revert writes the values a group had before a change as a new version.',
             central: 'The configuration',
-            created: 'Created',
-            changed: 'Changed',
-            version: 'version {version}',
-            current: 'current',
             revert: 'Revert',
         },
         revert: {
             title: 'Revert the group',
-            lead: 'This writes the values the group had before the change as a new version. The history keeps the version it replaces.',
+            lead: 'This writes the values the group held at this version as a new version. The history keeps the version it replaces.',
             nothing: 'The group already holds these values.',
         },
         rename: {

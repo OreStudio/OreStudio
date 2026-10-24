@@ -24,6 +24,7 @@ set(files
     "history_commands_tests.cpp"
     "main.cpp"
     "marketdata_stream_commands_tests.cpp"
+    "marketdata_ticks_commands_tests.cpp"
     "ore_commands_tests.cpp"
     "provision_commands_tests.cpp"
     "scheduler_commands_tests.cpp"

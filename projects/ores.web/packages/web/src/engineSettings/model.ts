@@ -219,10 +219,13 @@ export function stepsOf(entries: readonly EngineHistoryEntry[]): readonly Step[]
     });
 }
 
-/** The values a revert of a step writes: what the group had before the step, as a new version. */
+/**
+ * The values a revert to a step writes: what the group held at that version, as a
+ * new version. The current version offers none, because the group already holds it.
+ */
 export function revertValues(group: EngineGroup, step: Step): Draft | null {
-    if (step.first || step.current || step.entry.kind === 'central') {
+    if (step.current || step.entry.kind === 'central' || step.entry.values === null) {
         return null;
     }
-    return step.previous === null ? null : draftFromValues(group, step.previous);
+    return draftFromValues(group, step.entry.values);
 }

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: AEF17C45-3FE6-4139-83BE-A264A9C5879F
+:END:
+#+title: Write the rest of a booked trade
+#+description: The instrument writer leaves three gaps: the bond remainder members, the child-to-header check and the round trip for every family. Close them so book_trade writes whatever the export reads.
+#+type: capture
+#+level: cross
+#+filetags: :trading:booking:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Close three gaps that the generated instrument writer left. =book_trade= should write whatever the export reads, and refuse by name whatever it cannot write.
+
+- Write the remainder members of a bond row: the fact rows (option, TRS, repo, future, ascot), the schedules, the legs and the option block. Today the service refuses them by name.
+- Check each child array against the header of its family. The catalogue does not state which header a child belongs to, so the catalogue needs a column for it. Today only a child array with no header at all is refused.
+- Prove the export-and-rebook round trip for every family, comparing the whole row apart from the keys, the version and the audit fields. Today it is proved for a swap with legs, on four fields.
+
+* Why
+
+The ORE import, the UX and the web API will book through the same call. A bond row that carries a fact row cannot be booked until its remainder members have a writer. A child array of the wrong family fails in the database as an exception, not as a named refusal. A round trip of one family does not show that the other families write every column.
+
+The review of PR #3700 raised the second and third gaps. The first gap is the stated limit of the task that generated the writer.
+
+* References
+
+- PR #3700, which generated the writer.
+- PR #3673, which books a bond trade as one unit.
+
+* See also
+
+- The task Generate the instrument writer for every kind, in the sprint 28 story Populate the ACME books with a realistic trade population.

@@ -1,0 +1,177 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.trade_type.writer.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
+#define ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
+{{#trade_type_catalogue}}
+{{#batch}}
+#include "ores.trading.core/repository/{{entity}}_repository.hpp"
+{{/batch}}
+{{/trade_type_catalogue}}
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::trading::service {
+
+/**
+ * @brief The keys a booking states on every row of its instrument batch.
+ */
+struct instrument_keys {
+    boost::uuids::uuid trade_id;
+    std::string trade_type;
+    boost::uuids::uuid activity_id;
+};
+
+/**
+ * @brief States the trade id, the trade type and the activity id on a row, and
+ * starts its version at zero.
+ *
+ * A document container passes the call to the entity it holds, and an entity
+ * that nests its key in an identity group states it there.
+ */
+template <typename T>
+void state_keys(T& row, const instrument_keys& keys) {
+    if constexpr (requires { row.instrument; }) {
+        state_keys(row.instrument, keys);
+    } else if constexpr (requires { row.identity; }) {
+        state_keys(row.identity, keys);
+    } else {
+        if constexpr (requires { row.trade_id; })
+            row.trade_id = keys.trade_id;
+        if constexpr (requires { row.trade_type_code; })
+            row.trade_type_code = keys.trade_type;
+        if constexpr (requires { row.trade_activity_id; })
+            row.trade_activity_id = keys.activity_id;
+        if constexpr (requires { row.version; })
+            row.version = 0;
+    }
+}
+
+/**
+ * @brief Stamps a row, and the identity group and the audit group it nests.
+ */
+template <typename T, typename Stamp>
+void stamp_row(T& row, Stamp& stamp) {
+    if constexpr (requires { row.instrument; }) {
+        stamp_row(row.instrument, stamp);
+    } else {
+        stamp(row);
+        if constexpr (requires { row.identity; })
+            stamp(row.identity);
+        if constexpr (requires { row.audit; })
+            stamp(row.audit);
+    }
+}
+
+/**
+ * @brief The entity a batch member writes: the member, or the entity that a
+ * document container holds.
+ */
+template <typename T>
+[[nodiscard]] const auto& entity_of(const T& row) {
+    if constexpr (requires { row.instrument; })
+        return row.instrument;
+    else
+        return row;
+}
+
+/**
+ * @brief Writes every row of one array, each under the claim given.
+ *
+ * A claim of must_not_exist makes each write a create, so a booking never
+ * replaces a row.
+ */
+template <typename Repository, typename Row, typename Stamp, typename Claim>
+void write_rows(ores::database::context ctx,
+                std::vector<Row>& rows,
+                const instrument_keys& keys,
+                Stamp& stamp,
+                const Claim& claim) {
+    Repository repository;
+    for (auto& row : rows) {
+        state_keys(row, keys);
+        stamp_row(row, stamp);
+        repository.write(ctx, entity_of(row), claim);
+    }
+}
+
+/**
+ * @brief Writes every array of the batch.
+ *
+ * Generated from ores.trading.trade_type_catalogue: one write for each member,
+ * in the order the catalogue lists them.
+ */
+template <typename Stamp, typename Claim>
+void write_instrument_batch(ores::database::context ctx,
+                            domain::instrument_batch& batch,
+                            const instrument_keys& keys,
+                            Stamp&& stamp,
+                            const Claim& claim) {
+{{#trade_type_catalogue}}
+{{#batch}}
+    write_rows<repository::{{entity}}_repository>(ctx, batch.{{name}}, keys, stamp, claim);
+{{/batch}}
+{{/trade_type_catalogue}}
+}
+
+/**
+ * @brief The routed arrays of the batch that hold rows and are not the table
+ * the catalogue routes @p trade_type to.
+ *
+ * A trade type no table holds names every routed array that holds rows.
+ */
+[[nodiscard]] inline std::vector<std::string>
+misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_type) {
+    std::vector<std::string> names;
+    const auto table = domain::instrument_table_for(trade_type);
+{{#trade_type_catalogue}}
+{{#batch}}
+{{#routed}}
+    if (!batch.{{name}}.empty() && table != domain::instrument_table::{{entity}})
+        names.emplace_back("{{name}}");
+{{/routed}}
+{{/batch}}
+{{/trade_type_catalogue}}
+    return names;
+}
+
+/**
+ * @brief The child arrays of the batch that hold rows when no routed array
+ * holds one.
+ *
+ * A child belongs to the header of its family, so a batch with children and no
+ * header is not a booking.
+ */
+[[nodiscard]] inline std::vector<std::string>
+orphan_arrays(const domain::instrument_batch& batch) {
+    std::vector<std::string> names;
+    const bool headed =
+{{#trade_type_catalogue}}
+{{#batch}}
+{{#routed}}
+        !batch.{{name}}.empty() ||
+{{/routed}}
+{{/batch}}
+{{/trade_type_catalogue}}
+        false;
+    if (headed)
+        return names;
+{{#trade_type_catalogue}}
+{{#batch}}
+{{^routed}}
+    if (!batch.{{name}}.empty())
+        names.emplace_back("{{name}}");
+{{/routed}}
+{{/batch}}
+{{/trade_type_catalogue}}
+    return names;
+}
+
+}
+
+#endif

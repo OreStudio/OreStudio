@@ -23,6 +23,7 @@
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
@@ -45,6 +46,9 @@ ores::database::context party_context(ores::testing::scoped_database_helper& h) 
             break;
         }
     repo.write(h.context(), party);
+    // The npv analytic and its parameters are described in the system tenant, which
+    // holds none until a test seeds them.
+    ores::testing::seed_system_analytic_parameters(h.context(), h.db_user(), gen);
     return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
 
@@ -59,7 +63,7 @@ boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
     return d.id;
 }
 
-// An npv analytic with one parameter, both of which the seeded vocabulary holds.
+// An npv analytic with one parameter, both of which the test seeds.
 ores::reporting::messaging::run_document npv_run() {
     ores::reporting::messaging::run_document doc;
     doc.settings.market_data_type = "date";

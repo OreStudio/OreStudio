@@ -289,15 +289,19 @@ describe('the history as steps', () => {
         expect(steps[2]?.previous).toBeNull();
     });
 
-    it('offers a revert only on a step that is neither current nor the first', () => {
+    it('offers a revert to every earlier version of a group, with the values it held', () => {
         const steps = stepsOf(entries);
         expect(revertValues(EXECUTION, steps[0]!)).toBeNull();
         expect(revertValues(EXECUTION, steps[1]!)).toEqual({
+            n_threads: 4,
+            log_mask: null,
+            gzip_compression_level: null,
+        });
+        expect(revertValues(EXECUTION, steps[2]!)).toEqual({
             n_threads: 1,
             log_mask: null,
             gzip_compression_level: null,
         });
-        expect(revertValues(EXECUTION, steps[2]!)).toBeNull();
         expect(revertValues(EXECUTION, steps[3]!)).toBeNull();
     });
 });

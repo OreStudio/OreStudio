@@ -179,7 +179,8 @@ const CONTROL =
     'w-full rounded-md border border-line bg-surface-base px-3 py-2 text-sm text-ink ' +
     'placeholder:text-ink-faint transition-colors duration-100 ' +
     'hover:border-line-strong focus:border-accent focus:outline-none ' +
-    'focus:ring-3 focus:ring-accent/20 disabled:opacity-50';
+    'focus:ring-3 focus:ring-accent/20 disabled:opacity-50 ' +
+    'aria-invalid:border-down aria-invalid:focus:border-down aria-invalid:focus:ring-down/20';
 
 export function Input({
     className,

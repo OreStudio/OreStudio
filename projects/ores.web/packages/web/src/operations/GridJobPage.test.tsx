@@ -173,6 +173,7 @@ describe('the job page', () => {
         const html = render(workunit(), [run()], ['storage::objects:read'], {
             ...batch,
             external_ref: runId,
+            report_run_name: 'NPV 2026-10-23 22:07:58',
         });
 
         expect(html).toContain(`/operations/grid/report-runs/${runId}`);

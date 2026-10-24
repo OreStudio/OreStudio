@@ -78,13 +78,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3703 | Draw the lineage of a job as a chart |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The scheduled job and run nodes show for a UUID that names no run. | GridJobPage.tsx | Fixed | The BFF names the run on the batch exactly when the session may read it, so the report nodes are drawn only then. An id with no readable run draws none and says so. |
+| 2 | The dot may not sit on the line. | GridJobPage.tsx | Fixed | The dot is centred on the line, and the line is drawn as a solid element, because the border colour was too dim to see. Checked live. |
+| 3 | The sibling count is a second request. | GridJobPage.tsx | Skipped | The page learns the total inside its paged list. One request for one row is cheap, and passing the total up would couple the two panels. |
+| 4 | The shell batch test has a weak negative assertion. | GridJobPage.test.tsx | Fixed | It asserts that no report or definition link is present. |
+| 5 | The marker for the definition node is fragile. | GridJobPage.test.tsx | Fixed | The test orders the nodes by their links. |
+| 6 | No test for a run that cannot be read. | GridJobPage.test.tsx | Fixed | A test with an id and no readable run asserts that no report nodes appear. |
+| 7 | No test for a batch with no siblings. | GridJobPage.test.tsx | Fixed | A test seeds a batch of one job and asserts that no sibling node appears. |
+| 8 | The Lineage doc comment is long. | GridJobPage.tsx | Fixed | It is shorter. |
 
 * Result
 

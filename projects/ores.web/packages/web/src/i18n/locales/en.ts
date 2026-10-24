@@ -1800,6 +1800,7 @@ export const en: SourceCatalogue = {
                     running: 'still running',
                     hint: 'The service stores when the run was written and when its output arrived. It stores nothing between, so the bar is not split into phases.',
                 },
+                unreadable: 'The External Ref names no report run that this session can read.',
                 siblings: {
                     title: 'Jobs of the batch',
                     count: {

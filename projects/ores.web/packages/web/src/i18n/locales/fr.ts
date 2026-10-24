@@ -1820,6 +1820,8 @@ const fr: SourceCatalogue = {
                     running: 'encore en cours',
                     hint: 'Le service enregistre quand l’exécution a été écrite et quand sa sortie est arrivée. Il n’enregistre rien entre les deux, donc la barre n’est pas découpée en phases.',
                 },
+                unreadable:
+                    'La référence externe ne nomme aucune exécution de rapport que cette session peut lire.',
                 siblings: {
                     title: 'Travaux du lot',
                     count: {

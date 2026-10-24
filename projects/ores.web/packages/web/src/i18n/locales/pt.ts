@@ -1811,6 +1811,8 @@ const pt: SourceCatalogue = {
                     running: 'ainda a executar',
                     hint: 'O serviço guarda quando a execução foi escrita e quando a sua saída chegou. Não guarda nada entre os dois, por isso a barra não se divide em fases.',
                 },
+                unreadable:
+                    'A referência externa não nomeia nenhuma execução de relatório que esta sessão possa ler.',
                 siblings: {
                     title: 'Trabalhos do lote',
                     count: {

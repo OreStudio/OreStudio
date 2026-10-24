@@ -573,7 +573,7 @@ function ChainNode({
         <li className="relative">
             <span
                 aria-hidden="true"
-                className={`absolute -left-[1.6rem] top-1.5 h-2.5 w-2.5 rounded-full ${DOT[kind]}`}
+                className={`absolute -left-[1.81rem] top-1.5 h-2.5 w-2.5 rounded-full ${DOT[kind]}`}
             />
             <div className={kind === 'here' ? 'font-medium' : undefined}>{title}</div>
             {note !== undefined && <p className="text-xs text-ink-faint">{note}</p>}
@@ -586,12 +586,10 @@ function ChainNode({
  * The chain that put this job on the grid, one column of nodes from the top: the scheduled
  * job, the report definition, the report run, the batch, and this job with its results.
  *
- * The hop from the batch to the report run is the batch's External Ref, which holds the run's
- * id when a report dispatched it. The model does not state it as a relationship, so the batch
- * node is drawn dashed and says so. A batch the shell dispatched holds an operator string
- * there, and the chart says no report is behind it. The scheduled job has no read by id yet,
- * so its node says that. A session that may not read the run sees the run as a link and no
- * definition.
+ * The batch names its run in the External Ref, which the model does not state as a
+ * relationship, so a batch a report made is drawn dashed and says so. The scheduled job has no
+ * read by id yet, so its node says that. A session that may not read the run sees no report
+ * nodes, and the batch says why.
  */
 function Lineage({
     workunit,
@@ -619,11 +617,14 @@ function Lineage({
         meta: QUIET,
     });
     const siblings = jobs.data === undefined ? 0 : Math.max(0, jobs.data.total - 1);
+    // The service names the run on the batch exactly when this session may read it, so the
+    // chain above the batch is drawn then. An id that names no run it can read is text.
+    const reported = reportRef !== null && batch?.report_run_name != null;
     const key = 'operations.grid.job.lineage';
     return (
         <Panel title={t(`${key}.title`)}>
-            <ol className="relative ml-2 space-y-4 border-l border-line pl-6 text-sm">
-                {reportRef !== null && (
+            <ol className="relative ml-2 space-y-4 pl-6 text-sm before:absolute before:bottom-2 before:left-0 before:top-2 before:w-px before:bg-ink-faint">
+                {reported && (
                     <ChainNode
                         kind="unchecked"
                         title={t(`${key}.scheduled`)}
@@ -640,7 +641,7 @@ function Lineage({
                         note={t(`${key}.definitionNote`)}
                     />
                 )}
-                {reportRef !== null && (
+                {reported && reportRef !== null && (
                     <ChainNode
                         title={
                             <PageLink to={gridReportRunPath(reportRef)}>
@@ -652,14 +653,18 @@ function Lineage({
                 )}
                 {batch !== undefined && (
                     <ChainNode
-                        kind={reportRef === null ? 'stated' : 'unchecked'}
+                        kind={reported ? 'unchecked' : 'stated'}
                         title={
                             <PageLink to={gridBatchPath(batch.id)}>
                                 {batch.report_run_name ?? batch.external_ref}
                             </PageLink>
                         }
                         note={
-                            reportRef === null ? t(`${key}.noReport`) : t(`${key}.batchUnchecked`)
+                            reported
+                                ? t(`${key}.batchUnchecked`)
+                                : reportRef === null
+                                  ? t(`${key}.noReport`)
+                                  : t(`${key}.unreadable`)
                         }
                     />
                 )}

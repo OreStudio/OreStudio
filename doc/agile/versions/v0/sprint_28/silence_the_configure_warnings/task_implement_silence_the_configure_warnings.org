@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :silence_the_configure_warnings:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/silence-the-configure-warnings
+#+pr: 3367
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -28,7 +28,7 @@ The site configure and the macOS configure report no warning that the repository
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:40CC49C7-405B-472D-93A7-BDEB09991C39][Silence the configure warnings on the site and macOS builds]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |
@@ -90,7 +90,7 @@ shorter vcpkg root on Windows; the libarchive one wants
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3367][#3367]] | [cmake] Stop the doc-only and macOS configures warning |
 
 * Review
 

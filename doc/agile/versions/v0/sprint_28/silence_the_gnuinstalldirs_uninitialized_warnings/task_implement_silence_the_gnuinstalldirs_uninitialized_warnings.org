@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :silence_the_gnuinstalldirs_uninitialized_warnings:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/silence-the-gnuinstalldirs-uninitialized-warnings
+#+pr: 3347
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -28,7 +28,7 @@ The Linux CI configure step reports no uninitialized-variable warnings from CMak
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |
@@ -80,7 +80,7 @@ equivalents of both preset settings.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3347][#3347]] | [cmake] Silence the GNUInstallDirs uninitialized warnings |
 
 * Review
 

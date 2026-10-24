@@ -23,7 +23,7 @@ No translation unit calls a C runtime function that MSVC's STL deprecates, so th
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Closed.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
 | Next          | None.            |
 | Last touched  | 2026-10-16                               |

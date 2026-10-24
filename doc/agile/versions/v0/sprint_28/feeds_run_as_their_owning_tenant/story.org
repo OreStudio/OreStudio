@@ -23,9 +23,9 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.            |
 | Last touched  | 2026-10-19                               |
 
 * Acceptance

@@ -27,13 +27,12 @@ still holds up, but whether it was ever built to the rules.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The review is done and written up. It is not yet agreed. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Agree the review and decide the remediations. |
-| Last touched  | 2026-10-16                               |
-
+| Next          | Nothing. |
+| Last touched  | 2026-10-24                               |
 * Acceptance
 
 - Every Regime 2 decision check is walked over the family's seven entity models, with the evidence for each result.

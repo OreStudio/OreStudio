@@ -30,9 +30,9 @@ exponentiates.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | The emitter writes every generated family, and every document it writes validates against the schema. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The round-trip harness, which compares values rather than text. |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

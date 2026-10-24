@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :run_code_coverage_on_the_continuous_debug_builds:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/run-code-coverage-on-the-continuous-debug-builds
+#+pr: 3343
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -28,7 +28,7 @@ The Continuous Linux debug build collects code coverage and submits it to the Co
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:F8DF1A62-3405-436E-96C6-56D6BAC8775E][Run code coverage on the Continuous debug builds]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |
@@ -78,7 +78,7 @@ needs a measured covered run before it can be re-derived.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3343][#3343]] | [ci] Collect coverage on the Continuous debug build |
 
 * Review
 

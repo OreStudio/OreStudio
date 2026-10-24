@@ -8,7 +8,7 @@
 #+filetags: :unblock_the_unity_build:sprint_28:v0:
 #+owner: marco
 #+branch: feature/unblock-the-unity-build
-#+pr:
+#+pr: none (committed directly)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14

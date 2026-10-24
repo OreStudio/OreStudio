@@ -29,7 +29,7 @@ the story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D21D0B36-81FF-4E04-9E1D-470CC82EDF1D][Save the compiler cache instead of silently dropping it]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |

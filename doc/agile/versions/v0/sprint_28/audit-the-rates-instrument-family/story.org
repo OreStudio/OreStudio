@@ -23,7 +23,7 @@ Establish, with evidence, whether the rates instrument family's data model meets
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Nothing. The findings are carried by [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]]. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-10-18                               |

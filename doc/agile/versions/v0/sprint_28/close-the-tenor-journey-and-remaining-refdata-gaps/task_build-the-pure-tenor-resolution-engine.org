@@ -29,7 +29,7 @@ The server cannot answer what date a tenor resolves to, and the screen that auth
 | State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
 | Now          | Nothing. |
-| Waiting on   | Review of PR #3399.                    |
+| Waiting on   | Nothing.                    |
 | Next         | Nothing. |
 | Last touched | 2026-10-16                             |
 

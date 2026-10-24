@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :give_the_web_one_way_to_handle_time:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: none (no commit carries the task id)
+#+pr: none (no commit carries the task id)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -29,7 +29,7 @@ A person working in ores.web should have exactly one place that knows how a time
 | State        | DONE                              |
 | Parent story | [[id:19B54929-1098-4FBD-B588-505CC7C3BBFB][Give the web one way to handle time and timestamps]] |
 | Now          | Nothing. |
-| Waiting on   | A build-lock slot for =./compass.sh build ores.iam.service.exe ores.platform.tests -j6=. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 

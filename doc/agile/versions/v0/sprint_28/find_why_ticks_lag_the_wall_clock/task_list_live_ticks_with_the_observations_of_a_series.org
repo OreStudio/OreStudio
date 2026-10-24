@@ -28,7 +28,7 @@ The shell and the screens that list the observations of a series show the live t
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:3575BB1B-B8A9-419F-A22E-FDFDC985F987][Find why market data ticks lag the wall clock]] |
-| Now          | Replaced by the task that adds the history call. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |
 | Last touched | 2026-10-23                               |

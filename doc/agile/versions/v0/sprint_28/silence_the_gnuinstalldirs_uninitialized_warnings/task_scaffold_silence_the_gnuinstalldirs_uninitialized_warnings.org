@@ -29,7 +29,7 @@ thing to change, and wire the story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9CFAAFA9-6EB9-4A57-8761-AF9C348BF138][Silence the GNUInstallDirs uninitialized warnings]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |

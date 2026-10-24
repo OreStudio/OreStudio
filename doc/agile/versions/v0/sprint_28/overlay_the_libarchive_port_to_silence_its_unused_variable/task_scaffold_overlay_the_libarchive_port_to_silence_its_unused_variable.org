@@ -30,7 +30,7 @@ Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |

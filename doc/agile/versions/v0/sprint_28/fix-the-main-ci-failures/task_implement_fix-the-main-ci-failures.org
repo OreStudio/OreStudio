@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :fix-the-main-ci-failures:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: hotfix/fix-the-main-ci-failures
+#+pr: 3584
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3584][#3584]] | [ci] Fix the four failures on main |
 
 * Review
 

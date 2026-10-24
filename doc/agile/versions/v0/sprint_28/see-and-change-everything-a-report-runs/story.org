@@ -23,10 +23,10 @@ A person who opens a report sees, on one page, what the report is, what it runs 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The report page analysis, the engine settings design and the prototype are merged. The engine settings data model, the seed, the export and the import are in one PR, and the 19 engine columns of the run settings are gone. |
-| Waiting on    | Review of the data model PR. Owner answers to the open questions under Design that still stand. |
-| Next          | Move the currency and the market kind to the report definition, record what a run used, and build the engine settings screens. |
-| Last touched  | 2026-10-22                               |
+| Now           | The engine settings arc is done and merged: the model, the documentation of 610 ORE parameters published through DQ, the screens, the party rules, the history and the refresh. The scenario passes. The report page itself, with its six tabs and the convention set, is not started. |
+| Waiting on    | Nothing. |
+| Next          | Analyse the report page and prototype the tabs, then move the currency and the market kind to the report definition and record what a run used. |
+| Last touched  | 2026-10-24                               |
 
 * Acceptance
 

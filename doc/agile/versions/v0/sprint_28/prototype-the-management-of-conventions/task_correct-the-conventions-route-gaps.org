@@ -28,9 +28,9 @@ The journeys and prototype notes say that no BFF route serves conventions. Route
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
-| Now          | The gap statements are corrected.      |
+| Now          | Nothing.      |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing.                      |
 | Last touched | 2026-10-21                               |
 
 * Acceptance

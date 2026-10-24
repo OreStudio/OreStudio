@@ -29,9 +29,9 @@ schema. They come last because nothing depends on them yet.
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Abandoned: most of these families have no product reader, so no domain model is owed. See the census task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

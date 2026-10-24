@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :report_the_nightly_platforms_under_the_nightly_group:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/report-the-nightly-platforms-under-the-nightly-group
+#+pr: 3300
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3300][#3300]] | [ci] Report the nightly platform builds under the CDash Nightly group |
 
 * Review
 

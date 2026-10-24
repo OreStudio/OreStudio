@@ -35,7 +35,7 @@ that produced no analytics is a failed result carrying the engine's error.
 | State        | DONE                              |
 | Parent story | [[id:43CA594B-4A2E-4873-B5C7-145F24CA600B][Prove the report grid run end to end]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing. The live run belongs to Prove the run end to end and keep it repeatable. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 

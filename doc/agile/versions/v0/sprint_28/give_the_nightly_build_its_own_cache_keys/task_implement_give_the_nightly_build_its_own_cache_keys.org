@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :give_the_nightly_build_its_own_cache_keys:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-nightly-build-its-own-cache-keys
+#+pr: 3342
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -28,7 +28,7 @@ Each workflow restores only a cache built with its own flags, and all six Linux 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:FC9DEEA3-58F1-4E00-985A-6DB12AA45DAF][Give the Nightly Build its own cache keys]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |
@@ -81,7 +81,7 @@ workflow, and it appears in the continuous =restore-keys= list alone.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3342][#3342]] | [ci] Scope the sccache keys to the workflow |
 
 * Review
 

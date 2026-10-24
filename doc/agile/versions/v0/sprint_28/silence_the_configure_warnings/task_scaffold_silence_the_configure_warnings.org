@@ -29,7 +29,7 @@ the story into Sprint 28.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:40CC49C7-405B-472D-93A7-BDEB09991C39][Silence the configure warnings on the site and macOS builds]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :save_the_compiler_cache_instead_of_dropping_it:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/save-the-compiler-cache-instead-of-dropping-it
+#+pr: 3381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -28,7 +28,7 @@ A run that builds enough to be worth saving really stores its compiler cache, an
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D21D0B36-81FF-4E04-9E1D-470CC82EDF1D][Save the compiler cache instead of silently dropping it]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-16                               |
@@ -84,7 +84,7 @@ the cache, which is why only the debug variant was stuck.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3381][#3381]] | [ci] Store the compiler cache instead of dropping it silently |
 
 * Review
 

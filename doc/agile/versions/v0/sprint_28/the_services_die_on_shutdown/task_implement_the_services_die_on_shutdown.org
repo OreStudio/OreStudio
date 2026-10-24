@@ -8,7 +8,7 @@
 #+filetags: :the_services_die_on_shutdown:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/the-services-die-on-shutdown
-#+pr:
+#+pr: 3550
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18

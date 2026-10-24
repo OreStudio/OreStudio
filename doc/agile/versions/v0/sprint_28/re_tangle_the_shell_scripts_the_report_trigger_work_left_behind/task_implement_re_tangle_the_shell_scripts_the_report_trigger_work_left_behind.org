@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :re_tangle_the_shell_scripts_the_report_trigger_work_left_behind:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/re-tangle-the-shell-scripts-the-report-trigger-work-left-behind
+#+pr: 3351
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -28,7 +28,7 @@ The shell script library matches what the recipes tangle to, and the tangle-shel
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:3C9FF46E-E842-4D60-B3B9-4154E904D460][Re-tangle the shell scripts the report trigger work left behind]] |
-| Now          | Closed.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | None.                  |
 | Last touched | 2026-10-15                               |
@@ -76,7 +76,7 @@ gate is run again after the commit.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3351][#3351]] | [shell] Re-tangle the scripts the report trigger work left behind |
 
 * Review
 

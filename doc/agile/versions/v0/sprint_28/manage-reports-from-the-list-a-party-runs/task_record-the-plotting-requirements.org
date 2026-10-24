@@ -32,9 +32,9 @@ is built here, and this task schedules no plotting work.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
-| Now          | The capture is filed and the gate passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None. The capture waits for a decision, not for work. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                             |
 
 * Acceptance

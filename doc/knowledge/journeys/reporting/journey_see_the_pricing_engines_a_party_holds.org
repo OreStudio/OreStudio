@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 386DD47E-DA9E-4EA7-B925-852048EE47B7
 :END:
-#+title: User Journey: See the pricing engines a party holds
+#+title: User Journey: See the pricing engine configurations a party holds
 #+description: A market-risk owner or tenant administrator reads the pricing engine configurations the party holds, which one is official for each cycle, what each one prices with, which reports bind it, and what it leaves unpriced.
 #+type: user_journey
 #+level: cross
@@ -43,6 +43,28 @@ page, or on one of the three journeys that change a configuration.
 This journey reads. It writes nothing. Adding, changing and importing are the
 journeys it links to.
 
+* This is not the engine run settings
+
+Two configurations carry the word "engine" and a person must not confuse them.
+This journey is about the first only.
+
+| | Pricing engine configuration | Engine run settings |
+|--+------------------------------+---------------------|
+| Question | Which model and engine price this product, and how are they set? | How does the engine run this report? |
+| ORE document | =pricingengine.xml= | =ore.xml=, the =Setup= block |
+| Unit | One product type | The whole run |
+| Holds | Product rows, each with a model, an engine and their parameters | Three groups of fixed settings: fixings, building, execution |
+| Journey | this page | [[id:29C26BB5-2F89-448C-8E1E-BAA60C91B327][See and change the engine run settings a party holds]] |
+
+A change here applies to one product type. A change to the engine run settings
+applies to every product of the run. The record page of each configuration
+carries a *Related configurations* card that lists the other configurations
+the same report binds, with a link.
+
+No screen, card or journey calls this configuration *pricing engines*, *pricing
+model config* or *the pricing engine* alone. Its page has a *Parameters* tab,
+never a *Settings* tab.
+
 * Official, approved and draft
 
 A party does not hold many official pricing configurations. Model risk controls
@@ -72,7 +94,7 @@ tag. The list is short on purpose, and the screen says so.
 
 ** Step 1: the list
 
-1. *Open the list.* The person opens *Pricing engines* under the reporting area.
+1. *Open the list.* The person opens *Pricing engine configurations* under the reporting area.
    The screen is a record list as the
    [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws one:
    breadcrumb, the plural as the title, one sentence, *Refresh* and *Add*, a
@@ -90,7 +112,7 @@ tag. The list is short on purpose, and the screen says so.
 4. *Start a change from the list.* *Add* opens
    [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
    The *Workflows* menu offers
-   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]
+   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]]
    and the queue of
    [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]].
 
@@ -153,15 +175,15 @@ screen, in its own journey. A journey is one
 screen composed around a goal, so the Products tab carries the coverage strip and
 the Reports tab carries the reach, rather than a separate screen for each.
 
-#+caption: The pricing engines list and one configuration's page: the Products tab with the coverage strip, and the Reports tab.
+#+caption: The pricing engine configurations list and one configuration's page: the details with the related configurations card, the Products tab with the coverage strip, and the Reports tab.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_see_the_pricing_engines_a_party_holds.png]]
 
 * Prototype
 
-The [[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds/][see the pricing engines a party holds prototype]] owns this journey, and
+The [[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds/][see the pricing engine configurations a party holds prototype]] owns this journey, and
 [[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds.org][its design note]] says what it argues, which states it can reach and what is
-fake. It belongs at =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/=.
+fake. It belongs at =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/=. The prototype keeps its earlier file name; the screen it draws is *Pricing engine configurations*.
 
 It must draw the list and the record page as the Record screen standard draws
 them, with no layout of its own. The list must show the name, status, the cycle a
@@ -207,13 +229,13 @@ party-scoped.
 | 2, Details | Read the status, the cycle and the sign-off of a version | (no operation) | missing |
 | 2, Reports | Read the product types of a report's portfolio | (no operation) | missing |
 | 3, coverage | Read the product types the party trades | (no operation) | missing |
-| The screen | Read pricing engines from the browser | =GET /api/reporting/pricing-engines= and =GET /api/reporting/pricing-engines/:id= | exists |
+| The screen | Read pricing engine configurations from the browser | =GET /api/reporting/pricing-engines= and =GET /api/reporting/pricing-engines/:id= | exists |
 
 * What is missing
 
-1. *A route and a screen.* No BFF route serves pricing engines and no screen
-   reads them. The list and the page are new. The configuration is reachable from
-   the browser today only through the shell.
+1. *A route and a screen.* The BFF routes under =/api/reporting/pricing-engines=
+   serve the list and the document, and the list and the page exist. The page has
+   no *Used by* read and no *History* screen, which items 3 and 6 below describe.
 2. *Reads of the parts by configuration.* The document read returns the whole
    document, which is enough for a page. The list of configurations needs a count
    of products and a count of reports for each row, and no operation returns a
@@ -249,9 +271,10 @@ party-scoped.
 - [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — when the party needs a configuration that does not exist
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — when a row is wrong
 - [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — the queue, and what happens to a proposal
-- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — when the configuration lives in an ORE file
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]] — when the configuration lives in an ORE file
+- [[id:29C26BB5-2F89-448C-8E1E-BAA60C91B327][See and change the engine run settings a party holds]] — when the question is how the engine runs rather than which model prices a product
 - [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] — step 4 binds a pricing engine configuration, and links here once this screen exists
-- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — step 1 names the pricing engines a definition binds, and links here
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — step 1 names the pricing engine configuration a definition binds, and links here
 - [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the reports this configuration reaches
 
 * Related knowledge
@@ -259,6 +282,7 @@ party-scoped.
 - [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the =pricingengine.xml= document and how it maps to these tables
 - [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][Investigation: the ORE report configuration vocabulary]] — who owns each configuration document
+- [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]] — the boundary between this configuration and the engine run settings
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list and the page
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
 

@@ -37,7 +37,7 @@ The trigger is a party with no configuration for a set of products, a new
 desk that trades a product type the existing configurations do not cover, a
 candidate that model risk asked for, or a quant who wants to try a change without
 touching the official configuration. The journey starts from *Add* on the list in
-[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]
+[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]]
 and ends on the new configuration's page, ready to bind to a report.
 
 The journey writes one configuration, its products and its parameters. It binds
@@ -75,7 +75,7 @@ last step is final.
 3. *Choose a starting point.* Three choices, one panel: *Start empty*, *Start from
    a copy of* a configuration the party holds, or *Start from an ORE file*, which
    hands the person to
-   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]
+   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]]
    and returns with the rows read. A copy carries the products and parameters of
    the source and nothing else; it does not carry the source's report bindings.
 
@@ -252,15 +252,15 @@ carries all three as arrays.
    writing a new one with new identifiers. Nothing makes a copy on the server.
 7. *No status, no cycle, no sign-off.* A draft, a candidate and an official
    configuration are the same row today. The same gap as in
-   [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]].
+   [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]].
    A candidate that replaces the official configuration also rebinds the reports of
    the cycle in one step. No operation does that, and the sign-off prototype does not
    draw the step.
 
 * Related journeys
 
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
-- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — the way to start from an ORE file
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — where this journey starts and ends
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engine configuration file]] — the way to start from an ORE file
 - [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the way to change one row after the configuration exists
 - [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — where a candidate goes after it is submitted
 - [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] — step 4 binds the configuration this journey saves

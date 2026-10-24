@@ -127,7 +127,6 @@ Backlog, sprint planning, and task lifecycle.
 | GitHub    | [[https://github.com/OreStudio/OreStudio][github.com/OreStudio/OreStudio]]                   |
 | Doxygen   | [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][orestudio.github.io — Doxygen API docs]] |
 | Site      | [[https://orestudio.github.io/OreStudio/][orestudio.github.io/OreStudio]]            |
-| DeepWiki  | [[https://deepwiki.com/OreStudio/OreStudio][deepwiki.com/OreStudio/OreStudio]]          |
 
 ** Community
 

@@ -90,6 +90,7 @@ const pt: SourceCatalogue = {
             refdata: 'Dados de referência',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
+            language: 'Idioma',
             changeParty: 'Mudar de parte',
             changePartyFailed: 'Não foi possível mudar de parte.',
             changePartyHint: 'Escolha a parte em nome da qual atua.',
@@ -4786,6 +4787,14 @@ const pt: SourceCatalogue = {
             none: 'Nenhuma configuração corresponde aos filtros.',
         },
         noRow: 'Esta configuração não tem linha para {group}. O motor usa o padrão para cada configuração aqui.',
+        allParties: 'Todas as partes',
+        otherParty: {
+            notice: 'Estas configurações do motor pertencem a {party}. Você atua noutra parte, por isso pode lê-las mas não alterá-las.',
+            switch: 'Mudar para {party}',
+            history:
+                'O histórico está disponível na parte proprietária. Mude para {party} para lê-lo.',
+            failed: 'Não foi possível mudar de parte: {message}',
+        },
         rowBy: 'Última alteração por {who}.',
         changesTheNumbers: 'Estas configurações alteram os números que uma execução calcula.',
         reach: {
@@ -4816,17 +4825,12 @@ const pt: SourceCatalogue = {
             count: '{count} relatórios',
         },
         history: {
-            lead: 'Cada versão destas configurações do motor e de seus grupos, da mais recente para a mais antiga. Reverter escreve os valores que um grupo tinha antes de uma alteração como uma nova versão.',
             central: 'A configuração',
-            created: 'Criado',
-            changed: 'Alterado',
-            version: 'versão {version}',
-            current: 'atual',
             revert: 'Reverter',
         },
         revert: {
             title: 'Reverter o grupo',
-            lead: 'Isto escreve os valores que o grupo tinha antes da alteração como uma nova versão. O histórico mantém a versão que ela substitui.',
+            lead: 'Isto grava como nova versão os valores que o grupo tinha nesta versão. O histórico mantém a versão que ela substitui.',
             nothing: 'O grupo já contém estes valores.',
         },
         rename: {

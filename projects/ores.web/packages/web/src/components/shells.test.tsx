@@ -255,6 +255,15 @@ describe('the application shell', () => {
         expect(html).not.toContain('admin · Acme Corporation');
     });
 
+    it('lets the person choose the language, each named in itself', () => {
+        const html = renderAppShell('Acme Operations');
+
+        expect(html).toContain('Language');
+        expect(html).toContain('>English<');
+        expect(html).toContain('>Português<');
+        expect(html).toContain('>Français<');
+    });
+
     /*
      * The header names the person from their own account once the shell has
      * read it, so an administrator is not listed by a handle; the username

@@ -37,10 +37,14 @@ import { useTranslation } from '../i18n/Provider.js';
 import {
     RecordList,
     type ListColumn,
+    type ListFilter,
     type ListSource,
     type PageRequest,
 } from '../refdata/RecordList.js';
-import { NEW_RECORD_REASON, useCloseGuard, LeavingFooter } from '../refdata/records.js';
+import { NEW_RECORD_REASON, markStale, useCloseGuard, LeavingFooter } from '../refdata/records.js';
+import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
+import { Crumbs } from '../refdata/shared.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { engineSettingsPath } from '../shell/paths.js';
 import { Button, Dialog, Field, Input, Notice, Textarea } from '../ui/Primitives.js';
@@ -64,13 +68,15 @@ function isSortField(field: string): field is SortField {
 /** One page of the rows, searched and ordered as the list asked. */
 export function pageOf(
     rows: readonly EngineSummary[],
-    page: Pick<PageRequest, 'offset' | 'limit' | 'sort' | 'descending' | 'search'>,
+    page: Pick<PageRequest, 'offset' | 'limit' | 'sort' | 'descending' | 'search' | 'filters'>,
 ): { readonly rows: readonly EngineSummary[]; readonly total: number } {
     const needle = page.search.trim().toLowerCase();
+    const party = page.filters[PARTY_FILTER_ID] ?? '';
+    const owned = party === '' ? rows : rows.filter((row) => row.partyId === party);
     const found =
         needle === ''
-            ? [...rows]
-            : rows.filter((row) =>
+            ? [...owned]
+            : owned.filter((row) =>
                   [row.name, row.description, row.partyName, row.partyCode].some((text) =>
                       text.toLowerCase().includes(needle),
                   ),
@@ -88,19 +94,28 @@ export function pageOf(
     return { rows: found.slice(page.offset, page.offset + page.limit), total: found.length };
 }
 
-const SOURCE: ListSource<EngineSummary> = {
-    key: 'engine-settings',
-    read: async (page) => pageOf(await engineSettings.list(), page),
-    search: true,
-    sortable: SORTABLE,
-    mayAdd: false,
-    watches: [ENGINE_SETTINGS_EVENTS],
-    recordKey: (row) => ({ name: row.name }),
-};
+function sourceOf(filter: ListFilter | undefined): ListSource<EngineSummary> {
+    return {
+        key: 'engine-settings',
+        // An address can carry a party from a time the account worked in several. A
+        // list with no party filter has no way to clear it, so it ignores it.
+        read: async (page) =>
+            pageOf(
+                await engineSettings.list(),
+                filter === undefined ? { ...page, filters: {} } : page,
+            ),
+        search: true,
+        sortable: SORTABLE,
+        ...(filter === undefined ? {} : { filters: [filter] }),
+        mayAdd: false,
+        watches: [ENGINE_SETTINGS_EVENTS],
+        recordKey: (row) => ({ name: row.name }),
+    };
+}
 
-function useColumns(): readonly ListColumn<EngineSummary>[] {
+function useColumns(showParty: boolean): readonly ListColumn<EngineSummary>[] {
     const { t } = useTranslation();
-    return [
+    const columns: readonly ListColumn<EngineSummary>[] = [
         {
             id: 'name',
             sort: 'name',
@@ -155,6 +170,7 @@ function useColumns(): readonly ListColumn<EngineSummary>[] {
             cell: (row) => <RelativeTime at={row.recordedAt} />,
         },
     ];
+    return showParty ? columns : columns.filter((column) => column.id !== PARTY_COLUMN_ID);
 }
 
 /** Adds a configuration with a name and a description. Its groups are set on its own page. */
@@ -174,7 +190,7 @@ function AddDialog({ onClose }: { readonly onClose: () => void }): ReactNode {
                 intent: { reason_code: NEW_RECORD_REASON, commentary: '' },
             }),
         onSuccess: async (document) => {
-            await queries.invalidateQueries({ queryKey: ['records', 'engine-settings'] });
+            markStale(queries, [['records', 'engine-settings']]);
             onClose();
             void navigate(engineSettingsPath(document.id));
         },
@@ -231,13 +247,35 @@ function AddDialog({ onClose }: { readonly onClose: () => void }): ReactNode {
 export function EngineSettingsPage(): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
-    const columns = useColumns();
+    const scope = usePartyScope({
+        label: t('engineSettings.columns.party'),
+        all: t('engineSettings.allParties'),
+    });
+    const columns = useColumns(scope.several);
+    const source = sourceOf(scope.filter);
     const [adding, setAdding] = useState(false);
     const trail = [...useAreaRoot('reporting'), { label: t('engineSettings.title') }];
+    if (scope.pending || scope.error !== null) {
+        return (
+            <ScreenFrame
+                trail={<Crumbs parts={trail} />}
+                title={t('engineSettings.title')}
+                description={t('engineSettings.lead')}
+            >
+                {scope.error === null ? (
+                    <p className="text-sm text-ink-muted" role="status">
+                        {t('common.loading')}
+                    </p>
+                ) : (
+                    <Notice tone="error">{scope.error}</Notice>
+                )}
+            </ScreenFrame>
+        );
+    }
     return (
         <>
             <RecordList
-                source={SOURCE}
+                source={source}
                 title={t('engineSettings.title')}
                 lead={t('engineSettings.lead')}
                 crumbs={trail}

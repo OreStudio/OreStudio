@@ -51,6 +51,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Crumbs } from '../refdata/shared.js';
+import { MY_PARTIES_QUERY_KEY, PARTY_COLUMN_ID, usePartyScope } from '../refdata/partyScope.js';
 import { reportPath } from '../shell/paths.js';
 import {
     RecordList,
@@ -74,8 +75,7 @@ import {
 /** The key the list's pages are cached under, and the prefix its load state reads. */
 export const REPORTS_QUERY_KEY = ['records', 'reports'] as const;
 
-/** The parties the session's account works in, which are the parties the filter may offer. */
-export const MY_PARTIES_QUERY_KEY = ['my-parties'] as const;
+export { MY_PARTIES_QUERY_KEY };
 
 /** The column of the row each unread read would have filled. */
 const CELL_COLUMNS: Readonly<Record<ReportUnread['cell'], string>> = {
@@ -104,42 +104,6 @@ export function unreadNotes(
     }));
 }
 
-/**
- * The parties in scope, as the filter's choices.
- *
- * The choices are the parties the session's own account works in, so a filter
- * offers only values that exist and that the person may read. The list waits for
- * them rather than drawing a filter it cannot fill.
- */
-function usePartyFilter(): {
-    readonly filter: ListFilter | undefined;
-    readonly pending: boolean;
-    readonly error: string | null;
-} {
-    const { t } = useTranslation();
-    const parties = useQuery({ queryKey: MY_PARTIES_QUERY_KEY, queryFn: api.myParties });
-    if (parties.isPending) {
-        return { filter: undefined, pending: true, error: null };
-    }
-    if (parties.isError) {
-        return { filter: undefined, pending: false, error: parties.error.message };
-    }
-    return {
-        filter: {
-            kind: 'choice',
-            id: 'party',
-            label: t('reporting.columns.party'),
-            all: t('reporting.filter.allParties'),
-            choices: parties.data.parties.map((party) => ({
-                value: party.partyId,
-                label: party.name,
-            })),
-        },
-        pending: false,
-        error: null,
-    };
-}
-
 /** The fields of a definition the server orders by, which are the columns that can be clicked. */
 const SORTABLE_FIELDS = ['name', 'report_type', 'schedule_expression'] as const;
 
@@ -149,7 +113,8 @@ function useReportSource(party: ListFilter | undefined): ListSource<ReportRowVie
     return {
         key: 'reports',
         read: async (page) => {
-            const partyId = page.filters['party'] ?? null;
+            // A party in the address is dropped when the list has no party filter to clear it.
+            const partyId = party === undefined ? null : (page.filters['party'] ?? null);
             // The tally is of every report the party and the search match, so it
             // is read with the page and not added up from it. It is read apart
             // from the rows: a tally that cannot be read costs the strip and the
@@ -266,9 +231,9 @@ function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
  * latest run. A count is a number, so it is stated in its own column, right
  * aligned and tabular, and never as a word a screen invented.
  */
-function useColumns(): readonly ListColumn<ReportRowView>[] {
+function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
     const { t } = useTranslation();
-    return [
+    const columns: readonly ListColumn<ReportRowView>[] = [
         {
             id: 'name',
             sort: 'name',
@@ -335,11 +300,15 @@ function useColumns(): readonly ListColumn<ReportRowView>[] {
             numeric: true,
         },
     ];
+    return showParty ? columns : columns.filter((column) => column.id !== PARTY_COLUMN_ID);
 }
 
 export function ReportsPage(): ReactNode {
     const { t } = useTranslation();
-    const { filter, pending, error } = usePartyFilter();
+    const { several, filter, pending, error } = usePartyScope({
+        label: t('reporting.columns.party'),
+        all: t('reporting.filter.allParties'),
+    });
     const source = useReportSource(filter);
     const trail = [...useAreaRoot('reporting'), { label: t('reporting.title') }];
     const lead = t('reporting.lead');
@@ -370,7 +339,7 @@ export function ReportsPage(): ReactNode {
         );
     }
 
-    return <ReportsList source={source} trail={trail} />;
+    return <ReportsList source={source} trail={trail} showParty={several} />;
 }
 
 /**
@@ -381,12 +350,14 @@ export function ReportsPage(): ReactNode {
 function ReportsList({
     source,
     trail,
+    showParty,
 }: {
     readonly source: ListSource<ReportRowView>;
+    readonly showParty: boolean;
     readonly trail: readonly { readonly label: string; readonly to?: string }[];
 }): ReactNode {
     const { t } = useTranslation();
-    const columns = useColumns();
+    const columns = useColumns(showParty);
     return (
         <RecordList
             source={source}

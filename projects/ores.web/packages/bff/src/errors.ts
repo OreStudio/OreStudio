@@ -90,6 +90,20 @@ export function notPermitted(message: string): HttpFailure {
     return new HttpFailure(403, { code: 'forbidden', message });
 }
 
+/**
+ * The record belongs to another party than the one the session acts in.
+ *
+ * A record is read and written under the party that owns it, so a person who can
+ * see it from a parent party changes it only after switching. The refusal names
+ * the owner so the screen can offer the switch.
+ */
+export function otherParty(owner: string): HttpFailure {
+    return new HttpFailure(409, {
+        code: 'other-party',
+        message: `This record belongs to ${owner}. Switch to that party to change it.`,
+    });
+}
+
 /** The thing the address names does not exist, or is not one this route serves. */
 export function notFound(message: string): HttpFailure {
     return new HttpFailure(404, { code: 'not-found', message });

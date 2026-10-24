@@ -18,10 +18,18 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { QueryClient } from '@tanstack/react-query';
 import { Route } from 'react-router';
-import type { EngineDocument, EngineDocumentation, EngineSummary } from '../api/engineSettings.js';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TranslationProvider } from '../i18n/Provider.js';
+import type {
+    EngineDocument,
+    EngineDocumentation,
+    EngineHistoryEntry,
+    EngineSummary,
+} from '../api/engineSettings.js';
+import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { textOf } from '../textOf.js';
@@ -29,8 +37,21 @@ import { EngineSettingsPage, pageOf } from './EngineSettingsPage.js';
 import {
     DOCUMENTATION_KEY,
     EngineSettingsRecordPage,
+    SettingRow,
+    engineWatches,
     engineSettingsKey,
+    historyKey,
 } from './EngineSettingsRecordPage.js';
+
+const acting = vi.hoisted(() => ({
+    party: undefined as string | undefined,
+    canSwitch: true,
+}));
+
+vi.mock('../session/SessionProvider.js', () => ({
+    useActingPartyId: () => acting.party,
+    useSwitchParty: () => (acting.canSwitch ? async () => undefined : undefined),
+}));
 
 /**
  * The engine settings screens, rendered from a seeded query cache.
@@ -178,13 +199,35 @@ const DOCUMENTATION: EngineDocumentation = {
 const WRITE = ['reporting::engine_settings:read', 'reporting::engine_settings:write'];
 const READ = ['reporting::engine_settings:read'];
 
-function list(codes: string[]): string {
+const party = (partyId: string, name: string) => ({
+    partyId,
+    name,
+    shortCode: name.slice(0, 3).toUpperCase(),
+    partyCategory: 'Operational',
+    businessCenterCode: 'GBLO',
+});
+
+const ONE_PARTY = { defaultPartyId: 'p-hk', parties: [party('p-hk', 'ACME Corporation HK')] };
+const TWO_PARTIES = {
+    defaultPartyId: 'p-hk',
+    parties: [party('p-hk', 'ACME Corporation HK'), party('p-uk', 'ACME Corporation UK')],
+};
+
+const ONE_PARTY_UK = { defaultPartyId: 'p-uk', parties: [party('p-uk', 'ACME Corporation UK')] };
+
+afterEach(() => {
+    acting.party = undefined;
+    acting.canSwitch = true;
+});
+
+function list(codes: string[], parties = TWO_PARTIES): string {
     return renderRecords(
         '/reporting/engine-settings',
         [],
         <Route path="/reporting/engine-settings" element={<EngineSettingsPage />} />,
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(pageKey({ key: 'engine-settings' }, FIRST_PAGE), {
                 rows: ROWS,
                 total: ROWS.length,
@@ -193,21 +236,31 @@ function list(codes: string[]): string {
     );
 }
 
-function record(codes: string[], tab = '', document: EngineDocument = DOCUMENT): string {
+function record(
+    codes: string[],
+    tab = '',
+    document: EngineDocument = DOCUMENT,
+    parties = TWO_PARTIES,
+    history: readonly EngineHistoryEntry[] | undefined = undefined,
+): string {
     return renderRecords(
         `/reporting/engine-settings/${HK}${tab === '' ? '' : `?tab=${tab}`}`,
         [],
         <Route path="/reporting/engine-settings/:id" element={<EngineSettingsRecordPage />} />,
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(engineSettingsKey(HK), document);
+            if (history !== undefined) {
+                client.setQueryData(historyKey(HK), history);
+            }
             client.setQueryData(DOCUMENTATION_KEY, DOCUMENTATION);
         },
     );
 }
 
 describe('pageOf', () => {
-    const page = { offset: 0, limit: 15, sort: 'name', descending: false, search: '' };
+    const page = { offset: 0, limit: 15, sort: 'name', descending: false, search: '', filters: {} };
 
     it('orders by name and pages the rows', () => {
         expect(pageOf(ROWS, page).rows.map((row) => row.name)).toEqual(['HK standard', 'Trial']);
@@ -226,6 +279,14 @@ describe('pageOf', () => {
         );
     });
 
+    it('keeps the rows of the party the filter names', () => {
+        const mixed = [...ROWS, { ...ROWS[0]!, id: 'x', name: 'UK standard', partyId: 'p-uk' }];
+        expect(
+            pageOf(mixed, { ...page, filters: { party: 'p-uk' } }).rows.map((row) => row.name),
+        ).toEqual(['UK standard']);
+        expect(pageOf(mixed, { ...page, filters: {} })).toMatchObject({ total: 3 });
+    });
+
     it('searches the name, the description and the party, and counts what it found', () => {
         expect(pageOf(ROWS, { ...page, search: 'hong kong' })).toMatchObject({ total: 1 });
         expect(pageOf(ROWS, { ...page, search: 'corporation hk' })).toMatchObject({ total: 2 });
@@ -241,6 +302,19 @@ describe('the list of engine settings', () => {
         expect(text).toContain('0 of 3');
         expect(text).toContain('default');
         expect(text).toContain('ACME Corporation HK');
+    });
+
+    it('names the owning party and offers a party filter when the account works in several', () => {
+        const text = textOf(list(READ));
+        expect(text).toContain('Party');
+        expect(text).toContain('All parties');
+    });
+
+    it('shows neither the party column nor the filter when the account works in one party', () => {
+        const text = textOf(list(READ, ONE_PARTY));
+        expect(text).toContain('HK standard');
+        expect(text).not.toContain('All parties');
+        expect(text).not.toContain('ACME Corporation HK');
     });
 
     it('opens each row by the id of the configuration', () => {
@@ -323,5 +397,158 @@ describe('one configuration of engine settings', () => {
         expect(textOf(record(READ, 'reports', { ...DOCUMENT, reports: [] }))).toContain(
             'No report binds these engine settings',
         );
+    });
+});
+
+describe('a configuration another party owns', () => {
+    it('says whose it is, offers the switch, and offers no edit', () => {
+        acting.party = 'p-uk';
+        const text = textOf(record(WRITE));
+        expect(text).toContain('belong to ACME Corporation HK');
+        expect(text).toContain('Switch to ACME Corporation HK');
+        expect(text).not.toContain('Edit');
+    });
+
+    it('offers no switch to a party the account does not work in', () => {
+        acting.party = 'p-uk';
+        const text = textOf(record(WRITE, '', DOCUMENT, ONE_PARTY_UK));
+        expect(text).toContain('belong to ACME Corporation HK');
+        expect(text).not.toContain('Switch to');
+    });
+
+    it('says the history is in the owning party instead of reading it', () => {
+        acting.party = 'p-uk';
+        const text = textOf(record(WRITE, 'history'));
+        expect(text).toContain('Switch to ACME Corporation HK to read it');
+    });
+
+    it('draws no notice and keeps Edit for the owning party', () => {
+        acting.party = 'p-hk';
+        const text = textOf(record(WRITE));
+        expect(text).not.toContain('Switch to');
+        expect(text).toContain('Edit');
+    });
+});
+
+describe('a setting being changed', () => {
+    const threads = DOCUMENTATION.groups[2]!.settings[0]!;
+    const row = (problem: { key: string; params: Record<string, string> } | null): string =>
+        renderToStaticMarkup(
+            <TranslationProvider>
+                <ul>
+                    <SettingRow
+                        setting={threads}
+                        saved={1}
+                        text="0"
+                        changed
+                        problem={problem}
+                        open={false}
+                        mode="simple"
+                        onToggle={() => undefined}
+                        onText={() => undefined}
+                        onFocus={() => undefined}
+                    />
+                </ul>
+            </TranslationProvider>,
+        );
+
+    it('marks the field and states the problem beside it', () => {
+        const html = row({
+            key: 'engineSettings.problem.min',
+            params: { setting: 'Threads', min: '1' },
+        });
+        expect(html).toContain('aria-invalid="true"');
+        expect(html).toContain('role="alert"');
+        expect(textOf(html)).toContain('Threads must be at least 1.');
+    });
+
+    it('marks nothing when the text is a value the setting takes', () => {
+        const html = row(null);
+        expect(html).toContain('aria-invalid="false"');
+        expect(html).not.toContain('role="alert"');
+    });
+});
+
+describe('the history of a configuration', () => {
+    const version = (
+        kind: EngineHistoryEntry['kind'],
+        number: number,
+        at: string,
+        values: EngineHistoryEntry['values'],
+    ): EngineHistoryEntry => ({
+        kind,
+        version: number,
+        modifiedBy: 'analyst',
+        recordedAt: at,
+        changeReason: 'common.correction',
+        changeCommentary: `change ${String(number)}`,
+        values,
+    });
+    const HISTORY = [
+        version('central', 1, '2026-10-18 09:00:00.000000Z', {
+            name: 'HK standard',
+            description: 'What the Hong Kong reports share',
+        }),
+        version('execution', 1, '2026-10-18 09:01:00.000000Z', {
+            n_threads: 1,
+            log_mask: null,
+            gzip_compression_level: null,
+        }),
+        version('execution', 2, '2026-10-19 09:00:00.000000Z', {
+            n_threads: 4,
+            log_mask: null,
+            gzip_compression_level: null,
+        }),
+        version('central', 2, '2026-10-19 09:00:00.000000Z', {
+            name: 'HK standard',
+            description: 'What the Hong Kong reports share',
+        }),
+    ];
+
+    it('draws the shared timeline: the chart, one entry for each change and the system toggle', () => {
+        const text = textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY));
+        expect(text).toContain('Execution');
+        expect(text).toContain('The configuration');
+        expect(text).toContain('change 2');
+        expect(text).toContain('Threads');
+    });
+
+    it('leaves out the version of the configuration that only counted a change of a group', () => {
+        const text = textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY));
+        expect(text.match(/change 2/g)?.length).toBe(1);
+    });
+
+    it('offers Revert on a version older than the current one, and only to a person who may write', () => {
+        expect(textOf(record(WRITE, 'history', DOCUMENT, TWO_PARTIES, HISTORY))).toContain(
+            'Revert',
+        );
+        expect(textOf(record(READ, 'history', DOCUMENT, TWO_PARTIES, HISTORY))).not.toContain(
+            'Revert',
+        );
+    });
+});
+
+describe('what the page listens to', () => {
+    it('names its own configuration, so another configuration does not turn Refresh gold', () => {
+        expect(engineWatches('HK standard')[0]).toEqual({
+            component: 'reporting',
+            entity: 'engine_settings',
+            record: { name: 'HK standard' },
+        });
+    });
+
+    it('hears every change of a group, which is keyed by something else', () => {
+        expect(engineWatches('HK standard').slice(1)).toEqual([
+            { component: 'reporting', entity: 'engine_settings_fixings' },
+            { component: 'reporting', entity: 'engine_settings_building' },
+            { component: 'reporting', entity: 'engine_settings_execution' },
+        ]);
+    });
+
+    it('hears any configuration until the page knows which one it shows', () => {
+        expect(engineWatches(undefined)[0]).toEqual({
+            component: 'reporting',
+            entity: 'engine_settings',
+        });
     });
 });

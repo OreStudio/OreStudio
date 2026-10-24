@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <chrono>
 #include <cstddef>
 #include <expected>
 #include <functional>
@@ -83,6 +84,18 @@ struct stream_output {
 struct stream_watch {
     std::vector<std::string> subjects;
     std::optional<marketdata::datum::market_datum> series;
+};
+
+/**
+ * @brief One tick of a history reply, with its time rebuilt.
+ *
+ * The reply states the first instant once and a gap in microseconds for each tick, so the
+ * time of a tick is the first instant plus the gaps up to it.
+ */
+struct history_tick {
+    std::chrono::system_clock::time_point at;
+    std::string oresmd_uri;
+    double value = 0.0;
 };
 
 /**
@@ -151,6 +164,39 @@ public:
     static void process_backfill_identity(std::ostream& out,
                                           ores::nats::service::nats_client& session,
                                           const std::vector<std::string>& args);
+
+    /**
+     * @brief Read the ticks of one series over a span: marketdata ticks <series-id>
+     * [--from <date|instant>] [--to <date|instant>] [--coordinate <oresmd-uri>] [--csv <path>].
+     *
+     * Sends one get_series_ticks_request and prints every tick of the reply, with the count.
+     * Without --from the span starts ten minutes ago, and without --to it runs to now. A date is
+     * midnight UTC, and an instant has the wire shape of every instant, such as
+     * 2026-10-23 14:30:00Z. The optional --coordinate reads one coordinate of the series, and the
+     * optional --csv writes the ticks as a CSV file as well.
+     */
+    static void process_ticks(std::ostream& out,
+                              ores::nats::service::nats_client& session,
+                              const std::vector<std::string>& args);
+
+    /**
+     * @brief The ticks of @p reply with their times rebuilt from the first instant and the gaps.
+     *
+     * A reply whose arrays differ in length, whose coordinate index names no coordinate, or that
+     * holds ticks and no first instant is malformed, and the error says which.
+     */
+    [[nodiscard]] static std::expected<std::vector<history_tick>, std::string>
+    history_ticks(const marketdata::messaging::get_series_ticks_response& reply);
+
+    /// A bound of a span: a date, which is midnight UTC, or an instant in the wire shape.
+    [[nodiscard]] static std::expected<std::chrono::system_clock::time_point, std::string>
+    parse_span_bound(std::string_view text);
+
+    /// One history tick as the screen renders it: time, coordinate URI and value.
+    [[nodiscard]] static std::string history_tick_line(const history_tick& tick);
+
+    /// One history tick as the CSV renders it, with its fields escaped.
+    [[nodiscard]] static std::string history_tick_row(const history_tick& tick);
 
     /**
      * @brief Watch one oresmd on the republished tick stream.

@@ -65,6 +65,8 @@ const documentSchema = z.object({
     recordedAt: z.string(),
     changeReason: z.string(),
     changeCommentary: z.string(),
+    /** The reports that bind the configuration, or null when the read of them failed. */
+    reports: z.array(z.object({ id: z.string(), name: z.string() })).nullable(),
     products: z.array(productSchema),
     parameters: z.array(parameterSchema),
 });
@@ -99,6 +101,7 @@ const vocabularySchema = z.object({
             code: z.string(),
             description: z.string(),
             instrumentTypeCode: z.string(),
+            assetClass: z.string(),
         }),
     ),
     pairs: z.array(

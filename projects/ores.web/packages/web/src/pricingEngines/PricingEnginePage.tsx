@@ -39,6 +39,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     pricingEngines,
     type PricingDocument,
+    type PricingParameter,
     type PricingProduct,
     type PricingVocabulary,
 } from '../api/pricingEngines.js';
@@ -48,14 +49,16 @@ import { PERMISSION } from '../access/permissions.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { RecordHeader } from '../refdata/records.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS } from '../shell/paths.js';
+import { PATHS, reportPath } from '../shell/paths.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { useTabs } from '../ui/Tabs.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
@@ -86,9 +89,30 @@ export function pricingEngineKey(id: string): readonly unknown[] {
 /** Where the vocabulary is cached. It does not change while a person works. */
 export const VOCABULARY_KEY = ['pricing-engine-vocabulary'] as const;
 
+/** The five sections of the configuration page, in the order the standard fixes. */
+const TABS = ['details', 'globals', 'products', 'reports', 'history'] as const;
+
+/** The entity type of the configuration header, for its history. */
+const ENTITY_TYPE = 'ores.analytics.pricing_model_config';
+
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
+}
+
+/** An asset class code as a person reads it: Interest Rates, FX, Bond. */
+function assetClassLabel(code: string): string {
+    if (code === '') return '';
+    if (code === 'fx') return 'FX';
+    return code
+        .split('_')
+        .map((word) => (word === '' ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+        .join(' ');
+}
+
+/** The asset class of a product type, from the instrument it maps to. */
+function assetClassOf(vocabulary: PricingVocabulary | undefined, typeCode: string): string {
+    return vocabulary?.types.find((type) => type.code === typeCode)?.assetClass ?? '';
 }
 
 export function PricingEnginePage(): ReactNode {
@@ -100,6 +124,7 @@ export function PricingEnginePage(): ReactNode {
     const area = useAreaRoot('reporting');
     const mayWrite = holds(PERMISSION.pricingEnginesWrite);
     const mayDelete = holds(PERMISSION.pricingEnginesDelete);
+    const [selected, setSelected] = useState<string | null>(null);
     const [dialog, setDialog] = useState<
         | { readonly kind: 'details' }
         | { readonly kind: 'product'; readonly productId: string }
@@ -108,6 +133,11 @@ export function PricingEnginePage(): ReactNode {
         | { readonly kind: 'delete' }
         | null
     >(null);
+    const tabs = useTabs({
+        label: t('pricingEngines.tabs.label'),
+        tabs: TABS,
+        titleOf: (tab) => t(`pricingEngines.tabs.${tab}`),
+    });
     const open = useQuery({
         queryKey: pricingEngineKey(id),
         queryFn: () => pricingEngines.read(id),
@@ -169,6 +199,8 @@ export function PricingEnginePage(): ReactNode {
     };
     const close = (): void => setDialog(null);
     const known: PricingVocabulary | undefined = vocabulary.data;
+    const products = [...document.products].sort((a, b) => a.position - b.position);
+    const chosen = products.find((product) => product.id === selected) ?? products[0];
 
     return (
         <div className="space-y-4">
@@ -183,60 +215,34 @@ export function PricingEnginePage(): ReactNode {
                 onEdit={mayWrite ? () => setDialog({ kind: 'details' }) : undefined}
                 onDelete={mayDelete ? () => setDialog({ kind: 'delete' }) : undefined}
             />
-            <section className="card space-y-4 p-4">
-                <h2 className="text-sm font-medium">{t('pricingEngines.record.details')}</h2>
-                <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-5">
-                    <Detail label={t('pricingEngines.fields.name')} value={document.name} />
-                    <Detail
-                        label={t('pricingEngines.fields.party')}
-                        value={document.partyName === '' ? document.partyId : document.partyName}
-                    />
-                    <Detail
-                        label={t('pricingEngines.fields.variant')}
-                        value={
-                            document.variant === '' ? (
-                                <span className="text-ink-faint">
-                                    {t('pricingEngines.cell.noVariant')}
-                                </span>
-                            ) : (
-                                <Tag>{document.variant}</Tag>
-                            )
-                        }
-                    />
-                    <Detail
-                        label={t('pricingEngines.fields.modifiedBy')}
-                        value={document.modifiedBy}
-                    />
-                    <Detail
-                        label={t('pricingEngines.fields.changed')}
-                        value={<RelativeTime at={document.recordedAt} />}
-                    />
-                    <div className="sm:col-span-4">
-                        <Detail
-                            label={t('pricingEngines.fields.description')}
-                            value={
-                                document.description === '' ? (
-                                    <span className="text-ink-faint">
-                                        {t('pricingEngines.cell.noDescription')}
-                                    </span>
-                                ) : (
-                                    document.description
-                                )
-                            }
-                        />
-                    </div>
-                </dl>
-                <p className="text-xs text-ink-faint">{t('pricingEngines.record.reachUnknown')}</p>
-            </section>
-            <ProductsSection
-                document={document}
-                draft={draft}
-                vocabulary={vocabulary.data}
-                mayWrite={mayWrite && known !== undefined}
-                onChange={(productId) => setDialog({ kind: 'product', productId })}
-                onRemove={(productId) => setDialog({ kind: 'remove', productId })}
-                onAdd={() => setDialog({ kind: 'add' })}
-            />
+            {tabs.bar}
+            {tabs.tab === 'details' && (
+                <DetailsTab
+                    document={document}
+                    mayWrite={mayWrite}
+                    onEdit={() => setDialog({ kind: 'details' })}
+                />
+            )}
+            {tabs.tab === 'globals' && (
+                <GlobalParametersTab document={document} vocabulary={known} />
+            )}
+            {tabs.tab === 'products' && (
+                <ProductsTab
+                    document={document}
+                    draft={draft}
+                    vocabulary={known}
+                    mayWrite={mayWrite && known !== undefined}
+                    chosen={chosen}
+                    onSelect={setSelected}
+                    onChange={(productId) => setDialog({ kind: 'product', productId })}
+                    onRemove={(productId) => setDialog({ kind: 'remove', productId })}
+                    onAdd={() => setDialog({ kind: 'add' })}
+                />
+            )}
+            {tabs.tab === 'reports' && <ReportsTab reports={document.reports} />}
+            {tabs.tab === 'history' && (
+                <HistoryPanel entityType={ENTITY_TYPE} entityId={document.id} />
+            )}
             {vocabulary.isError && (
                 <Notice tone="warn">
                     {t('pricingEngines.record.vocabularyUnread', {
@@ -277,12 +283,117 @@ export function PricingEnginePage(): ReactNode {
     );
 }
 
-/** The products with the settings each holds, and the actions on them. */
-function ProductsSection({
+/** The configuration's own fields, as read. */
+function DetailsTab({
+    document,
+    mayWrite,
+    onEdit,
+}: {
+    readonly document: PricingDocument;
+    readonly mayWrite: boolean;
+    readonly onEdit: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <section className="card space-y-4 p-4">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-sm font-medium">{t('pricingEngines.record.details')}</h2>
+                {mayWrite && (
+                    <Button size="sm" icon="edit" onClick={onEdit}>
+                        {t('pricingEngines.actions.change')}
+                    </Button>
+                )}
+            </header>
+            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-5">
+                <Detail label={t('pricingEngines.fields.name')} value={document.name} />
+                <Detail
+                    label={t('pricingEngines.fields.party')}
+                    value={document.partyName === '' ? document.partyId : document.partyName}
+                />
+                <Detail
+                    label={t('pricingEngines.fields.variant')}
+                    value={
+                        document.variant === '' ? (
+                            <span className="text-ink-faint">
+                                {t('pricingEngines.cell.noVariant')}
+                            </span>
+                        ) : (
+                            <Tag>{document.variant}</Tag>
+                        )
+                    }
+                />
+                <Detail label={t('pricingEngines.fields.modifiedBy')} value={document.modifiedBy} />
+                <Detail
+                    label={t('pricingEngines.fields.changed')}
+                    value={<RelativeTime at={document.recordedAt} />}
+                />
+                <div className="sm:col-span-4">
+                    <Detail
+                        label={t('pricingEngines.fields.description')}
+                        value={
+                            document.description === '' ? (
+                                <span className="text-ink-faint">
+                                    {t('pricingEngines.cell.noDescription')}
+                                </span>
+                            ) : (
+                                document.description
+                            )
+                        }
+                    />
+                </div>
+            </dl>
+        </section>
+    );
+}
+
+/** The parameters of the whole document, with their documentation under them. */
+function GlobalParametersTab({
+    document,
+    vocabulary,
+}: {
+    readonly document: PricingDocument;
+    readonly vocabulary: PricingVocabulary | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const globals = document.parameters.filter((parameter) => parameter.productId === null);
+    return (
+        <section className="card space-y-4 p-4">
+            <header className="space-y-1">
+                <h2 className="text-sm font-medium">{t('pricingEngines.globals.heading')}</h2>
+                <p className="text-sm text-ink-muted">{t('pricingEngines.globals.lead')}</p>
+            </header>
+            {globals.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('pricingEngines.globals.empty')}</p>
+            ) : (
+                <div>
+                    {globals.map((parameter) => (
+                        <ParameterRow
+                            key={parameter.id}
+                            parameter={parameter}
+                            note={
+                                vocabulary?.settings.find(
+                                    (setting) => setting.name === parameter.name,
+                                )?.note ?? ''
+                            }
+                            kind={undefined}
+                            required={false}
+                            options={[]}
+                        />
+                    ))}
+                </div>
+            )}
+        </section>
+    );
+}
+
+/** Every product of the configuration, by asset class, and the product itself. */
+function ProductsTab({
     document,
     draft,
     vocabulary,
     mayWrite,
+    chosen,
+    onSelect,
     onChange,
     onRemove,
     onAdd,
@@ -291,129 +402,346 @@ function ProductsSection({
     readonly draft: Draft;
     readonly vocabulary: PricingVocabulary | undefined;
     readonly mayWrite: boolean;
-    readonly onChange: (productId: string) => void;
-    readonly onRemove: (productId: string) => void;
+    readonly chosen: PricingProduct | undefined;
+    readonly onSelect: (id: string) => void;
+    readonly onChange: (id: string) => void;
+    readonly onRemove: (id: string) => void;
     readonly onAdd: () => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const products = [...document.products].sort((a, b) => a.position - b.position);
+    const classes = [
+        ...new Set(products.map((product) => assetClassOf(vocabulary, product.typeCode))),
+    ];
     return (
-        <section className="card space-y-4 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-sm font-medium">
-                    {t('pricingEngines.record.products', {
-                        count: String(document.products.length),
-                    })}
-                </h2>
+        <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <aside className="card space-y-3 p-3">
+                <div className="space-y-1">
+                    <h2 className="text-sm font-medium">{t('pricingEngines.tabs.products')}</h2>
+                    <p className="text-xs text-ink-faint">
+                        {t('pricingEngines.record.products', {
+                            count: String(products.length),
+                        })}
+                    </p>
+                </div>
+                {products.length === 0 ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('pricingEngines.record.noProducts')}
+                    </p>
+                ) : (
+                    classes.map((assetClass) => (
+                        <div key={assetClass} className="space-y-1">
+                            <div className="px-1 pt-2 text-[10px] tracking-wide text-ink-faint uppercase">
+                                {assetClassLabel(assetClass) === ''
+                                    ? t('pricingEngines.workbench.assetClass')
+                                    : assetClassLabel(assetClass)}
+                            </div>
+                            {products
+                                .filter(
+                                    (product) =>
+                                        assetClassOf(vocabulary, product.typeCode) === assetClass,
+                                )
+                                .map((product) => (
+                                    <button
+                                        key={product.id}
+                                        type="button"
+                                        onClick={() => onSelect(product.id)}
+                                        className={
+                                            product.id === chosen?.id
+                                                ? 'block w-full rounded border-l-2 border-accent bg-panel-2 px-2 py-1 text-left text-sm text-ink'
+                                                : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm text-ink-muted hover:text-ink'
+                                        }
+                                    >
+                                        {product.typeCode}
+                                    </button>
+                                ))}
+                        </div>
+                    ))
+                )}
                 {mayWrite && (
-                    <Button icon="add" size="sm" onClick={onAdd}>
+                    <Button size="sm" icon="add" onClick={onAdd}>
                         {t('pricingEngines.actions.addProduct')}
                     </Button>
                 )}
-            </header>
-            {document.products.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('pricingEngines.record.noProducts')}</p>
-            ) : (
-                <ul className="divide-y divide-line-subtle">
-                    {[...document.products]
-                        .sort((a, b) => a.position - b.position)
-                        .map((product) => (
-                            <ProductRow
-                                key={product.id}
-                                product={product}
-                                draft={draft}
-                                vocabulary={vocabulary}
-                                mayWrite={mayWrite}
-                                onChange={() => onChange(product.id)}
-                                onRemove={() => onRemove(product.id)}
-                            />
-                        ))}
-                </ul>
-            )}
-        </section>
+            </aside>
+            <div className="space-y-4">
+                <Notice tone="info">
+                    {t('pricingEngines.workbench.runSettings')}{' '}
+                    <Link
+                        to={PATHS.engineSettings}
+                        className="text-accent hover:text-accent-bright"
+                    >
+                        {t('reporting.area.screens.engineSettings')}
+                    </Link>
+                </Notice>
+                {chosen === undefined ? (
+                    <section className="card p-4">
+                        <p className="text-sm text-ink-muted">
+                            {t('pricingEngines.record.noProducts')}
+                        </p>
+                    </section>
+                ) : (
+                    <Workbench
+                        draft={draft}
+                        vocabulary={vocabulary}
+                        product={chosen}
+                        mayWrite={mayWrite}
+                        onChange={() => onChange(chosen.id)}
+                        onRemove={() => onRemove(chosen.id)}
+                    />
+                )}
+            </div>
+        </div>
     );
 }
 
-function ProductRow({
-    product,
+/** The selected product: what it is, its model and its engine. */
+function Workbench({
     draft,
     vocabulary,
+    product,
     mayWrite,
     onChange,
     onRemove,
 }: {
-    readonly product: PricingProduct;
     readonly draft: Draft;
     readonly vocabulary: PricingVocabulary | undefined;
+    readonly product: PricingProduct;
     readonly mayWrite: boolean;
     readonly onChange: () => void;
     readonly onRemove: () => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const type = vocabulary?.types.find((candidate) => candidate.code === product.typeCode);
     const parameters = parametersOf(draft, product.id);
+    const settings = vocabulary
+        ? settingsFor(vocabulary, product.typeCode, product.model, product.engine)
+        : [];
+    const settingOf = (scope: string, name: string) =>
+        settings.find((setting) => setting.scope === scope && setting.name === name);
+    const model = vocabulary?.models.find((candidate) => candidate.code === product.model);
+    const engine = vocabulary?.methods.find((candidate) => candidate.code === product.engine);
+    const modelParameters = parameters.filter((parameter) => parameter.scope !== 'engine');
+    const engineParameters = parameters.filter((parameter) => parameter.scope === 'engine');
     return (
-        <li className="space-y-2 py-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div className="flex flex-wrap items-baseline gap-3">
-                    <span className="font-medium">{product.typeCode}</span>
-                    <span className="font-mono text-xs">
-                        {product.model} / {product.engine}
-                    </span>
-                </div>
-                {mayWrite && (
-                    <div className="flex gap-2">
-                        <Button size="sm" icon="edit" onClick={onChange}>
-                            {t('pricingEngines.actions.change')}
-                        </Button>
-                        <Button size="sm" variant="danger" icon="delete" onClick={onRemove}>
-                            {t('pricingEngines.actions.remove')}
-                        </Button>
+        <div className="space-y-4">
+            <section className="card space-y-2 p-4">
+                <header className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div>
+                        <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                        <p className="text-xs text-ink-faint">
+                            {[
+                                assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
+                                type?.instrumentTypeCode ?? '',
+                            ]
+                                .filter((part) => part !== '')
+                                .join(' · ')}
+                        </p>
                     </div>
+                    {mayWrite && (
+                        <div className="flex gap-2">
+                            <Button size="sm" icon="edit" onClick={onChange}>
+                                {t('pricingEngines.actions.change')}
+                            </Button>
+                            <Button size="sm" variant="danger" icon="delete" onClick={onRemove}>
+                                {t('pricingEngines.actions.remove')}
+                            </Button>
+                        </div>
+                    )}
+                </header>
+                {type !== undefined && type.description !== '' && (
+                    <p className="text-sm text-ink-muted">{type.description}</p>
+                )}
+            </section>
+            <RoleCard
+                title={t('pricingEngines.fields.model')}
+                definition={t('pricingEngines.workbench.definitionModel')}
+                code={product.model}
+                description={model?.description ?? ''}
+                detail={model?.detail ?? ''}
+                source={model?.source ?? ''}
+                parameters={modelParameters}
+                settingOf={settingOf}
+            />
+            <RoleCard
+                title={t('pricingEngines.fields.engine')}
+                definition={t('pricingEngines.workbench.definitionEngine')}
+                code={product.engine}
+                description={engine?.description ?? ''}
+                detail={engine?.detail ?? ''}
+                source={engine?.source ?? ''}
+                parameters={engineParameters}
+                settingOf={settingOf}
+                pairKnown={
+                    vocabulary === undefined
+                        ? undefined
+                        : isKnownPair(vocabulary, product.typeCode, product.model, product.engine)
+                }
+            />
+        </div>
+    );
+}
+
+/** One of the two roles a product's price comes from: the model or the engine. */
+function RoleCard({
+    title,
+    definition,
+    code,
+    description,
+    detail,
+    source,
+    parameters,
+    settingOf,
+    pairKnown,
+}: {
+    readonly title: string;
+    readonly definition: string;
+    readonly code: string;
+    readonly description: string;
+    readonly detail: string;
+    readonly source: string;
+    readonly parameters: readonly PricingParameter[];
+    readonly settingOf: (
+        scope: string,
+        name: string,
+    ) =>
+        | {
+              readonly note: string;
+              readonly kind: string;
+              readonly options: readonly string[];
+              readonly required: boolean;
+          }
+        | undefined;
+    readonly pairKnown?: boolean | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <section className="card space-y-3 p-4">
+            <header className="space-y-1">
+                <h3 className="text-sm font-medium">{title}</h3>
+                <p className="text-xs text-ink-faint">{definition}</p>
+            </header>
+            <div className="space-y-1">
+                <div className="font-mono text-sm">{code}</div>
+                {description === '' ? (
+                    <p className="text-sm text-ink-faint">
+                        {t('pricingEngines.workbench.noDescription')}
+                    </p>
+                ) : (
+                    <p className="text-sm text-ink-muted">{description}</p>
+                )}
+                {detail !== '' && <p className="text-sm text-ink-muted">{detail}</p>}
+                {source !== '' && (
+                    <p className="text-xs text-ink-faint">{t(`pricingEngines.source.${source}`)}</p>
+                )}
+                {pairKnown === false && (
+                    <p className="text-xs text-ink-faint">
+                        {t('pricingEngines.change.unknownPair')}
+                    </p>
                 )}
             </div>
-            {parameters.length === 0 ? (
-                <p className="text-xs text-ink-faint">{t('pricingEngines.record.noSettings')}</p>
-            ) : (
-                <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2 lg:grid-cols-3">
-                    {parameters.map((parameter) => {
-                        const kind = vocabulary
-                            ? settingsFor(
-                                  vocabulary,
-                                  product.typeCode,
-                                  product.model,
-                                  product.engine,
-                              ).find(
-                                  (setting) =>
-                                      setting.name === parameter.name &&
-                                      setting.scope === parameter.scope,
-                              )?.kind
-                            : undefined;
-                        const template =
-                            vocabulary && kind === 'reference'
-                                ? templateInfo(vocabulary, parameter.value)
-                                : undefined;
+            <div>
+                <h4 className="pb-1 text-xs text-ink-faint">
+                    {t('pricingEngines.workbench.parameters')}
+                </h4>
+                {parameters.length === 0 ? (
+                    <p className="text-sm text-ink-faint">
+                        {t('pricingEngines.workbench.noParameters')}
+                    </p>
+                ) : (
+                    parameters.map((parameter) => {
+                        const setting = settingOf(parameter.scope, parameter.name);
                         return (
-                            <div key={parameter.id} className="flex gap-2">
-                                <dt className="text-ink-faint">
-                                    {parameter.name}
-                                    <span className="ml-1 text-[10px]">({parameter.scope})</span>
-                                </dt>
-                                <dd
-                                    className="font-mono"
-                                    {...(template ? { title: template.description } : {})}
-                                >
-                                    {parameter.value}
-                                    {template && (
-                                        <span className="ml-1 font-sans text-ink-faint">
-                                            {template.assetClass} · {template.method}
-                                        </span>
-                                    )}
-                                </dd>
-                            </div>
+                            <ParameterRow
+                                key={parameter.id}
+                                parameter={parameter}
+                                note={setting?.note ?? ''}
+                                kind={setting?.kind}
+                                required={setting?.required ?? false}
+                                options={setting?.options ?? []}
+                            />
                         );
-                    })}
-                </dl>
+                    })
+                )}
+            </div>
+        </section>
+    );
+}
+
+/** One parameter: its value, and its documentation collapsed under it. */
+function ParameterRow({
+    parameter,
+    note,
+    kind,
+    required,
+    options,
+}: {
+    readonly parameter: PricingParameter;
+    readonly note: string;
+    readonly kind: string | undefined;
+    readonly required: boolean;
+    readonly options: readonly string[];
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="border-t border-line-subtle py-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-sm">{parameter.name}</span>
+                <span className="font-mono text-xs">{parameter.value}</span>
+            </div>
+            <details className="mt-1">
+                <summary className="cursor-pointer text-xs text-ink-faint">
+                    {t('pricingEngines.workbench.documentation')}
+                </summary>
+                <div className="space-y-1 pt-1 text-xs text-ink-muted">
+                    <p>{note === '' ? t('pricingEngines.globals.noDocumentation') : note}</p>
+                    {kind !== undefined && (
+                        <p className="text-ink-faint">
+                            {t('pricingEngines.workbench.format')}: {kind}
+                            {' · '}
+                            {t('pricingEngines.workbench.required')}:{' '}
+                            {required ? t('common.yes') : t('common.no')}
+                            {options.length > 0 && (
+                                <>
+                                    {' · '}
+                                    {t('pricingEngines.workbench.options')}: {options.join(', ')}
+                                </>
+                            )}
+                        </p>
+                    )}
+                </div>
+            </details>
+        </div>
+    );
+}
+
+/** The reports a change reaches. */
+function ReportsTab({ reports }: { readonly reports: PricingDocument['reports'] }): ReactNode {
+    const { t } = useTranslation();
+    if (reports === null) {
+        return <Notice tone="warn">{t('pricingEngines.record.reachUnknown')}</Notice>;
+    }
+    return (
+        <section className="card space-y-3 p-4">
+            <h2 className="text-sm font-medium">{t('pricingEngines.reports.heading')}</h2>
+            <p className="text-sm text-ink-muted">{t('pricingEngines.reports.lead')}</p>
+            {reports.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('pricingEngines.reports.empty')}</p>
+            ) : (
+                <ul className="space-y-2">
+                    {reports.map((report) => (
+                        <li key={report.id}>
+                            <Link
+                                to={reportPath(report.id)}
+                                className="text-sm text-accent hover:text-accent-bright"
+                            >
+                                {report.name}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             )}
-        </li>
+        </section>
     );
 }
 

@@ -4910,6 +4910,43 @@ const fr: SourceCatalogue = {
         },
         title: 'Tarification des produits',
         lead: 'Les configurations de moteur de valorisation de la partie dans laquelle vous travaillez, avec les produits et les paramètres de chacune.',
+        tabs: {
+            label: 'Sections de la configuration',
+            details: 'Détails',
+            globals: 'Paramètres globaux',
+            products: 'Produits',
+            reports: 'Rapports',
+            history: 'Historique',
+        },
+        workbench: {
+            assetClass: "Classe d'actif",
+            instrument: 'Instrument',
+            definitionModel:
+                'Un modèle est la description mathématique du comportement du produit : sa dynamique, ses hypothèses et ce à quoi il est calibré.',
+            definitionEngine:
+                "Un moteur est l'implémentation qui calcule le prix à partir du modèle : une formule fermée, un treillis, une grille ou une simulation.",
+            noDescription: "Aucune description n'est disponible pour ce choix.",
+            parameters: 'Paramètres',
+            noParameters:
+                'Aucun paramètre. Le modèle ou le moteur utilise ses propres valeurs par défaut.',
+            documentation: 'Documentation',
+            format: 'Format',
+            required: 'Requis',
+            options: 'Options',
+            runSettings:
+                "Cette page fixe comment chaque produit est valorisé. La façon dont le moteur exécute chaque produit — fixings, construction du marché, threads — est fixée pour toute l'exécution dans",
+        },
+        globals: {
+            heading: 'Paramètres globaux',
+            lead: "Paramètres qui s'appliquent à tout le document.",
+            empty: 'Cette configuration ne contient aucun paramètre global.',
+            noDocumentation: "Aucune documentation n'est encore disponible pour ce paramètre.",
+        },
+        reports: {
+            heading: 'Les rapports qui lient cette configuration',
+            lead: "Un rapport a besoin d'un prix pour chaque type de produit de son portefeuille. Un changement atteint la prochaine exécution de chaque rapport une fois enregistré.",
+            empty: 'Aucun rapport ne lie cette configuration.',
+        },
         columns: {
             name: 'Configuration',
             party: 'Partie',
@@ -5270,6 +5307,8 @@ const fr: SourceCatalogue = {
         advancedHelp: 'Réglez les paramètres propres au modèle.',
     },
     common: {
+        yes: 'Oui',
+        no: 'Non',
         locked: 'Verrouillé',
         unlocked: 'Déverrouillé',
         loading: 'Chargement...',

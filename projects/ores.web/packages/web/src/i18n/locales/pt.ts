@@ -4879,6 +4879,42 @@ const pt: SourceCatalogue = {
         },
         title: 'Preços por produto',
         lead: 'As configurações de motor de avaliação da parte em que trabalha, com os produtos e as definições de cada uma.',
+        tabs: {
+            label: 'Secções da configuração',
+            details: 'Detalhes',
+            globals: 'Parâmetros globais',
+            products: 'Produtos',
+            reports: 'Relatórios',
+            history: 'Histórico',
+        },
+        workbench: {
+            assetClass: 'Classe de ativo',
+            instrument: 'Instrumento',
+            definitionModel:
+                'Um modelo é a descrição matemática do comportamento do produto: a sua dinâmica, as suas hipóteses e aquilo a que é calibrado.',
+            definitionEngine:
+                'Um motor é a implementação que calcula o preço a partir do modelo: uma fórmula fechada, uma grelha, uma rede ou uma simulação.',
+            noDescription: 'Não há descrição para esta escolha.',
+            parameters: 'Parâmetros',
+            noParameters: 'Sem parâmetros. O modelo ou o motor usa os seus próprios valores.',
+            documentation: 'Documentação',
+            format: 'Formato',
+            required: 'Obrigatório',
+            options: 'Opções',
+            runSettings:
+                'Esta página define como cada produto é valorizado. A forma como o motor executa cada produto — fixings, construção do mercado, threads — é definida para toda a execução em',
+        },
+        globals: {
+            heading: 'Parâmetros globais',
+            lead: 'Parâmetros que se aplicam a todo o documento.',
+            empty: 'Esta configuração não tem parâmetros globais.',
+            noDocumentation: 'Ainda não há documentação para este parâmetro.',
+        },
+        reports: {
+            heading: 'Os relatórios que vinculam esta configuração',
+            lead: 'Um relatório precisa de um preço para cada tipo de produto do seu portefólio. Uma alteração chega à próxima execução de cada relatório depois de guardada.',
+            empty: 'Nenhum relatório vincula esta configuração.',
+        },
         columns: {
             name: 'Configuração',
             party: 'Parte',
@@ -5239,6 +5275,8 @@ const pt: SourceCatalogue = {
         advancedHelp: 'Ajuste os parâmetros do próprio modelo.',
     },
     common: {
+        yes: 'Sim',
+        no: 'Não',
         locked: 'Bloqueada',
         unlocked: 'Desbloqueada',
         loading: 'A carregar...',

@@ -32,6 +32,9 @@ import { subjects as modelSubjects } from '@ores/wire-protocol/generated/analyti
 import { subjects as methodSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_method_protocol';
 import { subjects as templateSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
+import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
+import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
+import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -232,6 +235,47 @@ function documentOf(stored: Stored, parties: PartyNames): Readonly<Record<string
     };
 }
 
+/** The reports that bind a configuration, by the binding that names it. */
+async function readBoundReports(
+    session: LiveSession,
+    configurationId: string,
+): Promise<readonly Readonly<Record<string, unknown>>[]> {
+    const bindings = await readAll(
+        session,
+        bindingSubjects.list_report_configurations_request,
+        'report_configurations',
+        {
+            filter: {
+                report_definition_id: null,
+                configuration_type_code: 'pricing_engines',
+                configuration_id: configurationId,
+                id_one_of: null,
+                report_definition_id_one_of: null,
+                configuration_type_code_one_of: null,
+                configuration_id_one_of: null,
+            },
+            as_of: null,
+        },
+    );
+    const ids = [...new Set(bindings.map((binding) => text(binding['report_definition_id'])))];
+    if (ids.length === 0) {
+        return [];
+    }
+    const definitions = await readAll(
+        session,
+        definitionSubjects.list_report_definitions_request,
+        'definitions',
+        {
+            filter: { party_id: null, id_one_of: ids, party_id_one_of: null, search: null },
+            as_of: null,
+        },
+    );
+    return definitions.map((definition) => ({
+        id: text(definition['id']),
+        name: text(definition['name']),
+    }));
+}
+
 /** The row a list shows for one configuration. */
 function summaryOf(
     config: Readonly<Record<string, unknown>>,
@@ -344,15 +388,20 @@ const PERIOD_CODE = /^\d+[DWMY]$/;
 async function vocabulary(session: LiveSession): Promise<Readonly<Record<string, unknown>>> {
     const rows = (subject: string, key: string) =>
         readAll(session, subject, key, { filter: null, as_of: null });
-    const [types, pairs, settings, models, methods, templates, tenors] = await Promise.all([
-        rows(typeSubjects.list_pricing_engine_types_request, 'types'),
-        rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
-        rows(settingSubjects.list_pricing_pair_settings_request, 'settings'),
-        rows(modelSubjects.list_pricing_models_request, 'models'),
-        rows(methodSubjects.list_pricing_methods_request, 'methods'),
-        rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
-        rows(tenorSubjects.list_tenors_request, 'tenors'),
-    ]);
+    const [types, pairs, settings, models, methods, templates, tenors, instruments] =
+        await Promise.all([
+            rows(typeSubjects.list_pricing_engine_types_request, 'types'),
+            rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
+            rows(settingSubjects.list_pricing_pair_settings_request, 'settings'),
+            rows(modelSubjects.list_pricing_models_request, 'models'),
+            rows(methodSubjects.list_pricing_methods_request, 'methods'),
+            rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
+            rows(tenorSubjects.list_tenors_request, 'tenors'),
+            rows(instrumentCodeSubjects.list_instrument_codes_request, 'instrument_codes'),
+        ]);
+    const assetClassOf = new Map(
+        instruments.map((row) => [text(row['code']), text(row['asset_class'])]),
+    );
     const described = (row: Readonly<Record<string, unknown>>) => ({
         code: text(row['code']),
         description: text(row['description']),
@@ -364,6 +413,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             code: text(row['code']),
             description: text(row['description']),
             instrumentTypeCode: text(row['instrument_type_code']),
+            assetClass: assetClassOf.get(text(row['instrument_type_code'])) ?? '',
         })),
         pairs: pairs.map((row) => ({
             typeCode: text(row['pricing_engine_type_code']),
@@ -506,7 +556,13 @@ export function registerPricingEngineRoutes(
     server.get('/api/reporting/pricing-engines/:id', async (request) => {
         const session = requireSession(request);
         const id = input(idSchema, (request.params as { id: string }).id);
-        return documentOf(await readStored(session, id), await readPartyNames(session));
+        const [stored, parties] = await Promise.all([
+            readStored(session, id),
+            readPartyNames(session),
+        ]);
+        const document = documentOf(stored, parties);
+        const reports = await readBoundReports(session, text(document['configurationId']));
+        return { ...document, reports };
     });
 
     server.post('/api/reporting/pricing-engines', async (request, reply) => {

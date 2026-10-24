@@ -90,6 +90,7 @@ const DOCUMENT: PricingDocument = {
     recordedAt: '2026-10-19 10:00:00.000000Z',
     changeReason: 'common.correction',
     changeCommentary: '',
+    reports: [{ id: 'report-eod', name: 'EOD risk' }],
     products: [
         {
             id: PRODUCT,
@@ -110,11 +111,27 @@ const DOCUMENT: PricingDocument = {
             value: 'Bootstrap',
             position: 0,
         },
+        {
+            id: 'parameter-global',
+            version: 1,
+            productId: null,
+            scope: 'global',
+            name: 'Calendar',
+            value: 'TARGET',
+            position: 1,
+        },
     ],
 };
 
 const VOCABULARY: PricingVocabulary = {
-    types: [{ code: 'BermudanSwaption', description: '', instrumentTypeCode: 'SWPTN' }],
+    types: [
+        {
+            code: 'BermudanSwaption',
+            description: 'A swap exercisable on several dates.',
+            instrumentTypeCode: 'SWPTN',
+            assetClass: 'interest_rates',
+        },
+    ],
     pairs: [
         {
             typeCode: 'BermudanSwaption',
@@ -204,9 +221,13 @@ function list(codes: string[]): string {
     );
 }
 
-function record(codes: string[], vocabulary: PricingVocabulary | null = VOCABULARY): string {
+function record(
+    codes: string[],
+    vocabulary: PricingVocabulary | null = VOCABULARY,
+    tab?: string,
+): string {
     return renderRecords(
-        `/reporting/pricing-engines/${EOD}`,
+        `/reporting/pricing-engines/${EOD}${tab === undefined ? '' : `?tab=${tab}`}`,
         [],
         <Route path="/reporting/pricing-engines/:id" element={<PricingEnginePage />} />,
         (client: QueryClient) => {
@@ -284,35 +305,55 @@ describe('the list of pricing engine configurations', () => {
 });
 
 describe('one pricing engine configuration', () => {
-    it('states its details, its product and the settings of that product', () => {
+    it('states its details', () => {
         const text = textOf(record(READ));
         expect(text).toContain('EOD pricing');
         expect(text).toContain('ACME Corporation UK');
-        expect(text).toContain('BermudanSwaption');
-        expect(text).toContain('LGM / Grid');
-        expect(text).toContain('Calibration');
-        expect(text).toContain('Bootstrap');
+        expect(text).toContain('Details');
+        expect(text).toContain('Global parameters');
+        expect(text).toContain('Products');
+        expect(text).toContain('Reports');
+        expect(text).toContain('History');
     });
 
-    it('says the reports that use it cannot be listed yet', () => {
-        expect(textOf(record(READ))).toContain('cannot be listed yet');
+    it('draws the product under the model and the engine that price it', () => {
+        const text = textOf(record(READ, VOCABULARY, 'products'));
+        expect(text).toContain('BermudanSwaption');
+        expect(text).toContain('LGM');
+        expect(text).toContain('Grid');
+        expect(text).toContain('Calibration');
+        expect(text).toContain('Bootstrap');
+        expect(text).toContain('Interest Rates');
+    });
+
+    it('states the reach of a change', () => {
+        const text = textOf(record(READ, VOCABULARY, 'reports'));
+        expect(text).toContain('EOD risk');
+        expect(text).toContain('A report needs a price');
+    });
+
+    it('states the global parameters of the document', () => {
+        const text = textOf(record(READ, VOCABULARY, 'globals'));
+        expect(text).toContain('Global parameters');
+        expect(text).toContain('Calendar');
+        expect(text).toContain('TARGET');
     });
 
     it('offers Change, Remove and Add product to a person who may write', () => {
-        const text = textOf(record(WRITE));
+        const text = textOf(record(WRITE, VOCABULARY, 'products'));
         expect(text).toContain('Change');
         expect(text).toContain('Remove');
         expect(text).toContain('Add product');
     });
 
     it('offers no change to a person who may only read', () => {
-        const text = textOf(record(READ));
+        const text = textOf(record(READ, VOCABULARY, 'products'));
         expect(text).not.toContain('Add product');
         expect(text).not.toContain('Remove');
     });
 
     it('offers no product change until the models and engines are read', () => {
-        expect(textOf(record(WRITE, null))).not.toContain('Add product');
+        expect(textOf(record(WRITE, null, 'products'))).not.toContain('Add product');
     });
 });
 

@@ -4839,6 +4839,42 @@ export const en: SourceCatalogue = {
         },
         title: 'Product pricing',
         lead: 'How each product type is priced for the party you work in: the model, the engine and their parameters.',
+        tabs: {
+            label: 'Configuration sections',
+            details: 'Details',
+            globals: 'Global parameters',
+            products: 'Products',
+            reports: 'Reports',
+            history: 'History',
+        },
+        workbench: {
+            assetClass: 'Asset class',
+            instrument: 'Instrument',
+            definitionModel:
+                'A model is the mathematical description of how the product behaves: its dynamics, the assumptions and what it is calibrated to.',
+            definitionEngine:
+                'An engine is the implementation that computes the price from the model: a closed formula, a lattice, a grid or a simulation.',
+            noDescription: 'No description is held for this choice.',
+            parameters: 'Parameters',
+            noParameters: 'No parameters. The model or the engine uses its own defaults.',
+            documentation: 'Documentation',
+            format: 'Format',
+            required: 'Required',
+            options: 'Options',
+            runSettings:
+                'This page sets how each product is priced. How the engine runs every product — fixings, market building, threads — is set for the whole run in',
+        },
+        globals: {
+            heading: 'Global parameters',
+            lead: 'Parameters that apply to the whole document.',
+            empty: 'This configuration holds no global parameter.',
+            noDocumentation: 'No documentation is held for this parameter yet.',
+        },
+        reports: {
+            heading: 'The reports that bind this configuration',
+            lead: 'A report needs a price for every product type in its portfolio. A change reaches the next run of each report once it is saved.',
+            empty: 'No report binds this configuration.',
+        },
         columns: {
             name: 'Configuration',
             party: 'Party',
@@ -5198,6 +5234,8 @@ export const en: SourceCatalogue = {
         advancedHelp: "Set the model's own parameters.",
     },
     common: {
+        yes: 'Yes',
+        no: 'No',
         locked: 'Locked',
         unlocked: 'Unlocked',
         loading: 'Loading...',

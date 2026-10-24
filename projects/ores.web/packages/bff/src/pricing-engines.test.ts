@@ -177,6 +177,7 @@ const reads = {
     'analytics.v1.pricing_model_configs.list': { result: ok, configs: [header] },
     'analytics.v1.pricing_model_products.list': { result: ok, products: [product, stranger] },
     'analytics.v1.pricing_model_product_parameters.list': { result: ok, parameters: [parameter] },
+    'reporting.v1.report_configurations.list': { result: ok, report_configurations: [] },
 };
 
 const INTENT = { reason_code: 'common.correction', commentary: 'Fix the grid' };
@@ -220,6 +221,10 @@ function vocabularyReads(): Record<string, unknown> {
                     instrument_type_code: 'SWPTN',
                 },
             ],
+        },
+        'refdata.v1.instrument_codes.list': {
+            result: ok,
+            instrument_codes: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
         },
         'analytics.v1.pricing_model_engine_pairs.list': {
             result: ok,
@@ -401,6 +406,7 @@ describe('pricing engine routes', () => {
             code: 'BermudanSwaption',
             description: 'Bermudan',
             instrumentTypeCode: 'SWPTN',
+            assetClass: 'interest_rates',
         });
         expect(response.json().pairs[0]).toMatchObject({
             model: 'LGM',

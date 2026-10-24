@@ -22,6 +22,7 @@
 set(files
     "affine_term_structure_process_tests.cpp"
     "arithmetic_gaussian_mixture_model_process_tests.cpp"
+    "arrival_process_tests.cpp"
     "black_derman_toy_process_tests.cpp"
     "black_karasinski_process_tests.cpp"
     "business_day_calendar_set_tests.cpp"
@@ -51,6 +52,7 @@ set(files
     "risk_recentering_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
+    "tick_clock_tests.cpp"
     "topology_builder_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"

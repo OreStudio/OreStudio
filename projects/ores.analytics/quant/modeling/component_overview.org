@@ -44,6 +44,14 @@ synthetic-data-generation orchestration; it moved here so the maths is
 reusable (e.g. by a future calibration service) and independently
 unit-testable without pulling in a service binary.
 
+A third family answers a different question: when does the next tick arrive.
+=domain::i_arrival_process= has one method, =next_gap()= in seconds, and three
+implementations: =periodic_arrival_process= (equal gaps), =poisson_arrival_process=
+(exponential gaps) and =hawkes_arrival_process= (self-exciting gaps). The same
+factory builds them with =make_arrival_process=, and =tick_clock= turns one into
+the stop-responsive loop every producer runs on. The arrival rules live beside
+the others in =domain::validate_arrival_process_parameters=.
+
 * Inputs
 
 - =domain::ccy_pair_input= -- raw currency-pair quotes (base/quote codes,
@@ -71,6 +79,11 @@ unit-testable without pulling in a service binary.
   advancing).
 - =domain::process_parameter_validation_result= -- ok/error-message pair
   from validating raw process parameters before construction.
+- =domain::i_arrival_process= -- the pure interface an arrival process
+  implements (=next_gap()= draws the wait to the next arrival, in seconds).
+- =domain::process_parameter_validation_result= from
+  =domain::validate_arrival_process_parameters= -- the arrival rules (mode,
+  positive rate, branching ratio below one, positive decay).
 
 * Entry points
 

@@ -30,5 +30,4 @@ set(files
     "fx_simple_conversion_tests.cpp"
     "ir_parameter_conversion_tests.cpp"
     "main.cpp"
-    "tick_clock_tests.cpp"
 )

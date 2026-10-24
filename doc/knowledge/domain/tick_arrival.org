@@ -29,10 +29,10 @@ second. Both live in =ores.analytics.quant=.
 
 ** The tick clock
 
-The tick clock is the one clock every feed runs on. It takes a mean rate in
-ticks per hour and an arrival process. Before each tick it asks the process for
-the next gap in seconds, and sleeps for the gap in slices of a hundred
-milliseconds, so that =stop()= is seen quickly. It then runs one tick body,
+The tick clock is the one clock every feed runs on. It takes an arrival
+process. Before each tick it asks the process for the next gap in seconds, and
+sleeps for the gap in slices of a hundred milliseconds, so that =stop()= is seen
+quickly. It then runs one tick body,
 counts the tick and passes it to a hook. A throw from the body goes to a failure
 hook and the tick is skipped, because a tick-loop thread has no caller to
 receive an exception. The clock is described from the feed's side in
@@ -40,9 +40,10 @@ receive an exception. The clock is described from the feed's side in
 
 The clock holds no database, messaging or logging code. It needs only
 =<chrono>=, =<thread>=, =<atomic>= and =<functional>=, so it keeps the rule of
-=ores.analytics.quant=. The synthetic side holds only the feeds. A feed reads
-its mode and numbers from the generation config, asks the factory for an
-arrival process, builds a clock around it and gives the clock a tick body. Any
+=ores.analytics.quant=: =service/tick_clock.hpp=, beside the processes it is
+driven by. The synthetic side holds only the feeds. A feed reads its mode and
+numbers from the generation config, asks the factory for an arrival process,
+builds a clock around it and gives the clock a tick body. Any
 other consumer, such as a calibration tool or =ores.marketdata=, can pace itself
 the same way without linking the synthetic service.
 

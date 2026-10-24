@@ -20,7 +20,9 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FX_SPOT_FEED_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FX_SPOT_FEED_HPP
 
+#include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
@@ -30,7 +32,6 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
-#include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include <memory>
 #include <optional>
 #include <string>
@@ -130,7 +131,8 @@ private:
     std::vector<std::string> series_uris_;
     std::string source_name_;
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
-    tick_clock clock_;
+    std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
+    ores::analytics::quant::service::tick_clock clock_;
     std::string nats_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;

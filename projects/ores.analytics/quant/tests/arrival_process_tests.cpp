@@ -1,0 +1,212 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
+#include "ores.analytics.quant/service/processes/hawkes_arrival_process.hpp"
+#include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
+#include "ores.analytics.quant/service/processes/poisson_arrival_process.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <cmath>
+#include <cstdint>
+#include <stdexcept>
+#include <vector>
+
+namespace {
+
+const std::string_view test_suite("ores.analytics.quant.tests");
+const std::string tags("[arrival_process]");
+
+/// The long-run mean of a gap, measured over enough draws to be tight.
+double mean_gap(ores::analytics::quant::domain::i_arrival_process& process, std::size_t draws) {
+    double total = 0.0;
+    for (std::size_t i = 0; i < draws; ++i)
+        total += process.next_gap();
+    return total / static_cast<double>(draws);
+}
+
+/// Count the events of a stream in equal windows, for the Fano factor.
+std::vector<double> counts_per_window(ores::analytics::quant::domain::i_arrival_process& process,
+                                      std::size_t events,
+                                      double window) {
+    std::vector<double> counts;
+    double window_end = window;
+    double count = 0.0;
+    double now = 0.0;
+
+    for (std::size_t i = 0; i < events; ++i) {
+        now += process.next_gap();
+        while (now >= window_end) {
+            counts.push_back(count);
+            count = 0.0;
+            window_end += window;
+        }
+        count += 1.0;
+    }
+    return counts;
+}
+
+}
+
+using ores::analytics::quant::service::hawkes_arrival_process;
+using ores::analytics::quant::service::periodic_arrival_process;
+using ores::analytics::quant::service::poisson_arrival_process;
+using namespace ores::logging;
+
+TEST_CASE("the periodic process returns the gap its mean rate asks for", tags) {
+    auto lg(make_logger(test_suite));
+
+    periodic_arrival_process process(4.0);
+
+    CHECK(process.next_gap() == Catch::Approx(0.25));
+    CHECK(process.next_gap() == Catch::Approx(0.25));
+}
+
+TEST_CASE("the poisson process draws gaps at its mean rate", tags) {
+    auto lg(make_logger(test_suite));
+
+    // 1000 arrivals a second, so a gap of one millisecond, and 200k draws put
+    // the sample mean within a fraction of a percent of it.
+    poisson_arrival_process process(1000.0, 7);
+    const auto mean = mean_gap(process, 200000);
+
+    CHECK(mean == Catch::Approx(0.001).epsilon(0.02));
+}
+
+TEST_CASE("a hawkes stream settles at its long-run mean rate", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The long-run rate is the rate the caller asked for, mu / (1 - n), not the
+    // baseline, which is half of it here.
+    hawkes_arrival_process process(1000.0, 0.5, 10.0, 11);
+    CHECK(process.baseline() == Catch::Approx(500.0));
+    CHECK(process.jump() == Catch::Approx(5.0));
+
+    const auto mean = mean_gap(process, 200000);
+    CHECK(mean == Catch::Approx(0.001).epsilon(0.03));
+}
+
+TEST_CASE("a hawkes stream clusters: the Fano factor is one over one minus n squared", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Windows of a second are ten bursts long (1 / beta = 0.1 s), so the count
+    // inside one window sees the clustering. For n = 0.5 the Fano factor is 4.
+    hawkes_arrival_process process(10.0, 0.5, 10.0, 13);
+    const auto counts = counts_per_window(process, 100000, 1.0);
+
+    REQUIRE(counts.size() > 9000);
+    double total = 0.0;
+    for (double c : counts)
+        total += c;
+    const double mean = total / static_cast<double>(counts.size());
+    double squared = 0.0;
+    for (double c : counts)
+        squared += (c - mean) * (c - mean);
+    const double variance = squared / static_cast<double>(counts.size() - 1);
+
+    CHECK(mean == Catch::Approx(10.0).epsilon(0.05));
+    CHECK(variance / mean == Catch::Approx(4.0).epsilon(0.15));
+}
+
+TEST_CASE("the rescaled gaps of a hawkes stream are exponential with mean one", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The time-rescaling test: integrate the intensity over each gap. For the
+    // exponential kernel that integral is closed form, and the compensated
+    // gaps must be Exp(1), whose mean and variance are both one.
+    const double mean_rate = 100.0;
+    const double branching_ratio = 0.5;
+    const double decay = 10.0;
+    hawkes_arrival_process process(mean_rate, branching_ratio, decay, 17);
+
+    const double baseline = mean_rate * (1.0 - branching_ratio);
+    const double jump = branching_ratio * decay;
+
+    constexpr std::size_t draws = 200000;
+    double excess = 0.0;
+    double total = 0.0;
+    double squared = 0.0;
+
+    for (std::size_t i = 0; i < draws; ++i) {
+        const auto gap = process.next_gap();
+        const auto increment = baseline * gap + excess * (1.0 - std::exp(-decay * gap)) / decay;
+        total += increment;
+        squared += increment * increment;
+        excess = excess * std::exp(-decay * gap) + jump;
+    }
+
+    const auto mean = total / static_cast<double>(draws);
+    const auto variance = squared / static_cast<double>(draws) - mean * mean;
+
+    CHECK(mean == Catch::Approx(1.0).epsilon(0.05));
+    CHECK(variance == Catch::Approx(1.0).epsilon(0.15));
+}
+
+TEST_CASE("a branching ratio of one or more is refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    CHECK_THROWS_AS(hawkes_arrival_process(10.0, 1.0, 10.0), std::invalid_argument);
+    CHECK_THROWS_AS(hawkes_arrival_process(10.0, 1.5, 10.0), std::invalid_argument);
+    CHECK_THROWS_AS(ores::analytics::quant::service::process_factory::make_arrival_process(
+                        "hawkes", 3600.0, 1.0, 10.0),
+                    std::invalid_argument);
+
+    const auto refused = ores::analytics::quant::domain::validate_arrival_process_parameters(
+        "hawkes", 3600.0, 1.0, 10.0);
+    CHECK_FALSE(refused.valid);
+    CHECK_FALSE(refused.message.empty());
+}
+
+TEST_CASE("the arrival rules refuse what cannot work", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::analytics::quant::domain::validate_arrival_process_parameters;
+
+    CHECK_FALSE(validate_arrival_process_parameters("periodic", 0.0, 0.0, 1.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("poisson", -1.0, 0.0, 1.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("hawkes", 3600.0, 0.5, 0.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("hawkes", 3600.0, -0.1, 10.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("annual", 3600.0, 0.0, 1.0).valid);
+
+    // The two non-clustering modes ignore the clustering numbers.
+    CHECK(validate_arrival_process_parameters("periodic", 3600.0, 5.0, -1.0).valid);
+    CHECK(validate_arrival_process_parameters("poisson", 3600.0, 5.0, -1.0).valid);
+    CHECK(validate_arrival_process_parameters("hawkes", 3600.0, 0.5, 10.0).valid);
+    CHECK(validate_arrival_process_parameters("hawkes", 3600.0, 0.0, 10.0).valid);
+}
+
+TEST_CASE("the factory converts ticks per hour to the process unit and refuses a bad mode", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto hourly =
+        ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 3600.0);
+    CHECK(hourly->next_gap() == Catch::Approx(1.0));
+
+    const auto half_hourly =
+        ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 7200.0);
+    CHECK(half_hourly->next_gap() == Catch::Approx(0.5));
+
+    CHECK_THROWS_AS(
+        ores::analytics::quant::service::process_factory::make_arrival_process("annual", 3600.0),
+        std::invalid_argument);
+    CHECK_THROWS_AS(
+        ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 0.0),
+        std::invalid_argument);
+}

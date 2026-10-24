@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
@@ -64,7 +65,9 @@ ir_curve_feed::ir_curve_feed(
     , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
-    , clock_(ticks_per_hour)
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
+          "periodic", ticks_per_hour))
+    , clock_(*arrivals_)
     , entries_(std::move(entries)) {
 
     if (!process_)

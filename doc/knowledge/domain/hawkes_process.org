@@ -153,6 +153,17 @@ tick, or one currency pair that excites another. This note, and the
 implementation in ORE Studio, treat one stream. The reason is in
 [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]].
 
+* In the code
+
+=service::hawkes_arrival_process=, in
+=ores.analytics.quant/service/processes/hawkes_arrival_process.hpp=, draws gaps
+by direct inversion. It is built by =process_factory::make_arrival_process= from
+a mode, a rate in ticks per hour, a branching ratio and a decay; the factory
+converts the rate to arrivals per second and the class turns the observable
+triple into the baseline $\mu$ and the jump $\alpha$. The constructor refuses a
+branching ratio of one or more. The tests check the long-run mean rate, the Fano
+factor and the time rescaling of the rescaled gaps.
+
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.

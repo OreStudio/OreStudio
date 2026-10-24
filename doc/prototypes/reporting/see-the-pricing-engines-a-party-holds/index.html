@@ -173,7 +173,7 @@ label.plain{white-space:nowrap}
   and lists the related configurations the same report binds.
   Add, Edit and the file import are the other three prototypes of this journey group.
 
-  Addresses: ?screen=record (the default) | list, then &tab=details|products|parameters|reports|history
+  Addresses: ?screen=list | record&id=c1|c2|c3&tab=details|products|parameters|reports|history
     &card=<product type> opens the product card; &class=<asset class> opens the asset class card
   Switches in the bottom bar (they reload and reset the mock data):
     ?state=all|empty|error|loading
@@ -315,6 +315,8 @@ const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'Calibrat
 const clone = x => JSON.parse(JSON.stringify(x));
 const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
 const EOD_REPORTS = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Large Exposures', 'Cross-Entity Counterparty Concentration'];
+const INTRA_REPORTS = ['Treasury Sensitivity', 'Group DV01 by book'];
+const REPORTS_ALL = EOD_REPORTS.concat(INTRA_REPORTS);
 // FIXTURE. The product types each report's portfolio holds. No operation returns them.
 const REPORT_META = {
   'Group Consolidated Exposure': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
@@ -349,19 +351,38 @@ const setParam = (p, name, value) => { p.params.find(x => x.name === name).value
 const amcV3 = withEdit(AMC_NOW, c => setParam(c[2], 'VolatilityType', 'HullWhite'));
 const amcV2 = amcV3.filter(p => p.type !== 'CMS');
 const amcV1 = withEdit(amcV2, c => setParam(c[2], 'ShiftHorizon', '1.0'));
-
+const INTRA_V2 = [
+  { type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM().map(p => (p.name === 'nx' || p.name === 'ny') ? P(p.scope, p.name, '6') : p) },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '1Y')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'DiscountedCashflows', engine: 'DiscountingCrossCurrencySwapEngine', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(c[2], 'ny', '10'); });
 const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
 const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
 const CONFIGS = [
-  { id: 'c1', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
+  { id: 'c2', name: 'EOD pricing', desc: 'The official EOD pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
     versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
       { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
       { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
-      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] }
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
 ];
 CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
 // A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
-const PROPOSAL = { id: 'pr1', configId: 'c1', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
+const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
   note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
   products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
   approvals: PARTS.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
@@ -502,9 +523,9 @@ const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
 let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple');
-const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'record', id: null, tab: p.get('tab') || 'details' }; };
-const byId = () => CONFIGS[0];
-CONFIGS[0].proposal = proposalIn('partly');
+const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details' }; };
+const byId = id => CONFIGS.find(c => c.id === id);
+byId('c2').proposal = proposalIn('partly');
 const LIST = () => href({ screen: 'list' });
 const OTHER = { add: '../author-a-pricing-engine-configuration/', change: '../change-how-a-product-is-priced/', imp: '../bring-in-a-pricing-engines-file/', sign: SIGNOFF };
 function visible() {
@@ -520,7 +541,7 @@ function listScreen() {
   if (state === 'error') return head + '<div class="badbox">The pricing engine configurations could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
   const list = state === 'empty' ? [] : visible();
   const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
-  const tr = c => `<tr class="rec" tabindex="0" data-open><td><a data-nav class="link" href="${href({ screen: 'record' })}">${esc(c.name)}</a>${c.proposal ? ' ' + tag('1 proposal', 'warn') : ''}</td><td>${statusTag(c.status)}</td><td>${officialTag(c)}</td><td>${c.variant ? tag(esc(c.variant), 'cls') : dash}</td><td class="num">${c.products.length}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
+  const tr = c => `<tr class="rec" tabindex="0" data-open="${c.id}"><td><a data-nav class="link" href="${href({ screen: 'record', id: c.id })}">${esc(c.name)}</a>${c.proposal ? ' ' + tag('1 proposal', 'warn') : ''}</td><td>${statusTag(c.status)}</td><td>${officialTag(c)}</td><td>${c.variant ? tag(esc(c.variant), 'cls') : dash}</td><td class="num">${c.products.length}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
   let body;
   if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no pricing engine configurations yet.${may('add') ? ` <a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div></div>`;
   else if (!list.length) body = '<div class="notice">No pricing engine configurations match the search. <button class="btn" id="clear">Clear</button></div>';
@@ -560,7 +581,7 @@ function detailsTab(c) {
 function recordScreen(c) {
   const r = route();
   if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], ['Not found']]) + '<div class="notice">This pricing engine configuration does not exist.</div>';
-  const tabHref = t => href({ screen: 'record', tab: t });
+  const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
   const tabs = [['details', 'Details'], ['products', 'Products'], ['parameters', 'Parameters'], ['reports', 'Reports'], ['history', 'History']];
   const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
@@ -608,8 +629,8 @@ function deleteDialog(c) {
   document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
 }
 function wire() {
-  const r = route(), c = byId();
-  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record' }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
+  const r = route(), c = byId(r.id);
+  document.querySelectorAll('#app [data-open]').forEach(x => { const open = e => { if (e.target.closest('a,button')) return; nav({ screen: 'record', id: x.dataset.open }); }; x.onclick = open; x.onkeydown = e => { if (e.key === 'Enter') open(e); }; });
   document.querySelectorAll('#app [data-sort]').forEach(x => x.onclick = () => { sortDir = sortKey === x.dataset.sort ? -sortDir : 1; sortKey = x.dataset.sort; render(); });
   const s = document.getElementById('search'); if (s) s.oninput = () => { search = s.value; render(); const n = document.getElementById('search'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
   const vf = document.getElementById('varf'); if (vf) vf.onchange = () => { variantF = vf.value; render(); };
@@ -629,7 +650,7 @@ function wire() {
 }
 function render() {
   const r = route();
-  document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId()) : listScreen();
+  document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
   chrome('see the pricing engine configurations a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();
 }

@@ -59,15 +59,13 @@ The instrument and asset class descriptions already exist in the data:
 description is the humanised label, so the product card needs a verbose field
 beside it.
 
-The Parameters tab carries the same depth: every parameter has its documentation collapsed under it, and the Simple and Advanced switch sits in the card header.
-
 ** The question the screen answers
 
 "Which engine prices my swaptions, and which of my reports use it?" The screen answers it in two reads: the list, to find the configuration, and the page, to read what it prices with and who binds it. The coverage strip answers the third question, what is left unpriced.
 
 ** States and switches
 
-- =?screen=record= (the default) shows the one configuration, the approved EOD pricing: eleven products, four reports, four versions signed off by three approval parts, and a proposal for version 5 that waits for sign-off. =?screen=list= shows it as a row. =&tab=details|products|parameters|reports|history= picks the tab. There is one configuration on purpose: the page is the design, and a second fixture would only add a switch to learn.
+- =?screen=list= and =?screen=record&id=c1|c2|c3&tab=...=. =c1= is the approved Intraday pricing, official for the intraday cycle, with eleven products and two reports. =c2= is the approved EOD pricing, official for the EOD cycle, with eleven products, four reports, four versions each signed off by three approval parts, and a proposal for version 5 that waits for sign-off. =c3= is a draft that no report binds.
 - =?state=all|empty|error|loading= for the four list states.
 - =?actor=viewer|analyst|admin=: a viewer reads, an analyst adds and edits, and only the administrator deletes. An action a person may not take is not drawn.
 - Delete is offered on a draft only. A report that binds a draft is refused, and the page says that no service refuses it today.

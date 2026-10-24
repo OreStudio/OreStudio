@@ -70,25 +70,52 @@ Nor can the pieces simply be dropped into a client join of entities. The rule th
 | R2 | Extend both list filters with =party_id=, fix the erase-after-paging, and let the BFF build the tree from two lists plus the count read | Least new codegen, but two page walks and a client-built hierarchy |
 | R3 | One view in trading over refdata and trading tables | Rejected: crosses the service boundary, couples two schemas, bypasses refdata's authorization |
 
+* What the legacy Qt tree did
+
+The retired application at =ores.qt= had this screen, and reading it answers three of the questions the doctrine left open. Its files are =trading/src/PortfolioExplorerTreeModel.cpp= and =PortfolioExplorerMdiWindow.cpp=, with =api/src/ClientManagerTrades.cpp= for the read.
+
+*** The shape it chose
+
+- *The root is the party hierarchy, not one party.* =load(parties, portfolios, books)= builds party nodes nested by =parent_party_id=, so a holding company shows its regional companies as sub-nodes. A party's portfolios hang under its party node, portfolios nest by =parent_portfolio_id=, and books are leaves under their portfolio. A party with no visible parent becomes a root, and a portfolio whose party is invisible gets a bare fallback node rather than vanishing.
+- *Virtual portfolios are structural parents*, and the model distinguishes them by the outline briefcase icon. That is the same icon the new prototype uses for a portfolio.
+- *The tree is assembled in the client from three whole lists.* There is no server tree read: the window fetches parties, portfolios and books, then =load= builds the hierarchy in memory, and calls =expandAll()=.
+
+*** The counts
+
+- Each book's count is fetched in the background, *one request per book*, through a =QFutureWatcher= per book, and stored in a map.
+- A portfolio's count is =subtree_count=, which sums the map over the subtree in the client. So the legacy answered the open question by summing in the client, not by aggregating in the database.
+- =set_trade_count= emits =dataChanged= for the book and every ancestor, so the labels above it update as counts arrive.
+
+*** The filter it sent
+
+- =selected_filter= returns =book_id= for a book, =portfolio_id= for a portfolio, and nothing for a party node.
+- The request carried a single opaque =node_id= string, and the server resolved whether it named a portfolio or a book.
+
 * Conclusions
 
-1. *The tree is a read model*, by the classification and by the pattern table, and the doctrine's alternative — a client join of entities — is closed.
-2. *It is two reads, not one*, because the rows it draws belong to refdata and the number it prints belongs to trading. Neither service may see the other's tables.
-3. *A refdata read model is the right home for the hierarchy*, because refdata owns both entities, both carry the same parent shape, and one read model can serve the tree today and the book screen later. =trade_summary= is the template: a view inside one component, a discriminator column, a list verb, no write.
-4. *The count is a trading read model*, not a column on the hierarchy: one row per book with its trade count, filtered by =book_id_one_of=, which is the call the list already makes.
-5. *The existing list reads cannot serve the tree as they stand.* =portfolios_filter= has no party member and the party is applied by erasing rows after the pager, so a page and its total disagree. That is a defect in its own right, on the list as much as on the tree.
-6. *The node count per portfolio is the open question.* A book's count is a cheap read. A portfolio's count is its subtree's, and a subtree sum per node is either a recursive aggregate in the view or a roll-up maintained elsewhere. The doctrine would not put a recursive aggregate on a hot path, and the tree is drawn on every visit. This one needs a measurement before a decision, with the real sizes of a party's tree.
+The doctrine's verdict stands, and the legacy sharpens six points.
+
+1. *The tree is a read model* by classification, and the legacy shows the alternative in the flesh: three whole lists read on every visit and the hierarchy built in memory. It works, and the relationship-view rule rejects it, because it reads every row to draw the part the reader sees.
+2. *The hierarchy is refdata's and the count is trading's.* The legacy read both from one client, which is the same two-read split this investigation recommends.
+3. *The count per node is summed in the client*, as the legacy did, so no recursive aggregate belongs in a view. What the legacy got wrong is the batching: one request per book is per-object where the sixth axiom asks for batch. The count read must be one call returning a row per book.
+4. *A typed filter, not an opaque node id.* The legacy's =node_id= string is a primitive standing in for two different keys, which the wire rules forbid. The new read names its members: =book_id= for a book and a portfolio member for a portfolio.
+5. *The party belongs in the tree.* The legacy nests parties by =parent_party_id=, and the relationship-view rule agrees: "A group is a party, nested by its own parent". The new prototype draws a single party root and is the poorer for it, so the tree model must carry party nodes too.
+6. *The open question is now only size.* Whether the hierarchy is read lazily or as whole lists depends on how large a party's tree is, which is one measurement, not a design choice.
 
 * Recommendations
 
-1. Write the classification down on the checklist before building: a read model, spanning refdata entities, assembled on the server.
-2. Build the refdata read model first, because it is the piece with a precedent and no measurement open: =portfolio_tree_node= with =node_kind=, =parent_id=, =party_id=, =sandbox_id=, label and order, a =list= verb filtered by =parent_id= and =sandbox_id=, and no count.
-3. Decide the count separately, after measuring a party's tree: either the trading read model carries =book_id= and =trade_count= and the BFF rolls the subtree up from the nodes it has loaded, or the view precomputes it. The first is lazier and costs a sum in the browser; the second costs an aggregate per load.
-4. Fix the erase-after-paging defect in both refdata repositories whichever shape wins, because it makes every paged read disagree with its own total.
-5. Do not build the tree in the list's PR. The list is settled and shippable without it; the tree is a read model of its own, with its own task.
+1. Write the classification down on the checklist before building: a read model spanning refdata entities, assembled on the server for display.
+2. Carry three node kinds in the read model, as the legacy did: party, portfolio and book, with the party nested by =parent_party_id=.
+3. Build the refdata read first, with no count: =portfolio_tree_node= with =node_kind=, =parent_id=, =party_id=, =sandbox_id=, label and order, a =list= filtered by =parent_id= and =sandbox_id=, and paged so a lazy tree can ask for one node's children.
+4. Read the count as one batch, never one call per book: a trading read model with a row per book, filtered by =book_id_one_of=, which is the filter the list already carries.
+5. Sum the subtree in the client, as the legacy did, and never aggregate it in a view.
+6. Measure a party's tree once to decide lazy or whole: if the tree is dozens of nodes, the two lists zipped in the BFF are enough and the node read waits.
+7. Fix the erase-after-paging defect in both refdata repositories whichever shape wins, because it makes every paged read disagree with its own total.
+8. Do not build the tree in the list's PR. The list is settled and shippable without it; the tree is a read model of its own, with its own task.
 
 * See also
 
 - [[id:247B37A7-15AF-4C24-80D1-8BC4CD45DBF1][The junction capture]] — the six questions this investigation answers.
+- The retired Qt application, =/home/marco/Vault/Development/OreStudio/ores.qt=: =trading/src/PortfolioExplorerTreeModel.cpp=, =trading/src/PortfolioExplorerMdiWindow.cpp=, =api/src/ClientManagerTrades.cpp=.
 - [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] — the screen the tree belongs to.
 - [[id:1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20][Trade list and page prototype]] — what the tree draws.

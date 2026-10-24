@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rename-the-process-and-feed-interfaces
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
+| Now          | The task is scoped and the plan is written. 43 source files and 8 current documents carry the three names. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Next         | Write the rename script, run it over the source tree, then update the documents. |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
@@ -40,9 +40,33 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This task changes names only. It adds no behaviour and no build target, and it
+moves no file: the three headers are already =i_yield_curve_process.hpp=,
+=i_stochastic_process.hpp= and =i_feed.hpp=. The symbols inside them are not.
+
+1. Rename the three class names, and only the class names:
+
+   | Old                  | New                    |
+   |----------------------+------------------------|
+   | =IStochasticProcess= | =i_stochastic_process= |
+   | =IYieldCurveProcess= | =i_yield_curve_process= |
+   | =IFeed=              | =i_feed=               |
+
+2. Drive the rename with one scripted pass that a reviewer can rerun. The
+   script owns the file list and the substitutions, so the diff reads as one
+   shape and the old spelling cannot survive in a corner of the tree.
+3. Follow the dependency order inside the tree: =ores.analytics.quant= first,
+   then =ores.marketdata.api=, then the synthetic feeds, the service and the
+   clients that consume both.
+4. Leave the past agile records alone. A sprint org file from an earlier sprint
+   is a record of what was true then. It keeps the old spelling. This point
+   overrules point 2 for =doc/agile/=.
+5. Rewrite the eight current documents that name an interface. The generated
+   modeling pages under =projects/*/modeling/= come from the templates, so fix
+   the source and regenerate, rather than editing the output.
+6. Build and run the affected suites. The acceptance is no behaviour change, so
+   a green build and green tests are the proof. A =git diff --stat= that touches
+   no test expectation is the second proof.
 
 * Measurements
 
@@ -56,7 +80,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ files under =projects/= that name one of the three classes | 43 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed projects --include=*.hpp --include=*.cpp --include=*.h= (count the printed lines) | 9838f83ef5 |
+| Occurrences of the three names in those files | 104 | =grep -rho -e IStochasticProcess -e IYieldCurveProcess -e IFeed projects --include=*.hpp --include=*.cpp --include=*.h= (count the printed lines) | 9838f83ef5 |
+| Test files among those files | 4 | the same command with =--include=*_tests.cpp= | 9838f83ef5 |
+| Current documents that name one, outside =doc/agile/= | 8 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed doc projects --include=*.org --include=*.md --exclude-dir=agile --exclude-dir=.audit= | 9838f83ef5 |
+| Of those documents, generated modeling pages | 5 | the same list, filtered to =projects/*/modeling/= | 9838f83ef5 |
+| Past agile records that name one, left unchanged | 30 | =grep -rlw -e IStochasticProcess -e IYieldCurveProcess -e IFeed doc/agile= | 9838f83ef5 |
+| Header files already named in snake_case | 3 | =find projects -name "i_*.hpp"= | 9838f83ef5 |
 
 * Notes
 

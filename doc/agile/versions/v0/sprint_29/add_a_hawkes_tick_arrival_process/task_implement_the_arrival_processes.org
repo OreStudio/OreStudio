@@ -8,7 +8,7 @@
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
 #+branch: feature/implement-the-arrival-processes
-#+pr:
+#+pr: 3731
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3731][#3731]] | [analytics] Add the periodic, Poisson and Hawkes arrival processes |
 
 * Review
 

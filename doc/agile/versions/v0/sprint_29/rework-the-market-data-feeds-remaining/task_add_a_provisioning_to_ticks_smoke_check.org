@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-a-provisioning-to-ticks-smoke-check
-#+pr:
+#+pr: 3732
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3732][#3732]] | [compass] Smoke the market data path from provisioning to ticks |
 
 * Review
 

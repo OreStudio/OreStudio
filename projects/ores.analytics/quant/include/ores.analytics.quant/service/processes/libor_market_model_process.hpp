@@ -115,7 +115,7 @@ lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
  * finer granularity -- they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT libor_market_model_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     libor_market_model_process(Eigen::VectorXd initial_forward_rates,
                                Eigen::VectorXd volatilities,

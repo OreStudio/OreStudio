@@ -88,7 +88,7 @@ namespace ores::analytics::quant::service {
  * of 1/dt over a multi-tick horizon.
  */
 class ORES_ANALYTICS_QUANT_EXPORT hull_white_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     hull_white_process(double kappa,
                        std::vector<double> theta_path,

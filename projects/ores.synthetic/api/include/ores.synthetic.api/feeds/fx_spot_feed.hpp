@@ -56,7 +56,7 @@ struct adapter_target final {
 /**
  * @brief The kind string this producer registers under in
  * make_default_feed_factory() — the asset-class discriminator of the factory
- * seam, exposed as IFeed::kind(). The control-plane passes it to
+ * seam, exposed as i_feed::kind(). The control-plane passes it to
  * factory::make() to select this producer's builder and scopes running-feed
  * listings by it.
  */
@@ -65,7 +65,7 @@ inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
 /**
  * @brief Concrete FX spot feed: fixed-mode tick clock + stochastic process.
  *
- * Implements IFeed. On start(), runs a tick loop on the calling thread
+ * Implements i_feed. On start(), runs a tick loop on the calling thread
  * (caller must run it on a dedicated std::thread). Each tick:
  *   1. Advances the stochastic process to get a new price.
  *   2. Builds a market_tick: the datum's oresmd quote URI, the price as decimal
@@ -86,13 +86,13 @@ inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
  * the one series URI of that quote. The feed has no role -- its conflict key is
  * its series URI alone.
  */
-class ORES_SYNTHETIC_API_EXPORT fx_spot_feed final : public ores::marketdata::domain::IFeed {
+class ORES_SYNTHETIC_API_EXPORT fx_spot_feed final : public ores::marketdata::domain::i_feed {
 public:
     fx_spot_feed(ores::nats::service::client& nats,
                  std::string quote_uri,
                  std::string source_name,
                  std::string nats_subject,
-                 std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
+                 std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
                  double ticks_per_hour,
                  std::optional<adapter_target> adapter = std::nullopt);
 
@@ -129,7 +129,7 @@ private:
     std::string quote_uri_;
     std::vector<std::string> series_uris_;
     std::string source_name_;
-    std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
+    std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
     tick_clock clock_;
     std::string nats_subject_;
     std::optional<adapter_target> adapter_;

@@ -37,11 +37,11 @@ namespace ores::analytics::quant::service {
  *
  * This is arithmetic Brownian motion (Bachelier) when single-component. Unlike
  * the geometric engine the price may cross zero. Exists alongside gaussian_mixture_model_process to
- * exercise the IStochasticProcess abstraction (we are not hardcoded to the
+ * exercise the i_stochastic_process abstraction (we are not hardcoded to the
  * geometric case) and to let the UI contrast engines.
  */
 class ORES_ANALYTICS_QUANT_EXPORT arithmetic_gaussian_mixture_model_process final
-    : public ores::analytics::quant::domain::IStochasticProcess {
+    : public ores::analytics::quant::domain::i_stochastic_process {
 public:
     arithmetic_gaussian_mixture_model_process(std::vector<double> means,
                                               std::vector<double> stdevs,

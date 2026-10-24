@@ -39,7 +39,7 @@ namespace ores::synthetic::domain {
  * A typed sub-configuration owned by a market_data_generation_config. Describes
  * how to synthesise a single currency+index interest-rate curve: which
  * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/
- * two_factor_gaussian, per ores.analytics.quant's IYieldCurveProcess
+ * two_factor_gaussian, per ores.analytics.quant's i_yield_curve_process
  * engines) and that process's parameters, stored row-based as
  * ir_curve_generation_config_process_parameter_value children joined onto the
  * yield_curve_process_parameter_definition catalogue -- so a new process
@@ -131,8 +131,8 @@ struct ir_curve_generation_config final {
     /**
      * @brief Short-rate process engine driving this curve (references
      * yield_curve_process_type.code: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or
-     * TWO_FACTOR_GAUSSIAN) -- selects among ores.analytics.quant's IYieldCurveProcess engines. The
-     * engine's parameters are not stored as columns on this record; each process type has a
+     * TWO_FACTOR_GAUSSIAN) -- selects among ores.analytics.quant's i_yield_curve_process engines.
+     * The engine's parameters are not stored as columns on this record; each process type has a
      * yield_curve_process_parameter_definition catalogue (name, description, min/max, defaults) and
      * this config's values live as ir_curve_generation_config_process_parameter_value rows, one per
      * parameter, joined onto the definitions at feed-start time by

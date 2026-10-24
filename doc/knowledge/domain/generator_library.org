@@ -13,8 +13,8 @@
 
 =ores.analytics.quant= is the library that holds the price and short-rate
 processes the synthetic producers step. Its two interfaces are
-=IStochasticProcess= in =ores.analytics.quant/domain/i_stochastic_process.hpp=
-and =IYieldCurveProcess= beside it, and its entry point is
+=i_stochastic_process= in =ores.analytics.quant/domain/i_stochastic_process.hpp=
+and =i_yield_curve_process= beside it, and its entry point is
 =process_factory::make_process= in
 =ores.analytics.quant/service/process_factory.hpp=.
 
@@ -22,12 +22,12 @@ and =IYieldCurveProcess= beside it, and its entry point is
 
 ** The interface
 
-=IStochasticProcess= has two methods. =next()= advances the process by one
+=i_stochastic_process= has two methods. =next()= advances the process by one
 step and returns the new price, and =current()= reads the price without
 advancing. The process owns its own state, which is the current price, the
 engine and the parameters, and it is not thread-safe.
 
-=IYieldCurveProcess= extends that interface with one method.
+=i_yield_curve_process= extends that interface with one method.
 =discount_factor(ticks_ahead)= answers, from the current state, what
 zero-coupon bond price the model implies at that distance in ticks. Every
 instrument a caller derives from one state is evaluated through that one

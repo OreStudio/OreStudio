@@ -33,7 +33,7 @@ short-term rates) is supplied by the caller as plain parameters, so the
 library is consumable standalone and fully unit-testable in isolation.
 
 A second, unrelated area covers stochastic price processes: pluggable
-=IStochasticProcess= implementations (geometric and arithmetic Gaussian
+=i_stochastic_process= implementations (geometric and arithmetic Gaussian
 mixture engines, an Ornstein-Uhlenbeck mean-reverting engine), a
 =process_factory= that builds one from a process-type string plus raw
 parameters, and =process_parameter_validation= as the single source of
@@ -66,7 +66,7 @@ unit-testable without pulling in a service binary.
 - =domain::derived_rate= -- a rate (direct or triangulated) with its
   =rate_status= (fresh/stale/unavailable) and the oldest contributing
   driver's timestamp.
-- =domain::IStochasticProcess= -- the pure interface every price process
+- =domain::i_stochastic_process= -- the pure interface every price process
   implements (=next()= advances one step, =current()= reads without
   advancing).
 - =domain::process_parameter_validation_result= -- ok/error-message pair

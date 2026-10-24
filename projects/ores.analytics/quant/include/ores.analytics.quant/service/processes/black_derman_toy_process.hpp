@@ -120,7 +120,7 @@ ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree build_black_
  * finer tick granularity, they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT black_derman_toy_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     black_derman_toy_process(std::vector<double> discount_curve,
                              std::vector<double> sigma_path,

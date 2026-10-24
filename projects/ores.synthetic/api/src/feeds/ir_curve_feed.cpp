@@ -55,7 +55,7 @@ ir_curve_feed::ir_curve_feed(
     std::string currency_code,
     std::string index_tenor,
     std::string role,
-    std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
+    std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     double ticks_per_hour,
     std::vector<ir_curve_resolved_entry> entries)
     : nats_(nats)

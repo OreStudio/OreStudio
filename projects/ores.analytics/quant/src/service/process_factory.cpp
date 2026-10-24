@@ -29,7 +29,7 @@
 
 namespace ores::analytics::quant::service {
 
-std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
+std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>
 process_factory::make_process(const std::string& process_type,
                               std::vector<double> means,
                               std::vector<double> stdevs,
@@ -62,7 +62,7 @@ process_factory::make_process(const std::string& process_type,
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
 }
 
-std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
 process_factory::make_yield_curve_process(const std::string& process_type,
                                           double kappa,
                                           std::vector<double> theta_path,

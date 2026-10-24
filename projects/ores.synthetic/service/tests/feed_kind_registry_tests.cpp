@@ -86,8 +86,8 @@ boost::uuids::uuid uuid_of(const std::string& s) {
     return boost::uuids::string_generator()(s);
 }
 
-// A stub IFeed: the stand-in for a third asset class's producer.
-class stub_feed final : public ores::marketdata::domain::IFeed {
+// A stub i_feed: the stand-in for a third asset class's producer.
+class stub_feed final : public ores::marketdata::domain::i_feed {
 public:
     explicit stub_feed(std::string source)
         : source_(std::move(source)) {}
@@ -126,9 +126,9 @@ private:
     std::atomic<bool> stop_{false};
 };
 
-// A stub IStochasticProcess: one flat sample, so the envelope's clamps and
+// A stub i_stochastic_process: one flat sample, so the envelope's clamps and
 // per-path stepping are observable without a real process.
-class stub_process final : public ores::analytics::quant::domain::IStochasticProcess {
+class stub_process final : public ores::analytics::quant::domain::i_stochastic_process {
 public:
     double next() override {
         return 42.0;
@@ -198,7 +198,7 @@ ores::synthetic::service::feed_kind stub_kind(const std::string& permission) {
     k.decode_simulate = [](const ores::nats::message&) {
         return ores::synthetic::service::feed_simulate_envelope{
             .num_ticks = 3, .num_paths = 2, .seed = 7, .make_process = [](std::uint32_t) {
-                return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+                return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
                     std::make_unique<stub_process>());
             }};
     };
@@ -453,7 +453,7 @@ TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", tags) {
 TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     const feed_simulate_envelope env{
         .num_ticks = 3, .num_paths = 2, .seed = 7, .make_process = [](std::uint32_t) {
-            return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+            return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
                 std::make_unique<stub_process>());
         }};
 
@@ -479,7 +479,7 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     recording.num_paths = 3;
     recording.make_process = [&seeds](std::uint32_t seed) {
         seeds.push_back(seed);
-        return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+        return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
             std::make_unique<stub_process>());
     };
     REQUIRE(ores::synthetic::service::run_simulate_paths(recording).success);
@@ -489,7 +489,7 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     // rather than the text of the failure.
     auto throwing = env;
     throwing.make_process =
-        [](std::uint32_t) -> std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> {
+        [](std::uint32_t) -> std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> {
         throw std::runtime_error("no process");
     };
     const auto failed = ores::synthetic::service::run_simulate_paths(throwing);

@@ -47,7 +47,7 @@ namespace ores::synthetic::service {
  * Shared by the IR curve's simulate registration and the curve-shape preview,
  * so the two cannot disagree on how a preview request becomes a process.
  */
-inline std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+inline std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
 make_preview_process(const std::string& process_type,
                      const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
                      std::uint32_t seed) {

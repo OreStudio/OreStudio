@@ -337,7 +337,7 @@ TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     REQUIRE(sent);
     CHECK(sent->identity.scope == "EUR");
     REQUIRE(sent->identity.fields.size() == 2);
-    CHECK(sent->identity.fields.front().value == "curve");
+    CHECK(sent->identity.fields.front().text == "curve");
     CHECK(sent->from_instant == t0);
     CHECK_FALSE(sent->to_instant.has_value());
     CHECK(sent->coordinates == request.coordinates);

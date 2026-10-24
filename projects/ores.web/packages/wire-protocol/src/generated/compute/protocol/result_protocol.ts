@@ -42,6 +42,7 @@ export interface ResultWrite {
     output_uri: string;
     error_message: string;
     received_at: string;
+    duration_ms: number | null;
 }
 
 export interface ResultChange {

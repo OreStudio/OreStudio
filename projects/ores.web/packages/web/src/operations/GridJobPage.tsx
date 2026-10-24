@@ -347,9 +347,113 @@ export function secondsBetween(recordedAt: string, receivedAt: string | null): n
     return Math.max(0, Math.round(milliseconds / 1000));
 }
 
-/** One bar for the first run, from its row being written to its output arriving. */
+/** The split of a run's time: claim to arrival, and how much of it the engine ran. */
+export interface Phases {
+    readonly totalMs: number;
+    /** The engine's own time, or null when the node did not report it. */
+    readonly ranMs: number | null;
+    /** The rest: the download, the upload and the hand back, or null with no engine time. */
+    readonly otherMs: number | null;
+}
+
+/**
+ * The phases of a run, or nothing when the run has no recorded claim or has not ended.
+ *
+ * The server's clock stamps the claim and the arrival, so their difference is the whole time
+ * of the run on the grid. The node's clock times the engine alone. The engine's time cannot
+ * exceed the whole, so a longer one, which only a rounding or a fault could make, is cut to it.
+ */
+export function phasesOf(run: ResultView): Phases | null {
+    if (run.started_at === null || run.received_at === null) {
+        return null;
+    }
+    const totalMs = Math.max(
+        0,
+        parseTimestamp(run.received_at).getTime() - parseTimestamp(run.started_at).getTime(),
+    );
+    if (run.duration_ms === null) {
+        return { totalMs, ranMs: null, otherMs: null };
+    }
+    const ranMs = Math.min(run.duration_ms, totalMs);
+    return { totalMs, ranMs, otherMs: totalMs - ranMs };
+}
+
+/** A time span the way a person reads it: whole seconds, then minutes. */
+export function formatDuration(milliseconds: number): string {
+    if (milliseconds < 500) {
+        return '< 1 s';
+    }
+    const seconds = Math.round(milliseconds / 1000);
+    return seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+}
+
+/** The bar of a run that has a recorded claim, split by what the engine ran. */
+function PhaseBar({
+    run,
+    phases,
+}: {
+    readonly run: ResultView;
+    readonly phases: Phases;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    const key = 'operations.grid.job.time';
+    const ranShare =
+        phases.ranMs === null
+            ? null
+            : phases.totalMs === 0
+              ? 100
+              : (phases.ranMs / phases.totalMs) * 100;
+    return (
+        <Panel title={t(`${key}.title`)} note={t(`${key}.phasesNote`)}>
+            <div className="flex h-3 w-full overflow-hidden rounded bg-bg-hover">
+                {ranShare === null ? (
+                    <div className="h-3 w-full bg-accent/60" />
+                ) : (
+                    <>
+                        <div
+                            className={`h-3 ${failed(run) ? 'bg-down' : 'bg-up'}`}
+                            style={{ width: `${ranShare}%` }}
+                        />
+                        <div className="h-3 bg-accent/40" style={{ width: `${100 - ranShare}%` }} />
+                    </>
+                )}
+            </div>
+            <div className="flex justify-between text-xs text-ink-muted">
+                <span>
+                    {t(`${key}.claimed`, {
+                        time: formatDateTime(run.started_at as string, language),
+                    })}
+                </span>
+                <span>
+                    {t(`${key}.receivedAfter`, {
+                        time: formatDateTime(run.received_at as string, language),
+                        duration: formatDuration(phases.totalMs),
+                    })}
+                </span>
+            </div>
+            {phases.ranMs === null || phases.otherMs === null ? (
+                <p className="text-xs text-ink-faint">{t(`${key}.unreported`)}</p>
+            ) : (
+                <ul className="flex flex-wrap gap-x-6 text-xs text-ink-muted">
+                    <li>{t(`${key}.ran`, { duration: formatDuration(phases.ranMs) })}</li>
+                    <li>{t(`${key}.other`, { duration: formatDuration(phases.otherMs) })}</li>
+                </ul>
+            )}
+            <p className="text-xs text-ink-faint">{t(`${key}.phasesHint`)}</p>
+        </Panel>
+    );
+}
+
+/**
+ * One bar for the first run. A run with a recorded claim is split by what the engine ran. An
+ * older run has no claim, and its bar runs from its row being written to its output arriving.
+ */
 function TimeBar({ run }: { readonly run: ResultView }): ReactNode {
     const { t, language } = useTranslation();
+    const phases = phasesOf(run);
+    if (phases !== null) {
+        return <PhaseBar run={run} phases={phases} />;
+    }
     const seconds = secondsBetween(run.recorded_at, run.received_at);
     const tone = seconds === null ? 'bg-accent/40' : failed(run) ? 'bg-down' : 'bg-up';
     return (

@@ -108,6 +108,7 @@ domain::result to_domain(const messaging::result_write& write) {
     v.output_uri = write.output_uri;
     v.error_message = write.error_message;
     v.received_at = write.received_at;
+    v.duration_ms = write.duration_ms;
     return v;
 }
 
@@ -408,6 +409,12 @@ result_service::prepare_change(const messaging::result_change& change,
             break;
         case precondition_kind::any:
             break;
+    }
+    // What the row already records about its own life is the row's to keep.
+    // The write carries no way to state these, so an edit that let them take
+    // a default would clear the stamps the service itself wrote.
+    if (!current.empty()) {
+        out.started_at = current.front().started_at;
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the

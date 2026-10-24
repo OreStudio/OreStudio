@@ -53,6 +53,8 @@ struct result_entity {
     std::optional<std::string> output_uri;
     std::optional<std::string> error_message;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> received_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
+    std::optional<std::int64_t> duration_ms;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

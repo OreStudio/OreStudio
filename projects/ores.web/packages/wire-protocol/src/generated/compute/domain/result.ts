@@ -42,6 +42,8 @@ export interface Result {
     output_uri: string;
     error_message: string;
     received_at: string;
+    started_at: string;
+    duration_ms: number | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

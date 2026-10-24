@@ -94,6 +94,8 @@ function result(id: string, overrides: Partial<ResultView> = {}): ResultView {
         output_uri: '/api/v1/storage/ores/compute/output/result.tar.gz',
         error_message: null,
         received_at: '2026-10-13 02:28:00.000000Z' as NonNullable<ResultView['received_at']>,
+        started_at: null,
+        duration_ms: null,
         modified_by: 'ores_compute_service',
         recorded_at: '2026-10-13 02:28:00.000000Z' as ResultView['recorded_at'],
         ...overrides,

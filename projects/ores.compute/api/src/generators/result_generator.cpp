@@ -51,6 +51,7 @@ domain::result generate_synthetic_result(utility::generation::generation_context
     r.output_uri = std::string();
     r.error_message = std::string();
     r.received_at = std::chrono::system_clock::time_point{};
+    r.started_at = std::chrono::system_clock::time_point{};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -48,6 +48,7 @@ struct result_write {
     std::string output_uri;
     std::string error_message;
     std::chrono::system_clock::time_point received_at;
+    std::optional<std::int64_t> duration_ms;
 };
 
 struct result_change {

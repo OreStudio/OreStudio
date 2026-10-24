@@ -30,9 +30,9 @@ The bond planner is the first implementation. The commodity planner is the secon
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Writing the plan variant and the planner registry. A build runs against the new vcpkg baseline. |
-| Waiting on   | The build, before any source edit. |
-| Next         | Port the bond planner onto the interface, then move the population size into the config. |
+| Now          | Unit one landed: the planner interface and registry, with the bond planner behind it, and the component suite green. |
+| Waiting on   | Nothing. |
+| Next         | The payload variant, so a slot carries its own family's terms. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -124,7 +124,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The population cases | 15 cases passed, 352 assertions, on a database recreated the same day | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | 8bd52fa8a2 |
+| The whole synthetic core suite | 61 cases passed, 1388 assertions | =publish/bin/ores.synthetic.core.tests= | 8bd52fa8a2 |
 
 * Notes
 

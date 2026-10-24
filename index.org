@@ -24,32 +24,28 @@
 #+HTML: </div>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/sprint_23_cross_rates_matrix.png" alt="Cross-Rates Matrix">
-#+HTML: <figcaption class="carousel-caption"><strong>Live FX Cross-Rates</strong><span>Real-time cross-rates matrices for any currency set, with mini price charts and configurable update intervals.</span></figcaption>
-#+HTML: </figure>
-#+HTML: <figure class="carousel-slide">
 #+HTML: <img src="./assets/images/ore_studio-v0.0.28.png" alt="Operations Dashboard">
 #+HTML: <figcaption class="carousel-caption"><strong>Operations Dashboard</strong><span>See tenants, services, the compute grid and the message queue at a glance, with a status for each.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/sprint_23_ir_synthetic_data_generator.png" alt="Market Simulator: IR curve calibration">
-#+HTML: <figcaption class="carousel-caption"><strong>Market Simulator</strong><span>Calibrate and simulate interest-rate curves with QuantLib-backed stochastic models, previewed live.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-overview.png" alt="Compute Grid Overview">
+#+HTML: <figcaption class="carousel-caption"><strong>Compute Grid</strong><span>Watch the load, the fleet, the throughput and the outcomes of the grid over the last hour, day or week.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/sprint_23_data_librarian_accession_card.png" alt="Data Librarian">
-#+HTML: <figcaption class="carousel-caption"><strong>Data Librarian</strong><span>Track provenance, lineage, and governance for every dataset in the system.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-usage.png" alt="Compute Grid Usage by Party">
+#+HTML: <figcaption class="carousel-caption"><strong>Usage by Party</strong><span>See each party's share of the grid's work and how its results ended, as a chart and a table.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.12.png" alt="Reference Data">
-#+HTML: <figcaption class="carousel-caption"><strong>Reference Data</strong><span>Business centres, portfolios, business units, and counterparties -- the shared foundation every other screen builds on.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-jobs.png" alt="Compute Grid Jobs">
+#+HTML: <figcaption class="carousel-caption"><strong>Follow a Job</strong><span>Open a batch, its workunits and its results, and follow a job from its dispatch to its output.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.15.png" alt="Compute Grid">
-#+HTML: <figcaption class="carousel-caption"><strong>Distributed Compute</strong><span>Monitor a BOINC-inspired compute grid: hosts, workunits, and applications, live.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-synthetic-price-behaviour.png" alt="Synthetic Market Data">
+#+HTML: <figcaption class="carousel-caption"><strong>Synthetic Market Data</strong><span>Shape the price behaviour of a synthetic feed and read the returns it implies before you save.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.20.png" alt="ores.shell">
-#+HTML: <figcaption class="carousel-caption"><strong>Scriptable Shell</strong><span>Automate provisioning and operations with a scriptable shell, side by side with the GUI.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.28-engine-settings.png" alt="Engine Settings">
+#+HTML: <figcaption class="carousel-caption"><strong>Engine Settings</strong><span>Read what each ORE setting does and where it came from, and change it for the party that owns it.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <button class="carousel-nav prev" aria-label="Previous slide">&#8249;</button>
 #+HTML: <button class="carousel-nav next" aria-label="Next slide">&#8250;</button>
@@ -62,7 +58,6 @@
 #+HTML: <button class="carousel-dot" aria-label="Slide 5"></button>
 #+HTML: <button class="carousel-dot" aria-label="Slide 6"></button>
 #+HTML: <button class="carousel-dot" aria-label="Slide 7"></button>
-#+HTML: <button class="carousel-dot" aria-label="Slide 8"></button>
 #+HTML: </div>
 #+HTML: </div>
 #+HTML: </section>

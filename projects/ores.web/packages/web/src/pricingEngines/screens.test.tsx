@@ -139,7 +139,8 @@ const VOCABULARY: PricingVocabulary = {
             model: 'LGM',
             engine: 'Grid',
             usual: true,
-            note: 'Builds a numeric multi-leg option engine.',
+            help: 'Builds a numeric multi-leg option engine.',
+            description: 'Builds a numeric multi-leg option engine.',
         },
     ],
     settings: [
@@ -153,7 +154,8 @@ const VOCABULARY: PricingVocabulary = {
             usual: 'IR_FD',
             options: [],
             required: false,
-            note: 'The sensitivity template of the product.',
+            help: 'The sensitivity template of the product.',
+            description: 'The sensitivity template of the product.',
         },
         {
             typeCode: 'BermudanSwaption',
@@ -165,7 +167,8 @@ const VOCABULARY: PricingVocabulary = {
             usual: '3M',
             options: [],
             required: true,
-            note: 'The step of the grid.',
+            help: 'The step of the grid.',
+            description: 'The step of the grid.',
         },
     ],
     models: [

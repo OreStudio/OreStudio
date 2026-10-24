@@ -33,6 +33,10 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(
+    os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..")),
+    "projects", "ores.seeder", "datasets", "ore_pricing_engines"))
+import descriptions  # noqa: E402
 from ore_parameter_seed import TEXT_KEYS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -341,9 +345,82 @@ def global_rows():
     return out
 
 
+def release_at_least(*names):
+    """The latest release that holds every name, or the floor of this checkout."""
+    versions = [releases().get(name, "") for name in names]
+    known = [v for v in versions if v not in ("", "1.8.0.7 or earlier")]
+    if not known:
+        return "1.8.0.7 or earlier"
+    def key(text):
+        return [int(part) for part in text.split(".") if part.isdigit()]
+    return max(known, key=key)
+
+
+def model_rows():
+    rows = []
+    for scope, table, kind, path in (
+        ("Models", descriptions.MODELS, "model", "Model"),
+        ("Engines", descriptions.ENGINES, "engine", "Engine"),
+    ):
+        for code, (description, detail, _source) in sorted(table.items()):
+            text = detail if detail else description
+            rows.append({
+                "scope": scope,
+                "subtype": "",
+                "name": code,
+                "domain": "string",
+                "required": False,
+                "label": code,
+                "help": first_sentence(description),
+                "description": text,
+                "default_text": "The name of a pricing " + kind + ".",
+                "format": "The name of a pricing " + kind + ".",
+                "introduced_in": release_at_least(code),
+                "removed_in": None,
+                "xpath": f"/PricingEngines/Product/{path}[@name='{code}']",
+            })
+    return rows
+
+
+def pair_rows():
+    with open(VOCABULARY) as f:
+        vocabulary = json.load(f)
+    seen = {}
+    for type_code, entry in sorted(vocabulary.items()):
+        for pair in entry.get("pairs", []):
+            key = (type_code, pair["model"], pair["engine"])
+            if key in seen:
+                continue
+            seen[key] = pair
+    rows = []
+    for (type_code, model, engine), pair in sorted(seen.items()):
+        note = (pair.get("note") or "").strip()
+        if note == "":
+            note = f"{model} with {engine} prices {type_code}."
+        rows.append({
+            "scope": "Pairs",
+            "subtype": type_code,
+            "name": f"{model}|{engine}",
+            "domain": "string",
+            "required": False,
+            "label": f"{model} / {engine}",
+            "help": first_sentence(note),
+            "description": note,
+            "default_text": "The usual pair." if pair.get("usual") else "Not the usual pair.",
+            "format": f"The model and engine that price {type_code} together.",
+            "introduced_in": release_at_least(model, engine),
+            "removed_in": None,
+            "xpath": (f"/PricingEngines/Product[@type='{type_code}']/"
+                      f"Model[@name='{model}']/Engine[@name='{engine}']"),
+        })
+    return rows
+
+
 def rows():
     out = []
-    for position, row in enumerate(setting_rows() + global_rows(), start=1):
+    for position, row in enumerate(
+        setting_rows() + global_rows() + model_rows() + pair_rows(), start=1
+    ):
         out.append({**row, "position": position})
     return out
 

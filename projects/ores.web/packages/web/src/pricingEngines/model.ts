@@ -156,7 +156,7 @@ export function pairNote(
     return (
         vocabulary.pairs.find(
             (pair) => pair.typeCode === typeCode && pair.model === model && pair.engine === engine,
-        )?.note ?? ''
+        )?.help ?? ''
     );
 }
 

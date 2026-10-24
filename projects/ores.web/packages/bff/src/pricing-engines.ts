@@ -427,13 +427,23 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             instrumentTypeCode: text(row['instrument_type_code']),
             assetClass: assetClassOf.get(text(row['instrument_type_code'])) ?? '',
         })),
-        pairs: pairs.map((row) => ({
-            typeCode: text(row['pricing_engine_type_code']),
-            model: text(row['model']),
-            engine: text(row['engine']),
-            usual: row['is_usual'] === true,
-            note: text(row['note']),
-        })),
+        pairs: pairs.map((row) => {
+            const typeCode = text(row['pricing_engine_type_code']);
+            const model = text(row['model']);
+            const engine = text(row['engine']);
+            const doc = docOf('Pairs', typeCode, `${model}|${engine}`);
+            return {
+                typeCode,
+                model,
+                engine,
+                usual: row['is_usual'] === true,
+                label: text(doc?.['label']),
+                help: text(doc?.['help']),
+                description: text(doc?.['description']),
+                defaultText: text(doc?.['default_text']),
+                xpath: text(doc?.['xpath']),
+            };
+        }),
         settings: settings.map((row) => {
             const scope = text(row['scope']);
             const typeCode = text(row['pricing_engine_type_code']);
@@ -452,7 +462,6 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                 usual: text(row['usual_value']),
                 options: text(row['options']) === '' ? [] : text(row['options']).split(','),
                 required: row['is_required'] === true,
-                note: text(row['note']),
                 documented: doc !== undefined,
                 label: text(doc?.['label']),
                 help: text(doc?.['help']),
@@ -482,8 +491,24 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                 xpath: text(row['xpath']),
             }))
             .sort((a, b) => a.name.localeCompare(b.name)),
-        models: models.map(described),
-        methods: methods.map(described),
+        models: models.map((row) => {
+            const doc = docOf('Models', '', text(row['code']));
+            return {
+                code: text(row['code']),
+                description: text(doc?.['help']),
+                detail: text(doc?.['description']),
+                source: text(row['source']),
+            };
+        }),
+        methods: methods.map((row) => {
+            const doc = docOf('Engines', '', text(row['code']));
+            return {
+                code: text(row['code']),
+                description: text(doc?.['help']),
+                detail: text(doc?.['description']),
+                source: text(row['source']),
+            };
+        }),
         templates: templates.map((row) => ({
             code: text(row['code']),
             assetClass: text(row['asset_class']),

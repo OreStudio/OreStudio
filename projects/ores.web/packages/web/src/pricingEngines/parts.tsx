@@ -272,7 +272,7 @@ export function SettingValue({
     const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
     const meaning =
         template === undefined
-            ? (setting?.note ?? '')
+            ? (setting?.help ?? '')
             : `${template.assetClass} · ${template.method}. ${template.description}`;
     const label = `${name} (${scope})${setting?.required === true ? ` · ${t('pricingEngines.fields.required')}` : ''}`;
     return (

@@ -70,7 +70,7 @@ std::string join_quoted(const std::vector<std::string>& v) {
 
 } // namespace
 
-std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
 map_parameters_to_yield_curve_process(
     const std::string& process_type,
     const std::vector<yield_curve_process_parameter_definition>& definitions,

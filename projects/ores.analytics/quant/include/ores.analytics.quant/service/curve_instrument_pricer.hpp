@@ -31,7 +31,7 @@ namespace ores::analytics::quant::service {
  *
  * Every function here is a pure closed-form calculation over discount
  * factors and year fractions already evaluated from one
- * IYieldCurveProcess::discount_factor() at the tick-batch's single
+ * i_yield_curve_process::discount_factor() at the tick-batch's single
  * current state -- this is what guarantees the tick batch a Curve
  * Template publishes is, by construction, a slice of one internally
  * consistent latent curve rather than an incoherent grid (see the IR

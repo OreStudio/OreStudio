@@ -75,7 +75,7 @@ public:
  * and is not part of any series, so a discount feed and a projection feed of one
  * index publish the same series and conflict. Two FX feeds on one pair conflict
  * for the same reason. A feed that names no series has an empty list, owns
- * nothing to protect and conflicts with nothing. Pure and free of IFeed/NATS so
+ * nothing to protect and conflicts with nothing. Pure and free of i_feed/NATS so
  * it is directly unit-testable without a live NATS client.
  */
 inline bool feeds_conflict(const std::vector<std::string>& series_a,
@@ -100,7 +100,7 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  * producers run concurrently and publish on distinct subjects — but at
  * most one per series (see feeds_conflict), so two feeds that
  * publish the same series — two FX feeds on one pair included — never both run. Every feed
- * enters the map through the common IFeed interface: the per-kind
+ * enters the map through the common i_feed interface: the per-kind
  * producers (fx_spot_feed, ir_curve_feed) differ only in what they
  * publish, not in how they are owned.
  *
@@ -110,11 +110,11 @@ make_marketdata_binding_store(ores::nats::service::nats_client& auth_nats);
  *     config via the factory, including any vintage resolution the
  *     builder performed. Returns false (and never starts) when the
  *     source_name is already running or the conflict key is held.
- *   - start(IFeed) — the on-demand path (the per-config control-plane),
+ *   - start(i_feed) — the on-demand path (the per-config control-plane),
  *     reporting already_running when that source is already up.
  *
  * Both create the feed's marketdata feed_binding once the feed is running.
- * Nothing branches on the asset class — a feed arrives as IFeed and its kind is
+ * Nothing branches on the asset class — a feed arrives as i_feed and its kind is
  * irrelevant here.
  *
  * At most one feed runs at a time for any series (see feeds_conflict):
@@ -179,7 +179,7 @@ public:
      * different running feed (with @p out_conflicting_source_name set to
      * the holder's source_name).
      */
-    bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+    bool add(std::shared_ptr<ores::marketdata::domain::i_feed> feed,
              const std::string& caller_bearer_token = {},
              std::string* out_conflicting_source_name = nullptr) {
         const auto source_name = feed->source_name();
@@ -218,7 +218,7 @@ public:
      * confirms its binding, so a feed whose row was deleted by hand regains it
      * on the next start.
      */
-    start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+    start_result start(std::shared_ptr<ores::marketdata::domain::i_feed> feed,
                        const std::string& caller_bearer_token = {}) {
         const auto source_name = feed->source_name();
         bool already_running = false;
@@ -299,7 +299,7 @@ public:
 
     /**
      * @brief Snapshot of source_names for all currently running feeds,
-     * optionally scoped to one feed kind (IFeed::kind()) — the per-kind
+     * optionally scoped to one feed kind (i_feed::kind()) — the per-kind
      * control-plane handlers list only their own kind, so a collapsed
      * controller still answers each handler's list as before.
      */
@@ -367,7 +367,7 @@ private:
     }
 
     struct running_feed {
-        std::shared_ptr<ores::marketdata::domain::IFeed> feed;
+        std::shared_ptr<ores::marketdata::domain::i_feed> feed;
         std::thread thread;
     };
 
@@ -380,7 +380,7 @@ private:
 
     // Emplace a feed as running, spawn its tick thread, and start the
     // status thread on the first feed. Caller must already hold mu_.
-    void start_running(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
+    void start_running(std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         const auto key = feed->source_name();
         auto* raw = feed.get();
         running_feed rf;
@@ -397,7 +397,7 @@ private:
     // of @p feed's series, if any. Excludes @p excluding_source_name so
     // re-adding/restarting the same config never self-conflicts. Caller must
     // already hold mu_.
-    std::optional<std::string> find_conflict(const ores::marketdata::domain::IFeed& feed,
+    std::optional<std::string> find_conflict(const ores::marketdata::domain::i_feed& feed,
                                              const std::string& excluding_source_name) const {
         for (const auto& [name, rf] : feeds_) {
             if (name == excluding_source_name)

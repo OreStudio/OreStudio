@@ -65,7 +65,7 @@ namespace ores::analytics::quant::service {
  * granularity — they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT two_factor_gaussian_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     two_factor_gaussian_process(double kappa_x,
                                 double kappa_y,

@@ -187,9 +187,9 @@ ir_fixture make_ir_fixture() {
     return f;
 }
 
-// A minimal IFeed stub proving make() dispatches to whatever builder is
+// A minimal i_feed stub proving make() dispatches to whatever builder is
 // registered for the kind -- the registration point for future asset classes.
-class stub_feed final : public ores::marketdata::domain::IFeed {
+class stub_feed final : public ores::marketdata::domain::i_feed {
 public:
     const std::string& source_name() const override {
         return source_name_;
@@ -368,7 +368,7 @@ TEST_CASE("factory::make dispatches to a replacement registration for a kind", t
     feed_factory factory;
     factory.register_kind(
         std::string(fx_spot_feed_kind), [](const feed_build_context&, const feed_build_input&) {
-            return std::shared_ptr<ores::marketdata::domain::IFeed>(new stub_feed());
+            return std::shared_ptr<ores::marketdata::domain::i_feed>(new stub_feed());
         });
 
     const auto input = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};

@@ -31,7 +31,7 @@
 namespace ores::analytics::quant::service {
 
 /**
- * @brief Factory for IStochasticProcess implementations.
+ * @brief Factory for i_stochastic_process implementations.
  *
  * Kept minimal at the scaffold stage; will grow as more process types
  * are added in later implementation steps.
@@ -58,7 +58,7 @@ public:
      *        moments with no kappa/dt coupling, so dt does not apply to
      *        them.
      */
-    static std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
+    static std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>
     make_process(const std::string& process_type,
                  std::vector<double> means,
                  std::vector<double> stdevs,
@@ -87,7 +87,7 @@ public:
      *        use dt=1.0/365.0, not a pre-divided kappa) -- see
      *        hull_white_process's docstring for why.
      */
-    static std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+    static std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
     make_yield_curve_process(const std::string& process_type,
                              double kappa,
                              std::vector<double> theta_path,

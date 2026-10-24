@@ -41,7 +41,7 @@ namespace ores::synthetic::feed {
 // Kind strings (fx_spot_feed_kind, ir_curve_feed_kind) live in their producer headers and are
 // registered by make_default_feed_factory(). A producer's kind is the asset-class discriminator
 // of the factory seam: the control-plane passes it (or derives it from the config table) to
-// select the builder, and IFeed::kind() exposes it.
+// select the builder, and i_feed::kind() exposes it.
 
 /**
  * @brief Shared inputs every producer builder needs, gathered once by the caller (application
@@ -90,12 +90,12 @@ using feed_build_input = std::variant<fx_spot_feed_build_input, ir_curve_feed_bu
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted
  * configuration -- the factory seam the original FX PoC architecture doc specified (open design
  * question 8): control-plane and lifecycle code request a producer by kind and never name a
- * concrete producer class. A new asset class is a config table, a producer behind IFeed, and
+ * concrete producer class. A new asset class is a config table, a producer behind i_feed, and
  * one registration.
  */
 class ORES_SYNTHETIC_API_EXPORT feed_factory final {
 public:
-    using builder = std::function<std::shared_ptr<ores::marketdata::domain::IFeed>(
+    using builder = std::function<std::shared_ptr<ores::marketdata::domain::i_feed>(
         const feed_build_context&, const feed_build_input&)>;
 
     /**
@@ -110,7 +110,7 @@ public:
      * @throws std::invalid_argument if no builder is registered for @p kind, or @p input is not
      * the kind's own build-input variant member.
      */
-    [[nodiscard]] std::shared_ptr<ores::marketdata::domain::IFeed>
+    [[nodiscard]] std::shared_ptr<ores::marketdata::domain::i_feed>
     make(const std::string& kind,
          const feed_build_context& ctx,
          const feed_build_input& input) const;

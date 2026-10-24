@@ -36,16 +36,16 @@ namespace ores::synthetic::domain {
  * @brief Short-rate process engine selector for IR curve generation: vasicek, cox_ingersoll_ross,
  * or hull_white.
  *
- * Reference data table enumerating the IYieldCurveProcess engines
+ * Reference data table enumerating the i_yield_curve_process engines
  * ores.analytics.quant's process_factory::make_yield_curve_process()
  * can construct: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE. Replaces an inline
  * CHECK ("process_type" in ('vasicek', 'cox_ingersoll_ross', 'hull_white')) constraint
  * on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper,
  * FK-validated, describable catalogue row per engine -- same reasoning as promoting instrument_code
  * from a hardcoded list to a real reference-data table. Scoped to ores.synthetic (not ores.refdata)
- * since IYieldCurveProcess engine selection is specific to synthetic IR curve generation, its only
- * consumer today; not promoted to shared refdata until it is genuinely shared by something else,
- * per this story's own payment_frequency precedent. Managed by the system tenant.
+ * since i_yield_curve_process engine selection is specific to synthetic IR curve generation, its
+ * only consumer today; not promoted to shared refdata until it is genuinely shared by something
+ * else, per this story's own payment_frequency precedent. Managed by the system tenant.
  */
 struct yield_curve_process_type final {
     /**

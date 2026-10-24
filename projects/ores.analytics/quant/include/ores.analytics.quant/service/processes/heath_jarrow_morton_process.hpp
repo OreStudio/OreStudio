@@ -96,7 +96,7 @@ hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities, const Eigen::VectorX
  * finer granularity -- they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT heath_jarrow_morton_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     heath_jarrow_morton_process(Eigen::VectorXd initial_forward_rates,
                                 Eigen::VectorXd volatilities,

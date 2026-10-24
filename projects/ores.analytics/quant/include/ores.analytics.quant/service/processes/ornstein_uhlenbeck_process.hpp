@@ -47,7 +47,7 @@ namespace ores::analytics::quant::service {
  * per tick), the kappa -> 0 limit of the variance term above.
  */
 class ORES_ANALYTICS_QUANT_EXPORT ornstein_uhlenbeck_process final
-    : public ores::analytics::quant::domain::IStochasticProcess {
+    : public ores::analytics::quant::domain::i_stochastic_process {
 public:
     ornstein_uhlenbeck_process(double kappa,
                                double theta,

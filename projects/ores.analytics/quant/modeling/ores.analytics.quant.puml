@@ -113,9 +113,9 @@ namespace ores #F2F2F2 {
                     +rate : double
                     +observed_at : chrono::system_clock::time_point
                 }
-                class IStochasticProcess {
+                class i_stochastic_process {
                 }
-                class IYieldCurveProcess {
+                class i_yield_curve_process {
                 }
                 class process_parameter_validation_result <<struct>> {
                     +valid : bool
@@ -312,7 +312,7 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
-ores::analytics::quant::service::process_factory ..> ores::analytics::quant::domain::IStochasticProcess : builds
+ores::analytics::quant::service::process_factory ..> ores::analytics::quant::domain::i_stochastic_process : builds
 ores::analytics::quant::service::topology_builder ..> ores::analytics::quant::domain::crm_topology : builds
 ores::analytics::quant::service::rate_engine ..> ores::analytics::quant::domain::derived_rate : serves
 ores::analytics::quant::service::rate_engine ..> ores::analytics::quant::domain::rate_snapshot : publishes through
@@ -321,7 +321,7 @@ note as N1
   Pluggable price processes. The library has no database, messaging or
   refdata coupling; the caller supplies every input as a plain parameter.
 end note
-ores::analytics::quant::domain::IStochasticProcess .. N1
+ores::analytics::quant::domain::i_stochastic_process .. N1
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.analytics.quant.puml"

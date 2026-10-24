@@ -145,7 +145,7 @@ feed_kind make_fx_spot_kind() {
             .make_process = [req = *req](std::uint32_t seed) {
                 if (req.gmm_means.empty())
                     throw std::invalid_argument("at least one GMM component is required");
-                return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+                return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
                     ores::analytics::quant::service::process_factory::make_process(
                         req.process_type,
                         req.gmm_means,
@@ -306,7 +306,7 @@ feed_kind make_ir_curve_kind() {
             .num_paths = req->num_paths,
             .seed = req->seed,
             .make_process = [req = *req](std::uint32_t seed) {
-                return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+                return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
                     make_preview_process(req.process_type, req.parameters, seed));
             }};
     };

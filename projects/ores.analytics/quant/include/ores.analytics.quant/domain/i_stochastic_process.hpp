@@ -33,9 +33,9 @@ namespace ores::analytics::quant::domain {
  * new price as a double. The process owns its state (current price, RNG
  * seed, parameter values) and is not thread-safe.
  */
-class IStochasticProcess {
+class i_stochastic_process {
 public:
-    virtual ~IStochasticProcess() = default;
+    virtual ~i_stochastic_process() = default;
 
     /**
      * @brief Advance the process by one step and return the new price.

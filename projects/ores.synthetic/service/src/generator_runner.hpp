@@ -47,7 +47,7 @@ namespace ores::synthetic::service {
  */
 struct generator_offer final {
     ores::marketdata::messaging::vendor_id id;
-    std::function<std::shared_ptr<ores::marketdata::domain::IFeed>()> make;
+    std::function<std::shared_ptr<ores::marketdata::domain::i_feed>()> make;
 };
 
 /** What the runner did with one demand set. */
@@ -173,7 +173,7 @@ private:
     using key = std::tuple<std::string, std::string, std::string>;
 
     struct running_generator {
-        std::shared_ptr<ores::marketdata::domain::IFeed> feed;
+        std::shared_ptr<ores::marketdata::domain::i_feed> feed;
         std::thread thread;
     };
 
@@ -194,7 +194,7 @@ private:
         return out;
     }
 
-    static running_generator launch(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
+    static running_generator launch(std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         running_generator g;
         auto* raw = feed.get();
         g.feed = std::move(feed);

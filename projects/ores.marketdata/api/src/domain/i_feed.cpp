@@ -21,8 +21,8 @@
 
 namespace ores::marketdata::domain {
 
-IFeed::IFeed() = default;
+i_feed::i_feed() = default;
 
-IFeed::~IFeed() = default;
+i_feed::~i_feed() = default;
 
 }

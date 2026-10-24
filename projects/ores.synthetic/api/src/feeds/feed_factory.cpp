@@ -26,7 +26,7 @@ void feed_factory::register_kind(std::string kind, builder b) {
     builders_[std::move(kind)] = std::move(b);
 }
 
-std::shared_ptr<ores::marketdata::domain::IFeed> feed_factory::make(
+std::shared_ptr<ores::marketdata::domain::i_feed> feed_factory::make(
     const std::string& kind, const feed_build_context& ctx, const feed_build_input& input) const {
     const auto it = builders_.find(kind);
     if (it == builders_.end())
@@ -49,15 +49,15 @@ std::vector<std::string> feed_factory::kinds() const {
 
 namespace {
 
-std::shared_ptr<ores::marketdata::domain::IFeed> build_fx_spot(const feed_build_context& ctx,
-                                                               const feed_build_input& input) {
+std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build_context& ctx,
+                                                                const feed_build_input& input) {
     const auto& in = std::get<fx_spot_feed_build_input>(input);
     return make_fx_spot_feed(
         ctx.nats, ctx.auth_nats, in.config, in.components, in.adapter, ctx.clock.get());
 }
 
-std::shared_ptr<ores::marketdata::domain::IFeed> build_ir_curve(const feed_build_context& ctx,
-                                                                const feed_build_input& input) {
+std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
+                                                                 const feed_build_input& input) {
     const auto& in = std::get<ir_curve_feed_build_input>(input);
     return make_ir_curve_feed(ctx.nats,
                               ctx.auth_nats,

@@ -66,7 +66,7 @@ template resolver.
 
 Public, because the domain and protocol headers name their types:
 
-- =ores.marketdata.api= — the =IFeed= interface and the market tick.
+- =ores.marketdata.api= — the =i_feed= interface and the market tick.
 - =ores.refdata.api=, =ores.iam.api=, =ores.dq.api=, =ores.analytics.quant=
   — types the generated entities and the feed classes carry.
 - =ores.database= — the context the IR template resolver reads reference data

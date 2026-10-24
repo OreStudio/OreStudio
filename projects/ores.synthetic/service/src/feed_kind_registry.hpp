@@ -126,7 +126,7 @@ struct feed_start_target final {
 
 /** One start attempt's producer, or the reason it cannot be built. */
 struct feed_start_attempt final {
-    std::shared_ptr<ores::marketdata::domain::IFeed> feed;
+    std::shared_ptr<ores::marketdata::domain::i_feed> feed;
     std::string failure;
 };
 
@@ -135,7 +135,7 @@ struct feed_simulate_envelope final {
     int num_ticks = 0;
     int num_paths = 0;
     std::uint32_t seed = 0;
-    std::function<std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
+    std::function<std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
         std::uint32_t seed)>
         make_process;
 };

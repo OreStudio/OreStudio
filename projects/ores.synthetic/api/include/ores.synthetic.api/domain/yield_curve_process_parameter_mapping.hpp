@@ -61,7 +61,7 @@ namespace ores::synthetic::domain {
  *   - @a values contains a parameter not declared for @a process_type;
  *   - any value lies outside its definition's [min_value, max_value].
  */
-ORES_SYNTHETIC_API_EXPORT std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+ORES_SYNTHETIC_API_EXPORT std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
 map_parameters_to_yield_curve_process(
     const std::string& process_type,
     const std::vector<yield_curve_process_parameter_definition>& definitions,

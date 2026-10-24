@@ -36,7 +36,7 @@ namespace ores::marketdata::domain {
  * creating a circular dependency.
  *
  * The feed manager pattern (a future ores.marketdata.service concern,
- * see architecture doc open design question 8) acquires IFeed instances
+ * see architecture doc open design question 8) acquires i_feed instances
  * via a registered factory; ores.synthetic.api registers its producers
  * (fx_spot_feed, ir_curve_feed) under per-kind factory registrations.
  *
@@ -57,10 +57,10 @@ namespace ores::marketdata::domain {
  * instantiated in the producer would otherwise never emit or export
  * them.
  */
-class ORES_MARKETDATA_API_EXPORT IFeed {
+class ORES_MARKETDATA_API_EXPORT i_feed {
 public:
-    IFeed();
-    virtual ~IFeed();
+    i_feed();
+    virtual ~i_feed();
 
     /**
      * @brief The producer's unique identity, e.g. "eur_usd_gbm_1".

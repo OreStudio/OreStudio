@@ -45,7 +45,7 @@ namespace ores::synthetic::feed {
 /**
  * @brief The kind string this producer registers under in
  * make_default_feed_factory() — the asset-class discriminator of the factory
- * seam, exposed as IFeed::kind(). The control-plane passes it to
+ * seam, exposed as i_feed::kind(). The control-plane passes it to
  * factory::make() to select this producer's builder and scopes running-feed
  * listings by it.
  */
@@ -67,7 +67,7 @@ public:
 /**
  * @brief Concrete IR curve family feed: one short-rate process step fans out to N tenor ticks.
  *
- * Implements IFeed. Mirrors fx_spot_feed's fixed-mode tick clock, but where fx_spot_feed
+ * Implements i_feed. Mirrors fx_spot_feed's fixed-mode tick clock, but where fx_spot_feed
  * publishes one scalar per step, ir_curve_feed publishes N (one per ir_curve_template_entry) —
  * the "one process step -> N tenor ticks" shape a curve needs (see the tick-batch-publishing
  * task). Each generation step:
@@ -83,7 +83,7 @@ public:
  * row of the tick table per tick for each consumer the source's feed bindings name. The synthetic
  * service has no marketdata writes.
  */
-class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::IFeed {
+class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::i_feed {
 public:
     ir_curve_feed(ores::nats::service::client& nats,
                   std::string source_name,
@@ -91,7 +91,7 @@ public:
                   std::string currency_code,
                   std::string index_tenor,
                   std::string role,
-                  std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
+                  std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
                   double ticks_per_hour,
                   std::vector<ir_curve_resolved_entry> entries);
 
@@ -136,7 +136,7 @@ private:
     std::string role_;
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
-    std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process_;
+    std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;
     tick_clock clock_;
     std::vector<ir_curve_resolved_entry> entries_;
 };

@@ -89,7 +89,7 @@ export interface PreviewIrCurveTemplateRow {
  * Template entry) implied by the given process parameters and template rows.
  *
  * Derives each row's rate the same way ir_curve_feed does
- * (IYieldCurveProcess::discount_factor() + curve_instrument_pricer, via the
+ * (i_yield_curve_process::discount_factor() + curve_instrument_pricer, via the
  * shared price_ir_curve_entry()), from the process's current state, with no
  * ticking, so an editor can show "if I save these parameters and this
  * template, here is the curve you would publish" before committing anything.

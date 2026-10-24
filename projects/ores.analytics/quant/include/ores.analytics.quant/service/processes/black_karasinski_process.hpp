@@ -131,7 +131,7 @@ ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree build_black_
  * them for a finer tick granularity, they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT black_karasinski_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     black_karasinski_process(double kappa,
                              double theta,

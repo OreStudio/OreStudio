@@ -84,7 +84,7 @@ namespace ores::analytics::quant::service {
  * for finer granularity — they pass the real dt instead.
  */
 class ORES_ANALYTICS_QUANT_EXPORT quadratic_gaussian_process final
-    : public ores::analytics::quant::domain::IYieldCurveProcess {
+    : public ores::analytics::quant::domain::i_yield_curve_process {
 public:
     quadratic_gaussian_process(Eigen::VectorXd kappas,
                                Eigen::MatrixXd sigma,

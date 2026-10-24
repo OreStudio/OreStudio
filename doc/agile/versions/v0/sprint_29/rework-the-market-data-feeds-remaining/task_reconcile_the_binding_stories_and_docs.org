@@ -60,8 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Files changed against main | 35 (356 insertions, 896 deletions) | =git diff --shortstat origin/main..HEAD= | 06d1c2434b |
-| Remaining current docs that name a binding | 0 | =grep -rn "feed binding\|feed_binding" doc/knowledge doc/recipes projects/modeling projects/ores.codegen/docs= | 06d1c2434b |
+| Files changed against main | 35 (356 insertions, 896 deletions) | =git diff --shortstat origin/main..HEAD= | 0e26b3156c |
+| Remaining current docs that name a binding | 0 | =grep -rn "feed binding\|feed_binding" doc/knowledge doc/recipes projects/modeling projects/ores.codegen/docs= | 0e26b3156c |
 
 * Notes
 

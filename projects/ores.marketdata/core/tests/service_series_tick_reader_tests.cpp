@@ -96,6 +96,15 @@ get_series_ticks_request span(const owned_series& o,
     return request;
 }
 
+/// A session that sees the parties of both series, as the session of a parent party does.
+ores::database::context
+sees_both(database_helper& h, const owned_series& first, const owned_series& second) {
+    return h.context().with_party(h.tenant_id(),
+                                  first.series.party_id,
+                                  {first.series.party_id, second.series.party_id},
+                                  h.db_user());
+}
+
 /// Appends @p count ticks of one second apart in one statement, because a statement for each
 /// tick would take longer than the test is worth.
 void insert_many_ticks(const owned_series& o,
@@ -380,7 +389,11 @@ TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one
     const auto t0 = now_second();
     insert_tick(first.owner, first.series.party_id, first.series.id, first.number, t0, 1.0);
 
-    const auto reply = series_tick_reader::read(first.owner, span(first, t0 - 1s, t0 + 1min));
+    // The identity table shows a session the series of its visible parties only, so a session
+    // that sees one party can never meet the same identity twice. A parent party sees its
+    // children as well.
+    const auto both = sees_both(h, first, second);
+    const auto reply = series_tick_reader::read(both, span(first, t0 - 1s, t0 + 1min));
 
     CHECK(reply.result.outcome == outcome::invalid);
     CHECK(reply.result.code == "series_ambiguous");
@@ -398,7 +411,7 @@ TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
 
     auto request = span(second, t0 - 1s, t0 + 1min);
     request.identity.party_id = boost::uuids::to_string(second.series.party_id);
-    const auto reply = series_tick_reader::read(second.owner, request);
+    const auto reply = series_tick_reader::read(sees_both(h, first, second), request);
 
     CHECK(reply.result.outcome == outcome::ok);
     CHECK(reply.values == std::vector<double>{2.0});

@@ -23,12 +23,18 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import type { BatchView, ResultView, WorkunitView } from '@ores/wire-protocol/browser';
+import type {
+    BatchView,
+    GridReportRunView,
+    ResultView,
+    WorkunitView,
+} from '@ores/wire-protocol/browser';
 import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { GridJobPage, canonicalRun, findTarget, focusRun, secondsBetween } from './GridJobPage.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
 import { GRID_JOBS_QUERY_KEY } from './GridJobs.js';
+import { REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
 
 /**
  * The job page, as a reader sees it.
@@ -106,6 +112,7 @@ function render(
     runs: readonly ResultView[],
     permissions: readonly string[] = ['storage::objects:read'],
     shownBatch: BatchView = batch,
+    reportRun?: GridReportRunView,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], {
@@ -129,6 +136,13 @@ function render(
         [GRID_JOBS_QUERY_KEY, 'workunits', BATCH_ID, 0, 15],
         page([wu, workunit({ id: SIBLING_ID, canonical_result_id: null })]),
     );
+    client.setQueryData(
+        [GRID_JOBS_QUERY_KEY, 'lineage-jobs', BATCH_ID],
+        page([wu, workunit({ id: SIBLING_ID, canonical_result_id: null })]),
+    );
+    if (reportRun !== undefined) {
+        client.setQueryData([REPORT_RUN_QUERY_KEY, reportRun.id], reportRun);
+    }
     client.setQueryData([APP_VERSION_QUERY_KEY, APP_VERSION_ID], {
         version: { engine_version: '1.8.17.0', wrapper_version: '1.0.0' },
     });
@@ -305,6 +319,72 @@ describe('the layout and the finder of the job page', () => {
 
         expect(html).toContain('Jobs tab, batch order-e');
         expect(html).toContain(`open=${BATCH_ID}`);
+    });
+});
+
+describe('the lineage of the job page', () => {
+    const RUN_ID = 'a1b2c3d4-0000-4000-8000-000000000009';
+    const DEFINITION_ID = 'd0000000-0000-4000-8000-0000000000de';
+    const reportBatch: BatchView = {
+        ...batch,
+        external_ref: RUN_ID,
+        report_run_name: 'NPV 2026-10-23 22:07:58',
+    };
+    const reportRun: GridReportRunView = {
+        id: RUN_ID,
+        name: 'NPV 2026-10-23 22:07:58',
+        description: '',
+        definition_id: DEFINITION_ID,
+        definition_name: 'NPV',
+        party_id: PARTY_ID,
+        party_name: null,
+        kind: 'production',
+        state_name: 'completed',
+        health: 'completed clean',
+        output_message: '',
+        started_at: null,
+        completed_at: null,
+        batch_id: BATCH_ID,
+        modified_by: 'scheduler',
+        recorded_at: '2026-10-23 22:07:58.000000Z' as GridReportRunView['recorded_at'],
+    };
+
+    it('draws the chain from the report to the job for a batch a report made', () => {
+        const html = render(workunit(), [run()], ['storage::objects:read'], reportBatch, reportRun);
+        const chain = html.slice(html.indexOf('>Lineage<'));
+
+        for (const node of ['Scheduled job', '>NPV<', 'NPV 2026-10-23 22:07:58', 'this job']) {
+            expect(chain).toContain(node);
+        }
+        expect(chain.indexOf('Scheduled job')).toBeLessThan(chain.indexOf('>NPV<'));
+        expect(chain.indexOf('>NPV<')).toBeLessThan(chain.indexOf('this job'));
+        expect(chain).toContain(`/reporting/reports/${DEFINITION_ID}`);
+        expect(chain).toContain(`/operations/grid/report-runs/${RUN_ID}`);
+    });
+
+    it('says the batch names the run only in its External Ref, and counts the siblings', () => {
+        const html = render(workunit(), [run()], ['storage::objects:read'], reportBatch, reportRun);
+
+        expect(html).toContain('does not state this as a relationship');
+        expect(html).toContain('1 sibling workunit in the same batch');
+    });
+
+    it('draws no report for a batch the shell dispatched, and says so', () => {
+        const html = render(workunit(), [run()]);
+        const chain = html.slice(html.indexOf('>Lineage<'));
+
+        expect(chain).toContain('No report is behind this batch.');
+        expect(chain).not.toContain('Scheduled job');
+        expect(chain).not.toContain('Report definition');
+        expect(chain).toContain('this job');
+    });
+
+    it('draws the run as a link when the session cannot read it, and no definition', () => {
+        const html = render(workunit(), [run()], ['storage::objects:read'], reportBatch);
+        const chain = html.slice(html.indexOf('>Lineage<'));
+
+        expect(chain).toContain(`/operations/grid/report-runs/${RUN_ID}`);
+        expect(chain).not.toContain('/reporting/reports/');
     });
 });
 

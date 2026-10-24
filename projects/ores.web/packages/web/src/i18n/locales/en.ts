@@ -1820,7 +1820,19 @@ export const en: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Lineage',
-                    reportRun: 'Open the report run named by the External Ref',
+                    reportRun: 'Report run',
+                    scheduled: 'Scheduled job',
+                    scheduledNote:
+                        'Not shown yet: the scheduler has no read of one job instance by id.',
+                    definition: 'Report definition',
+                    definitionNote: 'by scheduler_job_id',
+                    runNote: 'by definition_id and trigger_run_id',
+                    batchUnchecked:
+                        'The batch names the run in its External Ref. The model does not state this as a relationship.',
+                    siblings: {
+                        one: '{count} sibling workunit in the same batch, listed beside',
+                        other: '{count} sibling workunits in the same batch, listed beside',
+                    },
                     noReport:
                         'No report is behind this batch. The shell dispatched it, and its External Ref is an operator string.',
                     workunit: 'Workunit {id} (this job)',

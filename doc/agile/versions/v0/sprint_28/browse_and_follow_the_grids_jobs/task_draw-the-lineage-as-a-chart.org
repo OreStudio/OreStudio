@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The job page draws the lineage as a column of nodes: the report definition, the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C8D96F9A-75F2-4AB8-90F0-3FD1FF807845][Browse and follow the grid's jobs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing for the report definition, the run, the batch and the jobs. The scheduled job node waits for the task Read a scheduled job by its id. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,7 @@ The job page draws the lineage as a column of nodes: the report definition, the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Replace the lineage list with the chain of the prototype: one column of nodes, each with a dot on a line, from the scheduled job to this job. The report run page already reads the run with its definition, so the chart reads the run through it, and one read of the batch's jobs gives the sibling count. A node the model states is a solid dot. The batch is a dashed dot when a report made it, because its link to the run is the External Ref and not a checked relationship. This job is the highlighted node, with its results beneath it.
 
 * Measurements
 
@@ -60,6 +58,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The scheduled job node is drawn and says it is not shown yet, because the scheduler has no read of one job instance by id. The task Read a scheduled job by its id lifts that, and the node then names the job. A batch the shell dispatched has no report behind it, and the chart draws the batch and the job only and says so. A session that may not read the run, such as the operator, sees the run as a link and no definition.
+
+I did not draw this chart when I built the job page. The prototype showed it and I built to the story's acceptance line instead. The comparison of the page with the prototype is in the task Lay out the job page as its prototype.
 
 * Test Scenarios
 
@@ -85,3 +87,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The job page draws the lineage as a chain: the scheduled job (not shown yet), the report definition, the report run, the batch, and this job with its results, with the number of sibling jobs. Each node links to its page. The batch of a shell dispatch shows no report. The page has four new tests, and the chart was checked live on a real NPV run.

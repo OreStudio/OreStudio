@@ -1831,7 +1831,19 @@ const pt: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Linhagem',
-                    reportRun: 'Abrir a execução de relatório nomeada pela referência externa',
+                    reportRun: 'Execução de relatório',
+                    scheduled: 'Trabalho agendado',
+                    scheduledNote:
+                        'Ainda não mostrado: o agendador não tem leitura de uma instância de trabalho por id.',
+                    definition: 'Definição de relatório',
+                    definitionNote: 'por scheduler_job_id',
+                    runNote: 'por definition_id e trigger_run_id',
+                    batchUnchecked:
+                        'O lote nomeia a execução na sua referência externa. O modelo não a declara como relação.',
+                    siblings: {
+                        one: '{count} unidade de trabalho irmã no mesmo lote, listada ao lado',
+                        other: '{count} unidades de trabalho irmãs no mesmo lote, listadas ao lado',
+                    },
                     noReport:
                         'Nenhum relatório está por trás deste lote. A shell enviou-o, e a sua referência externa é uma cadeia de operador.',
                     workunit: 'Unidade de trabalho {id} (este trabalho)',

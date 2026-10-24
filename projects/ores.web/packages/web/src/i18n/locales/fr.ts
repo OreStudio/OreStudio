@@ -1840,7 +1840,19 @@ const fr: SourceCatalogue = {
                 },
                 lineage: {
                     title: 'Filiation',
-                    reportRun: 'Ouvrir l’exécution de rapport nommée par la référence externe',
+                    reportRun: 'Exécution de rapport',
+                    scheduled: 'Travail planifié',
+                    scheduledNote:
+                        'Pas encore affiché : le planificateur n’a pas de lecture d’une instance de travail par id.',
+                    definition: 'Définition de rapport',
+                    definitionNote: 'par scheduler_job_id',
+                    runNote: 'par definition_id et trigger_run_id',
+                    batchUnchecked:
+                        'Le lot nomme l’exécution dans sa référence externe. Le modèle ne l’énonce pas comme une relation.',
+                    siblings: {
+                        one: '{count} unité de travail sœur dans le même lot, listée à côté',
+                        other: '{count} unités de travail sœurs dans le même lot, listées à côté',
+                    },
                     noReport:
                         'Aucun rapport n’est derrière ce lot. Le shell l’a envoyé, et sa référence externe est une chaîne d’opérateur.',
                     workunit: 'Unité de travail {id} (ce travail)',

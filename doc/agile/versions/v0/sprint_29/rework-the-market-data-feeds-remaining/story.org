@@ -25,7 +25,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The route is the one consumer record; the feed binding retires. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task that reads the consumers from the routes only. |
+| Next          | Start [[id:6DB2B277-D4CC-4FE2-830B-A83D1033B6AC][Retire the feed binding]], then reconcile the stories and the docs. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -58,6 +58,8 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] | BACKLOG | | | Today the ingest writes one copy of a tick for each party that routes to the source. Decide if one shared copy with entitlement at read time is better. |
 | [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] | BACKLOG | | | The simulator builds its adapters once, at start. A new simulated source needs a restart. |
 | [[id:E53B0439-85D8-44FF-9D3F-6C7C644E0D62][Decide the binding's place in the route architecture]] | DONE | 2026-10-24 | 2026-10-24 | Settle whether a feed binding stays as the persisted consumer record or retires in favour of the route, before the ingest, the screen and the policy audit build on it. |
+| [[id:6DB2B277-D4CC-4FE2-830B-A83D1033B6AC][Retire the feed binding]] | BACKLOG | | | Delete the feed binding and read the consumers from the routes, so one record says which party consumes which source. |
+| [[id:C452234B-3764-45C7-A62D-9DCDDFF151BC][Reconcile the binding stories and the market data docs]] | BACKLOG | | | Make the agile record and the market data docs say that the route is the consumer record and the binding is gone. |
 
 * Decisions
 

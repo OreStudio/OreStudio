@@ -141,21 +141,22 @@ what the absence of a route already says.
   =ores_marketdata_feed_binding_activity_tbl= with their triggers, event
   mappings and two policies. Remove =feed_bindings_tbl_tenant_isolation_policy=
   from the widening guard when the table drops. The audit story records the
-  decision for that policy as "retired", not "role-scoped".
+  decision for that policy as "retired", not "role-scoped". No migration and no
+  data are kept: the database is recreated.
 - *Stories:* the bindings screen story =AE947749= closes as superseded by the
   service screens task. The subscribe story =3BAE4AAA= is reworded to
   subscriptions and routes.
 
 ** The tasks this decision unblocks
 
-1. Read the consumers from the routes only.
-2. Retire the bindings screen, its BFF read and its menu card.
-3. Drop the binding tables, triggers, event mappings and policies, and update
-   the widening guard.
-4. Reconcile the two Sprint 29 stories: close =AE947749= and reword =3BAE4AAA=.
+1. Retire the feed binding. The ingest reads the routes only, and the binding
+   model, code, tables, policies, screen, permissions and generated artefacts
+   are deleted in the same change. The database is trashed and recreated, so
+   there is no migration and no legacy row to keep.
+2. Reconcile the binding stories and the market data docs with the retirement.
 
-** The measurement gap
+** No migration
 
-No database was reachable in this worktree, so the row count of an existing
-database was not measured. The drop task counts the rows first and moves any
-that exist onto routes.
+The database is recreated from the create scripts. The drop keeps no data and
+needs no row count, and no compatibility view, dual write or deprecation window
+is added. A database that still holds binding rows is discarded.

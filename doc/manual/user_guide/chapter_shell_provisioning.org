@@ -185,10 +185,10 @@ today:
   the tenant's parties.
 - =acme_demo= — the demonstration, the Acme Corporation holding group
   with its legal entities, staff, books and market data.
-- =northwind= — a second demonstration tenant, the fictional Northwind
-  Traders: one legal entity, nine staff, six portfolios and seven books,
-  with its own report documents. It is lighter than =acme_demo=, and a
-  deployment uses it to exercise more than one tenant at once.
+- =northwind= is a second demonstration tenant, the fictional Northwind
+  Traders. It has one legal entity, nine staff, six portfolios and seven
+  books, and its own report documents. It is lighter than =acme_demo=.
+  A deployment uses it to exercise more than one tenant at once.
 
 =--profile= names the starting point and =--param name=value= supplies
 one parameter it declares, for example =--param root_lei=<lei>= or

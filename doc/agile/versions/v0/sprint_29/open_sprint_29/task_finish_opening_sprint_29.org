@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_29:sprint_29:v0:
 #+owner: marco
 #+branch: feature/finish-opening-sprint-29
-#+pr:
+#+pr: 3714
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3714][#3714]] | [agile] Finish opening sprint 29: vcpkg, version and the carried stories |
 
 * Review
 

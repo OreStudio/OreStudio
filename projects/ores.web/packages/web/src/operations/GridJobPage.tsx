@@ -49,9 +49,11 @@ import {
     gridJobPath,
     gridNodePath,
     gridReportRunPath,
+    reportPath,
 } from '../shell/paths.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { APP_VERSION_QUERY_KEY } from './GridAppVersionPage.js';
+import { REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
 import { Button, Detail, Input, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { formatDateTime, parseTimestamp } from '../ui/Time.js';
 import {
@@ -545,13 +547,49 @@ function Release({ workunit }: { readonly workunit: WorkunitView }): ReactNode {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * What the model states and what it does not.
+ * How a node of the chain stands: stated by the model, named by text only, or the job
+ * the page is about.
+ */
+type NodeKind = 'stated' | 'unchecked' | 'here';
+
+const DOT: Readonly<Record<NodeKind, string>> = {
+    stated: 'bg-ink-faint',
+    unchecked: 'border border-dashed border-warn bg-surface-base',
+    here: 'bg-accent',
+};
+
+function ChainNode({
+    kind = 'stated',
+    title,
+    note,
+    children,
+}: {
+    readonly kind?: NodeKind;
+    readonly title: ReactNode;
+    readonly note?: ReactNode;
+    readonly children?: ReactNode;
+}): ReactNode {
+    return (
+        <li className="relative">
+            <span
+                aria-hidden="true"
+                className={`absolute -left-[1.81rem] top-1.5 h-2.5 w-2.5 rounded-full ${DOT[kind]}`}
+            />
+            <div className={kind === 'here' ? 'font-medium' : undefined}>{title}</div>
+            {note !== undefined && <p className="text-xs text-ink-faint">{note}</p>}
+            {children}
+        </li>
+    );
+}
+
+/**
+ * The chain that put this job on the grid, one column of nodes from the top: the scheduled
+ * job, the report definition, the report run, the batch, and this job with its results.
  *
- * The hop from a batch to the report run behind it is the batch's External Ref,
- * which holds the run's id when a report dispatched it. The model does not state
- * that as a relationship, so the link goes to a page that answers not found when
- * the reference names no run. A batch the shell dispatched holds an operator
- * string there, and the page says no report is behind it.
+ * The batch names its run in the External Ref, which the model does not state as a
+ * relationship, so a batch a report made is drawn dashed and says so. The scheduled job has no
+ * read by id yet, so its node says that. A session that may not read the run sees no report
+ * nodes, and the batch says why.
  */
 function Lineage({
     workunit,
@@ -562,43 +600,92 @@ function Lineage({
     readonly batch: BatchView | undefined;
     readonly runs: readonly ResultView[];
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
+    const reportRef =
+        batch !== undefined && UUID.test(batch.external_ref) ? batch.external_ref : null;
+    const run = useQuery({
+        queryKey: [REPORT_RUN_QUERY_KEY, reportRef],
+        queryFn: () => api.gridReportRun(reportRef ?? ''),
+        enabled: reportRef !== null,
+        meta: QUIET,
+    });
+    const batchId = batch?.id;
+    const jobs = useQuery({
+        queryKey: [GRID_JOBS_QUERY_KEY, 'lineage-jobs', batchId],
+        queryFn: () => api.gridJobWorkunits(batchId ?? '', 0, 1),
+        enabled: batchId !== undefined,
+        meta: QUIET,
+    });
+    const siblings = jobs.data === undefined ? 0 : Math.max(0, jobs.data.total - 1);
+    // The service names the run on the batch exactly when this session may read it, so the
+    // chain above the batch is drawn then. An id that names no run it can read is text.
+    const reported = reportRef !== null && batch?.report_run_name != null;
+    const key = 'operations.grid.job.lineage';
     return (
-        <Panel title={t('operations.grid.job.lineage.title')}>
-            <ol className="space-y-2 text-sm">
-                {batch !== undefined && (
-                    <li>
-                        <PageLink to={gridBatchPath(batch.id)}>
-                            {batch.report_run_name ?? batch.external_ref}
-                        </PageLink>
-                        <p className="text-xs text-ink-faint">
-                            {UUID.test(batch.external_ref) ? (
-                                <PageLink to={gridReportRunPath(batch.external_ref)}>
-                                    {t('operations.grid.job.lineage.reportRun')}
-                                </PageLink>
-                            ) : (
-                                t('operations.grid.job.lineage.noReport')
-                            )}
-                        </p>
-                    </li>
+        <Panel title={t(`${key}.title`)}>
+            <ol className="relative ml-2 space-y-4 pl-6 text-sm before:absolute before:bottom-2 before:left-0 before:top-2 before:w-px before:bg-ink-faint">
+                {reported && (
+                    <ChainNode
+                        kind="unchecked"
+                        title={t(`${key}.scheduled`)}
+                        note={t(`${key}.scheduledNote`)}
+                    />
                 )}
-                <li>
-                    {t('operations.grid.job.lineage.workunit', { id: workunit.id.slice(0, 8) })}
-                    <p className="text-xs text-ink-faint">
-                        {t('operations.grid.job.lineage.viaBatch')}
-                    </p>
-                    <ul className="ml-4 list-disc text-xs text-ink-muted">
-                        {runs.map((run, index) => (
-                            <li key={run.id}>
-                                {t('operations.grid.job.lineage.result', {
-                                    id: run.id.slice(0, 8),
+                {run.data !== undefined && (
+                    <ChainNode
+                        title={
+                            <PageLink to={reportPath(run.data.definition_id)}>
+                                {run.data.definition_name ?? t(`${key}.definition`)}
+                            </PageLink>
+                        }
+                        note={t(`${key}.definitionNote`)}
+                    />
+                )}
+                {reported && reportRef !== null && (
+                    <ChainNode
+                        title={
+                            <PageLink to={gridReportRunPath(reportRef)}>
+                                {run.data?.name ?? batch?.report_run_name ?? t(`${key}.reportRun`)}
+                            </PageLink>
+                        }
+                        note={t(`${key}.runNote`)}
+                    />
+                )}
+                {batch !== undefined && (
+                    <ChainNode
+                        kind={reported ? 'unchecked' : 'stated'}
+                        title={
+                            <PageLink to={gridBatchPath(batch.id)}>
+                                {batch.report_run_name ?? batch.external_ref}
+                            </PageLink>
+                        }
+                        note={
+                            reported
+                                ? t(`${key}.batchUnchecked`)
+                                : reportRef === null
+                                  ? t(`${key}.noReport`)
+                                  : t(`${key}.unreadable`)
+                        }
+                    />
+                )}
+                <ChainNode
+                    kind="here"
+                    title={t(`${key}.workunit`, { id: workunit.id.slice(0, 8) })}
+                    note={t(`${key}.viaBatch`)}
+                >
+                    <ul className="ml-4 mt-1 list-disc text-xs text-ink-muted">
+                        {runs.map((result, index) => (
+                            <li key={result.id}>
+                                {t(`${key}.result`, {
+                                    id: result.id.slice(0, 8),
                                     run: index + 1,
                                 })}{' '}
-                                <OutcomeTag run={run} />
+                                <OutcomeTag run={result} />
                             </li>
                         ))}
                     </ul>
-                </li>
+                </ChainNode>
+                {siblings > 0 && <ChainNode title={plural(`${key}.siblings`, siblings)} />}
             </ol>
         </Panel>
     );

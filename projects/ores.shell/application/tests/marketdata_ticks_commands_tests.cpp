@@ -20,11 +20,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cli/cli.h>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 using ores::nats::service::nats_client;

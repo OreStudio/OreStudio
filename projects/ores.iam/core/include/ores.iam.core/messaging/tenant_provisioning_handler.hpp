@@ -1881,9 +1881,12 @@ private:
         if (subscriptions.result.outcome != ores::utility::domain::outcome::ok)
             throw std::runtime_error("The subscriptions of party " + party_text +
                                      " were not read: " + subscriptions.result.message);
+        // The session of a parent party also sees the rows of its child parties, so the
+        // check names the party and a child's subscription does not count as the parent's.
         const bool has_subscription =
-            std::ranges::any_of(subscriptions.subscriptions,
-                                [&](const auto& s) { return s.provider_code == provider; });
+            std::ranges::any_of(subscriptions.subscriptions, [&](const auto& s) {
+                return s.party_id == party_id && s.provider_code == provider;
+            });
         if (!has_subscription) {
             marketdata::messaging::put_subscription_request put;
             put.change.write.id = uuid_gen();
@@ -1908,8 +1911,9 @@ private:
         if (routes.result.outcome != ores::utility::domain::outcome::ok)
             throw std::runtime_error("The routes of party " + party_text +
                                      " were not read: " + routes.result.message);
-        const bool has_route = std::ranges::any_of(
-            routes.routes, [&](const auto& r) { return r.provider_code == provider; });
+        const bool has_route = std::ranges::any_of(routes.routes, [&](const auto& r) {
+            return r.party_id == party_id && r.provider_code == provider;
+        });
         if (!has_route) {
             marketdata::messaging::put_route_request put;
             put.change.write.id = uuid_gen();

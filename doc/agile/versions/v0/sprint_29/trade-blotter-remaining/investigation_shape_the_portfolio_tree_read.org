@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 87771BE6-D4BF-40C2-B5DB-179A9696837D
+:END:
+#+title: Investigation: The shape of the portfolio tree read
+#+description: What the data-oriented design doctrine, the existing entities and the service boundary say the portfolio tree read must be, before any change is proposed.
+#+type: investigation
+#+level: s1
+#+filetags: :trade-blotter-remaining:sprint_29:v0:trading:portfolio:read-model:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+A point-in-time record, written while the story that commissioned it was open, of an investigation into the shape the portfolio tree read must take, before any change is proposed.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The trade list carries a portfolio tree on its left. The prototype settles what it draws: portfolios nested by parent, the books that hang from each portfolio, a count of the trades in each, and the two icons that tell a portfolio from a book. The prototype reads mock data, so it proves the screen and not the server.
+
+The junction capture answered what the reads can do today. This investigation asks the prior question: given our data-oriented design, the entities we hold and the service boundary, what should the tree read *be*? The order matters, because the first shape that works is rarely the one that survives review.
+
+* Methodology
+
+Read the doctrine first, then the entities, then the boundary, and only then the candidate shapes.
+
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]] and [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the closed set of six that precedes a pattern.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — the axioms, the regimes, and the rule that there is no entity.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — the pattern table, including the read model.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verb set a read model gets.
+- The models: =ores.refdata.portfolio=, =ores.refdata.book=, =ores.trading.trade_booking=, =ores.trading.trade_summary=.
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service to service auth patterns]] — the rule against reaching across a service boundary.
+- The generated read model on =main=, =ores.trading.trade_summary=, which is the one precedent in the tree.
+
+* Paths taken
+
+*** The classification comes first
+
+The doctrine asks what the data *is* before it asks what the pattern is. The tree is not one entity, because it draws two; it is not a list of one entity kind, because its rows are portfolios and books; it is not a family, because nothing is written in one transaction; and it is not a bundle, a package or an artefact.
+
+It is a screen whose rows span several entities, so the pattern table sends it to one place: *a read model, never a client join*. That closes the classification question and leaves the shape.
+
+*** What the entities already say
+
+| Entity | Owns | The tree needs |
+|---|---|---|
+| =ores.refdata.portfolio= | =party_id=, =parent_portfolio_id=, =name=, =is_virtual=, =sandbox_id=, =status=, =purpose= | identity, parent, label, sandbox |
+| =ores.refdata.book= | =party_id=, =parent_portfolio_id= → portfolio (mandatory, exactly one), =name=, =book_status=, =sandbox_id= | identity, parent, label, sandbox |
+| =ores.trading.trade_booking= | =trade_id=, =book_id=, =trade_date= | which book a trade is filed in |
+| =ores.trading.trade_summary= | =book_id=, =row_kind=, =trade_count= | the count per book, already read for the list |
+
+So the tree is two hierarchies in one shape: a portfolio nests under a portfolio, and a book hangs from one. Both carry the party and the sandbox, which are the two axes the tree filters on. And the count is not a property of either: it is the trading side's opinion about a book.
+
+*** The boundary decides where each read lives
+
+The tree needs refdata's rows and a trading count. The tempting shape is one view that joins them: a =portfolio_tree_node= read model in trading, selecting from the refdata tables and counting the trading ones. It would be one call, one pager, one array.
+
+The doctrine forbids it. A service reads another service's data through that service's NATS API, never through its tables: reaching across the boundary couples the two schemas, and it bypasses the owning service's authorization. A view that selects refdata tables from trading is exactly that reach, whether or not Postgres allows it.
+
+Nor can the pieces simply be dropped into a client join of entities. The rule that closes that door is the same one that closed the classification: a screen spanning entities is assembled for display from reads, not built by the screen out of raw entity rows.
+
+*** The one precedent worth copying
+
+=trade_summary= is the shape the doctrine endorses, and it is worth naming precisely because it looks like the forbidden view and is not. Its view =union all=s two tables of *one* component, trading, into one row type with =row_kind= as the discriminator; every table it reads belongs to trading. That is a read model inside one service. The tree's tempting view would union two *components*, and no amount of syntactic similarity makes that the same thing.
+
+*** Where the shapes split
+
+| Shape | What it is | Verdict |
+|---|---|---|
+| R1 | A =portfolio_tree_node= read model in refdata (portfolios and books, =node_kind=, =parent_id=, label, sandbox), plus a count-per-book read in trading, zipped in the BFF | Right by the boundary, and the same shape as =trade_summary= |
+| R2 | Extend both list filters with =party_id=, fix the erase-after-paging, and let the BFF build the tree from two lists plus the count read | Least new codegen, but two page walks and a client-built hierarchy |
+| R3 | One view in trading over refdata and trading tables | Rejected: crosses the service boundary, couples two schemas, bypasses refdata's authorization |
+
+* Conclusions
+
+1. *The tree is a read model*, by the classification and by the pattern table, and the doctrine's alternative — a client join of entities — is closed.
+2. *It is two reads, not one*, because the rows it draws belong to refdata and the number it prints belongs to trading. Neither service may see the other's tables.
+3. *A refdata read model is the right home for the hierarchy*, because refdata owns both entities, both carry the same parent shape, and one read model can serve the tree today and the book screen later. =trade_summary= is the template: a view inside one component, a discriminator column, a list verb, no write.
+4. *The count is a trading read model*, not a column on the hierarchy: one row per book with its trade count, filtered by =book_id_one_of=, which is the call the list already makes.
+5. *The existing list reads cannot serve the tree as they stand.* =portfolios_filter= has no party member and the party is applied by erasing rows after the pager, so a page and its total disagree. That is a defect in its own right, on the list as much as on the tree.
+6. *The node count per portfolio is the open question.* A book's count is a cheap read. A portfolio's count is its subtree's, and a subtree sum per node is either a recursive aggregate in the view or a roll-up maintained elsewhere. The doctrine would not put a recursive aggregate on a hot path, and the tree is drawn on every visit. This one needs a measurement before a decision, with the real sizes of a party's tree.
+
+* Recommendations
+
+1. Write the classification down on the checklist before building: a read model, spanning refdata entities, assembled on the server.
+2. Build the refdata read model first, because it is the piece with a precedent and no measurement open: =portfolio_tree_node= with =node_kind=, =parent_id=, =party_id=, =sandbox_id=, label and order, a =list= verb filtered by =parent_id= and =sandbox_id=, and no count.
+3. Decide the count separately, after measuring a party's tree: either the trading read model carries =book_id= and =trade_count= and the BFF rolls the subtree up from the nodes it has loaded, or the view precomputes it. The first is lazier and costs a sum in the browser; the second costs an aggregate per load.
+4. Fix the erase-after-paging defect in both refdata repositories whichever shape wins, because it makes every paged read disagree with its own total.
+5. Do not build the tree in the list's PR. The list is settled and shippable without it; the tree is a read model of its own, with its own task.
+
+* See also
+
+- [[id:247B37A7-15AF-4C24-80D1-8BC4CD45DBF1][The junction capture]] — the six questions this investigation answers.
+- [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] — the screen the tree belongs to.
+- [[id:1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20][Trade list and page prototype]] — what the tree draws.

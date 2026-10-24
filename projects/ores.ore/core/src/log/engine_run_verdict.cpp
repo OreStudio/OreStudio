@@ -99,11 +99,10 @@ std::vector<std::string> fatal_messages(std::string_view engine_log) {
 std::string reported_errors(const std::vector<std::string>& errors) {
     const auto omitted = errors.size() > max_reported_errors ? errors.size() - max_reported_errors :
                                                                static_cast<std::size_t>(0);
-    std::string out = omitted == 0 ?
-                          " The engine reported:" :
-                          std::format(" The engine reported {} errors; the last {} are:",
-                                      errors.size(),
-                                      max_reported_errors);
+    std::string out = omitted == 0 ? " The engine reported:" :
+                                     std::format(" The engine reported {} errors; the last {} are:",
+                                                 errors.size(),
+                                                 max_reported_errors);
     for (auto it = errors.begin() + static_cast<std::ptrdiff_t>(omitted); it != errors.end(); ++it)
         out += "\n  " + *it;
     return out;

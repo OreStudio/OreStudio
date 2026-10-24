@@ -721,6 +721,7 @@ tangled into the runnable script library
 
 * Report Operations
 
+- [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How do I prove a report runs end to end?]]
 - [[id:C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD][How do I run the report_operations commands from the shell?]]
 
 * Report Types

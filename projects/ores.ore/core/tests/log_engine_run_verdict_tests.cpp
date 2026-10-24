@@ -99,9 +99,8 @@ TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote"
                                           log);
 
     CHECK_FALSE(outcome.succeeded);
-    CHECK(outcome.failure ==
-          "The engine reported a failed analytic. The engine reported:\n"
-          "  Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS");
+    CHECK(outcome.failure == "The engine reported a failed analytic. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS");
 }
 
 TEST_CASE("a refusal says how many errors it left out", tags) {
